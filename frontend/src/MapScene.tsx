@@ -209,17 +209,24 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
     if(e.button!==0) return;
     drag.current={x:e.clientX,y:e.clientY,cx,cy,travel:0};
     ignoreNextClick.current=false;
-    e.currentTarget.setPointerCapture(e.pointerId);
+    // Do not capture on pointer-down: small clicks must reach site/resource icons.
+    // Capture only after the gesture is clearly a drag.
   };
   const pointerMove=(e:ReactPointerEvent<SVGSVGElement>)=>{
     if(!drag.current)return;
     const rect=e.currentTarget.getBoundingClientRect();
     const dx=e.clientX-drag.current.x,dy=e.clientY-drag.current.y;
     drag.current.travel=Math.max(drag.current.travel,Math.hypot(dx,dy));
+    if(drag.current.travel<=5) return; // click tolerance in CSS pixels
+    if(!e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.setPointerCapture(e.pointerId);
     setCx(drag.current.cx-dx*viewWidth/rect.width);
     setCy(drag.current.cy-dy*viewHeight/rect.height);
   };
-  const pointerUp=()=>{if(drag.current?.travel && drag.current.travel>5)ignoreNextClick.current=true;drag.current=null;};
+  const pointerUp=(e:ReactPointerEvent<SVGSVGElement>)=>{
+    if(drag.current && drag.current.travel>5) ignoreNextClick.current=true;
+    drag.current=null;
+    if(e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+  };
   const wheel=(e:ReactWheelEvent<SVGSVGElement>)=>{
     e.preventDefault();
     const rect=e.currentTarget.getBoundingClientRect();
