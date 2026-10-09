@@ -8695,7 +8695,7 @@
       "display_vi": "Cập Nhật Hệ Thống — giới hạn trang bị chiến lợi phẩm và thương tật",
       "source_class": "SOURCE_EXPLICIT_NOVEL_SYSTEM_PATCH_NOTE",
       "linked_entry_ids": [],
-      "observed_effect": "The system notice forbids equipment dropping when an enemy was not wearing/carrying equipment; this does not forbid non-equipment materials and other drops. Combat gains limb severing, permanent/severe disabling injuries and vital-point attacks with increased damage; severed limbs cannot be restored by ordinary healing magic according to this notice. No exact rates, body-slot tables, vital-hit multipliers or regeneration exceptions are given.",
+      "observed_effect": "The system notice forbids equipment dropping from an enemy that was not wearing equipment; this does not forbid non-equipment materials and other drops. Combat gains limb severing, permanent/severe disabling injuries and vital-point attacks with increased damage; severed limbs cannot be restored by ordinary healing magic according to this notice. No exact rates, body-slot tables, vital-hit multipliers or regeneration exceptions are given.",
       "equipment_drop_if_target_has_no_equipment": false,
       "non_equipment_drop_status": "NOT_PROHIBITED_BY_RULE",
       "injury_types": [
