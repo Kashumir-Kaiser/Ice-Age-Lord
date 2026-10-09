@@ -8,9 +8,11 @@ import {
   formatClock, formatDistance, heatRadiusM, shouldEnterWorldMap, visibilityDiscs, fogOpacityAt, WORLD_ZOOM,
 } from './mapModel';
 import { CANONICAL_SITES, CANONICAL_RESOURCES, CANONICAL_CHEST_CACHES, CANONICAL_MAP_RADIUS_M, knownOpeningSites } from './canonicalGeography';
+import TerrainDetails from './TerrainDetails';
+import { visibleMapSpots, visibleMapViewport } from './worldFeatures';
 import './map-refinement.css';
 
-type Props = { selected: SiteKind; onSelect: (id: SiteKind) => void; compact?: boolean };
+type Props = { selected: SiteKind; onSelect: (id: SiteKind) => void; compact?: boolean; clockSeconds:number; onClockChange:(seconds:number)=>void };
 const TIMES = [420, 720, 990, 1005, 1140, 60] as const;
 const LEVELS = [1, 2, 3, 4, 5, 6, 7, 10, 11, 16, 21, 26, 30] as const;
 const FIRST_SITES = sites.map(site=>({...site,renderY:-site.y}));
@@ -46,6 +48,7 @@ function Terrain({id,world}:{id:string;world:boolean}) {
     <circle r={CANONICAL_MAP_RADIUS_M} fill={`url(#${id}-ground)`}/>
     <circle r={CANONICAL_MAP_RADIUS_M} fill={`url(#${id}-cart-grid)`}/>
     <circle r={CANONICAL_MAP_RADIUS_M} fill="none" stroke="#8cb7bb" strokeWidth="200" strokeOpacity=".35" strokeDasharray="950 750"/>
+    <TerrainDetails world={world}/>
     {/* Regions radiate out from exact source point anchors; their artwork boundaries are schematic. */}
     <ellipse cx={pines.x} cy={-pines.y} rx="1600" ry="1900" fill={`url(#${id}-treezone)`}/>
     <ellipse cx={stone.x} cy={-stone.y} rx="1300" ry="1100" fill={`url(#${id}-rockzone)`}/>
@@ -75,6 +78,7 @@ function MarkerGraphic({kind}:{kind:string}) {
   if(kind==='wood') return <g><path d="m0-20-13 18h6L-16 9h9l-5 10h24L7 9h9L7-2h6Z" fill="#305a4f" stroke="#b3d4bd" strokeWidth="2"/><path d="M0-20V19m-10-9 10-9 10 9" fill="none" stroke="#d9eee0" strokeWidth="2"/></g>;
   if(kind==='stone') return <g><path d="m-18 15 7-21L0-19 11-9 19 15Z" fill="#7895a2" stroke="#e0eeea" strokeWidth="2"/><path d="M0-19-2 5l-16 10m16-10 21 10M-11-6 9-7" fill="none" stroke="#b5d4d5" strokeWidth="2"/></g>;
   if(kind==='ore') return <g><path d="m-18 13 8-24 12-11 15 15 4 20Z" fill="#516a79" stroke="#a6ccd4" strokeWidth="2"/><path d="m-10-11 12 13v-24m0 24 15-9M2 2l-1 11" stroke="#84d4e4" strokeWidth="3"/><path d="m-2-4 7 8" stroke="#d1f3ef" strokeWidth="3"/></g>;
+  if(kind==='site') return <g><path d="M-16 15V-8l7-8 11 8 8-13 9 7V15Z" fill="#637985" stroke="#d2e3db" strokeWidth="1.6"/><path d="M-21 15h44M-7 15v-13h8v13m10-20-7 4" fill="none" stroke="#9ebcbe" strokeWidth="3"/></g>;
   if(kind==='salt') return <g><path d="m-16 14 6-18 10-14 10 10 8 22Z" fill="#bed7ce" stroke="#f8efe0" strokeWidth="2"/><path d="m0-18 0 31m-10-17 10 5 10-9M-16 14 0 1l18 13" fill="none" stroke="#e5f0e1" strokeWidth="2"/><path d="m-5-12 5-6 6 6" fill="none" stroke="#fff9e8" strokeWidth="2"/></g>;
   if(kind==='herbs') return <g><path d="M0 18V-13m0 24q-12-3-12-18Q1-5 0 11Zm0-10q5-18 16-20 1 17-16 20" fill="#618e7f" stroke="#d2e8d8" strokeWidth="2"/><path d="m-15 18 30 0" stroke="#d3e5d8" strokeWidth="2"/></g>;
   return <g><path d="m-18 9 5-16 18-11 15 14-7 19-20 5Z" fill="#93c9d5" stroke="#e6f9f8" strokeWidth="2"/><path d="m5-18-2 16 17-2M3-2-7 20m10-22-21 11" fill="none" stroke="#d2ffff" strokeWidth="2"/></g>;
@@ -111,7 +115,7 @@ function FogMask({id,discs,viewport}:{id:string;discs:readonly {x:number;y:numbe
     </radialGradient>
   </defs>;
 }
-export default function MapScene({selected,onSelect,compact=false}:Props){
+export default function MapScene({selected,onSelect,compact=false,clockSeconds,onClockChange}:Props){
   const unique=useId().replace(/[^a-zA-Z0-9]/g,'')||'map';
   const root=useRef<HTMLDivElement>(null);
   const svgRef=useRef<SVGSVGElement>(null);
@@ -124,7 +128,7 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
   const [cy,setCy]=useState(0);
   const [survey,setSurvey]=useState(false);
   const [labels,setLabels]=useState(true);
-  const [minutes,setMinutes]=useState(420);
+  const minutes=Math.floor((clockSeconds%86400)/60);
   const [level,setLevel]=useState(1);
   const [inspected,setInspected]=useState<string|null>(null);
   const radius=heatRadiusM(level);
@@ -134,47 +138,46 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
   const viewport={x:cx-viewWidth/2,y:cy-viewHeight/2,width:viewWidth,height:viewHeight};
   const vb=`${viewport.x} ${viewport.y} ${viewWidth} ${viewHeight}`;
   const discs=useMemo(()=>visibilityDiscs(minutes,level,survey),[minutes,level,survey]);
-  // Opaque-black concealment in the renderer is independent from the actor's knowledge.
-  // Debug preview is the ONLY way to inspect canonical hidden resources or caches.
-  const previewMarkers=useMemo(()=>{
-    if(!survey)return [];
-    const resources=CANONICAL_RESOURCES.map(r=>({
-      id:r.id,kind:r.kind,name:r.name,x:r.x,y:r.y,
-      unit:r.unit,capacity:r.capacity,remaining:r.capacity,description:r.renewal,demoOnly:true as const,
-    }));
-    const caches=CANONICAL_CHEST_CACHES.map(c=>({
-      id:c.id,kind:'chest' as const,name:'Rương Báu · '+c.id,x:c.x,y:c.y,
-      opened:false as const,contentsKnown:false as const,demoOnly:true as const,
-    }));
-    return [...resources,...caches].filter(p=>fogOpacityAt(p.x,p.y,true,minutes,level)<=.08);
-  },[survey,minutes,level]);
-  const current=previewMarkers.find(m=>m.id===inspected);
+  // Firelight reveals the physical area. Model-generated vegetation and surface
+  // relics are visible without debug. Buried/sealed locations remain hidden.
+  const visibleSpots=useMemo(()=>visibleMapSpots(minutes,level,survey),[minutes,level,survey]);
+  const markers=useMemo(()=>visibleMapViewport(visibleSpots,cx,cy,viewWidth,viewHeight).filter((spot,index)=>{
+    if(spot.provenance==='canonical'||zoom>.035)return true;
+    // Far overview shows fewer secondary model spots to avoid unreadable clusters.
+    return index%7===0;
+  }),[visibleSpots,cx,cy,viewWidth,viewHeight,zoom]);
+  const current=visibleSpots.find(m=>m.id===inspected);
   const world=viewMode==='world';
   const knownSites=knownOpeningSites();
+  const [mapHeight,setMapHeight]=useState(550);
   useEffect(()=>{
     if(!root.current) return;
     const observer=new ResizeObserver(entries=>{
       const {width,height}=entries[0].contentRect;
-      if(width>0 && height>0) setAspect(width/height);
+      if(width>0 && height>0){setAspect(width/height);setMapHeight(height);}
     });
     observer.observe(root.current);
     return ()=>observer.disconnect();
   },[]);
   const enterWorld=()=>{setViewMode('world');setZoom(WORLD_ZOOM);setCx(0);setCy(0);setInspected(null);};
   const enterLocal=()=>{setViewMode('local');setZoom(1);setCx(0);setCy(0);setInspected(null);};
-  const setZoomBound=(value:number)=>{
-    const next=Math.max(WORLD_ZOOM*.85,Math.min(6,value));
-    if(viewMode==='local'&&shouldEnterWorldMap(next,radius))enterWorld();
-    else setZoom(next);
+  const setZoomBound=(value:number,allowWorldTransition:boolean)=>{
+    const next=Math.max(WORLD_ZOOM*.8,Math.min(6,value));
+    if(allowWorldTransition && viewMode==='local' && next<zoom && shouldEnterWorldMap(next,radius)){
+      enterWorld();return;
+    }
+    setZoom(next);
   };
   const zoomBy=(factor:number)=>{
-    if(viewMode==='world'&&factor>1){enterLocal();return;}
-    setZoomBound(zoom*factor);
+    if(viewMode==='world' && factor>1){enterLocal();return;}
+    setZoomBound(zoom*factor,factor<1);
   };
   const reset=()=>{viewMode==='world'?enterWorld():enterLocal();};
   const fitHeat=()=>{
-    setCx(DEMO_CAMP.x);setCy(-DEMO_CAMP.y);
-    setZoomBound(172/(Math.max(24,radius)*2.6));
+    // Explicit camera framing MUST stay local, regardless of how large radius becomes.
+    setViewMode('local');setCx(DEMO_CAMP.x);setCy(-DEMO_CAMP.y);
+    setZoom(Math.max(WORLD_ZOOM*.8,Math.min(6,172/(Math.max(80,radius*2.5)))));
+    setInspected(null);
   };
   const pointerDown=(e:ReactPointerEvent<SVGSVGElement>)=>{
     if(e.button!==0) return;
@@ -211,7 +214,7 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
       if(viewMode==='world'&&e.deltaY<0){enterLocal();return;}
       const factor=e.deltaY<0?1.2:1/1.2;
       const next=Math.max(WORLD_ZOOM*.85,Math.min(6,zoom*factor));
-      if(viewMode==='local'&&shouldEnterWorldMap(next,radius)){enterWorld();return;}
+      if(viewMode==='local'&&e.deltaY>0&&shouldEnterWorldMap(next,radius)){enterWorld();return;}
       const x=(e.clientX-rect.left)/rect.width-.5;
       const y=(e.clientY-rect.top)/rect.height-.5;
       const nextHeight=172/next;
@@ -233,7 +236,7 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
   const clearSurvey=()=>{
     setSurvey(s=>!s);setInspected(null);
   };
-  const allIcons=world?120:FIRE_MARKER_SCALE(zoom);
+  const allIcons=Math.max(.17,Math.min(600,viewHeight/Math.max(100,mapHeight)*.66));
   return <div className={`map-experience ${compact?'map-experience--compact':''}`}>
     {!compact&&<div className="map-toolbar">
       <div className="map-toolbar-main">
@@ -242,7 +245,8 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
       </div>
       <div className="map-toolbar-actions">
         <label className="map-control-label" htmlFor={`${unique}-time`}>Thử ánh sáng</label>
-        <select id={`${unique}-time`} value={minutes} onChange={e=>setMinutes(Number(e.target.value))} aria-label="Mô phỏng giờ hiển thị">
+        <select id={`${unique}-time`} value={TIMES.includes(minutes as typeof TIMES[number])?minutes:-1} onChange={e=>onClockChange(Math.floor(clockSeconds/86400)*86400+Number(e.target.value)*60)} aria-label="Mô phỏng giờ hiển thị">
+          {!TIMES.includes(minutes as typeof TIMES[number])&&<option value={-1}>{formatClock(minutes)}</option>}
           {TIMES.map(t=><option value={t} key={t}>{formatClock(t)}</option>)}
         </select>
         <label className="map-control-label" htmlFor={`${unique}-level`}>Xem vùng nhiệt</label>
@@ -277,17 +281,17 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
           <MarkerGraphic kind={site.id}/>
           {labels && zoom>.16 && <g transform="translate(0 33)">
             <rect x={-Math.max(27,site.label.length*3.6)} y="-6" width={Math.max(54,site.label.length*7.2)} height="17" rx="4" fill="#091721" stroke="#a5c6c9" strokeOpacity=".3"/>
-            <text textAnchor="middle" fontSize="8" fill="#f3f1e8" y="5">{site.label}</text>
+            <text textAnchor="middle" fontSize="13" fill="#f3f1e8" y="5">{site.label}</text>
           </g>}
         </g>)}
-        {previewMarkers.map(marker=><g key={marker.id} className={`map-resource-marker ${inspected===marker.id?'map-resource-marker--selected':''}`}
+        {markers.map(marker=><g key={marker.id} className={`map-resource-marker ${inspected===marker.id?'map-resource-marker--selected':''}`}
           transform={`translate(${marker.x} ${-marker.y}) scale(${allIcons})`}
           role="button" tabIndex={0} aria-label={`Kiểm tra ${marker.name}`} onClick={()=>inspectMarker(marker.id)}
           onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inspectMarker(marker.id);}}}>
-          <circle r="21" fill="#0b2933" stroke={inspected===marker.id?'#f0c88b':'#b4d3c7'} strokeWidth="1.6"/>
+          <circle r="21" fill={marker.provenance==='modeled'?'#203f41':'#0b2933'} stroke={inspected===marker.id?'#f0c88b':marker.provenance==='canonical'?'#f1c991':'#b4d3c7'} strokeWidth="1.6"/>
           <circle r="26" fill="none" stroke="#b4d9d9" strokeOpacity=".18" strokeDasharray="2 4"/>
           <MarkerGraphic kind={marker.kind}/>
-          {labels && zoom>.16&&<text y="36" textAnchor="middle" fontSize="8" fill="#e5efea" stroke="#091d27" strokeWidth="3" paintOrder="stroke">{marker.kind==='chest'?'Rương Báu':marker.name}</text>}
+          {labels && zoom>.075&&<text y="36" textAnchor="middle" fontSize="14" fill="#e5efea" stroke="#091d27" strokeWidth="3" paintOrder="stroke">{marker.kind==='chest'?'Dấu rương':marker.label}</text>}
         </g>)}
         <g className="map-snow-particles" pointerEvents="none">
           {SNOW_PARTICLES.map((p,i)=><circle key={i} cx={p.x} cy={p.y} r={p.r} fill="#eaf5ee" opacity=".63" style={{animationDelay:`${p.delay}s`}} />)}
@@ -304,17 +308,17 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
         <button onClick={world?enterLocal:enterWorld} aria-label={world?'Chuyển sang bản đồ địa phương':'Chuyển sang bản đồ thế giới'} title="Đổi chế độ bản đồ"><Globe2 size={17}/></button>
       </div>
       {current&&!compact&&<div className="map-entity-popover" role="region" aria-label="Thông tin điểm được chọn">
-        <div className="map-entity-kicker">{current.kind==='chest'?'CACHE RƯƠNG BÁU':'ĐIỂM THU THẬP'} <span>NGUỒN / DEBUG</span></div>
-        <h3>{current.name}</h3>
-        {current.kind==='chest'?<>
-          <div className="map-entity-quantity">Chưa mở · Nội dung chưa xác định</div>
-          <p>Đây là vị trí cache thật từ bảng thế giới, chỉ phục vụ kiểm chứng bản đồ. Không tiết lộ nội dung, Phẩm hoặc quyền tiếp cận trong game.</p>
+        <div className="map-entity-kicker">{current.kind==='chest'?'DẤU HIỆU RƯƠNG':current.kind==='site'?'DẤU TÍCH CÔNG TRÌNH':'ĐIỂM THU THẬP'} <span>{current.provenance==='canonical'?'NGUỒN':'DỰNG THÊM'}</span></div>
+        <h3>{current.kind==='site'&&!survey?'Dấu vết công trình chưa khảo sát':current.name}</h3>
+        {current.kind==='chest'||current.kind==='site'?<>
+          <div className="map-entity-quantity">{current.kind==='chest'?'Chưa khai quật · Chưa xác định bên trong':'Chưa khảo sát · Chưa thể tương tác'}</div>
+          <p>{current.kind==='site'?'Ánh sáng cho thấy dấu tích trên mặt băng; cần khảo sát mới xác nhận danh tính và cửa tiếp cận.':'Tọa độ dấu rương từ gói thế giới. Ánh sáng không tự khai quật, xác minh Phẩm hoặc mở phần thưởng.'}</p>
         </>:<>
-          <div className="map-entity-quantity">{current.remaining.toLocaleString('vi-VN')} / {current.capacity.toLocaleString('vi-VN')} {current.unit}</div>
-          <div className="map-resource-progress"><span style={{width:`${current.capacity?current.remaining/current.capacity*100:0}%`}} /></div>
-          <p>{current.description}</p>
+          <div className="map-entity-quantity">{current.amount?.toLocaleString('vi-VN')??'—'} {current.unit} <small>ước lượng ban đầu</small></div>
+          <div className="map-resource-progress"><span style={{width:'100%'}} /></div>
+          <p>{current.detail}</p>
         </>}
-        <small>Tọa độ và giá trị T0 từ WORLD-PACKAGE-LL01-1.0 · Chỉ hiển thị ở chế độ xem nguồn. Không xác nhận đã được Lí Lan khám phá, không trừ kho.</small>
+        <small>{current.provenance==='canonical'?'Điểm cố định từ WORLD-PACKAGE-LL01-1.0.':'Tọa độ và trữ lượng dựng thêm hợp lý, chưa xác lập canon.'} Không cộng vật phẩm hay trừ kho; tình trạng cần xác minh bằng hành động chơi.</small>
         <button onClick={()=>setInspected(null)}>Đóng <ArrowDownRight size={15}/></button>
       </div>}
       <div className="map-heat-readout">
@@ -323,13 +327,13 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
         <em>{fireForm(level)} Cấp {level} {level!==1?'· Xem trước':''}</em>
       </div>
       {!compact&&<div className="map-drag-hint">{world?'Vùng tối chưa được khảo sát · Bản đồ không tự khám phá':'Kéo để di chuyển · Cuộn chuột để thu phóng, không cuộn trang'}</div>}
-      {compact&&<span className="map-compact-label">SƯƠNG MÙ KHÁM PHÁ · T0</span>}
+      {compact&&<span className="map-compact-label">SƯƠNG MÙ KHÁM PHÁ</span>}
     </div>
     {!compact&&<div className="map-footer-bar">
-      <span><span className="map-dot mapped"/> Đã quan sát T0</span>
+      <span><span className="map-dot mapped"/> Vùng đang nhìn thấy</span>
       <span><span className="map-dot fogged"/> Chưa khám phá</span>
       {survey&&<span><span className="map-dot sample"/> Atlas nguồn (không phải kiến thức nhân vật)</span>}
-      <span className="map-footer-aside">{survey?'Chỉ số và tọa độ nguồn, không tự khám phá':'T0: chỉ bốn vật thể khởi đầu đã biết'} · Lửa soi sáng địa hình, không tiết lộ rương giấu</span>
+      <span className="map-footer-aside">{survey?'Atlas nguồn chỉ phục vụ kiểm tra':'Địa vật mặt đất hiện khi đủ sáng'} · Rương dưới đất cần khảo sát</span>
     </div>}
   </div>;
 }
