@@ -72,7 +72,7 @@ export function visibilityDiscs(minutes:number,level:number,surveyPreview=false,
   // Daylight eyesight is separate from explored-map knowledge.
   const daylight=phase==='night'?[]:[{x:0,y:0,...sight}];
   const preview=surveyPreview && phase!=='night'?DEMO_SURVEYED.slice(1):[];
-  return [...heat,...daylight,...preview];
+  return [...daylight,...preview,...heat];
 }
 function smoothstep(a:number,b:number,value:number):number {
   const t=Math.max(0,Math.min(1,(value-a)/(b-a)));
