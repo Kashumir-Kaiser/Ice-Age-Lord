@@ -137,6 +137,7 @@ export default function MapScene({selected,onSelect,compact=false,clockSeconds,o
   const viewWidth=viewHeight*aspect;
   const viewport={x:cx-viewWidth/2,y:cy-viewHeight/2,width:viewWidth,height:viewHeight};
   const vb=`${viewport.x} ${viewport.y} ${viewWidth} ${viewHeight}`;
+  const [mapHeight,setMapHeight]=useState(550);
   const discs=useMemo(()=>visibilityDiscs(minutes,level,survey),[minutes,level,survey]);
   // Firelight reveals the physical area. Model-generated vegetation and surface
   // relics are visible without debug. Buried/sealed locations remain hidden.
@@ -163,7 +164,7 @@ export default function MapScene({selected,onSelect,compact=false,clockSeconds,o
   const current=markers.find(m=>m.id===inspected);
   const world=viewMode==='world';
   const knownSites=knownOpeningSites();
-  const [mapHeight,setMapHeight]=useState(550);
+
   useEffect(()=>{
     if(!root.current) return;
     const observer=new ResizeObserver(entries=>{
