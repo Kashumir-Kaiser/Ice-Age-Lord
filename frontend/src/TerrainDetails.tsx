@@ -58,6 +58,19 @@ export default function TerrainDetails({world}:{world:boolean}){
       fill="none" stroke="url(#rim-creek)" strokeWidth="530" strokeOpacity=".55"/>
     <path d="M4500 5000q1680 700 2050 2020t1460 1900q1600 300 2160 2100"
       fill="none" stroke="#e0eeeb" strokeWidth="65" strokeDasharray="110 175" strokeOpacity=".39"/>
+    {/* The wooded fringe approaches the eastern edge of the opening camera.
+         This is modeled terrain infill, not a relocated canonical timber forest. */}
+    <ellipse cx="305" cy="75" rx="315" ry="255" fill="url(#rim-forest)" opacity=".48"/>
+    <g opacity=".91">
+      {[
+        [105,-67],[118,-30],[120,25],[130,70],[154,-87],[169,-4],[183,44],
+        [201,-38],[214,105],[237,-71],[258,18],[293,54],
+      ].map(([x,y],i)=><g key={i} transform={`translate(${x} ${y}) scale(${.8+i%3*.13})`}>
+        <ellipse cx="8" cy="8" rx="17" ry="7" fill="#061c29" opacity=".5"/>
+        <path d="M0-22-13-2l5-2-12 17 12-3-8 17h32L8 10l12 3L8-4l5 2Z" fill="#173d43" stroke="#91bcbc" strokeWidth="1.3"/>
+        <path d="m0-22-6 11 6-2m-13 16 11-6m-11 21 13-6" fill="none" stroke="#e0efea" strokeWidth="2" opacity=".75"/>
+      </g>)}
+    </g>
     {/* Physical battlefield debris near fire, consistent with the opening narration. */}
     <g stroke="#bcd2d4" strokeWidth="1.3" opacity=".85">
       <path d="m-53 15 28-12 7 8 14-5M-51 21l-13 12m40-13-2 18" fill="none"/>
