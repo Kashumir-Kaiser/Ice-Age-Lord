@@ -134,7 +134,7 @@ function MarkerGraphic({kind}:{kind:string}) {
   if(kind==='herbs') return <g><path d="M0 18V-13m0 24q-12-3-12-18Q1-5 0 11Zm0-10q5-18 16-20 1 17-16 20" fill="#618e7f" stroke="#d2e8d8" strokeWidth="2"/><path d="m-15 18 30 0" stroke="#d3e5d8" strokeWidth="2"/></g>;
   return <g><path d="m-18 9 5-16 18-11 15 14-7 19-20 5Z" fill="#93c9d5" stroke="#e6f9f8" strokeWidth="2"/><path d="m5-18-2 16 17-2M3-2-7 20m10-22-21 11" fill="none" stroke="#d2ffff" strokeWidth="2"/></g>;
 }
-function FogMask({id,survey}:{id:string;survey:boolean}) {
+function FogMask({id,survey,viewport}:{id:string;survey:boolean;viewport:{x:number;y:number;width:number;height:number}}) {
   const discs=survey?DEMO_SURVEYED:OPENING_OBSERVED;
   return <defs>
     {discs.map((disc,i)=><radialGradient id={`${id}-reveal-${i}`} key={i}>
@@ -143,9 +143,19 @@ function FogMask({id,survey}:{id:string;survey:boolean}) {
       <stop offset="83%" stopColor="#a7a7a7"/>
       <stop offset="100%" stopColor="white"/>
     </radialGradient>)}
-    <mask id={`${id}-fog-mask`} maskUnits="userSpaceOnUse" x="-96000" y="-96000" width="192000" height="192000">
-      <rect x="-96000" y="-96000" width="192000" height="192000" fill="white"/>
+    {discs.map((disc,i)=><radialGradient id={`${id}-known-${i}`} key={`known-${i}`}>
+      <stop offset="0%" stopColor="white"/>
+      <stop offset={`${100*disc.clear/disc.fade}%`} stopColor="white"/>
+      <stop offset="83%" stopColor="#555"/>
+      <stop offset="100%" stopColor="black"/>
+    </radialGradient>)}
+    <mask id={`${id}-fog-mask`} maskUnits="userSpaceOnUse" x={viewport.x} y={viewport.y} width={viewport.width} height={viewport.height}>
+      <rect {...viewport} fill="white"/>
       {discs.map((disc,i)=><circle key={i} cx={disc.x} cy={-disc.y} r={disc.fade} fill={`url(#${id}-reveal-${i})`}/>)}
+    </mask>
+    <mask id={`${id}-known-mask`} maskUnits="userSpaceOnUse" x={viewport.x} y={viewport.y} width={viewport.width} height={viewport.height}>
+      <rect {...viewport} fill="black"/>
+      {discs.map((disc,i)=><circle key={i} cx={disc.x} cy={-disc.y} r={disc.fade} fill={`url(#${id}-known-${i})`}/>)}
     </mask>
     <radialGradient id={`${id}-heat`}>
       <stop stopColor="#ffd58b" stopOpacity=".52"/><stop offset=".52" stopColor="#e9ab5a" stopOpacity=".22"/>
@@ -175,7 +185,8 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
   const phase=dayPhase(minutes);
   const viewHeight=172/zoom;
   const viewWidth=viewHeight*aspect;
-  const vb=`${cx-viewWidth/2} ${cy-viewHeight/2} ${viewWidth} ${viewHeight}`;
+  const viewport={x:cx-viewWidth/2,y:cy-viewHeight/2,width:viewWidth,height:viewHeight};
+  const vb=`${viewport.x} ${viewport.y} ${viewWidth} ${viewHeight}`;
   const revealed=useMemo(()=>visibleDemoMarkers(survey),[survey]);
   const current=revealed.find(m=>m.id===inspected);
   useEffect(()=>{
@@ -256,12 +267,12 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
       <svg className="terrain-svg terrain-svg--deep" viewBox={vb} aria-label="Bản đồ băng nguyên với lớp sương mù khám phá, giữ chuột trái và kéo để di chuyển"
         onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp} onWheel={wheel}>
         <Terrain id={unique}/>
-        <FogMask id={unique} survey={survey}/>
+        <FogMask id={unique} survey={survey} viewport={viewport}/>
         <rect x="-96000" y="-96000" width="192000" height="192000" fill="#081527" opacity={dayOverlayOpacity(minutes)} pointerEvents="none"/>
         {(survey?DEMO_SURVEYED:OPENING_OBSERVED).map((d,i)=>
           <circle key={i} cx={d.x} cy={-d.y} r={d.fade+27} fill={`url(#${unique}-halo)`} pointerEvents="none"/>)}
         <rect x="-96000" y="-96000" width="192000" height="192000" fill="#01040a" mask={`url(#${unique}-fog-mask)`} pointerEvents="none"/>
-        <circle cx="0" cy="0" r={radius} fill={`url(#${unique}-heat)`} pointerEvents="none"/>
+        <circle cx="0" cy="0" r={radius} fill={`url(#${unique}-heat)`} mask={`url(#${unique}-known-mask)`} pointerEvents="none"/>
         <circle cx="0" cy="0" r={radius} fill="none" stroke="#edbc77" strokeWidth={Math.max(.8,Math.min(5,2.2/zoom))} strokeDasharray={`${Math.max(4,8/zoom)} ${Math.max(3,6/zoom)}`} strokeOpacity=".88" pointerEvents="none"/>
         <circle cx="0" cy="0" r={Math.min(radius,Math.max(3,radius*.18))} fill="none" stroke="#ffc881" strokeOpacity=".23" strokeWidth="2" pointerEvents="none"/>
         {FIRST_SITES.map(site=><g key={site.id} className={`map-site map-site--deep ${selected===site.id&&!inspected?'map-site--selected':''}`}
