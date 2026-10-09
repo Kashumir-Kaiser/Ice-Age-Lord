@@ -12657,43 +12657,43 @@
     },
     "752": {
       "summary": "Northwind deathmatch continues; King Kai's Blood-Life Compensation transfers 265,255,321 life points to Kaelan.",
-      "url": "https://www.69shuba.com/txt/58776/40565455"
+      "url": "https://www.69shuba.com/txt/58776/40564755"
     },
     "753": {
       "summary": "Five-kilometre black sphere battle ends with King Kai killed; +100,000 reputation reaches the 500,000 威名远扬 achievement threshold.",
-      "url": "https://www.69shuba.com/txt/58776/40565456"
+      "url": "https://www.69shuba.com/txt/58776/40564756"
     },
     "754": {
       "summary": "King Kai's loot receipt and Northwind Mother's Gaze curse; temporary 10-km Life Tree is destroyed, and Sarah collects its final branch.",
-      "url": "https://www.69shuba.com/txt/58776/40565457"
+      "url": "https://www.69shuba.com/txt/58776/40564757"
     },
     "755": {
       "summary": "29 challengers pool inventory; 78 silver, 61 gold and 17 black jars are opened together, with exact pooled outputs and 81/100 Jar King progress.",
-      "url": "https://www.69shuba.com/txt/58776/40565458"
+      "url": "https://www.69shuba.com/txt/58776/40564758"
     },
     "756": {
       "summary": "Commander and Overlord souls are allocated; one Knight relic is retained for Asam's Legendary breakthrough; source narration has a recipient-count wording gap.",
-      "url": "https://www.69shuba.com/txt/58776/40565459"
+      "url": "https://www.69shuba.com/txt/58776/40564759"
     },
     "757": {
       "summary": "Three Red Blood Heart Fruits are distributed; 150-level Epic Immortal King five-piece set panel and conflicting bonus names are recorded.",
-      "url": "https://www.69shuba.com/txt/58776/40565460"
+      "url": "https://www.69shuba.com/txt/58776/40564760"
     },
     "758": {
       "summary": "Godslayer sword properties shown at 11/100, then the weapon is given to Xiao; Hero Heart advancement outcomes follow.",
-      "url": "https://www.69shuba.com/txt/58776/40565461"
+      "url": "https://www.69shuba.com/txt/58776/40564761"
     },
     "759": {
       "summary": "Xiao uses the Godslayer sword to remove Lloyd's hidden soul; Asam absorbs the Holy War Broken Blade and reaches Legendary.",
-      "url": "https://www.69shuba.com/txt/58776/40565462"
+      "url": "https://www.69shuba.com/txt/58776/40564762"
     },
     "760": {
       "summary": "Iron Rose's 148 members join Cao Xing's territory; castle and energy-station status, two completed Destroyer Towers, and the relic-box choice are recorded.",
-      "url": "https://www.69shuba.com/txt/58776/40565463"
+      "url": "https://www.69shuba.com/txt/58776/40564763"
     },
     "761": {
       "summary": "Xierda attempts the selected Emerald-Shadow Poison Core twice and reaches Legendary; poison talent and profession labels are retained with their source variants.",
-      "url": "https://www.69shuba.com/txt/58776/40565464"
+      "url": "https://www.69shuba.com/txt/58776/40564764"
     },
     "762": {
       "summary": "Two operating Legendary Blood Destroyer towers and exact range/damage/interval panel",
@@ -17003,7 +17003,7 @@
       "effect_id": "FX34-0001",
       "event_id": null,
       "source_chapter": 752,
-      "source_url": "https://www.69shuba.com/txt/58776/40565455",
+      "source_url": "https://www.69shuba.com/txt/58776/40564755",
       "source_name_zh": "王权·血命代偿",
       "display_vi": "Vương Quyền · Bù Đắp Sinh Mệnh",
       "source_class": "SOURCE_EXPLICIT_NOVEL_BATTLE_MECHANIC",
@@ -17022,7 +17022,7 @@
       "effect_id": "FX34-0002",
       "event_id": null,
       "source_chapter": 753,
-      "source_url": "https://www.69shuba.com/txt/58776/40565456",
+      "source_url": "https://www.69shuba.com/txt/58776/40564756",
       "source_name_zh": "北风国王击杀与声望成就",
       "display_vi": "Hạ gục Vua Gió Bắc và thành tựu danh vọng",
       "source_class": "SOURCE_EXPLICIT_NOVEL_KILL_AND_ACHIEVEMENT_REWARD",
@@ -17059,7 +17059,7 @@
       "effect_id": "FX34-0003",
       "event_id": null,
       "source_chapter": 754,
-      "source_url": "https://www.69shuba.com/txt/58776/40565457",
+      "source_url": "https://www.69shuba.com/txt/58776/40564757",
       "source_name_zh": "北风之母的凝视（半神级诅咒）",
       "display_vi": "Ánh Nhìn của Mẹ Gió Bắc (Lời Nguyền Bán Thần)",
       "source_class": "SOURCE_EXPLICIT_NOVEL_STATUS_EFFECT",
@@ -17081,7 +17081,7 @@
       "effect_id": "FX34-0004",
       "event_id": null,
       "source_chapter": 757,
-      "source_url": "https://www.69shuba.com/txt/58776/40565460",
+      "source_url": "https://www.69shuba.com/txt/58776/40564760",
       "source_name_zh": "不灭之王套装属性与五件套效果",
       "display_vi": "Thuộc tính Bộ Vương Bất Diệt",
       "source_class": "SOURCE_EXPLICIT_NOVEL_EQUIPMENT_SET_EFFECT",
@@ -17146,7 +17146,7 @@
       "effect_id": "FX34-0005",
       "event_id": null,
       "source_chapter": 758,
-      "source_url": "https://www.69shuba.com/txt/58776/40565461",
+      "source_url": "https://www.69shuba.com/txt/58776/40564761",
       "source_name_zh": "永夜低语·弑神者属性与终焉低语进度",
       "display_vi": "Thuộc tính Thì Thầm Vĩnh Dạ · Kẻ Sát Thần",
       "source_class": "SOURCE_EXPLICIT_NOVEL_ITEM_EFFECT",
@@ -17219,7 +17219,7 @@
       "effect_id": "FX34-0006",
       "event_id": null,
       "source_chapter": 755,
-      "source_url": "https://www.69shuba.com/txt/58776/40565458",
+      "source_url": "https://www.69shuba.com/txt/58776/40564758",
       "source_name_zh": "29名角斗场挑战者的罐子汇总与开罐结果",
       "display_vi": "Tổng Hợp Hũ của 29 Đấu Sĩ Cổ Đại",
       "source_class": "SOURCE_EXPLICIT_NOVEL_POOLED_INVENTORY_AND_OPENING",
@@ -17371,7 +17371,7 @@
       "effect_id": "FX34-0007",
       "event_id": null,
       "source_chapter": 757,
-      "source_url": "https://www.69shuba.com/txt/58776/40565460",
+      "source_url": "https://www.69shuba.com/txt/58776/40564760",
       "source_name_zh": "赤血心果属性与使用效果",
       "display_vi": "Hiệu Ứng Quả Tim Máu Đỏ",
       "source_class": "SOURCE_EXPLICIT_NOVEL_ITEM_EFFECT",
@@ -17405,7 +17405,7 @@
       "effect_id": "FX34-0008",
       "event_id": null,
       "source_chapter": 755,
-      "source_url": "https://www.69shuba.com/txt/58776/40565458",
+      "source_url": "https://www.69shuba.com/txt/58776/40564758",
       "source_name_zh": "遗物·圣战断刃效果与骑士突破用途",
       "display_vi": "Hiệu Ứng Di Vật · Đoạn Nhận Thánh Chiến",
       "source_class": "SOURCE_EXPLICIT_NOVEL_RELIC_EFFECT",
@@ -17431,7 +17431,7 @@
       "effect_id": "FX34-0009",
       "event_id": null,
       "source_chapter": 761,
-      "source_url": "https://www.69shuba.com/txt/58776/40565464",
+      "source_url": "https://www.69shuba.com/txt/58776/40564764",
       "source_name_zh": "遗物·翠影毒核属性与毒性融合结果",
       "display_vi": "Hiệu Ứng Di Vật · Lõi Độc Bích Ảnh",
       "source_class": "SOURCE_EXPLICIT_NOVEL_RELIC_EFFECT",
@@ -17502,7 +17502,7 @@
       "effect_id": "FX34-0010",
       "event_id": null,
       "source_chapter": 760,
-      "source_url": "https://www.69shuba.com/txt/58776/40565463",
+      "source_url": "https://www.69shuba.com/txt/58776/40564763",
       "source_name_zh": "自选传奇遗物箱开启与108种选择",
       "display_vi": "Mở Hộp Di Vật Truyền Thuyết Tự Chọn",
       "source_class": "SOURCE_EXPLICIT_NOVEL_CHOICE_REWARD",
@@ -18673,7 +18673,7 @@
       "observation_id": "OBS34-01",
       "event_id": null,
       "source_chapter": 752,
-      "source_url": "https://www.69shuba.com/txt/58776/40565455",
+      "source_url": "https://www.69shuba.com/txt/58776/40564755",
       "type": "KING_KAI_BLOOD_LIFE_TRANSFER",
       "observed_totals": {
         "life_points_transferred": 265255321,
@@ -18686,7 +18686,7 @@
       "observation_id": "OBS34-02",
       "event_id": null,
       "source_chapter": 753,
-      "source_url": "https://www.69shuba.com/txt/58776/40565456",
+      "source_url": "https://www.69shuba.com/txt/58776/40564756",
       "type": "KING_KAI_KILL_REWARD_AND_REGIONAL_BATTLE",
       "observed_totals": {
         "experience": 10240000,
@@ -18700,7 +18700,7 @@
       "observation_id": "OBS34-03",
       "event_id": null,
       "source_chapter": 754,
-      "source_url": "https://www.69shuba.com/txt/58776/40565457",
+      "source_url": "https://www.69shuba.com/txt/58776/40564757",
       "type": "KAI_KAELAN_ITEM_LOOT_AND_CURSE",
       "observed_totals": {
         "boss_loot": {
@@ -18717,7 +18717,7 @@
       "observation_id": "OBS34-04",
       "event_id": null,
       "source_chapter": 754,
-      "source_url": "https://www.69shuba.com/txt/58776/40565457",
+      "source_url": "https://www.69shuba.com/txt/58776/40564757",
       "type": "TEMPORARY_LIFE_TREE_AND_BRANCH_PICKUP",
       "observed_totals": {
         "tree_height_m": 10000,
@@ -18731,7 +18731,7 @@
       "observation_id": "OBS34-05",
       "event_id": null,
       "source_chapter": 755,
-      "source_url": "https://www.69shuba.com/txt/58776/40565458",
+      "source_url": "https://www.69shuba.com/txt/58776/40564758",
       "type": "ARENA_PARTY_POOLED_HANDOVER",
       "observed_totals": {
         "challengers": 29,
@@ -18755,7 +18755,7 @@
       "observation_id": "OBS34-06",
       "event_id": null,
       "source_chapter": 755,
-      "source_url": "https://www.69shuba.com/txt/58776/40565458",
+      "source_url": "https://www.69shuba.com/txt/58776/40564758",
       "type": "AGGREGATE_JAR_OPENING_AND_JAR_KING_PROGRESS",
       "observed_totals": {
         "opened": {
@@ -18776,7 +18776,7 @@
       "observation_id": "OBS34-07",
       "event_id": null,
       "source_chapter": 756,
-      "source_url": "https://www.69shuba.com/txt/58776/40565459",
+      "source_url": "https://www.69shuba.com/txt/58776/40564759",
       "type": "SOUL_ALLOCATION_AND_BREAKTHROUGH_RESULTS",
       "observed_totals": {
         "commander_souls_used": 8,
@@ -18795,7 +18795,7 @@
       "observation_id": "OBS34-08",
       "event_id": null,
       "source_chapter": 757,
-      "source_url": "https://www.69shuba.com/txt/58776/40565460",
+      "source_url": "https://www.69shuba.com/txt/58776/40564760",
       "type": "RED_BLOOD_FRUIT_DISTRIBUTION_AND_SET_INSPECTION",
       "observed_totals": {
         "red_blood_fruits_seen": 3,
@@ -18811,7 +18811,7 @@
       "observation_id": "OBS34-09",
       "event_id": null,
       "source_chapter": 758,
-      "source_url": "https://www.69shuba.com/txt/58776/40565461",
+      "source_url": "https://www.69shuba.com/txt/58776/40564761",
       "type": "GODSLAYER_SWORD_TRANSFER_TO_XIAO",
       "observed_totals": {
         "weapon_transferred": 1,
@@ -18824,7 +18824,7 @@
       "observation_id": "OBS34-10",
       "event_id": null,
       "source_chapter": 759,
-      "source_url": "https://www.69shuba.com/txt/58776/40565462",
+      "source_url": "https://www.69shuba.com/txt/58776/40564762",
       "type": "BROKEN_BLADE_AND_LEGENDARY_BREAKTHROUGH",
       "observed_totals": {
         "holy_war_broken_blade_used": 1,
@@ -18838,7 +18838,7 @@
       "observation_id": "OBS34-11",
       "event_id": null,
       "source_chapter": 760,
-      "source_url": "https://www.69shuba.com/txt/58776/40565463",
+      "source_url": "https://www.69shuba.com/txt/58776/40564763",
       "type": "IRON_ROSE_RECRUITMENT_AND_TERRITORY_CONSTRUCTION",
       "observed_totals": {
         "recruits": 148,
@@ -18860,7 +18860,7 @@
       "observation_id": "OBS34-12",
       "event_id": null,
       "source_chapter": 761,
-      "source_url": "https://www.69shuba.com/txt/58776/40565464",
+      "source_url": "https://www.69shuba.com/txt/58776/40564764",
       "type": "SELECTED_POISON_RELIC_AND_XIERDA_BREAKTHROUGH",
       "observed_totals": {
         "choice_box_options": 108,
@@ -18877,7 +18877,7 @@
       "observation_id": "OBS34-13",
       "event_id": null,
       "source_chapter": 758,
-      "source_url": "https://www.69shuba.com/txt/58776/40564759",
+      "source_url": "https://www.69shuba.com/txt/58776/40564761",
       "type": "HERO_HEART_BREAKTHROUGHS",
       "observed_totals": {
         "hero_hearts_used": 8,
@@ -20670,16 +20670,16 @@
       761
     ],
     "evidence_pages": [
-      "https://www.69shuba.com/txt/58776/40565455",
-      "https://www.69shuba.com/txt/58776/40565456",
-      "https://www.69shuba.com/txt/58776/40565457",
-      "https://www.69shuba.com/txt/58776/40565458",
-      "https://www.69shuba.com/txt/58776/40565459",
-      "https://www.69shuba.com/txt/58776/40565460",
-      "https://www.69shuba.com/txt/58776/40565461",
-      "https://www.69shuba.com/txt/58776/40565462",
-      "https://www.69shuba.com/txt/58776/40565463",
-      "https://www.69shuba.com/txt/58776/40565464"
+      "https://www.69shuba.com/txt/58776/40564755",
+      "https://www.69shuba.com/txt/58776/40564756",
+      "https://www.69shuba.com/txt/58776/40564757",
+      "https://www.69shuba.com/txt/58776/40564758",
+      "https://www.69shuba.com/txt/58776/40564759",
+      "https://www.69shuba.com/txt/58776/40564760",
+      "https://www.69shuba.com/txt/58776/40564761",
+      "https://www.69shuba.com/txt/58776/40564762",
+      "https://www.69shuba.com/txt/58776/40564763",
+      "https://www.69shuba.com/txt/58776/40564764"
     ],
     "parent_structure_release_id": "LL01-ICE-AGE-LORD-SOURCE-STRUCTURES-0.2",
     "structure_release_id": "LL01-ICE-AGE-LORD-SOURCE-STRUCTURES-0.3",
@@ -20712,7 +20712,8 @@
         true,
         true
       ],
-      "calendar_event_creation": false
+      "calendar_event_creation": false,
+      "source_chapter_urls_correct": true
     },
     "structure_count": 15
   }
