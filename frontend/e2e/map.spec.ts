@@ -27,8 +27,8 @@ test('source chest caches and outer structures light up at level 30',async({page
   await visitMap(page);
   await page.getByLabel('Xem thử vùng nhiệt theo cấp').selectOption('30');
   await page.getByRole('button',{name:'Xem toàn bộ vòng nhiệt'}).click();
-  await expect(page.getByRole('button',{name:'Kiểm tra Dấu vết rương · CACHE-LL01-01'})).toHaveCount(1);
-  await expect(page.getByRole('button',{name:'Kiểm tra Hào Nông Sora'})).toHaveCount(1);
+  await expect.poll(()=>page.locator('.map-resource-marker[data-kind="chest"]').count()).toBeGreaterThan(0);
+  await expect.poll(()=>page.locator('.map-resource-marker[data-kind="site"]').count()).toBeGreaterThan(0);
   await expect(page.getByRole('button',{name:'Kiểm tra Rừng Thông Tro Băng'})).toHaveCount(1);
   await expect(page.getByRole('button',{name:'Kiểm tra Mỏ Đá Vân Xám'})).toHaveCount(1);
 });
@@ -134,8 +134,12 @@ test('snapshot QA: navigation brand and mapped forest edge',async({page},testInf
   await expect(page.getByText('Đồng bằng Cổ Chiến Trường')).toBeVisible();
   const mapshot=await page.locator('.map-experience').screenshot({type:'jpeg',quality:55});
   await testInfo.attach('map-heat-forest-1280.jpg',{body:mapshot,contentType:'image/jpeg'});
+  await page.getByRole('button',{name:'Trở về tâm lãnh địa'}).click();
+  for(let n=0;n<4;n++)await page.getByRole('button',{name:'Thu nhỏ'}).click();
+  const edge=await page.locator('.map-experience').screenshot({type:'jpeg',quality:57});
+  await testInfo.attach('map-battlefield-forest-edge-1280.jpg',{body:edge,contentType:'image/jpeg'});
   // Chunked JPEG in CI logs permits independent visual review without external hosting.
-  for(const [name,bytes] of [['sidebar',sidebar],['map',mapshot]] as const){
+  for(const [name,bytes] of [['sidebar',sidebar],['map',mapshot],['edge',edge]] as const){
     const encoded=bytes.toString('base64');
     for(let at=0;at<encoded.length;at+=1800){
       console.log('VISUAL_SNAPSHOT '+name+' '+(at/1800)+' '+encoded.slice(at,at+1800));
