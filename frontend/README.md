@@ -1,40 +1,45 @@
-# Ice Age Lord — frontend demo v0.1
+# Ice Age Lord — frontend map prototype
 
-This directory is a **standalone visual prototype**. It does not load, write, or mutate the simulation, save files, extracted event catalogs, sealed loot, or source registries. Displayed inventory counts, building footprints and example task entries are deliberately **mock UI data**, not an LL01 campaign checkpoint.
+The app is a **read-only UI prototype** on `frontend/demo-ui-v0`. It does not advance the campaign clock, change FireLevel, discover hidden locations, consume resources, award chests, alter saves or overwrite the ongoing source extraction.
 
 ## Run locally
 
-Requires Node.js 20.19+ (or 22.12+) and npm.
+Use a **separate frontend worktree** so the main extraction worktree is unaffected:
 
 ```bash
+git fetch origin frontend/demo-ui-v0
+# If the frontend worktree already exists:
+cd ../Ice-Age-Lord-frontend
+git pull --ff-only origin frontend/demo-ui-v0
 cd frontend
 npm install
 npm run dev
 ```
 
-Open http://localhost:5173. For a production static build run `npm run build` then `npm run preview`.
+Open http://localhost:5173. If you have not created a worktree, use `git worktree add ../Ice-Age-Lord-frontend origin/frontend/demo-ui-v0` from your original repository.
 
-## Try the demo
+## Geography: canonical point records, schematic interpolation
 
-- Switch between Tổng quan, Lãnh địa, Bản đồ, Kho vật phẩm, Quân lực, Công trình, Nhật ký.
-- Pan/zoom the illustrated map; click Lửa Trại, Nhà Lãnh Chúa, Ngôi Mộ and Hòm Vật Tư to inspect demo descriptions.
-- Fog is **always on**: drag beyond observed cells into progressively darker whiteout and finally opaque black. Select **Xem khảo sát mẫu** to inspect fabricated preview-only timber, stone, ore, herb, ice and chest sites, including sample remaining quantities. The real pre-seeded chests are never sent to this display.
-- Search/filter inventory and select an item to inspect its demo presentation.
-- Inspect building and force mockups and use the responsive mobile sidebar.
+- `src/canonicalGeography.ts` transcribes **WORLD-PACKAGE-LL01-1.0** in `references/canonical/LORD-DND-03.md`, §3.K.4–3.K.7: 38 fixed site coordinates, 10 player anchor coordinates, 41 chest caches, eight specified route endpoints, five resource records and the **96 km local map radius**. Coordinates are in *metres*, +X east and +Y north, origin at H0.
+- Four opening structures use **exact point locations**: fire (0,0), damaged house (40,20), supply chest (30,-10), and tomb (-20,30), all in metres.
+- Source heights and some terrain descriptions are fixed, but the source does **not** provide a complete polygon raster, DEM/elevation field, river bank geometry, slope curves, or exact road polylines. Consequently the decorative ice shading, wind-swept surfaces and region coloring are *artistically schematic*, **not new canonical geometry**. Road endpoints alone are not enough to infer a legal traversable route.
+- Before campaign integration, move the full private registry out of the shipped client, and supply only server-side *knowledge-filtered* `PlayerView.visibleMap` records. This standalone prototype bundles source records for developer inspection and **is not a secure fog-of-war implementation against devtools inspection**.
 
-## Boundaries
+## Map controls
 
-- Fixed protagonist: Lí Lan, Tử Phục Linh Sư SSS.
-- Opening presentation: T0, 07:00; no fabricated T0 progression, discovered lairs, recruited heroes, learned recipes, or purchased goods.
-- All inventory quantities and UI tasks are explicitly labeled illustrative.
-- The map coordinates/geometry are a composition prototype, **not** the canonical world package; real site positions must come from a future filtered map projection. Starting fire radius levels 1–30 and clock boundaries are read from the canonical rules, but level/time controls are **read-only visual scenarios**, not free upgrades or world-time advances.
-- UI elements labeled `Chưa kết nối` are not gameplay buttons.
-- Zero API calls, server writes, random reward generation or local-save side effects.
-- The map uses a layered SVG winter terrain, source-radius warming perimeter, light phases, and strict marker-visibility gating to review art direction and interaction first. Replace its renderer with PixiJS + atlas textures when canonical chunk/terrain data and camera contract are ready; keep the component input contract.
+- **Drag:** hold left mouse button and drag; panning never counts as exploration.
+- **Zoom:** wheel while hovering the map (native non-passive listener blocks page scrolling) or use +/- controls.
+- **World map:** button **Bản đồ thế giới** shows the complete 96 km active-region frame, but unrevealed ground remains dark. Zooming out sufficiently to include the entire firelight circle also switches to world view; **Bản đồ địa phương** returns to the starting scale.
+- **Light and fog:** source `FireLevel 1→30` heat radii in `mapModel.ts` (10 m → 25 km) reveal **all terrain within the projected light zone**. The intensity tapers only **after** the actual heat boundary. At night (17:00–07:00), visible terrain contracts to this circle. At dawn/daylight (07:00–16:30), the sight preview extends beyond the fire; twilight runs 16:30–17:00. Day sight values (260 m clear, 680 m fade) are presentation defaults, **not claimed canon weather visibility**.
+- **Atlas nguồn (debug):** optional developer inspector for canonical resource anchors and cached chest groups. Displays *T0 source capacities* such as 780 timber and 1,240 stone, **not balances produced by gameplay**. Does not reveal chest contents or mutate world state. Ordinary player view never shows these unobserved icons.
+- **Sidebar:** the seven pages remain independently scrollable in desktop or mobile mode, even at short window heights.
 
-## Integration contract (future work, NOT part of this demo)
+## Testing and CI
 
-Create a read-only `PlayerView` projection with `version`, `worldTime`, `visibleMap`, `inventory`, `units`, `buildings` and `notifications`. Apply knowledge filtering in the runtime **before** serialization. No frontend access to hidden seed coordinates, chest rewards, unobserved actor positions or future events. Actions should be validated by the deterministic engine and return immutable receipts; demo does not impersonate the engine.
+Run `npm run build`, `npm test`, `npm run test:e2e`. The GitHub Actions workflow runs for **every push** to the frontend branch; desktop and mobile Chromium E2E checks cover visibility, wheel zoom, drag, source geography, switch to world map, heat values, sidebar usability and inspector knowledge gates. It uploads test screenshots/traces if a browser test fails.
 
-The extraction workstream owns `data/`, `research/`, `references/` and `design/`. This frontend lives exclusively in `frontend/` on branch `frontend/demo-ui-v0`.
-\n## Continuous integration\n\nPushes to `frontend/**` run the GitHub Actions Vite/TypeScript build and map/demo tests. `.github/workflows/frontend-demo.yml` also includes a daily `0 17 * * *` cron (midnight in Vietnam). **GitHub executes scheduled workflows only from the default branch**; because this project explicitly forbids touching `main` during prototype development, the midnight schedule is configured but cannot execute until a workflow is separately placed on the default branch. `workflow_dispatch` can be used meanwhile to test the frontend branch manually. Nothing is merged to `main`.\n
+`frontend-demo.yml` contains cron `0 17 * * *` for **00:00 Asia/Ho_Chi_Minh**. **GitHub executes schedules only from the default branch**; it will not run nightly while the workflow exists *only* on `frontend/demo-ui-v0`. This restriction is intentional until permission is given to add a lightweight CI entrypoint to `main`—no changes have been made there.
+
+## Future runtime integration
+
+Expose `PlayerView(version, worldTime, visibleMap, inventory, units, buildings, notifications)` filtered server-side. Initial knowledge includes only H0 and objects within sensory reach; new visibility must come from resolved exploration/line-of-sight observations. A fire upgrade changes illuminated geometry, **not player authorization to know concealed loot or inaccessible sites**. Authoritative extraction remains in `research/`, `data/`, `design/`, and `references/`, wholly unaffected by frontend work.
