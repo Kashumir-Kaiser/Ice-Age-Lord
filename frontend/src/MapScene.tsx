@@ -141,12 +141,26 @@ export default function MapScene({selected,onSelect,compact=false,clockSeconds,o
   // Firelight reveals the physical area. Model-generated vegetation and surface
   // relics are visible without debug. Buried/sealed locations remain hidden.
   const visibleSpots=useMemo(()=>visibleMapSpots(minutes,level,survey),[minutes,level,survey]);
-  const markers=useMemo(()=>visibleMapViewport(visibleSpots,cx,cy,viewWidth,viewHeight).filter((spot,index)=>{
-    if(spot.provenance==='canonical'||zoom>.035)return true;
-    // Far overview shows fewer secondary model spots to avoid unreadable clusters.
-    return index%7===0;
-  }),[visibleSpots,cx,cy,viewWidth,viewHeight,zoom]);
-  const current=visibleSpots.find(m=>m.id===inspected);
+  const markers=useMemo(()=>{
+    const visible=visibleMapViewport(visibleSpots,cx,cy,viewWidth,viewHeight);
+    if(zoom>=.075)return visible.map(spot=>({...spot,count:1}));
+    // Spatial grouping changes visualization only, never world-resource instances.
+    const bin=Math.max(1,viewHeight/Math.max(mapHeight,100)*32);
+    const groups=new Map<string,typeof visible>();
+    for(const point of visible){
+      const key=point.kind+':'+Math.floor(point.x/bin)+':'+Math.floor(point.y/bin);
+      const group=groups.get(key);
+      if(group)group.push(point);else groups.set(key,[point]);
+    }
+    return [...groups.values()].map(points=>{
+      const first=points.find(p=>p.provenance==='canonical')??points[0];
+      const count=points.length;
+      const amount=first.kind==='chest'||first.kind==='site'?null:
+        points.reduce((total,p)=>total+(p.amount??0),0);
+      return {...first,count,amount,label:count>1?first.label+' ×'+count:first.label};
+    });
+  },[visibleSpots,cx,cy,viewWidth,viewHeight,zoom,mapHeight]);
+  const current=markers.find(m=>m.id===inspected);
   const world=viewMode==='world';
   const knownSites=knownOpeningSites();
   const [mapHeight,setMapHeight]=useState(550);
@@ -269,7 +283,7 @@ export default function MapScene({selected,onSelect,compact=false,clockSeconds,o
         {discs.map((d,i)=>
           <circle key={i} cx={d.x} cy={-d.y} r={d.fade+27} fill={`url(#${unique}-halo)`} pointerEvents="none"/>)}
         <rect {...viewport} fill="#01040a" mask={`url(#${unique}-fog-mask)`} pointerEvents="none"/>
-        <circle cx="0" cy="0" r={radius} fill={`url(#${unique}-heat)`} mask={`url(#${unique}-known-mask)`} pointerEvents="none"/>
+        <circle cx="0" cy="0" r={radius} fill={`url(#${unique}-heat)`} opacity={phase==='night'?.8:.16} mask={`url(#${unique}-known-mask)`} pointerEvents="none"/>
         <circle cx="0" cy="0" r={radius} fill="none" stroke="#edbc77" strokeWidth={Math.max(.8,Math.min(750,viewHeight/245))} strokeDasharray={`${Math.max(4,viewHeight/70)} ${Math.max(3,viewHeight/100)}`} strokeOpacity=".88" pointerEvents="none"/>
         <circle cx="0" cy="0" r={Math.min(radius,Math.max(3,radius*.18))} fill="none" stroke="#ffc881" strokeOpacity=".23" strokeWidth="2" pointerEvents="none"/>
         {FIRST_SITES.filter(site=>(!world||site.id==='fire') && knownSites.some(known=>known.x===site.x&&known.y===site.y) && fogOpacityAt(site.x,site.y,survey,minutes,level)<.92).map(site=><g key={site.id} className={`map-site map-site--deep ${selected===site.id&&!inspected?'map-site--selected':''}`}
@@ -291,6 +305,7 @@ export default function MapScene({selected,onSelect,compact=false,clockSeconds,o
           <circle r="21" fill={marker.provenance==='modeled'?'#203f41':'#0b2933'} stroke={inspected===marker.id?'#f0c88b':marker.provenance==='canonical'?'#f1c991':'#b4d3c7'} strokeWidth="1.6"/>
           <circle r="26" fill="none" stroke="#b4d9d9" strokeOpacity=".18" strokeDasharray="2 4"/>
           <MarkerGraphic kind={marker.kind}/>
+          {marker.count>1&&<g><rect x="7" y="-29" width="26" height="13" rx="6" fill="#edc994" stroke="#193541" strokeWidth="1"/><text x="20" y="-19" fontSize="9" fontWeight="800" textAnchor="middle" fill="#182d37">×{marker.count}</text></g>}
           {labels && zoom>.075&&<text y="36" textAnchor="middle" fontSize="14" fill="#e5efea" stroke="#091d27" strokeWidth="3" paintOrder="stroke">{marker.kind==='chest'?'Dấu rương':marker.label}</text>}
         </g>)}
         <g className="map-snow-particles" pointerEvents="none">
@@ -301,7 +316,7 @@ export default function MapScene({selected,onSelect,compact=false,clockSeconds,o
       <div className="map-corner-title"><span><Compass size={13}/> PHƯƠNG BẮC ↑</span><strong>{world?'Bản đồ thế giới · LL01':'Đồng bằng Cổ Chiến Trường'}</strong><small>{world?'Phạm vi nguồn · bán kính 96 km':'Tọa độ nguồn cố định · Đường viền địa hình minh họa'}</small></div>
       <div className="map-corner-controls">
         <button onClick={()=>zoomBy(.74)} aria-label="Thu nhỏ" title="Thu nhỏ"><Minus size={17}/></button>
-        <span aria-live="polite">{Math.round(zoom*100)}%</span>
+        <span aria-live="polite">{zoom>=.1?Math.round(zoom*100)+'%':'1:'+Math.round(1/zoom)}</span>
         <button onClick={()=>zoomBy(1.34)} aria-label="Phóng to" title="Phóng to"><Plus size={17}/></button>
         <button onClick={reset} aria-label="Trở về tâm lãnh địa" title="Trở về tâm lãnh địa"><Maximize2 size={17}/></button>
         <button onClick={fitHeat} aria-label="Xem toàn bộ vòng nhiệt" title="Xem toàn bộ vòng nhiệt"><ThermometerSun size={17}/></button>
@@ -310,6 +325,7 @@ export default function MapScene({selected,onSelect,compact=false,clockSeconds,o
       {current&&!compact&&<div className="map-entity-popover" role="region" aria-label="Thông tin điểm được chọn">
         <div className="map-entity-kicker">{current.kind==='chest'?'DẤU HIỆU RƯƠNG':current.kind==='site'?'DẤU TÍCH CÔNG TRÌNH':'ĐIỂM THU THẬP'} <span>{current.provenance==='canonical'?'NGUỒN':'DỰNG THÊM'}</span></div>
         <h3>{current.kind==='site'&&!survey?'Dấu vết công trình chưa khảo sát':current.name}</h3>
+        {current.count>1&&<p className="map-cluster-note">Cụm bản đồ · {current.count} điểm gần nhau. Phóng to để kiểm tra riêng từng điểm.</p>}
         {current.kind==='chest'||current.kind==='site'?<>
           <div className="map-entity-quantity">{current.kind==='chest'?'Chưa khai quật · Chưa xác định bên trong':'Chưa khảo sát · Chưa thể tương tác'}</div>
           <p>{current.kind==='site'?'Ánh sáng cho thấy dấu tích trên mặt băng; cần khảo sát mới xác nhận danh tính và cửa tiếp cận.':'Tọa độ dấu rương từ gói thế giới. Ánh sáng không tự khai quật, xác minh Phẩm hoặc mở phần thưởng.'}</p>
