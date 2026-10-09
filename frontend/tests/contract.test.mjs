@@ -19,16 +19,17 @@ test('T0 character, empty army and sample-only inventory unchanged',()=>{
   assert.match(read('src/App.tsx'),/T0 · 07:00/);
   assert.match(read('src/App.tsx'),/0 đơn vị/);
   assert.match(read('src/App.tsx'),/không phải vật phẩm đã nhận/);
-  assert.match(read('src/MapScene.tsx'),/Không phải địa hình canon/);
+  assert.match(read('src/MapScene.tsx'),/Tọa độ nguồn cố định/);
 });
 test('map enforces fog before markers, fog never disabled, and supports dragging',()=>{
   const map=read('src/MapScene.tsx');
   assert.match(map,/onPointerDown=\{pointerDown\}/);
   assert.match(map,/onPointerMove=\{pointerMove\}/);
   assert.match(map,/onPointerUp=\{pointerUp\}/);
-  assert.match(map,/onWheel=\{wheel\}/);
-  assert.match(map,/FogMask id=\{unique\}/);
-  assert.match(map,/visibleDemoMarkers\(survey\)/);
+  assert.match(map,/addEventListener\('wheel',onWheel,\{passive:false\}\)/);
+  assert.match(map,/FogMask id=\{unique\} discs=\{discs\}/);
+  assert.match(map,/CANONICAL_RESOURCES\.map/);
+  assert.match(map,/CANONICAL_CHEST_CACHES\.map/);
   assert.match(map,/map-survey-switch/);
   assert.doesNotMatch(map,/<button[^>]*>.*?Tắt sương mù/);
 });
@@ -38,8 +39,8 @@ test('fire circle and time lighting are bound to rule-based data',()=>{
   assert.match(map,/r=\{radius\}/);
   assert.match(map,/dayOverlayOpacity\(minutes\)/);
   assert.match(map,/const phase=dayPhase\(minutes\)/);
-  assert.match(map,/displayRemaining\(current\)/);
-  assert.match(read('src/mapModel.ts'),/contentsKnown:false/);
+  assert.match(map,/current\.remaining\.toLocaleString/);
+  assert.match(map,/contentsKnown:false/);
 });
 test('CI runs after each frontend push and declares midnight ICT cron',()=>{
   const workflow=read('../.github/workflows/frontend-demo.yml');
@@ -49,4 +50,10 @@ test('CI runs after each frontend push and declares midnight ICT cron',()=>{
   assert.match(workflow,/cron: '0 17 \* \* \*'/);
   assert.match(workflow,/npm run build/);
   assert.match(workflow,/npm test/);
+});
+
+test('sidebar navigation scrolls independently of page body',()=>{
+  const css=read('src/styles.css');
+  assert.match(css,/\.sidebar-nav\s*\{[^}]*overflow-y:auto/);
+  assert.match(css,/\.sidebar-nav\s*\{[^}]*min-height:0/);
 });
