@@ -7,7 +7,7 @@ import {
   dayOverlayOpacity, dayPhase, DEMO_CAMP, fireForm,
   formatClock, formatDistance, heatRadiusM, shouldEnterWorldMap, visibilityDiscs, fogOpacityAt, WORLD_ZOOM,
 } from './mapModel';
-import { CANONICAL_SITES, CANONICAL_RESOURCES, CANONICAL_CHEST_CACHES, CANONICAL_MAP_RADIUS_M, knownOpeningSites } from './canonicalGeography';
+import { CANONICAL_SITES, CANONICAL_MAP_RADIUS_M, knownOpeningSites } from './canonicalGeography';
 import TerrainDetails from './TerrainDetails';
 import { visibleMapSpots, visibleMapViewport } from './worldFeatures';
 import './map-refinement.css';
@@ -336,8 +336,4 @@ export default function MapScene({selected,onSelect,compact=false,clockSeconds,o
       <span className="map-footer-aside">{survey?'Atlas nguồn chỉ phục vụ kiểm tra':'Địa vật mặt đất hiện khi đủ sáng'} · Rương dưới đất cần khảo sát</span>
     </div>}
   </div>;
-}
-function FIRE_MARKER_SCALE(zoom:number):number{
-  // Markers remain legible across local zoom, without turning into gigantic buildings.
-  return Math.max(.14,Math.min(.9,.32/Math.sqrt(zoom)));
 }
