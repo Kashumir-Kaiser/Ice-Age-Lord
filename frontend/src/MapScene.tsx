@@ -294,7 +294,7 @@ export default function MapScene({selected,onSelect,compact=false,clockSeconds,o
           <circle r="23" fill="#0e2531" opacity=".92" stroke={selected===site.id&&!inspected?'#eccd91':'#9bc7c9'} strokeWidth="1.7"/>
           <circle r="28" fill="none" stroke="#b8c8bd" strokeOpacity=".23" strokeWidth="1" strokeDasharray="3 5"/>
           <MarkerGraphic kind={site.id}/>
-          {labels && zoom>.16 && <g transform="translate(0 33)">
+          {labels && zoom>.7 && <g transform="translate(0 33)">
             <rect x={-Math.max(27,site.label.length*3.6)} y="-6" width={Math.max(54,site.label.length*7.2)} height="17" rx="4" fill="#091721" stroke="#a5c6c9" strokeOpacity=".3"/>
             <text textAnchor="middle" fontSize="13" fill="#f3f1e8" y="5">{site.label}</text>
           </g>}
