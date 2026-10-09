@@ -46,17 +46,18 @@ The v0.3 structure catalog appends one temporary battlefield construct, three de
 - Parent v3.3 JSON/CSV are copied byte-for-byte to `research/snapshots/events/`.
 - Parent entries, effect records, observations and conflicts are preserved as prefixes; source item rows and CSV rows are appended.
 - Older observations/conflicts without assigned IDs remain unchanged; uniqueness checks cover assigned IDs.
+- Source URLs for Chapters 752–761 are checked against the direct chapter pages.
 - No source receipt is converted into a repeatable drop rate, guaranteed reward, T0 possession, or fixed schedule entry.
 
 ## Primary source pages
 
-- [Chapter 752](https://www.69shuba.com/txt/58776/40565455): Northwind deathmatch continues; King Kai's Blood-Life Compensation transfers 265,255,321 life points to Kaelan.
-- [Chapter 753](https://www.69shuba.com/txt/58776/40565456): Five-kilometre black sphere battle ends with King Kai killed; +100,000 reputation reaches the 500,000 威名远扬 achievement threshold.
-- [Chapter 754](https://www.69shuba.com/txt/58776/40565457): King Kai's loot receipt and Northwind Mother's Gaze curse; temporary 10-km Life Tree is destroyed, and Sarah collects its final branch.
-- [Chapter 755](https://www.69shuba.com/txt/58776/40565458): 29 challengers pool inventory; 78 silver, 61 gold and 17 black jars are opened together, with exact pooled outputs and 81/100 Jar King progress.
-- [Chapter 756](https://www.69shuba.com/txt/58776/40565459): Commander and Overlord souls are allocated; one Knight relic is retained for Asam's Legendary breakthrough; source narration has a recipient-count wording gap.
-- [Chapter 757](https://www.69shuba.com/txt/58776/40565460): Three Red Blood Heart Fruits are distributed; 150-level Epic Immortal King five-piece set panel and conflicting bonus names are recorded.
-- [Chapter 758](https://www.69shuba.com/txt/58776/40565461): Godslayer sword properties shown at 11/100, then the weapon is given to Xiao; Hero Heart advancement outcomes follow.
-- [Chapter 759](https://www.69shuba.com/txt/58776/40565462): Xiao uses the Godslayer sword to remove Lloyd's hidden soul; Asam absorbs the Holy War Broken Blade and reaches Legendary.
-- [Chapter 760](https://www.69shuba.com/txt/58776/40565463): Iron Rose's 148 members join Cao Xing's territory; castle and energy-station status, two completed Destroyer Towers, and the relic-box choice are recorded.
-- [Chapter 761](https://www.69shuba.com/txt/58776/40565464): Xierda attempts the selected Emerald-Shadow Poison Core twice and reaches Legendary; poison talent and profession labels are retained with their source variants.
+- [Chapter 752](https://www.69shuba.com/txt/58776/40564755): Northwind deathmatch continues; King Kai's Blood-Life Compensation transfers 265,255,321 life points to Kaelan.
+- [Chapter 753](https://www.69shuba.com/txt/58776/40564756): Five-kilometre black sphere battle ends with King Kai killed; +100,000 reputation reaches the 500,000 威名远扬 achievement threshold.
+- [Chapter 754](https://www.69shuba.com/txt/58776/40564757): King Kai's loot receipt and Northwind Mother's Gaze curse; temporary 10-km Life Tree is destroyed, and Sarah collects its final branch.
+- [Chapter 755](https://www.69shuba.com/txt/58776/40564758): 29 challengers pool inventory; 78 silver, 61 gold and 17 black jars are opened together, with exact pooled outputs and 81/100 Jar King progress.
+- [Chapter 756](https://www.69shuba.com/txt/58776/40564759): Commander and Overlord souls are allocated; one Knight relic is retained for Asam's Legendary breakthrough; source narration has a recipient-count wording gap.
+- [Chapter 757](https://www.69shuba.com/txt/58776/40564760): Three Red Blood Heart Fruits are distributed; 150-level Epic Immortal King five-piece set panel and conflicting bonus names are recorded.
+- [Chapter 758](https://www.69shuba.com/txt/58776/40564761): Godslayer sword properties shown at 11/100, then the weapon is given to Xiao; Hero Heart advancement outcomes follow.
+- [Chapter 759](https://www.69shuba.com/txt/58776/40564762): Xiao uses the Godslayer sword to remove Lloyd's hidden soul; Asam absorbs the Holy War Broken Blade and reaches Legendary.
+- [Chapter 760](https://www.69shuba.com/txt/58776/40564763): Iron Rose's 148 members join Cao Xing's territory; castle and energy-station status, two completed Destroyer Towers, and the relic-box choice are recorded.
+- [Chapter 761](https://www.69shuba.com/txt/58776/40564764): Xierda attempts the selected Emerald-Shadow Poison Core twice and reaches Legendary; poison talent and profession labels are retained with their source variants.
