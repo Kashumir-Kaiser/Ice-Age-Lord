@@ -25,6 +25,14 @@ export default function TerrainDetails({world}:{world:boolean}){
         <stop stopColor="#112f3a" stopOpacity=".85"/><stop offset=".45" stopColor="#284d58" stopOpacity=".7"/>
         <stop offset="1" stopColor="#7295a0" stopOpacity="0"/>
       </radialGradient>
+      <radialGradient id="rim-ice-ridge">
+        <stop stopColor="#192e41" stopOpacity=".65"/><stop offset=".33" stopColor="#466c7b" stopOpacity=".42"/>
+        <stop offset=".78" stopColor="#bbd3d4" stopOpacity=".24"/><stop offset="1" stopColor="#e2eeee" stopOpacity="0"/>
+      </radialGradient>
+      <radialGradient id="rim-distant-pines">
+        <stop stopColor="#174344" stopOpacity=".68"/><stop offset=".5" stopColor="#3e7273" stopOpacity=".26"/>
+        <stop offset="1" stopColor="#789a9d" stopOpacity="0"/>
+      </radialGradient>
       <radialGradient id="rim-snow">
         <stop stopColor="#f3f7ef" stopOpacity=".47"/><stop offset=".5" stopColor="#a8cfce" stopOpacity=".13"/>
         <stop offset="1" stopColor="#d6e6dc" stopOpacity="0"/>
@@ -33,14 +41,29 @@ export default function TerrainDetails({world}:{world:boolean}){
         <stop stopColor="#1b4157"/><stop offset=".55" stopColor="#88c7d6"/><stop offset="1" stopColor="#2e526b"/>
       </linearGradient>
     </defs>
+    {/* Distant modeled belts fill the wide exploration canvas; coordinates are
+         deliberately not treated as source-lockable roads or terrain boundaries. */}
+    <ellipse cx="-15600" cy="-6300" rx="5800" ry="4700" fill="url(#rim-ice-ridge)" transform="rotate(-19 -15600 -6300)"/>
+    <ellipse cx="-11700" cy="9250" rx="5200" ry="6200" fill="url(#rim-ice-ridge)" transform="rotate(21 -11700 9250)"/>
+    <ellipse cx="11200" cy="-13300" rx="6500" ry="5700" fill="url(#rim-distant-pines)"/>
+    <ellipse cx="-9000" cy="15900" rx="4500" ry="4000" fill="url(#rim-distant-pines)"/>
+    <ellipse cx="17000" cy="5200" rx="5300" ry="3600" fill="url(#rim-ice-ridge)"/>
+    <path d="M-20400-8400q4200-1600 6500 1100t4400 1800m-9500 900q4200-1600 6500 1100t4400 1800"
+      stroke="#d9e7e3" strokeOpacity=".18" strokeWidth="135" fill="none"/>
+    <path d="M5200-14500q4500 2700 8500 1400t8200 4100"
+      stroke="#d5eae5" strokeOpacity=".17" strokeWidth="230" fill="none"/>
+    <path d="M-18400 7900q4000 1500 7100 500t7300 1700"
+      stroke="#102a40" strokeOpacity=".19" strokeWidth="380" fill="none"/>
+    <path d="M-18400 7740q4000 1500 7100 500t7300 1700"
+      stroke="#b1ccd0" strokeOpacity=".19" strokeWidth="70" fill="none"/>
     {/* Open western battlefield, with a trench running through the upwind flank. */}
     <ellipse cx="-930" cy="-130" rx="3100" ry="2450" fill="url(#rim-snow)"/>
-    <path d="M-2300-830Q-1380-450-870-920T-105 25Q190 370-335 780"
-      fill="none" stroke="#081e31" strokeWidth="94" strokeOpacity=".52"/>
-    <path d="M-2300-830Q-1380-450-870-920T-105 25Q190 370-335 780"
-      fill="none" stroke="#7499a3" strokeWidth="53" strokeOpacity=".43"/>
-    <path d="M-2300-830Q-1380-450-870-920T-105 25Q190 370-335 780"
-      fill="none" stroke="#d4e9e7" strokeWidth="9" strokeDasharray="28 70" strokeOpacity=".36"/>
+    <path d="M-1750-690Q-1330-430-990-765T-335-245Q-186-120-200 48T-330 520"
+      fill="none" stroke="#092332" strokeWidth="32" strokeOpacity=".58"/>
+    <path d="M-1750-679Q-1350-417-1010-750T-343-235Q-185-125-209 58T-340 532"
+      fill="none" stroke="#8daeb3" strokeWidth="12" strokeOpacity=".35"/>
+    <path d="m-225-100-27 19 20 18m-10 72-33 13 14 21m-12 84-22 12"
+      fill="none" stroke="#d8e6e1" strokeWidth="3" strokeOpacity=".5"/>
     <path d="M-1720 660Q-1280 310-610 550T1000 155" fill="none" stroke="#cce1dc"
       strokeWidth="37" strokeOpacity=".16"/>
     {/* A treeline just outside camp; main named forest stays at (+4.7,-6.8 km). */}
