@@ -111,3 +111,10 @@
 .sidebar-nav::-webkit-scrollbar { width:7px; }
 .sidebar-nav::-webkit-scrollbar-thumb { background:#456a79; border-radius:12px; }
 @media(max-height:720px) {.sidebar-bottom { padding:7px 13px 10px; }.weather-box { padding:9px; }.sidebar-caption { margin-top:8px; }}
+
+/* At wide view the SVG map is dense; allow the heat and terrain to remain the focus. */
+.map-resource-marker { cursor:pointer; }
+.map-resource-marker:focus-visible>circle:first-child { stroke-width:3; stroke:#fbe3ae; }
+.map-entity-popover .map-entity-quantity small {font-size:10px; font-weight:400; color:#b6d1cc;}
+.map-heat-readout { z-index:4; }
+.map-corner-controls {max-width:100%;flex-wrap:wrap;}
