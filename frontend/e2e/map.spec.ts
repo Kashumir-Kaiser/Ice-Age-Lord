@@ -41,6 +41,21 @@ test('wheel on map zooms without scrolling the document',async({page})=>{
   const docAfter=await page.evaluate(()=>scrollY);
   expect(docAfter).toBe(docBefore);
 });
+test('wheel zoom-out automatically enters world map once complete fire circle fits',async({page})=>{
+  await visitMap(page);
+  const canvas=page.locator('svg.terrain-svg--deep');
+  const box=await canvas.boundingBox();expect(box).not.toBeNull();
+  await page.mouse.move(box!.x+box!.width*.50,box!.y+box!.height*.55);
+  for(let i=0;i<7;i++)await page.mouse.wheel(0,220);
+  await expect(page.getByText('Bản đồ thế giới · LL01')).toBeVisible();
+  await expect(page.getByRole('button',{name:'Chuyển sang bản đồ địa phương'}).first()).toBeVisible();
+});
+test('level 30 fit-heat control transitions to world frame',async({page})=>{
+  await visitMap(page);
+  await page.getByLabel('Xem thử vùng nhiệt theo cấp').selectOption('30');
+  await page.getByRole('button',{name:'Xem toàn bộ vòng nhiệt'}).click();
+  await expect(page.getByText('Bản đồ thế giới · LL01')).toBeVisible();
+});
 test('pan and return to center do not reveal hidden markers',async({page})=>{
   await visitMap(page);
   const map=page.locator('svg.terrain-svg--deep');
