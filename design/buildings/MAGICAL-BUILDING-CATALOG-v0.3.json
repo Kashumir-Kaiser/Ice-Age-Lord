@@ -1,0 +1,2422 @@
+{
+  "release_id": "LL-WEB-MAGICAL-BUILDING-CATALOG-0.3.0",
+  "authority": "DESIGN_PROPOSAL",
+  "total": 143,
+  "complete_operation_drafts": 19,
+  "entries": [
+    {
+      "id": "LL-MAG-001",
+      "bucket": "Lương thực & canh tác",
+      "base": "Ruộng Canh Tác",
+      "name": "Linh Điền",
+      "effect": "Tăng sản lượng và rút ngắn chu kỳ từ hạt giống thật",
+      "tradeoff": "Đất linh bị suy nếu thiếu nước/phân; không tạo hạt giống",
+      "rarity_band": "I",
+      "provenance_tags": [
+        "U",
+        "N1"
+      ],
+      "status": "V0_3_BALANCE_CONTRACT_READY_FOR_REVIEW",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false,
+      "execution_model": "NEW_PLOT",
+      "construction_materials": {
+        "Gỗ": 35,
+        "Đá": 25,
+        "Sắt": 5,
+        "Tinh Thể Nguyên Tố Sơ Cấp": 2
+      },
+      "work_units": 16,
+      "maximum_workers": 4,
+      "operation_contract": "Mỗi ô gieo phải có hạt giống, nước và phân. Chu kỳ hợp lệ = chu kỳ gốc / 1.35; thu hoạch = floor(sản lượng cây giống × 1.6). 1 Tinh Thể dùng làm lõi cố định, không tiêu từng vụ. Không có giống linh mễ thì không ra linh mễ.",
+      "throughput_claim": "1.6× vụ và 1.35× tốc độ; cần cây giống thật",
+      "failure_mode": "thiếu nước → 0, thiếu phân → hệ số nền",
+      "notes": "Mọi hằng số là bản thiết kế độc lập, KHÔNG phải nguồn đã khóa. Cần duyệt trước khi trở thành game active."
+    },
+    {
+      "id": "LL-MAG-002",
+      "bucket": "Lương thực & canh tác",
+      "base": "Ruộng Canh Tác",
+      "name": "Hàn Tủy Điền",
+      "effect": "Trồng cây chịu băng và thảo dược hàn tính ngoài vòng nhiệt",
+      "tradeoff": "Chỉ hỗ trợ giống cây tương thích; các cây ưa ấm phát triển chậm",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-003",
+      "bucket": "Lương thực & canh tác",
+      "base": "Ruộng Canh Tác",
+      "name": "Hỏa Mạch Điền",
+      "effect": "Trồng nông sản nhiệt đới trên nền băng nhờ địa nhiệt",
+      "tradeoff": "Cần nguồn địa nhiệt hoặc cấp nhiệt thật; khô đất khi thiếu nước",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-004",
+      "bucket": "Lương thực & canh tác",
+      "base": "Ruộng Canh Tác",
+      "name": "Dược Linh Điền",
+      "effect": "Trồng dược thảo có phẩm và nồng độ hoạt chất xác định",
+      "tradeoff": "Sản lượng thực phẩm thấp; cần giống dược thảo đã có",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D",
+        "N2"
+      ],
+      "status": "V0_3_BALANCE_CONTRACT_READY_FOR_REVIEW",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false,
+      "execution_model": "NEW_PLOT",
+      "construction_materials": {
+        "Gỗ": 35,
+        "Đá": 35,
+        "Sắt": 8,
+        "Tinh Thể Nguyên Tố Sơ Cấp": 3
+      },
+      "work_units": 26,
+      "maximum_workers": 4,
+      "operation_contract": "Chỉ nhận cây có type medicinal. Hỗ trợ hiệu lực dược thảo +15% so với cây tương đồng ở ruộng thường khi được thu đúng chu kỳ; sản lượng khối lượng 0.70 lần ruộng thường. Mỗi 24 giờ cần 1 đơn vị phân linh đã có recipe.",
+      "throughput_claim": "Dược lực 1.15×, sản lượng 0.70×",
+      "failure_mode": "hạt thường không tự biến thành thảo dược",
+      "notes": "Mọi hằng số là bản thiết kế độc lập, KHÔNG phải nguồn đã khóa. Cần duyệt trước khi trở thành game active."
+    },
+    {
+      "id": "LL-MAG-005",
+      "bucket": "Lương thực & canh tác",
+      "base": "Ruộng Canh Tác",
+      "name": "Tinh Sương Điền",
+      "effect": "Tạo nông sản tích sương; dùng làm nguyên liệu thuốc chống lạnh",
+      "tradeoff": "Phụ thuộc chu kỳ lạnh đêm và luống lưới; giảm vụ ngày",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-006",
+      "bucket": "Lương thực & canh tác",
+      "base": "Ruộng Canh Tác",
+      "name": "Kim Tuệ Điền",
+      "effect": "Trồng giống lúa linh mễ cho khẩu phần tăng hồi năng lượng ngoài chiến đấu",
+      "tradeoff": "Không thể biến lúa thường thành linh mễ; thiếu giống thì không sản xuất",
+      "rarity_band": "III",
+      "provenance_tags": [
+        "N1",
+        "N3"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-007",
+      "bucket": "Lương thực & canh tác",
+      "base": "Ruộng Canh Tác",
+      "name": "Dạ Hoa Điền",
+      "effect": "Trồng hoa ăn được và dược liệu chỉ trưởng thành trong tối",
+      "tradeoff": "Không sinh trưởng khi thiếu bóng tối theo profile loài",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-008",
+      "bucket": "Lương thực & canh tác",
+      "base": "Ruộng Canh Tác",
+      "name": "Tịnh Thổ Điền",
+      "effect": "Lọc ô nhiễm đất qua vụ cây hấp phụ và cho nông sản an toàn về sau",
+      "tradeoff": "Vụ đầu là cây xử lý không ăn được; đất quá độc vẫn không trồng",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-009",
+      "bucket": "Lương thực & canh tác",
+      "base": "Ruộng Canh Tác",
+      "name": "Thổ Linh Luống",
+      "effect": "Trồng củ sâu kháng sương; thu được thực phẩm và củ giống",
+      "tradeoff": "Phải làm lại luống sâu, cần đất đủ chiều dày",
+      "rarity_band": "I",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-010",
+      "bucket": "Lương thực & canh tác",
+      "base": "Ruộng Canh Tác",
+      "name": "Phù Không Linh Điền",
+      "effect": "Trồng cây tại bệ cao vùng thiếu đất; vùng rễ được nuôi bởi dung dịch",
+      "tradeoff": "Rất đắt, cần nước và dung dịch liên tục; không gia tăng đất claim",
+      "rarity_band": "III",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-011",
+      "bucket": "Lương thực & canh tác",
+      "base": "Nhà Kính",
+      "name": "Nhà Kính Tụ Dương",
+      "effect": "Tích nhiệt ban ngày để đỡ nhiên liệu sưởi đêm",
+      "tradeoff": "Ngày thiếu nắng không tích được nhiều nhiệt; không tăng crop yield vô cớ",
+      "rarity_band": "I",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "V0_3_BALANCE_CONTRACT_READY_FOR_REVIEW",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false,
+      "execution_model": "NEW_GREENHOUSE",
+      "construction_materials": {
+        "Gỗ": 90,
+        "Đá": 45,
+        "Sắt": 15,
+        "Tinh Thể Nguyên Tố Sơ Cấp": 1
+      },
+      "work_units": 38,
+      "maximum_workers": 6,
+      "operation_contract": "Tối đa 30 m² cây. Ban ngày tích tối đa 8 đơn vị nhiệt; trong mỗi giờ đêm tiêu 1 nhiệt cho nhà kính, thay tối đa 1 đơn vị nhiên liệu sưởi nhà kính; không thay Lửa Sinh Tồn. Nhiệt không dự trữ xuyên 2 đêm.",
+      "throughput_claim": "30m² trồng; tích 8 giờ nhiệt tối đa",
+      "failure_mode": "thiếu nắng → cần cấp nhiệt thường",
+      "notes": "Mọi hằng số là bản thiết kế độc lập, KHÔNG phải nguồn đã khóa. Cần duyệt trước khi trở thành game active."
+    },
+    {
+      "id": "LL-MAG-012",
+      "bucket": "Lương thực & canh tác",
+      "base": "Nhà Kính",
+      "name": "Nhà Kính Linh Vũ",
+      "effect": "Tưới sương nước theo recipe trồng và đều trên các luống",
+      "tradeoff": "Tiêu nước thật; đường ống đóng băng sẽ dừng tưới",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "N1",
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-013",
+      "bucket": "Lương thực & canh tác",
+      "base": "Nhà Kính",
+      "name": "Nhà Kính Nhật Nguyệt",
+      "effect": "Luân phiên chiếu sáng và tối cho giống cây có hai pha",
+      "tradeoff": "Không thể dùng đồng thời hai chế độ; tiêu vật dẫn ánh sáng",
+      "rarity_band": "III",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-014",
+      "bucket": "Lương thực & canh tác",
+      "base": "Vườn Ươm",
+      "name": "Linh Chủng Viên",
+      "effect": "Ủ hạt phẩm cao thành cây con tăng tỷ lệ sống khi đem trồng",
+      "tradeoff": "Không sinh giống mới hoặc tăng số hạt; yêu cầu giống thật",
+      "rarity_band": "I",
+      "provenance_tags": [
+        "N2"
+      ],
+      "status": "V0_3_BALANCE_CONTRACT_READY_FOR_REVIEW",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false,
+      "execution_model": "NEW_NURSERY",
+      "construction_materials": {
+        "Gỗ": 60,
+        "Đá": 30,
+        "Sắt": 8,
+        "Tinh Thể Nguyên Tố Sơ Cấp": 2
+      },
+      "work_units": 28,
+      "maximum_workers": 5,
+      "operation_contract": "Đầu vào 20 hạt thật + nước 10 đơn vị + 1 phân; sau 12 giờ cho tối đa 18 cây con cùng loài. Cây con giữ đúng phẩm di truyền của hạt; không tự tăng phẩm, không sinh thêm hạt. Theo điều kiện gieo, tối đa 18, có log hạt hỏng.",
+      "throughput_claim": "20 hạt → tối đa 18 cây con/12 giờ",
+      "failure_mode": "không hạt/nước → không nảy",
+      "notes": "Mọi hằng số là bản thiết kế độc lập, KHÔNG phải nguồn đã khóa. Cần duyệt trước khi trở thành game active."
+    },
+    {
+      "id": "LL-MAG-015",
+      "bucket": "Lương thực & canh tác",
+      "base": "Vườn Ươm",
+      "name": "Vườn Ươm Đông Miên",
+      "effect": "Bảo quản mầm cây mùa đông mà không tăng trưởng",
+      "tradeoff": "Chiếm chỗ dài hạn, tốc độ thành cây chậm hơn vườn thường",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-016",
+      "bucket": "Lương thực & canh tác",
+      "base": "Vườn Ươm",
+      "name": "Vườn Ươm Phân Chi",
+      "effect": "Nhân cây bằng giâm/chiết với tỉ lệ sống hữu hạn",
+      "tradeoff": "Đầu vào phải là cây mẹ và vật liệu ghép; không clone tự do",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-017",
+      "bucket": "Lương thực & canh tác",
+      "base": "Vườn Cây Ăn Trái",
+      "name": "Nguyệt Quả Viên",
+      "effect": "Quả chín mang hiệu ứng hồi thể lực nhẹ trên người sống",
+      "tradeoff": "Đậu quả theo đêm, cây mẹ ít quả hơn cây phổ thông",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-018",
+      "bucket": "Lương thực & canh tác",
+      "base": "Vườn Cây Ăn Trái",
+      "name": "Xích Dương Quả Viên",
+      "effect": "Quả cung cấp tích nhiệt tạm thời khi ăn",
+      "tradeoff": "Tiêu khoáng nhiệt, khó trồng ở địa hình hàn âm",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-019",
+      "bucket": "Lương thực & canh tác",
+      "base": "Vườn Cây Ăn Trái",
+      "name": "Thọ Mộc Quả Viên",
+      "effect": "Sinh trái hiếm dùng trong recipe thuốc phục hồi thể chất",
+      "tradeoff": "Chu kỳ nhiều mùa; không tăng trực tiếp tuổi thọ không giới hạn",
+      "rarity_band": "III",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-020",
+      "bucket": "Lương thực & canh tác",
+      "base": "Trại Nuôi Ong",
+      "name": "Linh Phong Trại",
+      "effect": "Ong thụ phấn tăng tỷ lệ đậu quả; tạo mật linh nếu hoa phù hợp",
+      "tradeoff": "Cần đàn ong thật, thức ăn và điều kiện nhiệt; ong có thể chết",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "N2"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-021",
+      "bucket": "Lương thực & canh tác",
+      "base": "Trại Nuôi Ong",
+      "name": "Băng Phong Trại",
+      "effect": "Ong chịu lạnh thụ phấn cây vùng ngoài nhiệt",
+      "tradeoff": "Sản lượng mật thấp hơn trại linh thường",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-022",
+      "bucket": "Lương thực & canh tác",
+      "base": "Chuồng Gia Súc",
+      "name": "Linh Mục Trường",
+      "effect": "Nuôi gia súc linh thú đã thuần hóa để lấy sữa, thịt, lông đặc biệt",
+      "tradeoff": "Cần con giống/khẩu phần; không sản xuất thú từ hư không",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "N2",
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-023",
+      "bucket": "Lương thực & canh tác",
+      "base": "Chuồng Gia Súc",
+      "name": "Sương Nhung Trại",
+      "effect": "Nuôi thú cho lông chống lạnh dùng trong Tiệm May",
+      "tradeoff": "Sản lượng thịt thấp; chăm sóc nhiều",
+      "rarity_band": "I",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-024",
+      "bucket": "Lương thực & canh tác",
+      "base": "Ao Cá",
+      "name": "Hàn Ngư Trì",
+      "effect": "Nuôi cá băng có dầu giữ nhiệt cho thực phẩm và đèn",
+      "tradeoff": "Cần cá bố mẹ và nước có oxy, dễ cạn nguồn thức ăn",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-025",
+      "bucket": "Lương thực & canh tác",
+      "base": "Ao Cá",
+      "name": "Linh Liên Trì",
+      "effect": "Trồng sen/dược liên trong ao, thu hạt và rễ",
+      "tradeoff": "Không đồng thời tối ưu nuôi cá; cần nước linh thích hợp",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-026",
+      "bucket": "Nguồn nước",
+      "base": "Giếng Nước",
+      "name": "Nguyệt Giếng",
+      "effect": "Đêm ngưng Nguyệt Hoa Thủy giúp trị thương và hồi mana giới hạn",
+      "tradeoff": "Tốc độ nước rất thấp so với giếng thường; chỉ tạo mẻ ban đêm",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "U",
+        "N1",
+        "N5"
+      ],
+      "status": "V0_3_BALANCE_CONTRACT_READY_FOR_REVIEW",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false,
+      "execution_model": "NEW_WELL",
+      "construction_materials": {
+        "Gỗ": 20,
+        "Đá": 70,
+        "Sắt": 10,
+        "Tinh Thể Nguyên Tố Sơ Cấp": 4
+      },
+      "work_units": 30,
+      "maximum_workers": 5,
+      "operation_contract": "Tối đa 12 bình 0.5L trong kho; mỗi đêm đủ điều kiện, tích 8 bình 0.5L vào 04:00 (không vượt 12). Uống 1 bình: hồi 12 HP + 8 Mana cho người có hồ tương ứng; cùng nguồn hồi phục chỉ 1 bình/30 phút. Không tác dụng với tử thi không có cơ chế hồi phục phù hợp. Không sinh nước uống đại trà.",
+      "throughput_claim": "4 L nước trị thương/đêm; không cấp nước sản xuất",
+      "failure_mode": "ban ngày 0; không có ánh trăng/tác nhân phù hợp → 0",
+      "notes": "Mọi hằng số là bản thiết kế độc lập, KHÔNG phải nguồn đã khóa. Cần duyệt trước khi trở thành game active."
+    },
+    {
+      "id": "LL-MAG-027",
+      "bucket": "Nguồn nước",
+      "base": "Giếng Nước",
+      "name": "Tịnh Tuyền",
+      "effect": "Lọc nước bẩn thành nước uống thật",
+      "tradeoff": "Cần vật liệu lọc, nguồn nước và xử lý chất thải",
+      "rarity_band": "I",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "V0_3_BALANCE_CONTRACT_READY_FOR_REVIEW",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false,
+      "execution_model": "NEW_WELL",
+      "construction_materials": {
+        "Gỗ": 15,
+        "Đá": 45,
+        "Sắt": 5,
+        "Tinh Thể Nguyên Tố Sơ Cấp": 1
+      },
+      "work_units": 18,
+      "maximum_workers": 4,
+      "operation_contract": "Nhận tối đa 50L nước không uống được/giờ, cho 40L nước uống được/giờ; 10L bùn/chất thải được ghi container riêng; cần một lõi lọc mỗi 1000L. Chất độc ngoài profile lọc không bị xóa.",
+      "throughput_claim": "50L bẩn → 40L nước uống; sản xuất có vật lý",
+      "failure_mode": "không nguồn nước, thiếu lõi lọc → dừng",
+      "notes": "Mọi hằng số là bản thiết kế độc lập, KHÔNG phải nguồn đã khóa. Cần duyệt trước khi trở thành game active."
+    },
+    {
+      "id": "LL-MAG-028",
+      "bucket": "Nguồn nước",
+      "base": "Giếng Nước",
+      "name": "Hàn Tủy Tuyền",
+      "effect": "Cho nước lạnh với tác dụng giảm bỏng/nhiệt độc theo kháng tính",
+      "tradeoff": "Không thay nước chữa bệnh phổ quát; dễ đóng băng ống",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-029",
+      "bucket": "Nguồn nước",
+      "base": "Giếng Nước",
+      "name": "Hỏa Mạch Tuyền",
+      "effect": "Cung cấp nước nóng cho sưởi và tắm chữa lạnh",
+      "tradeoff": "Chỉ khi có nguồn nhiệt; gây nguy cơ bỏng nếu không pha",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "N2",
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-030",
+      "bucket": "Nguồn nước",
+      "base": "Giếng Nước",
+      "name": "Sinh Cơ Tuyền",
+      "effect": "Ngưng nước có tác dụng hỗ trợ hồi phục sau điều trị",
+      "tradeoff": "Lượng nhỏ, không hồi sinh hay chữa thương chí mạng tức khắc",
+      "rarity_band": "III",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-031",
+      "bucket": "Nguồn nước",
+      "base": "Giếng Nước",
+      "name": "Dưỡng Dược Tuyền",
+      "effect": "Cung cấp dung dịch làm nguyên liệu thuốc/dược điền",
+      "tradeoff": "Không có hiệu quả trị thương trực tiếp bằng uống",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-032",
+      "bucket": "Nguồn nước",
+      "base": "Giếng Nước",
+      "name": "Thạch Nhũ Tuyền",
+      "effect": "Ngưng khoáng chất nước đặc cho công thức rèn/thuốc",
+      "tradeoff": "Nhiều cặn, không thích hợp uống thường xuyên",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-033",
+      "bucket": "Nguồn nước",
+      "base": "Trạm Nấu Tuyết",
+      "name": "Lò Tuyết Tịnh Hỏa",
+      "effect": "Nấu tuyết và lọc bệnh nguyên bằng lửa nguyên tố",
+      "tradeoff": "Tiêu nhiên liệu thật và tinh thạch nạp lần; không lấy nước từ không khí",
+      "rarity_band": "I",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "V0_3_BALANCE_CONTRACT_READY_FOR_REVIEW",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false,
+      "execution_model": "UPGRADE_MODULE",
+      "construction_materials": {
+        "Gỗ": 15,
+        "Đá": 30,
+        "Sắt": 5,
+        "Tinh Thể Nguyên Tố Sơ Cấp": 1
+      },
+      "work_units": 12,
+      "maximum_workers": 3,
+      "operation_contract": "Một mẻ: 20 đơn vị Tuyết/Băng đầu vào + 2 Gỗ → tối đa 15 đơn vị Nước Sạch sau 30 phút; sạch chỉ với contamination loại có trong recipe; tiêu gỗ thực. Gắn đúng Trạm Nấu Tuyết đã học/xây.",
+      "throughput_claim": "20 tuyết + 2 gỗ → tối đa 15 nước sạch/30 phút",
+      "failure_mode": "mất nhiệt hoặc thiếu tuyết → 0",
+      "notes": "Mọi hằng số là bản thiết kế độc lập, KHÔNG phải nguồn đã khóa. Cần duyệt trước khi trở thành game active."
+    },
+    {
+      "id": "LL-MAG-034",
+      "bucket": "Nguồn nước",
+      "base": "Trạm Nấu Tuyết",
+      "name": "Nguyệt Tuyết Đài",
+      "effect": "Làm tan tuyết thành nước có hồi thể lực nhẹ lúc trăng xuất hiện",
+      "tradeoff": "Nước thường chỉ ở ban ngày; đêm sản lượng chậm hơn trạm nền",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-035",
+      "bucket": "Nguồn nước",
+      "base": "Trạm Nấu Tuyết",
+      "name": "Băng Lộ Ngưng Đài",
+      "effect": "Thu sương giá sạch từ mặt đón gió để pha chế thuốc",
+      "tradeoff": "Phụ thuộc độ ẩm thời tiết và bề mặt ngưng; lượng ít",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-036",
+      "bucket": "Nguồn nước",
+      "base": "Hồ Chứa Nước",
+      "name": "Hồ Trấn Hàn",
+      "effect": "Giữ nước ở trạng thái lỏng dù nhiệt thấp, phục vụ khu dân cư",
+      "tradeoff": "Cần năng lượng duy trì; mất nguồn thì nước đóng băng",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-037",
+      "bucket": "Nguồn nước",
+      "base": "Hồ Chứa Nước",
+      "name": "Hồ Quang Minh",
+      "effect": "Lắng lọc tà uế loại tương thích trước khi phân phối",
+      "tradeoff": "Không thanh tẩy mọi loại độc; cần xử lý bùn đáy",
+      "rarity_band": "III",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-038",
+      "bucket": "Thực phẩm & bếp",
+      "base": "Bếp Đơn Giản",
+      "name": "Bếp Hỏa Tinh",
+      "effect": "Nấu món có hiệu ứng giữ nhiệt ngắn, nguyên liệu thật",
+      "tradeoff": "Cần recipe và nhiên liệu Hỏa; không tăng số món miễn phí",
+      "rarity_band": "I",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "V0_3_BALANCE_CONTRACT_READY_FOR_REVIEW",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false,
+      "execution_model": "UPGRADE_MODULE",
+      "construction_materials": {
+        "Gỗ": 15,
+        "Đá": 25,
+        "Sắt": 8,
+        "Tinh Thể Nguyên Tố Sơ Cấp": 1
+      },
+      "work_units": 14,
+      "maximum_workers": 3,
+      "operation_contract": "Khi nấu 4 phần từ cùng recipe hợp lệ, 1 viên Tinh Thể Hỏa hoặc vật dẫn tương thích cung cấp 12 charge; tiêu 1 charge/mẻ để nhận hiệu ứng giữ nhiệt +10% trong 2 giờ sau ăn. Bếp vẫn tốn nguyên liệu/nhiên liệu nền.",
+      "throughput_claim": "4 khẩu phần/mẻ, hiệu ứng giữ ấm 2h",
+      "failure_mode": "không nạp vật dẫn thì chỉ ra món thường",
+      "notes": "Mọi hằng số là bản thiết kế độc lập, KHÔNG phải nguồn đã khóa. Cần duyệt trước khi trở thành game active."
+    },
+    {
+      "id": "LL-MAG-039",
+      "bucket": "Thực phẩm & bếp",
+      "base": "Bếp Đơn Giản",
+      "name": "Dược Thiện Phường",
+      "effect": "Nấu món ăn hồi phục sức sau bệnh từ dược liệu",
+      "tradeoff": "Nấu lâu hơn bếp thường; không thay ca điều trị",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-040",
+      "bucket": "Thực phẩm & bếp",
+      "base": "Bếp Đơn Giản",
+      "name": "Bếp Linh Vị",
+      "effect": "Tạo phần ăn phẩm cao hỗ trợ mana ở người dùng phù hợp",
+      "tradeoff": "Tốn linh dược/linh mễ, không tạo mana cho Tử Phục",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "N1",
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-041",
+      "bucket": "Thực phẩm & bếp",
+      "base": "Bếp Đơn Giản",
+      "name": "Bếp Hàn Ẩm",
+      "effect": "Chế biến thịt thú băng không mất hiệu quả hàn tính của nguyên liệu",
+      "tradeoff": "Không dùng cho cây ưa nóng; đầu ra kén người ăn",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-042",
+      "bucket": "Thực phẩm & bếp",
+      "base": "Bếp Đơn Giản",
+      "name": "Thiện Đường Chúng Dân",
+      "effect": "Nấu suất lớn cho dân cư và giảm thất thoát suất qua định lượng",
+      "tradeoff": "Tăng suất cần nhiều nguyên liệu/nhân lực, không buff tự động",
+      "rarity_band": "I",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-043",
+      "bucket": "Thực phẩm & bếp",
+      "base": "Nhà Kho Lương",
+      "name": "Kho Hàn Phong",
+      "effect": "Ngăn hư thực phẩm ở ô kho có sẵn mà không tạo sản lượng",
+      "tradeoff": "Chiếm slot kho chuyên dụng; cần nguồn lạnh hoặc môi trường",
+      "rarity_band": "I",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "V0_3_BALANCE_CONTRACT_READY_FOR_REVIEW",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false,
+      "execution_model": "NEW_STORAGE",
+      "construction_materials": {
+        "Gỗ": 50,
+        "Đá": 20,
+        "Sắt": 5,
+        "Tinh Thể Nguyên Tố Sơ Cấp": 1
+      },
+      "work_units": 18,
+      "maximum_workers": 4,
+      "operation_contract": "Có 20 ô lưu hàng lạnh. Trong môi trường <0°C, thực phẩm type perish giảm tiến độ hư xuống 25% tốc độ nền (không dừng); khi >=0°C và không có máy lạnh, trở về tốc độ nền. Lô hàng giữ timestamp riêng.",
+      "throughput_claim": "20 ô chứa; 0.25× tốc độ hư khi đúng điều kiện",
+      "failure_mode": "mất điều kiện lạnh → 1× hư",
+      "notes": "Mọi hằng số là bản thiết kế độc lập, KHÔNG phải nguồn đã khóa. Cần duyệt trước khi trở thành game active."
+    },
+    {
+      "id": "LL-MAG-044",
+      "bucket": "Thực phẩm & bếp",
+      "base": "Nhà Kho Lương",
+      "name": "Kho Thời Tàng",
+      "effect": "Làm chậm hư hỏng thực phẩm cao phẩm bằng ấn bảo quản",
+      "tradeoff": "Tốn ấn/chỗ, không dừng thời gian toàn thế giới",
+      "rarity_band": "III",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-045",
+      "bucket": "Thực phẩm & bếp",
+      "base": "Nhà Kho Lương",
+      "name": "Kho Linh Chủng",
+      "effect": "Giữ sức nảy mầm của hạt giống tốt trong mùa lạnh",
+      "tradeoff": "Không thay kho lương ăn được, bảo quản sai loài gây mất mầm",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-046",
+      "bucket": "Thực phẩm & bếp",
+      "base": "Nhà Xay Bột",
+      "name": "Phong Luân Ma Ma",
+      "effect": "Xay lúa thành bột bằng cối gió ma pháp ở vùng nhiều gió",
+      "tradeoff": "Không có lúa thì không xay; gió mạnh có thể ngừng",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-047",
+      "bucket": "Thực phẩm & bếp",
+      "base": "Nhà Xay Bột",
+      "name": "Tinh Thạch Nghiền Phường",
+      "effect": "Nghiền thảo dược/linh mễ thành bột đều và ít hao hụt",
+      "tradeoff": "Tiêu mài mòn đá nghiền; tốc độ thấp với khoáng cứng",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-048",
+      "bucket": "Thực phẩm & bếp",
+      "base": "Lò Sấy",
+      "name": "Xích Hỏa Hồng Lô",
+      "effect": "Sấy thịt cá nhanh và diệt tác nhân gây bệnh loại đã biết",
+      "tradeoff": "Dễ làm mất dược tính của nguyên liệu linh; tiêu nhiên liệu",
+      "rarity_band": "I",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-049",
+      "bucket": "Thực phẩm & bếp",
+      "base": "Nhà Ủ Rượu",
+      "name": "Nguyệt Tửu Phường",
+      "effect": "Ủ rượu làm dung môi dược và đồ uống phục hồi tinh thần",
+      "tradeoff": "Chu kỳ lâu; cần men và nước đặc thù",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-050",
+      "bucket": "Thực phẩm & bếp",
+      "base": "Nhà Ủ Rượu",
+      "name": "Băng Hương Cất Phòng",
+      "effect": "Chưng cất dung dịch chống lạnh từ quả hàn và thảo dược",
+      "tradeoff": "Nguyên liệu hữu hạn, rượu không thay hồi HP",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-051",
+      "bucket": "Cư trú & sức khỏe",
+      "base": "Nhà Nông Phu Cực Địa",
+      "name": "Nhà Nông Phu Linh Noãn",
+      "effect": "Tăng khả năng giữ ấm của phòng và phục hồi thể lực khi ngủ",
+      "tradeoff": "Không tăng số giường/cấp hay đổi phí gọi dân đã khóa",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-052",
+      "bucket": "Cư trú & sức khỏe",
+      "base": "Nhà Nông Phu Cực Địa",
+      "name": "Nhà Nông Phu Tịnh Tức",
+      "effect": "Giảm truyền bệnh hô hấp tại phòng có người nghỉ",
+      "tradeoff": "Cần không khí sạch; không chữa người đã nhiễm",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-053",
+      "bucket": "Cư trú & sức khỏe",
+      "base": "Nơi Trú Nhỏ",
+      "name": "Nơi Trú Tụ Nhiệt",
+      "effect": "Tích giữ nhiệt theo ca, tăng thời gian ấm sau khi lò tắt",
+      "tradeoff": "Không tự tạo nhiệt mới, không vượt số chỗ nền",
+      "rarity_band": "I",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-054",
+      "bucket": "Cư trú & sức khỏe",
+      "base": "Nơi Trú Nhỏ",
+      "name": "Nơi Trú Hồi Sức",
+      "effect": "Người sống nghỉ có giường được tăng tốc hồi thể lực",
+      "tradeoff": "Cần ngủ thực sự, thức ăn và nhiệt; không hồi máu tức thì",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-055",
+      "bucket": "Cư trú & sức khỏe",
+      "base": "Nơi Trú Nhỏ",
+      "name": "Hàn Quang Tĩnh Xá",
+      "effect": "Cách âm và giảm căng thẳng sau trận chiến",
+      "tradeoff": "Giảm số người ở vì không gian yên tĩnh",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-056",
+      "bucket": "Cư trú & sức khỏe",
+      "base": "Phòng Y Tế",
+      "name": "Phòng Y Tế Tịnh Quang",
+      "effect": "Điều trị vết thương nhiễm uế hệ tương thích ở bệnh nhân sống",
+      "tradeoff": "Cần thuốc, bác sĩ và giường; không chữa tử thi thành lính",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-057",
+      "bucket": "Cư trú & sức khỏe",
+      "base": "Phòng Y Tế",
+      "name": "Hàn Ngọc Điều Dưỡng Viện",
+      "effect": "Ổn định bệnh nhân sốt/bỏng và hồi phục dài ngày",
+      "tradeoff": "Điều trị dài hơn; công suất thấp hơn bệnh xá thường",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-058",
+      "bucket": "Cư trú & sức khỏe",
+      "base": "Phòng Y Tế",
+      "name": "Sinh Cơ Dược Viện",
+      "effect": "Dùng nước sinh cơ và dược liệu phục hồi thương tổn có thể chữa",
+      "tradeoff": "Cực kỳ hiếm, ca điều trị và nguyên liệu bắt buộc",
+      "rarity_band": "III",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-059",
+      "bucket": "Cư trú & sức khỏe",
+      "base": "Lò Sưởi Đơn Giản",
+      "name": "Lò Sưởi Hỏa Văn",
+      "effect": "Đổi nhiên liệu thành nhiệt ổn định khi gió lớn",
+      "tradeoff": "Tiêu tinh thạch ở khởi động; vẫn phải nạp nhiên liệu",
+      "rarity_band": "I",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "V0_3_BALANCE_CONTRACT_READY_FOR_REVIEW",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false,
+      "execution_model": "UPGRADE_MODULE",
+      "construction_materials": {
+        "Gỗ": 10,
+        "Đá": 20,
+        "Sắt": 6,
+        "Tinh Thể Nguyên Tố Sơ Cấp": 1
+      },
+      "work_units": 10,
+      "maximum_workers": 3,
+      "operation_contract": "Ở Lò Sưởi có nhiên liệu thật, lúc gió lớn độ ổn định nhiệt được giữ tại mức cơ sở thay vì phạt mất 20% do gió; không giảm wood/coal charge vốn có và không thay radius/cấp của Lửa Sinh Tồn.",
+      "throughput_claim": "Kháng phạt gió cho 1 Lò Sưởi được gắn",
+      "failure_mode": "thiếu nhiên liệu vẫn tắt",
+      "notes": "Mọi hằng số là bản thiết kế độc lập, KHÔNG phải nguồn đã khóa. Cần duyệt trước khi trở thành game active."
+    },
+    {
+      "id": "LL-MAG-060",
+      "bucket": "Cư trú & sức khỏe",
+      "base": "Lò Sưởi Đơn Giản",
+      "name": "Lò Sưởi Địa Mạch",
+      "effect": "Khai thác địa nhiệt địa điểm có sẵn để giảm đốt gỗ",
+      "tradeoff": "Chỉ xây tại điểm địa nhiệt, không chuyển địa nhiệt vào Lửa Sinh Tồn",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "N2",
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-061",
+      "bucket": "Cư trú & sức khỏe",
+      "base": "Nhà Tắm",
+      "name": "Nguyệt Hoa Dục Đường",
+      "effect": "Tắm với lượng Nguyệt Hoa Thủy để giảm mệt mỏi và tổn thương nhẹ",
+      "tradeoff": "Tranh nước chữa trị với Nguyệt Giếng; nhiều lượt không stack",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "V0_3_BALANCE_CONTRACT_READY_FOR_REVIEW",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false,
+      "execution_model": "NEW_BATHHOUSE",
+      "construction_materials": {
+        "Gỗ": 60,
+        "Đá": 60,
+        "Sắt": 12,
+        "Tinh Thể Nguyên Tố Sơ Cấp": 3
+      },
+      "work_units": 30,
+      "maximum_workers": 5,
+      "operation_contract": "Một ca tắm 1 giờ dùng 2 bình Nguyệt Hoa Thủy + 8 đơn vị nước thường, hỗ trợ hồi 15 stamina và giảm 1 mức hàn lạnh có thể chữa. Không hồi HP vết thương hoặc thanh tẩy mọi debuff. Tối đa 4 khách/ca.",
+      "throughput_claim": "4 người/giờ từ 2 bình Nguyệt Hoa Thủy",
+      "failure_mode": "tranh nguồn nước Nguyệt Giếng với y tế",
+      "notes": "Mọi hằng số là bản thiết kế độc lập, KHÔNG phải nguồn đã khóa. Cần duyệt trước khi trở thành game active."
+    },
+    {
+      "id": "LL-MAG-062",
+      "bucket": "Cư trú & sức khỏe",
+      "base": "Nhà Tắm",
+      "name": "Địa Nhiệt Ôn Tuyền",
+      "effect": "Tắm nước nóng từ địa nhiệt và giảm trạng thái nhiễm lạnh",
+      "tradeoff": "Phải có vent và nguồn nước; không tự hồi vết thương sâu",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "N2"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-063",
+      "bucket": "Tài nguyên & chế tác",
+      "base": "Xưởng Gỗ",
+      "name": "Mộc Linh Công Phường",
+      "effect": "Chuyển gỗ thật thành cấu kiện đã gia cường chống ẩm",
+      "tradeoff": "Số đơn vị gỗ đầu vào không tăng; thêm vật dẫn Mộc",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-064",
+      "bucket": "Tài nguyên & chế tác",
+      "base": "Xưởng Gỗ",
+      "name": "Hàn Vân Cưa Xưởng",
+      "effect": "Cưa gỗ cứng băng giá với hao hụt lưỡi thấp hơn",
+      "tradeoff": "Chỉ có lợi khi gỗ bị băng; công suất thường không tăng",
+      "rarity_band": "I",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-065",
+      "bucket": "Tài nguyên & chế tác",
+      "base": "Xưởng Gỗ",
+      "name": "Phong Luân Mộc Xưởng",
+      "effect": "Dùng gió thật để giảm nhiên liệu cưa gỗ",
+      "tradeoff": "Ngày lặng gió hoạt động chậm",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-066",
+      "bucket": "Tài nguyên & chế tác",
+      "base": "Xưởng Chế Biến Quặng",
+      "name": "Địa Hỏa Tuyển Quặng",
+      "effect": "Phân tách xỉ khỏi quặng nhiều tạp chất",
+      "tradeoff": "Tiêu nhiệt/than, sản lượng tinh kim không vượt hàm lượng đầu vào",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-067",
+      "bucket": "Tài nguyên & chế tác",
+      "base": "Xưởng Chế Biến Quặng",
+      "name": "Hàn Tinh Luyện Khoáng",
+      "effect": "Tách tinh thể hàn tính khỏi quặng chứa nó",
+      "tradeoff": "Không thể chiết tinh thể nếu quặng không có thành phần đó",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-068",
+      "bucket": "Tài nguyên & chế tác",
+      "base": "Xưởng Chế Biến Quặng",
+      "name": "Thổ Linh Tuyển Quặng",
+      "effect": "Tăng khả năng thu hồi đá có kim loại bằng tuyển tỉ trọng",
+      "tradeoff": "Thải xỉ thật và tiêu nước; không làm giàu mạch quặng",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-069",
+      "bucket": "Tài nguyên & chế tác",
+      "base": "Lò Rèn",
+      "name": "Hỏa Linh Đoán Lô",
+      "effect": "Tôi thép và tạo vũ khí có sát thương Hỏa từ đúng recipe",
+      "tradeoff": "Cần phôi và vật liệu nguyên tố, có nguy cơ phế phẩm",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "V0_3_BALANCE_CONTRACT_READY_FOR_REVIEW",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false,
+      "execution_model": "UPGRADE_MODULE",
+      "construction_materials": {
+        "Gỗ": 30,
+        "Đá": 50,
+        "Sắt": 20,
+        "Tinh Thể Nguyên Tố Sơ Cấp": 2
+      },
+      "work_units": 32,
+      "maximum_workers": 5,
+      "operation_contract": "Ở Lò Rèn Cấp đủ, mở recipe Đao Hỏa Văn: 5 Sắt + 1 Gỗ + 1 Tinh Thể Hỏa tương thích → 1 đao trong 6 giờ; mỗi đao có charge nguyên tố riêng, không tạo vũ khí miễn phí.",
+      "throughput_claim": "1 vũ khí Hỏa/6h/recipe",
+      "failure_mode": "không tinh thạch phù hợp → không làm đao Hỏa",
+      "notes": "Mọi hằng số là bản thiết kế độc lập, KHÔNG phải nguồn đã khóa. Cần duyệt trước khi trở thành game active."
+    },
+    {
+      "id": "LL-MAG-070",
+      "bucket": "Tài nguyên & chế tác",
+      "base": "Lò Rèn",
+      "name": "Hàn Văn Đoán Lô",
+      "effect": "Chế tạo binh khí/giáp chịu băng và khắc hàn văn",
+      "tradeoff": "Khó rèn kim loại thường; cần người biết phù văn",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-071",
+      "bucket": "Tài nguyên & chế tác",
+      "base": "Lò Rèn",
+      "name": "Phá Giáp Trọng Lô",
+      "effect": "Rèn vũ khí chuyên phá giáp với kết cấu nặng",
+      "tradeoff": "Tiêu kim loại hơn rèn nhẹ, trang bị làm người dùng chậm",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-072",
+      "bucket": "Tài nguyên & chế tác",
+      "base": "Tiệm May",
+      "name": "Linh Ty Phường",
+      "effect": "Dệt chỉ linh từ tơ thật để làm áo chống lạnh và đồ phép",
+      "tradeoff": "Tơ đặc biệt hữu hạn, sản lượng may thường thấp",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-073",
+      "bucket": "Tài nguyên & chế tác",
+      "base": "Tiệm May",
+      "name": "Hàn Nhung Y Phường",
+      "effect": "Làm áo từ lông thú băng giảm mất nhiệt khi ra ngoài vùng nhiệt",
+      "tradeoff": "Không bảo vệ khỏi lửa; yêu cầu da/lông và fitting",
+      "rarity_band": "I",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "V0_3_BALANCE_CONTRACT_READY_FOR_REVIEW",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false,
+      "execution_model": "UPGRADE_MODULE",
+      "construction_materials": {
+        "Gỗ": 25,
+        "Đá": 15,
+        "Sắt": 6,
+        "Tinh Thể Nguyên Tố Sơ Cấp": 1
+      },
+      "work_units": 13,
+      "maximum_workers": 3,
+      "operation_contract": "Mở recipe áo choàng lông băng: 3 Da Thuộc tương thích + 1 Lông Băng + 1 Gỗ dùng cho khung → 1 áo trong 8 giờ/1 trạm; cách nhiệt bonus 0.30, không stack với cùng item slot. Tài nguyên phải có trong kho.",
+      "throughput_claim": "1 áo/8h từ vật liệu thật",
+      "failure_mode": "cần lông băng; chiếm slot áo",
+      "notes": "Mọi hằng số là bản thiết kế độc lập, KHÔNG phải nguồn đã khóa. Cần duyệt trước khi trở thành game active."
+    },
+    {
+      "id": "LL-MAG-074",
+      "bucket": "Tài nguyên & chế tác",
+      "base": "Tiệm May",
+      "name": "Phù Văn Y Quán",
+      "effect": "May áo có slot phù văn thật, kích hoạt theo nạp tinh thạch",
+      "tradeoff": "Không tự tạo kỹ năng của người mặc; nhiều slot cần vật liệu hiếm",
+      "rarity_band": "III",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-075",
+      "bucket": "Tài nguyên & chế tác",
+      "base": "Xưởng Cơ Khí",
+      "name": "Linh Cơ Công Xưởng",
+      "effect": "Làm xe kéo, bơm và máy có phụ trợ ma pháp từ các linh kiện",
+      "tradeoff": "Phải chế tạo bộ phận và nhiên liệu; không nhân số máy",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "N4",
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-076",
+      "bucket": "Tài nguyên & chế tác",
+      "base": "Xưởng Cơ Khí",
+      "name": "Hàn Thiết Xa Phường",
+      "effect": "Làm xe trượt/xe bánh chịu băng, dùng hàng thật",
+      "tradeoff": "Tốc độ cao trên băng nhưng nặng và chậm trên đá lở",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-077",
+      "bucket": "Tài nguyên & chế tác",
+      "base": "Trạm Lò Than",
+      "name": "Hỏa Mạch Lò Than",
+      "effect": "Tạo than từ gỗ thật với thu hồi nhiệt phục vụ xưởng gần",
+      "tradeoff": "Không tạo thêm Than nếu không có Gỗ; dư nhiệt chỉ theo mẻ đang chạy",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "V0_3_BALANCE_CONTRACT_READY_FOR_REVIEW",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false,
+      "execution_model": "UPGRADE_MODULE",
+      "construction_materials": {
+        "Gỗ": 25,
+        "Đá": 40,
+        "Sắt": 15,
+        "Tinh Thể Nguyên Tố Sơ Cấp": 2
+      },
+      "work_units": 24,
+      "maximum_workers": 4,
+      "operation_contract": "Khi Trạm Lò Than thực hiện một mẻ Gỗ→Than hợp lệ, module thu tối đa 6 đơn vị nhiệt vào Bể Nhiệt liền kề, sử dụng trong 6 giờ. Không có mẻ hoạt động thì không thu, công suất than vẫn theo recipe gốc chưa tự xác định.",
+      "throughput_claim": "thu 6 nhiệt/mẻ hợp lệ",
+      "failure_mode": "chưa có hợp đồng Gỗ→Than thì không thực thi",
+      "notes": "Mọi hằng số là bản thiết kế độc lập, KHÔNG phải nguồn đã khóa. Cần duyệt trước khi trở thành game active."
+    },
+    {
+      "id": "LL-MAG-078",
+      "bucket": "Tài nguyên & chế tác",
+      "base": "Trạm Lò Than",
+      "name": "Tịnh Yên Lò Than",
+      "effect": "Thu khói/bụi than làm chất phụ gia luyện kim, giảm khói bay",
+      "tradeoff": "Tốn bộ lọc, tốc độ than kém hơn lò nền",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-079",
+      "bucket": "Tài nguyên & chế tác",
+      "base": "Bãi Đá Gia Cố",
+      "name": "Thạch Linh Trường",
+      "effect": "Gia cố và cắt đá thành phiến dùng trong thành lũy",
+      "tradeoff": "Cần đá thật, lưỡi cắt và lao động; không sinh mỏ",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-080",
+      "bucket": "Tài nguyên & chế tác",
+      "base": "Kho Gỗ Có Mái",
+      "name": "Kho Mộc Ấn",
+      "effect": "Bảo quản gỗ khỏi nấm, chống ẩm lô hàng có gắn phù",
+      "tradeoff": "Phải niêm theo lô, tốn phù in; kho không to thêm",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-081",
+      "bucket": "Năng lượng & nguyên tố",
+      "base": "Trạm Nhiên Liệu",
+      "name": "Trạm Hỏa Tinh",
+      "effect": "Rút nhiệt từ tinh thạch để cấp máy, tạo nhiệt phụ trợ",
+      "tradeoff": "Tinh thạch tiêu hao theo năng lượng cấp, không có điện miễn phí",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-082",
+      "bucket": "Năng lượng & nguyên tố",
+      "base": "Trạm Nhiên Liệu",
+      "name": "Địa Nhiệt Trạm",
+      "effect": "Dùng dòng địa nhiệt để chạy máy vùng có mạch nóng",
+      "tradeoff": "Đòi site địa nhiệt có dữ liệu, rò nhiệt có hazard",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "N2",
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-083",
+      "bucket": "Năng lượng & nguyên tố",
+      "base": "Trạm Nhiên Liệu",
+      "name": "Phong Linh Trạm",
+      "effect": "Thu sức gió dùng cho máy và bơm",
+      "tradeoff": "Thiếu gió thì ngừng, bão vượt thiết kế phải khóa cánh",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-084",
+      "bucket": "Năng lượng & nguyên tố",
+      "base": "Trạm Nhiên Liệu",
+      "name": "Lôi Tinh Trạm",
+      "effect": "Lưu năng lượng sét trong bình tụ khi có thời tiết/nguồn điện",
+      "tradeoff": "Khó nạp, rủi ro quá tải và kho pin có giới hạn",
+      "rarity_band": "III",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-085",
+      "bucket": "Năng lượng & nguyên tố",
+      "base": "Lò Sưởi Đơn Giản",
+      "name": "Lò Sưởi Tinh Thạch",
+      "effect": "Tỏa nhiệt bằng một module tinh thạch có charge rõ ràng",
+      "tradeoff": "Hết charge dừng module, không được nạp từ Lửa Sinh Tồn",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-086",
+      "bucket": "Năng lượng & nguyên tố",
+      "base": "Bể Nhiệt",
+      "name": "Bể Hỏa Phách",
+      "effect": "Chứa nhiệt từ xưởng đang hoạt động và xả khi rét đột ngột",
+      "tradeoff": "Không tạo nhiệt; chỉ lưu nhiệt đã thu được",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-087",
+      "bucket": "Năng lượng & nguyên tố",
+      "base": "Trạm Than",
+      "name": "Hỏa Khí Tinh Lọc",
+      "effect": "Tách khí đốt dùng cho bếp từ nhiên liệu đã chế biến",
+      "tradeoff": "Có hao hụt đầu vào, nguy cơ cháy nổ; không nhân nhiên liệu",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-088",
+      "bucket": "Năng lượng & nguyên tố",
+      "base": "Lò Phản Ứng",
+      "name": "Hàn Hỏa Giao Lô",
+      "effect": "Dùng nhiệt độ chênh băng–lửa để cấp thiết bị đủ điều kiện",
+      "tradeoff": "Cần cả nguồn nóng/lạnh và thiết bị; không tác động ngoài mạng",
+      "rarity_band": "III",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-089",
+      "bucket": "Phòng thủ & công thành",
+      "base": "Tháp Canh Gỗ",
+      "name": "Tháp Hàn Tiễn",
+      "effect": "Chuyển tháp có lính canh thành tháp bắn băng khi có lõi/cung máy",
+      "tradeoff": "Cần module cơ khí/phù; tấn công chỉ theo tầm nhìn thật",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "N1",
+        "N4"
+      ],
+      "status": "V0_3_BALANCE_CONTRACT_READY_FOR_REVIEW",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false,
+      "execution_model": "UPGRADE_MODULE",
+      "construction_materials": {
+        "Gỗ": 65,
+        "Đá": 80,
+        "Sắt": 35,
+        "Tinh Thể Nguyên Tố Sơ Cấp": 4
+      },
+      "work_units": 48,
+      "maximum_workers": 6,
+      "operation_contract": "Gắn lên Tháp Canh Gỗ đã tồn tại, có mục tiêu thực trong LOS và 140m sẽ bắn một tên băng mỗi 5s, tạo 12 sát thương Hàn trước giáp/kháng theo engine và 20% giảm tốc 3s nếu trúng. Bắn tốn 1 charge/lần; một Tinh Thể Sơ Cấp nạp 40 charge.",
+      "throughput_claim": "12 damage Hàn / 5s, range 140m",
+      "failure_mode": "cần nạp đạn/tinh thạch; bị che tầm nhìn không bắn",
+      "notes": "Mọi hằng số là bản thiết kế độc lập, KHÔNG phải nguồn đã khóa. Cần duyệt trước khi trở thành game active."
+    },
+    {
+      "id": "LL-MAG-090",
+      "bucket": "Phòng thủ & công thành",
+      "base": "Tháp Canh Gỗ",
+      "name": "Tháp Hỏa Tiễn",
+      "effect": "Tạo phát bắn Hỏa đốt mục tiêu có thể cháy",
+      "tradeoff": "Nguy cơ đốt công trình gần; cần vật dẫn/tên",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-091",
+      "bucket": "Phòng thủ & công thành",
+      "base": "Tháp Canh Gỗ",
+      "name": "Tháp Lôi Xạ",
+      "effect": "Bắn tia điện chống đơn vị mặc giáp dẫn điện",
+      "tradeoff": "Kho điện hữu hạn, yếu khi mục tiêu cách điện",
+      "rarity_band": "III",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-092",
+      "bucket": "Phòng thủ & công thành",
+      "base": "Tường Rào",
+      "name": "Tường Thạch Văn",
+      "effect": "Gia cố tường thành bằng đá/phù để chịu công thành",
+      "tradeoff": "Không tăng diện tích claim, nặng và tốn đá",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-093",
+      "bucket": "Phòng thủ & công thành",
+      "base": "Tường Rào",
+      "name": "Tường Kinh Cức",
+      "effect": "Mọc gai có thể làm chậm và gây chảy máu kẻ bám tường",
+      "tradeoff": "Đòi giống gai sống và nước; dễ cháy",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "N2",
+        "D"
+      ],
+      "status": "V0_3_BALANCE_CONTRACT_READY_FOR_REVIEW",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false,
+      "execution_model": "UPGRADE_SEGMENT",
+      "construction_materials": {
+        "Gỗ": 20,
+        "Đá": 8,
+        "Sắt": 2,
+        "Tinh Thể Nguyên Tố Sơ Cấp": 1
+      },
+      "work_units": 10,
+      "maximum_workers": 3,
+      "operation_contract": "Chỉ trên một đoạn Tường 10m đã hoàn tất. Cần 10 hom Kinh Cức hợp lệ/đoạn, mỗi 12h 1 nước để giữ sống; kẻ leo có thể bị gây 4 damage vật lý mỗi giây tiếp xúc và bị kéo chân 10% tốc độ. Cây không tác dụng lên vật bay.",
+      "throughput_claim": "một đoạn 10m; 4 sát thương/s tiếp xúc",
+      "failure_mode": "cháy/thiếu nước → mất gai",
+      "notes": "Mọi hằng số là bản thiết kế độc lập, KHÔNG phải nguồn đã khóa. Cần duyệt trước khi trở thành game active."
+    },
+    {
+      "id": "LL-MAG-094",
+      "bucket": "Phòng thủ & công thành",
+      "base": "Tường Rào",
+      "name": "Tường Hàn Tinh",
+      "effect": "Tường gây đóng băng với kẻ chạm thực sự",
+      "tradeoff": "Tiêu tinh thạch theo lần kích hoạt; có thể làm kẹt cửa đồng minh",
+      "rarity_band": "III",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-095",
+      "bucket": "Phòng thủ & công thành",
+      "base": "Cổng",
+      "name": "Huyền Thiết Trấn Môn",
+      "effect": "Cổng thép nặng chống phá cửa và xung phong",
+      "tradeoff": "Mở đóng chậm hơn, yêu cầu máy nâng",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-096",
+      "bucket": "Phòng thủ & công thành",
+      "base": "Cổng",
+      "name": "Hỏa Ấn Trấn Môn",
+      "effect": "Tạo dải lửa có hướng khi kẻ địch phá cổng",
+      "tradeoff": "Dùng nhiên liệu/charge, có nguy cơ hại cả người bên trong",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-097",
+      "bucket": "Phòng thủ & công thành",
+      "base": "Cổng",
+      "name": "Huyễn Môn",
+      "effect": "Tạo ảo cảnh che chính lối vào khỏi trinh sát phép cấp thấp",
+      "tradeoff": "Không đổi vị trí vật lý, bị khắc chế bởi dò cấu trúc",
+      "rarity_band": "III",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-098",
+      "bucket": "Phòng thủ & công thành",
+      "base": "Bẫy Thú Tuyết",
+      "name": "Băng Tỏa Trận",
+      "effect": "Bẫy trói tạm kẻ đạp vào vùng gài",
+      "tradeoff": "Cần nạp vật liệu mỗi lần; không tự săn toàn bản đồ",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-099",
+      "bucket": "Phòng thủ & công thành",
+      "base": "Bẫy Thú Tuyết",
+      "name": "Hỏa Sấm Bẫy",
+      "effect": "Tạo nổ nhiệt cục bộ khi cảm biến va chạm hợp lệ",
+      "tradeoff": "Một lần nổ phải đặt lại; có friendly fire",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-100",
+      "bucket": "Phòng thủ & công thành",
+      "base": "Tháp Tiễn",
+      "name": "Nguyên Tố Tiễn Tháp",
+      "effect": "Đổi sát thương vật lý thành các profile nguyên tố đã mở",
+      "tradeoff": "Phải chọn profile khi nạp; mỗi phần tử có kháng và counter",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "N1",
+        "N4"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-101",
+      "bucket": "Phòng thủ & công thành",
+      "base": "Tháp Tiễn",
+      "name": "Độc Phong Tiễn Tháp",
+      "effect": "Bắn phi tiêu gây độc tồn lưu lên kẻ có thể nhiễm độc",
+      "tradeoff": "Miễn nhiễm độc không bị ảnh hưởng, đạn dược tiêu thật",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-102",
+      "bucket": "Phòng thủ & công thành",
+      "base": "Công Xưởng Công Thành",
+      "name": "Phá Băng Trọng Pháo",
+      "effect": "Chế tạo vũ khí công thành phá tường băng hoặc rào",
+      "tradeoff": "Vận chuyển chậm, cần đội thao tác và đạn",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-103",
+      "bucket": "Phòng thủ & công thành",
+      "base": "Công Xưởng Công Thành",
+      "name": "Lôi Đình Nỗ Phường",
+      "effect": "Chế tạo nỏ lớn phóng đạn dẫn sét",
+      "tradeoff": "Cần nạp đạn/tinh thạch; kém hiệu quả dưới đất khô",
+      "rarity_band": "III",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-104",
+      "bucket": "Huấn luyện & kỹ năng",
+      "base": "Trại Chiến Binh",
+      "name": "Chiến Binh Huyết Luyện Đường",
+      "effect": "Dạy võ kỹ trong bộ curriculum thật, tăng mastery từ giờ tập",
+      "tradeoff": "Phải có giáo viên, dụng cụ và người có agency/học được",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D",
+        "N4"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-105",
+      "bucket": "Huấn luyện & kỹ năng",
+      "base": "Trại Chiến Binh",
+      "name": "Băng Vệ Huấn Luyện Doanh",
+      "effect": "Rèn kháng lạnh và chiến đấu tuyết cho đơn vị đủ điều kiện",
+      "tradeoff": "Cần thời gian/thực hành, không biến đổi chủng loài",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-106",
+      "bucket": "Huấn luyện & kỹ năng",
+      "base": "Trại Chiến Binh",
+      "name": "Tử Thi Thực Chiến Trường",
+      "effect": "Tử thi tập phản xạ chiến đấu có bộ kỹ năng tương thích",
+      "tradeoff": "Không tạo kỹ năng chưa có/không tặng XP vô hạn cho lính rỗi",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-107",
+      "bucket": "Huấn luyện & kỹ năng",
+      "base": "Tháp Pháp Sư",
+      "name": "Hàn Pháp Tháp",
+      "effect": "Luyện kỹ năng phép Hàn và chế tác đúng phép đã biết",
+      "tradeoff": "Khắc chế hệ khác, yêu cầu người học phù hợp",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-108",
+      "bucket": "Huấn luyện & kỹ năng",
+      "base": "Tháp Pháp Sư",
+      "name": "Hỏa Pháp Tháp",
+      "effect": "Luyện pháp thuật Hỏa và tinh chỉnh pháp khí Hỏa",
+      "tradeoff": "Tiêu vật dẫn thử, nguy cơ cháy vùng tập",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-109",
+      "bucket": "Huấn luyện & kỹ năng",
+      "base": "Tháp Pháp Sư",
+      "name": "Nguyệt Minh Pháp Các",
+      "effect": "Thiền định phục hồi Mana theo ca cho pháp sư có Mana",
+      "tradeoff": "Không hồi HP hay Tử Phục, slot luyện hạn chế",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "N1",
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-110",
+      "bucket": "Huấn luyện & kỹ năng",
+      "base": "Tháp Pháp Sư",
+      "name": "Ám Thuật Pháp Tháp",
+      "effect": "Đào tạo thuật sĩ Ám trên bộ kỹ năng Ám hợp lệ",
+      "tradeoff": "Không tạo kỹ năng độc quyền SSS hoặc thay chức nghiệp Lí Lan",
+      "rarity_band": "III",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-111",
+      "bucket": "Huấn luyện & kỹ năng",
+      "base": "Điện Đường Kỵ Sĩ",
+      "name": "Hàn Thiết Kỵ Đường",
+      "effect": "Rèn kỹ năng đỡ đòn và chống xung phong",
+      "tradeoff": "Chỉ cưỡi được loài ngựa/thú đã thuần, yêu cầu kỵ sĩ hợp lệ",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-112",
+      "bucket": "Huấn luyện & kỹ năng",
+      "base": "Sân Tập Cung Thủ",
+      "name": "Phong Tiễn Sân",
+      "effect": "Huấn luyện bắn khi gió lớn, giảm sai lệch do điều kiện gió",
+      "tradeoff": "Cần đạn tập và giờ tập; không tự cấp kỹ năng",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-113",
+      "bucket": "Huấn luyện & kỹ năng",
+      "base": "Học Đường",
+      "name": "Linh Công Học Đường",
+      "effect": "Dạy nghề linh canh, may linh ty, luyện dược cho dân có tố chất",
+      "tradeoff": "Cần giáo viên và tài liệu nghề; không cấp nghề miễn phí",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-114",
+      "bucket": "Thương mại & dân sinh",
+      "base": "Quán Rượu",
+      "name": "Nguyệt Tửu Quán",
+      "effect": "Bán dược tửu, có khách thật ghé khi biết vị trí và đường đi",
+      "tradeoff": "Không tự tạo khách/anh hùng trong vùng chưa gieo",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-115",
+      "bucket": "Thương mại & dân sinh",
+      "base": "Quán Rượu",
+      "name": "Băng Lữ Khách Điếm",
+      "effect": "Nơi trú kèm dịch vụ chống lạnh cho thương khách thật",
+      "tradeoff": "Có phí nhiên liệu/giường; giá cao làm giảm cầu",
+      "rarity_band": "I",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-116",
+      "bucket": "Thương mại & dân sinh",
+      "base": "Chợ",
+      "name": "Linh Vật Giao Các",
+      "effect": "Bán linh vật/thuốc và đánh giá chất lượng bởi thương nhân thực",
+      "tradeoff": "Không thay chợ hệ thống/không sinh đơn hàng",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-117",
+      "bucket": "Thương mại & dân sinh",
+      "base": "Xưởng In",
+      "name": "Phù Ấn Phường",
+      "effect": "Chế phù tiêu hao và bao bì đóng dấu nguồn gốc",
+      "tradeoff": "Vật liệu, mực, người biết phù văn; không in tài nguyên",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-118",
+      "bucket": "Thương mại & dân sinh",
+      "base": "Nhà Vệ Sinh",
+      "name": "Tịnh Uế Phường",
+      "effect": "Chuyển nước thải thành nước tưới không uống và bùn làm phân",
+      "tradeoff": "Cần waste thật, chưa có dân sẽ không có nguyên liệu",
+      "rarity_band": "I",
+      "provenance_tags": [
+        "N1",
+        "D"
+      ],
+      "status": "V0_3_BALANCE_CONTRACT_READY_FOR_REVIEW",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false,
+      "execution_model": "NEW_SANITATION",
+      "construction_materials": {
+        "Gỗ": 50,
+        "Đá": 20,
+        "Sắt": 5,
+        "Tinh Thể Nguyên Tố Sơ Cấp": 1
+      },
+      "work_units": 22,
+      "maximum_workers": 4,
+      "operation_contract": "Tiếp nhận tối đa 20 đơn vị Nước Thải/giờ từ cư dân hoạt động; sau 4 giờ dùng 80 Nước Thải đầu vào cho 5 Phân Hữu Cơ và 75 Nước Thải Sau Xử Lý, vật liệu riêng không uống được (đơn vị quy đổi của game). Không có chất thải thì 0; chưa có cư dân thì 0.",
+      "throughput_claim": "80 nước thải → 5 phân và 75 nước thải xử lý tách dòng /4h",
+      "failure_mode": "thải độc vượt chuẩn cần lọc riêng",
+      "notes": "Mọi hằng số là bản thiết kế độc lập, KHÔNG phải nguồn đã khóa. Cần duyệt trước khi trở thành game active."
+    },
+    {
+      "id": "LL-MAG-119",
+      "bucket": "Thương mại & dân sinh",
+      "base": "Nhà Vệ Sinh",
+      "name": "Hương Thảo Tịnh Các",
+      "effect": "Tách độc từ chất thải và dùng thảo mộc khử khuẩn",
+      "tradeoff": "Không biến ô uế thành thuốc chữa bệnh; dùng thảo dược",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-120",
+      "bucket": "Thương mại & dân sinh",
+      "base": "Đường Lát Đá",
+      "name": "Hàn Thạch Đạo",
+      "effect": "Mặt đường chống đóng băng và tăng khả năng xe qua",
+      "tradeoff": "Mỗi đoạn có vật liệu riêng; không teleport",
+      "rarity_band": "I",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "V0_3_BALANCE_CONTRACT_READY_FOR_REVIEW",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false,
+      "execution_model": "UPGRADE_SEGMENT",
+      "construction_materials": {
+        "Gỗ": 4,
+        "Đá": 15,
+        "Sắt": 2,
+        "Tinh Thể Nguyên Tố Sơ Cấp": 1
+      },
+      "work_units": 8,
+      "maximum_workers": 3,
+      "operation_contract": "Một đoạn 10m Đường Lát Đá; tốc độ của actor/cargo bám đường hợp lệ +15% ở băng tuyết so với đi trên cùng đoạn đường đá không phủ; không ảnh hưởng combat riêng và không cộng chồng theo số đoạn.",
+      "throughput_claim": "10m mặt đường chống băng",
+      "failure_mode": "địa hình đổ vỡ làm mất bonus",
+      "notes": "Mọi hằng số là bản thiết kế độc lập, KHÔNG phải nguồn đã khóa. Cần duyệt trước khi trở thành game active."
+    },
+    {
+      "id": "LL-MAG-121",
+      "bucket": "Thương mại & dân sinh",
+      "base": "Đường Lát Đá",
+      "name": "Phong Hành Đạo",
+      "effect": "Mặt đường giảm lực kéo cho xe chở hàng ở đúng tile",
+      "tradeoff": "Chỉ vận chuyển có bánh/trượt phù hợp; không buff quãng xa",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-122",
+      "bucket": "Thương mại & dân sinh",
+      "base": "Đường Lát Đá",
+      "name": "Nguyệt Quang Lộ",
+      "effect": "Đường tự phát sáng yếu về đêm hỗ trợ tuần tra vật lý",
+      "tradeoff": "Khi bị che ánh trăng cần tích năng lượng hoặc tắt",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "V0_3_BALANCE_CONTRACT_READY_FOR_REVIEW",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false,
+      "execution_model": "UPGRADE_SEGMENT",
+      "construction_materials": {
+        "Gỗ": 5,
+        "Đá": 14,
+        "Sắt": 2,
+        "Tinh Thể Nguyên Tố Sơ Cấp": 1
+      },
+      "work_units": 9,
+      "maximum_workers": 3,
+      "operation_contract": "Đoạn 10m Đường Lát Đá phát sáng như đèn khuya sau một ngày hứng trăng, bán kính chiếu 8m qua LOS. Nếu bão/tuyết che trăng liên tiếp thì mỗi đêm mất 1 charge và tự tắt. Không dò người ẩn hình.",
+      "throughput_claim": "10m đường và 8m chiếu sáng",
+      "failure_mode": "thiếu nguồn trăng → tắt",
+      "notes": "Mọi hằng số là bản thiết kế độc lập, KHÔNG phải nguồn đã khóa. Cần duyệt trước khi trở thành game active."
+    },
+    {
+      "id": "LL-MAG-123",
+      "bucket": "Thương mại & dân sinh",
+      "base": "Tháp Đồng Hồ",
+      "name": "Thời Khắc Đài",
+      "effect": "Phát chuông đồng bộ ca sản xuất và cảnh báo lũ/bão khi có đo đạc",
+      "tradeoff": "Không điều khiển thời gian và không hiển thị UI thay đồng hồ",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-124",
+      "bucket": "Dã ngoại & thú nuôi",
+      "base": "Trại Thợ Săn",
+      "name": "Băng Lang Săn Trường",
+      "effect": "Tăng chất lượng dấu vết/trình độ săn cho thợ săn thật",
+      "tradeoff": "Phải có con mồi thực, săn quá mức làm cạn quần thể",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-125",
+      "bucket": "Dã ngoại & thú nuôi",
+      "base": "Trại Thợ Săn",
+      "name": "Mộc Ảnh Săn Trường",
+      "effect": "Ẩn trại dưới rừng để thú không phát hiện lều từ xa",
+      "tradeoff": "Cần cây tán thật, không tàng hình đội đi săn",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-126",
+      "bucket": "Dã ngoại & thú nuôi",
+      "base": "Chuồng Ngựa",
+      "name": "Nguyệt Túc Mã Xá",
+      "effect": "Hồi thể lực thú cưỡi sau chặng dài có nước tốt",
+      "tradeoff": "Cần thức ăn, giường ổ; không tốc độ tức thời",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-127",
+      "bucket": "Dã ngoại & thú nuôi",
+      "base": "Chuồng Ngựa",
+      "name": "Hàn Thú Thuần Dưỡng Trại",
+      "effect": "Thuần thú tuyết đã bắt được khi hành vi loài cho phép",
+      "tradeoff": "Không biến boss/chủng thông minh thành vật nuôi",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-128",
+      "bucket": "Dã ngoại & thú nuôi",
+      "base": "Trại Gỗ",
+      "name": "Mộc Linh Ươm Lâm",
+      "effect": "Trồng cây mới từ hạt và cây con quanh trại khai thác",
+      "tradeoff": "Phục hồi chậm; không tạo gỗ trưởng thành miễn phí",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D",
+        "N2"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-129",
+      "bucket": "Dã ngoại & thú nuôi",
+      "base": "Trại Mỏ",
+      "name": "Linh Quặng Thăm Mạch",
+      "effect": "Thăm dò mạch quặng trong vùng đào thật bằng dụng cụ cảm ứng",
+      "tradeoff": "Không tự điền bản đồ chưa khảo sát; đo có sai số và độ sâu",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-130",
+      "bucket": "Dã ngoại & thú nuôi",
+      "base": "Trại Mỏ",
+      "name": "Địa Tủy Khai Khoáng",
+      "effect": "Lấy đá/chất mạch nhiệt từ mỏ hiện có",
+      "tradeoff": "Cần quyền đào, mạch thật và nguy cơ sập/hỏa khí",
+      "rarity_band": "III",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-131",
+      "bucket": "Dã ngoại & thú nuôi",
+      "base": "Trại Cá",
+      "name": "Sương Ngư Giống Trại",
+      "effect": "Ấp cá giống chịu lạnh từ trứng đã có",
+      "tradeoff": "Không spawn cá, phụ thuộc nước và oxy",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-132",
+      "bucket": "Dã ngoại & thú nuôi",
+      "base": "Vườn Ươm",
+      "name": "Huyết Thảo Viên",
+      "effect": "Nuôi cây dược hút máu thú săn đã thu hợp pháp",
+      "tradeoff": "Nông sản có độc tính và cần xử lý, không tạo máu từ không",
+      "rarity_band": "III",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-133",
+      "bucket": "Dã ngoại & thú nuôi",
+      "base": "Rừng Phòng Hộ",
+      "name": "Kinh Cức Trận Lâm",
+      "effect": "Trồng hàng rào dây gai như công sự sống",
+      "tradeoff": "Bị đốt cháy, tranh nước với nông nghiệp",
+      "rarity_band": "II",
+      "provenance_tags": [
+        "N2",
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-134",
+      "bucket": "Kỳ quan & siêu phàm",
+      "base": "Tháp Pháp Sư",
+      "name": "Tinh Giới Quan Tinh Tháp",
+      "effect": "Quan sát thiên tượng và mở thí nghiệm tinh thuật cần trời quang",
+      "tradeoff": "Không cho bản đồ bí mật, chỉ tạo quan trắc thiên tượng",
+      "rarity_band": "III",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-135",
+      "bucket": "Kỳ quan & siêu phàm",
+      "base": "Thư Viện",
+      "name": "Mộng Cảnh Thư Viện",
+      "effect": "Tổ chức thử thách mộng cảnh phiên bản đã niêm và thưởng thực thể",
+      "tradeoff": "Chỉ có slot/lượt được nguồn hợp đồng; không tạo XP miễn phí",
+      "rarity_band": "IV",
+      "provenance_tags": [
+        "N4"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-136",
+      "bucket": "Kỳ quan & siêu phàm",
+      "base": "Đài Truyền Tống",
+      "name": "Truyền Tống Trận",
+      "effect": "Dịch chuyển người và cargo giữa hai neo đã mở và đang hoạt động",
+      "tradeoff": "Tiêu vật dẫn và giới hạn tải; không biết tọa độ thì không đi",
+      "rarity_band": "IV",
+      "provenance_tags": [
+        "N4"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-137",
+      "bucket": "Kỳ quan & siêu phàm",
+      "base": "Trận Phòng Ngự",
+      "name": "Tĩnh Trệ Ma Năng Tháp",
+      "effect": "Dựng lá chắn phòng công thành và nhiễu công kích đã xác định",
+      "tradeoff": "Năng lượng dự trữ hữu hạn, không bảo hộ vô địch",
+      "rarity_band": "IV",
+      "provenance_tags": [
+        "N4"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-138",
+      "bucket": "Kỳ quan & siêu phàm",
+      "base": "Lò Rèn",
+      "name": "Tượng Thần Công Tượng",
+      "effect": "Tăng năng lực chế tác các recipe đã nghiên cứu cho thợ tương thích",
+      "tradeoff": "Hiếm, chỉ tác dụng tại xưởng thật, không phát vũ khí tự do",
+      "rarity_band": "IV",
+      "provenance_tags": [
+        "N4"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-139",
+      "bucket": "Kỳ quan & siêu phàm",
+      "base": "Rừng Linh Thụ",
+      "name": "Thế Giới Thụ Mầm Viên",
+      "effect": "Nuôi cây cổ thụ địa điểm thực để tạo gỗ/quả đặc hữu theo mùa",
+      "tradeoff": "Cây phải tồn tại từ cây non thật và lớn rất lâu",
+      "rarity_band": "IV",
+      "provenance_tags": [
+        "N5",
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-140",
+      "bucket": "Kỳ quan & siêu phàm",
+      "base": "Thần Điện",
+      "name": "Sinh Mệnh Thánh Đàn",
+      "effect": "Hỗ trợ ca cứu chữa cực hiếm bằng vật tư và giáo sĩ thật",
+      "tradeoff": "Không hồi sinh tự do, không phá quy tắc chết thứ hai",
+      "rarity_band": "IV",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-141",
+      "bucket": "Kỳ quan & siêu phàm",
+      "base": "Hầm Quặng Cổ",
+      "name": "Địa Mạch Hạch Tâm",
+      "effect": "Khai thác dòng địa mạch cho một mạng công trình nối vật lý",
+      "tradeoff": "Đòi mạch hiện hữu, nguy cơ tranh chấp với phe địa phương",
+      "rarity_band": "IV",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-142",
+      "bucket": "Kỳ quan & siêu phàm",
+      "base": "Linh Điền",
+      "name": "Ngũ Hành Tiên Điền",
+      "effect": "Luân canh năm loại linh thực tương thích hệ nguyên tố",
+      "tradeoff": "Phải có năm giống/nguồn nước; không buff chồng 5 lần",
+      "rarity_band": "IV",
+      "provenance_tags": [
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    },
+    {
+      "id": "LL-MAG-143",
+      "bucket": "Kỳ quan & siêu phàm",
+      "base": "Nguyệt Giếng",
+      "name": "Nguyệt Hoa Thánh Tuyền",
+      "effect": "Làm nguyên liệu thần dược cực hiếm từ tích lũy nhiều đêm",
+      "tradeoff": "Không thay y viện, mỗi đợt sản lượng rất nhỏ",
+      "rarity_band": "IV",
+      "provenance_tags": [
+        "N1",
+        "D"
+      ],
+      "status": "DESIGN_PROPOSAL_NOT_IN_WORLD",
+      "knowledge": "LEARNED_BLUEPRINT_ONLY",
+      "is_new_canon": false
+    }
+  ]
+}
