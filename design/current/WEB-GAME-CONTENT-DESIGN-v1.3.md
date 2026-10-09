@@ -45,7 +45,7 @@ There is no general random item pool where an "item for necromancers" appears ju
 
 ## 3. Revised source-informed magical construction roster — 0.3
 
-The earlier overemphasis on corpse inspectors, command-relay buildings and ordinary inventory UI as structures is **withdrawn**. The playable-building design now uses a normal structure as a **base family** with magical alternatives and specialization modules; the full content and contract detail are in **[Lord_DnD_Magical_Building_Branches_v0.3.md](./Lord_DnD_Magical_Building_Branches_v0.3.md)**. The structured data file is **`Lord_DnD_Magical_Building_Catalog_v0.3.json`**.
+The earlier overemphasis on corpse inspectors, command-relay buildings and ordinary inventory UI as structures is **withdrawn**. The playable-building design now uses a normal structure as a **base family** with magical alternatives and specialization modules; the full content and contract detail are in **[Lord_DnD_Magical_Building_Branches_v0.3.md](../buildings/MAGICAL-BUILDING-BRANCHES-v0.3.md)**. The structured data file is **`design/buildings/MAGICAL-BUILDING-CATALOG-v0.3.json`**.
 
 - **Scale:** 143 branches in 11 functional categories; 19 have new numerical operation proposals, 124 are named design candidates that remain unavailable until individually materialized.
 - **Concrete examples:** Ruộng Canh Tác → **Linh Điền** for better output and growth; Giếng Nước → **Nguyệt Giếng** for *small nightly* quantities of HP/Mana restorative water; Bếp Đơn Giản → **Bếp Hỏa Tinh** for heat-retaining meals; Trạm Nấu Tuyết → **Lò Tuyết Tịnh Hỏa**; Lò Rèn → **Hỏa Linh Đoán Lô**; Tháp Canh Gỗ → **Tháp Hàn Tiễn**.
