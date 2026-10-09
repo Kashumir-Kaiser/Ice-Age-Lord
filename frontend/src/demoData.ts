@@ -31,7 +31,7 @@ export const screens: { id: Screen; name: string; hint: string }[] = [
   { id: 'buildings', name: 'Công trình', hint: 'Kiến trúc' },
   { id: 'journal', name: 'Nhật ký', hint: 'Sự kiện' },
 ];
-/** Presentation-only offsets in metres from camp H0 (+X east, +Y north).\n * Exact canonical locations are NOT asserted. Never use these as world state. */
+/** Opening site positions are exact LL01 registry coordinates in metres (+X east, +Y north).\n * They are read-only frontend projections; the site IDs and canonical registry remain authority. */
 export const sites: Site[] = [
   {
     id: 'fire', name: 'Lửa Trại Cấp 1', subtitle: 'Lửa Sinh Tồn',
@@ -41,17 +41,17 @@ export const sites: Site[] = [
   {
     id: 'house', name: 'Nhà Lãnh Chúa Hư Hại', subtitle: 'Công trình khởi đầu',
     description: 'Một ngôi nhà bị hư hại cần tu sửa. Công thức gốc: 20 Gỗ và 10 Đá. Nút sửa chữa chưa hoạt động trong bản xem thử.',
-    status: 'Chưa tu sửa tại T0', x: -25, y: 14, label: 'Nhà Lãnh Chúa',
+    status: 'Chưa tu sửa tại T0', x: 40, y: 20, label: 'Nhà Lãnh Chúa',
   },
   {
     id: 'tomb', name: 'Ngôi Mộ Bậc 1', subtitle: 'Công trình binh chủng',
     description: 'Đường tạo quân của Ngôi Mộ tách biệt hoàn toàn với Tử Phục xác thật của Lí Lan. Bản đồ minh họa không cho thấy quân đã được tạo.',
-    status: 'Tồn tại tại T0', x: 30, y: 22, label: 'Ngôi Mộ',
+    status: 'Tồn tại tại T0', x: -20, y: 30, label: 'Ngôi Mộ',
   },
   {
     id: 'supply', name: 'Hòm Vật Tư Lãnh Địa', subtitle: 'Hòm khởi đầu',
     description: 'Điểm chứa vật tư khởi đầu. Nội dung cụ thể phải lấy từ snapshot sạch và bộ mô phỏng, không suy từ dữ liệu kiểm thử.',
-    status: 'Chưa mô phỏng thao tác', x: 21, y: -15, label: 'Hòm Vật Tư',
+    status: 'Chưa mô phỏng thao tác', x: 30, y: -10, label: 'Hòm Vật Tư',
   },
 ];
 export const itemExamples: DemoItem[] = [
