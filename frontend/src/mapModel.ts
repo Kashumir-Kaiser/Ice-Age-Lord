@@ -70,7 +70,7 @@ export function visibilityDiscs(minutes:number,level:number,surveyPreview=false,
   // The radius is fully visible; atmospheric falloff begins OUTSIDE this edge.
   const heat=radius>0?[{x:0,y:0,clear:radius,fade:radius+Math.min(36,Math.max(2,radius*.008))}]:[];
   // Daylight eyesight is separate from explored-map knowledge.
-  const daylight=phase==='night'?[]:[{x:0,y:0,...sight}];
+  const daylight=phase==='night'?[]:[{x:0,y:0,clear:radius+sight.clear,fade:radius+sight.fade}];
   const preview=surveyPreview && phase!=='night'?DEMO_SURVEYED.slice(1):[];
   return [...daylight,...preview,...heat];
 }
