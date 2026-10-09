@@ -9,8 +9,8 @@
 | `design/buildings/MAGICAL-BUILDING-CATALOG-v0.3.json` | Machine-readable branch catalog | Proposed, partial executable contracts |
 | `design/buildings/SOURCE-GROUNDED-BUILDING-REDESIGN.md` | Source-first functional building distinctions | Reference and proposal |
 | `data/events/EVENT-TIMELINE-v0.6.json` | Reconciled fixed 30-event calendar | New-game candidate, not retroactive live migration |
-| `data/events/EVENT-SOURCE-CATALOG-v1.5.json` | Fifteen rounds of source event/world-mechanics extraction, 296 records (42 effect contracts) | Research, not guaranteed loot |
-| `data/events/EVENT-SOURCE-ITEMS-v1.5.csv` | Human-review event catalog | Review |
+| `data/events/EVENT-SOURCE-CATALOG-v1.6.json` | Sixteen rounds of source event/world-mechanics extraction, 298 records (46 effect contracts) | Research, not guaranteed loot |
+| `data/events/EVENT-SOURCE-ITEMS-v1.6.csv` | Human-review event catalog | Review |
 | `data/events/EVENT-TIMELINE-v0.6.csv` | Human-review schedule diff | Review |
 | `references/canonical/LORD-DND-01..07.md` | Underlying mechanics, fixed T0, world/hero/lair/quest data | Historical authoritative rules, require typed migration |
 | `references/canonical/RELEASE-LINEAGE-LL01-1.3.0.md` | Source release ancestry / exact known active versions | Legacy integrity reference |
@@ -20,10 +20,10 @@
 
 ## Research traceability
 
-- `research/extraction-audits/ROUND-01-SHOPS-CHESTS.md` through `ROUND-15-FIFTEENTH-EXTRACTION.md`: **all fifteen source extraction audits**.
+- `research/extraction-audits/ROUND-01-SHOPS-CHESTS.md` through `ROUND-16-SIXTEENTH-EXTRACTION.md`: **all sixteen source extraction audits**.
 - `research/extraction-audits/EVENT-TIMELINE-RECONCILIATION-v0.6.md`: chronology corrections and uncertain source cases.
-- `research/snapshots/events/EVENT-SOURCE-CATALOG-v0.1..v1.4.json`: historical extraction datasets.
-- `research/snapshots/events/EVENT-SOURCE-ITEMS-v0.1..v1.4.csv`: corresponding historical review datasets.
+- `research/snapshots/events/EVENT-SOURCE-CATALOG-v0.1..v1.5.json`: historical extraction datasets.
+- `research/snapshots/events/EVENT-SOURCE-ITEMS-v0.1..v1.5.csv`: corresponding historical review datasets.
 - `research/snapshots/design/`: previous web-game spec versions retained for forensic comparison, **not** alternative active specs.
 
 ## Explicitly excluded
