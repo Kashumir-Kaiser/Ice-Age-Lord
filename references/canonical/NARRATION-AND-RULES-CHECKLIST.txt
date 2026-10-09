@@ -1,0 +1,349 @@
+LORD DND — INTERNAL WRITING, RETRIEVAL AND STATE-ACCURACY GATE
+Version 3.8.0 — 2026-08-29 — preserves the complete 3.7.0 Hero-lair gate and adds generalized spatial sweep geometry, manpower/frontage scaling, multi-team concurrency, persistent search history, moving-target crossings, travel-time conservation and regional performance fixtures
+Release lock: document_id=LORD-DND-CHECKLIST; release_id=CHECKLIST-3.8.0-SPATIAL-SEARCH-GATE.1; manifest=RELEASE-LINEAGE-LL01-1.3.0
+
+PURPOSE
+
+This file is an internal execution gate. It is not lore, not a player-facing rules page, not a save file, and not permission to invent missing state. Its first priority is numerical and canonical accuracy. Response speed, brevity, and convenience are always subordinate to retrieving and reconciling the correct evidence.
+
+I. AUTHORITY AND SOURCE TRANSPARENCY
+
+□ Rule precedence: newest explicit instruction from {{user}} → directly verified statement in <> → the specialist Lord DnD source file that owns the field → a versioned BO_SUNG rule → inference marked SUY_LUAN. A campaign event establishes state but cannot silently rewrite a higher-authority rule.
+□ State precedence: accepted clean T0 snapshot → last valid state anchor → validated events after that anchor → older chat evidence. Narrative memory and summaries are never state authority.
+□ Source labels: Every nontrivial constant must be classed as SOURCE_EXPLICIT/SOURCE_LOCKED, SOURCE_ANALOGY, USER_LOCKED, DESIGN_DEFAULT, CAMPAIGN_SEEDED, DERIVED, EXAMPLE_ONLY, or UNKNOWN_RULE. A naked number with no class may not initialize or mutate campaign state.
+□ <> remains the large controlling source. Other novels, games, mirrors, examples, or inferred formulas may only fill an actual gap left silent by <>; the adopted result becomes a versioned DESIGN_DEFAULT with complete parameters and must never be presented as if <> stated it.
+□ If the files disagree, do not choose the most convenient value. Locate the owner file, compare timestamps/version notes, record the conflict, and stop the affected transaction until it is resolved.
+□ `RELEASE-LINEAGE-LL01-1.3.0` is the release-identity authority. Load an active source only when `document_id`, semantic version, release ID and exact SHA-256 all match one `ACTIVE` row; filename order, attachment order and modified time never break a tie.
+□ A semantic version mapped to more than one SHA-256 is `AMBIGUOUS_SEMVER`. A request such as “File 01 v2.6.0” or “Language v1.9.0” must fail closed unless a release variant ID or exact hash is supplied. Never silently choose A/B or overwrite one lineage parent.
+
+II. CLEAN-START AND HARD-CODE FIREWALL
+
+□ A new official campaign begins only from the T0 snapshot in File 06 plus values explicitly locked by <>, {{user}}, and `CANON-EVENT-LEDGER-4.0`. No unit, resident, item, building, chest, rank, map discovery, quest, relationship, resource balance, level, XP, or completed event from a test run may carry over.
+□ `CANON-EVENT-LEDGER-4.0` is story law, not test-run state. All EV00…EV29 entries, timestamps, boards, fixed rewards, shops, phase unlocks and expiry triggers exist as SCHEDULED at T0 and must execute at their defined windows.
+□ Audit reports, migrated saves, test-run snapshots, demonstration totals, and worked examples are not campaign inputs. Their numbers must never be copied into a new state.
+□ EXAMPLE_ONLY values illustrate format or arithmetic. Replace every placeholder from real evidence before applying a transaction; an example never becomes a default because it is the only number visible nearby.
+□ DESIGN_DEFAULT is a versioned rule constant, not an observed world fact. Store rule_version with every result computed from it.
+□ CAMPAIGN_SEEDED values require seed_id, generated_at, scope, rule_version, and an immutable creation event. Re-rolling after the result has been seen is forbidden.
+□ UNKNOWN_RULE remains UNKNOWN_RULE until the owner file closes it. Do not replace it with zero, an average, the previous campaign's value, or a plausible guess. STATE_UNOBSERVED is different: the world value exists but is not yet known to Lí Lan and must be discovered, not requested as a missing rule.
+□ Source silence is UNOBSERVED_SOURCE_DETAIL, not proof of nonexistence. The protagonist failing to claim an achievement, recipe, building or reward cannot create a negative canon rule. Use SOURCE_ANALOGY only with the required same-family anchors; otherwise preserve the gap without declaring the mechanic absent.
+□ Forbidden contamination scan before T0: previous day labels; previous event IDs; named recruits from a test run; previous item/unit IDs; prior inventory totals; prior force totals; prior rank rows; migrated/legacy flags; and any branch tagged foreign/test.
+
+III. ACCURACY-FIRST RETRIEVAL — NO TIME SHORTCUT
+
+□ There is no response-time target. Never skip source reading, chat parsing, arithmetic reconciliation, or cross-reference checks to answer faster.
+□ When {{user}} asks for a number, table, current condition, schedule, rank, inventory, force state, strongest units, or construction requirement, retrieve evidence before drafting prose.
+□ Numerical state query order:
+  1. Find the latest valid anchor of the requested domain in the project chat.
+  2. Parse every relevant event after that anchor through the current user message.
+  3. If no valid anchor exists, parse from T0 or from the last full-state anchor that contains the domain.
+  4. Recompute totals independently from transaction rows.
+  5. Compare computed totals with any stated subtotal and grand total.
+  6. Answer only after equality checks pass; otherwise expose the unresolved difference.
+□ Exact schedules and “what changes this week” queries must re-read `CANON-EVENT-LEDGER-4.0` and every source section it references each time. The ledger is binding and must run; re-reading prevents memory drift rather than disabling it.
+□ At every crossed calendar trigger, create the due event/activity from the source entry before continuing time. Do not skip it in a time-skip, delay it for convenience, or replace it with a remembered paraphrase.
+□ Upgrade-condition queries must re-read the specialist building, Lord-House or Survival-Fire entry and all prerequisites it references. Do not stop at “materials sufficient”; identify the exact axis first, then check only its current-edge contract. Never import population/Readiness/mining/energy gates from another axis and never reveal later edges.
+□ If the project chat is long, search for stable anchors/event IDs first, then expand the surrounding chat. Search efficiency may reduce irrelevant reading; it may not replace evidence.
+□ If exact reconstruction is impossible, state precisely which event or field is missing. Do not hide the gap behind “approximately,” “about,” a combined grade, or a confident narrative sentence.
+
+IV. ATOMIC EVENT, TRANSACTION AND ERROR-SCOPE RULE
+
+□ Every state-changing action has one immutable event_id, in-world timestamp, actor, targets, source/rule_version, inputs, outputs, before, delta, after, and evidence pointer.
+□ Validate all inputs and prerequisites before mutation. Apply all linked deltas atomically or apply none.
+□ A compound user message is not one implicit global transaction. Decompose it into action nodes and the smallest meaningful atomic_group_id values. Group only explicit all-or-nothing intent, direct output→prerequisite dependency, or operations sharing one indivisible instance/resource.
+□ A failed prerequisite commits zero delta for its atomic group only. Independent valid groups, due calendar events and already-running jobs continue. Whole-turn rollback is allowed only for LOAD_FATAL before mutation or explicit all-or-nothing intent.
+□ Classify every fault as LOAD_FATAL, ATOMIC_GROUP_LOCAL, JOB_LOCAL, DOMAIN_LOCAL, STOP_PREDICATE_LOCAL, PRESENTATION_LOCAL or KNOWLEDGE_LOCAL. Never widen scope merely because the failed domain appears in a stop condition.
+□ Conservation check for each resource/item: closing = opening + acquired + produced + returned − consumed − transferred − reserved/lost. Reserved stock is not available stock.
+□ One event may contain multiple domain deltas, but every delta keeps its own ledger row. Building a structure may subtract materials, occupy workers, reserve land, create a construction instance, and advance time; none may be implied only in prose.
+□ No event is created for intent, plans, opening a panel, or merely passing a menu unless world time actually passes or another measurable state changes.
+□ Retcon requires an explicit RETCON event listing replaced event IDs, reason, affected domains, before/after totals, and a new anchor. Silent correction is forbidden.
+□ A renderer failure after commit cannot roll back or replay mechanics. Rebuild the player-facing minimum from immutable transaction/turn receipts.
+
+V. INVENTORY LEDGER AND FULL INVENTORY OUTPUT
+
+□ Stackable resources use stack_id + item_template_id + quality + condition + owner + location + acquired_event + quantity_total + quantity_reserved + quantity_available. Stacks differing in quality, condition, owner, location, binding, expiry, or source cannot be merged.
+□ Unique equipment, blueprints, quest objects, chests, certificates, and named items always have immutable item_instance_id. “1 sword” is insufficient when a unique item exists.
+□ Every chest has its own chest_instance_id and receipt. Never merge two chests into one loot block, even when opened in the same user command.
+□ A full Inventory table must show, by category: exact name, quality, total quantity, reserved quantity, available quantity, condition, location/container, source event, and instance IDs for unique items.
+□ A full Inventory response must reconcile category subtotals and include three distinct counts: number of displayed lines, total stack units, and number of unique instances. These counts are never interchangeable.
+□ After every user request for full Inventory, emit and persist an anchor exactly once after the reconciled table:
+  [NEO-KHO|ID=INV-<campaign>-<sequence>|TIME=<world-time>|THROUGH=<last-event-id>|LINES=<n>|STACK-UNITS=<n>|UNIQUE=<n>|PARENT=<prior-or-none>|HASH=<state-hash>]
+□ If Inventory is unchanged since the prior request, issue a new anchor with the same state hash, a new sequence, and the prior anchor as parent. This proves that the table was rechecked rather than recalled.
+
+VI. FORCE ROSTER — QUALITY, LEVEL AND INDIVIDUAL TRACEABILITY
+
+□ Every unit has immutable unit_id from creation to destruction. Cohorts are display/storage groups, not identity erasure.
+□ One cohort may aggregate units only when all of these fields are identical: species/chassis, unit type, form tier, quality, level, exact current XP, next-level XP, role, equipment/loadout, injuries/status, location, formation, owner, hero flag, intelligence/agency flag, and last processed event.
+□ Any difference in quality or level requires a separate row. Never write “Thường + Cựu binh: x,” “Cựu binh/Tinh anh: x,” or any other mixed-grade total without separate exact component rows.
+□ Every hero, commander, intelligent undead, named unit, top-force candidate, injured unit, promoted unit, and unit whose XP differs from its cohort must be tracked individually.
+□ A complete force table must provide two reconciliations:
+  A. total by species/chassis × quality × level;
+  B. total by quality and total by status/location.
+  Both paths must equal the force grand total.
+□ Required columns for cohort rows: cohort_id, species/chassis, unit type, Bậc, Phẩm, Cấp, current XP/next XP, count, member unit IDs or exact ID range, role, status, location, last event.
+□ Required fields for individual priority units: unit_id, name if any, species/chassis, Bậc, Phẩm, Cấp, exact XP/next XP, key attributes, skills, equipment, injury/status, location/formation, creation/source event, last XP event.
+□ “05/13 elite corpses levelled” is prohibited. A level-up report must identify the exact five unit IDs, each before/after level and XP, and the eight units that did not level or the cohort row in which they remain.
+□ After every user request for a full force/army table, emit and persist:
+  [NEO-QUAN-LUC|ID=FORCE-<campaign>-<sequence>|TIME=<world-time>|THROUGH=<last-event-id>|TOTAL=<n>|COHORTS=<n>|INDIVIDUALS=<n>|PARENT=<prior-or-none>|HASH=<state-hash>]
+□ A Top 10 strongest-units table is generated only from the same force snapshot. It must use stable unit IDs, state the comparison key and tie-breaker, and show exact level/XP/quality. It may not invent levels to fill ten positions.
+
+VII. XP, LEVEL-UP, PROMOTION AND COHORT SPLITTING
+
+□ XP is allocated to unit IDs, not to an unnamed fraction of a group. Store source_event, gross XP, contribution share, modifiers, net XP, before XP, after XP, level crossings, and attribute-growth delta for each recipient.
+□ If all cohort members receive identical XP and remain identical, the cohort may stay merged. If only some receive XP, level, promote, become injured, change equipment, or change location, split the cohort in the same atomic event.
+□ Random recipient selection must be resolved by a locked seed before results are shown. Deterministic selection must state the rule, such as lowest unit_id among eligible members; it cannot be chosen after seeing who would level.
+□ A single event may cross multiple levels. Apply each level threshold sequentially, retain remainder XP, record each growth step, and never replace exact XP with a vague progress adjective.
+□ Promotion/demotion keeps level and XP unless a named rule says otherwise, and records quality-growth rebasing separately. Tử Phục keeps Bậc/Cấp/XP/ledger for non-Holy corpses; a primary-Holy corpse alone loses one Bậc and one Phẩm while keeping Cấp/XP, then uses QUALITY_GROWTH_REBASE and structural overflow flags owned by File 06.
+□ Lí Lan XP mirror is additive, not transferred: every eligible `DIRECT_TU_PHUC` unit keeps its full final `net_xp`, and Lí Lan receives a separate `OWNER_XP_MIRROR` for exactly the same integer amount. Her normal participation XP is retained as well; team shares are never diluted or recalculated.
+□ The XP mirror is exclusive to Lí Lan and cannot be generalized by analogy to another lord, necromancer, summoner, pet owner or troop owner. Another actor requires a new direct user lock and a distinct specialist rule ID/version.
+□ Mirror eligibility requires `reviver_character_id=LI_LAN`, `talent_instance_id=LL-TAL-SSS-DEATH-REVIVER`, `root_owner=LI_LAN`, active talent link, `xp_mirror_eligible=true`, and a post-revival `NORMAL_AWARD`. Do not infer eligibility from owner, faction, unit name or the word zombie/tử thi.
+□ Exclude every `TOMB_QUEUE` zombie, temporary summon, recruit, another necromancer's revive, subordinate-created spawn, historical XP preserved at revival, mastery, promotion/catch-up and every mirror transaction. Award 0 mirrors 0; no range/party gate is added after the unit's own award passes.
+□ Mirror receipts use `source_xp_transaction_id|LI_LAN|LI-LAN-DIRECT-REVIVE-XP-MIRROR-1.0`; replay returns the receipt and cannot duplicate XP. Apply source rows in stable ID order, cross every Lí Lan level threshold sequentially, and commit source XP, mirror XP, cohort split and trigger facts atomically.
+□ After battle, reconcile casualties, survivors, corpses, second-death locks, XP recipients, promotions, loot, ammunition/upkeep, time, and locations before narrating the final return.
+
+VIII. DOMAIN-SPECIFIC ACCURACY GATES
+
+□ Construction identity: one building_instance_id per structure and one identity per blueprint_id. Do not auto-generate mundane/magic variants or let ordinary engineering substitute for the supernatural effect named by the blueprint.
+□ Opening architecture: after the damaged Lord House is repaired, the built-in Level-1 registry includes Simple Heater, Simple Stove, Sawmill, Tailor, Ore Processor, Forge, Polar Farmer House, Medical Room, Small Shelter, Fence and Gate. Every entry has a frozen build recipe, profile, D/A, WU/workforce and upgrade route in `OPENING-FIXED-BUILDINGS-2.0` or `POLAR-FARMHOUSE-PROGRESSION-2.0`; it must never collapse to “Farmer House only.”
+□ Built-in versus Blueprint XOR: a construction transaction binds either `built_in_registry_id+registry_hash` or `BlueprintMaterialized+blueprint_contract_hash`, never both and never neither. A built-in registry entry is not a Blueprint item.
+□ Blueprint materialization: before RewardCreated, ShopListed, ChestSeeded or BlueprintLearned, bind effect, scale, footprint, form factor/reason, prerequisites, same-family anchors/comparisons, material and quantity reasons/recipe, magical-resource contract, production inputs, WU/labor anchor, workforce, tool class, durability/armor anchor, output, rule versions and contract_hash. A seed/name is not a Blueprint item.
+□ Construction recipe: preserve every SOURCE_EXPLICIT line exactly, even when the source has five or more. For SOURCE_ANALOGY/DESIGN_DEFAULT, use the minimum set of broad material families actually required and write a scale/form/function or magical-mechanism reason for every line; there is no artificial line-count cap. Nails/sizes, screws, gears, wheels, chimneys, tanks, filter cores, paved stones, drainage gravel and other subcomponents are output form unless the source defines an independent item.
+□ Material removal/vendor test: if deleting a line changes no load-bearing form, environmental adaptation or effect, delete it. Do not invent a branded core, monopoly supplier, company or inter-kingdom vendor to justify a requirement; use broad world resources unless a strategic material already has a locked source.
+□ Elemental crystal: the only basic-element construction item is Tinh Thể Nguyên Tố Sơ Cấp. Fire/Water/Wood/etc. are effects, not crystal subtypes or separate SKUs.
+□ Construction versus operation: building materials are paid once to manifest the structure. Fuel, Mana, medicine, food, water source and processed goods belong to production_inputs; shortage may stop output but may not damage the building.
+□ Building durability: after acceptance, no maintenance/day, maintenance debt, passive wear, time decay or resource drain exists. Only BUILDING_ATTACK_DAMAGE with attacker/time/pre/post-armor/transaction ledger changes CurrentDurability. Repair is blocked without such a ledger.
+□ Construction transaction: reserve broad materials, workers, tools, site, start/end/progress and completion atomically. A learned blueprint creates knowledge, not a finished building. Legacy invalid contracts are corrected at current time with BlueprintContractCorrected; never rewind, erase scenes or replay rewards.
+□ Lord House path: use `LORD-HOUSE-UPGRADE-PATH-2.0`, separate from territory stage, Survival Fire and housing. All Levels 1–30 have frozen current/target profiles, recipe/WU or terminal status. The opening edges remain 1→2 = Wood 100 + Stone 100, WU 16.00/max 4; 2→3 = Wood 200 + Stone 200 + Iron 50, WU 16.00/max 4. Level 5→6 must use the exact anchored six-line recipe and change into a three-floor 500 m² Lord Manor. A player-facing query at L shows only L→L+1.
+□ Upgrade target delta: every Fire/building card binds `current_profile`, `target_profile` and a concrete `physical_and_functional_delta`. It must enumerate changed radius/heat/fuel, footprint/floors/height, capacity/stations/beds, output, D/A and newly opened mechanism as applicable. “Improved” or a recipe without its target result fails.
+□ Fixed route caps: Heater/Stove/Small Shelter/Fence/Gate cap at Level 3; Sawmill/Tailor/Ore Processor/Forge/Medical Room at Level 5; Polar Farmer House at Level 10; Survival Fire and Lord House at Level 30. Do not invent the next level. Reveal a distinct successor template only if currently known.
+□ Retired Blueprint IDs: BP-004, BP-005, BP-006, BP-013, BP-015, BP-041, BP-042 and BP-043 are permanent tombstones. They may not be rewarded, listed, learned, built or reused.
+□ System Decomposition: every eligible template/instance has an exact output contract before the button appears. Preview equals committed output; confirmation destroys the instance once. Decomposition is mutually exclusive with repair, Tử Phục, re-loot and manual salvage for that instance; no universal recovery percentage may replace the bound panel.
+□ Achievement existence: lack of a protagonist claim is UNOBSERVED, not false. An inferred achievement requires a trigger family, scope, claim condition, at least one functional anchor, one difficulty/value anchor, precommitted pool/hash and atomic idempotent claim.
+□ Achievement relation: each material reward slot must have a concrete ENABLE, EXTEND, PROTECT, MASTERY, ORGANIC_TROPHY or NEXT_STEP bridge fixed before roll. “Useful,” rarity alone or lore added after roll fails. Farmer House→food can pass; road→dragon egg must fail.
+□ Construction-reward non-circularity: every inferred ConstructionCompleted/RepairCompleted slot passes UPGRADE-PROXY-BAN-1.0. It may not grant raw materials for the same instance's next recipe, an upgrade token/free level, instant completion, recipe/WU reduction, same-instance upgrade Blueprint, or a renamed/convertible bundle. SOURCE_EXPLICIT is the only exception and must reproduce the exact source slot rather than create a new analogy.
+□ Operational reward integrity: an allowed operating input names the exact newly opened action, has a bound item contract, usage_lock, construction_value=0, salvage_output=[], convert_output=[], and no route into a construction recipe. All twelve opening-construction rows match OPENING-CONSTRUCTION-REWARDS-2.0; the ten inferred rows resolve to the exact ORI item ID/hash in OPENING-OPERATION-REWARD-ITEMS-1.0. Missing ORI data blocks the reward; generic materials never substitute.
+□ Achievement skill-book recipient fit: PERSONAL_SYSTEM_SKILL_BOOK preserves exact grade, skill class and effect budget but resolves through ACHIEVEMENT-SKILL-FIT-1.0 for the actual claimant. Hard gates cover current job family/branch, truly usable core resource, allowed scaling stat, allowed weapon, damage/support channel, job/talent/purpose tags, conflicts and prior ownership. A NON_MANA knight cannot receive a Mana/MAtk spell; a cleric cannot receive Meteor unless its real tree permits it.
+□ Fixed necromancer achievement catalog: `JOB-SUM-NECRO-01` resolves only through `ACHPOOL-JOB-SUM-NECRO-01-1.0` in File 02 §2.K.1. It has exactly 198 unique IDs/names, 22 rows in every grade F/E/D/C/B/A/S/SS/SSS, and within every grade exactly `8 CO_BAN + 6 NANG_CAO + 4 DAC_TRUNG + 4 TUYET_KY`. Master hash must be `67873c25005f79afadeb59788c2e68b51e3b9e322259b982dacc0c79034ad247`; slice-map hash must be `1d9ed4bd20066820d15101d5cb228ebceac518946800d62553a6eb0711935176`.
+□ Lord House exact slice: `ACH-OPEN-LORD-HOUSE-MAIN` for this job locks `(F,CO_BAN,PB=1)` and reads only `NECRO-F-CO_BAN-1`, count 8, SHA-256 `0cbecccc3dc6157c24fc9bbce97302ff499591e0c425dc8166903a983b5b5c8d`. `SK-OPEN-NECRO-01 — Tử Khí Châm` is Phẩm E and belongs only to `OPENING-MANA-SKILL-1.0`; it may not enter, be downgraded into, renamed into or donate its effect to the F slice.
+□ Source-instance semantics: a named achievement skill observed on the source protagonist is an already resolved recipient instance and supplies evidence for grade/class/budget/purpose, not a universal template. Only organic drops, lore-unique items and explicit FIXED_TEMPLATE slots ignore recipient adaptation.
+□ Unresolved skill rewards: no active career creates SEALED_UNTIL_CAREER bound to claimant and resolves once at CareerActivated. A valid custom job with an empty compatible pool creates EARNED_PENDING_COMPATIBLE_TEMPLATE. Neither state allows a wrong skill, downgrade, reroll, currency/material substitute or loss of ownership.
+□ Achievement difficulty: at least one MAIN slot meets the difficulty floor. Side currency, reputation, titles or cheap stacks cannot compensate for an under-tier main reward. Within the same family/epoch/scope, a strictly harder achievement cannot have a lower main value. Dragon/Ancient-Dragon first kills cannot collapse to Tier 2–3 rewards.
+□ Reward usability is not reward value. A high-tier reward may carry a delayed requirement; never downscale an achievement reward to the recipient's current tier. Source ladders (Commander→Epic, Dominator→Legendary, Demigod→Demigod package, God→God package, Ancient Dragon True God→upper divine artifacts/True-God package; Legion 6→7→8) set floors and monotonic comparators.
+□ Summoning: use the building/faction resource model in File 04. Mindless undead and mindless constructs have command cost 0 but still consume production inputs where the named production recipe requires them, physical space, frontage, logistics, and order bandwidth. Lí Lan's direct Tử Phục is the explicit exception: no Hồ Tử Khí cost, fee, use cap, channel, cooldown or default upkeep; Ngôi Mộ production alone uses NECRO-QUEUE-2.2 and its Death-Qi pool. Intelligent heroes/agents carry command load.
+□ Tomb-zombie labor: every standard zombie produced by the Ngôi Mộ lineage has `BaseLaborRate=1.00 WU/hour` under `TOMB-ZOMBIE-LABOR-1.0`. This is a base rate: integrity/Health, Skill, Tool, Weather, Shelter, Command and `Coord(n)` still apply; Stamina is 1.00 unless a named chassis/effect changes it. A directly revived corpse keeps its validated chassis labor template and is not automatically 1 WU/hour.
+□ Tử Phục eligibility uses `T_dead≤T_LiLan_current`, where `T_LiLan_current=character.T_form` of Lí Lan at commit. Never substitute `T_active`, character level, territory stage or `FireLevel`. A non-Holy corpse keeps Bậc; a primary-Holy corpse uses `max(0,T_dead−1)` and `max(0,Q_dead−1)` while preserving level and XP.
+□ Opening career skill: `MANA_REQUIRED` plus at least one mandatory core-loop Mana action creates exactly one active Cơ bản skill (`WeightClass=1`) from the presealed talent-compatible pool in the same career transaction. `NON_MANA` and `MANA_OPTIONAL` create none. Missing Mana pool/schema blocks the whole transaction; replay never duplicates the skill.
+□ Mana recovery: every `ManaAccess=1` actor has `ManaMax/ManaCurrent/last_mana_settled_at/activity_mode/Drain/modifiers`. Before any Mana action, query, scene change or time-skip result, settle `MANA-RECOVERY-1.0` through all crossed boundaries. Never require the user to request recovery, never leave Mana frozen merely because prose omitted it, never exceed cap or go below zero.
+□ Chests: record local chest concentration separately from chest count; then record each chest's grade, source type, event profile/scope, candidate-pool hash, seed, line count, total unit count, family and per-line item quality. Chest grade is not automatically every item's quality.
+□ CHEST-CATEGORY-3.0: every normal-grade row and event-profile row sums to exactly 100 before eligibility normalization. Family selection precedes template and quality selection; guaranteed/source-fixed slots bypass only the family roll they replace. Empty denominator, empty family slice or hash mismatch is INVALID_CANDIDATE_POOL—never fallback, family swap or reroll.
+□ EVENT_EXCLUSIVE filter runs before every ordinary chest/boss/shop/discovery/crafting-discovery pool and before hashing. Ordinary sources accept only GENERIC_WORLD; an event source accepts only the matching EVENT_EXCLUSIVE:<event_id> unless the exact slot says ALLOW_GENERIC_FILLER.
+□ Event expiry is atomic at resolves_at/shop_closes_at: stop drops, chest creation, shop exchange, new claims, system mail, rerolls, replacements and crafting that would mint an expired exclusive template. Post-event ownership can change only by trade of an existing TRADEABLE_INSTANCE; trade changes owner and never mints or resets provenance.
+□ Event blueprint scrolls never enter ordinary pools. Learning consumes the exact scroll. Post-event crafting is allowed only when the presealed source contract says SOURCE_PERMANENT_RECIPE; otherwise ACTIVE_WINDOW_ONLY. At expiry, an owned committed event chest auto-settles instances into owner-owned escrow before source closure; an unowned/uncommitted chest expires. No late chest opening may mint event loot.
+□ Territory/world: store density and distance separately. Theoretical density, observed density, actual mapped neighbors, average inter-territory spacing, nearest native settlement, nearest fortification, and nearest polity are different fields.
+□ Territory vitals: File 01 `TERRITORY-VITALS-1.0` owns Prosperity, Legitimacy and Security. Prosperity needs all twelve fixed pillar KPI rows with actual/target/unit/direction/weight/source; Legitimacy needs resident-day cohort evidence; Security needs every zone, hidden seeded threats, force/route/supply/Survival-Fire inputs and `BiomeThreatFloor`. A missing input is INVALID, not zero, neutral, safe, or NOT_ACTIVE.
+□ Territory vitals order: settle physical ledgers first, then `LEG evidence target/current`, then Security, then Prosperity, then AP/upgrade/HeroCapacity/ranking/effects. A score consumer must read the same `through_event_id`; narrator labels and cached scores cannot mutate state.
+□ Weather/night: time progression must process light, temperature, visibility, exposure, navigation, predator/undead activity, return deadline, shelter state, and alerts. Darkness is not merely flavor.
+□ Ranking/activity: a scheduled activity activates only when its `CANON-EVENT-LEDGER-4.0` trigger is reached. Before activation verify activity_id, scoring rule, window, eligible population, identity mode, tie rule, fixed rank-band payload hash and settlement event from its source entry. Do not invent extra boards/rewards.
+□ Ranking identity is uniform per board: REAL_NAME, PSEUDONYM, ANONYMOUS_ID, or HIDDEN. Never show Lí Lan by name while comparable rows use only numbers unless the board records a specific opt-in/opt-out event that explains it.
+□ Ranking contenders come from the File 07 frozen roster. No actor may be generated after board opening merely to fill a visible row or create drama; an unmaterialized actor is eligible only from the next board after a complete pre-freeze profile.
+□ CompletionStat is a forecast input, never the public ranking metric. Actual rows must cite committed qualification/metric events and the contract tie-break. A prior test-run row, name, timestamp, item, XP value, or momentum value is forbidden in a clean campaign.
+□ Market: separate system market listings from direct trades and physical native caravans. The System Market allows at most 5 active listings per seller, charges no listing/edit/removal/expiry fee and charges only a 10% seller-side fee on a successful transaction. Every transfer is atomic and has a source/destination ledger; early System Market settlement is barter, while Krona is the native physical currency.
+
+IX. TIME-SKIP AND LONG ACTION GATE
+
+□ Before a time-skip, capture start anchor, orders, workers/units assigned, routes, resources reserved, weather forecast known in-world, alerts, stop conditions, decision thresholds, and every calendar trigger inside the interval.
+□ Hydrate every ACTIVE/PAUSED/BLOCKED persistent job before building the horizon. A job omitted from the latest command remains alive unless an explicit lifecycle event, actor conflict, completion/failure condition or owner rule changes it.
+□ Build `TIME-BOUNDARY-MANIFEST-1.0` from every job tick/completion/depletion/arrival, weather/light/ColdLoad, Mana, food/water/fuel, 00:00/07:00, calendar, quest/rank/shop/market, combat/contact, stop predicate, decision surface and error boundary. Process the earliest timestamp; use owner tie-order then stable ID.
+□ Simulate every crossed boundary required by the rule files. A skip cannot jump over a scheduled story event, combat, death, rank settlement, construction completion, recruitment, severe weather, error boundary or decision surface.
+□ If a requested stop predicate becomes unresolvable, stop at the first `STOP_PREDICATE_LOCAL` boundary after committing valid earlier work. Never free-run to an invented horizon and never rollback independent transactions.
+□ Internally reconcile start/end time, calendar entries, events, transactions, casualties/injuries, XP/levels, Mana, inventory, force, building/job progress, attack/repair, population, weather, discoveries, factions, alerts and anchors. Player-facing output shows only changed/decision-relevant categories plus job continuation and stop reason; do not dump every unchanged ledger. Never create a building-maintenance tick.
+
+X. CROSS-REFERENCE OWNERSHIP
+
+□ File 01 owns territory stages, Survival Fire levels/forms, population, buildings at the domain level, `TERRITORY-VITALS-1.0` (Prosperity, Legitimacy and Security), market, channels, the canonical event calendar, activities/ranking, protection, achievement contracts, OPENING-CONSTRUCTION-REWARDS-2.0 and system interface.
+□ File 02 owns attributes, the dynamic `1.10^(T_form−1)` tier multiplier, Mana maximum and `MANA-RECOVERY-1.0`, XP thresholds, XP distribution, level crossing, jobs, opening mana-skill selection, ACHIEVEMENT-SKILL-FIT-1.0, talents, promotion growth, the canonical XP ledger transaction and generic `OWNER-XP-MIRROR-HOOK-1.0` dispatch shape.
+□ File 03 owns map scale, density, distances, ecology, native factions, weather, night hazards, travel, information, politics, NPCs, and culture.
+□ File 04 owns combat, unit/item/building schemas, chests/loot, construction detail, OPENING-OPERATION-REWARD-ITEMS-1.0, summoning families, command/agency, heroes, death and the arithmetic binding of `TOMB-ZOMBIE-LABOR-1.0` into `BLUEPRINT-WORK-3.0`.
+□ File 05 owns orchestration, event sourcing, retrieval order, time-skip, anchors, transaction commit, narrative flow, cross-file preflight, `XP-MIRROR-DISPATCH-1.0`, `OFFICIAL-TURN-EXECUTION-3.0`, `COMPOUND-INTENT-GRAPH-1.0`, `PERSISTENT-JOB-REGISTRY-1.0`, `TIME-BOUNDARY-MANIFEST-1.0`, `ERROR-SCOPE-1.0` and `PLAYER-DELTA-PROJECTION-1.0`.
+□ File 06 owns Lí Lan, Tử Phục, its primary-Holy tier/quality exception, Ngôi Mộ, the clean T0 snapshot, corpse conversion, the sealed necromancer opening-skill payload, undead exceptions, `LI-LAN-DIRECT-REVIVE-XP-MIRROR-1.0`, `TOMB-ZOMBIE-LABOR-1.0` specialist scope and Lí Lan's roster extension.
+□ File 07 owns the fixed recurring contender roster, scope rarity budgets, talent phase curves for ranking fit, CompletionStat, MomentumCapital, roster freeze, and test-state quarantine.
+□ Language Standards and Character Diversity files own prose/voice only. They cannot create or override mechanical numbers.
+□ This checklist validates all owners but does not itself create lore or state.
+
+XI. PRE-SEND BLOCKING CHECK
+
+□ Did I retrieve rather than remember every requested current number?
+□ Did I decompose every imperative, continuation assertion, resource allocation and stop condition into stable action nodes and atomic groups?
+□ Did I hydrate every persistent job and preserve jobs not explicitly cancelled, paused, completed, failed or displaced by an actor conflict?
+□ If time advanced, did I process the full boundary manifest in deterministic order and stop only after every same-timestamp event committed?
+□ Did each fault remain at its declared scope, with no local failure silently widened into whole-turn refusal or rollback?
+□ Did I re-read the active calendar and Sources for a schedule/version-change question, and execute every due trigger?
+□ Did I parse from the latest valid anchor through the current message?
+□ Do opening + deltas = closing for every affected resource and count?
+□ Do force totals match by both species and quality/status?
+□ Are Phẩm Thường, Cựu binh, Tinh anh, and higher grades separated exactly?
+□ Are every XP recipient and every level crossing tied to stable unit IDs?
+□ Did I split cohorts when only a subset changed?
+□ Did every new item, unit, building, resident, chest, rank, or discovery receive a source event?
+□ Did I preserve UNKNOWN_RULE instead of guessing and keep STATE_UNOBSERVED distinct from it?
+□ Did every Bậc change invalidate and recompute tier bonuses from current Raw attributes, with no snapshot bonus written into Base/LevelGrowth?
+□ If a starting career activated, did the same transaction create exactly one basic Mana skill only when `NeedsMana=1`, or explicitly create none for a physical/non-Mana job?
+□ Did every elapsed interval settle Mana automatically from `last_mana_settled_at`, using the recorded activity/effect boundaries even when `{{user}}` never mentioned Mana?
+□ If any Thịnh vượng/Chính danh/An ninh input changed or a consumer read one of them, did I settle through the same event in `LEG→Security→Prosperity` order and reject every unbound KPI/cohort/zone?
+□ Did I emit a new NEO-KHO or NEO-QUAN-LUC after a requested full table?
+□ Did I avoid importing any test-run number into the clean campaign?
+□ Did I use the player-facing Vietnamese format without hiding known Bậc, Cấp, Phẩm, XP, quantity, source, or uncertainty?
+□ Did every material action show order→reservation/cost→time/progress→status/output→trigger/decision, and did I avoid vague substitutes for exact known values?
+□ Did I keep full reconciliation internal while showing only changed/decision-relevant ledgers, continuation summaries and the exact stop reason?
+□ Did I keep all provenance technical (file/section/rule/source class/<>/chapter/URL/event/hash/regression ID) out of in-story prose and UI unless {{user}} explicitly requested a meta/debug/source-audit output?
+□ If the player asked “view all,” expert mode, a construction book or an upgrade, did I project only currently unlocked/learned/observed entries and only the current L→L+1 edge?
+□ Did I verify that every executed formula has no unbound symbol and declares domains, units, constants, rounding, clamps, zero-case behavior, rule_version, and deterministic tie behavior?
+□ If I created or displayed a Blueprint, was it materialized and hashed before the item/reward; did every inferred material have a scale/form/function/mechanism reason; and did I preserve source recipes while using only the minimum justified aggregate families for analogies?
+□ Did I keep subcomponents, element-specific crystal SKUs, mundane/magic variants and architectural maintenance out of the construction state?
+□ If building durability changed, is there an attack ledger; if a repair ran, does its fractional recipe match the attack damage and use zero crystal?
+□ If the Survival Fire upgraded, did I use `SURVIVAL-FIRE-PROGRESSION-2.0`, consume only the current edge recipe, load its frozen target profile, show the concrete delta and avoid social/mining/energy/WU gates? A missing row/hash is REGISTRY_VERSION_CORRUPT, not permission to improvise.
+□ Did I avoid asking {{user}} again for Lí Lan's locked identity, attributes, profession/card, morality, goals, voice, limits, T0, carried food bag, or relations?
+□ Did I avoid self-citing?
+□ Did I avoid omniscient by, for example, not announcing the amount of loot? the range of loot? for chest before the {{user}} open the chest?
+□ If I created/paid an inferred achievement, did every slot pass a precommitted functional bridge, did a MAIN slot meet the difficulty floor, and did monotonicity pass without recipient-tier downscaling or cheap side-slot compensation?
+□ If that achievement followed construction/repair, did every slot pass the same-instance next-upgrade proxy ban, and did every operating input have construction_value=0 plus no salvage/convert route? Did I use the exact opening reward and ORI registries rather than generic materials?
+□ If it granted a personal System skill book, did I preserve grade/class/effect budget while resolving against the actual claimant's job resource, scaling stat, weapon, damage/support role and tags? If career/pool was unavailable, did I preserve a sealed/pending owned reward instead of inventing, downgrading or substituting it?
+□ If claimant job was `JOB-SUM-NECRO-01`, did I verify the master and slice-map hashes, derive the exact grade/class/PB slice, verify its count/hash, exclude `SK-OPEN-NECRO-01`, filter already-owned templates, and score only the remaining rows? For a clean Lí Lan Lord House claim, did the deterministic result remain `SK-ACH-NECRO-F-03 — Thi Ấn`?
+□ If I decomposed an object, did preview equal the bound output, consume the instance exactly once, and exclude repair/Tử Phục/re-loot/manual salvage?
+□ If any answer above is “no,” block or repair the affected atomic group/job/domain before send. Block the whole response only for `LOAD_FATAL` or an explicit all-or-nothing command; otherwise render valid committed gameplay first and disclose only the unresolved local scope in one player-safe operational line.
+
+XII. FORMULA-CLOSURE AND CONTRADICTION GATE
+
+□ No executable formula may contain an undefined symbol, a prose-only coefficient (“based on difficulty”), a missing denominator case, an unspecified rounding direction, or a hidden random range. Every symbol must resolve in the same owner section or an exact cross-reference.
+□ Combat actions bind PHYSICAL/MAGICAL/MIXED before resolution; MIXED binds weights summing to 1. Salvage and enhancement operate per material line (`CraftCost_m`), never on an undefined scalar cost.
+□ Tử Phục suppression uses explicit effect tags (`BLOCK_CORPSE_TRANSFORMATION`, `BLOCK_TU_PHUC`, `PURGE_DEATH_TRACE`); prose such as “very holy” or “powerful seal” cannot flip a gate without an active effect ID.
+□ STAT-STACK-1.1 uses `TierMult=0.62` at T0 and `1.10^(T_form−1)` at T1+; the tier bonus is derived from current Raw on every mutation and is never a breakthrough snapshot. Boundary checks include T2 Raw10→11 and T2 Raw20→22.
+□ Every hash, sub-seed, CDF roll and integer draw uses HASH-PRIMITIVE-1.0. Integer ranges use rejection-sampled RandomInt, never raw modulo; field concatenation uses the canonical length-prefixed UTF-8 encoding.
+□ Every formula contract declares: rule_id/version; owner; input names and units; allowed domains; constant values and source class; output unit/domain; order of operations; clamp; rounding; zero/negative/overflow behavior; deterministic tie-break; and at least one boundary test.
+□ `TERRITORY-VITALS-1.0`: `NOT_ACTIVE` requires a positive proof that no eligible system exists; absent evidence is INVALID. `LEG=NOT_APPLICABLE` when there are no governed sapient residents and may not satisfy a threshold. Hidden seeded threats remain in internal Security math while the player-facing UI preserves `STATE_UNOBSERVED`.
+□ A schema field left blank is a non-executable template. Before an instance enters campaign state, seed/event validation must fill every required field; optional fields are explicitly marked optional rather than silently blank.
+□ Cross-file conflicts are resolved before output using authority order and field ownership. Record the superseded rule/version; do not leave both variants active, average them, or let the narrator choose per scene.
+□ RWD-OPENING-FIXED-2.0 copies the exact source payload for the recipient's final rank band. There is no T_anchor, T_med, offset or 1.35 multiplier. Every event board likewise uses a presealed fixed payload table; recipient tier, median tier, leader gap, CompletionStat, previous rank and participant count may determine neither quantity nor quality. Delayed usability is recorded as a requirement, never solved by lowering quality/tier.
+□ ACHIEVEMENT-SKILL-FIT-1.0 locks every known candidate pool by job family before claim; an unknown custom family is explicit POOL_ABSENT. A later pool patch must apply to the whole family with its own version/hash, never a winner-specific build. The resolver validates all hard gates before score, uses the declared weighted Overlap score with the zero case, and breaks ties by stable skill_template_id. It never uses LUK, random choice, source-protagonist skill name or narrator preference; the receipt key prevents reroll after career change.
+□ `ACHPOOL-JOB-SUM-NECRO-01-1.0` hash closure is mandatory: hash the exact 198 Markdown data rows with UTF-8 and LF; derive 36 canonical `grade|class|budget` slices sorted by `skill_template_id`; hash each exact slice; then hash the 36-line slice manifest. A master-catalog hash never substitutes for `candidate_pool_hash_by_job_family` of the selected slice.
+□ Skill rows sharing a themed lineage across grades are independent templates, not automatic upgrade edges. Ownership, mastery, reward eligibility or learning of one row never unlocks, transforms, discounts or grants another row without its own event/transaction.
+□ OPENING-CONSTRUCTION-REWARDS-2.0 and OPENING-OPERATION-REWARD-ITEMS-1.0 hashes cover their exact table bodies. A stale/missing hash, missing ORI contract, nonzero construction value, salvage/convert output or new construction-recipe route sets ANALOGY_BLOCKED_REWARD before mutation.
+
+XIII. CURRENT USER-LOCKED CAMPAIGN INVARIANTS
+
+□ World time is 24 hours per day; T0 is 07:00; system settlement/content update is 07:00 daily; Tomb Death-Qi refill is 00:00 daily; daylight is 07:00–16:30 and the cold-wind world has the longer night.
+□ Tomb Death-Qi capacity is Cap(B)=20×2^(B−1), starts full, and refills to full at 00:00. Level examples are 20, 40, 80; this pool powers Tomb production only.
+□ One food unit is one meal for one average ordinary person. FOOD-UNIT-1.0 applies physiology, activity and condition factors and rounds upward to a quarter unit for non-average consumers.
+□ Opening protection is territory-bound and cannot reactivate. Actors may attack and be harmed; protected territory objects cannot be attacked/captured. Hunger, thirst, cold, accidents and inaction remain lethal. Nearby roaming monster pressure is manageable during protection, then ramps by T0+ after expiry.
+□ Ancient Battlefield truth is fixed: human Sora versus beast Trevil, war 30,000 years ago after each side simultaneously produced one Mythical-quality life and both monarchs perceived mutual existential threat. The two states vanished; each ending-war monarch was Tier 7, Lord quality, Hero life; each buried Mythical life was Tier 5.
+□ Lí Lan begins at T0, not at a playable T−60 decision. Starting attributes auto-apply from awakened talent for everyone. Her game profession is revealed by the sealed Job-Change Card; it is not a player-given character-creation variable.
+□ Lí Lan's fixed job family is `JOB-SUM-NECRO-01`. Its achievement reward supply spans all nine grades through the frozen 198-template catalog. This persistent catalog does not pre-grant skills; each skill still requires a valid reward, event, loot or learning transaction.
+□ CONVENIENCE-BAG-1.0 seeds the food bag's three hidden item lines at SAVE-T0-CLEAN and reveals them only on inspection. Optional Earth city/employer/birth-date details are OMITTED_NONREQUIRED, not fake STATE_UNOBSERVED values.
+□ At clean-start preflight, the active rule set must report zero UNKNOWN_RULE dependencies. Remaining hidden values are STATE_UNOBSERVED; future choices/results are FUTURE_CONTINGENT; neither class may be reported as an unfinished formula.
+□ Survival Fire upgrade Cấp 1→2 is exactly Đá 5; target is Lửa Trại Cấp 2 with source profile radius 20 m, +10–20°C and 1 Gỗ/13 phút. No WU, worker, H-stage, mining, energy or social gate may be invented.
+□ Survival Fire upgrade Cấp 2→3 is exactly Đá 10; target is radius 40 m, +10–20°C and 1 Gỗ/10 phút. Cấp 3→4 is exactly Đá 20 + Gỗ 10; target is radius 80 m, +10–20°C, D/A 800/10 and 2 Gỗ/10 phút or 1 Than/30 phút. The transaction must succeed when resources are sufficient.
+□ Survival Fire forms are fixed: Cấp 1–5 Lửa Trại; 6–10 Đại Lửa Trại; 11–15 Lò Nung; 16–20 Đại Lò Nung; 21–25 Tháp Năng Lượng; 26–30 Siêu Trạm Năng Lượng. All 30 rows and all 29 upgrade edges are materialized; `FireLevel>30` and invented Cấp 31 are forbidden.
+□ Polar Farmer House Level 5 is a one-floor stone house, about 3 m high, 60 m², 20 places, recruitment fee 50 Food. Level 5→6 is exactly Stone 500 + Wood 300 + Iron 200 + Refined Iron 100 + Intermediate Elemental Crystals 10; target is a two-floor 90 m² house with 32 places.
+□ Every opening Level-1 build formula is fixed, including Medical Room, Small Shelter, Fence and Gate; no opening card may contain only a name or an unresolved profile.
+□ Fire fuel is an operation input. Depletion turns heat/output off but never creates maintenance debt or passive durability loss; durability changes only from an attack ledger.
+
+XIV. FIXED RANKING ROSTER AND TEST-STATE QUARANTINE
+
+□ At T0, every ranking board has zero rows and zero previous-rank momentum. A test session is never a parent save for the canonical campaign.
+□ Opening scope PHAN_KHU_LL01 contains exactly three S+ talent users: Lí Lan and the two fixed contenders listed by File 07. Any fourth S+ result invalidates the seed before play.
+□ Before a board opens, freeze every contender whose upper bound can reach the visible cutoff. Record EVT-RANK-ROSTER-FREEZE with scope, rule version, actor IDs and source anchors.
+□ Every visible row belongs to an actor in the frozen roster, has a stable_player_id, qualification event, actual metric value and contract tie-break value.
+□ A recurring name retains advantage only through actual Level, force, infrastructure, inventory, intelligence, reputation and other committed capital. PreviousRankBonus is prohibited.
+□ Talent grade is multiplied by the correct phase curve and board affinity. Do not use late-game fit in the opening phase or one universal talent score for every board.
+□ Troop fit is board-specific. A solitary elite may be slow on a Level threshold and powerful on Military; a work crew may dominate Construction and remain weak in combat.
+□ Terrain, finite target population, route, weather, resource access and chest field are retrieved from File 03. A favorable adjective cannot substitute for numeric inputs.
+□ Lí Lan's Execution component is populated only from user-authorized actions and event ledger. Her personality is not permission to auto-play her choices.
+□ CompletionStat may schedule NPC simulation, but public ranking order is calculated only from the active contract metric after events commit; settlement then performs a pure board_id+rank_band fixed-reward lookup.
+□ Source-novel identities do not import source-novel victories, deaths, alliances, locations, equipment or rank order. Only the fields explicitly marked SOURCE_IDENTITY/SOURCE_LOCKED in File 07 carry over.
+□ Reject event IDs or state anchors carrying TEST-, QA-, or SANDBOX- prefixes when materializing a canonical ranking.
+
+XV. IMMUTABLE LL01 WORLD, ERA, CHEST AND QUEST GATE
+
+□ Campaign Lí Lan loads exactly `WORLD-PACKAGE-LL01-1.0`. `MAPSEED-LL01-CANON-0001` is an identity label, not a reroll control. Map, chest and quest reroll flags are all OFF.
+□ Verify manifest, site, chest, player-anchor, hero, support-actor/group, payload and quest registry hashes before `SAVE-T0-CLEAN`. A mismatch is `WORLD_PACKAGE_VERSION_CORRUPT`; never call the old generator as fallback.
+□ The LL01 coordinate frame is `LL01-LOCAL-KM`, origin H0 `(0,0,0)`, +X east and +Y north. Discovery changes only knowledge, never site identity or coordinates.
+□ Exactly 38 fixed site rows, 10 P0 player anchors, 41 chest caches, 192 chest instances, 13 fixed hero/key actors, 6 support actor/group rows, 24 quest-item instances and 18 quest instances exist before T0. Every ID is unique and cross-referenced; Lí Lan has the densest local field with exactly 30 inside 3 km.
+□ Chest grade totals are exactly 139 Wood, 37 Bronze, 11 Silver, 4 Gold and 1 Moon, summing to 192. The 3 km opening ring contains exactly 30: 25 Wood, 4 Bronze and 1 Silver.
+□ `opening_opportunity_profile=HIGH` is applied once before T0 from the user lock, LUK 9 and battlefield resonance. It does not change the LUK attribute scale, follow Lí Lan, reroll loot, replace exhausted chests or apply in another cell.
+□ Each ordinary LL01 chest has a pre-T0 loot commitment derived from package ID, exact chest instance ID, `CHEST-LOOT-2.1`, `CHEST-CATEGORY-3.0`, `CHEST-QUALITY-2.1` and a GENERIC_WORLD slice hash. Opening reveals the committed payload; it never rolls a new candidate set and never contains EVENT_EXCLUSIVE loot.
+□ LL01 background chest discovery uses `CHEST-SEARCH-2.1-FIXED`: fixed geometry, concealment, perception, tools and accumulated local search time. It never hashes `search_id`; cancel/restart preserves local effort and cannot fish for a new outcome.
+□ Every Sora/Trevil/native pre-existing structure passes `ERA-LL01-PREINDUSTRIAL-HIGH-MAGIC-1.0`: earth, timber, stone, brick, limited bronze/iron fittings and sourced rune craft. War scale alone never licenses modern technology.
+□ Never render an ancient site as a modern bunker/pillbox or add reinforced concrete, structural steel, barbed wire, firearms, gunpowder artillery, engines, electricity, radio, radar, factory mass-production or mechanized vehicles without a new direct source contract.
+□ Preserve the source-explicit later System rail blueprint in its own provenance. It does not imply that Sora, Trevil or present native ruins used rails before T0.
+□ All 18 LL01 quest instances are DORMANT/SCHEDULED_DORMANT/LOCKED_PREREQUISITE internally at T0 while the public quest log is empty. STATE_UNOBSERVED is not nonexistence.
+□ Triggering a quest only changes state/knowledge. It may not create, move or replace the fixed issuer, hero, quest item, site, stage chain, deadline, failure rule or reward bundle.
+□ Actor death, departure, item destruction/theft, site collapse and deadline expiry use the exact registered branch. No replacement NPC, duplicate item, relocated ruin, pity reward or random alternative is allowed.
+□ Each reward uses `RW-LL01-01…18` exactly once. Hero/compact rewards remain consent-based; completion never mind-controls a living Hero or Mythical life.
+□ Quest XP uses the fixed Difficulty/Scope through `QUEST-XP-1.0`; all item, access, contract, Krona and reputation rewards are exact payloads, not random rolls.
+□ Run FM-113…FM-151 in addition to FM-01…FM-112. Static documentation is not dynamic proof; event replay must demonstrate idempotency, conservation, category sums, fixed rewards and exclusive-item expiry/trade behavior.
+□ Reject `UNKNOWN_RULE`, `TBD`, `TO_FILL`, a blank required field, fallback random generation, or “materialize on discovery” anywhere in the LL01 package/payload/quest registry.
+
+XVI. RELEASE LINEAGE, COLLISION AND REGRESSION GATE
+
+□ Hash canonical bytes as exact UTF-8 with LF and no BOM. Do not normalize whitespace, headings, tables or filenames before hashing the release artifact.
+□ File 01 `2.6.0-A` and `2.6.0-B` remain immutable lineage parents with different hashes. Only `FILE01-2.7.0-MERGE.1` is active; it must contain both the `WORLD-PACKAGE-LL01-1.0`/quest binding and `CANON-EVENT-LEDGER-4.0`/fixed reward/event-exclusive locks.
+□ Language `1.9.0-A` and `1.9.0-B` remain immutable lineage parents with different hashes. `LANG-2.1.0-MERGE.1` remains an immutable parent; only `LANG-2.2.0-OFFICIAL-RUNTIME.1` is active and must retain both 1.9 branches, all 2.0 event/chest/rank rules and the official-runtime projection contract.
+□ File 03 active release must descend from the complete `1.7.0` artifact, not the shorter `1.6.3` regression branch. It must contain markers `LL01-MANIFEST`, `LL01-SITES`, `LL01-CHESTS`, `LL01-ANCHORS`, Appendix 3.K, all 38 sites, 10 anchors, 41 caches, 192 chest instances and `CHEST-SEARCH-2.1-FIXED`.
+□ Before replacing any source file, diff the proposed artifact against every declared parent and run capability-presence tests. A release note claiming “keeps all earlier locks” is not evidence of retention.
+□ Active deltas are File 03 `FILE03-1.10.0-SPATIAL-SWEEP.1`, File 04 `FILE04-3.1.0-SEARCH-TEAM-CAPABILITY.1`, File 05 `FILE05-3.2.0-SPATIAL-SEARCH-RUNTIME.1`, File 06 `FILE06-2.5.0-SPATIAL-SEARCH-BINDING.1` and this checklist `CHECKLIST-3.8.0-SPATIAL-SEARCH-GATE.1`. Each must descend from its prior active row without deleting prior capabilities.
+□ Any active-file hash mismatch returns `RELEASE_HASH_MISMATCH`; a missing parent returns `MISSING_LINEAGE_PARENT`; a duplicated bare version returns `AMBIGUOUS_SEMVER`. At load these are `LOAD_FATAL`, commit zero campaign delta and prohibit latest-file fallback.
+
+XVII. OFFICIAL RUNTIME EXECUTION AND PRESENTATION GATE
+
+□ TEST_ONLY and official use the same mechanics resolver, seeds/commitments, formulas, scheduler, transaction grouping and post-commit trigger sweep. Only persistence namespace, quarantine, knowledge filtering and provenance display differ.
+□ Compound commands create one node per imperative/continuation/allocation/stop predicate. Adjacency does not imply all-or-nothing; direct dependency, indivisible shared state or explicit user wording does.
+□ Every long action is present in `PERSISTENT-JOB-REGISTRY-1.0` with stable job_id, actors, lifecycle, progress, reservations, next boundary and owner rule. Foreground changes never erase background jobs.
+□ Actor reassignment pauses/releases the old job at the current timestamp before assigning the new one. Preserve valid progress; never refund consumed inputs or duplicate unreleased reservations.
+□ `TIME-BOUNDARY-MANIFEST-1.0` includes every relevant job/calendar/survival/weather/route/stop/error boundary. After all same-timestamp events and trigger sweeps, evaluate stop predicates.
+□ Local failure isolation is mandatory: ATOMIC_GROUP_LOCAL commits zero only for that group; JOB_LOCAL pauses only the job; DOMAIN_LOCAL blocks only dependents; STOP_PREDICATE_LOCAL stops safely without free-running; PRESENTATION_LOCAL never rolls back state.
+□ A transient retrieval failure after a release-verified artifact was loaded may use only the immutable cached artifact with the same release ID+hash. Absence pauses the affected domain; it never licenses latest-file fallback or invented data.
+□ Player-facing output preserves causal chains and exact visible quantities: order, actor/instance, reservation/cost, elapsed time/progress, completion/block status, output, trigger and new decision. “Some,” “several,” “later,” or “nearly complete” cannot replace a known number.
+□ Keep full reconciliation internal. Show every MUST_SHOW delta, changed decision-relevant background result, relevant continuation summary, exact end timestamp and stop reason; omit unchanged ledgers unless requested.
+□ Technical diagnostics stay internal unless they block the requested action/stop predicate or silence would misstate the result. Render valid gameplay first, then at most one non-lore operational note without file/hash/rule/stack identifiers unless meta/debug was requested.
+□ Renderer failure after commit uses `turn_receipt` fallback and cannot replay, reroll, duplicate or erase state.
+□ Regression suite FM-152…FM-210 must pass in addition to FM-01…FM-151 before this release line becomes ACTIVE.
+
+XVIII. FIXED HERO-LAIR SOCIETY AND WORLD-SIMULATION GATE
+
+□ Load exactly `LL01-HERO-LAIR-PACK-1.0` as a pre-T0 extension of `WORLD-PACKAGE-LL01-1.0`. Verify its registry hash before state mutation. A missing/hash-mismatched pack is `HERO_LAIR_PACK_CORRUPT/LOAD_FATAL`; never skip it or call a generator.
+□ Parent 3.K remains independently valid: exactly 38 site rows, 10 P0 anchors, 41 caches, 192 chest instances, all four parent hashes and `CHEST-SEARCH-2.1-FIXED`. Adding lairs cannot renumber, replace or absorb a parent object.
+□ The extension has exactly 15 unique lair IDs, 15 unique Hero IDs and 693 preallocated unit IDs: 10 local within 96 km and 5 macro at fixed distances 134.2–907.4 km. Every coordinate, member count, cohort, territory layer, resource, route profile, transition and succession field is explicit.
+□ All 15 lairs exist before T0 and begin `UNOBSERVED`. Discovery changes knowledge only. Never materialize, move, reroll, jitter, respawn or replace a lair because a search begins, a scene needs danger or a Hero dies.
+□ Reconcile finite populations exactly: R1 debit 9 wolves, 43 corpse-crows and 8 ice-burrowers; R2 debit 14/24 wolves and 37/91 corpse-crows; R3 debit 1/7 cave bears and 18/29 wild undead; R4 debit 82/94 native monsters. Membership is a classification of existing individuals, never an additive population.
+□ R0 is untouched by the lair extension. At the accepted D1 22:00 checkpoint it remains 26 Ice Rabbits, 3 Snow Foxes, 8 Mist Deer and 3 Ice Burrowers. Do not replay hunts or reclassify Lí Lan's undead as living ecology.
+□ Hero influence opens only the registered signals/orders and gated cohesion recovery. It never raises follower quality/level/HP, mints followers, grants free resources or makes a group automatically win.
+□ Enforce species capability. Wolves/boars form packs or herds; crows form rookeries; burrowers/spiders/salamanders form colonies; elemental and undead groups use resonance/ritual organization; sapient clans may build only era-valid camps; the Hero cave bear remains solitary with no followers.
+□ Lair materials obey `ERA-LL01-PREINDUSTRIAL-HIGH-MAGIC-1.0`: earth, timber, hide, dry stone, masonry, hand-worked bronze/iron and sourced rune/crystal anchors. No bunker, reinforced concrete, structural-steel complex, rail, engine, electricity, radio, factory or industrial mine.
+□ Every local mobile group follows its fixed P4/F4/T4/O4/H4 route phase from T0 plus its offset; reload/branch reproduces the same phase. Casualty or reassignment changes the schedule only through an event receipt.
+□ Macro lairs settle daily resource/pressure and weekly transitions without per-individual continuous ticks. Contact hydrates exact cohorts/member IDs from the last-settled state; it never creates an encounter packet.
+□ Search and hunting intersect actual geometry. A sign-zone contact reveals at most `SIGNS_ONLY`; a peripheral group does not reveal the core, Hero, member total, resource or schedule. No intersection means no forced encounter.
+□ Any death/capture/migration/resource use writes both lair and source ecology/resource ledgers in one atomic group. Patrol, core member, corpse, loot and XP must reference the same unit ID so nothing is counted twice.
+□ Hero death triggers the exact species-specific succession row at an emergency boundary. Followers keep identity, position, injuries and memory; no despawn/refill, free owner change or replacement Hero is allowed.
+□ Run FM-175…FM-210 along with all earlier tests. A static table is not proof of runtime conservation, deterministic scheduling, fog-of-war, spatial causality, parallelism or failure isolation.
+
+XIX. GENERALIZED SPATIAL SEARCH, MULTI-TEAM AND THROUGHPUT GATE
+
+□ Every HUNTING, TREASURE_SEARCH, SCOUTING, PROSPECTING, PATROL, MILITARY_RECON, CONVOY_INTERCEPT, CORPSE_EXCAVATION and EXPLORATION parent job creates a versioned `spatial_search_plan` plus one `team_spatial_operation` per actual team/sector. A parent job has no shared encounter stream or next-encounter roll.
+□ Operational radius/envelope is only a geographic clip. It never counts as swept area. Outbound, search, pursuit/load and return consume the same world clock; `T_search=max(0,ReturnBy−Start−T_out−T_return−SafetyBuffer−PursuitReserve)`.
+□ Every committed sweep is generated from actor route lanes and stores `gross_area`, polygon-union `unique_area`, `repeated_area=gross−unique` and `fresh_area=union−prior-history`. `A_tick` may cap a team/tick; it cannot conjure geometry or pool separate teams.
+□ Actor count affects lane/frontage/detection through `SEARCH-TEAM-CAPABILITY-1.0`. Coordination span, terrain bottlenecks, formation and support roles impose diminishing returns; a flat encounter bonus per hunter or every-N-hunters roll is forbidden.
+□ Independent teams remain independent spacetime operations. Separate teams may discover different pre-existing groups at the same timestamp. Stable commit order is not permission to advance world time serially between simultaneous contacts.
+□ Overlapping lanes increase repeated/thorough effort in the overlap but never multiply unique area. If four identical teams each sweep the same 2,880 km² footprint, gross is 11,520, unique 2,880 and repeated 8,640 km².
+□ Search history persists by observer lineage, target class, geometry and time epoch; cancel/restart or a new search ID cannot erase it. Fresh terrain never inherits negative evidence or depletion from a different footprint.
+□ Negative evidence for a static target applies only where/when detection threshold was reached. For mobile targets it applies only to the tested worldline interval; stale history loses confidence after movement/weather/state change.
+□ Searchers and targets advance on one scheduler timeline. Eligibility requires spatial and temporal overlap between sweep lane and target worldtube/footprint; a successful abstract hunt check may not select an arbitrary group from the radius.
+□ Same-target simultaneous crossings use one atomic target lock so position/casualty/loot/XP settle once. Different-target crossings remain independent. Finite population, lair membership, patrol provenance and ordinary ecology IDs never collapse together.
+□ Hero-lair outer influence/sign geometry reveals at most `SIGNS_ONLY`; patrol contact requires patrol-worldline intersection, and core/Hero/count/schedule stay hidden until their own geometry/evidence gates are met.
+□ Stop predicates declare TEAM_LOCAL, ALL_ON_SIGNAL, PARENT_AT_TIME, NAMED_TEAM_LOCAL or proven ALL_IMMEDIATE_IF_LINKED. Recall/signal delay is a real boundary; one team contact does not freeze unrelated teams or the universe.
+□ Chest search reuses actual spatial lanes; LL01 focused minutes increase only at coordinates/cache footprints truly covered. The 192 pre-T0 chest instances and `CHEST-SEARCH-2.1-FIXED` remain immutable and no normal/event-exclusive loot rule changes.
+□ Prospecting, scouting, patrol/recon, convoy interception, corpse excavation and exploration reuse the shared geometry/clock/index layer; none may fall back to one-job-one-opportunity logic.
+□ Regional/continental simulation may aggregate through 0,25×2^L km cells, R-tree/quadtree and interval indexes, but it must preserve team ID, target ID, world clock, finite population and the same candidate crossings as local hydration.
+□ Deterministic frontage fixture must reproduce: 2 hunters `1,440 km²`; 10 `4,255`; 40 `6,566`; one 20-person formation `5,242`; four disjoint 5-person teams `11,520`; four fully overlapping 5-person teams gross/unique/repeated `11,520/2,880/8,640`.
+□ Six-hour travel fixture must leave 4 search hours for a 3 km outbound+return at 3 km/h and zero useful search time for a 20 km target. Storm fixture for team 10 must yield `2,979 km²` unique and `31,5%` clear-weather detection effort under the sealed factors.
+□ Regional 50 km fixture has 12 parent parties, 34 teams and 608 target groups; the spatial-temporal index returns 57 candidate crossings instead of testing all 20.672 pairs, then hydrates only those candidates without changing results.
+□ D1 22:00 migration is schema-only and zero-physical-delta. Accepted hunts remain `LEGACY_CONTACT_ONLY`; do not invent old polygons, searched cells or negative evidence. Preserve R0 `26/3/8/3`, all inventory/force/XP/chest/jobs and all 15 hidden lairs.
+□ Run FM-191…FM-210 together with FM-01…FM-190. Activation requires exact benchmark outputs plus content retention of Appendix 3.K, 192 chests, 15 lairs/15 Heroes/693 units, event/quest/exclusive-loot rules, Lí Lan XP mirror and zombie `1,00 WU/giờ`.
