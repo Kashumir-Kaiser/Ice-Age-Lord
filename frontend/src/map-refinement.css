@@ -103,3 +103,11 @@
   .map-experience--compact .map-heat-readout em { display:none; }
 }
 @media(prefers-reduced-motion:reduce) { .map-snow-particles>circle { animation:none !important; } }
+
+/* World map is an interaction mode, not a second independently seeded world. */
+.map-scene--deep .terrain-svg--deep { overflow:hidden; }
+.map-toolbar-actions .map-survey-switch { white-space:nowrap; }
+.map-scene--deep { overscroll-behavior:contain; }
+.sidebar-nav::-webkit-scrollbar { width:7px; }
+.sidebar-nav::-webkit-scrollbar-thumb { background:#456a79; border-radius:12px; }
+@media(max-height:720px) {.sidebar-bottom { padding:7px 13px 10px; }.weather-box { padding:9px; }.sidebar-caption { margin-top:8px; }}
