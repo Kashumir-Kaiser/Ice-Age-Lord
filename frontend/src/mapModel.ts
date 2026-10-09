@@ -46,10 +46,16 @@ export function formatClock(minutes: number): string {
   return `${h}:${m}`;
 }
 export type FogDisc = {x:number;y:number;clear:number;fade:number};
-export const OPENING_OBSERVED: readonly FogDisc[] = [
-  {x:0,y:0,clear:58,fade:108},
-];
-/** These extra discs are demonstrative survey previews, not explored canon cells. */
+/** Presentation-only sight distances in metres pending a runtime weather visibility record.
+ * Fixed campaign sunrise/sunset and fire radii ARE canonical; visibility metres are NOT.
+ * Night: no player-visible terrain outside the live firelight. */
+export const PRESENTATION_SIGHT = {
+  day:{clear:260,fade:680},
+  twilight:{clear:100,fade:240},
+  night:{clear:0,fade:0},
+} as const;
+export const OPENING_OBSERVED: readonly FogDisc[] = [{x:0,y:0,clear:58,fade:108}];
+/** Survey preview is a separate developer showcase, NOT discovery in the game. */
 export const DEMO_SURVEYED: readonly FogDisc[] = [
   ...OPENING_OBSERVED,
   {x:-75,y:54,clear:68,fade:104},
@@ -58,18 +64,32 @@ export const DEMO_SURVEYED: readonly FogDisc[] = [
   {x:-297,y:98,clear:72,fade:118},
   {x:205,y:-75,clear:63,fade:104},
 ];
+export function visibilityDiscs(minutes:number,level:number,surveyPreview=false,fireActive=true):readonly FogDisc[] {
+  const phase=dayPhase(minutes),radius=heatRadiusM(level,fireActive);
+  const sight=PRESENTATION_SIGHT[phase];
+  // The radius is fully visible; atmospheric falloff begins OUTSIDE this edge.
+  const heat=radius>0?[{x:0,y:0,clear:radius,fade:radius+Math.min(36,Math.max(2,radius*.008))}]:[];
+  // Daylight eyesight is separate from explored-map knowledge.
+  const daylight=phase==='night'?[]:[{x:0,y:0,...sight}];
+  const preview=surveyPreview && phase!=='night'?DEMO_SURVEYED.slice(1):[];
+  return [...heat,...daylight,...preview];
+}
 function smoothstep(a:number,b:number,value:number):number {
   const t=Math.max(0,Math.min(1,(value-a)/(b-a)));
   return t*t*(3-2*t);
 }
-/** 0 means clear; 1 is pitch-black unrevealed terrain. */
-export function fogOpacityAt(x:number,y:number,surveyPreview=false):number {
-  const discs=surveyPreview?DEMO_SURVEYED:OPENING_OBSERVED;
-  return discs.reduce((opacity,disc)=> {
+/** 0 visible; 1 absolute night/unseen black. */
+export function fogOpacityAt(x:number,y:number,surveyPreview=false,minutes=420,level=1):number {
+  return visibilityDiscs(minutes,level,surveyPreview).reduce((opacity,disc)=>{
     const dist=Math.hypot(x-disc.x,y-disc.y);
     return Math.min(opacity,smoothstep(disc.clear,disc.fade,dist));
   },1);
 }
+export function shouldEnterWorldMap(zoom:number,heatRadius:number):boolean{
+  const viewHeight=172/zoom;
+  return zoom<.55 && viewHeight>=heatRadius*2.15;
+}
+export const WORLD_ZOOM = 172/(192000*1.12);
 export type HarvestKind='wood'|'stone'|'ore'|'herbs'|'water';
 export type MapResource = {
   id:string; kind:HarvestKind; name:string; x:number;y:number;
