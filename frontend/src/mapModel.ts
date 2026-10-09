@@ -83,7 +83,7 @@ export type MapChest = {
 };
 export type ResourceOrChest=MapResource|MapChest;
 export const DEMO_MAP_MARKERS: readonly ResourceOrChest[] = [
-  {id:'example-wood-01',kind:'wood',name:'Lâm địa phủ tuyết',x:-126,y:48,remaining:480,capacity:620,unit:'Gỗ',description:'Gỗ có thể thu hoạch tại điểm được khảo sát trong kịch bản minh họa.',demoOnly:true},
+  {id:'example-wood-01',kind:'wood',name:'Lâm địa phủ tuyết',x:-95,y:42,remaining:480,capacity:620,unit:'Gỗ',description:'Gỗ có thể thu hoạch tại điểm được khảo sát trong kịch bản minh họa.',demoOnly:true},
   {id:'example-stone-01',kind:'stone',name:'Vỉa đá lộ thiên',x:123,y:67,remaining:270,capacity:350,unit:'Đá',description:'Lượng đá khả dụng để minh họa panel kiểm kê mỏ.',demoOnly:true},
   {id:'example-ore-01',kind:'ore',name:'Mạch quặng trong băng',x:-298,y:99,remaining:65,capacity:110,unit:'Quặng Sắt',description:'Một mạch quặng giả lập, không áp vào kho hay world package.',demoOnly:true},
   {id:'example-herbs-01',kind:'herbs',name:'Địa y băng nguyên',x:59,y:-125,remaining:28,capacity:40,unit:'Bó',description:'Điểm thu hái vật phẩm sinh thái minh họa.',demoOnly:true},
