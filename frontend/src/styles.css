@@ -388,3 +388,5 @@ a { color: inherit; }
 @media (max-width:1350px) {.brand-row { padding:15px 11px 18px; gap:8px; } .brand-row .brand-copy strong { font-size:14px; }.brand-row .brand-copy strong em {font-size:18px;} .brand-row .brand-copy span {font-size:7px;} }
 @media (max-width:1020px) {.brand-row .brand-copy {display:none;} .clock-player {max-width:290px;} }
 @media (max-width:700px) {.sidebar--open .brand-row .brand-copy {display:block; max-width:165px;} .sidebar--open .brand-row {gap:8px;padding:16px;} .topbar-actions {gap:7px;} .clock-player {max-width:230px;} .clock-sim-label {display:none;} .clock-speed-wrap>span {display:none;} .clock-player .clock-chip {min-width:120px;} .clock-speed-wrap select {padding:6px 4px;min-width:64px;} }
+
+@media (max-width:700px){.clock-player .clock-sim-label{display:block;font-size:8px;line-height:1.15;}}
