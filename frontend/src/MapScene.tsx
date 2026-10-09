@@ -1,200 +1,313 @@
-
-import { useRef, useState } from 'react';
-import type { PointerEvent as ReactPointerEvent } from 'react';
-import { Crosshair, Eye, EyeOff, Maximize2, Minus, Plus } from 'lucide-react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import type { PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from 'react';
+import { ArrowDownRight, Compass, Maximize2, Minus, Plus, Snowflake, Sun, Moon, ThermometerSun, MapPinned } from 'lucide-react';
 import { sites } from './demoData';
 import type { SiteKind } from './demoData';
+import {
+  dayOverlayOpacity, dayPhase, DEMO_CAMP, DEMO_SURVEYED, displayRemaining, fireForm, fogOpacityAt,
+  formatClock, formatDistance, heatRadiusM, OPENING_OBSERVED, visibleDemoMarkers,
+} from './mapModel';
+import type { ResourceOrChest } from './mapModel';
+import './map-refinement.css';
 
-type Props = {
-  selected: SiteKind;
-  onSelect: (id: SiteKind) => void;
-  compact?: boolean;
-};
-
-const TREE_POINTS = Array.from({ length: 38 }, (_, i) => ({
-  x: 50 + (i * 83) % 1010,
-  y: 78 + (i * 129) % 530,
-  scale: 0.58 + ((i * 7) % 8) / 16,
+type Props = { selected: SiteKind; onSelect: (id: SiteKind) => void; compact?: boolean };
+const TIMES = [420, 720, 990, 1005, 1140, 60] as const;
+const LEVELS = [1, 2, 3, 4, 5, 6, 7, 10, 11, 16, 21, 26, 30] as const;
+const FIRST_SITES = sites.map(site=>({...site,renderY:-site.y}));
+const PINE_FIELD=Array.from({length:148},(_,i)=>({
+  x:((i*167+13)%1900)-950,
+  y:((i*271+47)%1580)-790,
+  size:3.8+(i%6)*1.35,
+  spin:(i%7)-3,
 }));
-const ROCK_POINTS = Array.from({ length: 34 }, (_, i) => ({
-  x: 40 + (i * 157) % 1010,
-  y: 48 + (i * 97) % 570,
-  size: 4 + (i % 7),
+const SERRATED_ROCKS=Array.from({length:104},(_,i)=>({
+  x:((i*389+71)%2260)-1130,
+  y:((i*227+21)%1860)-930,
+  size:3+(i%5)*1.4,
 }));
+const SNOW_PARTICLES=Array.from({length:44},(_,i)=>({
+  x:((i*131+37)%900)-450,
+  y:((i*179+13)%650)-325,
+  r: i%4===0 ? 1.3:.75,
+  delay: (i%15)*-.55,
+}));
+const LOCALLY_CLEARED_RADIUS = 40; // Decorative empty-space arrangement, not a gameplay rule.
 
-function Terrain() {
-  return (
-    <>
-      <defs>
-        <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1">
-          <stop stopColor="#466b77" />
-          <stop offset=".45" stopColor="#2a4856" />
-          <stop offset="1" stopColor="#152e3c" />
-        </linearGradient>
-        <linearGradient id="river" x1="0" y1="0" x2="1" y2="0">
-          <stop stopColor="#7eacb5" stopOpacity=".25" />
-          <stop offset=".5" stopColor="#afcfce" stopOpacity=".72" />
-          <stop offset="1" stopColor="#739ba6" stopOpacity=".19" />
-        </linearGradient>
-        <radialGradient id="fire-glow">
-          <stop stopColor="#eec58c" stopOpacity=".55" />
-          <stop offset=".6" stopColor="#e2b56d" stopOpacity=".12" />
-          <stop offset="1" stopColor="#e2b56d" stopOpacity="0" />
-        </radialGradient>
-        <linearGradient id="snow-layer" x1="0" x2=".7" y1="0" y2="1">
-          <stop stopColor="#e1efeb" stopOpacity=".42" />
-          <stop offset="1" stopColor="#c3d9db" stopOpacity=".06" />
-        </linearGradient>
-        <pattern id="map-grid" width="90" height="90" patternUnits="userSpaceOnUse">
-          <path d="M90 0H0V90" fill="none" stroke="#b7d0d2" strokeWidth=".55" strokeOpacity=".09" />
-        </pattern>
-        <pattern id="snow-speckle" width="48" height="48" patternUnits="userSpaceOnUse">
-          <circle cx="11" cy="16" r="1" fill="#d5e9eb" opacity=".25" />
-          <circle cx="37" cy="39" r=".7" fill="#e4f3f1" opacity=".17" />
-          <path d="m27 9 4-2m7 18 3 1" stroke="#d4e9e8" strokeWidth=".8" opacity=".18" />
-        </pattern>
-        <symbol id="fir" viewBox="-14 -26 28 49">
-          <path d="M0 -26 -12 -7 -7 -7 -14 8 -8 8 -11 19 11 19 8 8 14 8 7 -7 12 -7Z" fill="#112c35" stroke="#6f9699" strokeWidth=".9"/>
-          <path d="m0 -25 -8 16M0 -25 8 -9M-10 8 -4 8m7-17 8 17M-7 19H9" fill="none" stroke="#bfdbd9" strokeOpacity=".45" strokeWidth="1.4"/>
-        </symbol>
-        <mask id="demo-fog">
-          <rect width="1100" height="690" fill="white"/>
-          <circle cx="548" cy="352" r="275" fill="black"/>
-          <circle cx="548" cy="352" r="330" fill="#777"/>
-        </mask>
-      </defs>
-      <rect width="1100" height="690" fill="url(#ground)" />
-      <path d="M-90 0H420l-53 62 138 51-141 93 43 107-184 37-189-92Z" fill="#b3cfd1" opacity=".13"/>
-      <path d="M410 -40 1170 0 1170 221 1001 183 895 227 711 139 559 164Z" fill="#aacacc" opacity=".1"/>
-      <path d="M-30 454 128 411l181 59 137-64 102 85 211-43 217 64 179-6v215H-30Z" fill="#9fbfc5" opacity=".11"/>
-      <path d="M-50 148c180-63 273 86 429 37s160-78 294-40 229 14 470-56" fill="none" stroke="#c9dfdc" strokeWidth="38" strokeOpacity=".09"/>
-      <path d="M-35 640c193-89 355-9 518-105 188-111 377 19 648-113" fill="none" stroke="#cce0df" strokeWidth="59" strokeOpacity=".08"/>
-      <path d="M984-40C916 76 939 159 1045 262s-48 216-16 484" stroke="#b8d8df" strokeWidth="83" strokeOpacity=".17" fill="none"/>
-      <path d="M984-40C916 76 939 159 1045 262s-48 216-16 484" stroke="url(#river)" strokeWidth="24" fill="none"/>
-      <path d="M-8 534c133-73 246-40 373-73s164-115 280-98 244 123 346 87" fill="none" stroke="#d5e9e1" strokeOpacity=".18" strokeWidth="21" strokeLinecap="round"/>
-      <path d="M-8 534c133-73 246-40 373-73s164-115 280-98 244 123 346 87" fill="none" stroke="#d7e7dc" strokeOpacity=".3" strokeWidth="3" strokeDasharray="6 17" strokeLinecap="round"/>
-      <path d="M310 267Q426 333 532 350T706 451M532 350Q639 254 754 236" stroke="#b6a58b" strokeWidth="21" strokeOpacity=".09" fill="none"/>
-      <path d="M310 267Q426 333 532 350T706 451M532 350Q639 254 754 236" stroke="#d0d6c6" strokeWidth="2.5" strokeDasharray="5 12" strokeOpacity=".38" fill="none"/>
-      <path d="M220 70q85 13 150-25m-80 13q40 10 69-14M768 592q80-51 202-45" fill="none" stroke="#e0efeb" strokeOpacity=".21" strokeWidth="3" />
-      <g opacity=".48">
-        {TREE_POINTS.map((t, i) => {
-          const skip = Math.hypot(t.x-532, t.y-348) < 165;
-          return skip ? null : <use key={i} href="#fir" x={t.x-14*t.scale} y={t.y-26*t.scale} width={28*t.scale} height={49*t.scale}/>;
-        })}
-      </g>
-      {ROCK_POINTS.map((p, i) => (
-        <path key={i} d={`M${p.x-p.size} ${p.y+3} l${p.size*.65} -${p.size} l${p.size*.95} -2 l${p.size*.8} ${p.size+3}Z`} fill="#c1d7d7" fillOpacity=".12" stroke="#a8c7ca" strokeOpacity=".17"/>
-      ))}
-      <rect width="1100" height="690" fill="url(#snow-speckle)" />
-      <rect width="1100" height="690" fill="url(#map-grid)" />
-      <ellipse cx="532" cy="348" rx="220" ry="175" fill="url(#fire-glow)" />
-      <circle cx="532" cy="348" r="155" fill="none" stroke="#d9c59f" strokeWidth="1.2" strokeDasharray="4 9" opacity=".35" />
-    </>
-  );
+function Terrain({id}: {id:string}) {
+  return <>
+    <defs>
+      <linearGradient id={`${id}-ice`} x1="0" y1="0" x2="0.8" y2="1">
+        <stop stopColor="#708e9a"/><stop offset=".25" stopColor="#436777"/>
+        <stop offset=".72" stopColor="#2b4e61"/><stop offset="1" stopColor="#142d3b"/>
+      </linearGradient>
+      <radialGradient id={`${id}-snowfield`}>
+        <stop stopColor="#d9e9e7" stopOpacity=".55"/><stop offset=".55" stopColor="#b2d1cf" stopOpacity=".14"/>
+        <stop offset="1" stopColor="#b3d1d0" stopOpacity="0"/>
+      </radialGradient>
+      <linearGradient id={`${id}-ridge`} x1=".1" y1="0" x2=".9" y2="1">
+        <stop stopColor="#d4e7e4" stopOpacity=".6"/><stop offset=".22" stopColor="#8faeb4" stopOpacity=".6"/>
+        <stop offset=".5" stopColor="#3d6677" stopOpacity=".58"/><stop offset="1" stopColor="#183547" stopOpacity=".8"/>
+      </linearGradient>
+      <pattern id={`${id}-frost`} width="38" height="38" patternUnits="userSpaceOnUse">
+        <path d="m4 7 6-3m14 20 3-5m-1-13 2 4M7 31l5 1" stroke="#e3f0ed" strokeOpacity=".13" strokeWidth=".65"/>
+        <circle cx="16" cy="11" r=".72" fill="#e5f3f2" opacity=".25"/>
+      </pattern>
+      <pattern id={`${id}-contour`} width="170" height="140" patternUnits="userSpaceOnUse" patternTransform="rotate(17)">
+        <path d="M-40 32q85-63 184 0t150 0M-40 67q85-63 184 0t150 0M-40 102q85-63 184 0t150 0" fill="none" stroke="#cbdfdf" strokeOpacity=".045" strokeWidth="1.7"/>
+      </pattern>
+    </defs>
+    <rect x="-96000" y="-96000" width="192000" height="192000" fill="#132d3d"/>
+    <rect x="-96000" y="-96000" width="192000" height="192000" fill={`url(#${id}-ice)`}/>
+    <g opacity=".85">
+      <path d="M-1450-330-1090-700-868-470-550-790-291-392-108-530 240-274 490-480 745-210 1180-510 1600-125V850H-1450Z" fill="#1b3e51" opacity=".34"/>
+      <path d="m-1320-280 235-430 188 245 332-360 270 393 150-180 310 270 195-240 220 265 390-110 260 266" fill="none" stroke="#9dc1c3" strokeWidth="12" strokeOpacity=".18"/>
+      <path d="M-1180-620-980-920-735-600-560-980-266-556-97-717 220-385 451-794 706-455 932-803 1255-489 1470-612V500H-1180Z" fill={`url(#${id}-ridge)`} opacity=".31"/>
+      <path d="m-980-920 122 197-110-83-92 80m500-254 132 207-115-93-111 85m1105-13 83 154-79-72-66 70" fill="none" stroke="#e5f2ec" strokeOpacity=".26" strokeWidth="11"/>
+    </g>
+    <g opacity=".63">
+      <ellipse cx="-142" cy="-34" rx="265" ry="142" fill={`url(#${id}-snowfield)`} transform="rotate(-21 -142 -34)"/>
+      <ellipse cx="271" cy="106" rx="225" ry="168" fill={`url(#${id}-snowfield)`}/>
+      <ellipse cx="-380" cy="200" rx="283" ry="188" fill={`url(#${id}-snowfield)`}/>
+      <path d="M-900 148q242-161 394-56t274-96q176-190 420-94 216 79 387-68" fill="none" stroke="#d4e8e5" strokeWidth="110" strokeOpacity=".05"/>
+      <path d="M-930 401q190-151 393-111t351-60 331 12q198 112 524-29" fill="none" stroke="#c3e1e0" strokeWidth="70" strokeOpacity=".06"/>
+    </g>
+    <g opacity=".68">
+      <path d="M-1160-316C-873-188-802-322-645-253s182 167 381 154S96-192 216-75 461 191 785 150" fill="none" stroke="#081f30" strokeWidth="54" strokeOpacity=".36"/>
+      <path d="M-1160-316C-873-188-802-322-645-253s182 167 381 154S96-192 216-75 461 191 785 150" fill="none" stroke="#7eaab4" strokeWidth="22" strokeOpacity=".31"/>
+      <path d="M-1070 170Q-675 300-519 117t343 97 517-68Q564 73 896 218" fill="none" stroke="#d0e6e1" strokeWidth="15" strokeOpacity=".14"/>
+      <path d="M-740-170C-470-400-355-195-202-262S117-362 302-291" stroke="#cde4df" strokeWidth="23" strokeOpacity=".1" fill="none"/>
+    </g>
+    <g fill="none" strokeLinecap="round">
+      <path d="M-560 10q89-80 180-71 117 17 185-34 92-73 180 27t151 31" stroke="#d8e9e6" strokeWidth="2.8" strokeOpacity=".17"/>
+      <path d="M-560 27q89-80 180-71 117 17 185-34 92-73 180 27t151 31" stroke="#d8e9e6" strokeWidth="1.4" strokeOpacity=".14"/>
+      <path d="M-440 309Q-199 154-36 271t333-26 396 29" stroke="#d8e9e6" strokeWidth="2" strokeOpacity=".17"/>
+      <path d="m-194-212 45 52-15 20 37 36m24 123 41-28 13 45 29-11m350-112-55 31 22 37-62 22" stroke="#e5efed" strokeWidth="2" strokeOpacity=".15"/>
+    </g>
+    <g opacity=".92">{PINE_FIELD.map((tree,i)=>Math.hypot(tree.x,tree.y)<LOCALLY_CLEARED_RADIUS+20?null:
+      <g key={i} transform={`translate(${tree.x} ${tree.y}) rotate(${tree.spin}) scale(${tree.size/10})`}>
+        <ellipse cx="7" cy="6" rx="15" ry="7" fill="#091c29" opacity=".42"/>
+        <path d="M0-20-13-2l6-1-12 17 14-3-7 17h24l-7-17 14 3L7-3l6 1Z" fill="#163945" stroke="#7096a2" strokeOpacity=".65" strokeWidth="1.5"/>
+        <path d="M0-20-6-9l9-4m-16 16 14-4m-12 11 16-4m-12 15 11-3" stroke="#d0e4df" strokeOpacity=".76" strokeWidth="2.4" strokeLinecap="round" fill="none"/>
+      </g>)}</g>
+    <g>{SERRATED_ROCKS.map((rock,i)=> Math.hypot(rock.x,rock.y)<35?null:<g key={i} transform={`translate(${rock.x} ${rock.y})`}>
+      <ellipse cx="4" cy="3" rx={rock.size*1.4} ry={rock.size*.65} fill="#081a26" opacity=".45"/>
+      <path d={`M${-rock.size} ${rock.size*.5} l${rock.size*.6} -${rock.size*1.3} ${rock.size*.9} -${rock.size*.7} ${rock.size*.9} ${rock.size*.7} ${rock.size*.35} ${rock.size*1.3}Z`} fill="#3c6071" stroke="#a4c6c7" strokeOpacity=".47" strokeWidth="1"/>
+      <path d={`M${-rock.size} ${rock.size*.5} l${rock.size*.6} -${rock.size*1.3} ${rock.size*.9} -${rock.size*.7}`} stroke="#e3eeee" strokeOpacity=".41" strokeWidth="2" fill="none"/>
+    </g>)}</g>
+    <rect x="-1200" y="-1200" width="2400" height="2400" fill={`url(#${id}-contour)`}/>
+    <rect x="-1200" y="-1200" width="2400" height="2400" fill={`url(#${id}-frost)`}/>
+    <g fill="none">
+      <path d="M-53-14 0 0 26-12 50-8m-29 20L0 0l-21 23" stroke="#ccdbd5" strokeOpacity=".1" strokeWidth="6"/>
+      <path d="M-53-14 0 0 26-12 50-8m-29 20L0 0l-21 23" stroke="#dbe9e3" strokeOpacity=".27" strokeWidth="1.6" strokeDasharray="2.2 7"/>
+      <circle r="46" stroke="#d4dfd8" strokeOpacity=".07" strokeWidth="2"/>
+    </g>
+  </>;
 }
-
-function SiteGlyph({ id }: { id: SiteKind }) {
-  if (id === 'fire') return (
-    <g>
-      <path d="m-20 14 36 7M-16 21l35-12" stroke="#6c4840" strokeWidth="8" strokeLinecap="round" />
-      <path d="M1 15C-24-1-10-17-2-30 1-13 15-17 10-35 30-13 26 2 7 15Z" fill="#ed9a60" stroke="#fee2b0" strokeWidth="2" />
-      <path d="M0 14C-9 4-5-5 3-19c8 14 12 23-3 33" fill="#ffe4a4" />
-    </g>
-  );
-  if (id === 'house') return (
-    <g>
-      <path d="m-29-1 30-26 30 25v33h-60Z" fill="#6e7d86" stroke="#d2d9d6" strokeWidth="3" />
-      <path d="m-37 1 38-34L38 1" fill="none" stroke="#bdd2d0" strokeWidth="10" strokeLinecap="square" />
-      <path d="m6-30-12 18 10 7-6 15" stroke="#35454c" strokeWidth="4" fill="none" />
-      <rect x="-7" y="11" width="15" height="20" rx="1" fill="#202e37" stroke="#a8b1b0" />
-      <path d="m-24 8 11 5m37-7-9 8" stroke="#33474d" strokeWidth="3"/>
-    </g>
-  );
-  if (id === 'tomb') return (
-    <g>
-      <path d="M-33 30V-5a33 33 0 0 1 66 0v35Z" fill="#445766" stroke="#bac8c6" strokeWidth="3"/>
-      <path d="M-22 29V-6a22 22 0 0 1 44 0v35Z" fill="#1d303b" stroke="#748e92" strokeWidth="2"/>
-      <path d="M-1-16v33M-13 0h25" stroke="#b6cbc4" strokeWidth="4" opacity=".9"/>
-      <path d="M-40 33h80" stroke="#c6d4d1" strokeWidth="5"/>
-    </g>
-  );
-  return (
-    <g>
-      <path d="M-30-10h60v38h-60Z" fill="#756757" stroke="#c5b196" strokeWidth="3"/>
-      <path d="M-32-12 -20-26h41l11 14Z" fill="#a18c71" stroke="#d7bd95" strokeWidth="3"/>
-      <path d="M-22-8V27M22-8V27" stroke="#ad9779" strokeWidth="6"/>
-      <path d="M-10 4h20v12h-20Z" fill="#bd9b64" stroke="#e6cb93" strokeWidth="2"/>
-      <circle cx="0" cy="10" r="3" fill="#2e3e47"/>
-    </g>
-  );
+function MarkerGraphic({kind}:{kind:string}) {
+  if(kind==='fire') return <g><path d="m-11 10 22 0m-19 4 16-6" stroke="#7b5142" strokeWidth="4" strokeLinecap="round"/><path d="M-1 12C-19-1-3-14-2-22 0-12 10-13 9-23c13 16 10 25-2 35Z" fill="#eaa05d" stroke="#ffe3a3" strokeWidth="1.5"/><path d="M1 10Q-5 0 3-11Q12 2 1 10" fill="#fff0b4"/></g>;
+  if(kind==='house') return <g><path d="m-15-1 15-13L15-1v17h-30Z" fill="#617b84" stroke="#d4e1dd" strokeWidth="1.5"/><path d="M-19 1 0-18 19 1" fill="none" stroke="#d7e9e3" strokeWidth="4"/><path d="M-4 16V4h8v12M6-11l-8 8 5 5-3 6" fill="none" stroke="#2a404b" strokeWidth="2.5"/></g>;
+  if(kind==='tomb') return <g><path d="M-15 17V-2a15 15 0 0 1 30 0v19Z" fill="#465b6c" stroke="#c7d7d9" strokeWidth="2"/><path d="M-8 16V-2a8 8 0 0 1 16 0v18Z" fill="#1b3140"/><path d="M0-8V10M-7 0h14" stroke="#bdd6d8" strokeWidth="2.5"/><path d="M-19 19h38" stroke="#c1d8d6" strokeWidth="3"/></g>;
+  if(kind==='supply'||kind==='chest') return <g><rect x="-15" y="-9" width="30" height="24" rx="2" fill="#785a43" stroke="#ead09f" strokeWidth="2"/><path d="M-16-8Q-14-22 0-22T16-8Z" fill="#b18b5c" stroke="#e8d39f" strokeWidth="2"/><path d="M-10-9v24M10-9v24M-15 0h30" stroke="#d5b17a" strokeWidth="3"/><rect x="-3" y="-3" width="6" height="10" fill="#ffe1a1" stroke="#926b45"/></g>;
+  if(kind==='wood') return <g><path d="m0-20-13 18h6L-16 9h9l-5 10h24L7 9h9L7-2h6Z" fill="#305a4f" stroke="#b3d4bd" strokeWidth="2"/><path d="M0-20V19m-10-9 10-9 10 9" fill="none" stroke="#d9eee0" strokeWidth="2"/></g>;
+  if(kind==='stone') return <g><path d="m-18 15 7-21L0-19 11-9 19 15Z" fill="#7895a2" stroke="#e0eeea" strokeWidth="2"/><path d="M0-19-2 5l-16 10m16-10 21 10M-11-6 9-7" fill="none" stroke="#b5d4d5" strokeWidth="2"/></g>;
+  if(kind==='ore') return <g><path d="m-18 13 8-24 12-11 15 15 4 20Z" fill="#516a79" stroke="#a6ccd4" strokeWidth="2"/><path d="m-10-11 12 13v-24m0 24 15-9M2 2l-1 11" stroke="#84d4e4" strokeWidth="3"/><path d="m-2-4 7 8" stroke="#d1f3ef" strokeWidth="3"/></g>;
+  if(kind==='herbs') return <g><path d="M0 18V-13m0 24q-12-3-12-18Q1-5 0 11Zm0-10q5-18 16-20 1 17-16 20" fill="#618e7f" stroke="#d2e8d8" strokeWidth="2"/><path d="m-15 18 30 0" stroke="#d3e5d8" strokeWidth="2"/></g>;
+  return <g><path d="m-18 9 5-16 18-11 15 14-7 19-20 5Z" fill="#93c9d5" stroke="#e6f9f8" strokeWidth="2"/><path d="m5-18-2 16 17-2M3-2-7 20m10-22-21 11" fill="none" stroke="#d2ffff" strokeWidth="2"/></g>;
 }
-
-export default function MapScene({ selected, onSelect, compact = false }: Props) {
-  const [zoom, setZoom] = useState(1);
-  const [cx, setCx] = useState(550);
-  const [cy, setCy] = useState(345);
-  const [fog, setFog] = useState(false);
-  const [labels, setLabels] = useState(true);
-  const pointer = useRef<{x:number;y:number;cx:number;cy:number} | null>(null);
-  const width = 1100 / zoom;
-  const height = 690 / zoom;
-  const viewBox = `${cx - width/2} ${cy - height/2} ${width} ${height}`;
-  const changeZoom = (step: number) => setZoom(z => Math.min(2.7, Math.max(1, Math.round((z + step)*10)/10)));
-  const reset = () => { setZoom(1); setCx(550); setCy(345); };
-  const pointerDown = (e: ReactPointerEvent<SVGSVGElement>) => {
-    if (e.button !== 0) return;
-    pointer.current = { x: e.clientX, y: e.clientY, cx, cy };
+function FogMask({id,survey}:{id:string;survey:boolean}) {
+  const discs=survey?DEMO_SURVEYED:OPENING_OBSERVED;
+  return <defs>
+    {discs.map((disc,i)=><radialGradient id={`${id}-reveal-${i}`} key={i}>
+      <stop offset="0%" stopColor="black"/>
+      <stop offset={`${100*disc.clear/disc.fade}%`} stopColor="black"/>
+      <stop offset="83%" stopColor="#a7a7a7"/>
+      <stop offset="100%" stopColor="white"/>
+    </radialGradient>)}
+    <mask id={`${id}-fog-mask`} maskUnits="userSpaceOnUse" x="-96000" y="-96000" width="192000" height="192000">
+      <rect x="-96000" y="-96000" width="192000" height="192000" fill="white"/>
+      {discs.map((disc,i)=><circle key={i} cx={disc.x} cy={-disc.y} r={disc.fade} fill={`url(#${id}-reveal-${i})`}/>)}
+    </mask>
+    <radialGradient id={`${id}-heat`}>
+      <stop stopColor="#ffd58b" stopOpacity=".52"/><stop offset=".52" stopColor="#e9ab5a" stopOpacity=".22"/>
+      <stop offset=".91" stopColor="#f0a755" stopOpacity=".095"/><stop offset="1" stopColor="#f5bf76" stopOpacity=".03"/>
+    </radialGradient>
+    <radialGradient id={`${id}-halo`}>
+      <stop stopColor="#e5eef0" stopOpacity="0"/><stop offset=".65" stopColor="#d5e6e9" stopOpacity="0"/>
+      <stop offset=".87" stopColor="#d7eef1" stopOpacity=".065"/><stop offset="1" stopColor="#c5dce4" stopOpacity="0"/>
+    </radialGradient>
+  </defs>;
+}
+export default function MapScene({selected,onSelect,compact=false}:Props){
+  const unique=useId().replace(/[^a-zA-Z0-9]/g,'')||'map';
+  const root=useRef<HTMLDivElement>(null);
+  const drag=useRef<{x:number;y:number;cx:number;cy:number;travel:number}|null>(null);
+  const ignoreNextClick=useRef(false);
+  const [aspect,setAspect]=useState(1.65);
+  const [zoom,setZoom]=useState(1);
+  const [cx,setCx]=useState(0);
+  const [cy,setCy]=useState(0);
+  const [survey,setSurvey]=useState(false);
+  const [labels,setLabels]=useState(true);
+  const [minutes,setMinutes]=useState(420);
+  const [level,setLevel]=useState(1);
+  const [inspected,setInspected]=useState<string|null>(null);
+  const radius=heatRadiusM(level);
+  const phase=dayPhase(minutes);
+  const viewHeight=172/zoom;
+  const viewWidth=viewHeight*aspect;
+  const vb=`${cx-viewWidth/2} ${cy-viewHeight/2} ${viewWidth} ${viewHeight}`;
+  const revealed=useMemo(()=>visibleDemoMarkers(survey),[survey]);
+  const current=revealed.find(m=>m.id===inspected);
+  useEffect(()=>{
+    if(!root.current) return;
+    const observer=new ResizeObserver(entries=>{
+      const {width,height}=entries[0].contentRect;
+      if(width>0 && height>0) setAspect(width/height);
+    });
+    observer.observe(root.current);
+    return ()=>observer.disconnect();
+  },[]);
+  const setZoomBound=(value:number)=>setZoom(Math.max(.002,Math.min(6,value)));
+  const zoomBy=(factor:number)=>setZoomBound(zoom*factor);
+  const reset=()=>{setZoom(1);setCx(0);setCy(0);};
+  const fitHeat=()=>{
+    setCx(DEMO_CAMP.x);setCy(-DEMO_CAMP.y);
+    setZoomBound(172/(Math.max(24,radius)*2.6));
+  };
+  const pointerDown=(e:ReactPointerEvent<SVGSVGElement>)=>{
+    if(e.button!==0) return;
+    drag.current={x:e.clientX,y:e.clientY,cx,cy,travel:0};
+    ignoreNextClick.current=false;
     e.currentTarget.setPointerCapture(e.pointerId);
   };
-  const pointerMove = (e: ReactPointerEvent<SVGSVGElement>) => {
-    if (!pointer.current) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    setCx(Math.max(width/2, Math.min(1100-width/2, pointer.current.cx-(e.clientX-pointer.current.x)*width/rect.width)));
-    setCy(Math.max(height/2, Math.min(690-height/2, pointer.current.cy-(e.clientY-pointer.current.y)*height/rect.height)));
+  const pointerMove=(e:ReactPointerEvent<SVGSVGElement>)=>{
+    if(!drag.current)return;
+    const rect=e.currentTarget.getBoundingClientRect();
+    const dx=e.clientX-drag.current.x,dy=e.clientY-drag.current.y;
+    drag.current.travel=Math.max(drag.current.travel,Math.hypot(dx,dy));
+    setCx(drag.current.cx-dx*viewWidth/rect.width);
+    setCy(drag.current.cy-dy*viewHeight/rect.height);
   };
-  const pointerUp = () => { pointer.current = null; };
-
-  return (
-    <div className={`map-scene ${compact ? 'map-scene--compact' : ''}`}>
-      <svg className="terrain-svg" viewBox={viewBox} aria-label="Bản đồ minh họa lãnh địa, vị trí không phải tọa độ thật" role="img"
-        onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp}>
-        <Terrain />
-        {sites.map(site => (
-          <g key={site.id} className={`map-site ${selected===site.id ? 'map-site--selected' : ''}`}
-             transform={`translate(${site.x} ${site.y})`} role="button" tabIndex={0}
-             aria-label={`Xem ${site.name}`}
-             onPointerDown={e => e.stopPropagation()}
-             onClick={() => onSelect(site.id)}
-             onKeyDown={e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();onSelect(site.id);} }}>
-            <circle r="55" fill={selected===site.id ? '#d9c092' : '#8cb6ba'} opacity={selected===site.id ? '.14':'.06'}/>
-            <circle r="46" fill="none" stroke={selected===site.id ? '#e4c99e':'#9ac5c9'} strokeWidth={selected===site.id ? 2:1}
-              strokeDasharray={selected===site.id ? 'none':'3 7'} opacity=".75"/>
-            <SiteGlyph id={site.id}/>
-            {labels && <g transform="translate(0 68)">
-              <rect x={-Math.max(51,site.label.length*5.7)} y="-20" rx="6" width={Math.max(102,site.label.length*11.4)} height="31" fill="#0e1d27" opacity=".9" stroke="#8aabad" strokeOpacity=".45"/>
-              <text textAnchor="middle" fill="#e6eeea" fontSize="15" fontWeight="600" y="1">{site.label}</text>
-            </g>}
-          </g>
-        ))}
-        {fog && <rect width="1100" height="690" fill="#07121b" opacity=".7" mask="url(#demo-fog)" pointerEvents="none"/>}
-        <g transform="translate(75 72)" opacity=".82" pointerEvents="none">
-          <path d="M0 27V-25m0 0-8 13m8-13 8 13" fill="none" stroke="#e7e8d9" strokeWidth="2"/>
-          <text x="0" y="-37" textAnchor="middle" fill="#f2ecdc" fontSize="16" fontWeight="700">B</text>
+  const pointerUp=()=>{if(drag.current?.travel && drag.current.travel>5)ignoreNextClick.current=true;drag.current=null;};
+  const wheel=(e:ReactWheelEvent<SVGSVGElement>)=>{
+    e.preventDefault();
+    const rect=e.currentTarget.getBoundingClientRect();
+    const x=(e.clientX-rect.left)/rect.width-.5;
+    const y=(e.clientY-rect.top)/rect.height-.5;
+    const next=Math.max(.002,Math.min(6,zoom*(e.deltaY<0?1.14:1/1.14)));
+    setCx(c=>c+x*(viewWidth-viewHeight*aspect/next));
+    setCy(c=>c+y*(viewHeight-172/next));
+    setZoom(next);
+  };
+  const inspectSite=(id:SiteKind)=>{
+    if(ignoreNextClick.current){ignoreNextClick.current=false;return;}
+    setInspected(null);onSelect(id);
+  };
+  const inspectMarker=(id:string)=>{
+    if(ignoreNextClick.current){ignoreNextClick.current=false;return;}
+    setInspected(id);
+  };
+  const clearSurvey=()=>{
+    setSurvey(s=>!s);setInspected(null);
+  };
+  const allIcons=FIRE_MARKER_SCALE(zoom);
+  return <div className={`map-experience ${compact?'map-experience--compact':''}`}>
+    {!compact&&<div className="map-toolbar">
+      <div className="map-toolbar-main">
+        <span className="map-eyebrow"><Snowflake size={14}/> BĂNG NGUYÊN · BẢN XEM THỬ</span>
+        <span className="map-time-flag"><span className={`map-phase-symbol phase-${phase}`}>{phase==='day'?<Sun size={15}/>:<Moon size={15}/>}</span>{formatClock(minutes)} · {phase==='day'?'Ban ngày':phase==='twilight'?'Chạng vạng':'Ban đêm'}</span>
+      </div>
+      <div className="map-toolbar-actions">
+        <label className="map-control-label" htmlFor={`${unique}-time`}>Thử ánh sáng</label>
+        <select id={`${unique}-time`} value={minutes} onChange={e=>setMinutes(Number(e.target.value))} aria-label="Mô phỏng giờ hiển thị">
+          {TIMES.map(t=><option value={t} key={t}>{formatClock(t)}</option>)}
+        </select>
+        <label className="map-control-label" htmlFor={`${unique}-level`}>Xem vùng nhiệt</label>
+        <select id={`${unique}-level`} value={level} onChange={e=>setLevel(Number(e.target.value))} aria-label="Xem thử vùng nhiệt theo cấp">
+          {LEVELS.map(l=><option value={l} key={l}>Cấp {l}</option>)}
+        </select>
+        <button className={`map-survey-switch ${survey?'is-on':''}`} onClick={clearSurvey} aria-pressed={survey}>
+          <MapPinned size={15}/> {survey?'Ẩn điểm mẫu':'Xem khảo sát mẫu'}
+        </button>
+      </div>
+    </div>}
+    <div className={`map-scene map-scene--deep ${compact?'map-scene--compact':''}`} ref={root}>
+      <svg className="terrain-svg terrain-svg--deep" viewBox={vb} aria-label="Bản đồ băng nguyên với lớp sương mù khám phá, giữ chuột trái và kéo để di chuyển"
+        onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp} onWheel={wheel}>
+        <Terrain id={unique}/>
+        <FogMask id={unique} survey={survey}/>
+        <rect x="-96000" y="-96000" width="192000" height="192000" fill="#081527" opacity={dayOverlayOpacity(minutes)} pointerEvents="none"/>
+        {(survey?DEMO_SURVEYED:OPENING_OBSERVED).map((d,i)=>
+          <circle key={i} cx={d.x} cy={-d.y} r={d.fade+27} fill={`url(#${unique}-halo)`} pointerEvents="none"/>)}
+        <rect x="-96000" y="-96000" width="192000" height="192000" fill="#01040a" mask={`url(#${unique}-fog-mask)`} pointerEvents="none"/>
+        <circle cx="0" cy="0" r={radius} fill={`url(#${unique}-heat)`} pointerEvents="none"/>
+        <circle cx="0" cy="0" r={radius} fill="none" stroke="#edbc77" strokeWidth={Math.max(.8,Math.min(5,2.2/zoom))} strokeDasharray={`${Math.max(4,8/zoom)} ${Math.max(3,6/zoom)}`} strokeOpacity=".88" pointerEvents="none"/>
+        <circle cx="0" cy="0" r={Math.min(radius,Math.max(3,radius*.18))} fill="none" stroke="#ffc881" strokeOpacity=".23" strokeWidth="2" pointerEvents="none"/>
+        {FIRST_SITES.map(site=><g key={site.id} className={`map-site map-site--deep ${selected===site.id&&!inspected?'map-site--selected':''}`}
+           transform={`translate(${site.x} ${site.renderY}) scale(${allIcons})`}
+           role="button" aria-label={`Xem ${site.name}`} tabIndex={0}
+           onClick={()=>inspectSite(site.id)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inspectSite(site.id);}}}>
+          <circle r="23" fill="#0e2531" opacity=".92" stroke={selected===site.id&&!inspected?'#eccd91':'#9bc7c9'} strokeWidth="1.7"/>
+          <circle r="28" fill="none" stroke="#b8c8bd" strokeOpacity=".23" strokeWidth="1" strokeDasharray="3 5"/>
+          <MarkerGraphic kind={site.id}/>
+          {labels && zoom>.16 && <g transform="translate(0 33)">
+            <rect x={-Math.max(27,site.label.length*3.6)} y="-6" width={Math.max(54,site.label.length*7.2)} height="17" rx="4" fill="#091721" stroke="#a5c6c9" strokeOpacity=".3"/>
+            <text textAnchor="middle" fontSize="8" fill="#f3f1e8" y="5">{site.label}</text>
+          </g>}
+        </g>)}
+        {revealed.map(marker=><g key={marker.id} className={`map-resource-marker ${inspected===marker.id?'map-resource-marker--selected':''}`}
+          transform={`translate(${marker.x} ${-marker.y}) scale(${allIcons})`}
+          role="button" tabIndex={0} aria-label={`Kiểm tra ${marker.name}`} onClick={()=>inspectMarker(marker.id)}
+          onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inspectMarker(marker.id);}}}>
+          <circle r="21" fill="#0b2933" stroke={inspected===marker.id?'#f0c88b':'#b4d3c7'} strokeWidth="1.6"/>
+          <circle r="26" fill="none" stroke="#b4d9d9" strokeOpacity=".18" strokeDasharray="2 4"/>
+          <MarkerGraphic kind={marker.kind}/>
+          {labels && zoom>.16&&<text y="36" textAnchor="middle" fontSize="8" fill="#e5efea" stroke="#091d27" strokeWidth="3" paintOrder="stroke">{marker.kind==='chest'?'Rương Báu':marker.name}</text>}
+        </g>)}
+        <g className="map-snow-particles" pointerEvents="none">
+          {SNOW_PARTICLES.map((p,i)=><circle key={i} cx={p.x} cy={p.y} r={p.r} fill="#eaf5ee" opacity=".63" style={{animationDelay:`${p.delay}s`}} />)}
         </g>
       </svg>
-      {!compact && <div className="map-overlay top-left">
-        <span className="map-tag">BẢN ĐỒ MINH HỌA</span>
-        <strong>Đồng bằng Cổ Chiến Trường</strong>
-        <small>Vị trí và địa hình chỉ để duyệt giao diện</small>
-      </div>}
-      <div className="map-controls" aria-label="Điều khiển bản đồ">
-        {!compact && <button title="Ẩn / hiện nhãn" aria-pressed={labels} onClick={() => setLabels(l=>!l)} className={labels?'active':''}><Eye size={16}/></button>}
-        {!compact && <button title="Bật / tắt hiệu ứng sương mù mẫu" aria-pressed={fog} onClick={() => setFog(f=>!f)} className={fog?'active':''}>{fog?<EyeOff size={16}/>:<Crosshair size={16}/>}</button>}
-        <button title="Thu nhỏ" aria-label="Thu nhỏ" onClick={() => changeZoom(-.3)} disabled={zoom<=1}><Minus size={16}/></button>
-        <button title="Phóng to" aria-label="Phóng to" onClick={() => changeZoom(.3)} disabled={zoom>=2.7}><Plus size={16}/></button>
-        <button title="Đặt lại vị trí" aria-label="Đặt lại vị trí" onClick={reset}><Maximize2 size={16}/></button>
+      <div className="map-vignette" aria-hidden="true"/>
+      <div className="map-corner-title"><span><Compass size={13}/> PHƯƠNG BẮC ↑</span><strong>Đồng bằng Cổ Chiến Trường</strong><small>Bản vẽ khu vực · Không phải địa hình canon</small></div>
+      <div className="map-corner-controls">
+        <button onClick={()=>zoomBy(.74)} aria-label="Thu nhỏ" title="Thu nhỏ"><Minus size={17}/></button>
+        <span aria-live="polite">{Math.round(zoom*100)}%</span>
+        <button onClick={()=>zoomBy(1.34)} aria-label="Phóng to" title="Phóng to"><Plus size={17}/></button>
+        <button onClick={reset} aria-label="Trở về tâm lãnh địa" title="Trở về tâm lãnh địa"><Maximize2 size={17}/></button>
+        <button onClick={fitHeat} aria-label="Xem toàn bộ vòng nhiệt" title="Xem toàn bộ vòng nhiệt"><ThermometerSun size={17}/></button>
       </div>
-      {!compact && <div className="map-scale">Tỷ lệ minh họa · {Math.round(zoom * 100)}%</div>}
+      {current&&!compact&&<div className="map-entity-popover" role="region" aria-label="Thông tin điểm được chọn">
+        <div className="map-entity-kicker">{current.kind==='chest'?'RƯƠNG BÁU':'ĐIỂM THU THẬP'} <span>MẪU</span></div>
+        <h3>{current.name}</h3>
+        {current.kind==='chest'?<>
+          <div className="map-entity-quantity">Chưa mở · Nội dung chưa xác định</div>
+          <p>Biểu tượng rương minh họa. Không đại diện vị trí rương được khóa trong gói thế giới.</p>
+        </>:<>
+          <div className="map-entity-quantity">{displayRemaining(current)}</div>
+          <div className="map-resource-progress"><span style={{width:`${current.capacity?current.remaining/current.capacity*100:0}%`}} /></div>
+          <p>{current.description}</p>
+        </>}
+        <small>Chỉ số phục vụ thử giao diện; không thêm vật phẩm vào kho.</small>
+        <button onClick={()=>setInspected(null)}>Đóng <ArrowDownRight size={15}/></button>
+      </div>}
+      <div className="map-heat-readout">
+        <span><ThermometerSun size={15}/> VÙNG NHIỆT</span>
+        <strong>{formatDistance(radius)} <small>bán kính</small></strong>
+        <em>{fireForm(level)} Cấp {level} {level!==1?'· Xem trước':''}</em>
+      </div>
+      {!compact&&<div className="map-drag-hint">Giữ chuột và kéo để khám phá không gian · Sương mù không mở thêm thông tin</div>}
+      {compact&&<span className="map-compact-label">SƯƠNG MÙ KHÁM PHÁ · T0</span>}
     </div>
-  );
+    {!compact&&<div className="map-footer-bar">
+      <span><span className="map-dot mapped"/> Đã quan sát T0</span>
+      <span><span className="map-dot fogged"/> Chưa khám phá</span>
+      {survey&&<span><span className="map-dot sample"/> Điểm khảo sát giả lập</span>}
+      <span className="map-footer-aside">{survey?'Số lượng tài nguyên chỉ là dữ liệu mẫu':'Ở T0 chỉ bốn vật thể khởi đầu đã biết'} · Vòng nhiệt không loại bỏ sương mù</span>
+    </div>}
+  </div>;
+}
+function FIRE_MARKER_SCALE(zoom:number):number{
+  // Markers remain legible across local zoom, without turning into gigantic buildings.
+  return Math.max(.45,Math.min(2.4,1/Math.sqrt(zoom)));
 }
