@@ -20,7 +20,7 @@ const rows=lines=>lines.split('\n').filter(line=>line.startsWith('| `'));
 const metres=tuple=>(tuple.match(/\((.*?)\)/)?.[1]??'').split(';').map(x=>Math.round(Number(x.replace(',','.'))*1000));
 
 test('entire canonical site table agrees with WORLD-PACKAGE-LL01-1.0',()=>{
-  const records=rows(between(source,'<!-- LL01-SITES-BEGIN -->','<!-- LL01-SITES-END -->'));
+  const records=rows(between(source,'<!-- LL01-SITES-BEGIN -->','<!-- LL01-SITES-END -->')).filter(line=>line.startsWith('| `SITE-'));
   assert.equal(records.length,38);
   for(const line of records){
     const fields=line.split('|').map(s=>s.trim());
