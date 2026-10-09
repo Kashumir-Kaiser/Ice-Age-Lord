@@ -372,3 +372,19 @@ a { color: inherit; }
 @media (prefers-reduced-motion:reduce) {
   *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; }
 }
+
+/* Brand title must remain INSIDE the fixed navigation rail at 228–260px. */
+.brand-row { min-width:0; overflow:hidden; align-items:center; gap:10px; }
+.brand-row .brand-copy { min-width:0; max-width:calc(100% - 54px); flex:1 1 auto; }
+.brand-row .brand-copy strong { white-space:normal; overflow-wrap:normal; font-size:16px; letter-spacing:.35px; line-height:1.12; font-weight:700; }
+.brand-row .brand-copy strong em { display:block; font-style:normal; font-size:19px; line-height:1.05; letter-spacing:1.9px; }
+.brand-row .brand-copy span { white-space:normal; font-size:8px; letter-spacing:.8px; line-height:1.35; }
+.clock-player { display:flex; align-items:center; flex-wrap:wrap; gap:8px; max-width:370px; }
+.clock-player .clock-chip { font-variant-numeric:tabular-nums; font-size:11px; min-width:145px; justify-content:center; }
+.clock-speed-wrap,.custom-clock-wrap { display:flex; align-items:center; gap:5px; white-space:nowrap; color:#a6bdc2; font-size:10px; }
+.clock-speed-wrap select,.custom-clock-wrap input { border:1px solid rgba(148,200,201,.34); background:#142d3c; color:#e9f0e8; padding:8px 9px; border-radius:7px; min-width:68px; }
+.custom-clock-wrap input { width:75px; }
+.clock-sim-label { color:#7d9ba5; width:100%; text-align:right; font-size:9px; }
+@media (max-width:1350px) {.brand-row { padding:15px 11px 18px; gap:8px; } .brand-row .brand-copy strong { font-size:14px; }.brand-row .brand-copy strong em {font-size:18px;} .brand-row .brand-copy span {font-size:7px;} }
+@media (max-width:1020px) {.brand-row .brand-copy {display:none;} .clock-player {max-width:290px;} }
+@media (max-width:700px) {.sidebar--open .brand-row .brand-copy {display:block; max-width:165px;} .sidebar--open .brand-row {gap:8px;padding:16px;} .topbar-actions {gap:7px;} .clock-player {max-width:230px;} .clock-sim-label {display:none;} .clock-speed-wrap>span {display:none;} .clock-player .clock-chip {min-width:120px;} .clock-speed-wrap select {padding:6px 4px;min-width:64px;} }
