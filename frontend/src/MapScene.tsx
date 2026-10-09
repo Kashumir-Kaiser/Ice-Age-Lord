@@ -55,8 +55,8 @@ function Terrain({id}: {id:string}) {
         <path d="M-40 32q85-63 184 0t150 0M-40 67q85-63 184 0t150 0M-40 102q85-63 184 0t150 0" fill="none" stroke="#cbdfdf" strokeOpacity=".045" strokeWidth="1.7"/>
       </pattern>
     </defs>
-    <rect x="-96000" y="-96000" width="192000" height="192000" fill="#132d3d"/>
-    <rect x="-96000" y="-96000" width="192000" height="192000" fill={`url(#${id}-ice)`}/>
+    <rect x="-50000" y="-50000" width="100000" height="100000" fill="#132d3d"/>
+    <rect x="-50000" y="-50000" width="100000" height="100000" fill={`url(#${id}-ice)`}/>
     <g opacity=".85">
       <path d="M-1450-330-1090-700-868-470-550-790-291-392-108-530 240-274 490-480 745-210 1180-510 1600-125V850H-1450Z" fill="#1b3e51" opacity=".34"/>
       <path d="m-1320-280 235-430 188 245 332-360 270 393 150-180 310 270 195-240 220 265 390-110 260 266" fill="none" stroke="#9dc1c3" strokeWidth="12" strokeOpacity=".18"/>
@@ -268,10 +268,10 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
         onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp} onWheel={wheel}>
         <Terrain id={unique}/>
         <FogMask id={unique} survey={survey} viewport={viewport}/>
-        <rect x="-96000" y="-96000" width="192000" height="192000" fill="#081527" opacity={dayOverlayOpacity(minutes)} pointerEvents="none"/>
+        <rect {...viewport} fill="#081527" opacity={dayOverlayOpacity(minutes)} pointerEvents="none"/>
         {(survey?DEMO_SURVEYED:OPENING_OBSERVED).map((d,i)=>
           <circle key={i} cx={d.x} cy={-d.y} r={d.fade+27} fill={`url(#${unique}-halo)`} pointerEvents="none"/>)}
-        <rect x="-96000" y="-96000" width="192000" height="192000" fill="#01040a" mask={`url(#${unique}-fog-mask)`} pointerEvents="none"/>
+        <rect {...viewport} fill="#01040a" mask={`url(#${unique}-fog-mask)`} pointerEvents="none"/>
         <circle cx="0" cy="0" r={radius} fill={`url(#${unique}-heat)`} mask={`url(#${unique}-known-mask)`} pointerEvents="none"/>
         <circle cx="0" cy="0" r={radius} fill="none" stroke="#edbc77" strokeWidth={Math.max(.8,Math.min(5,2.2/zoom))} strokeDasharray={`${Math.max(4,8/zoom)} ${Math.max(3,6/zoom)}`} strokeOpacity=".88" pointerEvents="none"/>
         <circle cx="0" cy="0" r={Math.min(radius,Math.max(3,radius*.18))} fill="none" stroke="#ffc881" strokeOpacity=".23" strokeWidth="2" pointerEvents="none"/>
