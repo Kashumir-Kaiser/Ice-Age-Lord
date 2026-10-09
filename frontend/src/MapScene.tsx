@@ -4,8 +4,8 @@ import { ArrowDownRight, Compass, Eye, EyeOff, Maximize2, Minus, Plus, Snowflake
 import { sites } from './demoData';
 import type { SiteKind } from './demoData';
 import {
-  dayOverlayOpacity, dayPhase, DEMO_CAMP, displayRemaining, fireForm,
-  formatClock, formatDistance, heatRadiusM, shouldEnterWorldMap, visibilityDiscs, fogOpacityAt, WORLD_ZOOM, visibleDemoMarkers,
+  dayOverlayOpacity, dayPhase, DEMO_CAMP, fireForm,
+  formatClock, formatDistance, heatRadiusM, shouldEnterWorldMap, visibilityDiscs, fogOpacityAt, WORLD_ZOOM,
 } from './mapModel';
 import { CANONICAL_SITES, CANONICAL_RESOURCES, CANONICAL_CHEST_CACHES, CANONICAL_MAP_RADIUS_M, knownOpeningSites } from './canonicalGeography';
 import './map-refinement.css';
@@ -226,7 +226,7 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
   const clearSurvey=()=>{
     setSurvey(s=>!s);setInspected(null);
   };
-  const allIcons=world?Math.min(1500,40/zoom):FIRE_MARKER_SCALE(zoom);
+  const allIcons=world?120:FIRE_MARKER_SCALE(zoom);
   return <div className={`map-experience ${compact?'map-experience--compact':''}`}>
     {!compact&&<div className="map-toolbar">
       <div className="map-toolbar-main">
@@ -244,8 +244,9 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
         </select>
         <button className="map-survey-switch" onClick={()=>setLabels(v=>!v)} aria-pressed={labels} aria-label="Hiện hoặc ẩn nhãn biểu tượng">{labels?<Eye size={15}/>:<EyeOff size={15}/>} {labels?'Ẩn nhãn':'Hiện nhãn'}</button>
         <button className={`map-survey-switch ${survey?'is-on':''}`} onClick={clearSurvey} aria-pressed={survey}>
-          <MapPinned size={15}/> {survey?'Ẩn điểm mẫu':'Xem khảo sát mẫu'}
+          <MapPinned size={15}/> {survey?'Ẩn atlas nguồn':'Xem atlas nguồn (debug)'}
         </button>
+        <button className={`map-survey-switch ${world?'is-on':''}`} onClick={world?enterLocal:enterWorld} aria-pressed={world} aria-label={world?'Chuyển sang bản đồ địa phương':'Chuyển sang bản đồ thế giới'}><Globe2 size={15}/> {world?'Bản đồ địa phương':'Bản đồ thế giới'}</button>
       </div>
     </div>}
     <div className={`map-scene map-scene--deep ${compact?'map-scene--compact':''}`} ref={root}>
@@ -260,7 +261,7 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
         <circle cx="0" cy="0" r={radius} fill={`url(#${unique}-heat)`} mask={`url(#${unique}-known-mask)`} pointerEvents="none"/>
         <circle cx="0" cy="0" r={radius} fill="none" stroke="#edbc77" strokeWidth={Math.max(.8,Math.min(5,2.2/zoom))} strokeDasharray={`${Math.max(4,8/zoom)} ${Math.max(3,6/zoom)}`} strokeOpacity=".88" pointerEvents="none"/>
         <circle cx="0" cy="0" r={Math.min(radius,Math.max(3,radius*.18))} fill="none" stroke="#ffc881" strokeOpacity=".23" strokeWidth="2" pointerEvents="none"/>
-        {FIRST_SITES.filter(site=>fogOpacityAt(site.x,site.y,survey,minutes,level)<.92).map(site=><g key={site.id} className={`map-site map-site--deep ${selected===site.id&&!inspected?'map-site--selected':''}`}
+        {FIRST_SITES.filter(site=>(!world||site.id==='fire') && knownSites.some(known=>known.x===site.x&&known.y===site.y) && fogOpacityAt(site.x,site.y,survey,minutes,level)<.92).map(site=><g key={site.id} className={`map-site map-site--deep ${selected===site.id&&!inspected?'map-site--selected':''}`}
            transform={`translate(${site.x} ${site.renderY}) scale(${allIcons})`}
            role="button" aria-label={`Xem ${site.name}`} tabIndex={0}
            onClick={()=>inspectSite(site.id)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inspectSite(site.id);}}}>
@@ -286,26 +287,27 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
         </g>
       </svg>
       <div className="map-vignette" aria-hidden="true"/>
-      <div className="map-corner-title"><span><Compass size={13}/> PHƯƠNG BẮC ↑</span><strong>Đồng bằng Cổ Chiến Trường</strong><small>Bản vẽ khu vực · Không phải địa hình canon</small></div>
+      <div className="map-corner-title"><span><Compass size={13}/> PHƯƠNG BẮC ↑</span><strong>{world?'Bản đồ thế giới · LL01':'Đồng bằng Cổ Chiến Trường'}</strong><small>Tọa độ nguồn cố định · Đường viền địa hình minh họa</small></div>
       <div className="map-corner-controls">
         <button onClick={()=>zoomBy(.74)} aria-label="Thu nhỏ" title="Thu nhỏ"><Minus size={17}/></button>
         <span aria-live="polite">{Math.round(zoom*100)}%</span>
         <button onClick={()=>zoomBy(1.34)} aria-label="Phóng to" title="Phóng to"><Plus size={17}/></button>
         <button onClick={reset} aria-label="Trở về tâm lãnh địa" title="Trở về tâm lãnh địa"><Maximize2 size={17}/></button>
         <button onClick={fitHeat} aria-label="Xem toàn bộ vòng nhiệt" title="Xem toàn bộ vòng nhiệt"><ThermometerSun size={17}/></button>
+        <button onClick={world?enterLocal:enterWorld} aria-label={world?'Chuyển sang bản đồ địa phương':'Chuyển sang bản đồ thế giới'} title="Đổi chế độ bản đồ"><Globe2 size={17}/></button>
       </div>
       {current&&!compact&&<div className="map-entity-popover" role="region" aria-label="Thông tin điểm được chọn">
-        <div className="map-entity-kicker">{current.kind==='chest'?'RƯƠNG BÁU':'ĐIỂM THU THẬP'} <span>MẪU</span></div>
+        <div className="map-entity-kicker">{current.kind==='chest'?'CACHE RƯƠNG BÁU':'ĐIỂM THU THẬP'} <span>NGUỒN / DEBUG</span></div>
         <h3>{current.name}</h3>
         {current.kind==='chest'?<>
           <div className="map-entity-quantity">Chưa mở · Nội dung chưa xác định</div>
-          <p>Biểu tượng rương minh họa. Không đại diện vị trí rương được khóa trong gói thế giới.</p>
+          <p>Đây là vị trí cache thật từ bảng thế giới, chỉ phục vụ kiểm chứng bản đồ. Không tiết lộ nội dung, Phẩm hoặc quyền tiếp cận trong game.</p>
         </>:<>
-          <div className="map-entity-quantity">{displayRemaining(current)}</div>
+          <div className="map-entity-quantity">{current.remaining.toLocaleString('vi-VN')} / {current.capacity.toLocaleString('vi-VN')} {current.unit}</div>
           <div className="map-resource-progress"><span style={{width:`${current.capacity?current.remaining/current.capacity*100:0}%`}} /></div>
           <p>{current.description}</p>
         </>}
-        <small>Chỉ số phục vụ thử giao diện; không thêm vật phẩm vào kho.</small>
+        <small>Tọa độ và giá trị T0 từ WORLD-PACKAGE-LL01-1.0 · Chỉ hiển thị ở chế độ xem nguồn. Không xác nhận đã được Lí Lan khám phá, không trừ kho.</small>
         <button onClick={()=>setInspected(null)}>Đóng <ArrowDownRight size={15}/></button>
       </div>}
       <div className="map-heat-readout">
@@ -313,14 +315,14 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
         <strong>{formatDistance(radius)} <small>bán kính</small></strong>
         <em>{fireForm(level)} Cấp {level} {level!==1?'· Xem trước':''}</em>
       </div>
-      {!compact&&<div className="map-drag-hint">Giữ chuột và kéo để khám phá không gian · Sương mù không mở thêm thông tin</div>}
+      {!compact&&<div className="map-drag-hint">{world?'Phạm vi vùng LL01: bán kính 96 km · Tối đen là chưa khám phá':'Kéo để di chuyển · Cuộn chuột để thu phóng, không cuộn trang'}</div>}
       {compact&&<span className="map-compact-label">SƯƠNG MÙ KHÁM PHÁ · T0</span>}
     </div>
     {!compact&&<div className="map-footer-bar">
       <span><span className="map-dot mapped"/> Đã quan sát T0</span>
       <span><span className="map-dot fogged"/> Chưa khám phá</span>
-      {survey&&<span><span className="map-dot sample"/> Điểm khảo sát giả lập</span>}
-      <span className="map-footer-aside">{survey?'Số lượng tài nguyên chỉ là dữ liệu mẫu':'Ở T0 chỉ bốn vật thể khởi đầu đã biết'} · Vòng nhiệt không loại bỏ sương mù</span>
+      {survey&&<span><span className="map-dot sample"/> Atlas nguồn (không phải kiến thức nhân vật)</span>}
+      <span className="map-footer-aside">{survey?'Chỉ số và tọa độ nguồn, không tự khám phá':'T0: chỉ bốn vật thể khởi đầu đã biết'} · Lửa soi sáng địa hình, không tiết lộ rương giấu</span>
     </div>}
   </div>;
 }
