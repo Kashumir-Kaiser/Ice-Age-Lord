@@ -50,9 +50,11 @@ test('daylight, twilight and night fog contracts around source heat radius',()=>
   assert.equal(model.fogOpacityAt(24000,0,false,1140,1),1);
 });
 test('world atlas transition waits until entire source heat area is visible',()=>{
-  assert.equal(model.shouldEnterWorldMap(.5,10),true);
+  assert.equal(model.shouldEnterWorldMap(.5,10),false);
   assert.equal(model.shouldEnterWorldMap(.5,25000),false);
-  assert.equal(model.shouldEnterWorldMap(.003,25000),true);
+  assert.equal(model.shouldEnterWorldMap(.003,25000),false);
+  assert.equal(model.shouldEnterWorldMap(.002,25000),true);
+  assert.equal(model.shouldEnterWorldMap(.01,10),true);
   assert.ok(model.WORLD_ZOOM<.002);
 });
 test('chests and resource spot quantities are withheld before survey preview',()=>{
