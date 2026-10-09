@@ -265,7 +265,7 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
           <circle key={i} cx={d.x} cy={-d.y} r={d.fade+27} fill={`url(#${unique}-halo)`} pointerEvents="none"/>)}
         <rect {...viewport} fill="#01040a" mask={`url(#${unique}-fog-mask)`} pointerEvents="none"/>
         <circle cx="0" cy="0" r={radius} fill={`url(#${unique}-heat)`} mask={`url(#${unique}-known-mask)`} pointerEvents="none"/>
-        <circle cx="0" cy="0" r={radius} fill="none" stroke="#edbc77" strokeWidth={Math.max(.8,Math.min(5,2.2/zoom))} strokeDasharray={`${Math.max(4,8/zoom)} ${Math.max(3,6/zoom)}`} strokeOpacity=".88" pointerEvents="none"/>
+        <circle cx="0" cy="0" r={radius} fill="none" stroke="#edbc77" strokeWidth={Math.max(.8,Math.min(750,viewHeight/245))} strokeDasharray={`${Math.max(4,viewHeight/70)} ${Math.max(3,viewHeight/100)}`} strokeOpacity=".88" pointerEvents="none"/>
         <circle cx="0" cy="0" r={Math.min(radius,Math.max(3,radius*.18))} fill="none" stroke="#ffc881" strokeOpacity=".23" strokeWidth="2" pointerEvents="none"/>
         {FIRST_SITES.filter(site=>(!world||site.id==='fire') && knownSites.some(known=>known.x===site.x&&known.y===site.y) && fogOpacityAt(site.x,site.y,survey,minutes,level)<.92).map(site=><g key={site.id} className={`map-site map-site--deep ${selected===site.id&&!inspected?'map-site--selected':''}`}
            transform={`translate(${site.x} ${site.renderY}) scale(${allIcons})`}
@@ -293,7 +293,7 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
         </g>
       </svg>
       <div className="map-vignette" aria-hidden="true"/>
-      <div className="map-corner-title"><span><Compass size={13}/> PHƯƠNG BẮC ↑</span><strong>{world?'Bản đồ thế giới · LL01':'Đồng bằng Cổ Chiến Trường'}</strong><small>Tọa độ nguồn cố định · Đường viền địa hình minh họa</small></div>
+      <div className="map-corner-title"><span><Compass size={13}/> PHƯƠNG BẮC ↑</span><strong>{world?'Bản đồ thế giới · LL01':'Đồng bằng Cổ Chiến Trường'}</strong><small>{world?'Phạm vi nguồn · bán kính 96 km':'Tọa độ nguồn cố định · Đường viền địa hình minh họa'}</small></div>
       <div className="map-corner-controls">
         <button onClick={()=>zoomBy(.74)} aria-label="Thu nhỏ" title="Thu nhỏ"><Minus size={17}/></button>
         <span aria-live="polite">{Math.round(zoom*100)}%</span>
@@ -321,7 +321,7 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
         <strong>{formatDistance(radius)} <small>bán kính</small></strong>
         <em>{fireForm(level)} Cấp {level} {level!==1?'· Xem trước':''}</em>
       </div>
-      {!compact&&<div className="map-drag-hint">{world?'Phạm vi vùng LL01: bán kính 96 km · Tối đen là chưa khám phá':'Kéo để di chuyển · Cuộn chuột để thu phóng, không cuộn trang'}</div>}
+      {!compact&&<div className="map-drag-hint">{world?'Vùng tối chưa được khảo sát · Bản đồ không tự khám phá':'Kéo để di chuyển · Cuộn chuột để thu phóng, không cuộn trang'}</div>}
       {compact&&<span className="map-compact-label">SƯƠNG MÙ KHÁM PHÁ · T0</span>}
     </div>
     {!compact&&<div className="map-footer-bar">
