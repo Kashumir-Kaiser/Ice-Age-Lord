@@ -84,11 +84,11 @@ function Terrain({id}: {id:string}) {
     </g>
     {/* Environmental silhouettes: sample biomes remain behind the knowledge fog. */}
     <g opacity=".64" aria-hidden="true" pointerEvents="none">
-      <ellipse cx="-126" cy="-48" rx="62" ry="48" fill="#092c36" opacity=".38"/>
-      <ellipse cx="-126" cy="-48" rx="52" ry="35" fill="#5d858b" opacity=".19"/>
+      <ellipse cx="-78" cy="-52" rx="62" ry="48" fill="#092c36" opacity=".38"/>
+      <ellipse cx="-78" cy="-52" rx="52" ry="35" fill="#5d858b" opacity=".19"/>
       {Array.from({length:24},(_,i)=>{
         const angle=i*2.39996,dist=16+(i%5)*9;
-        const px=-126+Math.cos(angle)*dist,py=-48+Math.sin(angle)*dist;
+        const px=-78+Math.cos(angle)*dist,py=-52+Math.sin(angle)*dist;
         return <g key={i} transform={`translate(${px} ${py}) scale(.75)`}>
           <path d="m0-19-9 14h4l-8 10 6-1-8 13h30L7 4l6 1-8-10h4Z" fill="#18424b" stroke="#adcbd0" strokeWidth="1.2" />
           <path d="M0-19-4-10m-7 15 9-3m-10 15 10-3" stroke="#d3e8e0" strokeWidth="2" opacity=".8"/>
