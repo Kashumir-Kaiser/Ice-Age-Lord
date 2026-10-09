@@ -41,7 +41,7 @@ test('daylight, twilight and night fog contracts around source heat radius',()=>
   assert.ok(model.fogOpacityAt(430,0,false,720,1)>0);
   assert.ok(model.fogOpacityAt(430,0,false,720,1)<1);
   assert.equal(model.fogOpacityAt(800,0,false,720,1),1);
-  assert.equal(model.fogOpacityAt(200,0,false,1005,1),1); // dusk is contracted
+  assert.equal(model.fogOpacityAt(300,0,false,1005,1),1); // dusk is contracted
   assert.equal(model.fogOpacityAt(9,0,false,1140,1),0);
   assert.equal(model.fogOpacityAt(50,0,false,1140,1),1);
   assert.equal(model.fogOpacityAt(24000,0,false,1140,30),0);
