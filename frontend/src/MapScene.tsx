@@ -72,32 +72,31 @@ function MarkerGraphic({kind}:{kind:string}) {
   if(kind==='herbs') return <g><path d="M0 18V-13m0 24q-12-3-12-18Q1-5 0 11Zm0-10q5-18 16-20 1 17-16 20" fill="#618e7f" stroke="#d2e8d8" strokeWidth="2"/><path d="m-15 18 30 0" stroke="#d3e5d8" strokeWidth="2"/></g>;
   return <g><path d="m-18 9 5-16 18-11 15 14-7 19-20 5Z" fill="#93c9d5" stroke="#e6f9f8" strokeWidth="2"/><path d="m5-18-2 16 17-2M3-2-7 20m10-22-21 11" fill="none" stroke="#d2ffff" strokeWidth="2"/></g>;
 }
-function FogMask({id,survey,viewport}:{id:string;survey:boolean;viewport:{x:number;y:number;width:number;height:number}}) {
-  const discs=survey?DEMO_SURVEYED:OPENING_OBSERVED;
+function FogMask({id,discs,viewport}:{id:string;discs:readonly {x:number;y:number;clear:number;fade:number}[];viewport:{x:number;y:number;width:number;height:number}}) {
   return <defs>
     {discs.map((disc,i)=><radialGradient id={`${id}-reveal-${i}`} key={i}>
       <stop offset="0%" stopColor="black"/>
       <stop offset={`${100*disc.clear/disc.fade}%`} stopColor="black"/>
-      <stop offset="83%" stopColor="#a7a7a7"/>
+      <stop offset="87%" stopColor="#aaa"/>
       <stop offset="100%" stopColor="white"/>
     </radialGradient>)}
     {discs.map((disc,i)=><radialGradient id={`${id}-known-${i}`} key={`known-${i}`}>
       <stop offset="0%" stopColor="white"/>
       <stop offset={`${100*disc.clear/disc.fade}%`} stopColor="white"/>
-      <stop offset="83%" stopColor="#555"/>
+      <stop offset="87%" stopColor="#555"/>
       <stop offset="100%" stopColor="black"/>
     </radialGradient>)}
-    <mask id={`${id}-fog-mask`} maskUnits="userSpaceOnUse" x={viewport.x} y={viewport.y} width={viewport.width} height={viewport.height}>
+    <mask id={`${id}-fog-mask`} maskUnits="userSpaceOnUse" {...viewport}>
       <rect {...viewport} fill="white"/>
       {discs.map((disc,i)=><circle key={i} cx={disc.x} cy={-disc.y} r={disc.fade} fill={`url(#${id}-reveal-${i})`}/>)}
     </mask>
-    <mask id={`${id}-known-mask`} maskUnits="userSpaceOnUse" x={viewport.x} y={viewport.y} width={viewport.width} height={viewport.height}>
+    <mask id={`${id}-known-mask`} maskUnits="userSpaceOnUse" {...viewport}>
       <rect {...viewport} fill="black"/>
       {discs.map((disc,i)=><circle key={i} cx={disc.x} cy={-disc.y} r={disc.fade} fill={`url(#${id}-known-${i})`}/>)}
     </mask>
     <radialGradient id={`${id}-heat`}>
-      <stop stopColor="#ffd58b" stopOpacity=".52"/><stop offset=".52" stopColor="#e9ab5a" stopOpacity=".22"/>
-      <stop offset=".91" stopColor="#f0a755" stopOpacity=".095"/><stop offset="1" stopColor="#f5bf76" stopOpacity=".03"/>
+      <stop stopColor="#ffd58b" stopOpacity=".5"/><stop offset=".75" stopColor="#e9ab5a" stopOpacity=".25"/>
+      <stop offset="1" stopColor="#f5bf76" stopOpacity=".12"/>
     </radialGradient>
     <radialGradient id={`${id}-halo`}>
       <stop stopColor="#e5eef0" stopOpacity="0"/><stop offset=".65" stopColor="#d5e6e9" stopOpacity="0"/>
