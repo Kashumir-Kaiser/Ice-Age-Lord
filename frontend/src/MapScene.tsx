@@ -1,126 +1,64 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import type { PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from 'react';
-import { ArrowDownRight, Compass, Eye, EyeOff, Maximize2, Minus, Plus, Snowflake, Sun, Moon, ThermometerSun, MapPinned } from 'lucide-react';
+import type { PointerEvent as ReactPointerEvent } from 'react';
+import { ArrowDownRight, Compass, Eye, EyeOff, Maximize2, Minus, Plus, Snowflake, Sun, Moon, ThermometerSun, MapPinned, Globe2 } from 'lucide-react';
 import { sites } from './demoData';
 import type { SiteKind } from './demoData';
 import {
-  dayOverlayOpacity, dayPhase, DEMO_CAMP, DEMO_SURVEYED, displayRemaining, fireForm,
-  formatClock, formatDistance, heatRadiusM, OPENING_OBSERVED, visibleDemoMarkers,
+  dayOverlayOpacity, dayPhase, DEMO_CAMP, displayRemaining, fireForm,
+  formatClock, formatDistance, heatRadiusM, shouldEnterWorldMap, visibilityDiscs, fogOpacityAt, WORLD_ZOOM, visibleDemoMarkers,
 } from './mapModel';
+import { CANONICAL_SITES, CANONICAL_RESOURCES, CANONICAL_CHEST_CACHES, CANONICAL_MAP_RADIUS_M, knownOpeningSites } from './canonicalGeography';
 import './map-refinement.css';
 
 type Props = { selected: SiteKind; onSelect: (id: SiteKind) => void; compact?: boolean };
 const TIMES = [420, 720, 990, 1005, 1140, 60] as const;
 const LEVELS = [1, 2, 3, 4, 5, 6, 7, 10, 11, 16, 21, 26, 30] as const;
 const FIRST_SITES = sites.map(site=>({...site,renderY:-site.y}));
-const PINE_FIELD=Array.from({length:480},(_,i)=>({
-  x:((i*167+13)%1900)-950,
-  y:((i*271+47)%1580)-790,
-  size:3.8+(i%6)*1.35,
-  spin:(i%7)-3,
-}));
-const SERRATED_ROCKS=Array.from({length:220},(_,i)=>({
-  x:((i*389+71)%2260)-1130,
-  y:((i*227+21)%1860)-930,
-  size:3+(i%5)*1.4,
-}));
-const SNOW_PARTICLES=Array.from({length:44},(_,i)=>({
-  x:((i*131+37)%900)-450,
-  y:((i*179+13)%650)-325,
-  r: i%4===0 ? 1.3:.75,
-  delay: (i%15)*-.55,
-}));
-const LOCALLY_CLEARED_RADIUS = 40; // Decorative empty-space arrangement, not a gameplay rule.
-
-function Terrain({id}: {id:string}) {
+/** Exact positions from the LL01 registry, not generated geographical features.
+ * Snow and shading are aesthetic cartography; no coastlines, hills, roads or biome
+ * polygon boundaries are claimed where the source supplies only point anchors. */
+function Terrain({id,world}:{id:string;world:boolean}) {
+  const pines=CANONICAL_SITES.find(s=>s.id==='SITE-LL01-040')!;
+  const stone=CANONICAL_SITES.find(s=>s.id==='SITE-LL01-041')!;
+  const ford=CANONICAL_SITES.find(s=>s.id==='SITE-LL01-042')!;
   return <>
     <defs>
-      <linearGradient id={`${id}-ice`} x1="0" y1="0" x2="0.8" y2="1">
-        <stop stopColor="#708e9a"/><stop offset=".25" stopColor="#436777"/>
-        <stop offset=".72" stopColor="#2b4e61"/><stop offset="1" stopColor="#142d3b"/>
-      </linearGradient>
-      <radialGradient id={`${id}-snowfield`}>
-        <stop stopColor="#d9e9e7" stopOpacity=".55"/><stop offset=".55" stopColor="#b2d1cf" stopOpacity=".14"/>
-        <stop offset="1" stopColor="#b3d1d0" stopOpacity="0"/>
-      </radialGradient>
-      <linearGradient id={`${id}-ridge`} x1=".1" y1="0" x2=".9" y2="1">
-        <stop stopColor="#d4e7e4" stopOpacity=".6"/><stop offset=".22" stopColor="#8faeb4" stopOpacity=".6"/>
-        <stop offset=".5" stopColor="#3d6677" stopOpacity=".58"/><stop offset="1" stopColor="#183547" stopOpacity=".8"/>
-      </linearGradient>
-      <pattern id={`${id}-frost`} width="38" height="38" patternUnits="userSpaceOnUse">
-        <path d="m4 7 6-3m14 20 3-5m-1-13 2 4M7 31l5 1" stroke="#e3f0ed" strokeOpacity=".13" strokeWidth=".65"/>
-        <circle cx="16" cy="11" r=".72" fill="#e5f3f2" opacity=".25"/>
+      <radialGradient id={`${id}-ground`}><stop stopColor="#88aab0"/><stop offset=".4" stopColor="#577d89"/><stop offset="1" stopColor="#23465b"/></radialGradient>
+      <radialGradient id={`${id}-landshade`}><stop stopColor="#c7dce0" stopOpacity=".36"/><stop offset=".6" stopColor="#a2c2cb" stopOpacity=".12"/><stop offset="1" stopColor="#6b9ca9" stopOpacity="0"/></radialGradient>
+      <radialGradient id={`${id}-treezone`}><stop stopColor="#184149" stopOpacity=".7"/><stop offset="1" stopColor="#254a53" stopOpacity="0"/></radialGradient>
+      <radialGradient id={`${id}-rockzone`}><stop stopColor="#293c4b" stopOpacity=".85"/><stop offset="1" stopColor="#718e9d" stopOpacity="0"/></radialGradient>
+      <radialGradient id={`${id}-icewater`}><stop stopColor="#b8e3ec" stopOpacity=".45"/><stop offset="1" stopColor="#588f9b" stopOpacity="0"/></radialGradient>
+      <pattern id={`${id}-frost`} width="58" height="47" patternUnits="userSpaceOnUse">
+        <path d="m4 9 6-2m21 28 5-3m-17-12 3 4" stroke="#e4f3ed" strokeOpacity=".17" strokeWidth=".9"/>
+        <circle cx="16" cy="16" r=".9" fill="#eef9f5" opacity=".35"/>
       </pattern>
-      <pattern id={`${id}-contour`} width="170" height="140" patternUnits="userSpaceOnUse" patternTransform="rotate(17)">
-        <path d="M-40 32q85-63 184 0t150 0M-40 67q85-63 184 0t150 0M-40 102q85-63 184 0t150 0" fill="none" stroke="#cbdfdf" strokeOpacity=".045" strokeWidth="1.7"/>
+      <pattern id={`${id}-cart-grid`} width="10000" height="10000" patternUnits="userSpaceOnUse">
+        <path d="M10000 0H0V10000" fill="none" stroke="#a1c1ce" strokeWidth="35" strokeOpacity=".28"/>
       </pattern>
     </defs>
-    <rect x="-50000" y="-50000" width="100000" height="100000" fill="#132d3d"/>
-    <rect x="-50000" y="-50000" width="100000" height="100000" fill={`url(#${id}-ice)`}/>
-    <g opacity=".85">
-      <path d="M-1450-330-1090-700-868-470-550-790-291-392-108-530 240-274 490-480 745-210 1180-510 1600-125V850H-1450Z" fill="#1b3e51" opacity=".34"/>
-      <path d="m-1320-280 235-430 188 245 332-360 270 393 150-180 310 270 195-240 220 265 390-110 260 266" fill="none" stroke="#9dc1c3" strokeWidth="12" strokeOpacity=".18"/>
-      <path d="M-1180-620-980-920-735-600-560-980-266-556-97-717 220-385 451-794 706-455 932-803 1255-489 1470-612V500H-1180Z" fill={`url(#${id}-ridge)`} opacity=".31"/>
-      <path d="m-980-920 122 197-110-83-92 80m500-254 132 207-115-93-111 85m1105-13 83 154-79-72-66 70" fill="none" stroke="#e5f2ec" strokeOpacity=".26" strokeWidth="11"/>
-    </g>
-    <g opacity=".63">
-      <ellipse cx="-142" cy="-34" rx="265" ry="142" fill={`url(#${id}-snowfield)`} transform="rotate(-21 -142 -34)"/>
-      <ellipse cx="271" cy="106" rx="225" ry="168" fill={`url(#${id}-snowfield)`}/>
-      <ellipse cx="-380" cy="200" rx="283" ry="188" fill={`url(#${id}-snowfield)`}/>
-      <path d="M-900 148q242-161 394-56t274-96q176-190 420-94 216 79 387-68" fill="none" stroke="#d4e8e5" strokeWidth="110" strokeOpacity=".05"/>
-      <path d="M-930 401q190-151 393-111t351-60 331 12q198 112 524-29" fill="none" stroke="#c3e1e0" strokeWidth="70" strokeOpacity=".06"/>
-    </g>
-    <g opacity=".68">
-      <path d="M-1160-316C-873-188-802-322-645-253s182 167 381 154S96-192 216-75 461 191 785 150" fill="none" stroke="#081f30" strokeWidth="54" strokeOpacity=".36"/>
-      <path d="M-1160-316C-873-188-802-322-645-253s182 167 381 154S96-192 216-75 461 191 785 150" fill="none" stroke="#7eaab4" strokeWidth="22" strokeOpacity=".31"/>
-      <path d="M-1070 170Q-675 300-519 117t343 97 517-68Q564 73 896 218" fill="none" stroke="#d0e6e1" strokeWidth="15" strokeOpacity=".14"/>
-      <path d="M-740-170C-470-400-355-195-202-262S117-362 302-291" stroke="#cde4df" strokeWidth="23" strokeOpacity=".1" fill="none"/>
-    </g>
-    <g fill="none" strokeLinecap="round">
-      <path d="M-560 10q89-80 180-71 117 17 185-34 92-73 180 27t151 31" stroke="#d8e9e6" strokeWidth="2.8" strokeOpacity=".17"/>
-      <path d="M-560 27q89-80 180-71 117 17 185-34 92-73 180 27t151 31" stroke="#d8e9e6" strokeWidth="1.4" strokeOpacity=".14"/>
-      <path d="M-440 309Q-199 154-36 271t333-26 396 29" stroke="#d8e9e6" strokeWidth="2" strokeOpacity=".17"/>
-      <path d="m-194-212 45 52-15 20 37 36m24 123 41-28 13 45 29-11m350-112-55 31 22 37-62 22" stroke="#e5efed" strokeWidth="2" strokeOpacity=".15"/>
-    </g>
-    {/* Environmental silhouettes: sample biomes remain behind the knowledge fog. */}
-    <g opacity=".64" aria-hidden="true" pointerEvents="none">
-      <ellipse cx="-78" cy="-52" rx="62" ry="48" fill="#092c36" opacity=".38"/>
-      <ellipse cx="-78" cy="-52" rx="52" ry="35" fill="#5d858b" opacity=".19"/>
-      {Array.from({length:24},(_,i)=>{
-        const angle=i*2.39996,dist=16+(i%5)*9;
-        const px=-78+Math.cos(angle)*dist,py=-52+Math.sin(angle)*dist;
-        return <g key={i} transform={`translate(${px} ${py}) scale(.75)`}>
-          <path d="m0-19-9 14h4l-8 10 6-1-8 13h30L7 4l6 1-8-10h4Z" fill="#18424b" stroke="#adcbd0" strokeWidth="1.2" />
-          <path d="M0-19-4-10m-7 15 9-3m-10 15 10-3" stroke="#d3e8e0" strokeWidth="2" opacity=".8"/>
-        </g>;
-      })}
-      <path d="M78-88q56-49 95-8l41 45-14 41-86 8-48-29Z" fill="#172e3d" stroke="#96b6c1" strokeWidth="3" opacity=".75"/>
-      <path d="m78-88 39 57 56-65m-56 65 83 21m-83-21-51 0m51 0 23 21" fill="none" stroke="#d8e9e8" strokeWidth="3" opacity=".36"/>
-      <path d="m-350-112 36-33 31 12 23 49-13 35-58-5-43-28Z" fill="#315465" stroke="#8ec4ce" strokeWidth="3"/>
-      <path d="m-314-145 7 54 24-42m-24 42-24 37m24-37 47 7" stroke="#a2dce3" strokeWidth="4" opacity=".58"/>
-      <ellipse cx="74" cy="115" rx="89" ry="48" fill="#163948" stroke="#a6d4dc" strokeWidth="4" opacity=".58"/>
-      <ellipse cx="76" cy="112" rx="64" ry="30" fill="#8fbbcd" opacity=".38"/>
-      <path d="m19 100 58 9 35-16m-35 16-11 27m11-27 26 17" fill="none" stroke="#e7f7f3" strokeWidth="2.2" opacity=".53"/>
-      {Array.from({length:10},(_,i)=><path key={i} d={`m${27+(i*9)%55} ${90+(i*7)%48} -4 -8 7 3`} stroke="#a7cfb3" strokeWidth="1.7" fill="none"/>)}
-    </g>
-    <g opacity=".92">{PINE_FIELD.map((tree,i)=>Math.hypot(tree.x,tree.y)<LOCALLY_CLEARED_RADIUS+20?null:
-      <g key={i} transform={`translate(${tree.x} ${tree.y}) rotate(${tree.spin}) scale(${tree.size/10})`}>
-        <ellipse cx="7" cy="6" rx="15" ry="7" fill="#091c29" opacity=".42"/>
-        <path d="M0-20-13-2l6-1-12 17 14-3-7 17h24l-7-17 14 3L7-3l6 1Z" fill="#163945" stroke="#7096a2" strokeOpacity=".65" strokeWidth="1.5"/>
-        <path d="M0-20-6-9l9-4m-16 16 14-4m-12 11 16-4m-12 15 11-3" stroke="#d0e4df" strokeOpacity=".76" strokeWidth="2.4" strokeLinecap="round" fill="none"/>
-      </g>)}</g>
-    <g>{SERRATED_ROCKS.map((rock,i)=> Math.hypot(rock.x,rock.y)<35?null:<g key={i} transform={`translate(${rock.x} ${rock.y})`}>
-      <ellipse cx="4" cy="3" rx={rock.size*1.4} ry={rock.size*.65} fill="#081a26" opacity=".45"/>
-      <path d={`M${-rock.size} ${rock.size*.5} l${rock.size*.6} -${rock.size*1.3} ${rock.size*.9} -${rock.size*.7} ${rock.size*.9} ${rock.size*.7} ${rock.size*.35} ${rock.size*1.3}Z`} fill="#3c6071" stroke="#a4c6c7" strokeOpacity=".47" strokeWidth="1"/>
-      <path d={`M${-rock.size} ${rock.size*.5} l${rock.size*.6} -${rock.size*1.3} ${rock.size*.9} -${rock.size*.7}`} stroke="#e3eeee" strokeOpacity=".41" strokeWidth="2" fill="none"/>
-    </g>)}</g>
-    <rect x="-1200" y="-1200" width="2400" height="2400" fill={`url(#${id}-contour)`}/>
-    <rect x="-1200" y="-1200" width="2400" height="2400" fill={`url(#${id}-frost)`}/>
-    <g fill="none">
-      <path d="M-53-14 0 0 26-12 50-8m-29 20L0 0l-21 23" stroke="#ccdbd5" strokeOpacity=".1" strokeWidth="6"/>
-      <path d="M-53-14 0 0 26-12 50-8m-29 20L0 0l-21 23" stroke="#dbe9e3" strokeOpacity=".27" strokeWidth="1.6" strokeDasharray="2.2 7"/>
-      <circle r="46" stroke="#d4dfd8" strokeOpacity=".07" strokeWidth="2"/>
-    </g>
+    <rect x="-300000" y="-300000" width="600000" height="600000" fill="#112b3c"/>
+    <circle r={CANONICAL_MAP_RADIUS_M} fill={`url(#${id}-ground)`}/>
+    <circle r={CANONICAL_MAP_RADIUS_M} fill={`url(#${id}-cart-grid)`}/>
+    <circle r={CANONICAL_MAP_RADIUS_M} fill="none" stroke="#8cb7bb" strokeWidth="200" strokeOpacity=".35" strokeDasharray="950 750"/>
+    {/* Regions radiate out from exact source point anchors; their artwork boundaries are schematic. */}
+    <ellipse cx={pines.x} cy={-pines.y} rx="1600" ry="1900" fill={`url(#${id}-treezone)`}/>
+    <ellipse cx={stone.x} cy={-stone.y} rx="1300" ry="1100" fill={`url(#${id}-rockzone)`}/>
+    <ellipse cx={ford.x} cy={-ford.y} rx="2100" ry="1200" fill={`url(#${id}-icewater)`}/>
+    <circle r="1300" fill={`url(#${id}-landshade)`}/>
+    {!world&&<>
+      <rect x="-1400" y="-1200" width="2800" height="2400" fill={`url(#${id}-frost)`}/>
+      <g opacity=".22" fill="none" stroke="#e1f1eb" strokeLinecap="round">
+        <path d="M-1200-140Q-650-290-300-120T480-150 1300-100" strokeWidth="22"/>
+        <path d="M-1160-117Q-640-268-295-101T485-125 1320-80" strokeWidth="2.5"/>
+        <path d="M-950 490Q-600 360-260 485T430 380 1190 390" strokeWidth="12"/>
+      </g>
+      <g opacity=".24" stroke="#b8d0ca" strokeWidth="2" fill="none">
+        <path d="M-78-42q51 16 90-31m-42 129 64 42m-77-17 20 29"/>
+        <path d="M-290 200q23-34 55-29m-22 32 32 22"/>
+      </g>
+    </>}
+    {world&&[3000,10000,25000,60000,96000].map(r=><circle key={r} r={r} fill="none"
+      stroke="#bdcdd0" strokeWidth="135" strokeOpacity=".08" strokeDasharray="350 550"/>)}
   </>;
 }
 function MarkerGraphic({kind}:{kind:string}) {
