@@ -17,7 +17,7 @@ const geo=await load('canonicalGeography.ts');
 const map=await load('mapModel.ts');
 const between=(body,a,b)=>body.split(a)[1]?.split(b)[0]??'';
 const rows=lines=>lines.split('\n').filter(line=>line.startsWith('| `'));
-const metres=tuple=>(tuple.match(/\\((.*?)\\)/)?.[1]??'').split(';').map(x=>Math.round(Number(x.replace(',','.'))*1000));
+const metres=tuple=>(tuple.match(/\((.*?)\)/)?.[1]??'').split(';').map(x=>Math.round(Number(x.replace(',','.'))*1000));
 
 test('entire canonical site table agrees with WORLD-PACKAGE-LL01-1.0',()=>{
   const records=rows(between(source,'<!-- LL01-SITES-BEGIN -->','<!-- LL01-SITES-END -->'));
