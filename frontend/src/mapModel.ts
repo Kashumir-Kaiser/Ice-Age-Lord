@@ -85,9 +85,13 @@ export function fogOpacityAt(x:number,y:number,surveyPreview=false,minutes=420,l
     return Math.min(opacity,smoothstep(disc.clear,disc.fade,dist));
   },1);
 }
+/** Automatic overview is triggered only by an intentional zoom-OUT gesture.
+ * Fitting heat is a different camera action and NEVER invokes this transition.
+ * Minimum 12 km span avoids jumping into world mode for the starting 10 m fire.
+ */
 export function shouldEnterWorldMap(zoom:number,heatRadius:number):boolean{
   const viewHeight=172/zoom;
-  return zoom<.55 && viewHeight>=heatRadius*2.15;
+  return zoom<.02 && viewHeight>=Math.max(12000,heatRadius*2.65);
 }
 export const WORLD_ZOOM = 172/(192000*1.12);
 export type HarvestKind='wood'|'stone'|'ore'|'herbs'|'water';
