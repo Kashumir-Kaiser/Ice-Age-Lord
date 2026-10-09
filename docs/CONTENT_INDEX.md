@@ -9,10 +9,10 @@
 | `design/buildings/MAGICAL-BUILDING-CATALOG-v0.3.json` | Machine-readable branch catalog | Proposed, partial executable contracts |
 | `design/buildings/SOURCE-GROUNDED-BUILDING-REDESIGN.md` | Source-first functional building distinctions | Reference and proposal |
 | `data/events/EVENT-TIMELINE-v0.6.json` | Reconciled fixed 30-event calendar | New-game candidate, not retroactive live migration |
-| `data/events/EVENT-SOURCE-CATALOG-v3.4.json` | Round 35: 464 source item records and 167 effect records through Ch762–771; prior releases retained | Research, not guaranteed loot |
-| `data/events/EVENT-SOURCE-ITEMS-v3.4.csv` | Human-review source item catalog (464 entries; prior rows retained) | Review |
+| `data/events/EVENT-SOURCE-CATALOG-v3.5.json` | Round 35: 464 source item records and 167 effect records through Ch762–771; prior releases retained | Research, not guaranteed loot |
+| `data/events/EVENT-SOURCE-ITEMS-v3.5.csv` | Human-review source item catalog (464 entries; prior rows retained) | Review |
 | `data/events/EVENT-TIMELINE-v0.6.csv` | Human-review schedule diff | Review |
-| `data/structures/SOURCE-STRUCTURE-CATALOG-v0.3.json` | Round 35: seventeen source-observed/reported structures and one route report; no LL01 construction contracts | Research only, not T0 world data |
+| `data/structures/SOURCE-STRUCTURE-CATALOG-v0.4.json` | Round 35: seventeen source-observed/reported structures and one route report; no LL01 construction contracts | Research only, not T0 world data |
 | `references/canonical/LORD-DND-01..07.md` | Underlying mechanics, fixed T0, world/hero/lair/quest data | Historical authoritative rules, require typed migration |
 | `references/canonical/RELEASE-LINEAGE-LL01-1.3.0.md` | Source release ancestry / exact known active versions | Legacy integrity reference |
 | `references/canonical/LANGUAGE-STANDARDS.md` | Vietnamese/Hán-Việt UI/narration conventions | Design guidance |
