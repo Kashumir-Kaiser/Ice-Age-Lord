@@ -30,7 +30,7 @@ The founding Lord House is damaged. The frozen battlefield, original starter con
 
 ## Fixed events
 
-Use `data/events/EVENT-TIMELINE-v0.6.json` as the **proposed new-game reconciled schedule**. The current extracted v3.5 content registry (Round 35, Chapters 762–771) is research evidence for possible event products and rewards, **not** an all-items-drop-at-start table. Pending requirements and source conflicts remain documented in `research/extraction-audits/`. Ensure each shop/chest/achievement has explicit availability, currency, acquisition and expiration contracts before making it executable.
+Use `data/events/EVENT-TIMELINE-v0.6.json` as the **proposed new-game reconciled schedule**. The current extracted v3.6 content registry (Round 36, Chapters 772–781) is research evidence for possible event products and rewards, **not** an all-items-drop-at-start table. Pending requirements and source conflicts remain documented in `research/extraction-audits/`. Ensure each shop/chest/achievement has explicit availability, currency, acquisition and expiration contracts before making it executable.
 
 ## Game readiness
 
