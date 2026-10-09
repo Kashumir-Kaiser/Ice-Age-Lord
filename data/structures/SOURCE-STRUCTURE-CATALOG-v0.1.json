@@ -1,0 +1,107 @@
+{
+  "release_id": "LL01-ICE-AGE-LORD-SOURCE-STRUCTURES-0.1",
+  "project": "LORD DND — LÍ LAN / Ice Age Lord",
+  "original_novel": "冰封末世：我打造完美领地",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": {
+    "first_printed_chapter": 732,
+    "last_printed_chapter": 741
+  },
+  "structures": [
+    {
+      "structure_id": "STR-0001",
+      "name_zh": "未命名黑色三角形建筑",
+      "display_vi": "Công trình tam giác màu đen chưa định danh",
+      "record_type": "OBSERVED_FIXED_RUIN_BUILDING",
+      "source_chapter": 734,
+      "source_url": "https://www.69shuba.com/txt/58776/40564737",
+      "location_context": "Source inner-city ruin; exact coordinates unknown.",
+      "status": "Existing and apparently intact when discovered; the party breaks the metal entrance, clears one golem guard, repairs the gate, and uses it as a temporary camp.",
+      "physical_profile": {
+        "shape": "triangular",
+        "color": "black",
+        "area_source_wording": "五百多个平方",
+        "area_lower_bound": 500,
+        "area_unit": "UNSPECIFIED_SQUARE_UNITS",
+        "height_m_approximate": {
+          "min": 20,
+          "max": 30
+        }
+      },
+      "observed_contents": {
+        "guardian": "one Asura golem, defeated by the source party",
+        "chest": "one medium-size reward chest opened; exact contents not itemized"
+      },
+      "observed_use": "Temporary refuge during the ruin's midnight-to-06:00 mist period.",
+      "ownership": "UNKNOWN",
+      "construction_recipe": "UNKNOWN",
+      "blueprint_available": false,
+      "inventory_item": false,
+      "player_buildable_from_this_evidence": false,
+      "notes": "The source does not name the building or specify square metres. Chest capacity prose says at most a Master-grade Strength Heart plus other materials; no exact chest receipt is present."
+    },
+    {
+      "structure_id": "STR-0002",
+      "name_zh": "远古角斗场",
+      "display_vi": "Đấu Trường Cổ Đại",
+      "record_type": "OBSERVED_FIXED_TRIAL_STRUCTURE",
+      "source_chapter": 736,
+      "source_url": "https://www.69shuba.com/txt/58776/40564739",
+      "additional_evidence": [
+        {
+          "source_chapter": 741,
+          "source_url": "https://www.69shuba.com/txt/58776/40564744"
+        }
+      ],
+      "location_context": "Source inner-city ruin; exact coordinates and ownership unknown.",
+      "status": "Existing fixed venue; source party enters individual trial instances.",
+      "physical_profile": {
+        "diameter_lower_bound_m": 1000,
+        "outer_appearance": "dark-gold metallic sheen",
+        "surface_marks": [
+          "alchemy runes",
+          "magic runes"
+        ],
+        "material": "unknown metal"
+      },
+      "observed_function": "Spatially folded internal arena spaces allow hundreds of simultaneous participants to challenge without interference; an external stone ranking board records rank, name, highest cleared round and elapsed time.",
+      "entry_rule": "One Soul Crystal per individual entrant; see event effect FX32-0004.",
+      "build_recipe": "UNKNOWN",
+      "blueprint_available": false,
+      "inventory_item": false,
+      "player_buildable_from_this_evidence": false,
+      "notes": "The source does not provide exact capacity, operating cost, ownership rights, repair method, full prize table or a player construction recipe."
+    }
+  ],
+  "route_observations": [
+    {
+      "route_id": "ROUTE-OBS-0001",
+      "source_chapter": 735,
+      "source_url": "https://www.69shuba.com/txt/58776/40564738",
+      "from": "Inner-city route junction",
+      "paths": [
+        {
+          "destination": "Ancient Arena",
+          "status": "established route described by the local guide"
+        },
+        {
+          "destination": "Central District",
+          "status": "established route described by the local guide"
+        },
+        {
+          "destination": "Soul Temple",
+          "status": "recently found branch from the second route, absent from the guide's years-old map; destination marker appears on arrival"
+        }
+      ],
+      "coordinates": "UNKNOWN",
+      "travel_distance": "UNKNOWN",
+      "direct_party_arrival_at_soul_temple": false,
+      "notes": "Route report only; do not synthesize a new explored site, map coordinate or fixed LL01 location."
+    }
+  ],
+  "preservation_notes": [
+    "These are source-world structures and route observations, not additions to LL01's fixed T0 geography.",
+    "No structure blueprint, ownership transfer, player construction contract or fresh-save discovery is implied.",
+    "The 30-entry EVENT-TIMELINE-v0.6 schedule remains unchanged."
+  ]
+}
