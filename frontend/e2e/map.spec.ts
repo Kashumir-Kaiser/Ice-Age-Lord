@@ -47,7 +47,7 @@ test('map allows drag-pan away from camp and returning to camp',async ({page})=>
 test('sampling a harvesting spot reveals remaining quantity without changing ownership',async ({page})=>{
   await visitMap(page);
   await page.getByRole('button',{name:/Xem khảo sát mẫu/}).click();
-  await page.getByRole('button',{name:'Kiểm tra Lâm địa phủ tuyết'}).click({force:true});
+  await page.getByRole('button',{name:'Kiểm tra Lâm địa phủ tuyết'}).click();
   await expect(page.getByRole('region',{name:'Thông tin điểm được chọn'})).toContainText('480');
   await expect(page.getByRole('region',{name:'Thông tin điểm được chọn'})).toContainText('620');
   await expect(page.getByRole('region',{name:'Thông tin điểm được chọn'})).toContainText('không thêm vật phẩm vào kho');
