@@ -23,6 +23,12 @@ const configurations=[
   {kind:'ore',name:'Đá quặng thô',unit:'Quặng',count:35,cx:-3600,cy:1800,rx:4500,ry:4300,base:20},
   {kind:'herbs',name:'Cỏ tuyết',unit:'Bó',count:75,cx:300,cy:-400,rx:1700,ry:1950,base:12},
   {kind:'water',name:'Băng nước sạch',unit:'Lít',count:25,cx:6000,cy:-7600,rx:5600,ry:3500,base:45},
+  {kind:'wood',name:'Thông băng triền đông',unit:'Gỗ',count:48,cx:14500,cy:-13700,rx:2100,ry:1900,base:52},
+  {kind:'wood',name:'Rặng thông lạnh',unit:'Gỗ',count:35,cx:-9000,cy:-15700,rx:1600,ry:1650,base:40},
+  {kind:'stone',name:'Đá gờ băng phía tây',unit:'Đá',count:33,cx:-16000,cy:6500,rx:2300,ry:1900,base:44},
+  {kind:'ore',name:'Mạch quặng ven sườn đá',unit:'Quặng',count:26,cx:-12800,cy:-9200,rx:1900,ry:2100,base:27},
+  {kind:'herbs',name:'Thảo dược dưới tuyết sâu',unit:'Bó',count:30,cx:8000,cy:16000,rx:2000,ry:1700,base:16},
+  {kind:'water',name:'Băng suối cao nguyên',unit:'Lít',count:20,cx:14200,cy:-18200,rx:1550,ry:1800,base:42},
 ] as const;
 /** Resource anchors are deliberately not snapped to a grid or scattered over the
  * 30,000-year-old battlefield's central open memorial plain. */
