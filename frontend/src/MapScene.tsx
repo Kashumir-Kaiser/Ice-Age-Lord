@@ -107,10 +107,12 @@ function FogMask({id,discs,viewport}:{id:string;discs:readonly {x:number;y:numbe
 export default function MapScene({selected,onSelect,compact=false}:Props){
   const unique=useId().replace(/[^a-zA-Z0-9]/g,'')||'map';
   const root=useRef<HTMLDivElement>(null);
+  const svgRef=useRef<SVGSVGElement>(null);
   const drag=useRef<{x:number;y:number;cx:number;cy:number;travel:number}|null>(null);
   const ignoreNextClick=useRef(false);
   const [aspect,setAspect]=useState(1.65);
   const [zoom,setZoom]=useState(1);
+  const [viewMode,setViewMode]=useState<'local'|'world'>('local');
   const [cx,setCx]=useState(0);
   const [cy,setCy]=useState(0);
   const [survey,setSurvey]=useState(false);
@@ -124,8 +126,24 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
   const viewWidth=viewHeight*aspect;
   const viewport={x:cx-viewWidth/2,y:cy-viewHeight/2,width:viewWidth,height:viewHeight};
   const vb=`${viewport.x} ${viewport.y} ${viewWidth} ${viewHeight}`;
-  const revealed=useMemo(()=>visibleDemoMarkers(survey),[survey]);
-  const current=revealed.find(m=>m.id===inspected);
+  const discs=useMemo(()=>visibilityDiscs(minutes,level,survey),[minutes,level,survey]);
+  // Opaque-black concealment in the renderer is independent from the actor's knowledge.
+  // Debug preview is the ONLY way to inspect canonical hidden resources or caches.
+  const previewMarkers=useMemo(()=>{
+    if(!survey)return [];
+    const resources=CANONICAL_RESOURCES.map(r=>({
+      id:r.id,kind:r.kind,name:r.name,x:r.x,y:r.y,
+      unit:r.unit,capacity:r.capacity,remaining:r.capacity,description:r.renewal,demoOnly:true as const,
+    }));
+    const caches=CANONICAL_CHEST_CACHES.map(c=>({
+      id:c.id,kind:'chest' as const,name:'Rương Báu · '+c.id,x:c.x,y:c.y,
+      opened:false as const,contentsKnown:false as const,demoOnly:true as const,
+    }));
+    return [...resources,...caches].filter(p=>fogOpacityAt(p.x,p.y,true,minutes,level)<=.08);
+  },[survey,minutes,level]);
+  const current=previewMarkers.find(m=>m.id===inspected);
+  const world=viewMode==='world';
+  const knownSites=knownOpeningSites();
   useEffect(()=>{
     if(!root.current) return;
     const observer=new ResizeObserver(entries=>{
@@ -135,9 +153,18 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
     observer.observe(root.current);
     return ()=>observer.disconnect();
   },[]);
-  const setZoomBound=(value:number)=>setZoom(Math.max(.002,Math.min(6,value)));
-  const zoomBy=(factor:number)=>setZoomBound(zoom*factor);
-  const reset=()=>{setZoom(1);setCx(0);setCy(0);};
+  const enterWorld=()=>{setViewMode('world');setZoom(WORLD_ZOOM);setCx(0);setCy(0);setInspected(null);};
+  const enterLocal=()=>{setViewMode('local');setZoom(1);setCx(0);setCy(0);setInspected(null);};
+  const setZoomBound=(value:number)=>{
+    const next=Math.max(WORLD_ZOOM*.85,Math.min(6,value));
+    if(viewMode==='local'&&shouldEnterWorldMap(next,radius))enterWorld();
+    else setZoom(next);
+  };
+  const zoomBy=(factor:number)=>{
+    if(viewMode==='world'&&factor>1){enterLocal();return;}
+    setZoomBound(zoom*factor);
+  };
+  const reset=()=>{viewMode==='world'?enterWorld():enterLocal();};
   const fitHeat=()=>{
     setCx(DEMO_CAMP.x);setCy(-DEMO_CAMP.y);
     setZoomBound(172/(Math.max(24,radius)*2.6));
@@ -164,16 +191,30 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
     drag.current=null;
     if(e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
   };
-  const wheel=(e:ReactWheelEvent<SVGSVGElement>)=>{
-    e.preventDefault();
-    const rect=e.currentTarget.getBoundingClientRect();
-    const x=(e.clientX-rect.left)/rect.width-.5;
-    const y=(e.clientY-rect.top)/rect.height-.5;
-    const next=Math.max(.002,Math.min(6,zoom*(e.deltaY<0?1.14:1/1.14)));
-    setCx(c=>c+x*(viewWidth-viewHeight*aspect/next));
-    setCy(c=>c+y*(viewHeight-172/next));
-    setZoom(next);
-  };
+  // React 18 installs passive wheel handlers. Native non-passive listener is required
+  // to stop browser-page scrolling while the cursor is over the map viewport.
+  useEffect(()=>{
+    const node=root.current;
+    if(!node)return;
+    const onWheel=(e:WheelEvent)=>{
+      if(e.target instanceof Element&&e.target.closest('button,select,option'))return;
+      e.preventDefault();
+      const rect=svgRef.current?.getBoundingClientRect();
+      if(!rect||!rect.width||!rect.height)return;
+      if(viewMode==='world'&&e.deltaY<0){enterLocal();return;}
+      const factor=e.deltaY<0?1.2:1/1.2;
+      const next=Math.max(WORLD_ZOOM*.85,Math.min(6,zoom*factor));
+      if(viewMode==='local'&&shouldEnterWorldMap(next,radius)){enterWorld();return;}
+      const x=(e.clientX-rect.left)/rect.width-.5;
+      const y=(e.clientY-rect.top)/rect.height-.5;
+      const nextHeight=172/next;
+      setCx(c=>c+x*(viewWidth-nextHeight*aspect));
+      setCy(c=>c+y*(viewHeight-nextHeight));
+      setZoom(next);
+    };
+    node.addEventListener('wheel',onWheel,{passive:false});
+    return ()=>node.removeEventListener('wheel',onWheel);
+  },[zoom,viewMode,radius,viewWidth,viewHeight,aspect]);
   const inspectSite=(id:SiteKind)=>{
     if(ignoreNextClick.current){ignoreNextClick.current=false;return;}
     setInspected(null);onSelect(id);
@@ -185,7 +226,7 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
   const clearSurvey=()=>{
     setSurvey(s=>!s);setInspected(null);
   };
-  const allIcons=FIRE_MARKER_SCALE(zoom);
+  const allIcons=world?Math.min(1500,40/zoom):FIRE_MARKER_SCALE(zoom);
   return <div className={`map-experience ${compact?'map-experience--compact':''}`}>
     {!compact&&<div className="map-toolbar">
       <div className="map-toolbar-main">
@@ -208,18 +249,18 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
       </div>
     </div>}
     <div className={`map-scene map-scene--deep ${compact?'map-scene--compact':''}`} ref={root}>
-      <svg className="terrain-svg terrain-svg--deep" viewBox={vb} aria-label="Bản đồ băng nguyên với lớp sương mù khám phá, giữ chuột trái và kéo để di chuyển"
-        onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp} onWheel={wheel}>
-        <Terrain id={unique}/>
-        <FogMask id={unique} survey={survey} viewport={viewport}/>
+      <svg ref={svgRef} className="terrain-svg terrain-svg--deep" viewBox={vb} aria-label="Bản đồ băng nguyên với lớp sương mù khám phá, giữ chuột trái và kéo để di chuyển"
+        onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp}>
+        <Terrain id={unique} world={world}/>
+        <FogMask id={unique} discs={discs} viewport={viewport}/>
         <rect {...viewport} fill="#081527" opacity={dayOverlayOpacity(minutes)} pointerEvents="none"/>
-        {(survey?DEMO_SURVEYED:OPENING_OBSERVED).map((d,i)=>
+        {discs.map((d,i)=>
           <circle key={i} cx={d.x} cy={-d.y} r={d.fade+27} fill={`url(#${unique}-halo)`} pointerEvents="none"/>)}
         <rect {...viewport} fill="#01040a" mask={`url(#${unique}-fog-mask)`} pointerEvents="none"/>
         <circle cx="0" cy="0" r={radius} fill={`url(#${unique}-heat)`} mask={`url(#${unique}-known-mask)`} pointerEvents="none"/>
         <circle cx="0" cy="0" r={radius} fill="none" stroke="#edbc77" strokeWidth={Math.max(.8,Math.min(5,2.2/zoom))} strokeDasharray={`${Math.max(4,8/zoom)} ${Math.max(3,6/zoom)}`} strokeOpacity=".88" pointerEvents="none"/>
         <circle cx="0" cy="0" r={Math.min(radius,Math.max(3,radius*.18))} fill="none" stroke="#ffc881" strokeOpacity=".23" strokeWidth="2" pointerEvents="none"/>
-        {FIRST_SITES.map(site=><g key={site.id} className={`map-site map-site--deep ${selected===site.id&&!inspected?'map-site--selected':''}`}
+        {FIRST_SITES.filter(site=>fogOpacityAt(site.x,site.y,survey,minutes,level)<.92).map(site=><g key={site.id} className={`map-site map-site--deep ${selected===site.id&&!inspected?'map-site--selected':''}`}
            transform={`translate(${site.x} ${site.renderY}) scale(${allIcons})`}
            role="button" aria-label={`Xem ${site.name}`} tabIndex={0}
            onClick={()=>inspectSite(site.id)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inspectSite(site.id);}}}>
@@ -231,7 +272,7 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
             <text textAnchor="middle" fontSize="8" fill="#f3f1e8" y="5">{site.label}</text>
           </g>}
         </g>)}
-        {revealed.map(marker=><g key={marker.id} className={`map-resource-marker ${inspected===marker.id?'map-resource-marker--selected':''}`}
+        {previewMarkers.map(marker=><g key={marker.id} className={`map-resource-marker ${inspected===marker.id?'map-resource-marker--selected':''}`}
           transform={`translate(${marker.x} ${-marker.y}) scale(${allIcons})`}
           role="button" tabIndex={0} aria-label={`Kiểm tra ${marker.name}`} onClick={()=>inspectMarker(marker.id)}
           onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inspectMarker(marker.id);}}}>
