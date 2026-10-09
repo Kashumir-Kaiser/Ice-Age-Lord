@@ -1,5 +1,5 @@
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Activity, AlertTriangle, Archive, Bell, BookOpen, Box, ChevronRight, Clock3,
   Compass, Crown, Flame, Hammer, Info, Layers, LayoutDashboard, Map as MapIcon,
@@ -7,6 +7,8 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import MapScene from './MapScene';
+import { INITIAL_CLOCK_SECONDS, speedMultiplier, advanceDisplayClock, displayClock, displayDay, customMultiplier } from './demoClock';
+import type { ClockSpeed } from './demoClock';
 import ItemArt from './ItemArt';
 import { itemExamples, mockJournal, screens, sites } from './demoData';
 import type { DemoItem, ItemKind, Screen, SiteKind } from './demoData';
@@ -50,20 +52,27 @@ function SiteInspector({ siteId }: { siteId:SiteKind }) {
     <div className="muted-text">{site.subtitle}</div>
     <div className="inspector-divider"/>
     <div className="detail-line"><span>Trạng thái</span><strong>{site.status}</strong></div>
-    <div className="detail-line"><span>Vị trí</span><strong>Minh họa</strong></div>
+    <div className="detail-line"><span>Vị trí</span><strong>Tọa độ nguồn LL01</strong></div>
     <p className="inspector-description">{site.description}</p>
     <div className="unavailable-action"><Info size={16}/> Chức năng tương tác đang chờ engine</div>
   </aside>;
 }
-function Header({ screen, onMenu, notifications, onNotifications }: {
-  screen:Screen; onMenu:()=>void; notifications:boolean; onNotifications:()=>void;
+function Header({ screen, onMenu, notifications, onNotifications, clockSeconds, speed, changeSpeed, customSpeed, setCustomSpeed }: {
+  screen:Screen; onMenu:()=>void; notifications:boolean; onNotifications:()=>void; clockSeconds:number; speed:ClockSpeed; changeSpeed:(speed:ClockSpeed)=>void; customSpeed:number; setCustomSpeed:(speed:number)=>void;
 }) {
   const heading = HEADINGS[screen];
   return <header className="topbar">
     <button className="icon-button mobile-menu" aria-label="Mở điều hướng" onClick={onMenu}><Menu size={21}/></button>
     <div className="topbar-heading"><span className="breadcrumb">ICE AGE LORD <ChevronRight size={13}/> {screen==='overview'?'CĂN CỨ':screens.find(s=>s.id===screen)?.name.toUpperCase()}</span><h1>{heading.title}</h1><p>{heading.description}</p></div>
     <div className="topbar-actions">
-      <span className="clock-chip"><Clock3 size={14}/> T0 · 07:00</span>
+      <div className="clock-player" aria-label="Đồng hồ mô phỏng">
+        <span className="clock-chip" aria-live="off"><Clock3 size={14}/> Ngày {displayDay(clockSeconds)} · {displayClock(clockSeconds)}</span>
+        <label className="clock-speed-wrap"><span>Tốc độ</span><select aria-label="Tốc độ thời gian" value={speed} onChange={e=>changeSpeed(e.target.value as ClockSpeed)}>
+          <option value="Frozen">Frozen</option><option value="1x">1×</option><option value="2x">2×</option><option value="5x">5×</option><option value="Custom">Tùy chọn</option>
+        </select></label>
+        {speed==='Custom'&&<label className="custom-clock-wrap"><span>Hệ số</span><input type="number" min=".1" max="3600" step=".1" aria-label="Hệ số tốc độ tùy chọn" value={customSpeed} onChange={e=>setCustomSpeed(customMultiplier(Number(e.target.value)))} /></label>}
+        <small className="clock-sim-label">Đồng hồ hiển thị · Không chạy engine</small>
+      </div>
       <button className={`icon-button ${notifications?'icon-button--active':''}`} onClick={onNotifications} aria-label="Thông tin bản demo" aria-expanded={notifications}><Bell size={18}/></button>
       <div className="profile-mini" aria-label="Lí Lan — người chơi"><span className="profile-monogram">蘭</span><span className="profile-name">Lí Lan<small>Người chơi</small></span></div>
     </div>
@@ -75,7 +84,7 @@ function Sidebar({ current, navigate, open, close }: {
   return <>
     {open&&<button className="sidebar-backdrop" aria-label="Đóng menu" onClick={close}/>}
     <aside className={`sidebar ${open?'sidebar--open':''}`}>
-      <div className="brand-row"><Emblem size={48}/><div><strong>ICE AGE <em>LORD</em></strong><span>BIÊN NIÊN BĂNG PHONG</span></div><button className="icon-button sidebar-close" aria-label="Đóng menu" onClick={close}><X size={18}/></button></div>
+      <div className="brand-row"><Emblem size={43}/><div className="brand-copy"><strong>ICE AGE <em>LORD</em></strong><span>BIÊN NIÊN BĂNG PHONG</span></div><button className="icon-button sidebar-close" aria-label="Đóng menu" onClick={close}><X size={18}/></button></div>
       <div className="sidebar-section-label">BẢNG ĐIỀU KHIỂN</div>
       <nav className="sidebar-nav" aria-label="Các mục giao diện">
         {screens.map(nav=>{
@@ -98,11 +107,11 @@ function StatCard({ icon:Icon, label, value, note, tone='neutral' }: {
 }) {
   return <div className={`stat-card stat-card--${tone}`}><div className="stat-icon"><Icon size={20}/></div><span>{label}</span><strong>{value}</strong><small>{note}</small></div>;
 }
-function Overview({ selected, select, navigate }: {selected:SiteKind;select:(v:SiteKind)=>void;navigate:(v:Screen)=>void}) {
+function Overview({ selected, select, navigate, clockSeconds, onClockChange }: {selected:SiteKind;select:(v:SiteKind)=>void;navigate:(v:Screen)=>void;clockSeconds:number;onClockChange:(s:number)=>void}) {
   return <div className="page-sections">
     <section className="hero-banner">
       <div className="hero-orbit hero-orbit-1"/><div className="hero-orbit hero-orbit-2"/>
-      <div className="hero-copy"><DemoLabel/><span className="hero-kicker">CHƯƠNG MỞ ĐẦU · T0</span><h2>Từ ngọn lửa nhỏ,<br/><em>đến một lãnh địa.</em></h2>
+      <div className="hero-copy"><DemoLabel/><span className="hero-kicker">CHƯƠNG MỞ ĐẦU</span><h2>Từ ngọn lửa nhỏ,<br/><em>đến một lãnh địa.</em></h2>
         <p>Trên đồng bằng bị chôn dưới lớp băng, Lí Lan bắt đầu với Lửa Sinh Tồn, Nhà Lãnh Chúa hư hại và Ngôi Mộ cổ xưa.</p>
         <button className="hero-link" onClick={()=>navigate('map')}>Khám phá bản đồ <ChevronRight size={18}/></button>
       </div>
@@ -120,7 +129,7 @@ function Overview({ selected, select, navigate }: {selected:SiteKind;select:(v:S
       </svg></div>
     </section>
     <section className="stats-grid" aria-label="Trạng thái khởi đầu">
-      <StatCard icon={Clock3} label="Thời gian thế giới" value="T0 · 07:00" note="Mốc bắt đầu xác lập" tone="ice"/>
+      <StatCard icon={Clock3} label="Thời gian thế giới" value={`Ngày ${displayDay(clockSeconds)} · ${displayClock(clockSeconds)}`} note="Mốc bắt đầu xác lập" tone="ice"/>
       <StatCard icon={Crown} label="Nhân vật" value="Lí Lan · Cấp 1" note="Thiên phú SSS cố định"/>
       <StatCard icon={ShieldCheck} label="Quân lực khởi đầu" value="0 đơn vị" note="Chưa thực hiện triệu hồi"/>
       <StatCard icon={Layers} label="Dữ liệu mô phỏng" value="Chưa kết nối" note="Bản hiển thị độc lập" tone="warm"/>
@@ -128,22 +137,22 @@ function Overview({ selected, select, navigate }: {selected:SiteKind;select:(v:S
     <section className="overview-columns">
       <div className="panel map-preview-panel">
         <BlockTitle title="Vùng lãnh địa" eyebrow="BẢN ĐỒ" action={<button className="text-button" onClick={()=>navigate('map')}>Xem toàn màn hình <ChevronRight size={15}/></button>}/>
-        <MapScene compact selected={selected} onSelect={select}/>
+        <MapScene compact selected={selected} onSelect={select} clockSeconds={clockSeconds} onClockChange={onClockChange}/>
         <div className="preview-footer"><span><span className="legend-circle warm"/> Vòng nhiệt theo bán kính nguồn</span><span><span className="legend-circle blue"/> Công trình khởi đầu</span><span className="preview-warning">Địa hình giả lập · Fog mặc định</span></div>
       </div>
       <SiteInspector siteId={selected}/>
     </section>
     <section className="bottom-cards">
-      <div className="panel feature-card"><div className="feature-icon"><Flame size={22}/></div><h3>Sinh tồn đầu tiên</h3><p>Quản lý nguồn nhiệt, lương thực và nơi trú. Chưa có thao tác thời gian hay tiêu hao trong bản demo.</p><button className="text-button" onClick={()=>navigate('territory')}>Xem giao diện lãnh địa <ChevronRight size={15}/></button></div>
+      <div className="panel feature-card"><div className="feature-icon"><Flame size={22}/></div><h3>Sinh tồn đầu tiên</h3><p>Quản lý nguồn nhiệt, lương thực và nơi trú. Có điều khiển tốc độ đồng hồ hiển thị; tiêu hao và cơ chế game vẫn chưa kết nối.</p><button className="text-button" onClick={()=>navigate('territory')}>Xem giao diện lãnh địa <ChevronRight size={15}/></button></div>
       <div className="panel feature-card"><div className="feature-icon"><Sparkles size={22}/></div><h3>SSS · Tử Phục Linh Sư</h3><p>Thiên phú của Lí Lan đã được xác lập. Tử Phục xác thật không đồng nhất với lính Ngôi Mộ.</p><button className="text-button" onClick={()=>navigate('forces')}>Xem hệ thống quân lực <ChevronRight size={15}/></button></div>
       <div className="panel feature-card"><div className="feature-icon"><Box size={22}/></div><h3>Thư viện vật phẩm</h3><p>Khung thẻ, biểu tượng và lọc danh mục có thể thử ngay; dữ liệu sở hữu chưa được nối vào engine.</p><button className="text-button" onClick={()=>navigate('inventory')}>Mở bộ sưu tập mẫu <ChevronRight size={15}/></button></div>
     </section>
   </div>;
 }
-function MapPage({ selected, select }: {selected:SiteKind;select:(v:SiteKind)=>void}) {
+function MapPage({ selected, select, clockSeconds, onClockChange }: {selected:SiteKind;select:(v:SiteKind)=>void;clockSeconds:number;onClockChange:(s:number)=>void}) {
   return <div className="page-sections">
-    <div className="notice-row"><Info size={17}/><span>Các điểm neo, điểm tài nguyên và cache lấy tọa độ từ WORLD-PACKAGE-LL01-1.0. T0 chỉ biết bốn vật thể khởi đầu; chế độ atlas nguồn (debug) có thể hiển thị dữ liệu ẩn để kiểm tra thiết kế, không cấp kiến thức cho Lí Lan.</span></div>
-    <div className="map-page-grid"><div className="panel map-full"><MapScene selected={selected} onSelect={select}/></div><div className="map-page-side"><SiteInspector siteId={selected}/><div className="panel help-panel"><h3><Compass size={18}/> Cách điều khiển</h3><p>Giữ chuột trái và kéo bản đồ. Cuộn chuột trực tiếp trên bản đồ để phóng/thu mà không cuộn trang. Khi thu đủ xa để thấy toàn bộ vùng nhiệt, bản đồ chuyển sang chế độ thế giới; cũng có nút chuyển trực tiếp.</p><p>Ban ngày nhìn xa hơn, ban đêm chỉ nhìn được trong vùng ánh sáng của Lửa Sinh Tồn. Tăng Cấp xem trước sẽ mở rộng vùng được chiếu sáng, nhưng không làm nhân vật khám phá rương hay địa điểm. Xem atlas nguồn là công cụ debug, không phải hành động chơi.</p></div></div></div>
+    <div className="notice-row"><Info size={17}/><span>Các điểm neo, điểm tài nguyên và cache lấy tọa độ từ WORLD-PACKAGE-LL01-1.0. Địa hình và các điểm mặt đất nằm trong vùng sáng được mô phỏng trên bản đồ. Các điểm chưa thăm dò không tự động cấp quyền khai thác, mở rương hoặc xác định nội dung.</span></div>
+    <div className="map-page-grid"><div className="panel map-full"><MapScene selected={selected} onSelect={select} clockSeconds={clockSeconds} onClockChange={onClockChange}/></div><div className="map-page-side"><SiteInspector siteId={selected}/><div className="panel help-panel"><h3><Compass size={18}/> Cách điều khiển</h3><p>Giữ chuột trái và kéo bản đồ. Cuộn chuột trực tiếp trên bản đồ để phóng/thu mà không cuộn trang. Thu rất xa sẽ chuyển sang bản đồ thế giới; nút định khung nhiệt luôn giữ bản đồ địa phương. Có thể đổi chế độ bằng nút bản đồ thế giới.</p><p>Ban ngày nhìn xa hơn, ban đêm chỉ nhìn được trong vùng ánh sáng của Lửa Sinh Tồn. Tăng Cấp xem trước mở rộng vùng nhìn thấy và có thể làm lộ các dấu tích/điểm mặt đất; phần thưởng và dữ liệu dưới đất vẫn bị khóa. Xem atlas nguồn là công cụ debug, không phải hành động chơi.</p></div></div></div>
   </div>;
 }
 function Inventory({ selected, select }: {selected:string;select:(id:string)=>void}) {
@@ -191,8 +200,8 @@ function Forces() {
     { icon:Sparkles, title:'Tử thi Tử Phục', text:'Chỉ xuất hiện từ xác thật hợp lệ đã được Lí Lan chuyển hóa; danh tính từng đơn vị được bảo toàn.' },
     { icon:Users, title:'Anh hùng', text:'Đơn vị có danh tính, xuất thân và năng lực thực tế; không được phát miễn phí từ khung thẻ.' }];
   return <div className="page-sections">
-    <div className="stats-grid force-stats"><StatCard icon={Shield} label="Đơn vị tại T0" value="0" note="Không có lực lượng được tạo"/><StatCard icon={Sparkles} label="Thiên phú chính" value="SSS" note="Tử Phục Linh Sư" tone="ice"/><StatCard icon={Activity} label="Đội đang hoạt động" value="Chưa có" note="Không mô phỏng lệnh chiến đấu"/><StatCard icon={Layers} label="Sổ đơn vị" value="Chờ engine" note="ID và XP cần nguồn xác thực" tone="warm"/></div>
-    <div className="panel empty-army"><div className="empty-army-illustration"><Shield size={52} strokeWidth={1}/><span>0</span></div><h2>Chưa có đơn vị tại thời điểm khởi đầu</h2><p>Đây là trạng thái mở đầu T0. Không sử dụng quân lực hoặc nhân vật từ những lần chạy thử trước.</p></div>
+    <div className="stats-grid force-stats"><StatCard icon={Shield} label="Đơn vị tại khởi đầu" value="0" note="Không có lực lượng được tạo"/><StatCard icon={Sparkles} label="Thiên phú chính" value="SSS" note="Tử Phục Linh Sư" tone="ice"/><StatCard icon={Activity} label="Đội đang hoạt động" value="Chưa có" note="Không mô phỏng lệnh chiến đấu"/><StatCard icon={Layers} label="Sổ đơn vị" value="Chờ engine" note="ID và XP cần nguồn xác thực" tone="warm"/></div>
+    <div className="panel empty-army"><div className="empty-army-illustration"><Shield size={52} strokeWidth={1}/><span>0</span></div><h2>Chưa có đơn vị tại thời điểm khởi đầu</h2><p>Đây là trạng thái mở đầu. Không sử dụng quân lực hoặc nhân vật từ những lần chạy thử trước.</p></div>
     <BlockTitle title="Các kiểu thẻ quân lực sẽ hỗ trợ" eyebrow="BỐ CỤC XEM TRƯỚC"/>
     <div className="sample-force-grid">{sample.map(({icon:Icon,title,text})=><div className="panel force-sample" key={title}><span className="sample-ribbon">KHÔNG SỞ HỮU</span><Icon size={35} strokeWidth={1.25}/><h3>{title}</h3><p>{text}</p><span className="muted-text">Mẫu cấu trúc hiển thị · Không có unit ID</span></div>)}</div>
   </div>;
@@ -200,7 +209,7 @@ function Forces() {
 function Territory({ navigate, select }: { navigate:(s:Screen)=>void; select:(id:SiteKind)=>void }) {
   const objectives=[{id:'fire' as SiteKind,title:'Duy trì Lửa Sinh Tồn',detail:'Quản trị nhiên liệu và nhiệt độ sau khi runtime được triển khai.',icon:Flame},
     {id:'house' as SiteKind,title:'Tu sửa Nhà Lãnh Chúa',detail:'Điều kiện gốc: 20 Gỗ và 10 Đá. Chưa thể thực hiện trong demo.',icon:Hammer},
-    {id:'tomb' as SiteKind,title:'Quản lý Ngôi Mộ',detail:'Cơ chế sinh quân riêng; không tự động tạo đơn vị ở T0.',icon:Shield}];
+    {id:'tomb' as SiteKind,title:'Quản lý Ngôi Mộ',detail:'Cơ chế sinh quân riêng; không tự động tạo đơn vị ở khởi đầu.',icon:Shield}];
   return <div className="page-sections">
     <section className="territory-intro panel"><div><span className="eyebrow">ĐIỂM KHỞI ĐẦU</span><h2>Một ngọn lửa giữa băng nguyên</h2><p>Chức năng này sẽ tập hợp kho vận, dân cư, nhiệt, lịch xây dựng và an ninh lãnh địa. Trong bản xem thử, các thao tác chỉ mở màn hình giới thiệu.</p><DemoLabel subtle/></div><span className="territory-decoration"><Snowflake size={98} strokeWidth={.7}/></span></section>
     <BlockTitle title="Những giao diện ưu tiên" eyebrow="QUẢN LÝ KHỞI ĐẦU"/>
@@ -224,15 +233,29 @@ export default function App() {
   const [notificationOpen,setNotificationOpen]=useState(false);
   const [selectedSite,setSelectedSite]=useState<SiteKind>('fire');
   const [selectedItem,setSelectedItem]=useState<DemoItem['id']>('wood');
+  const [clockSeconds,setClockSeconds]=useState(INITIAL_CLOCK_SECONDS);
+  const [speed,setSpeed]=useState<ClockSpeed>('Frozen');
+  const [customSpeed,setCustomSpeed]=useState(10);
+  const multiplier=speedMultiplier(speed,customSpeed);
+  useEffect(()=>{
+    if(multiplier===0)return;
+    let last=performance.now();
+    const interval=setInterval(()=>{
+      const now=performance.now();
+      setClockSeconds(previous=>advanceDisplayClock(previous,now-last,multiplier));
+      last=now;
+    },180);
+    return ()=>clearInterval(interval);
+  },[multiplier]);
   return <div className="app-shell">
     <Sidebar current={screen} navigate={setScreen} open={sidebarOpen} close={()=>setSidebarOpen(false)}/>
     <div className="app-main">
-      <Header screen={screen} onMenu={()=>setSidebarOpen(true)} notifications={notificationOpen} onNotifications={()=>setNotificationOpen(v=>!v)}/>
+      <Header screen={screen} onMenu={()=>setSidebarOpen(true)} notifications={notificationOpen} onNotifications={()=>setNotificationOpen(v=>!v)} clockSeconds={clockSeconds} speed={speed} changeSpeed={setSpeed} customSpeed={customSpeed} setCustomSpeed={setCustomSpeed}/>
       {notificationOpen && <div className="notification-popover" role="status"><div><Bell size={17}/><strong>Trạng thái bản xem thử</strong><button className="icon-button" aria-label="Đóng thông báo" onClick={()=>setNotificationOpen(false)}><X size={17}/></button></div><p>Chưa kết nối bộ mô phỏng hoặc dữ liệu lưu. Mọi thao tác ở đây chỉ thay đổi màn hình hiển thị.</p></div>}
       <main className="page-content">
-        {screen==='overview'&&<Overview selected={selectedSite} select={setSelectedSite} navigate={setScreen}/>}
+        {screen==='overview'&&<Overview selected={selectedSite} select={setSelectedSite} navigate={setScreen} clockSeconds={clockSeconds} onClockChange={setClockSeconds}/>}
         {screen==='territory'&&<Territory navigate={setScreen} select={setSelectedSite}/>}
-        {screen==='map'&&<MapPage selected={selectedSite} select={setSelectedSite}/>}
+        {screen==='map'&&<MapPage selected={selectedSite} select={setSelectedSite} clockSeconds={clockSeconds} onClockChange={setClockSeconds}/>}
         {screen==='inventory'&&<Inventory selected={selectedItem} select={setSelectedItem}/>}
         {screen==='forces'&&<Forces/>}
         {screen==='buildings'&&<Buildings selected={selectedSite} select={setSelectedSite} navigate={setScreen}/>}
