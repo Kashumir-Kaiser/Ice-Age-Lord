@@ -301,7 +301,8 @@ export default function MapScene({selected,onSelect,compact=false,clockSeconds,o
         </g>)}
         {markers.map(marker=><g key={marker.id} className={`map-resource-marker ${inspected===marker.id?'map-resource-marker--selected':''}`}
           transform={`translate(${marker.x} ${-marker.y}) scale(${allIcons})`}
-          role="button" tabIndex={0} aria-label={`Kiểm tra ${marker.name}`} onClick={()=>inspectMarker(marker.id)}
+          role="button" tabIndex={0} data-kind={marker.kind} data-provenance={marker.provenance}
+          aria-label={`Kiểm tra ${survey?marker.name:marker.kind==='chest'?'Dấu rương chưa khảo sát':marker.kind==='site'?'Dấu tích chưa khảo sát':marker.name}`} onClick={()=>inspectMarker(marker.id)}
           onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inspectMarker(marker.id);}}}>
           <circle r="21" fill={marker.provenance==='modeled'?'#203f41':'#0b2933'} stroke={inspected===marker.id?'#f0c88b':marker.provenance==='canonical'?'#f1c991':'#b4d3c7'} strokeWidth="1.6"/>
           <circle r="26" fill="none" stroke="#b4d9d9" strokeOpacity=".18" strokeDasharray="2 4"/>
@@ -325,7 +326,7 @@ export default function MapScene({selected,onSelect,compact=false,clockSeconds,o
       </div>
       {current&&!compact&&<div className="map-entity-popover" role="region" aria-label="Thông tin điểm được chọn">
         <div className="map-entity-kicker">{current.kind==='chest'?'DẤU HIỆU RƯƠNG':current.kind==='site'?'DẤU TÍCH CÔNG TRÌNH':'ĐIỂM THU THẬP'} <span>{current.provenance==='canonical'?'NGUỒN':'DỰNG THÊM'}</span></div>
-        <h3>{current.kind==='site'&&!survey?'Dấu vết công trình chưa khảo sát':current.name}</h3>
+        <h3>{!survey&&current.kind==='site'?'Dấu tích công trình chưa khảo sát':!survey&&current.kind==='chest'?'Dấu rương chưa khảo sát':current.name}</h3>
         {current.count>1&&<p className="map-cluster-note">Cụm bản đồ · {current.count} điểm gần nhau. Phóng to để kiểm tra riêng từng điểm.</p>}
         {current.kind==='chest'||current.kind==='site'?<>
           <div className="map-entity-quantity">{current.kind==='chest'?'Chưa khai quật · Chưa xác định bên trong':'Chưa khảo sát · Chưa thể tương tác'}</div>
