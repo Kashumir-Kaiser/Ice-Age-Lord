@@ -36,17 +36,17 @@ export const sites: Site[] = [
   {
     id: 'fire', name: 'Lửa Trại Cấp 1', subtitle: 'Lửa Sinh Tồn',
     description: 'Nguồn nhiệt sinh tồn khởi đầu. Đây là giao diện mô phỏng vị trí và tương tác; quy mô, nhiên liệu và thời gian phải do bộ mô phỏng cung cấp.',
-    status: 'Đã xác nhận trong thiết lập T0', x: 0, y: 0, label: 'Lửa Trại',
+    status: 'Đã xác nhận trong thiết lập khởi đầu', x: 0, y: 0, label: 'Lửa Trại',
   },
   {
     id: 'house', name: 'Nhà Lãnh Chúa Hư Hại', subtitle: 'Công trình khởi đầu',
     description: 'Một ngôi nhà bị hư hại cần tu sửa. Công thức gốc: 20 Gỗ và 10 Đá. Nút sửa chữa chưa hoạt động trong bản xem thử.',
-    status: 'Chưa tu sửa tại T0', x: 40, y: 20, label: 'Nhà Lãnh Chúa',
+    status: 'Chưa tu sửa tại khởi đầu', x: 40, y: 20, label: 'Nhà Lãnh Chúa',
   },
   {
     id: 'tomb', name: 'Ngôi Mộ Bậc 1', subtitle: 'Công trình binh chủng',
     description: 'Đường tạo quân của Ngôi Mộ tách biệt hoàn toàn với Tử Phục xác thật của Lí Lan. Bản đồ minh họa không cho thấy quân đã được tạo.',
-    status: 'Tồn tại tại T0', x: -20, y: 30, label: 'Ngôi Mộ',
+    status: 'Tồn tại tại khởi đầu', x: -20, y: 30, label: 'Ngôi Mộ',
   },
   {
     id: 'supply', name: 'Hòm Vật Tư Lãnh Địa', subtitle: 'Hòm khởi đầu',
@@ -57,7 +57,7 @@ export const sites: Site[] = [
 export const itemExamples: DemoItem[] = [
   { id:'wood', name:'Gỗ', kind:'Tài nguyên', symbol:'wood', note:'Vật liệu xây dựng', detail:'Mẫu hiển thị tài nguyên gỗ. Không ngụ ý người chơi đang sở hữu số lượng nào.', origin:'Nguồn thiết kế' },
   { id:'stone', name:'Đá', kind:'Tài nguyên', symbol:'stone', note:'Vật liệu công trình', detail:'Đá dùng trong nhiều hợp đồng xây dựng; kiểm tra tồn kho chỉ khi runtime có dữ liệu.', origin:'Nguồn thiết kế' },
-  { id:'ore', name:'Quặng Sắt', kind:'Tài nguyên', symbol:'ore', note:'Nguyên liệu luyện kim', detail:'Minh họa vật phẩm quặng; không khẳng định xuất hiện trong kho tại T0.', origin:'Mẫu thị giác' },
+  { id:'ore', name:'Quặng Sắt', kind:'Tài nguyên', symbol:'ore', note:'Nguyên liệu luyện kim', detail:'Minh họa vật phẩm quặng; không khẳng định xuất hiện trong kho tại khởi đầu.', origin:'Mẫu thị giác' },
   { id:'bread', name:'Bánh Mì', kind:'Vật phẩm', symbol:'bread', note:'Lương thực', detail:'Mẫu giao diện thức ăn. Không đưa phần thưởng hoặc chiến lợi phẩm vào kho tự động.', origin:'Nguồn thiết kế' },
   { id:'cloak', name:'Áo Choàng Chống Lạnh', kind:'Trang bị', symbol:'cloak', note:'Trang bị sinh tồn', detail:'Tên trang bị được nhắc trong tài liệu thiết kế. Bản demo không cấp vật phẩm này cho Lí Lan.', origin:'Nguồn thiết kế' },
   { id:'staff', name:'Trượng Gỗ', kind:'Trang bị', symbol:'staff', note:'Vũ khí / pháp khí', detail:'Mẫu thẻ trang bị. Mọi thuộc tính và quyền sở hữu cần dữ liệu runtime.', origin:'Mẫu thị giác' },
