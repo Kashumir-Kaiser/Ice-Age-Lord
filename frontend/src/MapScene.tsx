@@ -13,13 +13,13 @@ type Props = { selected: SiteKind; onSelect: (id: SiteKind) => void; compact?: b
 const TIMES = [420, 720, 990, 1005, 1140, 60] as const;
 const LEVELS = [1, 2, 3, 4, 5, 6, 7, 10, 11, 16, 21, 26, 30] as const;
 const FIRST_SITES = sites.map(site=>({...site,renderY:-site.y}));
-const PINE_FIELD=Array.from({length:148},(_,i)=>({
+const PINE_FIELD=Array.from({length:480},(_,i)=>({
   x:((i*167+13)%1900)-950,
   y:((i*271+47)%1580)-790,
   size:3.8+(i%6)*1.35,
   spin:(i%7)-3,
 }));
-const SERRATED_ROCKS=Array.from({length:104},(_,i)=>({
+const SERRATED_ROCKS=Array.from({length:220},(_,i)=>({
   x:((i*389+71)%2260)-1130,
   y:((i*227+21)%1860)-930,
   size:3+(i%5)*1.4,
@@ -81,6 +81,27 @@ function Terrain({id}: {id:string}) {
       <path d="M-560 27q89-80 180-71 117 17 185-34 92-73 180 27t151 31" stroke="#d8e9e6" strokeWidth="1.4" strokeOpacity=".14"/>
       <path d="M-440 309Q-199 154-36 271t333-26 396 29" stroke="#d8e9e6" strokeWidth="2" strokeOpacity=".17"/>
       <path d="m-194-212 45 52-15 20 37 36m24 123 41-28 13 45 29-11m350-112-55 31 22 37-62 22" stroke="#e5efed" strokeWidth="2" strokeOpacity=".15"/>
+    </g>
+    {/* Environmental silhouettes: sample biomes remain behind the knowledge fog. */}
+    <g opacity=".64" aria-hidden="true" pointerEvents="none">
+      <ellipse cx="-126" cy="-48" rx="62" ry="48" fill="#092c36" opacity=".38"/>
+      <ellipse cx="-126" cy="-48" rx="52" ry="35" fill="#5d858b" opacity=".19"/>
+      {Array.from({length:24},(_,i)=>{
+        const angle=i*2.39996,dist=16+(i%5)*9;
+        const px=-126+Math.cos(angle)*dist,py=-48+Math.sin(angle)*dist;
+        return <g key={i} transform={`translate(${px} ${py}) scale(.75)`}>
+          <path d="m0-19-9 14h4l-8 10 6-1-8 13h30L7 4l6 1-8-10h4Z" fill="#18424b" stroke="#adcbd0" strokeWidth="1.2" />
+          <path d="M0-19-4-10m-7 15 9-3m-10 15 10-3" stroke="#d3e8e0" strokeWidth="2" opacity=".8"/>
+        </g>;
+      })}
+      <path d="M78-88q56-49 95-8l41 45-14 41-86 8-48-29Z" fill="#172e3d" stroke="#96b6c1" strokeWidth="3" opacity=".75"/>
+      <path d="m78-88 39 57 56-65m-56 65 83 21m-83-21-51 0m51 0 23 21" fill="none" stroke="#d8e9e8" strokeWidth="3" opacity=".36"/>
+      <path d="m-350-112 36-33 31 12 23 49-13 35-58-5-43-28Z" fill="#315465" stroke="#8ec4ce" strokeWidth="3"/>
+      <path d="m-314-145 7 54 24-42m-24 42-24 37m24-37 47 7" stroke="#a2dce3" strokeWidth="4" opacity=".58"/>
+      <ellipse cx="74" cy="115" rx="89" ry="48" fill="#163948" stroke="#a6d4dc" strokeWidth="4" opacity=".58"/>
+      <ellipse cx="76" cy="112" rx="64" ry="30" fill="#8fbbcd" opacity=".38"/>
+      <path d="m19 100 58 9 35-16m-35 16-11 27m11-27 26 17" fill="none" stroke="#e7f7f3" strokeWidth="2.2" opacity=".53"/>
+      {Array.from({length:10},(_,i)=><path key={i} d={`m${27+(i*9)%55} ${90+(i*7)%48} -4 -8 7 3`} stroke="#a7cfb3" strokeWidth="1.7" fill="none"/>)}
     </g>
     <g opacity=".92">{PINE_FIELD.map((tree,i)=>Math.hypot(tree.x,tree.y)<LOCALLY_CLEARED_RADIUS+20?null:
       <g key={i} transform={`translate(${tree.x} ${tree.y}) rotate(${tree.spin}) scale(${tree.size/10})`}>
