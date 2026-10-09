@@ -1,0 +1,105 @@
+/* Interactive winter-cartography surface. Pure presentation, not simulated weather. */
+.map-experience { display:flex; flex-direction:column; gap:0; width:100%; border-radius:10px; overflow:hidden; }
+.map-toolbar { display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; padding:14px 16px; border:1px solid rgba(179,210,206,.23); border-radius:10px 10px 0 0; background:linear-gradient(115deg,#183746,#102c3e); }
+.map-toolbar-main, .map-toolbar-actions { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
+.map-toolbar-main { gap:15px; }
+.map-eyebrow { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:760; letter-spacing:1.3px; color:#d9e9e4; }
+.map-eyebrow svg { color:#b0dce3; }
+.map-time-flag { display:flex; align-items:center; gap:7px; padding-left:14px; border-left:1px solid rgba(188,210,214,.23); font-size:11px; color:#d4e5e5; }
+.map-phase-symbol { display:flex; align-items:center; color:#e6bb7f; }
+.map-phase-symbol.phase-night { color:#a6c8e4; }
+.map-phase-symbol.phase-twilight { color:#c6a1b7; }
+.map-control-label { font-size:10px; color:#91b0b8; font-weight:600; }
+.map-toolbar select { font-size:11px; color:#f2ead9; padding:8px 25px 8px 10px; background:#173645; border:1px solid rgba(161,207,206,.29); border-radius:6px; max-width:160px; }
+.map-toolbar select option { background:#173645; color:#e7f0e9; }
+.map-survey-switch { display:inline-flex; align-items:center; justify-content:center; gap:8px; color:#cfdddb; font-size:11px; border:1px solid rgba(179,209,212,.28); background:#203e4c; border-radius:6px; padding:9px 12px; white-space:nowrap; }
+.map-survey-switch:hover { border-color:#b1d5cc; background:#2a5060; }
+.map-survey-switch.is-on { color:#ffe3b2; background:#3c453f; border-color:#c3a57b; }
+.map-scene--deep { width:100%; height:610px; min-height:380px; border:1px solid #507487; border-top:0; border-bottom:0; border-radius:0; position:relative; background:#102837; box-shadow:inset 0 0 25px #040d17; }
+.map-scene--deep .terrain-svg--deep { width:100%; height:100%; cursor:grab; touch-action:none; user-select:none; }
+.map-scene--deep .terrain-svg--deep:active { cursor:grabbing; }
+.map-vignette { position:absolute; inset:0; z-index:1; pointer-events:none; box-shadow:inset 0 0 90px 34px rgba(2,10,22,.58),inset 0 0 20px rgba(175,205,217,.12); background:linear-gradient(to bottom,rgba(5,18,27,.25),transparent 16%,transparent 80%,rgba(5,17,29,.36)); }
+.map-scene--deep::after { content:""; position:absolute; z-index:2; pointer-events:none; inset:0; background:repeating-linear-gradient(123deg,rgba(229,242,248,.017) 0 1px,transparent 1px 125px); }
+.map-site--deep, .map-resource-marker { cursor:pointer; outline:none; }
+.map-site--deep:hover>circle:first-child,.map-resource-marker:hover>circle:first-child { fill:#204a5b; stroke:#f5dba3; }
+.map-site--deep:focus-visible>circle:first-child,.map-resource-marker:focus-visible>circle:first-child { stroke:#ffe2a3; stroke-width:3; }
+.map-resource-marker--selected>circle:first-child { filter:drop-shadow(0 0 7px #edca91); }
+.map-snow-particles>circle { animation:mapSnowWander 7s ease-in-out infinite alternate; transform-box:fill-box; }
+@keyframes mapSnowWander { from { transform:translate(-2px,-5px); opacity:.22; } to { transform:translate(7px,12px); opacity:.78; } }
+.map-corner-title { z-index:3; position:absolute; top:20px; left:21px; pointer-events:none; text-shadow:0 2px 8px #020812; max-width:48%; }
+.map-corner-title>span { display:flex; align-items:center; gap:6px; color:#b5d4d7; font-size:9px; font-weight:800; letter-spacing:1.3px; margin-bottom:8px; }
+.map-corner-title strong { display:block; font:normal 21px Georgia,"Times New Roman",serif; color:#f7f4e9; }
+.map-corner-title small { display:block; margin-top:5px; line-height:1.5; color:#c1d4d7; font-size:10px; }
+.map-corner-controls { position:absolute; z-index:4; top:16px; right:16px; display:flex; align-items:center; gap:4px; border:1px solid rgba(168,209,209,.33); background:rgba(9,23,33,.84); border-radius:8px; padding:5px; box-shadow:0 4px 20px rgba(0,0,0,.25); backdrop-filter:blur(7px); }
+.map-corner-controls button { display:grid; place-items:center; color:#d1e8e6; width:31px; height:31px; border:0; background:transparent; border-radius:6px; }
+.map-corner-controls button:hover { color:#ffe3af; background:rgba(184,220,219,.17); }
+.map-corner-controls span { color:#b1c6c9; font-size:10px; min-width:37px; text-align:center; }
+.map-heat-readout { position:absolute; z-index:3; bottom:19px; left:20px; display:flex; flex-direction:column; align-items:flex-start; gap:5px; padding:12px 14px; border:1px solid rgba(244,192,118,.35); border-radius:8px; background:linear-gradient(132deg,rgba(55,53,47,.91),rgba(19,36,44,.9)); box-shadow:0 4px 22px rgba(0,0,0,.22); backdrop-filter:blur(9px); pointer-events:none; }
+.map-heat-readout>span { display:flex; align-items:center; gap:6px; color:#f0c78d; font-size:9px; font-weight:800; letter-spacing:1.2px; }
+.map-heat-readout strong { color:#fff0cc; font:normal 25px Georgia,"Times New Roman",serif; white-space:nowrap; }
+.map-heat-readout strong small { color:#d8cab0; font:normal 11px "Segoe UI",sans-serif; }
+.map-heat-readout em { color:#a9bebf; font-size:10px; font-style:normal; }
+.map-drag-hint { pointer-events:none; position:absolute; bottom:15px; right:15px; z-index:3; background:rgba(8,23,36,.7); padding:7px 12px; border:1px solid rgba(168,202,205,.16); border-radius:5px; font-size:9px; color:#c6d7d8; max-width:54%; text-align:right; }
+.map-entity-popover { z-index:5; position:absolute; top:94px; right:18px; width:min(310px,43%); background:linear-gradient(150deg,rgba(20,47,58,.97),rgba(13,29,40,.97)); padding:18px 19px; border:1px solid rgba(185,215,209,.4); border-radius:10px; box-shadow:0 20px 43px rgba(0,0,0,.4); color:#e9f0e9; }
+.map-entity-kicker { display:flex; justify-content:space-between; gap:10px; color:#accacc; letter-spacing:1.2px; font-size:9px; font-weight:800; }
+.map-entity-kicker span { background:#544733; color:#f9d39b; padding:3px 6px; border-radius:3px; }
+.map-entity-popover h3 { font:normal 21px Georgia,"Times New Roman",serif; margin:13px 0 12px; }
+.map-entity-quantity { font-size:16px; font-weight:700; color:#efcf9f; margin:0 0 10px; }
+.map-entity-popover p { font-size:11px; color:#b4c8c8; line-height:1.65; margin:11px 0 15px; }
+.map-entity-popover small { display:block; font-size:9px; color:#879fa9; line-height:1.5; margin:0 0 13px; }
+.map-entity-popover button { display:flex; align-items:center; gap:8px; color:#f3e0b9; background:rgba(182,157,118,.13); border:1px solid rgba(210,181,137,.3); border-radius:6px; padding:7px 12px; font-size:10px; }
+.map-entity-popover button:hover { background:rgba(182,157,118,.28); }
+.map-resource-progress { height:5px; background:#0b2330; border-radius:4px; overflow:hidden; border:1px solid rgba(169,192,191,.13); }
+.map-resource-progress>span { display:block; height:100%; background:linear-gradient(to right,#7aa4aa,#c0dbc3); border-radius:3px; }
+.map-footer-bar { display:flex; flex-wrap:wrap; align-items:center; gap:16px; border:1px solid rgba(170,200,204,.23); background:#142c3a; border-radius:0 0 10px 10px; padding:11px 15px; color:#b9cccc; font-size:10px; }
+.map-footer-bar>span { display:flex; align-items:center; gap:7px; }
+.map-dot { width:8px; height:8px; display:inline-block; border-radius:50%; flex:0 0 auto; }
+.map-dot.mapped { background:#85b9b9; }
+.map-dot.fogged { background:#020712; border:1px solid #637887; }
+.map-dot.sample { background:#d7b586; }
+.map-footer-aside { margin-left:auto; color:#829ea8; text-align:right; }
+.map-experience--compact { border-radius:9px; }
+.map-experience--compact .map-scene--deep { height:320px; min-height:260px; border:1px solid rgba(151,181,190,.25); border-radius:8px; }
+.map-experience--compact .map-corner-title { top:15px; left:15px; }
+.map-experience--compact .map-corner-title strong { font-size:15px; }
+.map-experience--compact .map-corner-title small { display:none; }
+.map-experience--compact .map-corner-controls { top:auto; bottom:14px; right:13px; }
+.map-experience--compact .map-corner-controls button { width:26px; height:26px; }
+.map-experience--compact .map-heat-readout { bottom:12px; left:12px; padding:9px 11px; }
+.map-experience--compact .map-heat-readout strong { font-size:18px; }
+.map-experience--compact .map-heat-readout em { font-size:9px; }
+.map-compact-label { position:absolute; top:16px; right:13px; z-index:2; color:#e5ceae; font-size:8px; letter-spacing:.6px; background:#102937a9; padding:5px 7px; border-radius:4px; }
+.map-experience--compact .map-corner-title { max-width:65%; }
+@media (max-width:1360px) {
+  .map-toolbar-main { width:100%; justify-content:space-between; }
+  .map-toolbar-actions { width:100%; gap:9px; }
+  .map-scene--deep { height:550px; }
+  .map-experience--compact .map-scene--deep { height:290px; }
+}
+@media (max-width:700px) {
+  .map-toolbar { padding:10px; gap:10px; }
+  .map-toolbar-main { gap:8px; flex-wrap:wrap; }
+  .map-eyebrow { font-size:9px; }
+  .map-time-flag { font-size:10px; padding-left:8px; }
+  .map-toolbar-actions { gap:7px; display:grid; grid-template-columns:auto 1fr auto 1fr; }
+  .map-toolbar select { min-width:0; width:100%; max-width:none; padding:7px; }
+  .map-control-label { font-size:9px; }
+  .map-survey-switch { grid-column:1/-1; }
+  .map-scene--deep { height:490px; }
+  .map-corner-title { max-width:70%; top:12px; left:12px; }
+  .map-corner-title strong { font-size:15px; }
+  .map-corner-title small { font-size:9px; }
+  .map-corner-controls { top:auto; bottom:12px; right:9px; }
+  .map-corner-controls button { width:26px; height:26px; }
+  .map-heat-readout { bottom:12px; left:9px; padding:9px; }
+  .map-heat-readout strong { font-size:20px; }
+  .map-heat-readout em { font-size:8px; }
+  .map-drag-hint { display:none; }
+  .map-entity-popover { top:100px; left:10px; right:10px; width:auto; padding:13px 15px; }
+  .map-entity-popover h3 { font-size:17px; }
+  .map-footer-aside { margin-left:0; width:100%; text-align:left; }
+  .map-experience--compact .map-scene--deep { height:270px; }
+  .map-experience--compact .map-corner-title { display:none; }
+  .map-experience--compact .map-heat-readout em { display:none; }
+}
+@media(prefers-reduced-motion:reduce) { .map-snow-particles>circle { animation:none !important; } }
