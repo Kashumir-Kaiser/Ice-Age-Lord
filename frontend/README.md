@@ -1,45 +1,42 @@
-# Ice Age Lord — frontend map prototype
+# Ice-Age-Lord · Map/UI prototype (feature branch only)
 
-The app is a **read-only UI prototype** on `frontend/demo-ui-v0`. It does not advance the campaign clock, change FireLevel, discover hidden locations, consume resources, award chests, alter saves or overwrite the ongoing source extraction.
+This React/Vite frontend demonstrates maps and presentation-state interactions. It does **not** run the LL01 event engine, spend resources, perform exploration turns, persist progress, or mutate canonical source data. The opening map and the active territory are separate from earlier playable campaign saves.
 
-## Run locally
+## Run
 
-Use a **separate frontend worktree** so the main extraction worktree is unaffected:
+From an **existing** isolated frontend worktree:
 
 ```bash
-git fetch origin frontend/demo-ui-v0
-# If the frontend worktree already exists:
-cd ../Ice-Age-Lord-frontend
 git pull --ff-only origin frontend/demo-ui-v0
 cd frontend
 npm install
 npm run dev
 ```
 
-Open http://localhost:5173. If you have not created a worktree, use `git worktree add ../Ice-Age-Lord-frontend origin/frontend/demo-ui-v0` from your original repository.
+Open http://localhost:5173. To create that separate worktree for the first time, from the main checkout use `git fetch origin frontend/demo-ui-v0 && git worktree add ../Ice-Age-Lord-frontend origin/frontend/demo-ui-v0`.
 
-## Geography: canonical point records, schematic interpolation
+## Map geography and provenance
 
-- `src/canonicalGeography.ts` transcribes **WORLD-PACKAGE-LL01-1.0** in `references/canonical/LORD-DND-03.md`, §3.K.4–3.K.7: 38 fixed site coordinates, 10 player anchor coordinates, 41 chest caches, eight specified route endpoints, five resource records and the **96 km local map radius**. Coordinates are in *metres*, +X east and +Y north, origin at H0.
-- Four opening structures use **exact point locations**: fire (0,0), damaged house (40,20), supply chest (30,-10), and tomb (-20,30), all in metres.
-- Source heights and some terrain descriptions are fixed, but the source does **not** provide a complete polygon raster, DEM/elevation field, river bank geometry, slope curves, or exact road polylines. Consequently the decorative ice shading, wind-swept surfaces and region coloring are *artistically schematic*, **not new canonical geometry**. Road endpoints alone are not enough to infer a legal traversable route.
-- Before campaign integration, move the full private registry out of the shipped client, and supply only server-side *knowledge-filtered* `PlayerView.visibleMap` records. This standalone prototype bundles source records for developer inspection and **is not a secure fog-of-war implementation against devtools inspection**.
+- Coordinates for 38 fixed sites, 10 contender anchors, 41 chest-cache centers, eight route endpoints and five major resource sites come directly from `references/canonical/LORD-DND-03.md` §3.K.4–3.K.7, transcribed into `src/canonicalGeography.ts`. Fire radii are taken from `LORD-DND-01`, with 10 m at Cấp 1 and 25 km at Cấp 30. CI compares those tables against the sources.
+- The initial scene is the **frozen Sora–Trevil battlefield plain**, with low slopes, old defensive trenches and exposed relic fragments. The sources describe the opening surface as open plain and give a canonical timber forest **4.7 km east and 6.8 km south** of H0. They do *not* lock a precise nearby treeline polygon. The prototype adds a **modeled southeastern transition woodland near the camp**, retaining the fixed named timber forest at its original coordinate. These illustrative groves, streambank curves and detailed contour shapes are **not new canonical terrain facts**.
+- To make a populated and usable visual prototype, `src/worldFeatures.ts` deterministically adds modeled spots for wood, rock, ore, herbs, ice and salvage. **Their initial reserves are invented presentation fixtures**, clearly labeled “DỰNG THÊM” in the inspector; they are not a newly committed authoritative campaign loot registry. Canonical resources have a different provenance badge.
+- Lighting now controls terrain and **physically apparent** surface features in ordinary map mode. Some buried or sealed chest caches remain hidden until scouting, even if the firelight covers their coordinates. Visible chest signs are not opened loot or discovered treasure contents. Inspector labels hide unverified identities unless the user enters source/debug view.
+- At far zoom, nearby markers are **visually clustered by resource type** with counts. Zoom into the local map to inspect separate sites. This does not merge resources, chest instances or state.
 
-## Map controls
+## Controls
 
-- **Drag:** hold left mouse button and drag; panning never counts as exploration.
-- **Zoom:** wheel while hovering the map (native non-passive listener blocks page scrolling) or use +/- controls.
-- **World map:** button **Bản đồ thế giới** shows the complete 96 km active-region frame, but unrevealed ground remains dark. Zooming out sufficiently to include the entire firelight circle also switches to world view; **Bản đồ địa phương** returns to the starting scale.
-- **Light and fog:** source `FireLevel 1→30` heat radii in `mapModel.ts` (10 m → 25 km) reveal **all terrain within the projected light zone**. The intensity tapers only **after** the actual heat boundary. At night (17:00–07:00), visible terrain contracts to this circle. At dawn/daylight (07:00–16:30), the sight preview extends beyond the fire; twilight runs 16:30–17:00. Day sight values (260 m clear, 680 m fade) are presentation defaults, **not claimed canon weather visibility**.
-- **Atlas nguồn (debug):** optional developer inspector for canonical resource anchors and cached chest groups. Displays *T0 source capacities* such as 780 timber and 1,240 stone, **not balances produced by gameplay**. Does not reveal chest contents or mutate world state. Ordinary player view never shows these unobserved icons.
-- **Sidebar:** the seven pages remain independently scrollable in desktop or mobile mode, even at short window heights.
+- Hold and drag to pan; mouse-wheel zoom is captured on the map and **does not scroll the page**.
+- **Xem toàn bộ vòng nhiệt** always fits the full heat circle **within the local map camera**. It does **not** switch to world map, including at Cấp 30. The world map can be selected directly by button, or triggered by zooming **out deliberately** until the viewed region has a meaningful geographic span. This avoids switching for a 10 m starting fire.
+- The LL01 world map shows a 96 km active-world radius; unexplored areas remain in fog. Daytime terrain visibility extends beyond firelight. At night the visible area contracts to the source-defined active firelight radius. Day visibility falloff remains presentation-only, not canon weather data.
+- **Time speeds:** Frozen (default), 1×, 2×, 5× or custom 0.1×–3600×, in the header. A globally shared display clock advances with the chosen multiplier; the map's light phase reads the same clock, including crossing sunset and dawn. **No world events or resource consumption occur until a deterministic runtime is integrated.** Visible day count replaces the development `T0` tag.
+- The left navigation scrolls independently and its two-line brand fits the sidebar, even in narrower desktop layouts.
 
-## Testing and CI
+## CI and snapshots
 
-Run `npm run build`, `npm test`, `npm run test:e2e`. The GitHub Actions workflow runs for **every push** to the frontend branch; desktop and mobile Chromium E2E checks cover visibility, wheel zoom, drag, source geography, switch to world map, heat values, sidebar usability and inspector knowledge gates. It uploads test screenshots/traces if a browser test fails.
+GitHub Actions runs TypeScript/Vite build, unit tests, source-table audits and desktop/mobile Playwright browser interaction tests after frontend pushes. Screenshot QA captures the **1280 px desktop sidebar**, **25 km heat map**, and **battlefield–forest edge** views and attaches JPEGs to the Playwright report; failed runs preserve traces/screenshots.
 
-`frontend-demo.yml` contains cron `0 17 * * *` for **00:00 Asia/Ho_Chi_Minh**. **GitHub executes schedules only from the default branch**; it will not run nightly while the workflow exists *only* on `frontend/demo-ui-v0`. This restriction is intentional until permission is given to add a lightweight CI entrypoint to `main`—no changes have been made there.
+The workflow includes `0 17 * * *` for 00:00 in Vietnam. GitHub only executes scheduled workflows from the **default branch**; this scheduling trigger remains inactive while isolated exclusively to the frontend feature branch. `main` is deliberately not edited.
 
-## Future runtime integration
+## Runtime contract to implement later
 
-Expose `PlayerView(version, worldTime, visibleMap, inventory, units, buildings, notifications)` filtered server-side. Initial knowledge includes only H0 and objects within sensory reach; new visibility must come from resolved exploration/line-of-sight observations. A fire upgrade changes illuminated geometry, **not player authorization to know concealed loot or inaccessible sites**. Authoritative extraction remains in `research/`, `data/`, `design/`, and `references/`, wholly unaffected by frontend work.
+Server-side `PlayerView.visibleMap` must knowledge-filter canonical locations before serialization. The static browser demo currently embeds canonical registries and therefore is **not security-proof against developer-tools inspection**. The production runtime should persist campfire fuel/state, player sight, explored cells, depleted resource balances and actual world time; this prototype deliberately does not claim those features are working.
