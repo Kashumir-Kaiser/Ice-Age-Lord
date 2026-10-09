@@ -31,13 +31,13 @@ a { color: inherit; }
   background: linear-gradient(180deg, #102333 0%,#0a1a27 58%,#081621 100%);
   border-right: 1px solid #294451; box-shadow: 6px 0 38px rgba(0,0,0,.12);
 }
-.brand-row { display:flex; gap: 10px; align-items: center; padding: 30px 23px 35px; border-bottom:1px solid rgba(214,233,227,.06); }
+.brand-row { display:flex; flex:0 0 auto; gap: 10px; align-items: center; padding: 22px 23px 20px; border-bottom:1px solid rgba(214,233,227,.06); }
 .brand-row img { filter:drop-shadow(0 0 11px rgba(159,216,219,.14)); flex: 0 0 auto; }
 .brand-row strong { display:block; font-family:Georgia,"Times New Roman",serif; font-size:17px; white-space:nowrap; letter-spacing:1.5px; color:#dcebe7; }
 .brand-row em { font-style:normal; color:var(--gold); }
 .brand-row span { display:block; margin-top:6px; font-size:9px; letter-spacing:2px; color:#70949e; white-space:nowrap; }
-.sidebar-section-label { font-size:10px; letter-spacing:2px; color:#64828e; font-weight:700; padding:29px 29px 14px; }
-.sidebar-nav { padding:0 11px; display:flex; flex-direction:column; gap:5px; }
+.sidebar-section-label { flex:0 0 auto; font-size:10px; letter-spacing:2px; color:#64828e; font-weight:700; padding:20px 29px 10px; }
+.sidebar-nav { padding:0 11px 12px; display:flex; flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain; flex-direction:column; gap:5px; scrollbar-width:thin; scrollbar-color:#5c8491 transparent; }
 .nav-link { color:#9bb1b9; border:1px solid transparent; background:none; display:flex; align-items:center; gap:15px; width:100%; border-radius:8px; text-align:left; min-height:55px; padding:9px 13px; position:relative; transition:background .16s,color .16s; }
 .nav-link:hover { background:#193443; color:#e4efec; }
 .nav-link--active { background:linear-gradient(90deg,rgba(96,150,160,.22),rgba(47,82,96,.13)); border-color:rgba(144,196,195,.14); color:#f2f2e9; }
@@ -48,7 +48,7 @@ a { color: inherit; }
 .nav-link small { display:block; font-size:10px; margin-top:3px; font-weight:400; color:#6f8c97; }
 .nav-link--active small { color:#92a5ac; }
 .nav-diamond { width:5px; height:5px; rotate:45deg; border:1px solid var(--gold); }
-.sidebar-bottom { margin-top:auto; padding:20px 16px 24px; }
+.sidebar-bottom { flex:0 0 auto; margin-top:0; padding:12px 16px 16px; }
 .weather-box { display:flex; gap:11px; align-items:flex-start; padding:18px 14px; background:rgba(60,104,118,.16); border:1px solid rgba(144,185,194,.14); border-radius:9px; }
 .weather-box svg { color:#91bcc4; flex:0 0 auto; }
 .weather-box strong { display:block; font-size:11px; font-weight:700; color:#dae8e6; }
