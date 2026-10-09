@@ -15,8 +15,10 @@ test('demo does not fetch, store, mutate canonical extraction or persist saves',
   assert.doesNotMatch(source,/\b(fetch|XMLHttpRequest|localStorage|sessionStorage|indexedDB|WebSocket)\b/);
   assert.doesNotMatch(source,/Math\.random\s*\(/);
 });
-test('T0 character, empty army and sample-only inventory unchanged',()=>{
-  assert.match(read('src/App.tsx'),/T0 · 07:00/);
+test('opening character, paused clock and sample inventory remain isolated',()=>{
+  assert.match(read('src/App.tsx'),/useState\(INITIAL_CLOCK_SECONDS\)/);
+  assert.match(read('src/App.tsx'),/useState<ClockSpeed>\('Frozen'\)/);
+  assert.doesNotMatch(read('src/App.tsx'),/>T0(?:\s|<)/);
   assert.match(read('src/App.tsx'),/0 đơn vị/);
   assert.match(read('src/App.tsx'),/không phải vật phẩm đã nhận/);
   assert.match(read('src/MapScene.tsx'),/Tọa độ nguồn cố định/);
@@ -28,8 +30,9 @@ test('map enforces fog before markers, fog never disabled, and supports dragging
   assert.match(map,/onPointerUp=\{pointerUp\}/);
   assert.match(map,/addEventListener\('wheel',onWheel,\{passive:false\}\)/);
   assert.match(map,/FogMask id=\{unique\} discs=\{discs\}/);
-  assert.match(map,/CANONICAL_RESOURCES\.map/);
-  assert.match(map,/CANONICAL_CHEST_CACHES\.map/);
+  assert.match(map,/visibleMapSpots\(minutes,level,survey\)/);
+  assert.match(read('src/worldFeatures.ts'),/CANONICAL_CHEST_CACHES\.map/);
+  assert.match(read('src/worldFeatures.ts'),/CANONICAL_RESOURCES\.map/);
   assert.match(map,/map-survey-switch/);
   assert.doesNotMatch(map,/<button[^>]*>.*?Tắt sương mù/);
 });
@@ -39,8 +42,9 @@ test('fire circle and time lighting are bound to rule-based data',()=>{
   assert.match(map,/r=\{radius\}/);
   assert.match(map,/dayOverlayOpacity\(minutes\)/);
   assert.match(map,/const phase=dayPhase\(minutes\)/);
-  assert.match(map,/current\.remaining\.toLocaleString/);
-  assert.match(map,/contentsKnown:false/);
+  assert.match(map,/current\.amount\?\.toLocaleString/);
+  assert.match(map,/setViewMode\('local'\);setCx\(DEMO_CAMP/);
+  assert.match(read('src/worldFeatures.ts'),/hidden:/);
 });
 test('CI runs after each frontend push and declares midnight ICT cron',()=>{
   const workflow=read('../.github/workflows/frontend-demo.yml');
