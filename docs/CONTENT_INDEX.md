@@ -9,8 +9,8 @@
 | `design/buildings/MAGICAL-BUILDING-CATALOG-v0.3.json` | Machine-readable branch catalog | Proposed, partial executable contracts |
 | `design/buildings/SOURCE-GROUNDED-BUILDING-REDESIGN.md` | Source-first functional building distinctions | Reference and proposal |
 | `data/events/EVENT-TIMELINE-v0.6.json` | Reconciled fixed 30-event calendar | New-game candidate, not retroactive live migration |
-| `data/events/EVENT-SOURCE-CATALOG-v2.0.json` | Twenty rounds of source event/shop/world-mechanics extraction, 319 records (66 effect contracts) | Research, not guaranteed loot |
-| `data/events/EVENT-SOURCE-ITEMS-v2.0.csv` | Human-review event catalog | Review |
+| `data/events/EVENT-SOURCE-CATALOG-v2.1.json` | Twenty-one rounds of source event/shop/world-mechanics extraction, 319 records (68 effect contracts) | Research, not guaranteed loot |
+| `data/events/EVENT-SOURCE-ITEMS-v2.1.csv` | Human-review event catalog | Review |
 | `data/events/EVENT-TIMELINE-v0.6.csv` | Human-review schedule diff | Review |
 | `references/canonical/LORD-DND-01..07.md` | Underlying mechanics, fixed T0, world/hero/lair/quest data | Historical authoritative rules, require typed migration |
 | `references/canonical/RELEASE-LINEAGE-LL01-1.3.0.md` | Source release ancestry / exact known active versions | Legacy integrity reference |
@@ -20,9 +20,9 @@
 
 ## Research traceability
 
-- `research/extraction-audits/ROUND-01-SHOPS-CHESTS.md` through `ROUND-20-TWENTIETH-EXTRACTION.md`: **all twenty source extraction audits**.
+- `research/extraction-audits/ROUND-01-SHOPS-CHESTS.md` through `ROUND-21-TWENTY-FIRST-EXTRACTION.md`: **all twenty-one source extraction audits**.
 - `research/extraction-audits/EVENT-TIMELINE-RECONCILIATION-v0.6.md`: chronology corrections and uncertain source cases.
-- `research/snapshots/events/EVENT-SOURCE-CATALOG-v0.1..v1.9.json`: historical extraction datasets.
+- `research/snapshots/events/EVENT-SOURCE-CATALOG-v0.1..v2.0.json`: historical extraction datasets.
 - `research/snapshots/events/EVENT-SOURCE-ITEMS-v0.1..v1.7.csv`: corresponding historical review datasets.
 - `research/snapshots/design/`: previous web-game spec versions retained for forensic comparison, **not** alternative active specs.
 
