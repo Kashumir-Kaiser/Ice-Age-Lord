@@ -6,7 +6,7 @@ on:
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend-demo.yml'
-  workflow_dispatch:
+  # GitHub only executes scheduled workflows from the default branch.\n  # Kept here as a ready-to-enable schedule without modifying main.\n  # 17:00 UTC = 00:00 Asia/Ho_Chi_Minh (UTC+7), next calendar day.\n  schedule:\n    - cron: '0 17 * * *'\n  workflow_dispatch:
 jobs:
   frontend:
     runs-on: ubuntu-latest
