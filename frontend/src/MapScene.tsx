@@ -341,5 +341,5 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
 }
 function FIRE_MARKER_SCALE(zoom:number):number{
   // Markers remain legible across local zoom, without turning into gigantic buildings.
-  return Math.max(.45,Math.min(2.4,1/Math.sqrt(zoom)));
+  return Math.max(.14,Math.min(.9,.32/Math.sqrt(zoom)));
 }
