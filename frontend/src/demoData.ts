@@ -31,27 +31,27 @@ export const screens: { id: Screen; name: string; hint: string }[] = [
   { id: 'buildings', name: 'Công trình', hint: 'Kiến trúc' },
   { id: 'journal', name: 'Nhật ký', hint: 'Sự kiện' },
 ];
-/** All map placement is ILLUSTRATIVE only: these are not LL01 coordinates. */
+/** Presentation-only offsets in metres from camp H0 (+X east, +Y north).\n * Exact canonical locations are NOT asserted. Never use these as world state. */
 export const sites: Site[] = [
   {
     id: 'fire', name: 'Lửa Trại Cấp 1', subtitle: 'Lửa Sinh Tồn',
     description: 'Nguồn nhiệt sinh tồn khởi đầu. Đây là giao diện mô phỏng vị trí và tương tác; quy mô, nhiên liệu và thời gian phải do bộ mô phỏng cung cấp.',
-    status: 'Đã xác nhận trong thiết lập T0', x: 532, y: 348, label: 'Lửa Trại',
+    status: 'Đã xác nhận trong thiết lập T0', x: 0, y: 0, label: 'Lửa Trại',
   },
   {
     id: 'house', name: 'Nhà Lãnh Chúa Hư Hại', subtitle: 'Công trình khởi đầu',
     description: 'Một ngôi nhà bị hư hại cần tu sửa. Công thức gốc: 20 Gỗ và 10 Đá. Nút sửa chữa chưa hoạt động trong bản xem thử.',
-    status: 'Chưa tu sửa tại T0', x: 338, y: 256, label: 'Nhà Lãnh Chúa',
+    status: 'Chưa tu sửa tại T0', x: -25, y: 14, label: 'Nhà Lãnh Chúa',
   },
   {
     id: 'tomb', name: 'Ngôi Mộ Bậc 1', subtitle: 'Công trình binh chủng',
     description: 'Đường tạo quân của Ngôi Mộ tách biệt hoàn toàn với Tử Phục xác thật của Lí Lan. Bản đồ minh họa không cho thấy quân đã được tạo.',
-    status: 'Tồn tại tại T0', x: 755, y: 236, label: 'Ngôi Mộ',
+    status: 'Tồn tại tại T0', x: 30, y: 22, label: 'Ngôi Mộ',
   },
   {
     id: 'supply', name: 'Hòm Vật Tư Lãnh Địa', subtitle: 'Hòm khởi đầu',
     description: 'Điểm chứa vật tư khởi đầu. Nội dung cụ thể phải lấy từ snapshot sạch và bộ mô phỏng, không suy từ dữ liệu kiểm thử.',
-    status: 'Chưa mô phỏng thao tác', x: 706, y: 452, label: 'Hòm Vật Tư',
+    status: 'Chưa mô phỏng thao tác', x: 21, y: -15, label: 'Hòm Vật Tư',
   },
 ];
 export const itemExamples: DemoItem[] = [
