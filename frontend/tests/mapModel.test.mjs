@@ -35,14 +35,25 @@ test('world-clock light phases respect campaign dawn, sunset and night boundarie
   assert.ok(model.dayOverlayOpacity(1140)>model.dayOverlayOpacity(720));
   assert.throws(()=>model.dayPhase(1440),RangeError);
 });
-test('fog is clear at camp and becomes fully black far outside surveyed area',()=>{
-  assert.equal(model.fogOpacityAt(0,0,false),0);
-  assert.ok(model.fogOpacityAt(80,0,false)>0);
-  assert.ok(model.fogOpacityAt(80,0,false)<1);
-  assert.equal(model.fogOpacityAt(130,0,false),1);
-  assert.equal(model.fogOpacityAt(3000,1000,true),1);
-  assert.equal(model.fogOpacityAt(-125,48,true),0);
-  assert.equal(model.fogOpacityAt(-125,48,false),1);
+test('daylight, twilight and night fog contracts around source heat radius',()=>{
+  assert.equal(model.fogOpacityAt(0,0,false,420,1),0);
+  assert.equal(model.fogOpacityAt(250,0,false,720,1),0);
+  assert.ok(model.fogOpacityAt(430,0,false,720,1)>0);
+  assert.ok(model.fogOpacityAt(430,0,false,720,1)<1);
+  assert.equal(model.fogOpacityAt(800,0,false,720,1),1);
+  assert.equal(model.fogOpacityAt(200,0,false,1005,1),1); // dusk is contracted
+  assert.equal(model.fogOpacityAt(9,0,false,1140,1),0);
+  assert.equal(model.fogOpacityAt(50,0,false,1140,1),1);
+  assert.equal(model.fogOpacityAt(24000,0,false,1140,30),0);
+  assert.equal(model.fogOpacityAt(25060,0,false,1140,30),1);
+  assert.equal(model.fogOpacityAt(24000,0,true,1140,30),0);
+  assert.equal(model.fogOpacityAt(24000,0,false,1140,1),1);
+});
+test('world atlas transition waits until entire source heat area is visible',()=>{
+  assert.equal(model.shouldEnterWorldMap(.5,10),true);
+  assert.equal(model.shouldEnterWorldMap(.5,25000),false);
+  assert.equal(model.shouldEnterWorldMap(.003,25000),true);
+  assert.ok(model.WORLD_ZOOM<.002);
 });
 test('chests and resource spot quantities are withheld before survey preview',()=>{
   assert.deepEqual(model.visibleDemoMarkers(false),[]);
@@ -59,4 +70,23 @@ test('chests and resource spot quantities are withheld before survey preview',()
 test('metres are used for geometric radius and formatted in Vietnamese',()=>{
   assert.equal(model.formatDistance(10),'10 m');
   assert.match(model.formatDistance(1500),/1,5 km/);
+});
+
+test('canonical map geography uses all source site, anchor, and chest cache coordinates',async()=>{
+  const src=readFileSync(join(root,'src/canonicalGeography.ts'),'utf8');
+  const transpiled=ts.transpileModule(src,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
+  const geo=await import('data:text/javascript;base64,'+Buffer.from(transpiled).toString('base64'));
+  assert.equal(geo.CANONICAL_SITES.length,38);
+  assert.equal(geo.CANONICAL_ANCHORS.length,10);
+  assert.equal(geo.CANONICAL_CHEST_CACHES.length,41);
+  assert.equal(geo.CANONICAL_ROUTE_ENDPOINTS.length,8);
+  assert.equal(geo.CANONICAL_MAP_RADIUS_M,96000);
+  assert.equal(geo.knownOpeningSites().length,4);
+  assert.deepEqual(geo.knownOpeningSites().map(s=>[s.x,s.y]),[[0,0],[40,20],[30,-10],[-20,30]]);
+  assert.equal(geo.projectKnownSites(['SITE-LL01-000']).length,1);
+  assert.equal(geo.CANONICAL_RESOURCES.find(x=>x.id==='RES-LL01-01').capacity,780);
+  assert.equal(geo.CANONICAL_RESOURCES.find(x=>x.id==='RES-LL01-02').capacity,1240);
+  assert.equal(geo.CANONICAL_RESOURCES.find(x=>x.id==='RES-LL01-04').x,-12400);
+  assert.equal(geo.CANONICAL_CHEST_CACHES[0].x,-650);
+  assert.equal(geo.CANONICAL_ANCHORS[1].x,68000);
 });
