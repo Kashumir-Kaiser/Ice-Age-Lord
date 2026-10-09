@@ -12,8 +12,8 @@ This is a **new game**: do not import earlier campaign inventories, unit rosters
 
 - `references/canonical/`: original Lord DnD source rulebooks and lineage, retained **as references** (not an already-compiled runtime).
 - `design/`: latest web-game content design, magical buildings and source-grounded construction proposals.
-- `data/events/`: the 295-entry v1.4 source-research inventory with 36 source effect records, reconciled 30-event v0.6 timeline and review CSV. Extracted entries are not automatically obtainable in a new game.
-- `research/extraction-audits/`: **all fourteen passes** of event shop/chest/item/structure research and reconciliations.
+- `data/events/`: the 296-entry v1.5 source-research inventory with 42 source effect records, reconciled 30-event v0.6 timeline and review CSV. Extracted entries are not automatically obtainable in a new game.
+- `research/extraction-audits/`: **all fifteen passes** of event shop/chest/item/structure research and reconciliations.
 - `research/snapshots/`: chronological catalogs and design versions retained for traceability.
 
 ## Authority / migration rules
