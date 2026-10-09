@@ -14,6 +14,12 @@ type Props = { selected: SiteKind; onSelect: (id: SiteKind) => void; compact?: b
 const TIMES = [420, 720, 990, 1005, 1140, 60] as const;
 const LEVELS = [1, 2, 3, 4, 5, 6, 7, 10, 11, 16, 21, 26, 30] as const;
 const FIRST_SITES = sites.map(site=>({...site,renderY:-site.y}));
+const SNOW_PARTICLES=Array.from({length:44},(_,i)=>({
+  x:((i*131+37)%900)-450,
+  y:((i*179+13)%650)-325,
+  r:i%4===0?1.3:.75,
+  delay:(i%15)*-.55,
+}));
 /** Exact positions from the LL01 registry, not generated geographical features.
  * Snow and shading are aesthetic cartography; no coastlines, hills, roads or biome
  * polygon boundaries are claimed where the source supplies only point anchors. */
