@@ -18,7 +18,7 @@ const NAV_ICONS: Record<Screen, LucideIcon> = {
 const HEADINGS: Record<Screen, { title: string; description: string }> = {
   overview: { title:'Tổng quan lãnh địa', description:'Cảnh khởi đầu · Đồng bằng Cổ Chiến Trường' },
   territory: { title:'Quản lý lãnh địa', description:'Theo dõi công trình, ưu tiên và các tuyến sinh tồn' },
-  map: { title:'Bản đồ thám hiểm', description:'Xem bố cục thế giới ở chế độ minh họa, chưa kết nối tọa độ canon' },
+  map: { title:'Bản đồ thám hiểm', description:'Tọa độ từ gói thế giới LL01; sương mù theo ánh sáng và kiến thức' },
   inventory: { title:'Kho vật phẩm', description:'Thư viện thẻ vật phẩm mẫu · Chưa phải kho của nhân vật' },
   forces: { title:'Quân lực', description:'Sổ đơn vị và hệ thống triệu hoán · Chưa kết nối bộ mô phỏng' },
   buildings: { title:'Kiến trúc', description:'Các công trình đã được xác lập trong thiết lập mở đầu' },
@@ -142,8 +142,8 @@ function Overview({ selected, select, navigate }: {selected:SiteKind;select:(v:S
 }
 function MapPage({ selected, select }: {selected:SiteKind;select:(v:SiteKind)=>void}) {
   return <div className="page-sections">
-    <div className="notice-row"><Info size={17}/><span>Bản đồ luôn che những nơi chưa thăm dò. Các điểm khai thác/rương trong «Khảo sát mẫu» là số liệu giả lập để kiểm thử và tuyệt đối không phải vị trí rương, mỏ đã khóa trong thế giới.</span></div>
-    <div className="map-page-grid"><div className="panel map-full"><MapScene selected={selected} onSelect={select}/></div><div className="map-page-side"><SiteInspector siteId={selected}/><div className="panel help-panel"><h3><Compass size={18}/> Cách điều khiển</h3><p>Giữ chuột trái và kéo để đi xa khỏi điểm neo; cuộn chuột hoặc bấm + / − để thu phóng. Nhấn biểu tượng Gỗ, Đá, Quặng, thảo dược, Băng hoặc Rương để kiểm tra thông tin mẫu.</p><p>Sương mù mặc định che toàn bộ vùng ngoài tầm quan sát. Xem mẫu khảo sát chỉ mở một bản diễn họa đã quan sát, không thay đổi state thật. Bảng giờ thử ánh sáng không làm tiến thời gian.</p></div></div></div>
+    <div className="notice-row"><Info size={17}/><span>Các điểm neo, điểm tài nguyên và cache lấy tọa độ từ WORLD-PACKAGE-LL01-1.0. T0 chỉ biết bốn vật thể khởi đầu; chế độ atlas nguồn (debug) có thể hiển thị dữ liệu ẩn để kiểm tra thiết kế, không cấp kiến thức cho Lí Lan.</span></div>
+    <div className="map-page-grid"><div className="panel map-full"><MapScene selected={selected} onSelect={select}/></div><div className="map-page-side"><SiteInspector siteId={selected}/><div className="panel help-panel"><h3><Compass size={18}/> Cách điều khiển</h3><p>Giữ chuột trái và kéo bản đồ. Cuộn chuột trực tiếp trên bản đồ để phóng/thu mà không cuộn trang. Khi thu đủ xa để thấy toàn bộ vùng nhiệt, bản đồ chuyển sang chế độ thế giới; cũng có nút chuyển trực tiếp.</p><p>Ban ngày nhìn xa hơn, ban đêm chỉ nhìn được trong vùng ánh sáng của Lửa Sinh Tồn. Tăng Cấp xem trước sẽ mở rộng vùng được chiếu sáng, nhưng không làm nhân vật khám phá rương hay địa điểm. Xem atlas nguồn là công cụ debug, không phải hành động chơi.</p></div></div></div>
   </div>;
 }
 function Inventory({ selected, select }: {selected:string;select:(id:string)=>void}) {
@@ -179,11 +179,11 @@ function Inventory({ selected, select }: {selected:string;select:(id:string)=>vo
 }
 function Buildings({ selected, select, navigate }: {selected:SiteKind;select:(id:SiteKind)=>void;navigate:(v:Screen)=>void}) {
   return <div className="page-sections">
-    <div className="notice-row"><Info size={17}/><span>Đây là bốn vị trí khởi đầu dùng trong giao diện; vị trí biểu diễn không phải tọa độ thật. Không có công trình mới được xây.</span></div>
+    <div className="notice-row"><Info size={17}/><span>Bốn công trình khởi đầu được đặt ở đúng tọa độ LL01 cố định tương đối với ngọn lửa H0. Không có công trình mới được xây.</span></div>
     <div className="building-page-grid"><div className="building-grid">{sites.map(site=><button key={site.id} onClick={()=>select(site.id)} className={`panel building-card ${selected===site.id?'building-card--selected':''}`}>
       <div className="building-thumb"><span className="building-grid-overlay"/><Sigil kind={site.id}/></div>
       <div className="building-info"><span>{site.subtitle}</span><h3>{site.name}</h3><p>{site.status}</p><span className="building-open">Xem chi tiết <ChevronRight size={15}/></span></div>
-    </button>)}</div><div><SiteInspector siteId={selected}/><button className="nav-next" onClick={()=>navigate('map')}>Xem vị trí mô phỏng trên bản đồ <ChevronRight size={17}/></button></div></div>
+    </button>)}</div><div><SiteInspector siteId={selected}/><button className="nav-next" onClick={()=>navigate('map')}>Xem vị trí cố định trên bản đồ <ChevronRight size={17}/></button></div></div>
   </div>;
 }
 function Forces() {
