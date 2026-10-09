@@ -118,3 +118,5 @@
 .map-entity-popover .map-entity-quantity small {font-size:10px; font-weight:400; color:#b6d1cc;}
 .map-heat-readout { z-index:4; }
 .map-corner-controls {max-width:100%;flex-wrap:wrap;}
+
+.map-cluster-note{padding:8px 10px;border-radius:6px;background:#1c3e4a;color:#d4e9d8 !important;border:1px solid rgba(189,213,195,.21);margin:4px 0 12px !important;}
