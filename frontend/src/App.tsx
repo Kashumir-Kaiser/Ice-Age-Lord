@@ -129,7 +129,7 @@ function Overview({ selected, select, navigate }: {selected:SiteKind;select:(v:S
       <div className="panel map-preview-panel">
         <BlockTitle title="Vùng lãnh địa" eyebrow="BẢN ĐỒ" action={<button className="text-button" onClick={()=>navigate('map')}>Xem toàn màn hình <ChevronRight size={15}/></button>}/>
         <MapScene compact selected={selected} onSelect={select}/>
-        <div className="preview-footer"><span><span className="legend-circle warm"/> Lửa Sinh Tồn</span><span><span className="legend-circle blue"/> Công trình khởi đầu</span><span className="preview-warning">Bố cục chỉ để đánh giá hình ảnh</span></div>
+        <div className="preview-footer"><span><span className="legend-circle warm"/> Vòng nhiệt theo bán kính nguồn</span><span><span className="legend-circle blue"/> Công trình khởi đầu</span><span className="preview-warning">Địa hình giả lập · Fog mặc định</span></div>
       </div>
       <SiteInspector siteId={selected}/>
     </section>
@@ -142,8 +142,8 @@ function Overview({ selected, select, navigate }: {selected:SiteKind;select:(v:S
 }
 function MapPage({ selected, select }: {selected:SiteKind;select:(v:SiteKind)=>void}) {
   return <div className="page-sections">
-    <div className="notice-row"><Info size={17}/><span>Đây là bản đồ diễn họa để duyệt mỹ thuật. Không hiển thị tọa độ thật, địa điểm chưa khám phá hay rương ẩn.</span></div>
-    <div className="map-page-grid"><div className="panel map-full"><MapScene selected={selected} onSelect={select}/></div><div className="map-page-side"><SiteInspector siteId={selected}/><div className="panel help-panel"><h3><Compass size={18}/> Cách điều khiển</h3><p>Kéo để di chuyển · Phóng to bằng các nút + / − · Chạm biểu tượng để xem thông tin.</p><p>Chế độ sương mù ở đây chỉ là hiệu ứng thị giác, không đại diện quyền biết của nhân vật.</p></div></div></div>
+    <div className="notice-row"><Info size={17}/><span>Bản đồ luôn che những nơi chưa thăm dò. Các điểm khai thác/rương trong «Khảo sát mẫu» là số liệu giả lập để kiểm thử và tuyệt đối không phải vị trí rương, mỏ đã khóa trong thế giới.</span></div>
+    <div className="map-page-grid"><div className="panel map-full"><MapScene selected={selected} onSelect={select}/></div><div className="map-page-side"><SiteInspector siteId={selected}/><div className="panel help-panel"><h3><Compass size={18}/> Cách điều khiển</h3><p>Giữ chuột trái và kéo để đi xa khỏi điểm neo; cuộn chuột hoặc bấm + / − để thu phóng. Nhấn biểu tượng Gỗ, Đá, Quặng, thảo dược, Băng hoặc Rương để kiểm tra thông tin mẫu.</p><p>Sương mù mặc định che toàn bộ vùng ngoài tầm quan sát. Xem mẫu khảo sát chỉ mở một bản diễn họa đã quan sát, không thay đổi state thật. Bảng giờ thử ánh sáng không làm tiến thời gian.</p></div></div></div>
   </div>;
 }
 function Inventory({ selected, select }: {selected:string;select:(id:string)=>void}) {
