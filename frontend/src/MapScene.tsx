@@ -1,13 +1,12 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from 'react';
-import { ArrowDownRight, Compass, Maximize2, Minus, Plus, Snowflake, Sun, Moon, ThermometerSun, MapPinned } from 'lucide-react';
+import { ArrowDownRight, Compass, Eye, EyeOff, Maximize2, Minus, Plus, Snowflake, Sun, Moon, ThermometerSun, MapPinned } from 'lucide-react';
 import { sites } from './demoData';
 import type { SiteKind } from './demoData';
 import {
-  dayOverlayOpacity, dayPhase, DEMO_CAMP, DEMO_SURVEYED, displayRemaining, fireForm, fogOpacityAt,
+  dayOverlayOpacity, dayPhase, DEMO_CAMP, DEMO_SURVEYED, displayRemaining, fireForm,
   formatClock, formatDistance, heatRadiusM, OPENING_OBSERVED, visibleDemoMarkers,
 } from './mapModel';
-import type { ResourceOrChest } from './mapModel';
 import './map-refinement.css';
 
 type Props = { selected: SiteKind; onSelect: (id: SiteKind) => void; compact?: boolean };
@@ -226,6 +225,7 @@ export default function MapScene({selected,onSelect,compact=false}:Props){
         <select id={`${unique}-level`} value={level} onChange={e=>setLevel(Number(e.target.value))} aria-label="Xem thử vùng nhiệt theo cấp">
           {LEVELS.map(l=><option value={l} key={l}>Cấp {l}</option>)}
         </select>
+        <button className="map-survey-switch" onClick={()=>setLabels(v=>!v)} aria-pressed={labels} aria-label="Hiện hoặc ẩn nhãn biểu tượng">{labels?<Eye size={15}/>:<EyeOff size={15}/>} {labels?'Ẩn nhãn':'Hiện nhãn'}</button>
         <button className={`map-survey-switch ${survey?'is-on':''}`} onClick={clearSurvey} aria-pressed={survey}>
           <MapPinned size={15}/> {survey?'Ẩn điểm mẫu':'Xem khảo sát mẫu'}
         </button>
