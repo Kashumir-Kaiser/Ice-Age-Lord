@@ -111,13 +111,13 @@ test('painted Survival Fire stages use independent registered true-vector art an
       assert.ok(typeof url==='string'&&url.startsWith('/assets/buildings/'));
       const markup=readFileSync(resolve(repo,'frontend/public'+url),'utf8');
       assert.match(markup,/<svg[^>]*viewBox="0 0 480 400"/);
-      assert.doesNotMatch(markup,/<image(?:\\s|>)/i,'All layers must contain vector artwork, not embedded photos.');
-      if (layer==='vfx') assert.match(markup,/<path\\b/, 'Active fire must be separately switchable.');
-      if (layer==='upper'&&index>0) assert.match(markup,/<path\\b/,'Tall stages require their own removable upper geometry.');
+      assert.ok(!markup.includes('<image'), 'SVG layers must not embed raster images.');
+      if (layer==='vfx') assert.ok(markup.includes('<path'), 'Active fire must be separately switchable.');
+      if (layer==='upper'&&index>0) assert.ok(markup.includes('<path'), 'Tall stages require separate upper geometry.');
     }
   }
   const sprite=readFileSync(resolve(root,'src/territory/BuildingSprite.tsx'),'utf8');
-  assert.match(sprite,/asset\\?\\.presentationScale \\?\\? 1/);
+  assert.ok(sprite.includes('asset?.presentationScale ?? 1'));
   assert.match(sprite,/activeEffect && vfx/);
   assert.match(sprite,/mode === 'planning' && !missing && asset && base/);
 });
