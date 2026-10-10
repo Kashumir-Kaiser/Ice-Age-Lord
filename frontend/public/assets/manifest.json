@@ -127,7 +127,7 @@
       "definitionId": "SITE-LL01-001",
       "variant": "winter-ink-handpainted-architecture-v1",
       "orientation": "north",
-      "revision": 2,
+      "revision": 3,
       "presentationScale": 1.22,
       "layers": {
         "uiIcon": "/assets/buildings/lord-house-damaged/icon.svg",
@@ -236,10 +236,12 @@
           "shadow": "/assets/buildings/lord-house-damaged/shadow.svg"
         },
         "district": {
-          "icon": "/assets/buildings/lord-house-damaged/icon.svg"
+          "body": "/assets/buildings/lord-house-damaged/district.svg",
+          "icon": "/assets/buildings/lord-house-damaged/district.svg"
         },
         "regional": {
-          "icon": "/assets/buildings/lord-house-damaged/icon.svg"
+          "body": "/assets/buildings/lord-house-damaged/district.svg",
+          "icon": "/assets/buildings/lord-house-damaged/district.svg"
         }
       }
     },
@@ -248,7 +250,7 @@
       "definitionId": "SITE-LL01-003",
       "variant": "winter-ink-handpainted-architecture-v1",
       "orientation": "north",
-      "revision": 2,
+      "revision": 3,
       "presentationScale": 1.27,
       "layers": {
         "uiIcon": "/assets/buildings/tomb-entry/icon.svg",
@@ -357,10 +359,12 @@
           "shadow": "/assets/buildings/tomb-entry/shadow.svg"
         },
         "district": {
-          "icon": "/assets/buildings/tomb-entry/icon.svg"
+          "body": "/assets/buildings/tomb-entry/district.svg",
+          "icon": "/assets/buildings/tomb-entry/district.svg"
         },
         "regional": {
-          "icon": "/assets/buildings/tomb-entry/icon.svg"
+          "body": "/assets/buildings/tomb-entry/district.svg",
+          "icon": "/assets/buildings/tomb-entry/district.svg"
         }
       }
     },
@@ -369,7 +373,7 @@
       "definitionId": "SITE-LL01-002",
       "variant": "winter-ink-handpainted-architecture-v1",
       "orientation": "north",
-      "revision": 2,
+      "revision": 3,
       "presentationScale": 1.02,
       "layers": {
         "uiIcon": "/assets/buildings/supply-crate/icon.svg",
@@ -478,10 +482,12 @@
           "shadow": "/assets/buildings/supply-crate/shadow.svg"
         },
         "district": {
-          "icon": "/assets/buildings/supply-crate/icon.svg"
+          "body": "/assets/buildings/supply-crate/district.svg",
+          "icon": "/assets/buildings/supply-crate/district.svg"
         },
         "regional": {
-          "icon": "/assets/buildings/supply-crate/icon.svg"
+          "body": "/assets/buildings/supply-crate/district.svg",
+          "icon": "/assets/buildings/supply-crate/district.svg"
         }
       }
     },
@@ -1462,7 +1468,7 @@
       "definitionId": "SITE-LL01-001",
       "variant": "winter-ink-handpainted-architecture-v1",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
       "presentationScale": 1.22,
       "layers": {
         "uiIcon": "/assets/buildings/lord-house-repaired/icon.svg",
@@ -1571,10 +1577,12 @@
           "shadow": "/assets/buildings/lord-house-repaired/shadow.svg"
         },
         "district": {
-          "icon": "/assets/buildings/lord-house-repaired/icon.svg"
+          "body": "/assets/buildings/lord-house-repaired/district.svg",
+          "icon": "/assets/buildings/lord-house-repaired/district.svg"
         },
         "regional": {
-          "icon": "/assets/buildings/lord-house-repaired/icon.svg"
+          "body": "/assets/buildings/lord-house-repaired/district.svg",
+          "icon": "/assets/buildings/lord-house-repaired/district.svg"
         }
       }
     },
@@ -1583,7 +1591,7 @@
       "definitionId": "ART-REFERENCE:POLAR-FARMHOUSE-L1",
       "variant": "winter-ink-handpainted-architecture-v1",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
       "presentationScale": 1.17,
       "layers": {
         "uiIcon": "/assets/buildings/polar-farmhouse-l01/icon.svg",
@@ -1692,10 +1700,12 @@
           "shadow": "/assets/buildings/polar-farmhouse-l01/shadow.svg"
         },
         "district": {
-          "icon": "/assets/buildings/polar-farmhouse-l01/icon.svg"
+          "body": "/assets/buildings/polar-farmhouse-l01/district.svg",
+          "icon": "/assets/buildings/polar-farmhouse-l01/district.svg"
         },
         "regional": {
-          "icon": "/assets/buildings/polar-farmhouse-l01/icon.svg"
+          "body": "/assets/buildings/polar-farmhouse-l01/district.svg",
+          "icon": "/assets/buildings/polar-farmhouse-l01/district.svg"
         }
       }
     },
@@ -1704,7 +1714,7 @@
       "definitionId": "ART-REFERENCE:OPENING-FENCE-L1",
       "variant": "winter-ink-handpainted-architecture-v1",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
       "presentationScale": 1.24,
       "layers": {
         "uiIcon": "/assets/buildings/opening-palisade-wall/icon.svg",
@@ -1813,10 +1823,12 @@
           "shadow": "/assets/buildings/opening-palisade-wall/shadow.svg"
         },
         "district": {
-          "icon": "/assets/buildings/opening-palisade-wall/icon.svg"
+          "body": "/assets/buildings/opening-palisade-wall/district.svg",
+          "icon": "/assets/buildings/opening-palisade-wall/district.svg"
         },
         "regional": {
-          "icon": "/assets/buildings/opening-palisade-wall/icon.svg"
+          "body": "/assets/buildings/opening-palisade-wall/district.svg",
+          "icon": "/assets/buildings/opening-palisade-wall/district.svg"
         }
       }
     },
@@ -1825,7 +1837,7 @@
       "definitionId": "ART-REFERENCE:OPENING-GATE-L1",
       "variant": "winter-ink-handpainted-architecture-v1",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
       "presentationScale": 1.22,
       "layers": {
         "uiIcon": "/assets/buildings/opening-timber-gate/icon.svg",
@@ -1934,10 +1946,12 @@
           "shadow": "/assets/buildings/opening-timber-gate/shadow.svg"
         },
         "district": {
-          "icon": "/assets/buildings/opening-timber-gate/icon.svg"
+          "body": "/assets/buildings/opening-timber-gate/district.svg",
+          "icon": "/assets/buildings/opening-timber-gate/district.svg"
         },
         "regional": {
-          "icon": "/assets/buildings/opening-timber-gate/icon.svg"
+          "body": "/assets/buildings/opening-timber-gate/district.svg",
+          "icon": "/assets/buildings/opening-timber-gate/district.svg"
         }
       }
     },
@@ -1946,7 +1960,7 @@
       "definitionId": "ART-REFERENCE:OPENING-SIMPLE-HEATER",
       "variant": "winter-ink-handpainted-architecture-v1",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
       "presentationScale": 1,
       "layers": {
         "uiIcon": "/assets/buildings/opening-simple-heater/icon.svg",
@@ -2055,10 +2069,12 @@
           "shadow": "/assets/buildings/opening-simple-heater/shadow.svg"
         },
         "district": {
-          "icon": "/assets/buildings/opening-simple-heater/icon.svg"
+          "body": "/assets/buildings/opening-simple-heater/district.svg",
+          "icon": "/assets/buildings/opening-simple-heater/district.svg"
         },
         "regional": {
-          "icon": "/assets/buildings/opening-simple-heater/icon.svg"
+          "body": "/assets/buildings/opening-simple-heater/district.svg",
+          "icon": "/assets/buildings/opening-simple-heater/district.svg"
         }
       }
     },
@@ -2067,7 +2083,7 @@
       "definitionId": "ART-REFERENCE:OPENING-SIMPLE-KITCHEN",
       "variant": "winter-ink-handpainted-architecture-v1",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
       "presentationScale": 1.15,
       "layers": {
         "uiIcon": "/assets/buildings/opening-simple-kitchen/icon.svg",
@@ -2176,10 +2192,12 @@
           "shadow": "/assets/buildings/opening-simple-kitchen/shadow.svg"
         },
         "district": {
-          "icon": "/assets/buildings/opening-simple-kitchen/icon.svg"
+          "body": "/assets/buildings/opening-simple-kitchen/district.svg",
+          "icon": "/assets/buildings/opening-simple-kitchen/district.svg"
         },
         "regional": {
-          "icon": "/assets/buildings/opening-simple-kitchen/icon.svg"
+          "body": "/assets/buildings/opening-simple-kitchen/district.svg",
+          "icon": "/assets/buildings/opening-simple-kitchen/district.svg"
         }
       }
     },
@@ -2188,7 +2206,7 @@
       "definitionId": "ART-REFERENCE:OPENING-WOODSHOP",
       "variant": "winter-ink-handpainted-architecture-v1",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
       "presentationScale": 1.24,
       "layers": {
         "uiIcon": "/assets/buildings/opening-woodshop/icon.svg",
@@ -2297,10 +2315,12 @@
           "shadow": "/assets/buildings/opening-woodshop/shadow.svg"
         },
         "district": {
-          "icon": "/assets/buildings/opening-woodshop/icon.svg"
+          "body": "/assets/buildings/opening-woodshop/district.svg",
+          "icon": "/assets/buildings/opening-woodshop/district.svg"
         },
         "regional": {
-          "icon": "/assets/buildings/opening-woodshop/icon.svg"
+          "body": "/assets/buildings/opening-woodshop/district.svg",
+          "icon": "/assets/buildings/opening-woodshop/district.svg"
         }
       }
     },
@@ -2309,7 +2329,7 @@
       "definitionId": "ART-REFERENCE:OPENING-TAILOR",
       "variant": "winter-ink-handpainted-architecture-v1",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
       "presentationScale": 1.23,
       "layers": {
         "uiIcon": "/assets/buildings/opening-tailor/icon.svg",
@@ -2418,10 +2438,12 @@
           "shadow": "/assets/buildings/opening-tailor/shadow.svg"
         },
         "district": {
-          "icon": "/assets/buildings/opening-tailor/icon.svg"
+          "body": "/assets/buildings/opening-tailor/district.svg",
+          "icon": "/assets/buildings/opening-tailor/district.svg"
         },
         "regional": {
-          "icon": "/assets/buildings/opening-tailor/icon.svg"
+          "body": "/assets/buildings/opening-tailor/district.svg",
+          "icon": "/assets/buildings/opening-tailor/district.svg"
         }
       }
     },
@@ -2430,7 +2452,7 @@
       "definitionId": "ART-REFERENCE:OPENING-OREWORKS",
       "variant": "winter-ink-handpainted-architecture-v1",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
       "presentationScale": 1.34,
       "layers": {
         "uiIcon": "/assets/buildings/opening-oreworks/icon.svg",
@@ -2539,10 +2561,12 @@
           "shadow": "/assets/buildings/opening-oreworks/shadow.svg"
         },
         "district": {
-          "icon": "/assets/buildings/opening-oreworks/icon.svg"
+          "body": "/assets/buildings/opening-oreworks/district.svg",
+          "icon": "/assets/buildings/opening-oreworks/district.svg"
         },
         "regional": {
-          "icon": "/assets/buildings/opening-oreworks/icon.svg"
+          "body": "/assets/buildings/opening-oreworks/district.svg",
+          "icon": "/assets/buildings/opening-oreworks/district.svg"
         }
       }
     },
@@ -2551,7 +2575,7 @@
       "definitionId": "ART-REFERENCE:OPENING-FORGE",
       "variant": "winter-ink-handpainted-architecture-v1",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
       "presentationScale": 1.35,
       "layers": {
         "uiIcon": "/assets/buildings/opening-forge/icon.svg",
@@ -2660,10 +2684,12 @@
           "shadow": "/assets/buildings/opening-forge/shadow.svg"
         },
         "district": {
-          "icon": "/assets/buildings/opening-forge/icon.svg"
+          "body": "/assets/buildings/opening-forge/district.svg",
+          "icon": "/assets/buildings/opening-forge/district.svg"
         },
         "regional": {
-          "icon": "/assets/buildings/opening-forge/icon.svg"
+          "body": "/assets/buildings/opening-forge/district.svg",
+          "icon": "/assets/buildings/opening-forge/district.svg"
         }
       }
     },
@@ -2672,7 +2698,7 @@
       "definitionId": "ART-REFERENCE:OPENING-MEDICAL-STATION",
       "variant": "winter-ink-handpainted-architecture-v1",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
       "presentationScale": 1.22,
       "layers": {
         "uiIcon": "/assets/buildings/opening-medical-station/icon.svg",
@@ -2781,10 +2807,12 @@
           "shadow": "/assets/buildings/opening-medical-station/shadow.svg"
         },
         "district": {
-          "icon": "/assets/buildings/opening-medical-station/icon.svg"
+          "body": "/assets/buildings/opening-medical-station/district.svg",
+          "icon": "/assets/buildings/opening-medical-station/district.svg"
         },
         "regional": {
-          "icon": "/assets/buildings/opening-medical-station/icon.svg"
+          "body": "/assets/buildings/opening-medical-station/district.svg",
+          "icon": "/assets/buildings/opening-medical-station/district.svg"
         }
       }
     },
@@ -2793,7 +2821,7 @@
       "definitionId": "ART-REFERENCE:OPENING-SMALL-SHELTER",
       "variant": "winter-ink-handpainted-architecture-v1",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
       "presentationScale": 1.14,
       "layers": {
         "uiIcon": "/assets/buildings/opening-small-shelter/icon.svg",
@@ -2902,10 +2930,12 @@
           "shadow": "/assets/buildings/opening-small-shelter/shadow.svg"
         },
         "district": {
-          "icon": "/assets/buildings/opening-small-shelter/icon.svg"
+          "body": "/assets/buildings/opening-small-shelter/district.svg",
+          "icon": "/assets/buildings/opening-small-shelter/district.svg"
         },
         "regional": {
-          "icon": "/assets/buildings/opening-small-shelter/icon.svg"
+          "body": "/assets/buildings/opening-small-shelter/district.svg",
+          "icon": "/assets/buildings/opening-small-shelter/district.svg"
         }
       }
     }

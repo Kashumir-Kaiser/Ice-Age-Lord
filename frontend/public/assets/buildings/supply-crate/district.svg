@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400"><title>supply-crate | compact district ink silhouette</title><defs>
+<linearGradient id="slate" x1="0" y1="0" x2=".85" y2="1"><stop stop-color="#a6b4b4"/><stop offset=".24" stop-color="#667c87"/><stop offset=".65" stop-color="#2c4551"/><stop offset="1" stop-color="#162a35"/></linearGradient>
+<linearGradient id="snow" x1=".08" y1="0" x2=".85" y2="1"><stop stop-color="#f1ede0"/><stop offset=".46" stop-color="#cbd7d6"/><stop offset="1" stop-color="#718e9c"/></linearGradient>
+<linearGradient id="wood" x1="0" y1="0" x2="1" y2=".8"><stop stop-color="#a29b88"/><stop offset=".21" stop-color="#756c62"/><stop offset=".58" stop-color="#3c4447"/><stop offset="1" stop-color="#1b2932"/></linearGradient>
+<linearGradient id="roof" x1=".18" y1="0" x2=".8" y2="1"><stop stop-color="#96a5a9"/><stop offset=".25" stop-color="#61727c"/><stop offset=".54" stop-color="#394a54"/><stop offset="1" stop-color="#172933"/></linearGradient>
+<linearGradient id="iron" x1="0" y1="0" x2=".86" y2="1"><stop stop-color="#758992"/><stop offset=".31" stop-color="#30454e"/><stop offset=".69" stop-color="#1a2933"/><stop offset="1" stop-color="#081820"/></linearGradient>
+<linearGradient id="bone" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c4c2ae"/><stop offset="1" stop-color="#4e6067"/></linearGradient>
+<radialGradient id="warm" cx=".47" cy=".52" r=".55"><stop stop-color="#dd985b" stop-opacity=".67"/><stop offset=".5" stop-color="#aa6b41" stop-opacity=".31"/><stop offset="1" stop-color="#aa6b41" stop-opacity="0"/></radialGradient>
+<clipPath id="roofLeft"><path d="M121 194L237 126 246 200 146 239Z"/></clipPath>
+<clipPath id="roofRight"><path d="M237 126L361 195 337 240 246 200Z"/></clipPath>
+</defs><g stroke-linecap="round" stroke-linejoin="round"><g opacity=".95">
+<path d="M138 311Q145 285 240 283Q329 284 342 312Q351 347 242 352Q137 350 138 311Z" fill="#7b9198" opacity=".16"/>
+<path d="M93 314q22-11 47-5m158 3q29-10 69-1m-237 20q39 15 83 11m75-5 41-8" fill="none" stroke="#e5e9e1" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity=".65"/>
+<path d="M102 323l19-4m177-4-17 6m-136 24 25 1" fill="none" stroke="#637d87" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" opacity=".66"/>
+</g><g><path d="M157 284L235 251 324 282 247 327Z" fill="#425865" stroke="#162a34" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" /><path d="M157 284v18l90 43 77-44v-19l-77 45Z" fill="#354852" stroke="#142732" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M180 270l61 27v38l-65-33Z" fill="url(#wood)" stroke="#172a34" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" /><path d="M241 297l60-29v37l-60 29Z" fill="#57696c" stroke="#21333b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M189 275v31m23-18v32m52-35v34m27-46v33" fill="none" stroke="#a8aaa0" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" opacity=".68"/>
+<path d="M182 285l60 28 60-30M185 300l57 29 57-31" fill="none" stroke="#1b2931" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M241 309l12-2v15l-12 4Z" fill="#9e8367" stroke="#27343c" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" /></g><g><path d="M163 266L240 225 326 267 246 309Z" fill="url(#wood)" stroke="#1a2e38" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M163 266l84 35 79-34M183 255l80 36m-41-52 73 33" fill="none" stroke="#c1bbac" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity=".52"/>
+<path d="M187 253v28l14 7v-35m56-9v38l16-7v-29" fill="#63737a" stroke="#26333b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M202 249q34-25 55-8" fill="none" stroke="#cddbd7" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity=".76"/>
+<path d="M172 273l75 32 71-29" fill="none" stroke="#1d2b34" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" />
+</g></g></svg>

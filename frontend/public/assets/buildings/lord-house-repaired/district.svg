@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400"><title>lord-house-repaired | compact district ink silhouette</title><defs>
+<linearGradient id="slate" x1="0" y1="0" x2=".85" y2="1"><stop stop-color="#a6b4b4"/><stop offset=".24" stop-color="#667c87"/><stop offset=".65" stop-color="#2c4551"/><stop offset="1" stop-color="#162a35"/></linearGradient>
+<linearGradient id="snow" x1=".08" y1="0" x2=".85" y2="1"><stop stop-color="#f1ede0"/><stop offset=".46" stop-color="#cbd7d6"/><stop offset="1" stop-color="#718e9c"/></linearGradient>
+<linearGradient id="wood" x1="0" y1="0" x2="1" y2=".8"><stop stop-color="#a29b88"/><stop offset=".21" stop-color="#756c62"/><stop offset=".58" stop-color="#3c4447"/><stop offset="1" stop-color="#1b2932"/></linearGradient>
+<linearGradient id="roof" x1=".18" y1="0" x2=".8" y2="1"><stop stop-color="#96a5a9"/><stop offset=".25" stop-color="#61727c"/><stop offset=".54" stop-color="#394a54"/><stop offset="1" stop-color="#172933"/></linearGradient>
+<linearGradient id="iron" x1="0" y1="0" x2=".86" y2="1"><stop stop-color="#758992"/><stop offset=".31" stop-color="#30454e"/><stop offset=".69" stop-color="#1a2933"/><stop offset="1" stop-color="#081820"/></linearGradient>
+<linearGradient id="bone" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c4c2ae"/><stop offset="1" stop-color="#4e6067"/></linearGradient>
+<radialGradient id="warm" cx=".47" cy=".52" r=".55"><stop stop-color="#dd985b" stop-opacity=".67"/><stop offset=".5" stop-color="#aa6b41" stop-opacity=".31"/><stop offset="1" stop-color="#aa6b41" stop-opacity="0"/></radialGradient>
+<clipPath id="roofLeft"><path d="M121 194L237 126 246 200 146 239Z"/></clipPath>
+<clipPath id="roofRight"><path d="M237 126L361 195 337 240 246 200Z"/></clipPath>
+</defs><g stroke-linecap="round" stroke-linejoin="round"><g opacity=".95">
+<path d="M70 311Q145 285 240 283Q329 284 410 312Q351 347 242 352Q137 350 70 311Z" fill="#7b9198" opacity=".16"/>
+<path d="M93 314q22-11 47-5m158 3q29-10 69-1m-237 20q39 15 83 11m75-5 41-8" fill="none" stroke="#e5e9e1" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity=".65"/>
+<path d="M102 323l19-4m177-4-17 6m-136 24 25 1" fill="none" stroke="#637d87" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" opacity=".66"/>
+</g><g><path d="M98 268L239 216 382 267 241 344Z" fill="url(#slate)" stroke="#152b34" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" /><path d="M98 268L241 321 382 267 382 278 240 354 98 278Z" fill="#3c5560" stroke="#182b35" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M108 266L240 225 369 268 240 332Z" fill="#87969a" stroke="#344b56" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M98 274L241 329 381 273M240 332v18M139 287l56-19m106 13 46 14m-108-43 1 73" fill="none" stroke="#223740" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" opacity=".82"/>
+<path d="M105 264l14 5m248-7-18 8m-104 66-16 9" fill="none" stroke="#e0e6dc" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity=".57"/></g><g><path d="M145 202L240 177 338 207 338 280 242 319 144 284Z" fill="url(#wood)" stroke="#1a2934" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M145 202L242 237 242 320 144 284Z" fill="#536068" stroke="#21323a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M242 237L338 207 338 280 242 320Z" fill="#354953" stroke="#132934" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M145 205l96 33 97-32M242 237v83M151 224l85 29m-83-11 82 28m-79-7 78 27m17-48 79-26m-77 44 78-26m-76 46 77-25" fill="none" stroke="#a5a397" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity=".38"/>
+<path d="M145 208v74m20-64v73m64-46v65m38-79v89m61-100v68" fill="none" stroke="#172934" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" />
+<g><path d="M285 244l22-7v36l-22 8Z" fill="#172b36" stroke="#b4aca0" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M296 241v37M285 262l22-7" fill="none" stroke="#819498" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M288 247l18-6" fill="none" stroke="#e1bc7a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity=".38"/></g>
+<path d="M171 264l27 9v35l-27-12Z" fill="#142733" stroke="#a5aa9d" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M185 268v34M172 280l26 10" fill="none" stroke="#758b90" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M133 207l107 31 108-30" fill="none" stroke="#152933" stroke-width="8" stroke-linejoin="round" stroke-linecap="round" opacity=".85"/>
+
+</g><g><path d="M210 302l39-4 37 20-39 16Z" fill="#8e9b9b" stroke="#20343d" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" /><path d="M219 318l29-2 27 14-28 13Z" fill="#6a7c80" stroke="#1e333b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M222 318l27-3 25 14m-55-21 30-2 31 17" fill="none" stroke="#d8dfd6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity=".65"/></g><g><path d="M116 196L236 122 361 192 340 233 246 203 146 242Z" fill="url(#roof)" stroke="#152631" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M116 196L236 122 246 203 146 242Z" fill="#4e636e" stroke="#20353f" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M236 122L361 192 340 233 246 203Z" fill="#344b58" stroke="#142833" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M122 193Q170 155 238 125l28 15m-141 57q54-26 109-65M247 124q71 35 109 70" fill="none" stroke="#dfebe2" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" opacity=".66"/>
+<path d="M131 202l103-66 18 66-104 32m104-98 101 60" fill="none" stroke="#273d47" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity=".8"/>
+<path d="M145 223l92-61m-64 73 66-44m23-25 71 31m-60-16 52 31" fill="none" stroke="#8ea4a7" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" opacity=".6"/>
+<g clip-path="url(#roofLeft)"></g>
+<g clip-path="url(#roofRight)"></g>
+</g><path d="M142 181q58-39 92-58 43 20 75 46l-38-7-34-26-91 63Z" fill="url(#snow)" stroke="#c8d9d7" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M245 131q40 16 76 44l29 23-16-2q-36-30-88-51Z" fill="url(#snow)" stroke="#adbdbe" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M138 222q26-2 40-13l33-16m42-49q40 17 73 47" fill="none" stroke="#ecf0e5" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity=".67"/>
+<path d="M309 166l2-38 16-4 3 51" fill="url(#slate)" stroke="#132631" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M309 130l18-5 4 11-21 6Z" fill="#d0dcda" stroke="#435a65" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" /></g></svg>
