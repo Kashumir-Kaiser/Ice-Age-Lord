@@ -3061,7 +3061,10 @@
         "width": 480,
         "height": 640
       },
-      "status": "draft"
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/li-lan-t0-two-view.png",
+      "provenance": "Original OpenAI ImageGen character concept study generated for this project on 2026-10-10; palette-traced into editable SVG color paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project."
     },
     {
       "id": "li-lan-t0-fullbody",
@@ -3074,7 +3077,10 @@
         "width": 400,
         "height": 640
       },
-      "status": "draft"
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/li-lan-t0-two-view.png",
+      "provenance": "Original OpenAI ImageGen character concept study generated for this project on 2026-10-10; palette-traced into editable SVG color paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project."
     }
   ],
   "itemArt": [
