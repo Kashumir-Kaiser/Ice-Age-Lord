@@ -160,6 +160,7 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
       knownLairIds: empty,
       knownResourceIds: empty,
       knownRouteIds: empty,
+      careerCardObserved: false,
       lastSeenByEntity: { 'site:SITE-LL01-000': { observedAtElapsedMs: 0, knowledge: 'current' } },
       lastInspectedEntityIds: empty,
     },

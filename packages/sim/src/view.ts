@@ -1,4 +1,5 @@
 import type { EntityRef, GameState, PlayerView, WorldDefinition } from '../../contracts/src/index.ts';
+import { canAccessStarterContainer } from './access.ts';
 
 export function entityKey(ref: EntityRef): string {
   return `${ref.type}:${ref.id}`;
@@ -63,7 +64,25 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
       survivalFire: { level: 1, active: true, heatRadiusMetres: 10, protection: 'pending-opening-settlement' },
       buildings: knownBuildings,
     },
-    inventory: { containers: knownContainers },
+    careerCard: {
+      observed: state.playerKnowledge.careerCardObserved,
+      career: state.playerKnowledge.careerCardObserved ? {
+        id: state.player.career.sealedPayload.careerId,
+        name: 'Tử Linh Triệu Hoán Sư',
+        openingSkillId: state.player.career.sealedPayload.openingSkillId,
+        growthAllocation: state.player.career.sealedPayload.growthAllocation,
+      } : null,
+    },
+    inventory: {
+      inspectableContainers: state.inventory.containers.filter(container =>
+        !container.observed && (container.kind === 'territory_supply' || container.kind === 'carried_bag') && canAccessStarterContainer(container.id, state),
+      ).map(container => ({
+        containerId: container.id,
+        label: container.kind === 'territory_supply' ? 'Hòm Vật Tư Lãnh Địa' : 'Bịch đồ ăn',
+        kind: container.kind === 'territory_supply' ? 'territory_supply' as const : 'carried_bag' as const,
+      })),
+      containers: knownContainers,
+    },
     units: [],
     jobs: [],
     visibleMap: {

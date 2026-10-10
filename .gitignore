@@ -21,6 +21,7 @@ coverage/
 *.key
 
 # Runtime-generated state (fresh saves only)
+.local/
 saves/
 runtime/saves/
 runtime/logs/

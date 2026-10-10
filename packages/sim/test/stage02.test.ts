@@ -199,9 +199,9 @@ test('command validation and reducers reject client-owned outcomes and unsupport
   const fakeAmount = { ...harvest, payload: { ...harvest.payload, amount: 5 } };
   assert.equal(reduceCommand(state, fakeAmount, world).receipt.code, 'COMMAND_PAYLOAD_FIELD_UNKNOWN');
   const unknownLair = { ...inspect, commandId: 'cmd-inspect-unknown', payload: { entity: { type: 'lair', id: 'LAIR-LL01-01' } } };
-  assert.equal(reduceCommand(state, unknownLair, world).receipt.code, 'ENTITY_NOT_KNOWN');
+  assert.equal(reduceCommand(state, unknownLair, world).receipt.code, 'NOT_ACCESSIBLE');
   const stale = { ...inspect, expectedRevision: 3 };
-  assert.equal(reduceCommand(state, stale, world).receipt.code, 'REVISION_CONFLICT');
+  assert.equal(reduceCommand(state, stale, world).receipt.code, 'STALE_REVISION');
 });
 
 test('simulation clock starts at day 1 07:00 and is independent of local timezone', () => {
