@@ -1,4 +1,4 @@
-name: Stage 03 live frontend and demo checks
+name: Stage 03 live frontend and Chromium checks
 on:
   push:
     branches:
