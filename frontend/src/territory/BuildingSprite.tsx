@@ -45,7 +45,10 @@ export default function BuildingSprite({ id, name, asset, assetId, point, footpr
     worldToScreen({x:point.x-halfX,y:point.y+halfY},camera,viewport),
   ];
   const polygon = corners.map(p => `${p.x},${p.y}`).join(' ');
-  const spriteWidth = Math.max(38, Math.min(144, 98 * Math.sqrt(camera.zoom)));
+  const visualScale = asset?.presentationScale ?? 1;
+// Distinct development stages can be taller in screen pixels while their
+// world footprints, heat geometry, depth anchor, and click polygons stay authoritative.
+const spriteWidth = Math.max(30, Math.min(260, 98 * Math.sqrt(camera.zoom) * visualScale));
   const spriteHeight = spriteWidth * (asset?.logicalCanvas.height ?? 200) / (asset?.logicalCanvas.width ?? 240);
   const x = ground.x - spriteWidth * (asset?.groundAnchor.x ?? .5);
   const y = ground.y - spriteHeight * (asset?.groundAnchor.y ?? .82);

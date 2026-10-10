@@ -1,6 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200"><defs>
-<linearGradient id="stone" x1="0" y1="0" x2="0.95" y2="1"><stop stop-color="#7c8b8d"/><stop offset=".48" stop-color="#3c5259"/><stop offset="1" stop-color="#192e38"/></linearGradient>
-<linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6c6f6a"/><stop offset=".5" stop-color="#23343b"/><stop offset="1" stop-color="#102129"/></linearGradient>
-<linearGradient id="ember" x1="0" y1="0" x2=".1" y2="1"><stop stop-color="#fff0b1"/><stop offset=".45" stop-color="#e5a35c"/><stop offset="1" stop-color="#8b412a"/></linearGradient>
-<linearGradient id="ice" x1="0" y1="0" x2="0.8" y2="1"><stop stop-color="#e3e8df"/><stop offset=".6" stop-color="#b5c2c6"/><stop offset="1" stop-color="#79919b"/></linearGradient>
-</defs><ellipse cx="120" cy="164" rx="39" ry="13" fill="#07141a" opacity=".4"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400"><title>Ice Age Lord · Survival Fire artwork · stage 01 · shadow</title><defs><radialGradient id="contact"><stop stop-color="#07131b" stop-opacity=".44"/><stop offset="1" stop-color="#0a1824" stop-opacity="0"/></radialGradient></defs><ellipse cx="240" cy="329" rx="51" ry="13" fill="url(#contact)"/></svg>

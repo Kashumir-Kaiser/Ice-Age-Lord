@@ -725,9 +725,9 @@
     {
       "assetId": "survival-fire-l01",
       "definitionId": "SITE-LL01-000",
-      "variant": "ink-wash-progression-concept-1",
+      "variant": "winter-ink-painted-true-vector-v2",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
       "layers": {
         "uiIcon": "/assets/buildings/survival-fire-l01/icon.svg",
         "body": "/assets/buildings/survival-fire-l01/body.svg",
@@ -737,8 +737,8 @@
         "vfx": "/assets/buildings/survival-fire-l01/vfx.svg"
       },
       "logicalCanvas": {
-        "width": 240,
-        "height": 200
+        "width": 480,
+        "height": 400
       },
       "trimOffset": {
         "x": 0,
@@ -767,10 +767,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.09,
-        "minY": 0.04,
-        "maxX": 0.91,
-        "maxY": 0.95
+        "minX": 0.05,
+        "minY": 0.09,
+        "maxX": 0.95,
+        "maxY": 0.92
       },
       "hitPolygon": [
         [
@@ -824,8 +824,8 @@
         "depthM": 2
       },
       "source": "assets/source/buildings/survival-fire-l01.svg",
-      "provenance": "Original layered ink-inspired procedural SVG concept, generated for Ice Age Lord; separately switchable VFX.",
-      "license": "Project-authored original work",
+      "provenance": "Original project concept illustration, converted to independently editable SVG color paths; cleaned unlit architecture and separate live flame effect.",
+      "license": "Original art concept made for this project; traced vector adaptation for Ice Age Lord.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -841,14 +841,15 @@
         "regional": {
           "icon": "/assets/buildings/survival-fire-l01/icon.svg"
         }
-      }
+      },
+      "presentationScale": 0.9
     },
     {
       "assetId": "survival-fire-l06",
       "definitionId": "SITE-LL01-000",
-      "variant": "ink-wash-progression-concept-1",
+      "variant": "winter-ink-painted-true-vector-v2",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
       "layers": {
         "uiIcon": "/assets/buildings/survival-fire-l06/icon.svg",
         "body": "/assets/buildings/survival-fire-l06/body.svg",
@@ -858,8 +859,8 @@
         "vfx": "/assets/buildings/survival-fire-l06/vfx.svg"
       },
       "logicalCanvas": {
-        "width": 240,
-        "height": 200
+        "width": 480,
+        "height": 400
       },
       "trimOffset": {
         "x": 0,
@@ -888,10 +889,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.09,
-        "minY": 0.04,
-        "maxX": 0.91,
-        "maxY": 0.95
+        "minX": 0.05,
+        "minY": 0.09,
+        "maxX": 0.95,
+        "maxY": 0.92
       },
       "hitPolygon": [
         [
@@ -945,8 +946,8 @@
         "depthM": 2
       },
       "source": "assets/source/buildings/survival-fire-l06.svg",
-      "provenance": "Original layered ink-inspired procedural SVG concept, generated for Ice Age Lord; separately switchable VFX.",
-      "license": "Project-authored original work",
+      "provenance": "Original project concept illustration, converted to independently editable SVG color paths; cleaned unlit architecture and separate live flame effect.",
+      "license": "Original art concept made for this project; traced vector adaptation for Ice Age Lord.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -962,14 +963,15 @@
         "regional": {
           "icon": "/assets/buildings/survival-fire-l06/icon.svg"
         }
-      }
+      },
+      "presentationScale": 1.22
     },
     {
       "assetId": "survival-fire-l11",
       "definitionId": "SITE-LL01-000",
-      "variant": "ink-wash-progression-concept-1",
+      "variant": "winter-ink-painted-true-vector-v2",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
       "layers": {
         "uiIcon": "/assets/buildings/survival-fire-l11/icon.svg",
         "body": "/assets/buildings/survival-fire-l11/body.svg",
@@ -979,8 +981,8 @@
         "vfx": "/assets/buildings/survival-fire-l11/vfx.svg"
       },
       "logicalCanvas": {
-        "width": 240,
-        "height": 200
+        "width": 480,
+        "height": 400
       },
       "trimOffset": {
         "x": 0,
@@ -1009,10 +1011,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.09,
-        "minY": 0.04,
-        "maxX": 0.91,
-        "maxY": 0.95
+        "minX": 0.05,
+        "minY": 0.09,
+        "maxX": 0.95,
+        "maxY": 0.92
       },
       "hitPolygon": [
         [
@@ -1066,8 +1068,8 @@
         "depthM": 2
       },
       "source": "assets/source/buildings/survival-fire-l11.svg",
-      "provenance": "Original layered ink-inspired procedural SVG concept, generated for Ice Age Lord; separately switchable VFX.",
-      "license": "Project-authored original work",
+      "provenance": "Original project concept illustration, converted to independently editable SVG color paths; cleaned unlit architecture and separate live flame effect.",
+      "license": "Original art concept made for this project; traced vector adaptation for Ice Age Lord.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -1083,14 +1085,15 @@
         "regional": {
           "icon": "/assets/buildings/survival-fire-l11/icon.svg"
         }
-      }
+      },
+      "presentationScale": 1.43
     },
     {
       "assetId": "survival-fire-l16",
       "definitionId": "SITE-LL01-000",
-      "variant": "ink-wash-progression-concept-1",
+      "variant": "winter-ink-painted-true-vector-v2",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
       "layers": {
         "uiIcon": "/assets/buildings/survival-fire-l16/icon.svg",
         "body": "/assets/buildings/survival-fire-l16/body.svg",
@@ -1100,8 +1103,8 @@
         "vfx": "/assets/buildings/survival-fire-l16/vfx.svg"
       },
       "logicalCanvas": {
-        "width": 240,
-        "height": 200
+        "width": 480,
+        "height": 400
       },
       "trimOffset": {
         "x": 0,
@@ -1130,10 +1133,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.09,
-        "minY": 0.04,
-        "maxX": 0.91,
-        "maxY": 0.95
+        "minX": 0.05,
+        "minY": 0.09,
+        "maxX": 0.95,
+        "maxY": 0.92
       },
       "hitPolygon": [
         [
@@ -1187,8 +1190,8 @@
         "depthM": 2
       },
       "source": "assets/source/buildings/survival-fire-l16.svg",
-      "provenance": "Original layered ink-inspired procedural SVG concept, generated for Ice Age Lord; separately switchable VFX.",
-      "license": "Project-authored original work",
+      "provenance": "Original project concept illustration, converted to independently editable SVG color paths; cleaned unlit architecture and separate live flame effect.",
+      "license": "Original art concept made for this project; traced vector adaptation for Ice Age Lord.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -1204,14 +1207,15 @@
         "regional": {
           "icon": "/assets/buildings/survival-fire-l16/icon.svg"
         }
-      }
+      },
+      "presentationScale": 1.6
     },
     {
       "assetId": "survival-fire-l21",
       "definitionId": "SITE-LL01-000",
-      "variant": "ink-wash-progression-concept-1",
+      "variant": "winter-ink-painted-true-vector-v2",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
       "layers": {
         "uiIcon": "/assets/buildings/survival-fire-l21/icon.svg",
         "body": "/assets/buildings/survival-fire-l21/body.svg",
@@ -1221,8 +1225,8 @@
         "vfx": "/assets/buildings/survival-fire-l21/vfx.svg"
       },
       "logicalCanvas": {
-        "width": 240,
-        "height": 200
+        "width": 480,
+        "height": 400
       },
       "trimOffset": {
         "x": 0,
@@ -1251,10 +1255,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.09,
-        "minY": 0.04,
-        "maxX": 0.91,
-        "maxY": 0.95
+        "minX": 0.05,
+        "minY": 0.09,
+        "maxX": 0.95,
+        "maxY": 0.92
       },
       "hitPolygon": [
         [
@@ -1308,8 +1312,8 @@
         "depthM": 2
       },
       "source": "assets/source/buildings/survival-fire-l21.svg",
-      "provenance": "Original layered ink-inspired procedural SVG concept, generated for Ice Age Lord; separately switchable VFX.",
-      "license": "Project-authored original work",
+      "provenance": "Original project concept illustration, converted to independently editable SVG color paths; cleaned unlit architecture and separate live flame effect.",
+      "license": "Original art concept made for this project; traced vector adaptation for Ice Age Lord.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -1325,14 +1329,15 @@
         "regional": {
           "icon": "/assets/buildings/survival-fire-l21/icon.svg"
         }
-      }
+      },
+      "presentationScale": 1.88
     },
     {
       "assetId": "survival-fire-l26",
       "definitionId": "SITE-LL01-000",
-      "variant": "ink-wash-progression-concept-1",
+      "variant": "winter-ink-painted-true-vector-v2",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
       "layers": {
         "uiIcon": "/assets/buildings/survival-fire-l26/icon.svg",
         "body": "/assets/buildings/survival-fire-l26/body.svg",
@@ -1342,8 +1347,8 @@
         "vfx": "/assets/buildings/survival-fire-l26/vfx.svg"
       },
       "logicalCanvas": {
-        "width": 240,
-        "height": 200
+        "width": 480,
+        "height": 400
       },
       "trimOffset": {
         "x": 0,
@@ -1372,10 +1377,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.09,
-        "minY": 0.04,
-        "maxX": 0.91,
-        "maxY": 0.95
+        "minX": 0.05,
+        "minY": 0.09,
+        "maxX": 0.95,
+        "maxY": 0.92
       },
       "hitPolygon": [
         [
@@ -1429,8 +1434,8 @@
         "depthM": 2
       },
       "source": "assets/source/buildings/survival-fire-l26.svg",
-      "provenance": "Original layered ink-inspired procedural SVG concept, generated for Ice Age Lord; separately switchable VFX.",
-      "license": "Project-authored original work",
+      "provenance": "Original project concept illustration, converted to independently editable SVG color paths; cleaned unlit architecture and separate live flame effect.",
+      "license": "Original art concept made for this project; traced vector adaptation for Ice Age Lord.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -1446,7 +1451,8 @@
         "regional": {
           "icon": "/assets/buildings/survival-fire-l26/icon.svg"
         }
-      }
+      },
+      "presentationScale": 2.12
     }
   ],
   "fireProgression": [

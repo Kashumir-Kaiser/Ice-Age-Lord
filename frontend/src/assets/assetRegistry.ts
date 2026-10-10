@@ -5,6 +5,8 @@ export type AssetManifestEntry = {
   variant: string;
   orientation: string;
   revision: number;
+  /** Purely visual sprite-scale multiplier. Never changes physical occupancy or heat. */
+  presentationScale?: number;
   layers: AssetLayerPaths;
   logicalCanvas: { width: number; height: number };
   trimOffset: { x: number; y: number };
@@ -36,6 +38,7 @@ function validateManifest(value: unknown): AssetManifest {
     ids.add(asset.assetId);
     if (!Number.isInteger(asset.revision) || asset.revision < 1 || !asset.logicalCanvas || !Number.isFinite(asset.logicalCanvas.width) || !Number.isFinite(asset.logicalCanvas.height) || !isFinitePoint(asset.groundAnchor)) throw new Error(`Invalid registration for ${asset.assetId}`);
     if (asset.logicalCanvas.width <= 0 || asset.logicalCanvas.height <= 0 || asset.groundAnchor.x < 0 || asset.groundAnchor.x > 1 || asset.groundAnchor.y < 0 || asset.groundAnchor.y > 1) throw new Error(`Out-of-range canvas or anchor for ${asset.assetId}`);
+    if (asset.presentationScale !== undefined && (!Number.isFinite(asset.presentationScale) || asset.presentationScale < 0.4 || asset.presentationScale > 3)) throw new Error(`Invalid presentation scale for ${asset.assetId}`);
     if (!asset.layers.body || !asset.layers.base || !asset.layers.upper || !asset.layers.shadow || !asset.layers.uiIcon) throw new Error(`Missing required visual layer for ${asset.assetId}`);
   }
   if (manifest.fireProgression) {
