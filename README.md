@@ -4,7 +4,7 @@ Single-protagonist, fresh-start browser strategy/kingdom-building game inspired 
 
 ## Scope and status
 
-**Design/research repository, not a playable application yet.** The plan is a React/TypeScript + HTML frontend with a deterministic, persistent game simulation. No LLM or Codex is required as a runtime game master. Lí Lan is the only playable protagonist and has the fixed SSS talent **Tử Phục Linh Sư**. The game starts at **T0, 07:00 on the frozen ancient battlefield**.
+**Design/research, deterministic simulation and React frontend prototype; not yet a complete playable application.** The plan is a React/TypeScript + HTML frontend with a deterministic, persistent game simulation. No LLM or Codex is required as a runtime game master. Lí Lan is the only playable protagonist and has the fixed SSS talent **Tử Phục Linh Sư**. The game starts at **T0, 07:00 on the frozen ancient battlefield**.
 
 This is a **new game**: do not import earlier campaign inventories, unit rosters, learned blueprints, built structures, claimed chests, XP, quests, save logs or day-one checkpoints. Do not copy saved player actions into new-game starting conditions. The fixed seed/world geography, underlying system rules and authored events may be reused as design material after being made executable.
 
@@ -37,3 +37,7 @@ This is a **new game**: do not import earlier campaign inventories, unit rosters
 These research files contain source-derived material and references to a third-party novel. They are **not a grant of intellectual-property rights**. Obtain permissions or create original names/assets/lore before any public/commercial redistribution.
 
 See `docs/FRESH_START.md` and `docs/CONTENT_INDEX.md` for import priorities and exclusions.
+
+## Frontend and assets
+
+The React/Vite visual demo now lives in `frontend/` on `main`. It uses the original layered asset pipeline in `assets/` and `frontend/public/assets/`. Run `cd frontend && npm ci && npm run build` to synchronize registered assets and verify the production bundle. The ink / semi-realistic visual policy is in `assets/README.md`; the SVG Fire stage art is registered in `assets/manifest.json`. This UI still has a demo adapter and does not represent game state from the backend until integrated.

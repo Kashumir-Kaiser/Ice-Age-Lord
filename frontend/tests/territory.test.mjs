@@ -71,11 +71,14 @@ test('race filter tabs appear only for races with living units', () => {
 test('registered original SVG layers exist and match each manifest canvas', () => {
   const repo=resolve(root,'..');
   const manifest=JSON.parse(readFileSync(resolve(repo,'assets/manifest.json'),'utf8'));
-  assert.equal(manifest.assets.length,6);
+  assert.equal(manifest.assets.filter(asset=>asset.status==='placeholder').length,6);
+  assert.equal(manifest.assets.filter(asset=>asset.status==='draft'&&asset.assetId.startsWith('survival-fire-l')).length,6);
+  assert.deepEqual(manifest.fireProgression.map(stage=>stage.minLevel),[1,6,11,16,21,26]);
+  assert.deepEqual(manifest.fireProgression.map(stage=>stage.maxLevel),[5,10,15,20,25,30]);
   for (const asset of manifest.assets) {
     assert.ok(asset.assetId&&asset.definitionId&&asset.orientation&&asset.revision);
     assert.ok(asset.groundAnchor&&asset.artFootprint&&asset.visualBounds&&asset.occlusionRegion&&asset.drawDepthAnchor);
-    assert.equal(asset.status,'placeholder');
+    assert.ok(['placeholder','draft'].includes(asset.status));
     assert.ok(existsSync(resolve(repo,asset.source)));
     for (const file of new Set([...Object.values(asset.layers),...Object.values(asset.lodVariants).flatMap(lod=>Object.values(lod))].filter(value=>typeof value==='string'))) {
       const path=resolve(repo,'frontend/public',file.slice(1));

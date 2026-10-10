@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200"><defs>
+<linearGradient id="stone" x1="0" y1="0" x2="0.95" y2="1"><stop stop-color="#7c8b8d"/><stop offset=".48" stop-color="#3c5259"/><stop offset="1" stop-color="#192e38"/></linearGradient>
+<linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6c6f6a"/><stop offset=".5" stop-color="#23343b"/><stop offset="1" stop-color="#102129"/></linearGradient>
+<linearGradient id="ember" x1="0" y1="0" x2=".1" y2="1"><stop stop-color="#fff0b1"/><stop offset=".45" stop-color="#e5a35c"/><stop offset="1" stop-color="#8b412a"/></linearGradient>
+<linearGradient id="ice" x1="0" y1="0" x2="0.8" y2="1"><stop stop-color="#e3e8df"/><stop offset=".6" stop-color="#b5c2c6"/><stop offset="1" stop-color="#79919b"/></linearGradient>
+</defs><g><path d="M112 151C82 126 117 117 105 97c20 18 9 30 22 38 13-17 1-28 8-46 32 29 22 59-11 68Z" fill="#ad5032" opacity=".83"/><path d="M118 154C102 133 127 112 117 100c20 16 10 34 19 42-4 17-17 22-18 12Z" fill="url(#ember)"/><path d="M124 146c-10-9-2-22 0-30 15 17 8 28 0 30Z" fill="#fff0b7"/></g></svg>

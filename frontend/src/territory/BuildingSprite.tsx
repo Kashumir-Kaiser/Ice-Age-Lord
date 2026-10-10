@@ -20,6 +20,7 @@ type Props = {
   mode: ReadabilityMode;
   selected: boolean;
   faded: boolean;
+  activeEffect?: boolean;
   draft?: boolean;
   blocked?: boolean;
   onSelect?: () => void;
@@ -31,7 +32,7 @@ function fallbackShape(assetId: string) {
   return <path d="M-34 3v-29L0-58l35 28V3Z M-40-27 0-65l42 34" fill="#687f86" stroke="#d2d4c1" strokeWidth="3"/>;
 }
 
-export default function BuildingSprite({ id, name, asset, assetId, point, footprint, orientation, camera, viewport, mode, selected, faded, draft = false, blocked = false, onSelect }: Props) {
+export default function BuildingSprite({ id, name, asset, assetId, point, footprint, orientation, camera, viewport, mode, selected, faded, activeEffect = false, draft = false, blocked = false, onSelect }: Props) {
   const [missing, setMissing] = useState(false);
   useEffect(() => setMissing(false), [assetId]);
   const ground = worldToScreen(point, camera, viewport);
@@ -55,6 +56,7 @@ export default function BuildingSprite({ id, name, asset, assetId, point, footpr
   const base = layerPath(asset, 'base', camera.zoom < .35 ? 'district' : 'close');
   const upper = layerPath(asset, 'upper', camera.zoom < .35 ? 'district' : 'close');
   const shadow = layerPath(asset, 'shadow', camera.zoom < .35 ? 'district' : 'close');
+  const vfx = layerPath(asset, 'vfx', camera.zoom < .35 ? 'district' : 'close');
   const onError = () => setMissing(true);
   const handleClick = (event: React.MouseEvent<SVGGElement>) => { event.stopPropagation(); onSelect?.(); };
   return <g className={`territory-building${selected?' is-selected':''}${draft?' is-draft':''}${blocked?' is-blocked':''}`} data-building-id={id}
@@ -64,6 +66,7 @@ export default function BuildingSprite({ id, name, asset, assetId, point, footpr
     {mode !== 'planning' && !missing && camera.zoom < .35 && body && <image href={body} x={x} y={y} width={spriteWidth} height={spriteHeight} transform={imageTransform} opacity={draft ? .65 : 1} pointerEvents="none" onError={onError}/>}
     {mode !== 'planning' && !missing && camera.zoom >= .35 && base && <image href={base} x={x} y={y} width={spriteWidth} height={spriteHeight} transform={imageTransform} opacity={draft ? .65 : 1} pointerEvents="none" onError={onError}/>}
     {mode !== 'planning' && !missing && camera.zoom >= .35 && upper && <image href={upper} x={x} y={y} width={spriteWidth} height={spriteHeight} transform={imageTransform} opacity={draft ? .48 : upperOpacity} pointerEvents="none" onError={onError}/>}
+    {mode !== 'planning' && !missing && activeEffect && vfx && <image href={vfx} x={x} y={y} width={spriteWidth} height={spriteHeight} transform={imageTransform} opacity={draft ? .48 : faded && mode === 'focus' ? .24 : 1} pointerEvents="none" onError={onError}/>}
     {(mode === 'planning' || missing || !asset) && <g transform={`translate(${ground.x} ${ground.y}) rotate(${angle})`} pointerEvents="none">{fallbackShape(assetId)}</g>}
     <polygon points={polygon} className="territory-footprint" fill={selected?'rgba(238,194,126,.2)':draft?'rgba(127,197,195,.16)':'rgba(143,190,193,.02)'} stroke={blocked?'#e98272':selected?'#f2ce93':draft?'#83cebe':'#789a9d'} strokeDasharray={draft?'5 4':'none'} strokeWidth={selected?2.5:1.5}
       onClick={onSelect?handleClick:undefined} pointerEvents="all"/>

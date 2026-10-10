@@ -21,7 +21,8 @@ export type AssetManifestEntry = {
   status: 'placeholder' | 'draft' | 'approved';
   lodVariants: { close: AssetLayerPaths; district: AssetLayerPaths; regional: AssetLayerPaths };
 };
-export type AssetManifest = { schemaVersion: number; coordinateConvention: string; assets: readonly AssetManifestEntry[] };
+export type FireArtStage = { minLevel: number; maxLevel: number; assetId: string };
+export type AssetManifest = { schemaVersion: number; coordinateConvention: string; assets: readonly AssetManifestEntry[]; fireProgression?: readonly FireArtStage[] };
 
 const isFinitePoint = (value: unknown): value is { x: number; y: number } => Boolean(value && typeof value === 'object'
   && Number.isFinite((value as {x?:unknown}).x) && Number.isFinite((value as {y?:unknown}).y));
@@ -36,6 +37,18 @@ function validateManifest(value: unknown): AssetManifest {
     if (!Number.isInteger(asset.revision) || asset.revision < 1 || !asset.logicalCanvas || !Number.isFinite(asset.logicalCanvas.width) || !Number.isFinite(asset.logicalCanvas.height) || !isFinitePoint(asset.groundAnchor)) throw new Error(`Invalid registration for ${asset.assetId}`);
     if (asset.logicalCanvas.width <= 0 || asset.logicalCanvas.height <= 0 || asset.groundAnchor.x < 0 || asset.groundAnchor.x > 1 || asset.groundAnchor.y < 0 || asset.groundAnchor.y > 1) throw new Error(`Out-of-range canvas or anchor for ${asset.assetId}`);
     if (!asset.layers.body || !asset.layers.base || !asset.layers.upper || !asset.layers.shadow || !asset.layers.uiIcon) throw new Error(`Missing required visual layer for ${asset.assetId}`);
+  }
+  if (manifest.fireProgression) {
+    let nextLevel = 1;
+    for (const stage of manifest.fireProgression) {
+      if (!Number.isInteger(stage.minLevel) || !Number.isInteger(stage.maxLevel)
+        || stage.minLevel !== nextLevel || stage.maxLevel < stage.minLevel
+        || !ids.has(stage.assetId)) {
+        throw new Error('Invalid or discontinuous Survival Fire artwork progression.');
+      }
+      nextLevel = stage.maxLevel + 1;
+    }
+    if (nextLevel !== 31) throw new Error('Survival Fire artwork is not mapped for all levels 1–30.');
   }
   return manifest;
 }
@@ -56,4 +69,13 @@ export function findAsset(manifest: AssetManifest | null, assetId: string): Asse
 export function layerPath(asset: AssetManifestEntry | undefined, layer: keyof AssetLayerPaths, lod: 'close' | 'district' | 'regional' = 'close'): string | undefined {
   const candidate = asset?.lodVariants[lod]?.[layer] ?? asset?.layers[layer];
   return typeof candidate === 'string' && candidate.length > 0 ? candidate : undefined;
+}
+
+// Resolve visuals only. The simulation remains the authority on Fire level,
+// footprint, heat radius, fuel and valid structure progression.
+export function resolveSettlementAssetId(
+  manifest: AssetManifest | null, sourceAssetId: string, fireLevel: number, isSurvivalFire: boolean,
+): string {
+  if (!isSurvivalFire || !manifest?.fireProgression || !Number.isInteger(fireLevel)) return sourceAssetId;
+  return manifest.fireProgression.find(stage => fireLevel >= stage.minLevel && fireLevel <= stage.maxLevel)?.assetId ?? sourceAssetId;
 }
