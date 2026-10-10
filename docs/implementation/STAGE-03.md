@@ -114,4 +114,4 @@ npm run test:stage02
 npm run test:stage03
 ```
 
-The frontend branch workflow runs the Stage 02 and Stage 03 backend regression suites, builds the client, runs frontend unit tests, and runs Playwright in desktop and mobile Chromium. Its live browser journey starts a local Stage 03 API, creates a clean save, inspects the carried bag, reloads, authenticates again, and confirms the same save and observed container are recovered. A separate browser check verifies that API disconnection stays visible without falling back to demo data.
+The frontend branch workflow runs the Stage 03 backend regression suite, builds the client, runs frontend unit tests, and runs Playwright in desktop and mobile Chromium. Its live browser journey starts a local Stage 03 API, creates a clean save, inspects the carried bag, reloads, authenticates again, and confirms the same save and observed container are recovered. A separate browser check verifies that API disconnection stays visible without falling back to demo data.
