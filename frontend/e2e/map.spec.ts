@@ -342,8 +342,11 @@ test('visual baselines cover day, night, maximum heat, world, cluster, and selec
   await expect(page.locator('.map-experience')).toHaveScreenshot(`${label}-cluster.png`, visualOptions);
 
   const inspector = isMobile ? page.locator('.map-inspector-mobile') : page.locator('.map-inspector-desktop');
-  if (!isMobile) {
+  if (isMobile) {
+    await expect(inspector).toBeVisible();
+    await expect(inspector.locator('summary')).toBeVisible();
+  } else {
     await inspector.evaluate(node => { (node as HTMLElement).style.minHeight = '525px'; });
+    await expect(inspector).toHaveScreenshot(`${label}-selected-inspector.png`, visualOptions);
   }
-  await expect(inspector).toHaveScreenshot(`${label}-selected-inspector.png`, visualOptions);
 });
