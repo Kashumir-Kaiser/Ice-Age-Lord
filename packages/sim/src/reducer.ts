@@ -1,9 +1,20 @@
-import type { ActionAvailability, CommandEnvelope, CommandEvent, CommandReceipt, CommandReduction, CommandType, EntityRef, GameState, WorldDefinition } from '../../contracts/src/index.ts';
+import type { ActionAvailability, CommandEnvelope, CommandEvent, CommandReceipt, CommandReduction, CommandType, CoordinateMm, EntityRef, GameState, WorldDefinition } from '../../contracts/src/index.ts';
 import { validateCommandEnvelope } from '../../contracts/src/index.ts';
 import { canonicalStateHash } from './hash.ts';
 import { canAccessStarterContainer } from './access.ts';
 import { entityKey } from './view.ts';
 import { cancelTombJob, enqueueTombJob, selectedSpeed, TOMB_STANDARD_BLUEPRINT_ID } from './time.ts';
+import {
+  actorAvailability,
+  cancelSpatialJob,
+  cancelTravel,
+  materializeChestLootBlocker,
+  previewMovement,
+  startHarvestJob,
+  startMovement,
+  startSearchJob,
+  transferItem,
+} from './spatial.ts';
 
 const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | 'inspect_starter_container' | 'inspect_career_card'>, { code: string; message: string }>> = {
   activate_career_card: { code: 'CAREER_CARD_FLOW_NOT_IMPLEMENTED', message: 'Career activation is unavailable until its verified flow is implemented.' },
@@ -15,9 +26,12 @@ const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | '
   extinguish_fire: { code: 'FIRE_FUEL_STAGE_04', message: 'Fire control is unavailable until the authoritative fuel ledger is implemented.' },
   light_fire: { code: 'FIRE_FUEL_STAGE_04', message: 'Fire control is unavailable until the authoritative fuel ledger is implemented.' },
   move: { code: 'MOVEMENT_RULES_STAGE_05', message: 'Travel is unavailable until routes, access and settlement rules are implemented.' },
+  cancel_travel: { code: 'MOVEMENT_ORDER_NOT_ACTIVE', message: 'The selected movement order is no longer active.' },
   survey: { code: 'SURVEY_RULES_STAGE_05', message: 'Surveying is unavailable until its source-locked contracts are implemented.' },
   search: { code: 'SEARCH_RULES_STAGE_05', message: 'Searching is unavailable until spatial sweep and target rules are implemented.' },
   harvest: { code: 'RESOURCE_LEDGER_STAGE_05', message: 'Resource extraction is unavailable until the authoritative balance ledger is implemented.' },
+  cancel_spatial_job: { code: 'SPATIAL_JOB_NOT_ACTIVE', message: 'The selected spatial job is no longer active.' },
+  transfer_item: { code: 'CONTAINER_NOT_ACCESSIBLE', message: 'Both containers must be accessible to the player.' },
   open_cache: { code: 'CHEST_LIFECYCLE_STAGE_05', message: 'Field chests cannot be opened until access and reward commitments are implemented.' },
   repair: { code: 'CONSTRUCTION_ECONOMY_STAGE_06', message: 'Repair is unavailable until reservations and work settlement are implemented.' },
   build: { code: 'CONSTRUCTION_ECONOMY_STAGE_06', message: 'Construction is unavailable until blueprint, site and worker contracts are implemented.' },
@@ -44,13 +58,16 @@ export function actionAvailability(type: CommandType): ActionAvailability {
   if (type === 'inspect_entity') return { actionId: type, enabled: true, reasonCode: null, requirements: ['The entity must already be known to the player.'] };
   if (type === 'inspect_starter_container') return { actionId: type, enabled: true, reasonCode: null, requirements: ['The container must be in reach and belong to the player.'] };
   if (type === 'inspect_career_card') return { actionId: type, enabled: true, reasonCode: null, requirements: ['The sealed opening card must still be available.'] };
+  if (type === 'move' || type === 'search' || type === 'harvest' || type === 'cancel_travel' || type === 'cancel_spatial_job' || type === 'transfer_item' || type === 'open_cache') {
+    return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
+  }
   return staticAvailability(type);
 }
 
 function isKnownEntity(ref: EntityRef, state: GameState): boolean {
   switch (ref.type) {
     case 'site': return state.playerKnowledge.knownSiteIds.includes(ref.id);
-    case 'cache': return state.playerKnowledge.knownChestIds.includes(ref.id);
+    case 'cache': return state.playerKnowledge.knownChestIds.includes(ref.id) || state.playerKnowledge.knownSignalIds.includes(ref.id);
     case 'lair': return state.playerKnowledge.knownLairIds.includes(ref.id);
     case 'resource': return state.playerKnowledge.knownResourceIds.includes(ref.id);
     case 'route': return state.playerKnowledge.knownRouteIds.includes(ref.id);
@@ -63,6 +80,40 @@ function isKnownEntity(ref: EntityRef, state: GameState): boolean {
     }));
     case 'corpse': return false;
   }
+}
+
+function resolvedDestination(state: GameState, world: WorldDefinition, payload: { destinationId?: string; destination?: { xMm: number; yMm: number; sourceZMetres?: number } }) {
+  if (payload.destination) return { coordinate: payload.destination, kind: 'coordinate' as const, entityId: null };
+  const id = payload.destinationId;
+  if (!id) return null;
+  const site = world.sites.find(candidate => candidate.id === id && state.playerKnowledge.knownSiteIds.includes(id));
+  if (site) return { coordinate: site.position, kind: 'entity' as const, entityId: id };
+  const resource = world.resources.find(candidate => candidate.id === id && state.playerKnowledge.knownResourceIds.includes(id));
+  if (resource) return { coordinate: resource.location, kind: 'entity' as const, entityId: id };
+  const chest = world.fieldChests.find(candidate => candidate.id === id && state.playerKnowledge.knownChestIds.includes(id));
+  if (chest) return { coordinate: chest.position, kind: 'entity' as const, entityId: id };
+  const signal = state.spatial.signals.find(candidate => candidate.signalId === id && state.playerKnowledge.knownSignalIds.includes(id));
+  if (signal) return {
+    coordinate: signal.discovery === 'identified' ? signal.exactPosition : signal.approximatePosition,
+    kind: 'entity' as const,
+    entityId: signal.signalId,
+  };
+  const route = world.navigationOverlay.routeEdges.find(candidate => candidate.id === id && state.playerKnowledge.knownRouteIds.includes(id));
+  if (route) {
+    const start = Math.hypot(route.path[0].xMm - state.player.position.xMm, route.path[0].yMm - state.player.position.yMm);
+    const end = Math.hypot(route.path.at(-1)!.xMm - state.player.position.xMm, route.path.at(-1)!.yMm - state.player.position.yMm);
+    return { coordinate: start <= end ? route.path.at(-1)! : route.path[0], kind: 'entity' as const, entityId: id };
+  }
+  return null;
+}
+
+function unavailable(type: CommandType, code: string, message: string): ActionAvailability {
+  return { actionId: type, enabled: false, reasonCode: code, requirements: [message] };
+}
+
+function actorPosition(state: GameState, actorId: string): CoordinateMm | null {
+  if (actorId === state.player.id) return state.player.position;
+  return state.ownedUnits.find(unit => unit.id === actorId)?.position ?? null;
 }
 
 export function previewCommand(
@@ -88,7 +139,7 @@ export function previewCommand(
   }
   if (command.type === 'inspect_starter_container') {
     const containerId = command.payload.containerId;
-    return canAccessStarterContainer(containerId, state)
+    return canAccessStarterContainer(containerId, state, world)
       ? actionAvailability(command.type)
       : { actionId: command.type, enabled: false, reasonCode: 'NOT_ACCESSIBLE', requirements: ['The container must be in reach and belong to the player.'] };
   }
@@ -110,8 +161,7 @@ export function previewCommand(
   }
   if (command.type === 'refuel_fire') {
     const container = state.inventory.containers.find(item => item.id === command.payload.containerId);
-    const accessible = Boolean(container && (canAccessStarterContainer(container.id, state)
-      || (container.location.kind === 'carried' && container.location.ownerId === state.player.id)));
+    const accessible = Boolean(container && canAccessStarterContainer(container.id, state, world));
     const wood = container?.stacks.find(item => item.itemId === command.payload.itemId && item.templateId === 'WOOD');
     return state.territory.survivalFire.fuelKnowledge === 'known' && accessible && container?.observed && wood && wood.quantity >= command.payload.quantity
       ? actionAvailability(command.type)
@@ -125,6 +175,43 @@ export function previewCommand(
     return !state.territory.survivalFire.active && (state.territory.survivalFire.fuelRemaining ?? 0) > 0
       ? actionAvailability(command.type)
       : { actionId: command.type, enabled: false, reasonCode: state.territory.survivalFire.fuelRemaining === null ? 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED' : 'FUEL_REQUIRED', requirements: ['Known assigned wood is required to light the fire.'] };
+  }
+  if (command.type === 'move') {
+    const destination = resolvedDestination(state, world, command.payload);
+    if (!destination) return unavailable(command.type, 'NOT_ACCESSIBLE', 'Choose a coordinate or an entity already shown in the player view.');
+    const result = previewMovement(state, world, command.payload.actorId, destination.coordinate);
+    if (result.code || !result.preview) return unavailable(command.type, result.code ?? 'MOVEMENT_UNAVAILABLE', 'The actor cannot reach that destination under the known route rules.');
+    return { actionId: command.type, enabled: true, reasonCode: null, requirements: [], preview: { label: result.preview.uncertainty === 'known' ? 'Known route' : 'Uncertain route', value: `${(result.preview.distanceMm / 1_000_000).toFixed(2)} km · ${Math.ceil(result.preview.etaMs / 60_000)} min` } };
+  }
+  if (command.type === 'cancel_travel') {
+    const order = state.travel.orders.find(candidate => candidate.id === command.payload.orderId && candidate.status === 'active');
+    return order && order.actorIds.every(actorId => actorId === state.player.id || state.ownedUnits.some(unit => unit.id === actorId))
+      ? actionAvailability(command.type) : unavailable(command.type, 'MOVEMENT_ORDER_NOT_ACTIVE', 'The movement order is unavailable.');
+  }
+  if (command.type === 'search') {
+    const result = startSearchJob(state, world, 'PREVIEW-SEARCH', command.payload.actorId, command.payload.center, command.payload.radiusMm);
+    return result.job ? actionAvailability(command.type) : unavailable(command.type, result.code ?? 'SEARCH_UNAVAILABLE', 'The actor cannot search this area.');
+  }
+  if (command.type === 'harvest') {
+    const result = startHarvestJob(state, world, 'PREVIEW-HARVEST', command.payload.actorId, command.payload.resourceId, command.payload.materialId, command.payload.quantity, command.payload.toolItemId);
+    return result.job ? actionAvailability(command.type) : unavailable(command.type, result.code ?? 'HARVEST_UNAVAILABLE', 'The actor cannot harvest this resource.');
+  }
+  if (command.type === 'cancel_spatial_job') {
+    const active = state.spatial.searchJobs.some(job => job.id === command.payload.jobId && job.status === 'active')
+      || state.spatial.harvestJobs.some(job => job.id === command.payload.jobId && job.status === 'active');
+    return active ? actionAvailability(command.type) : unavailable(command.type, 'SPATIAL_JOB_NOT_ACTIVE', 'The spatial job is unavailable.');
+  }
+  if (command.type === 'transfer_item') {
+    const result = transferItem(state, world, command.payload.actorId, command.payload.sourceContainerId, command.payload.destinationContainerId, command.payload.itemId, command.payload.quantity);
+    return result.code ? unavailable(command.type, result.code, 'Check the item quantity, container access, and available storage slots.') : actionAvailability(command.type);
+  }
+  if (command.type === 'open_cache') {
+    const chest = world.fieldChests.find(candidate => candidate.id === command.payload.chestId && state.playerKnowledge.knownChestIds.includes(candidate.id));
+    const position = actorPosition(state, command.payload.actorId);
+    if (!chest || !position || Math.hypot(position.xMm - chest.position.xMm, position.yMm - chest.position.yMm) > world.navigationOverlay.interactionRangeMm) {
+      return unavailable(command.type, 'NOT_ACCESSIBLE', 'The identified cache must be within reach.');
+    }
+    return unavailable(command.type, materializeChestLootBlocker(world), 'The chest reward candidate pool is not compiled.');
   }
   return staticAvailability(command.type);
 }
@@ -213,6 +300,32 @@ export function reduceCommand(
     const key = entityKey(ref);
     if (state.playerKnowledge.lastInspectedEntityIds.includes(key)) return acceptWithoutMutation(state, command, requestSha256, 'ALREADY_INSPECTED', 'This known entity has already been inspected.');
     const lastInspectedEntityIds = [...new Set([...state.playerKnowledge.lastInspectedEntityIds, key])].sort();
+    if (ref.type === 'cache') {
+      const signal = state.spatial.signals.find(candidate => candidate.signalId === ref.id);
+      if (signal) {
+        const identified = { ...signal, discovery: 'identified' as const };
+        const chestId = signal.targetId.startsWith('CH-LL01-') ? signal.targetId : null;
+        const knownChestIds = chestId ? [...new Set([...state.playerKnowledge.knownChestIds, chestId])].sort() : state.playerKnowledge.knownChestIds;
+        const lastSeenByEntity = chestId ? {
+          ...state.playerKnowledge.lastSeenByEntity,
+          [`cache:${chestId}`]: { observedAtElapsedMs: state.simElapsedMs, knowledge: 'current' as const },
+        } : state.playerKnowledge.lastSeenByEntity;
+        return acceptMutation(state, command, requestSha256, {
+          spatial: { ...state.spatial, signals: state.spatial.signals.map(candidate => candidate.signalId === ref.id ? identified : candidate) },
+          fieldChestStates: chestId ? state.fieldChestStates.map(candidate => candidate.chestId === chestId ? { ...candidate, discovery: 'identified' as const } : candidate) : state.fieldChestStates,
+          playerKnowledge: { ...state.playerKnowledge, lastInspectedEntityIds, knownChestIds, lastSeenByEntity },
+        }, 'known_entity_inspected', { entity: ref, discovery: 'identified' }, 'INSPECTION_RECORDED', 'The discovered field signal was identified.');
+      }
+    }
+    if (ref.type === 'resource') {
+      const resourceBalances = state.spatial.resourceBalances.map(balance => balance.resourceId === ref.id ? {
+        ...balance, amountKnowledge: 'known_exact' as const, lastSettledAtElapsedMs: state.simElapsedMs,
+      } : balance);
+      return acceptMutation(state, command, requestSha256, {
+        spatial: { ...state.spatial, resourceBalances },
+        playerKnowledge: { ...state.playerKnowledge, lastInspectedEntityIds },
+      }, 'known_entity_inspected', { entity: ref }, 'INSPECTION_RECORDED', 'Inspection of a known resource was recorded.');
+    }
     return acceptMutation(state, command, requestSha256, {
       playerKnowledge: { ...state.playerKnowledge, lastInspectedEntityIds },
     }, 'known_entity_inspected', { entity: ref }, 'INSPECTION_RECORDED', 'Inspection of a known entity was recorded.');
@@ -220,7 +333,7 @@ export function reduceCommand(
 
   if (command.type === 'inspect_starter_container') {
     const container = state.inventory.containers.find(candidate => candidate.id === command.payload.containerId);
-    if (!container || !canAccessStarterContainer(container.id, state)) return reject(state, command.commandId, 'NOT_ACCESSIBLE', 'That container is unavailable or out of reach.', requestSha256);
+    if (!container || !canAccessStarterContainer(container.id, state, world)) return reject(state, command.commandId, 'NOT_ACCESSIBLE', 'That container is unavailable or out of reach.', requestSha256);
     if (container.observed) return acceptWithoutMutation(state, command, requestSha256, 'ALREADY_OBSERVED', 'The container contents are already known.');
     const containers = state.inventory.containers.map(candidate => candidate.id === container.id ? { ...candidate, observed: true } : candidate);
     const bagSeed = container.kind === 'carried_bag' ? { ...state.bagSeed, inspected: true } : state.bagSeed;
@@ -234,6 +347,80 @@ export function reduceCommand(
     return acceptMutation(state, command, requestSha256, {
       playerKnowledge: { ...state.playerKnowledge, careerCardObserved: true },
     }, 'career_card_inspected', {}, 'CAREER_CARD_INSPECTED', 'The sealed career card was inspected; the career remains inactive.');
+  }
+
+  if (command.type === 'move') {
+    const destination = resolvedDestination(state, world, command.payload);
+    if (!destination) return reject(state, command.commandId, 'NOT_ACCESSIBLE', 'Choose a coordinate or an entity already shown in the player view.', requestSha256);
+    const idHash = canonicalStateHash({ saveId: state.saveId, commandId: command.commandId }).slice(0, 20).toUpperCase();
+    const result = startMovement(state, world, `MOVE-${idHash}`, command.payload.actorId, destination.coordinate, { kind: destination.kind, entityId: destination.entityId });
+    if (!result.order) return reject(state, command.commandId, result.code ?? 'MOVEMENT_UNAVAILABLE', 'The actor cannot reach that destination under the known route rules.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, [{
+      type: 'movement_order_started', occurredAtElapsedMs: state.simElapsedMs,
+      payload: { orderId: result.order.id, actorIds: result.order.actorIds, distanceMm: result.order.totalDistanceMm, uncertainty: result.order.pathSegments.some(segment => segment.uncertainty === 'uncertain') },
+    }], 'MOVEMENT_STARTED', 'The travel order was accepted.');
+  }
+
+  if (command.type === 'cancel_travel') {
+    const result = cancelTravel(state, world, command.payload.orderId, state.simElapsedMs);
+    if (!result.event) return reject(state, command.commandId, result.code ?? 'MOVEMENT_ORDER_NOT_ACTIVE', 'The movement order is unavailable.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'MOVEMENT_CANCELLED', 'Travel was cancelled at the actor’s current position.');
+  }
+
+  if (command.type === 'search') {
+    const idHash = canonicalStateHash({ saveId: state.saveId, commandId: command.commandId }).slice(0, 20).toUpperCase();
+    const jobId = `SEARCH-${idHash}`;
+    const result = startSearchJob(state, world, jobId, command.payload.actorId, command.payload.center, command.payload.radiusMm);
+    if (!result.job) return reject(state, command.commandId, result.code ?? 'SEARCH_UNAVAILABLE', 'The actor cannot search this area.', requestSha256);
+    const next = structuredClone(state);
+    next.spatial.searchJobs = [...next.spatial.searchJobs, result.job];
+    next.jobs = [...next.jobs, { id: jobId, kind: 'spatial_search', status: 'active', actorIds: [...result.job.actorIds], reservedItemIds: [], startedAtElapsedMs: state.simElapsedMs, completedAtElapsedMs: null }];
+    next.exploration.searchHistory = [...next.exploration.searchHistory, { searchId: jobId, startedAtElapsedMs: state.simElapsedMs, status: 'active' }];
+    return acceptMutationMany(state, command, requestSha256, next, [{
+      type: 'spatial_search_started', occurredAtElapsedMs: state.simElapsedMs,
+      payload: { jobId, actorId: command.payload.actorId, envelopeRadiusMm: result.job.envelopeRadiusMm, laneWidthMm: result.job.laneWidthMm },
+    }], 'SEARCH_STARTED', 'The search job was started.');
+  }
+
+  if (command.type === 'harvest') {
+    const idHash = canonicalStateHash({ saveId: state.saveId, commandId: command.commandId }).slice(0, 20).toUpperCase();
+    const jobId = `HARVEST-${idHash}`;
+    const result = startHarvestJob(state, world, jobId, command.payload.actorId, command.payload.resourceId, command.payload.materialId, command.payload.quantity, command.payload.toolItemId);
+    if (!result.job) return reject(state, command.commandId, result.code ?? 'HARVEST_UNAVAILABLE', 'The actor cannot harvest this resource.', requestSha256);
+    const next = structuredClone(state);
+    next.spatial.harvestJobs = [...next.spatial.harvestJobs, result.job];
+    next.spatial.resourceBalances = next.spatial.resourceBalances.map(balance => balance.resourceId === result.job!.resourceId
+      ? { ...balance, reserved: balance.reserved + result.job!.reservedQuantity, lastSettledAtElapsedMs: state.simElapsedMs }
+      : balance);
+    next.jobs = [...next.jobs, { id: jobId, kind: 'resource_harvest', status: 'active', actorIds: [...result.job.actorIds], reservedItemIds: [result.job.toolItemId], startedAtElapsedMs: state.simElapsedMs, completedAtElapsedMs: null }];
+    return acceptMutationMany(state, command, requestSha256, next, [{
+      type: 'harvest_job_started', occurredAtElapsedMs: state.simElapsedMs,
+      payload: { jobId, resourceId: result.job.resourceId, materialId: result.job.materialId, quantity: result.job.requestedQuantity },
+    }], 'HARVEST_STARTED', 'The harvest and return job was started.');
+  }
+
+  if (command.type === 'cancel_spatial_job') {
+    const result = cancelSpatialJob(state, command.payload.jobId, state.simElapsedMs);
+    if (!result.event) return reject(state, command.commandId, result.code ?? 'SPATIAL_JOB_NOT_ACTIVE', 'The spatial job is unavailable.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'SPATIAL_JOB_CANCELLED', 'The spatial job was cancelled.');
+  }
+
+  if (command.type === 'transfer_item') {
+    const result = transferItem(state, world, command.payload.actorId, command.payload.sourceContainerId, command.payload.destinationContainerId, command.payload.itemId, command.payload.quantity);
+    if (result.code) return reject(state, command.commandId, result.code, 'The item could not be transferred between the selected containers.', requestSha256);
+    return acceptMutation(state, command, requestSha256, { inventory: result.state.inventory }, 'inventory_item_transferred', {
+      actorId: command.payload.actorId, sourceContainerId: command.payload.sourceContainerId,
+      destinationContainerId: command.payload.destinationContainerId, itemId: command.payload.itemId, quantity: command.payload.quantity,
+    }, 'ITEM_TRANSFERRED', 'The item was transferred.');
+  }
+
+  if (command.type === 'open_cache') {
+    const chest = world.fieldChests.find(candidate => candidate.id === command.payload.chestId && state.playerKnowledge.knownChestIds.includes(candidate.id));
+    const position = actorPosition(state, command.payload.actorId);
+    if (!chest || !position || Math.hypot(position.xMm - chest.position.xMm, position.yMm - chest.position.yMm) > world.navigationOverlay.interactionRangeMm) {
+      return reject(state, command.commandId, 'NOT_ACCESSIBLE', 'The identified cache must be within reach.', requestSha256);
+    }
+    return reject(state, command.commandId, materializeChestLootBlocker(world), 'The chest reward candidate pool is not compiled.', requestSha256);
   }
 
   if (command.type === 'set_clock_speed') {
@@ -276,8 +463,7 @@ export function reduceCommand(
 
   if (command.type === 'refuel_fire') {
     const container = state.inventory.containers.find(item => item.id === command.payload.containerId);
-    const accessible = Boolean(container && (canAccessStarterContainer(container.id, state)
-      || (container.location.kind === 'carried' && container.location.ownerId === state.player.id)));
+    const accessible = Boolean(container && canAccessStarterContainer(container.id, state, world));
     const stack = container?.stacks.find(item => item.itemId === command.payload.itemId && item.templateId === 'WOOD');
     if (state.territory.survivalFire.fuelKnowledge !== 'known' || state.territory.survivalFire.fuelRemaining === null) {
       return reject(state, command.commandId, 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED', 'The opening fire fuel amount is unknown, so an exact remaining-fuel total cannot be calculated.', requestSha256);

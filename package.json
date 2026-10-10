@@ -10,6 +10,7 @@
     "content:compile": "node --experimental-strip-types packages/content/tools/compile-content.ts",
     "test:stage02": "node --experimental-strip-types packages/sim/test/stage02.test.ts",
     "test:stage04": "node --experimental-strip-types packages/sim/test/stage04.test.ts",
+    "test:stage05": "node --experimental-strip-types packages/sim/test/stage05.test.ts",
     "test:stage03": "node --experimental-strip-types --test packages/api/test/stage03.test.ts",
     "owner:key:create": "node --experimental-strip-types packages/api/tools/create-owner-key.ts",
     "db:migrate": "node --experimental-strip-types packages/storage/tools/migrate.ts",

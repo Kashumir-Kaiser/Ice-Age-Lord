@@ -15,6 +15,7 @@ import type {
   WorldSite,
 } from '../../contracts/src/index.ts';
 import { CONTENT_VERSION, RULESET_VERSION, SOURCE_LOCK, SOURCE_RELEASES } from './sourceLock.ts';
+import { buildNavigationOverlay } from './navigationOverlay.ts';
 
 export type ContentManifest = {
   schemaVersion: 1;
@@ -438,11 +439,22 @@ function parseTypedWorldRows(file03: string, kind: 'Resource' | 'Route' | 'Ecolo
   return file03.slice(start, end).split('\n').filter(line => line.startsWith('|')).map(line => line.slice(1, line.endsWith('|') ? -1 : undefined).split('|').map(cleanCell)).filter(row => row[0] === kind);
 }
 
-function parseResources(file03: string): WorldResource[] {
+function parseResources(file03: string, sites: readonly WorldSite[]): WorldResource[] {
+  const profiles: Readonly<Record<string, Omit<WorldResource, 'id' | 'payload' | 'source'>>> = {
+    'RES-LL01-01': { materialId: 'WOOD', materialName: 'Gỗ trưởng thành', unit: 'unit', capacity: 780, location: sites.find(site => site.id === 'SITE-LL01-040')!.position, siteId: 'SITE-LL01-040', renewal: 'biological_rate_unresolved', dailyQuota: null, access: 'open_surface', requiredToolTemplateId: 'STONE-AXE' },
+    'RES-LL01-02': { materialId: 'STONE', materialName: 'Đá lộ thiên', unit: 'unit', capacity: 1240, location: sites.find(site => site.id === 'SITE-LL01-041')!.position, siteId: 'SITE-LL01-041', renewal: 'none', dailyQuota: null, access: 'open_surface', requiredToolTemplateId: 'STONE-HAMMER' },
+    'RES-LL01-03': { materialId: 'RAW-ICE-WATER', materialName: 'Nước băng nguyên liệu', unit: 'L', capacity: 20000, location: sites.find(site => site.id === 'SITE-LL01-042')!.position, siteId: 'SITE-LL01-042', renewal: 'daily_quota', dailyQuota: 20000, access: 'frozen_water', requiredToolTemplateId: null },
+    'RES-LL01-04': { materialId: 'BROWN-COAL', materialName: 'Than nâu khảo địa chất', unit: 'unit', capacity: 430, location: parseCoordinate2d('(-12,4;-6,8)'), siteId: null, renewal: 'none', dailyQuota: null, access: 'survey_required', requiredToolTemplateId: null },
+    'RES-LL01-05': { materialId: 'RAW-SALT', materialName: 'Muối thô', unit: 'unit', capacity: 14, location: sites.find(site => site.id === 'SITE-LL01-051')!.position, siteId: 'SITE-LL01-051', renewal: 'daily_quota', dailyQuota: 14, access: 'workforce_and_fuel', requiredToolTemplateId: null },
+  };
   return parseTypedWorldRows(file03, 'Resource').map(row => {
     const id = row[1].match(/RES-LL01-\d{2}/)?.[0];
     if (!id) throw new Error(`WORLD_RESOURCE_ID_INVALID: ${row[1]}`);
-    return { id, payload: row[2], source: { path: 'references/canonical/LORD-DND-03.md', heading: '3.K.7 Resources', recordId: id } };
+    const profile = profiles[id];
+    if (!profile) throw new Error(`WORLD_RESOURCE_PROFILE_MISSING:${id}`);
+    const expectedQuantity = id === 'RES-LL01-01' ? '780' : id === 'RES-LL01-02' ? '1.240' : id === 'RES-LL01-03' ? '20.000' : id === 'RES-LL01-04' ? '430' : '14';
+    if (!row[2].includes(expectedQuantity)) throw new Error(`WORLD_RESOURCE_CAPACITY_SOURCE_MISMATCH:${id}`);
+    return { id, payload: row[2], ...profile, source: { path: 'references/canonical/LORD-DND-03.md', heading: '3.K.7 Resources', recordId: id } };
   });
 }
 
@@ -565,9 +577,10 @@ export function compileContent(root: string): { manifest: ContentManifest; world
   const fieldChests = parseFieldChests(file03);
   const { lairs, units } = parseLairConservation(file03);
   const fixedActors = parseFixedActors(file04, sites);
-  const resources = parseResources(file03);
+  const resources = parseResources(file03, sites);
   const ecology = parseEcology(file03);
   const routes = parseRoutes(file03);
+  const navigationOverlay = buildNavigationOverlay(routes, sites, { xMm: 0, yMm: 0, sourceZMetres: 0 });
   const dormantQuestIds = parseDormantQuests(file05);
   const eventSchedule = parseEventSchedule(timelineText);
   verifyEventAndHeroContracts(file01, file04, file05, eventSchedule, lairs, units);
@@ -611,6 +624,7 @@ export function compileContent(root: string): { manifest: ContentManifest; world
     resources,
     ecology,
     routes,
+    navigationOverlay,
     dormantQuestIds,
     eventSchedule,
     lockedSourceHashes,
@@ -625,7 +639,7 @@ export function compileContent(root: string): { manifest: ContentManifest; world
     sourceMainCommit: '66f0c2adaf9e2cc5b4391978a699bda6a24ecdbd',
     activeWorldPackageId: world.id,
     timelineVersion: 'LL01-WEB-EVENT-TIMELINE-RECONCILIATION-0.6-RC1',
-    approvedGameplayModules: ['clean-start-initialization', 'known-entity-inspection', 'player-view-projection'],
+    approvedGameplayModules: ['clean-start-initialization', 'known-entity-inspection', 'player-view-projection', 'navigation-overlay-v1', 'spatial-search-v1', 'resource-logistics-v1'],
     conversionManifest: [
       {
         input: 'data/events/EVENT-TIMELINE-v0.6.json',
@@ -646,6 +660,16 @@ export function compileContent(root: string): { manifest: ContentManifest; world
         input: 'references/canonical/LORD-DND-01.md §14.3 and data/events/EVENT-TIMELINE-v0.6.json',
         output: 'GameState.calendar',
         decision: 'v0.6 is selected through this conversion manifest; do not load the legacy File 01 schedule alongside it.',
+      },
+      {
+        input: 'references/canonical/LORD-DND-03.md §§3.K.4, 3.K.7, 26.10–26.12 and references/canonical/LORD-DND-04.md §18.10',
+        output: 'WorldDefinition.navigationOverlay',
+        decision: 'Keep source route endpoints and distances; derive only a versioned deterministic connecting geometry. Open-field connectors, walk speed, sight, signal and interaction ranges are explicit game-design defaults, never SVG measurements.',
+      },
+      {
+        input: 'references/canonical/LORD-DND-03.md §3.K.7 resource rows',
+        output: 'WorldDefinition.resources and per-save resource balances',
+        decision: 'Compile source capacities, units, locations and renewal gates; unresolved renewal rates and preparation rules remain blocked.',
       },
     ],
     sources: sourcesInManifest,

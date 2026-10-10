@@ -1,4 +1,6 @@
 import { expect, test } from '@playwright/test';
+import { mkdirSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 const fireRef = { type: 'site', id: 'SITE-LL01-000' };
 const fireKey = 'site:SITE-LL01-000';
@@ -18,6 +20,7 @@ function playerView(revision = 1) {
       id: 'LI_LAN', name: 'Lí Lan', level: 1, xp: 0, formTier: 1,
       talent: { name: 'Tử Phục Linh Sư', grade: 'SSS' },
       attributes: { STR: 8 }, mana: { current: 236, max: 236 }, careerState: 'unemployed',
+      position: { xMm: 0, yMm: 0, sourceZMetres: 0 },
     },
     careerCard: { observed: false, career: null },
     territory: {
@@ -52,15 +55,17 @@ function playerView(revision = 1) {
       }],
       knownRoutes: [], activeOrders: [], heatOverlays: [],
     },
+    spatial: { navigationRuleVersion: 'LL01-NAVIGATION-OVERLAY-1.0', movementOrders: [], searchJobs: [], harvestJobs: [], resources: [] },
     journal: [],
   };
 }
 
-test('live mode uses Stage 03 API and keeps map and settlement campfire on one entity', async ({ page }) => {
+test('live mode keeps map and settlement campfire on one entity and camera controls do not issue travel', async ({ page }, testInfo) => {
   let currentView = playerView();
   let saves: unknown[] = [];
   let created = false;
   let commands = 0;
+  let previews = 0;
   let expectedRevision: number | null = null;
 
   await page.route('**/api/v1/**', async route => {
@@ -109,6 +114,7 @@ test('live mode uses Stage 03 API and keeps map and settlement campfire on one e
       return;
     }
     if (pathname.endsWith('/commands/preview')) {
+      previews += 1;
       await route.fulfill({ json: { revision: currentView.revision, availability: { actionId: 'inspect_entity', enabled: true, reasonCode: null, requirements: [] }, estimate: null } });
       return;
     }
@@ -139,8 +145,15 @@ test('live mode uses Stage 03 API and keeps map and settlement campfire on one e
   const mapCampfire = page.getByTestId('map-campfire-marker');
   await expect(mapCampfire).toHaveAttribute('data-entity-ref', fireKey);
   await expect(mapCampfire).toBeVisible();
+  await page.getByRole('button', { name: 'Zoom in' }).click();
+  await page.getByRole('button', { name: 'Choose destination' }).click();
+  await page.getByTestId('live-map').click({ position: { x: 30, y: 30 } });
+  await expect(page.getByText('Destination preview')).toBeVisible();
+  expect(previews).toBe(1);
+  expect(commands).toBe(0);
+  await page.getByRole('button', { name: 'Cancel destination selection' }).click();
   await mapCampfire.click();
-  await page.getByRole('button', { name: 'Kiểm tra điểm đã chọn' }).click();
+  await page.getByRole('button', { name: 'Inspect' }).click();
   await expect(page.getByText('Đã commit · revision 2 đã commit.')).toBeVisible();
   expect(created).toBe(true);
   expect(commands).toBe(1);
@@ -153,6 +166,11 @@ test('live mode uses Stage 03 API and keeps map and settlement campfire on one e
   await expect(page.locator('.live-topbar')).toContainText('revision 2');
   await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Bản đồ/ }).click();
   await expect(page.getByTestId('map-campfire-marker')).toHaveAttribute('data-entity-ref', fireKey);
+  if (testInfo.project.name === 'chromium') {
+    const screenshotDirectory = resolve(process.cwd(), '../docs/implementation/screenshots');
+    mkdirSync(screenshotDirectory, { recursive: true });
+    await page.screenshot({ path: resolve(screenshotDirectory, 'stage-05-map.png'), fullPage: true });
+  }
 });
 
 test('live mode keeps the API disconnection visible and does not fall back to demo', async ({ page }) => {

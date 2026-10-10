@@ -24,7 +24,7 @@ test('content authority is pinned and the world compiles from the selected sourc
   assert.equal(ACTIVE_CONTENT.manifest.sourceMainCommit, '66f0c2adaf9e2cc5b4391978a699bda6a24ecdbd');
   assert.equal(ACTIVE_CONTENT.manifest.activeWorldPackageId, 'WORLD-PACKAGE-LL01-1.0');
   assert.equal(ACTIVE_CONTENT.manifest.timelineVersion, 'LL01-WEB-EVENT-TIMELINE-RECONCILIATION-0.6-RC1');
-  assert.equal(ACTIVE_CONTENT.manifest.conversionManifest.length, 4);
+  assert.equal(ACTIVE_CONTENT.manifest.conversionManifest.length, 6);
   assert.ok(ACTIVE_CONTENT.manifest.sources.find(source => source.path.endsWith('EVENT-SOURCE-CATALOG-v3.6.json'))?.runtimeUse.includes('not compiled'));
   assert.ok(ACTIVE_CONTENT.manifest.sources.find(source => source.path.endsWith('SOURCE-STRUCTURE-CATALOG-v0.5.json'))?.runtimeUse.includes('not compiled'));
   assert.equal(Object.keys(world.lockedSourceHashes).length, Object.keys(SOURCE_LOCK).length);
@@ -178,20 +178,20 @@ test('command validation and reducers reject client-owned outcomes and unsupport
 
   const harvest = {
     schemaVersion: 1, saveId: state.saveId, commandId: 'cmd-harvest', expectedRevision: 0,
-    type: 'harvest', payload: { actorId: 'LI_LAN', resourceId: 'RES-LL01-01', materialId: 'WOOD' },
+    type: 'harvest', payload: { actorId: 'LI_LAN', resourceId: 'RES-LL01-01', materialId: 'WOOD', quantity: 1, toolItemId: 'missing-tool' },
   };
   const denied = reduceCommand(state, harvest, world);
   assert.equal(denied.receipt.accepted, false);
-  assert.equal(denied.receipt.code, 'RESOURCE_LEDGER_STAGE_05');
+  assert.equal(denied.receipt.code, 'RESOURCE_NOT_ACCESSIBLE');
   assert.equal(denied.state.revision, state.revision);
   assert.equal(denied.state.lastEventSequence, state.lastEventSequence);
   assert.equal(denied.state.receipts.length, 1);
   const deniedReplay = reduceCommand(denied.state, harvest, world);
   assert.deepEqual(deniedReplay.receipt, denied.receipt);
   assert.equal(canonicalStateHash(deniedReplay.state), canonicalStateHash(denied.state));
-  const reusedId = { ...harvest, payload: { actorId: 'LI_LAN', resourceId: 'RES-LL01-02', materialId: 'STONE' } };
+  const reusedId = { ...harvest, payload: { ...harvest.payload, resourceId: 'RES-LL01-02', materialId: 'STONE' } };
   assert.equal(reduceCommand(denied.state, reusedId, world).receipt.code, 'COMMAND_ID_REUSED');
-  assert.equal(actionAvailability('harvest').enabled, false);
+  assert.equal(actionAvailability('harvest').enabled, true);
   assert.equal(actionAvailability('inspect_entity').enabled, true);
 
   const clientInventory = { ...harvest, payload: { ...harvest.payload, inventory: { wood: 999 } } };

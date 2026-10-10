@@ -3,6 +3,7 @@ import { assertCompiledWorld } from '../../content/src/compiler.ts';
 import { RULESET_VERSION } from '../../content/src/sourceLock.ts';
 import { canonicalStateHash } from './hash.ts';
 import { seedConvenienceBag } from './bag.ts';
+import { seedSpatialKnowledge } from './spatial.ts';
 
 export type NewGameOptions = {
   saveId: string;
@@ -91,6 +92,8 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
         state: 'unemployed_card_sealed',
         sealedPayload: { careerId: 'JOB-SUM-NECRO-01', openingSkillId: 'SK-OPEN-NECRO-01', growthAllocation: 'SPI/PRE' },
       },
+      position: world.origin,
+      location: { kind: 'site', siteId: 'SITE-LL01-000' },
       relationships: empty,
     },
     territory: {
@@ -171,19 +174,49 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
       { id: 'LL-BLD-TOMB-01', kind: 'tomb', name: 'Ngôi Mộ', level: 1, status: 'active', repairRequirements: empty },
     ],
     jobs: empty,
-    travel: { activeOrderId: null, routeId: null },
+    travel: { activeOrderId: null, routeId: null, orders: empty },
     exploration: { exploredGeometry: empty, searchHistory: empty },
+    spatial: {
+      movementOrders: empty,
+      searchJobs: empty,
+      harvestJobs: empty,
+      resourceBalances: world.resources.map(resource => ({
+        resourceId: resource.id,
+        remaining: resource.capacity,
+        reserved: 0,
+        materialId: resource.materialId,
+        unit: resource.unit,
+        lastSettledAtElapsedMs: 0,
+        lastRenewedAtElapsedMs: null,
+        dailyRemaining: resource.dailyQuota,
+        dailyResetAtElapsedMs: resource.dailyQuota === null ? null : 17 * hourMs,
+        amountKnowledge: 'unknown' as const,
+      })),
+      signals: empty,
+      sweepHistory: empty,
+    },
     playerKnowledge: {
       knownSiteIds: ['SITE-LL01-000'],
       knownChestIds: empty,
       knownLairIds: empty,
       knownResourceIds: empty,
       knownRouteIds: empty,
+      knownSignalIds: empty,
       careerCardObserved: false,
       lastSeenByEntity: { 'site:SITE-LL01-000': { observedAtElapsedMs: 0, knowledge: 'current' } },
       lastInspectedEntityIds: empty,
     },
-    fieldChestStates: world.fieldChests.map(chest => ({ chestId: chest.id, state: 'unopened' as const, openedAtElapsedMs: null })),
+    fieldChestStates: world.fieldChests.map(chest => ({
+      chestId: chest.id,
+      state: 'unopened' as const,
+      openedAtElapsedMs: null,
+      discovery: 'hidden' as const,
+      discoveredAtElapsedMs: null,
+      signalId: null,
+      custody: 'world' as const,
+      claimedById: null,
+      carrierId: null,
+    })),
     corpses: world.fixedActors.filter(actor => actor.lifeStateAtT0 === 'corpse').map(actor => ({
       id: `CORPSE-${actor.id}`,
       actorId: actor.id,
@@ -214,6 +247,7 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
     cleanStartDiagnostics: { contaminationCount: 0, legacyFlags: empty, historicalProgress: false },
   };
 
+  seedSpatialKnowledge(state, world);
   assertCleanStart(state, world);
   return state;
 }

@@ -1,27 +1,25 @@
-import { GAME_STATE_SCHEMA_VERSION, type GameState } from '../../contracts/src/index.ts';
+import { GAME_STATE_SCHEMA_VERSION, type GameState, type WorldDefinition } from '../../contracts/src/index.ts';
+import { ACTIVE_WORLD_PACKAGE } from '../../content/src/index.ts';
 import { DAY_MS, HOUR_MS, nextMidnightAfter } from './time.ts';
+import { seedSpatialKnowledge } from './spatial.ts';
 
 function nextDailyBoundary(elapsed: number, offset: number): number {
   return offset + (Math.floor((elapsed - offset) / DAY_MS) + 1) * DAY_MS;
 }
 
-export function upgradeGameState(value: unknown): GameState {
+function asRecord(value: unknown): Record<string, any> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) throw new Error('SAVE_STATE_SCHEMA_INVALID');
-  const candidate = structuredClone(value) as Record<string, unknown>;
-  if (candidate.schemaVersion === GAME_STATE_SCHEMA_VERSION) return candidate as unknown as GameState;
-  if (candidate.schemaVersion !== 1) throw new Error('SAVE_STATE_SCHEMA_UNSUPPORTED');
+  return structuredClone(value) as Record<string, any>;
+}
 
-  const state = candidate as unknown as GameState & {
-    clockControl: { status: 'paused' | 'running'; speedPermille: number };
-    territory: GameState['territory'] & { tomb: GameState['territory']['tomb'] & { deathQi: { current: number; capacity: number; refillAtWorldTime: string } } };
-    player: GameState['player'] & { mana: { current: number; max: number; baseRegenPerSecond: number } };
-  };
+function migrateV1ToV2(candidate: Record<string, any>): Record<string, any> {
+  const state = candidate as Record<string, any>;
   if (!Number.isSafeInteger(state.simElapsedMs) || state.simElapsedMs < 0) throw new Error('SAVE_STATE_SCHEMA_INVALID');
   if ((state.territory.tomb.queue as readonly unknown[]).length !== 0 || state.ownedUnits.length !== 0 || state.jobs.length !== 0) {
     throw new Error('SAVE_STATE_SCHEMA_MIGRATION_BLOCKED:_STAGE04_DATA');
   }
 
-  const elapsed = state.simElapsedMs;
+  const elapsed = state.simElapsedMs as number;
   const fire = state.territory.survivalFire;
   const oldClock = state.clockControl;
   const sunsetOffset = 9.5 * HOUR_MS;
@@ -37,18 +35,17 @@ export function upgradeGameState(value: unknown): GameState {
   };
   const migratedFire = {
     ...fire,
-    fuelKnowledge: fire.fuelRemaining === null ? 'state_unobserved' as const : 'known' as const,
+    fuelKnowledge: fire.fuelRemaining === null ? 'state_unobserved' : 'known',
     nextFuelConsumptionAtElapsedMs: null,
     fuelBlocker: fire.fuelRemaining === null ? 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED' : 'FUEL_DUE_TIME_UNRESOLVED_AFTER_SCHEMA_MIGRATION',
   };
-  const { speedPermille } = oldClock;
   return {
     ...state,
-    schemaVersion: GAME_STATE_SCHEMA_VERSION,
+    schemaVersion: 2,
     clockControl: {
       status: oldClock.status,
       selection: oldClock.status === 'paused' ? 'paused' : 'custom',
-      speedPermille: oldClock.status === 'paused' ? 0 : Math.max(100, Math.min(3_600_000, Math.round(speedPermille))),
+      speedPermille: oldClock.status === 'paused' ? 0 : Math.max(100, Math.min(3_600_000, Math.round(oldClock.speedPermille))),
       stopCondition: 'none',
     },
     timeBoundaries: boundaries,
@@ -60,17 +57,92 @@ export function upgradeGameState(value: unknown): GameState {
       blocker: 'OPENING_WEATHER_RECORD_NOT_SEEDED',
       hungerState: 'FED',
     },
-    player: {
-      ...state.player,
-      mana: { ...state.player.mana, baseRegenPerSecond: 0.45, lastSettledAtElapsedMs: elapsed },
-    },
+    player: { ...state.player, mana: { ...state.player.mana, baseRegenPerSecond: 0.45, lastSettledAtElapsedMs: elapsed } },
     territory: {
       ...state.territory,
       survivalFire: migratedFire,
-      tomb: {
-        ...state.territory.tomb,
-        deathQi: { ...state.territory.tomb.deathQi, nextRefillAtElapsedMs: boundaries.nextMidnightAtElapsedMs },
-      },
+      tomb: { ...state.territory.tomb, deathQi: { ...state.territory.tomb.deathQi, nextRefillAtElapsedMs: boundaries.nextMidnightAtElapsedMs } },
     },
-  } as GameState;
+  };
+}
+
+function migrateV2ToV3(candidate: Record<string, any>, world: WorldDefinition): GameState {
+  if (candidate.worldPackageId !== world.id) throw new Error('SAVE_STATE_SCHEMA_MIGRATION_WORLD_UNSUPPORTED');
+  const elapsed = candidate.simElapsedMs as number;
+  const territoryPosition = candidate.territory.position;
+  const playerPosition = candidate.player.position ?? territoryPosition;
+  const knownResources = new Set(candidate.playerKnowledge.knownResourceIds ?? []);
+  const navigation = candidate.navigationOverlay ?? world.navigationOverlay;
+  if (navigation.id !== world.navigationOverlay.id) throw new Error('SAVE_STATE_SCHEMA_MIGRATION_WORLD_UNSUPPORTED');
+  const orders = candidate.travel?.orders ?? [];
+  const resourceBalances = candidate.spatial?.resourceBalances ?? world.resources.map(resource => ({
+    resourceId: resource.id,
+    remaining: resource.capacity,
+    reserved: 0,
+    materialId: resource.materialId,
+    unit: resource.unit,
+    lastSettledAtElapsedMs: elapsed,
+    lastRenewedAtElapsedMs: null,
+    dailyRemaining: resource.dailyQuota,
+    dailyResetAtElapsedMs: resource.dailyQuota === null ? null : nextMidnightAfter(elapsed),
+    amountKnowledge: knownResources.has(resource.id) ? 'unknown' : 'unknown',
+  }));
+  const fieldChestStates = (candidate.fieldChestStates ?? world.fieldChests.map(chest => ({ chestId: chest.id, state: 'unopened', openedAtElapsedMs: null })))
+    .map((chest: Record<string, any>) => ({
+      ...chest,
+      discovery: chest.discovery ?? 'hidden',
+      discoveredAtElapsedMs: chest.discoveredAtElapsedMs ?? null,
+      signalId: chest.signalId ?? null,
+      custody: chest.custody ?? (chest.state === 'opened' ? 'opened' : chest.state === 'destroyed' ? 'destroyed' : 'world'),
+      claimedById: chest.claimedById ?? null,
+      carrierId: chest.carrierId ?? null,
+    }));
+  const migrated: Record<string, any> = {
+    ...candidate,
+    schemaVersion: GAME_STATE_SCHEMA_VERSION,
+    player: {
+      ...candidate.player,
+      position: playerPosition,
+      location: candidate.player.location ?? { kind: 'site', siteId: 'SITE-LL01-000' },
+    },
+    ownedUnits: (candidate.ownedUnits ?? []).map((unit: Record<string, any>) => {
+      const siteId = unit.location?.kind === 'site' ? unit.location.siteId : 'SITE-LL01-000';
+      const site = world.sites.find(item => item.id === siteId);
+      const position = unit.position ?? site?.position ?? territoryPosition;
+      return { ...unit, position, location: unit.location ?? { kind: 'site', siteId } };
+    }),
+    travel: {
+      activeOrderId: candidate.travel?.activeOrderId ?? null,
+      routeId: candidate.travel?.routeId ?? null,
+      orders,
+    },
+    exploration: {
+      exploredGeometry: candidate.exploration?.exploredGeometry ?? [],
+      searchHistory: candidate.exploration?.searchHistory ?? [],
+    },
+    spatial: {
+      movementOrders: candidate.spatial?.movementOrders ?? orders,
+      searchJobs: candidate.spatial?.searchJobs ?? [],
+      harvestJobs: candidate.spatial?.harvestJobs ?? [],
+      resourceBalances,
+      signals: candidate.spatial?.signals ?? [],
+      sweepHistory: candidate.spatial?.sweepHistory ?? [],
+    },
+    playerKnowledge: {
+      ...candidate.playerKnowledge,
+      knownRouteIds: candidate.playerKnowledge.knownRouteIds ?? [],
+      knownSignalIds: candidate.playerKnowledge.knownSignalIds ?? [],
+    },
+    fieldChestStates,
+  };
+  seedSpatialKnowledge(migrated as unknown as GameState, world);
+  return migrated as unknown as GameState;
+}
+
+export function upgradeGameState(value: unknown, world: WorldDefinition = ACTIVE_WORLD_PACKAGE): GameState {
+  let candidate = asRecord(value);
+  if (candidate.schemaVersion === 1) candidate = migrateV1ToV2(candidate);
+  if (candidate.schemaVersion === 2) candidate = migrateV2ToV3(candidate, world);
+  if (candidate.schemaVersion !== GAME_STATE_SCHEMA_VERSION) throw new Error('SAVE_STATE_SCHEMA_UNSUPPORTED');
+  return candidate as unknown as GameState;
 }

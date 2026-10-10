@@ -1,4 +1,5 @@
-import type { ClockControl, ColdEnvironment, GameState, PlayerUnitState } from '../../contracts/src/index.ts';
+import type { ClockControl, ColdEnvironment, GameState, PlayerUnitState, WorldDefinition } from '../../contracts/src/index.ts';
+import { integrateSpatialTo, nextSpatialBoundary, settleSpatialBoundary } from './spatial.ts';
 
 export const MINUTE_MS = 60_000;
 export const HOUR_MS = 60 * MINUTE_MS;
@@ -61,7 +62,7 @@ function nextColdThresholdAt(state: GameState, rateMicroPerMinute: number): numb
   return state.simElapsedMs + Math.ceil(needed / rateMicroPerMinute);
 }
 
-function integrateSegment(state: GameState, target: number, coldRateMicroPerMinute: number): void {
+function integrateSegment(state: GameState, target: number, coldRateMicroPerMinute: number, world?: WorldDefinition): void {
   const from = state.simElapsedMs;
   const duration = target - from;
   if (duration <= 0) return;
@@ -81,7 +82,8 @@ function integrateSegment(state: GameState, target: number, coldRateMicroPerMinu
   state.territory.tomb.queue = state.territory.tomb.queue.map(entry => entry.status === 'active' && entry.startedAtElapsedMs !== null
     ? { ...entry, progressCarryMs: Math.min(TOMB_STANDARD_DURATION_MS, Math.max(0, target - entry.startedAtElapsedMs)) }
     : entry);
-  state.simElapsedMs = target;
+  if (world) integrateSpatialTo(state, world, target);
+  else state.simElapsedMs = target;
 }
 
 function emit(events: SettledEvent[], type: string, at: number, payload: Record<string, unknown> = {}): void {
@@ -211,7 +213,7 @@ function completeTombJobs(state: GameState, at: number, events: SettledEvent[]):
   return due.length > 0;
 }
 
-function nextEventTime(state: GameState, target: number, coldRate: number): number {
+function nextEventTime(state: GameState, target: number, coldRate: number, world?: WorldDefinition): number {
   const candidates = [
     target,
     state.timeBoundaries.nextHourlySettlementAtElapsedMs,
@@ -226,11 +228,20 @@ function nextEventTime(state: GameState, target: number, coldRate: number): numb
   ];
   const coldThreshold = nextColdThresholdAt(state, coldRate);
   if (coldThreshold !== null) candidates.push(coldThreshold);
+  if (world) {
+    const spatialBoundary = nextSpatialBoundary(state);
+    if (spatialBoundary !== null) candidates.push(spatialBoundary);
+  }
   return Math.min(...candidates.filter(candidate => candidate >= state.simElapsedMs));
 }
 
-function processBoundary(state: GameState, at: number, events: SettledEvent[]): { completed: boolean; danger: boolean } {
+function processBoundary(state: GameState, at: number, events: SettledEvent[], world?: WorldDefinition): { completed: boolean; danger: boolean } {
   let completed = false;
+  if (world) {
+    const spatialEvents = settleSpatialBoundary(state, world, at);
+    events.push(...spatialEvents);
+    if (spatialEvents.some(event => event.type === 'movement_order_completed' || event.type === 'spatial_search_completed' || event.type === 'harvest_cargo_returned')) completed = true;
+  }
   const fire = state.territory.survivalFire;
   if (fire.active && fire.fuelRemaining !== null && fire.nextFuelConsumptionAtElapsedMs === at) {
     fire.fuelRemaining = Math.max(0, fire.fuelRemaining - 1);
@@ -244,7 +255,7 @@ function processBoundary(state: GameState, at: number, events: SettledEvent[]): 
     }
   }
 
-  completed = completeTombJobs(state, at, events);
+  completed = completeTombJobs(state, at, events) || completed;
   if (completed) startWaitingTombJobs(state, at, events);
 
   const boundaries = state.timeBoundaries;
@@ -253,7 +264,13 @@ function processBoundary(state: GameState, at: number, events: SettledEvent[]): 
     state.territory.tomb.deathQi.current = state.territory.tomb.deathQi.capacity;
     boundaries.nextMidnightAtElapsedMs += DAY_MS;
     state.territory.tomb.deathQi.nextRefillAtElapsedMs = boundaries.nextMidnightAtElapsedMs;
+    state.spatial.resourceBalances = state.spatial.resourceBalances.map(balance => {
+      if (balance.dailyRemaining === null) return balance;
+      const quota = world?.resources.find(resource => resource.id === balance.resourceId)?.dailyQuota ?? balance.dailyRemaining;
+      return { ...balance, dailyRemaining: quota, dailyResetAtElapsedMs: boundaries.nextMidnightAtElapsedMs };
+    });
     emit(events, 'tomb_death_qi_refilled', at, { current: state.territory.tomb.deathQi.current, capacity: state.territory.tomb.deathQi.capacity });
+    if (state.spatial.resourceBalances.some(balance => balance.dailyRemaining !== null)) emit(events, 'resource_daily_quotas_reset', at, {});
     startWaitingTombJobs(state, at, events);
   }
   if (boundaries.nextHourlySettlementAtElapsedMs === at) {
@@ -300,6 +317,7 @@ export function advanceTo(
   input: GameState,
   targetSimElapsedMs: number,
   options: { maxBoundaries?: number; stopCondition?: StopCondition } = {},
+  world?: WorldDefinition,
 ): AdvanceResult {
   if (!Number.isSafeInteger(targetSimElapsedMs) || targetSimElapsedMs < input.simElapsedMs) throw new Error('SIM_TIME_TARGET_INVALID');
   const maxBoundaries = options.maxBoundaries ?? MAX_BOUNDARIES_PER_BATCH;
@@ -313,7 +331,8 @@ export function advanceTo(
   let stoppedBy: AdvanceResult['stoppedBy'] = null;
 
   while (state.simElapsedMs <= targetSimElapsedMs) {
-    const at = nextEventTime(state, targetSimElapsedMs, coldRate);
+    const at = nextEventTime(state, targetSimElapsedMs, coldRate, world);
+    const spatialBoundary = world ? nextSpatialBoundary(state) : null;
     const hadBoundary = [
       state.timeBoundaries.nextHourlySettlementAtElapsedMs,
       state.timeBoundaries.nextMidnightAtElapsedMs,
@@ -325,9 +344,10 @@ export function advanceTo(
       state.territory.survivalFire.nextFuelConsumptionAtElapsedMs,
       ...state.territory.tomb.queue.filter(entry => entry.status === 'active').map(entry => entry.completesAtElapsedMs),
       nextColdThresholdAt(state, coldRate),
+      spatialBoundary,
     ].includes(at);
     if (at > state.simElapsedMs) {
-      integrateSegment(state, at, coldRate);
+      integrateSegment(state, at, coldRate, world);
       sameTimestampEvents = 0;
       lastBoundaryAt = -1;
     }
@@ -335,7 +355,7 @@ export function advanceTo(
       if (lastBoundaryAt === at) sameTimestampEvents += 1;
       else { lastBoundaryAt = at; sameTimestampEvents = 1; }
       if (sameTimestampEvents > 1_000) throw new Error('SIMULATION_ZERO_TIME_EVENT_LOOP');
-      const outcome = processBoundary(state, at, events);
+      const outcome = processBoundary(state, at, events, world);
       processed += 1;
       if (options.stopCondition === 'danger' && outcome.danger) stoppedBy = 'danger';
       if (options.stopCondition === 'next_completion' && outcome.completed) stoppedBy = 'next_completion';

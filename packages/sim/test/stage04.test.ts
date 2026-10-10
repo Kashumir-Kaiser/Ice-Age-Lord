@@ -152,7 +152,7 @@ test('midnight refills Death Qi once to current capacity; capacity upgrades do n
   assert.equal(midnight.state.territory.tomb.deathQi.nextRefillAtElapsedMs, 41 * HOUR_MS);
   assert.equal(midnight.events.filter(event => event.type === 'tomb_death_qi_refilled').length, 1);
   assert.deepEqual(midnight.events.filter(event => event.occurredAtElapsedMs === 17 * HOUR_MS).map(event => event.type).slice(0, 2), [
-    'tomb_death_qi_refilled', 'simulation_hour_settled',
+    'tomb_death_qi_refilled', 'resource_daily_quotas_reset',
   ]);
 
   const higher = resizeTombCapacity(midnight.state, 25, 2);

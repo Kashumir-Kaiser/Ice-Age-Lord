@@ -70,6 +70,137 @@ function systemOnlyRevisionAdvance(state: GameState, expectedRevision: number): 
     && item.receipt.code === 'SYSTEM_TRANSITION_COMMITTED');
 }
 
+function validateStage05State(candidate: GameState, world: WorldDefinition, baseline: GameState): void {
+  const invalid = (message: string): never => { throw new ApiProblem(400, 'BACKUP_INVALID', message, 'Bản sao lưu Stage 05 không hợp lệ.'); };
+  const validPosition = (position: unknown): position is { xMm: number; yMm: number; sourceZMetres?: number } => isRecord(position)
+    && Number.isSafeInteger(position.xMm) && Number.isSafeInteger(position.yMm)
+    && (position.sourceZMetres === undefined || (typeof position.sourceZMetres === 'number' && Number.isFinite(position.sourceZMetres)));
+  const samePoint = (a: { xMm: number; yMm: number }, b: { xMm: number; yMm: number }) => a.xMm === b.xMm && a.yMm === b.yMm;
+  const knownSites = new Set(world.sites.map(site => site.id));
+  const knownResources = new Set(world.resources.map(resource => resource.id));
+  const knownRoutes = new Set(world.navigationOverlay.routeEdges.map(route => route.id));
+  const knownChests = new Set(world.fieldChests.map(chest => chest.id));
+
+  if (!validPosition(candidate.player.position) || Math.hypot(candidate.player.position.xMm, candidate.player.position.yMm) > world.activeMapRadiusKm * 1_000_000
+    || !Array.isArray(candidate.travel.orders) || !Array.isArray(candidate.spatial.movementOrders)
+    || !Array.isArray(candidate.spatial.searchJobs) || !Array.isArray(candidate.spatial.harvestJobs)
+    || !Array.isArray(candidate.spatial.resourceBalances) || !Array.isArray(candidate.spatial.signals)
+    || !Array.isArray(candidate.spatial.sweepHistory) || !Array.isArray(candidate.exploration.exploredGeometry)
+    || !Array.isArray(candidate.exploration.searchHistory) || !Array.isArray(candidate.fieldChestStates)) invalid('Spatial state arrays or player coordinates are malformed.');
+
+  const travelIds = new Set<string>();
+  for (const order of candidate.travel.orders) {
+    if (!isRecord(order) || !isNonEmptyString(order.id) || travelIds.has(order.id) || !Array.isArray(order.actorIds)
+      || !Array.isArray(order.pathSegments) || !validPosition(order.originSnapshot) || !validPosition(order.destinationIntent?.coordinate)
+      || !isSafeInt(order.totalDistanceMm) || !isSafeInt(order.elapsedTravelMs) || order.elapsedTravelMs > order.pathSegments.reduce((sum, segment) => sum + (isRecord(segment) && isSafeInt(segment.durationMs) ? segment.durationMs : 0), 0)
+      || !['active', 'completed', 'cancelled', 'blocked'].includes(order.status)) invalid('Movement order state is malformed.');
+    travelIds.add(order.id);
+    if (order.actorIds.some((id: unknown) => id !== candidate.player.id && !candidate.ownedUnits.some(unit => unit.id === id))) invalid('Movement orders contain an actor outside the save roster.');
+    if (order.pathSegments.some(segment => !isRecord(segment) || !validPosition(segment.from) || !validPosition(segment.to)
+      || !isSafeInt(segment.distanceMm) || !isSafeInt(segment.durationMs, 1) || !isSafeInt(segment.progressMs) || segment.progressMs > segment.durationMs)) invalid('A movement path segment is malformed.');
+  }
+  if (canonicalStateHash(candidate.spatial.movementOrders) !== canonicalStateHash(candidate.travel.orders)) invalid('Movement order projections disagree.');
+  if (candidate.player.location.kind === 'travel') {
+    const order = candidate.travel.orders.find(item => item.id === candidate.player.location.orderId && item.status === 'active' && item.actorIds.includes(candidate.player.id));
+    if (!order) invalid('Player travel location has no active order.');
+  } else if (candidate.player.location.kind === 'field') {
+    if (!validPosition(candidate.player.location.coordinate) || !samePoint(candidate.player.location.coordinate, candidate.player.position)) invalid('Player field location does not match its position.');
+  } else if (candidate.player.location.kind === 'site') {
+    const site = world.sites.find(item => item.id === candidate.player.location.siteId);
+    if (!site || Math.hypot(site.position.xMm - candidate.player.position.xMm, site.position.yMm - candidate.player.position.yMm) > 1_000) invalid('Player site location does not match its position.');
+  } else invalid('Player location kind is invalid.');
+
+  const balances = new Map(candidate.spatial.resourceBalances.map(balance => [balance.resourceId, balance]));
+  if (balances.size !== world.resources.length || world.resources.some(resource => !balances.has(resource.id))) invalid('Resource balance identities do not match the compiled world.');
+  for (const resource of world.resources) {
+    const balance = balances.get(resource.id)!;
+    if (!isSafeInt(balance.remaining) || balance.remaining > resource.capacity || !isSafeInt(balance.reserved)
+      || balance.reserved > balance.remaining || balance.materialId !== resource.materialId || balance.unit !== resource.unit
+      || !['unknown', 'estimate', 'known_exact', 'stale'].includes(balance.amountKnowledge)
+      || (balance.dailyRemaining !== null && (!isSafeInt(balance.dailyRemaining) || balance.dailyRemaining > (resource.dailyQuota ?? 0)))) invalid('A resource balance is outside its source limits.');
+    const harvests = candidate.spatial.harvestJobs.filter(job => job.resourceId === resource.id);
+    const extracted = harvests.reduce((sum, job) => sum + job.extractedQuantity, 0);
+    if (resource.renewal === 'none' && balance.remaining + extracted !== resource.capacity) invalid('Finite resource extraction does not conserve the source balance.');
+    const reserved = harvests.filter(job => job.status === 'active').reduce((sum, job) => sum + job.reservedQuantity, 0);
+    if (balance.reserved !== reserved) invalid('Resource reservations do not match active harvest jobs.');
+  }
+
+  const spatialJobIds = new Set<string>();
+  for (const job of candidate.spatial.searchJobs) {
+    if (!isRecord(job) || !isNonEmptyString(job.id) || spatialJobIds.has(job.id) || !Array.isArray(job.actorIds)
+      || !Array.isArray(job.path) || job.path.length < 2 || job.path.some(point => !validPosition(point))
+      || !isSafeInt(job.envelopeRadiusMm, 1) || job.envelopeRadiusMm > 2_000_000 || !isSafeInt(job.laneWidthMm, 1)
+      || !isSafeInt(job.pathProgressMm) || !isSafeInt(job.startedAtElapsedMs) || job.startedAtElapsedMs > candidate.simElapsedMs
+      || !['active', 'paused', 'blocked', 'completed', 'cancelled'].includes(job.status)) invalid('Search job state is malformed.');
+    spatialJobIds.add(job.id);
+    if (job.actorIds.some((id: unknown) => id !== candidate.player.id && !candidate.ownedUnits.some(unit => unit.id === id))) invalid('Search jobs contain an actor outside the save roster.');
+  }
+  for (const job of candidate.spatial.harvestJobs) {
+    if (!isRecord(job) || !isNonEmptyString(job.id) || spatialJobIds.has(job.id) || !knownResources.has(job.resourceId)
+      || !Array.isArray(job.actorIds) || !Array.isArray(job.routeOut) || !Array.isArray(job.routeReturn)
+      || job.routeOut.some(point => !validPosition(point)) || job.routeReturn.some(point => !validPosition(point))
+      || !isSafeInt(job.requestedQuantity, 1) || !isSafeInt(job.extractedQuantity) || job.extractedQuantity > job.requestedQuantity
+      || !isSafeInt(job.reservedQuantity) || job.reservedQuantity > job.requestedQuantity - job.extractedQuantity
+      || !isSafeInt(job.startedAtElapsedMs) || job.startedAtElapsedMs > candidate.simElapsedMs
+      || !['outbound', 'working', 'returning', 'blocked'].includes(job.stage)
+      || !['active', 'paused', 'blocked', 'completed', 'cancelled'].includes(job.status)) invalid('Harvest job state is malformed.');
+    spatialJobIds.add(job.id);
+    if (job.actorIds.some((id: unknown) => id !== candidate.player.id && !candidate.ownedUnits.some(unit => unit.id === id))) invalid('Harvest jobs contain an actor outside the save roster.');
+  }
+  for (const order of candidate.travel.orders) spatialJobIds.add(order.id);
+  const runtimeJobIds = new Set(candidate.jobs.map(job => job.id));
+  if ([...spatialJobIds].some(id => !runtimeJobIds.has(id))
+    || candidate.jobs.some(job => !spatialJobIds.has(job.id) && !candidate.territory.tomb.queue.some(entry => entry.id === job.id))) invalid('Spatial runtime jobs do not match the job ledger.');
+
+  const signalIds = new Set<string>();
+  const signalTargets = new Set<string>();
+  const chestCenterIds = new Set(world.chestCacheCenters.map(cache => cache.id));
+  for (const signal of candidate.spatial.signals) {
+    if (!isRecord(signal) || !isNonEmptyString(signal.signalId) || signalIds.has(signal.signalId)
+      || !['site', 'resource', 'cache'].includes(signal.targetType) || !validPosition(signal.exactPosition)
+      || !validPosition(signal.approximatePosition) || !isSafeInt(signal.accuracyMm, 1)
+      || !['signal', 'identified'].includes(signal.discovery)) invalid('Spatial signal state is malformed.');
+    const targetKey = `${signal.targetType}:${signal.targetId}`;
+    if (signalTargets.has(targetKey)) invalid('Spatial signal targets are duplicated.');
+    signalIds.add(signal.signalId);
+    signalTargets.add(targetKey);
+    if (signal.targetType === 'cache' && !knownChests.has(signal.targetId) && !chestCenterIds.has(signal.targetId)) invalid('A cache signal does not refer to a compiled target.');
+  }
+  if (candidate.playerKnowledge.knownSignalIds.some(id => !signalIds.has(id)) || signalIds.size !== candidate.playerKnowledge.knownSignalIds.length) invalid('Known signal references do not match the spatial ledger.');
+  if (candidate.playerKnowledge.knownSiteIds.some(id => !knownSites.has(id))
+    || candidate.playerKnowledge.knownResourceIds.some(id => !knownResources.has(id))
+    || candidate.playerKnowledge.knownRouteIds.some(id => !knownRoutes.has(id))) invalid('Known map identities are not present in the compiled world.');
+  if (candidate.fieldChestStates.length !== world.fieldChests.length
+    || new Set(candidate.fieldChestStates.map(chest => chest.chestId)).size !== world.fieldChests.length
+    || candidate.fieldChestStates.some(chest => !knownChests.has(chest.chestId) || chest.state !== 'unopened' || chest.openedAtElapsedMs !== null
+      || !['hidden', 'signal', 'identified'].includes(chest.discovery) || chest.custody !== 'world')) invalid('Field chest state changed outside the supported discovery lifecycle.');
+  if (candidate.playerKnowledge.knownChestIds.some(id => !candidate.fieldChestStates.some(chest => chest.chestId === id && chest.discovery === 'identified'))) invalid('Known chest identities disagree with chest discovery state.');
+  if (canonicalStateHash(candidate.territory.position) !== canonicalStateHash(baseline.territory.position)) invalid('The H0 anchor was changed.');
+
+  const itemIds = new Set<string>();
+  const templateTotals = new Map<string, number>();
+  const initialTotals = new Map<string, number>();
+  for (const container of baseline.inventory.containers) for (const stack of container.stacks) initialTotals.set(stack.templateId, (initialTotals.get(stack.templateId) ?? 0) + stack.quantity);
+  const allowedTemplates = new Set([...initialTotals.keys(), ...world.resources.map(resource => resource.materialId)]);
+  for (const container of candidate.inventory.containers) {
+    const original = baseline.inventory.containers.find(item => item.id === container.id);
+    if (!original || container.kind !== original.kind || canonicalStateHash(container.location) !== canonicalStateHash(original.location)
+      || container.capacitySlots !== original.capacitySlots || container.stacks.length > (container.capacitySlots ?? Number.MAX_SAFE_INTEGER)) invalid('An inventory container changed its identity or capacity.');
+    for (const stack of container.stacks) {
+      if (!isNonEmptyString(stack.itemId) || itemIds.has(stack.itemId) || !allowedTemplates.has(stack.templateId)
+        || !isSafeInt(stack.quantity) || stack.equipped !== false) invalid('An inventory item is duplicated or outside the compiled material set.');
+      itemIds.add(stack.itemId);
+      templateTotals.set(stack.templateId, (templateTotals.get(stack.templateId) ?? 0) + stack.quantity);
+    }
+  }
+  const extractedByMaterial = new Map<string, number>();
+  for (const job of candidate.spatial.harvestJobs) extractedByMaterial.set(job.materialId, (extractedByMaterial.get(job.materialId) ?? 0) + job.extractedQuantity);
+  for (const template of allowedTemplates) {
+    const expected = (initialTotals.get(template) ?? 0) + (extractedByMaterial.get(template) ?? 0);
+    if ((templateTotals.get(template) ?? 0) !== expected) invalid('Inventory totals do not conserve starter and harvested materials.');
+  }
+}
+
 function validateBackupState(value: unknown, world: WorldDefinition): GameState {
   if (!isRecord(value) || !Array.isArray(value.receipts) || value.receipts.length !== 0
     || !isNonEmptyString(value.saveId) || !isNonEmptyString(value.campaignId) || !isNonEmptyString(value.seed)
@@ -92,8 +223,21 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
     || candidate.revision > candidate.lastEventSequence || !isSafeInt(candidate.simElapsedMs)) {
     throw new ApiProblem(400, 'CONTENT_MISMATCH', 'The backup schema or pinned content version is incompatible.', 'Phiên bản nội dung của bản sao lưu không tương thích.');
   }
-  if (candidate.playerKnowledge.lastInspectedEntityIds.some(id => id !== 'site:SITE-LL01-000')) {
-    throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup contains an unsupported inspection record.', 'Bản sao lưu không hợp lệ.');
+  const knownInspection = (key: string): boolean => {
+    const [type, id] = key.split(':', 2);
+    if (!id) return false;
+    if (type === 'site') return Array.isArray(candidate.playerKnowledge.knownSiteIds) && candidate.playerKnowledge.knownSiteIds.includes(id);
+    if (type === 'resource') return Array.isArray(candidate.playerKnowledge.knownResourceIds) && candidate.playerKnowledge.knownResourceIds.includes(id);
+    if (type === 'cache') return (Array.isArray(candidate.playerKnowledge.knownSignalIds) && candidate.playerKnowledge.knownSignalIds.includes(id))
+      || (Array.isArray(candidate.playerKnowledge.knownChestIds) && candidate.playerKnowledge.knownChestIds.includes(id));
+    if (type === 'route') return Array.isArray(candidate.playerKnowledge.knownRouteIds) && candidate.playerKnowledge.knownRouteIds.includes(id);
+    if (type === 'unit') return Array.isArray(candidate.ownedUnits) && candidate.ownedUnits.some(unit => unit.id === id);
+    if (type === 'item') return candidate.inventory.containers.some(container => isRecord(container) && container.observed === true
+      && Array.isArray(container.stacks) && container.stacks.some(stack => isRecord(stack) && stack.itemId === id));
+    return false;
+  };
+  if (candidate.playerKnowledge.lastInspectedEntityIds.some(id => !knownInspection(id))) {
+    throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup contains an inspection record for an unknown entity.', 'Bản sao lưu có thông tin kiểm tra không khớp với hiểu biết của người chơi.');
   }
 
   const baseline = createNewGame({
@@ -108,25 +252,26 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
   if (!isRecord(candidate.clockControl) || !isRecord(candidate.timeBoundaries) || !isRecord(candidate.survival)
     || !isRecord(candidate.territory) || !isRecord(candidate.territory.survivalFire) || !isRecord(candidate.territory.tomb)
     || !isRecord(candidate.player.mana) || !Array.isArray(candidate.ownedUnits) || !Array.isArray(candidate.jobs)
-    || !Array.isArray(candidate.calendar)) {
+    || !Array.isArray(candidate.calendar) || !isRecord(candidate.travel) || !isRecord(candidate.exploration)
+    || !isRecord(candidate.spatial) || !Array.isArray(candidate.fieldChestStates)
+    || !Array.isArray(candidate.playerKnowledge.knownSiteIds) || !Array.isArray(candidate.playerKnowledge.knownChestIds)
+    || !Array.isArray(candidate.playerKnowledge.knownResourceIds) || !Array.isArray(candidate.playerKnowledge.knownRouteIds)
+    || !Array.isArray(candidate.playerKnowledge.knownSignalIds)) {
     throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup is missing Stage 04 state.', 'Bản sao lưu thiếu trạng thái Stage 04.');
   }
   const incomingContainers = candidate.inventory.containers;
   if (incomingContainers.length !== baseline.inventory.containers.length
-    || incomingContainers.some(container => !isRecord(container) || !isNonEmptyString(container.id) || typeof container.observed !== 'boolean')) {
-    throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup inventory does not match the Stage 03 schema.', 'Bản sao lưu không hợp lệ.');
+    || incomingContainers.some(container => !isRecord(container) || !isNonEmptyString(container.id) || typeof container.observed !== 'boolean'
+      || !Array.isArray(container.stacks) || !baseline.inventory.containers.some(original => original.id === container.id && original.kind === container.kind))) {
+    throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup inventory does not match the Stage 05 container schema.', 'Bản sao lưu không hợp lệ.');
   }
   const bagObserved = incomingContainers.find(container => container.id === 'LL-CNT-CARRIED-FOOD-BAG-01')?.observed;
   const supplyObserved = incomingContainers.find(container => container.id === 'LL-CNT-SUPPLY-01')?.observed;
-  if (typeof bagObserved !== 'boolean' || supplyObserved !== false || candidate.bagSeed.inspected !== bagObserved
+  if (typeof bagObserved !== 'boolean' || typeof supplyObserved !== 'boolean' || candidate.bagSeed.inspected !== bagObserved
     || typeof candidate.playerKnowledge.careerCardObserved !== 'boolean') {
     throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup contains an invalid inspection state.', 'Bản sao lưu không hợp lệ.');
   }
-  baseline.playerKnowledge = {
-    ...baseline.playerKnowledge,
-    careerCardObserved: candidate.playerKnowledge.careerCardObserved,
-    lastInspectedEntityIds: [...candidate.playerKnowledge.lastInspectedEntityIds],
-  };
+  baseline.playerKnowledge.careerCardObserved = candidate.playerKnowledge.careerCardObserved;
   baseline.bagSeed = { ...baseline.bagSeed, inspected: bagObserved };
 
   const normalized = structuredClone(candidate) as GameState;
@@ -137,16 +282,18 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
   normalized.timeBoundaries = baseline.timeBoundaries;
   normalized.survival = baseline.survival;
   normalized.player.mana = baseline.player.mana;
+  normalized.player.position = baseline.player.position;
+  normalized.player.location = baseline.player.location;
   normalized.territory.survivalFire = baseline.territory.survivalFire;
   normalized.territory.tomb = baseline.territory.tomb;
   normalized.ownedUnits = baseline.ownedUnits;
   normalized.jobs = baseline.jobs;
   normalized.calendar = baseline.calendar;
-  normalized.playerKnowledge = {
-    ...baseline.playerKnowledge,
-    careerCardObserved: candidate.playerKnowledge.careerCardObserved,
-    lastInspectedEntityIds: [...candidate.playerKnowledge.lastInspectedEntityIds],
-  };
+  normalized.travel = baseline.travel;
+  normalized.exploration = baseline.exploration;
+  normalized.spatial = baseline.spatial;
+  normalized.fieldChestStates = baseline.fieldChestStates;
+  normalized.playerKnowledge = baseline.playerKnowledge;
   baseline.inventory = {
     containers: baseline.inventory.containers.map(container => ({
       ...container,
@@ -154,7 +301,7 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
     })),
   };
   normalized.inventory = {
-    containers: normalized.inventory.containers.map(container => ({
+    containers: baseline.inventory.containers.map(container => ({
       ...container,
       observed: incomingContainers.find(candidateContainer => isRecord(candidateContainer) && candidateContainer.id === container.id)?.observed === true,
     })),
@@ -226,8 +373,8 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
       && unit.xpMirrorEligible === false && unit.level === tomb.output.level && unit.xp === tomb.output.xp
       && unit.sourceStats.formTier === tomb.output.formTier && unit.sourceStats.grade === tomb.output.grade
       && unit.sourceStats.hero === false && unit.baseLaborRateWuPerHour === tomb.output.baseLaborRateWuPerHour))
-    || candidate.jobs.some(job => !queue.some(entry => entry.id === job.id && (entry.status === 'active' || entry.status === 'completed')))
-    || queue.some(entry => (entry.status === 'active' || entry.status === 'completed') && !candidate.jobs.some(job => job.id === entry.id))) {
+    || candidate.jobs.some(job => job.kind === 'tomb_production' && !queue.some(entry => entry.id === job.id && (entry.status === 'active' || entry.status === 'completed')))
+    || queue.some(entry => (entry.status === 'active' || entry.status === 'completed') && !candidate.jobs.some(job => job.kind === 'tomb_production' && job.id === entry.id))) {
     throw new ApiProblem(400, 'BACKUP_INVALID', 'The Tomb queue and roster do not agree.', 'Hàng đợi Mộ và quân lực trong bản sao lưu không khớp.');
   }
 
@@ -236,6 +383,7 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
     || (expectedProtection === 'expired' && !isSafeInt(ev00.resolutionReceiptSequence, 1))) {
     throw new ApiProblem(400, 'BACKUP_INVALID', 'The opening protection calendar row is inconsistent.', 'Sự kiện bảo hộ mở đầu trong lịch không nhất quán.');
   }
+  validateStage05State(candidate, world, baseline);
   return candidate;
 }
 
@@ -249,7 +397,18 @@ function validateBackupReceipt(value: unknown): value is { commandId: string; re
     && (receipt.accepted || receipt.eventSequence === null);
 }
 
-function validateBackupEvent(value: unknown, index: number, saveId: string, receipts: Map<string, CommandReceipt>): boolean {
+function validEventPayload(value: unknown, depth = 0): boolean {
+  if (depth > 5) return false;
+  if (value === null || typeof value === 'boolean') return true;
+  if (typeof value === 'string') return value.length <= 500;
+  if (typeof value === 'number') return Number.isFinite(value);
+  if (Array.isArray(value)) return value.length <= 1_000 && value.every(item => validEventPayload(item, depth + 1));
+  if (!isRecord(value)) return false;
+  const entries = Object.entries(value);
+  return entries.length <= 100 && entries.every(([key, item]) => key.length <= 100 && validEventPayload(item, depth + 1));
+}
+
+function validateBackupEvent(value: unknown, index: number, saveId: string, receipts: Map<string, CommandReceipt>, state: GameState): boolean {
   if (!isRecord(value) || value.eventSequence !== index + 1 || value.eventId !== `${saveId}:event:${String(index + 1).padStart(12, '0')}`
     || !isSafeInt(value.occurredAtElapsedMs) || !isNonEmptyString(value.causalCommandId)
     || value.payloadSchemaVersion !== 1 || !isNonEmptyString(value.rulesetVersion) || !isNonEmptyString(value.contentVersion)
@@ -268,15 +427,28 @@ function validateBackupEvent(value: unknown, index: number, saveId: string, rece
     'cold_warning_changed', 'cold_danger_reached', 'fire_fuel_consumed', 'survival_fire_extinguished',
     'fire_refuelled', 'survival_fire_lit', 'tomb_job_queued', 'tomb_job_started', 'tomb_job_blocked',
     'tomb_job_cancelled', 'tomb_unit_completed', 'tomb_death_qi_refilled',
+    'movement_order_started', 'movement_order_completed', 'movement_order_cancelled', 'spatial_search_started',
+    'spatial_search_tick_settled', 'spatial_search_completed', 'spatial_search_cancelled', 'chest_signal_detected',
+    'harvest_job_started', 'harvest_arrived_at_workfront', 'resource_extracted', 'harvest_work_completed',
+    'harvest_job_blocked', 'harvest_cargo_returned', 'harvest_job_cancelled', 'inventory_item_transferred',
+    'resource_daily_quotas_reset',
   ]);
   if (value.eventType === 'career_card_inspected') return Object.keys(value.payload).length === 0;
-  if (value.eventType === 'starter_container_inspected') return value.payload.containerId === 'LL-CNT-CARRIED-FOOD-BAG-01' && value.payload.containerKind === 'carried_bag';
+  if (value.eventType === 'starter_container_inspected') return (value.payload.containerId === 'LL-CNT-CARRIED-FOOD-BAG-01' && value.payload.containerKind === 'carried_bag')
+    || (value.payload.containerId === 'LL-CNT-SUPPLY-01' && value.payload.containerKind === 'territory_supply');
   if (value.eventType === 'known_entity_inspected') {
     const entity = value.payload.entity;
-    return isRecord(entity) && entity.type === 'site' && entity.id === 'SITE-LL01-000';
+    if (!isRecord(entity) || typeof entity.id !== 'string') return false;
+    if (entity.type === 'site') return state.playerKnowledge.knownSiteIds.includes(entity.id);
+    if (entity.type === 'resource') return state.playerKnowledge.knownResourceIds.includes(entity.id);
+    if (entity.type === 'cache') return state.playerKnowledge.knownSignalIds.includes(entity.id) || state.playerKnowledge.knownChestIds.includes(entity.id);
+    if (entity.type === 'route') return state.playerKnowledge.knownRouteIds.includes(entity.id);
+    if (entity.type === 'unit') return state.ownedUnits.some(unit => unit.id === entity.id);
+    if (entity.type === 'item') return state.inventory.containers.some(container => container.observed && container.stacks.some(stack => stack.itemId === entity.id));
+    return false;
   }
   if (!systemEventTypes.has(String(value.eventType))) return false;
-  return Object.values(value.payload).every(item => item === null || ['string', 'number', 'boolean'].includes(typeof item));
+  return validEventPayload(value.payload);
 }
 
 function validateBackup(value: unknown, world: WorldDefinition): BackupEnvelope {
@@ -309,7 +481,7 @@ function validateBackup(value: unknown, world: WorldDefinition): BackupEnvelope 
     }
     receiptMap.set(item.commandId, item.receipt);
   }
-  if (value.events.length !== state.lastEventSequence || value.events.some((event, index) => !validateBackupEvent(event, index, state.saveId, receiptMap))) {
+  if (value.events.length !== state.lastEventSequence || value.events.some((event, index) => !validateBackupEvent(event, index, state.saveId, receiptMap, state))) {
     throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup event ledger is malformed.', 'Bản sao lưu không hợp lệ.');
   }
   for (const receipt of receiptMap.values()) {
@@ -451,7 +623,7 @@ export class GameApplicationService {
     const result = this.persistSystemEvents(saveId, state => {
       const advanced = advanceTo(state, Math.max(state.simElapsedMs, driver.targetSimElapsedMs), {
         stopCondition: state.clockControl.stopCondition as StopCondition,
-      });
+      }, this.world);
       const events: Omit<CommandEvent, 'sequence'>[] = [...advanced.events];
       if (advanced.stoppedBy) {
         advanced.state.clockControl = { status: 'paused', selection: 'paused', speedPermille: 0, stopCondition: 'none' };
@@ -821,16 +993,32 @@ export class GameApplicationService {
   private projectPlayerEvent(event: CommandEvent, eventId: string, state: GameState): PlayerEvent {
     if (event.type === 'known_entity_inspected') {
       const payloadRef = event.payload.entity;
-      if (!isRecord(payloadRef) || payloadRef.type !== 'site' || payloadRef.id !== 'SITE-LL01-000'
-        || !state.playerKnowledge.knownSiteIds.includes('SITE-LL01-000')) {
+      const known = isRecord(payloadRef) && typeof payloadRef.id === 'string' && (
+        payloadRef.type === 'site' && state.playerKnowledge.knownSiteIds.includes(payloadRef.id)
+        || payloadRef.type === 'resource' && state.playerKnowledge.knownResourceIds.includes(payloadRef.id)
+        || payloadRef.type === 'cache' && (state.playerKnowledge.knownSignalIds.includes(payloadRef.id) || state.playerKnowledge.knownChestIds.includes(payloadRef.id))
+        || payloadRef.type === 'route' && state.playerKnowledge.knownRouteIds.includes(payloadRef.id)
+        || payloadRef.type === 'unit' && state.ownedUnits.some(unit => unit.id === payloadRef.id)
+        || payloadRef.type === 'item' && state.inventory.containers.some(container => container.observed && container.stacks.some(stack => stack.itemId === payloadRef.id))
+      );
+      if (!known) {
         throw new RepositoryError('PLAYER_EVENT_PROJECTION_DENIED', 'An inspection event cannot be exposed to the player.', 500);
       }
-      return { sequence: event.sequence, eventId, type: event.type, category: 'exploration', title: 'Đã kiểm tra điểm neo', text: 'Thông tin hiện có của Điểm Neo đã được xem lại.' };
+      const isSignal = payloadRef.type === 'cache' && event.payload.discovery === 'identified';
+      return {
+        sequence: event.sequence,
+        eventId,
+        type: event.type,
+        category: isSignal ? 'exploration' : 'inspection',
+        title: isSignal ? 'Field signal identified' : 'Known entity inspected',
+        text: isSignal ? 'The discovered field signal was identified. Its marker now shows the exact chest.' : 'The known entity details were inspected.',
+      };
     }
     if (event.type === 'starter_container_inspected') {
       const container = state.inventory.containers.find(item => item.id === event.payload.containerId && item.observed);
-      if (!container || container.kind !== 'carried_bag') throw new RepositoryError('PLAYER_EVENT_PROJECTION_DENIED', 'A hidden container event cannot be exposed to the player.', 500);
-      return { sequence: event.sequence, eventId, type: event.type, category: 'inventory', title: 'Đã kiểm tra bịch đồ ăn', text: 'Nội dung của bịch đồ ăn đã được mở vào túi đồ.' };
+      if (!container || !['carried_bag', 'territory_supply'].includes(container.kind)) throw new RepositoryError('PLAYER_EVENT_PROJECTION_DENIED', 'A hidden container event cannot be exposed to the player.', 500);
+      const bag = container.kind === 'carried_bag';
+      return { sequence: event.sequence, eventId, type: event.type, category: 'inventory', title: bag ? 'Carried bag inspected' : 'Supply chest inspected', text: bag ? 'The carried food bag contents are now known.' : 'The territory supply chest contents are now known.' };
     }
     if (event.type === 'career_card_inspected') {
       if (!state.playerKnowledge.careerCardObserved || state.player.career.state !== 'unemployed_card_sealed') {
@@ -877,6 +1065,23 @@ export class GameApplicationService {
       tomb_job_cancelled: { category: 'tomb', title: 'Đã hủy việc chưa bắt đầu', text: 'Đầu vào chưa được đặt trước nên không có Tử Khí được hoàn lại.' },
       tomb_unit_completed: { category: 'tomb', title: 'Mộ hoàn tất một Cương Thi', text: `Đơn vị ${String(event.payload.unitId)} đã được thêm vào quân lực.` },
       tomb_death_qi_refilled: { category: 'tomb', title: 'Tử Khí đã hồi phục lúc nửa đêm', text: `${String(event.payload.current)}/${String(event.payload.capacity)} Tử Khí.` },
+      movement_order_started: { category: 'travel', title: 'Travel started', text: `${(Number(event.payload.distanceMm) / 1_000_000).toFixed(2)} km planned · ${event.payload.uncertainty === true ? 'route uncertain' : 'known route'}.` },
+      movement_order_completed: { category: 'travel', title: 'Travel completed', text: `${(Number(event.payload.distanceMm) / 1_000_000).toFixed(2)} km travelled.` },
+      movement_order_cancelled: { category: 'travel', title: 'Travel cancelled', text: 'Travel stopped at the actor’s current position.' },
+      spatial_search_started: { category: 'exploration', title: 'Search started', text: 'The assigned observer began a focused spatial sweep.' },
+      spatial_search_tick_settled: { category: 'exploration', title: 'Search sweep settled', text: `${Number(event.payload.grossAreaM2).toFixed(1)} m² swept in this 15-minute tick.` },
+      spatial_search_completed: { category: 'exploration', title: 'Search completed', text: 'The planned search lane was completed.' },
+      spatial_search_cancelled: { category: 'exploration', title: 'Search cancelled', text: 'The search stopped at the observer’s current position.' },
+      chest_signal_detected: { category: 'exploration', title: 'Buried signal detected', text: 'A buried signal was detected in the swept lane.' },
+      harvest_job_started: { category: 'logistics', title: 'Harvest trip started', text: `Reserved ${String(event.payload.quantity)} units of ${String(event.payload.materialId)} for a round trip.` },
+      harvest_arrived_at_workfront: { category: 'logistics', title: 'Arrived at resource', text: 'The worker reached the resource and began gathering.' },
+      resource_extracted: { category: 'logistics', title: 'Resource gathered', text: `${String(event.payload.quantity)} ${String(event.payload.materialId)} unit(s) gathered.` },
+      harvest_work_completed: { category: 'logistics', title: 'Gathering completed', text: `${String(event.payload.quantity)} ${String(event.payload.materialId)} unit(s) loaded for return.` },
+      harvest_job_blocked: { category: 'logistics', title: 'Harvest trip blocked', text: `The trip stopped: ${String(event.payload.reason)}.` },
+      harvest_cargo_returned: { category: 'logistics', title: 'Cargo returned', text: `${String(event.payload.quantity)} resource unit(s) returned to the carried bag.` },
+      harvest_job_cancelled: { category: 'logistics', title: 'Harvest trip cancelled', text: `${String(event.payload.extractedQuantity)} gathered unit(s) remain in the carried bag.` },
+      inventory_item_transferred: { category: 'logistics', title: 'Inventory transferred', text: `${String(event.payload.quantity)} item unit(s) transferred between accessible containers.` },
+      resource_daily_quotas_reset: { category: 'logistics', title: 'Daily resource quotas reset', text: 'Daily source quotas reset at the world midnight boundary.' },
     };
     return events[event.type] ?? null;
   }
@@ -884,7 +1089,7 @@ export class GameApplicationService {
   private commandProblem(receipt: CommandReceipt, currentRevision: number): ApiProblem {
     if (receipt.code === 'STALE_REVISION') return apiProblem('STALE_REVISION', 409, receipt.message, 'Dữ liệu đã thay đổi. Hãy tải lại trước khi thử lại.', currentRevision);
     if (receipt.code === 'NOT_ACCESSIBLE' || receipt.code === 'ENTITY_NOT_KNOWN') return apiProblem('NOT_ACCESSIBLE', 404, 'The requested target is unavailable.', 'Không thể truy cập mục tiêu này.', currentRevision);
-    if (receipt.code.endsWith('_STAGE_04') || receipt.code.endsWith('_STAGE_05') || receipt.code.endsWith('_STAGE_06') || receipt.code.endsWith('_STAGE_07') || receipt.code.endsWith('_STAGE_08') || receipt.code.includes('NOT_IMPLEMENTED')) {
+    if (receipt.code.endsWith('_STAGE_04') || receipt.code.endsWith('_STAGE_05') || receipt.code.endsWith('_STAGE_06') || receipt.code.endsWith('_STAGE_07') || receipt.code.endsWith('_STAGE_08') || receipt.code.includes('NOT_IMPLEMENTED') || receipt.code.includes('NOT_COMPILED')) {
       return apiProblem('RULE_NOT_READY', 422, receipt.message, 'Quy tắc cho thao tác này chưa sẵn sàng.', currentRevision);
     }
     if (receipt.code === 'CONTENT_MISMATCH') return apiProblem('CONTENT_MISMATCH', 409, receipt.message, 'Phiên bản nội dung không khớp.', currentRevision);

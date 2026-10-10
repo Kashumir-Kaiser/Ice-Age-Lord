@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import type {
   ActionAvailability, ClockSpeedSelection, CommandEnvelope, CommandPayloadByType, CommandType,
-  EntityRef, PlayerEntityView, PlayerView,
+  CoordinateMm, EntityRef, PlayerEntityView, PlayerView,
 } from '../../packages/contracts/src/index.ts';
 import type { PlayerEvent, SaveSummary } from '../../packages/contracts/src/api.ts';
 import { findAsset, layerPath, loadAssetManifest } from './assets/assetRegistry';
@@ -85,7 +85,7 @@ function elapsedLabel(elapsedMs: number | null): string {
   return `T+${hours}h${String(minutes).padStart(2, '0')}`;
 }
 
-function Stage04Strip({ view }: { view: PlayerView }) {
+function RuntimeStrip({ view }: { view: PlayerView }) {
   const { survivalFire, tomb } = view.territory;
   const dayTime = `Ngày ${view.worldClock.day} · ${String(view.worldClock.hour).padStart(2, '0')}:${String(view.worldClock.minute).padStart(2, '0')}`;
   const cold = view.survival.coldStatus === 'weather_unresolved'
@@ -95,7 +95,7 @@ function Stage04Strip({ view }: { view: PlayerView }) {
   const catchingUp = view.clockStatus.catchingUp
     ? `Đang quyết toán tới ${elapsedLabel(view.clockStatus.targetSimElapsedMs)}`
     : `${dayTime} · T+${elapsedLabel(view.simElapsedMs).slice(2)}`;
-  return <section className="live-stage-strip" aria-label="Trạng thái mô phỏng Stage 04">
+  return <section className="live-stage-strip" aria-label="Stage 05 simulation status">
     <div><span>Thế giới</span><strong>{catchingUp}</strong><small>{view.worldClock.lightPhase} · Bậc 0 là cấp đầu ra Mộ</small></div>
     <div><span>Lửa trại</span><strong>{survivalFire.active ? 'Đang hoạt động' : 'Đã tắt'} · {fuel}</strong><small>{survivalFire.fuelBlocker || `Bán kính nhiệt ${survivalFire.heatRadiusMetres} m · mốc đốt ${elapsedLabel(survivalFire.nextFuelConsumptionAtElapsedMs)}`}</small></div>
     <div><span>Sinh tồn</span><strong>{cold}</strong><small>{view.survival.blocker || `Đói: ${view.survival.hungerState}`}</small></div>
@@ -139,6 +139,12 @@ function LiveApp() {
   const [manifestError, setManifestError] = useState(false);
   const [customSpeed, setCustomSpeed] = useState('10');
   const [customSelection, setCustomSelection] = useState(false);
+  const [chooseDestination, setChooseDestination] = useState(false);
+  const [mapZoom, setMapZoom] = useState(1);
+  const [destination, setDestination] = useState<CoordinateMm | null>(null);
+  const [destinationAvailability, setDestinationAvailability] = useState<ActionAvailability | null>(null);
+  const [searchRadiusMetres, setSearchRadiusMetres] = useState(500);
+  const [travelActorId, setTravelActorId] = useState('LI_LAN');
 
   useEffect(() => {
     let active = true;
@@ -405,6 +411,49 @@ function LiveApp() {
     if (pendingCommand) void sendCommand(pendingCommand, true);
   }
 
+  function previewCoordinateDestination(position: CoordinateMm) {
+    if (!view) return;
+    setDestination(position);
+    setDestinationAvailability(null);
+    const command = commandFor(view, 'move', { actorId: travelActorId, destination: position });
+    void client.previewCommand(command).then(result => setDestinationAvailability(result.availability)).catch(error => {
+      setFeedback({ kind: 'rejected', text: errorMessage(error) });
+    });
+  }
+
+  function moveToEntity(entity: PlayerEntityView) {
+    if (!view) return;
+    const command = commandFor(view, 'move', { actorId: travelActorId, destinationId: entity.ref.id });
+    void client.previewCommand(command).then(result => {
+      if (!result.availability.enabled) setFeedback({ kind: 'rejected', text: availabilityMessage(result.availability) });
+      else void sendCommand(command);
+    }).catch(error => setFeedback({ kind: 'rejected', text: errorMessage(error) }));
+  }
+
+  function harvestSelectedResource(entity: PlayerEntityView) {
+    if (!view || entity.ref.type !== 'resource') return;
+    const availability = entity.actions.find(item => item.actionId === 'harvest');
+    if (!availability?.enabled) {
+      setFeedback({ kind: 'rejected', text: availability ? availabilityMessage(availability) : 'Harvest is not available for this source.' });
+      return;
+    }
+    const bag = view.inventory.containers.find(container => container.kind === 'carried_bag');
+    const resource = view.spatial.resources.find(item => item.resourceId === entity.ref.id);
+    const requiredTemplate = resource?.materialId === 'WOOD' ? 'STONE-AXE' : resource?.materialId === 'STONE' ? 'STONE-HAMMER' : null;
+    const tool = bag?.items.find(item => item.label === requiredTemplate && item.quantity > 0);
+    if (!resource || !tool) {
+      setFeedback({ kind: 'rejected', text: 'Move the required tool into the carried bag first.' });
+      return;
+    }
+    void sendCommand(commandFor(view, 'harvest', {
+      actorId: view.player.id,
+      resourceId: resource.resourceId,
+      materialId: resource.materialId,
+      quantity: 1,
+      toolItemId: tool.itemId,
+    }));
+  }
+
   const selectedEntity = view && selectedRef
     ? view.visibleMap.entities.find(entity => sameRef(entity.ref, selectedRef)) || null
     : null;
@@ -431,28 +480,73 @@ function LiveApp() {
 
   function renderMap(): ReactNode {
     if (!view) return null;
-    const origin = view.territory.position;
+    const center = travelActorId === view.player.id ? view.player.position : view.units.find(unit => unit.id === travelActorId)?.position ?? view.player.position;
+    const spanMm = 26_315_789 / mapZoom;
+    const horizontalSpanMm = spanMm * 1.85;
+    const point = (position: CoordinateMm) => ({
+      x: 50 + (position.xMm - center.xMm) / horizontalSpanMm * 100,
+      y: 50 - (position.yMm - center.yMm) / spanMm * 100,
+    });
+    const toPolyline = (positions: readonly CoordinateMm[]) => positions.map(position => {
+      const projected = point(position);
+      return `${projected.x},${projected.y}`;
+    }).join(' ');
+    const selectedMove = selectedEntity?.actions.find(item => item.actionId === 'move');
+    const selectedInspect = selectedEntity?.actions.find(item => item.actionId === 'inspect_entity');
+    const selectedOpen = selectedEntity?.actions.find(item => item.actionId === 'open_cache');
+    const selectedHarvest = selectedEntity?.actions.find(item => item.actionId === 'harvest');
     return <div className="live-section-stack">
       <section className="live-panel">
         <div className="live-panel-heading">
-          <div><span className="live-eyebrow">VISIBLE MAP · API PROJECTION</span><h2>Dữ liệu vị trí đã biết</h2></div>
+          <div><span className="live-eyebrow">VISIBLE MAP · SERVER KNOWLEDGE</span><h2>Exploration and travel</h2></div>
           <span className="live-data-chip">{view.visibleMap.entities.length} entity</span>
         </div>
-        {fireRef && !fireEntity && <div className="live-inline-error" role="alert">Lãnh địa có tham chiếu Lửa Trại, nhưng lớp bản đồ không trả entity cùng ID.</div>}
+        <p className="live-muted">Camera movement only changes the view. Travel, sight, and searching change saved knowledge after the server settles them.</p>
+        <div className="live-map-tools">
+          <button className={'live-button' + (chooseDestination ? '' : ' live-button--secondary')} disabled={working || Boolean(pendingCommand)} onClick={() => setChooseDestination(value => !value)}>
+            {chooseDestination ? 'Cancel destination selection' : 'Choose destination'}
+          </button>
+          <div className="live-zoom-controls"><button className="live-button live-button--secondary" aria-label="Zoom out" disabled={mapZoom <= 0.2} onClick={() => setMapZoom(value => Math.max(0.2, Math.round(value / 1.6 * 100) / 100))}>−</button><span>{mapZoom.toFixed(2)}×</span><button className="live-button live-button--secondary" aria-label="Zoom in" disabled={mapZoom >= 500} onClick={() => setMapZoom(value => Math.min(500, Math.round(value * 1.6 * 100) / 100))}>+</button></div>
+          <label className="live-inline-field">Travel actor <select value={travelActorId} onChange={event => { setTravelActorId(event.target.value); setDestination(null); setDestinationAvailability(null); }}><option value={view.player.id}>{view.player.name}</option>{view.units.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}</select></label>
+          <span className="live-data-chip">Center · {center.xMm}, {center.yMm} mm</span>
+        </div>
+        {chooseDestination && <p className="live-map-hint">Click an empty map coordinate to preview an order. Confirming travel is a separate action.</p>}
+        {fireRef && !fireEntity && <div className="live-inline-error" role="alert">The H0 fire reference is missing from the player map projection.</div>}
         <div className="live-map-canvas" data-testid="live-map">
           <div className="live-map-crosshair" aria-hidden="true" />
+          <svg className="live-map-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            {view.visibleMap.exploredGeometry.map(area => {
+              const centerPoint = area.points[0];
+              if (!centerPoint || area.radiusMm === undefined) return null;
+              const projected = point(centerPoint);
+              return <ellipse key={area.id} className="live-map-explored" cx={projected.x} cy={projected.y} rx={area.radiusMm / horizontalSpanMm * 100} ry={area.radiusMm / spanMm * 100} />;
+            })}
+            {view.visibleMap.knownRoutes.map(route => <polyline key={route.id} className="live-map-route" points={toPolyline(route.path)} />)}
+            {view.visibleMap.activeOrders.map(order => <polyline key={order.id} className="live-map-order" points={toPolyline(order.path)} />)}
+            {view.spatial.searchJobs.filter(job => job.status === 'active').map(job => <polyline key={job.id} className="live-map-search-path" points={toPolyline(job.path)} />)}
+            {view.spatial.harvestJobs.filter(job => job.status === 'active').map(job => <polyline key={job.id} className="live-map-order" points={toPolyline(job.stage === 'returning' ? job.routeReturn : job.routeOut)} />)}
+            {view.visibleMap.currentSight.map((sight, index) => {
+              const projected = point(sight.center);
+              return <ellipse key={`${sight.source}-${index}`} className="live-map-sight" cx={projected.x} cy={projected.y} rx={sight.radiusMm / horizontalSpanMm * 100} ry={sight.radiusMm / spanMm * 100} />;
+            })}
+          </svg>
+          <div className="live-map-click-layer" onClick={event => {
+            if (!chooseDestination) return;
+            const rect = event.currentTarget.getBoundingClientRect();
+            const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+            const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+            previewCoordinateDestination({ xMm: Math.round(center.xMm + (x - 0.5) * horizontalSpanMm), yMm: Math.round(center.yMm - (y - 0.5) * spanMm), sourceZMetres: center.sourceZMetres ?? 0 });
+          }} />
           {view.visibleMap.terrain.map(terrain => {
-            const dx = terrain.position.xMm - origin.xMm;
-            const dy = terrain.position.yMm - origin.yMm;
-            const left = Math.max(8, Math.min(92, 50 + dx / 10000000 * 38));
-            const top = Math.max(8, Math.min(92, 50 - dy / 10000000 * 38));
+            const projected = point(terrain.position);
+            const left = Math.max(2, Math.min(98, projected.x));
+            const top = Math.max(2, Math.min(98, projected.y));
             return <span key={terrain.id} className="live-terrain-label" style={{ left: left + '%', top: top + '%' }}>{terrain.label}</span>;
           })}
           {view.visibleMap.entities.map(entity => {
-            const dx = (entity.position?.xMm ?? origin.xMm) - origin.xMm;
-            const dy = (entity.position?.yMm ?? origin.yMm) - origin.yMm;
-            const left = Math.max(8, Math.min(92, 50 + dx / 10000000 * 38));
-            const top = Math.max(8, Math.min(92, 50 - dy / 10000000 * 38));
+            const projected = point(entity.position ?? center);
+            const left = Math.max(2, Math.min(98, projected.x));
+            const top = Math.max(2, Math.min(98, projected.y));
             const isFire = sameRef(entity.ref, fireRef);
             return <button
               key={entityRefKey(entity.ref)}
@@ -460,7 +554,7 @@ function LiveApp() {
               data-testid={isFire ? 'map-campfire-marker' : undefined}
               data-entity-ref={entityRefKey(entity.ref)}
               style={{ left: left + '%', top: top + '%' }}
-              onClick={() => setSelectedRef(entity.ref)}
+              onClick={event => { event.stopPropagation(); setSelectedRef(entity.ref); }}
               aria-label={entity.label}
               title={entity.label}
             >
@@ -468,17 +562,43 @@ function LiveApp() {
               <span>{entity.label}</span>
             </button>;
           })}
-          {view.visibleMap.entities.length === 0 && <p className="live-map-empty">API chưa trả về entity đã biết.</p>}
+          {view.units.filter(unit => unit.position).map(unit => {
+            const projected = point(unit.position!);
+            return <span key={unit.id} className="live-map-unit" style={{ left: `${Math.max(2, Math.min(98, projected.x))}%`, top: `${Math.max(2, Math.min(98, projected.y))}%` }} title={unit.name}>{unit.name}</span>;
+          })}
+          {(() => { const projected = point(view.player.position); return <span className="live-map-player" style={{ left: `${projected.x}%`, top: `${projected.y}%` }} title="Lí Lan">LL</span>; })()}
+          {destination && (() => { const projected = point(destination); return <span className="live-map-destination" style={{ left: `${projected.x}%`, top: `${projected.y}%` }} title="Selected destination" />; })()}
+          {view.visibleMap.entities.length === 0 && <p className="live-map-empty">No explored map entities are known yet.</p>}
         </div>
+        {destination && <div className="live-destination-preview">
+          <div><strong>Destination preview</strong><span>{destination.xMm}, {destination.yMm} mm · {destinationAvailability?.preview?.value ?? (destinationAvailability ? availabilityMessage(destinationAvailability) : 'Calculating…')}</span></div>
+          <button className="live-button" disabled={working || Boolean(pendingCommand) || !destinationAvailability?.enabled} onClick={() => void sendCommand(commandFor(view, 'move', { actorId: view.player.id, destination }))}>Start travel</button>
+        </div>}
+        {view.spatial.movementOrders.filter(order => order.status === 'active').map(order => <div key={order.id} className="live-destination-preview">
+          <div><strong>Travel in progress</strong><span>{(order.totalDistanceMm / 1_000_000).toFixed(2)} km · {Math.floor(view.jobs.find(job => job.id === order.id)?.progressPercent ?? 0)}% · {order.pathSegments.some(segment => segment.uncertainty === 'uncertain') ? 'uncertain route' : 'known route'}</span></div>
+          <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'cancel_travel', { orderId: order.id }))}>Cancel travel</button>
+        </div>)}
         {selectedEntity && <div className="live-inspector">
-          <div><span className="live-eyebrow">ĐANG CHỌN</span><h3>{entityLabel(selectedEntity)}</h3><p>{selectedEntity.knowledge} · quan sát tại {selectedEntity.observedAtElapsedMs} ms</p></div>
+          <div><span className="live-eyebrow">SELECTED · {selectedEntity.category}</span><h3>{entityLabel(selectedEntity)}</h3><p>{selectedEntity.knowledge} · observed at {elapsedLabel(selectedEntity.observedAtElapsedMs)}</p></div>
           <div className="live-action-stack">
-            <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void runInspection(selectedEntity)}>
-              <Eye size={16} /> Kiểm tra điểm đã chọn
-            </button>
-            {selectedEntity.actions.find(action => action.actionId === 'inspect_entity' && !action.enabled) && <small>{availabilityMessage(selectedEntity.actions.find(action => action.actionId === 'inspect_entity')!)}</small>}
+            {selectedInspect && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !selectedInspect.enabled} onClick={() => void runInspection(selectedEntity)}><Eye size={16} /> Inspect</button>}
+            {selectedMove && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || (travelActorId === view.player.id && !selectedMove.enabled)} onClick={() => moveToEntity(selectedEntity)}><ArrowRight size={16} /> Move here {travelActorId === view.player.id && selectedMove.preview?.value ? `· ${selectedMove.preview.value}` : ''}</button>}
+            {selectedHarvest && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !selectedHarvest.enabled} onClick={() => harvestSelectedResource(selectedEntity)}>Harvest one unit</button>}
+            {selectedOpen && <small>{availabilityMessage(selectedOpen)}</small>}
+            {selectedInspect && !selectedInspect.enabled && <small>{availabilityMessage(selectedInspect)}</small>}
+            {selectedMove && !selectedMove.enabled && <small>{availabilityMessage(selectedMove)}</small>}
+            {selectedHarvest && !selectedHarvest.enabled && <small>{availabilityMessage(selectedHarvest)}</small>}
           </div>
         </div>}
+      </section>
+      <section className="live-panel">
+        <div className="live-panel-heading"><div><span className="live-eyebrow">SEARCH · FIXED 15-MINUTE SWEEPS</span><h3>Focused search</h3></div><Eye size={20} /></div>
+        <div className="live-button-row"><label className="live-inline-field">Lane radius <select value={searchRadiusMetres} onChange={event => setSearchRadiusMetres(Number(event.target.value))}><option value={250}>250 m</option><option value={500}>500 m</option><option value={1000}>1 km</option><option value={2000}>2 km</option></select></label>
+          <button className="live-button" disabled={working || Boolean(pendingCommand) || view.spatial.searchJobs.some(job => job.status === 'active')} onClick={() => void sendCommand(commandFor(view, 'search', { actorId: view.player.id, center: view.player.position, radiusMm: searchRadiusMetres * 1000 }))}>Start search from current position</button>
+        </div>
+        {view.spatial.searchJobs.length > 0 && <ul className="live-plain-list">{view.spatial.searchJobs.map(job => <li key={job.id}><strong>Search · {job.status} · {Math.floor(view.jobs.find(item => item.id === job.id)?.progressPercent ?? 0)}%</strong><span>{job.uniqueAreaM2.toFixed(0)} m² unique · {job.repeatedAreaM2.toFixed(0)} m² repeated {job.status === 'active' && <button className="live-text-button" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'cancel_spatial_job', { jobId: job.id }))}>Cancel</button>}</span></li>)}</ul>}
+        {view.spatial.harvestJobs.length > 0 && <ul className="live-plain-list">{view.spatial.harvestJobs.map(job => <li key={job.id}><strong>Harvest · {job.stage} · {job.status}</strong><span>{job.extractedQuantity}/{job.requestedQuantity} gathered {job.status === 'active' && <button className="live-text-button" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'cancel_spatial_job', { jobId: job.id }))}>Cancel</button>}</span></li>)}</ul>}
+        {destinationAvailability && !destinationAvailability.enabled && <p className="live-inline-error">{availabilityMessage(destinationAvailability)}</p>}
       </section>
     </div>;
   }
@@ -492,7 +612,7 @@ function LiveApp() {
       return <div className="live-section-stack">
         <section className="live-hero">
           <div>
-          <span className="live-eyebrow">STAGE 04 · AUTHORITATIVE SIMULATION</span>
+          <span className="live-eyebrow">STAGE 05 · MAP AND LOGISTICS</span>
             <h2>{view.player.name}</h2>
           <p>Thời gian, Tử Khí, hồi Mana và sản xuất đều lấy từ snapshot máy chủ. Lượt mới vẫn bắt đầu ở ngày 1 lúc 07:00.</p>
           </div>
@@ -521,7 +641,7 @@ function LiveApp() {
           </section>
         </div>
         <section className="live-panel">
-          <div className="live-panel-heading"><div><span className="live-eyebrow">SESSION</span><h3>Trạng thái lượt lưu</h3></div><span className="live-data-chip">Stage 04 · đồng hồ máy chủ</span></div>
+          <div className="live-panel-heading"><div><span className="live-eyebrow">SESSION</span><h3>Trạng thái lượt lưu</h3></div><span className="live-data-chip">Stage 05 · server clock</span></div>
           <p>Save ID: <code>{view.saveId}</code> · Event sequence: {view.lastEventSequence} · API revision: {view.revision}</p>
           <p>Quyền đồng hồ: {view.clockStatus.driver} · {view.clockControl.status} · {view.clockControl.speedPermille / 1000}× · {view.clockStatus.catchingUp ? 'đang quyết toán' : 'đã đồng bộ'}</p>
         </section>
@@ -589,7 +709,7 @@ function LiveApp() {
       return <div className="live-section-stack">
         <section className="live-panel">
           <div className="live-panel-heading"><div><span className="live-eyebrow">INVENTORY · SERVER PROJECTION</span><h2>Kho vật phẩm</h2></div><PackageOpen size={22} /></div>
-          <p className="live-muted">Vật phẩm chỉ xuất hiện sau khi API trả chúng trong container đã quan sát.</p>
+          <p className="live-muted">Items appear from observed containers. Move them only when both containers are in reach.</p>
           {view.inventory.inspectableContainers.length > 0 && <div className="live-inspectable-list">
             {view.inventory.inspectableContainers.map(container => <article key={container.containerId} className="live-container-row">
               <div><strong>{container.label}</strong><small>{container.kind} · chưa quan sát</small></div>
@@ -600,10 +720,26 @@ function LiveApp() {
             ? <div className="live-inventory-grid">{view.inventory.containers.map(container => <article className="live-container-card" key={container.id}>
                 <div className="live-panel-heading"><h3>{container.label}</h3><span>{container.slots} ô</span></div>
                 {container.items.length
-                  ? <ul className="live-plain-list">{container.items.map(item => <li key={item.itemId}><strong>{item.label}</strong><span>× {item.quantity}</span></li>)}</ul>
+                  ? <ul className="live-plain-list">{container.items.map(item => <li key={item.itemId}>
+                    <strong>{item.label} · × {item.quantity}</strong>
+                    <span>{view.inventory.containers.filter(target => target.id !== container.id).map(target => <button key={target.id} className="live-text-button" disabled={working || Boolean(pendingCommand) || !container.accessible || !target.accessible} title={!container.accessible || !target.accessible ? 'Move Lí Lan within reach of both containers.' : `Transfer the full stack to ${target.label}.`} onClick={() => void sendCommand(commandFor(view, 'transfer_item', {
+                      actorId: view.player.id, sourceContainerId: container.id, destinationContainerId: target.id, itemId: item.itemId, quantity: item.quantity,
+                    }))}>→ {target.label}</button>)}</span>
+                  </li>)}</ul>
                   : <p>Container đã quan sát, chưa có vật phẩm.</p>}
+                <small className="live-container-access">{container.accessible ? 'Within reach' : 'Out of reach'}</small>
               </article>)}</div>
             : view.inventory.inspectableContainers.length === 0 && <p className="live-empty-state">API chưa cung cấp container đã quan sát hoặc có thể kiểm tra.</p>}
+        </section>
+        <section className="live-panel">
+          <div className="live-panel-heading"><div><span className="live-eyebrow">FIELD RESOURCE LEDGER</span><h3>Known sources</h3></div><PackageOpen size={20} /></div>
+          {view.spatial.resources.length ? <ul className="live-plain-list">{view.spatial.resources.map(resource => <li key={resource.resourceId}>
+            <strong>{resource.materialName}</strong><span>{resource.remaining === null ? 'Remaining amount unknown' : `${resource.remaining} ${resource.unit}`} · {resource.reserved ?? 0} reserved · {resource.status}</span>
+          </li>)}</ul> : <p className="live-empty-state">No resource sites are known yet.</p>}
+          {view.spatial.harvestJobs.length > 0 && <div className="live-job-list">{view.spatial.harvestJobs.map(job => <article key={job.id} className="live-container-row">
+            <div><strong>{job.materialId} · {job.stage} · {job.status}</strong><small>{job.extractedQuantity}/{job.requestedQuantity} gathered · {Math.floor(view.jobs.find(item => item.id === job.id)?.progressPercent ?? 0)}%</small></div>
+            {job.status === 'active' && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'cancel_spatial_job', { jobId: job.id }))}>Cancel trip</button>}
+          </article>)}</div>}
         </section>
       </div>;
     }
@@ -648,7 +784,7 @@ function LiveApp() {
   if (!authenticated) {
     return <main className="live-start-page">
       <section className="live-start-card">
-        <span className="live-eyebrow">STAGE 04 · LOCAL OWNER SESSION</span>
+        <span className="live-eyebrow">STAGE 05 · LOCAL OWNER SESSION</span>
         <h1>Kết nối game API</h1>
         <p>Chế độ live chỉ dùng API SQLite cục bộ. Khóa chủ sở hữu chỉ được gửi tới API để tạo bearer session và không được lưu trong trình duyệt.</p>
         <div className={'live-api-status live-api-status--' + apiState}>
@@ -694,7 +830,7 @@ function LiveApp() {
 
   return <div className="live-shell">
     <aside className="live-sidebar">
-      <div className="live-brand"><span className="live-brand-mark"><Flame size={19} /></span><div><strong>ICE AGE LORD</strong><small>LIVE · STAGE 04</small></div></div>
+      <div className="live-brand"><span className="live-brand-mark"><Flame size={19} /></span><div><strong>ICE AGE LORD</strong><small>LIVE · STAGE 05</small></div></div>
       <div className="live-sidebar-status"><span className="live-status-dot" /> SQLite API · connected</div>
       <nav className="live-nav" aria-label="Màn hình game">
         {navigation.map(item => {
@@ -704,7 +840,7 @@ function LiveApp() {
           </button>;
         })}
       </nav>
-      <div className="live-sidebar-footer"><span>Simulation clock</span><strong>{view.clockControl.status.toUpperCase()} · Stage 04</strong></div>
+      <div className="live-sidebar-footer"><span>Simulation clock</span><strong>{view.clockControl.status.toUpperCase()} · Stage 05</strong></div>
     </aside>
     <main className="live-main">
       <header className="live-topbar">
@@ -730,7 +866,7 @@ function LiveApp() {
       </header>
       <div className="live-content">
         <StatusBanner feedback={feedback} retry={pendingCommand ? retryPending : undefined} />
-        <Stage04Strip view={view} />
+        <RuntimeStrip view={view} />
         {pageContent()}
       </div>
       <footer className="live-footer"><span>LIVE · API PLAYER VIEW</span><span>Save {view.saveId} · revision {view.revision}</span></footer>
