@@ -88,3 +88,36 @@ test('registered original SVG layers exist and match each manifest canvas', () =
     }
   }
 });
+
+
+test('painted Survival Fire stages use independent registered true-vector art and source-neutral visual scaling', () => {
+  const repo=resolve(root,'..');
+  const manifest=JSON.parse(readFileSync(resolve(repo,'assets/manifest.json'),'utf8'));
+  const stages=manifest.fireProgression;
+  assert.deepEqual(stages.map(stage=>stage.minLevel),[1,6,11,16,21,26]);
+  assert.deepEqual(stages.map(stage=>stage.maxLevel),[5,10,15,20,25,30]);
+  const assets=stages.map(stage=>manifest.assets.find(asset=>asset.assetId===stage.assetId));
+  assert.ok(assets.every(Boolean));
+  let previousScale=0;
+  for (const [index,asset] of assets.entries()) {
+    assert.equal(asset.variant,'winter-ink-painted-true-vector-v2');
+    assert.deepEqual(asset.logicalCanvas,{width:480,height:400});
+    assert.deepEqual(asset.groundAnchor,{x:.5,y:.82});
+    assert.ok(asset.presentationScale>previousScale,'Later fire forms must remain visually distinct in size.');
+    previousScale=asset.presentationScale;
+    assert.equal(asset.status,'draft');
+    for (const layer of ['body','base','upper','shadow','uiIcon','vfx']) {
+      const url=asset.layers[layer];
+      assert.ok(typeof url==='string'&&url.startsWith('/assets/buildings/'));
+      const markup=readFileSync(resolve(repo,'frontend/public'+url),'utf8');
+      assert.match(markup,/<svg[^>]*viewBox="0 0 480 400"/);
+      assert.doesNotMatch(markup,/<image(?:\\s|>)/i,'All layers must contain vector artwork, not embedded photos.');
+      if (layer==='vfx') assert.match(markup,/<path\\b/, 'Active fire must be separately switchable.');
+      if (layer==='upper'&&index>0) assert.match(markup,/<path\\b/,'Tall stages require their own removable upper geometry.');
+    }
+  }
+  const sprite=readFileSync(resolve(root,'src/territory/BuildingSprite.tsx'),'utf8');
+  assert.match(sprite,/asset\\?\\.presentationScale \\?\\? 1/);
+  assert.match(sprite,/activeEffect && vfx/);
+  assert.match(sprite,/mode === 'planning' && !missing && asset && base/);
+});
