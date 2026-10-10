@@ -10,8 +10,14 @@ import MapScene from './MapScene';
 import { INITIAL_CLOCK_SECONDS, speedMultiplier, advanceDisplayClock, displayClock, displayDay, customMultiplier } from './demoClock';
 import type { ClockSpeed } from './demoClock';
 import ItemArt from './ItemArt';
-import { itemExamples, mockJournal, screens, sites } from './demoData';
-import type { DemoItem, ItemKind, Screen, SiteKind } from './demoData';
+import type { ItemKind, Screen, Site, SiteKind } from './demoData';
+import { demoGameClient } from './game/DemoGameClient';
+import type { EntityRef, EntityView, PlayerView, VisibleMap } from './game/GameClient';
+import { sameEntityRef } from './game/GameClient';
+import { INITIAL_CAMERA } from './map/camera';
+import type { SharedMapCamera } from './map/camera';
+import EntityInspector from './inspectors/EntityInspector';
+import type { Dispatch, SetStateAction } from 'react';
 
 const NAV_ICONS: Record<Screen, LucideIcon> = {
   overview: LayoutDashboard, territory: Crown, map: MapIcon, inventory: Archive,
@@ -41,23 +47,29 @@ function Sigil({ kind }: { kind:SiteKind }) {
   const Icon = kind==='fire'?Flame:kind==='house'?Crown:kind==='tomb'?Shield:Package;
   return <span className={`site-sigil sigil-${kind}`}><Icon size={22} strokeWidth={1.65}/></span>;
 }
-function SiteInspector({ siteId }: { siteId:SiteKind }) {
-  const site = sites.find(s=>s.id===siteId)!;
-  return <aside className="panel inspector">
-    <div className="inspector-top">
-      <Sigil kind={site.id} />
-      <span className="inspector-kicker">THÔNG TIN ĐỊA ĐIỂM</span>
-    </div>
-    <h3>{site.name}</h3>
-    <div className="muted-text">{site.subtitle}</div>
-    <div className="inspector-divider"/>
-    <div className="detail-line"><span>Trạng thái</span><strong>{site.status}</strong></div>
-    <div className="detail-line"><span>Vị trí</span><strong>Tọa độ nguồn LL01</strong></div>
-    <p className="inspector-description">{site.description}</p>
-    <div className="unavailable-action"><Info size={16}/> Chức năng tương tác đang chờ engine</div>
-  </aside>;
-}
-function Header({ screen, onMenu, notifications, onNotifications, clockSeconds, speed, changeSpeed, customSpeed, setCustomSpeed }: {
+type MapStateProps = {
+  selectedEntity: EntityRef | null;
+  onSelectEntity: (ref:EntityRef)=>void;
+  inspectorOpen:boolean;
+  onInspectorOpenChange:(open:boolean)=>void;
+  clockSeconds:number;
+  onClockChange:(seconds:number)=>void;
+  visibleMap:VisibleMap;
+  camera:SharedMapCamera;
+  onCameraChange:Dispatch<SetStateAction<SharedMapCamera>>;
+  fireLevel:number;
+  onFireLevelChange:(level:number)=>void;
+  fireActive:boolean;
+  onFireActiveChange:(active:boolean)=>void;
+  sourceAtlas:boolean;
+  onSourceAtlasChange:(active:boolean)=>void;
+  showHeat:boolean;
+  onShowHeatChange:(active:boolean)=>void;
+  showExploration:boolean;
+  onShowExplorationChange:(active:boolean)=>void;
+};
+function Header({ screen, screens, onMenu, notifications, onNotifications, clockSeconds, speed, changeSpeed, customSpeed, setCustomSpeed }: {
+  screens:PlayerView['screens'];
   screen:Screen; onMenu:()=>void; notifications:boolean; onNotifications:()=>void; clockSeconds:number; speed:ClockSpeed; changeSpeed:(speed:ClockSpeed)=>void; customSpeed:number; setCustomSpeed:(speed:number)=>void;
 }) {
   const heading = HEADINGS[screen];
@@ -78,7 +90,8 @@ function Header({ screen, onMenu, notifications, onNotifications, clockSeconds, 
     </div>
   </header>;
 }
-function Sidebar({ current, navigate, open, close }: {
+function Sidebar({ current, screens, navigate, open, close }: {
+  screens:PlayerView['screens'];
   current:Screen; navigate:(screen:Screen)=>void; open:boolean; close:()=>void;
 }) {
   return <>
@@ -107,7 +120,7 @@ function StatCard({ icon:Icon, label, value, note, tone='neutral' }: {
 }) {
   return <div className={`stat-card stat-card--${tone}`}><div className="stat-icon"><Icon size={20}/></div><span>{label}</span><strong>{value}</strong><small>{note}</small></div>;
 }
-function Overview({ selected, select, navigate, clockSeconds, onClockChange }: {selected:SiteKind;select:(v:SiteKind)=>void;navigate:(v:Screen)=>void;clockSeconds:number;onClockChange:(s:number)=>void}) {
+function Overview({ selectedEntity, mapProps, navigate, clockSeconds, onClockChange }: {selectedEntity:EntityView|null;mapProps:MapStateProps;navigate:(v:Screen)=>void;clockSeconds:number;onClockChange:(s:number)=>void}) {
   return <div className="page-sections">
     <section className="hero-banner">
       <div className="hero-orbit hero-orbit-1"/><div className="hero-orbit hero-orbit-2"/>
@@ -137,10 +150,11 @@ function Overview({ selected, select, navigate, clockSeconds, onClockChange }: {
     <section className="overview-columns">
       <div className="panel map-preview-panel">
         <BlockTitle title="Vùng lãnh địa" eyebrow="BẢN ĐỒ" action={<button className="text-button" onClick={()=>navigate('map')}>Xem toàn màn hình <ChevronRight size={15}/></button>}/>
-        <MapScene compact selected={selected} onSelect={select} clockSeconds={clockSeconds} onClockChange={onClockChange}/>
+        <MapScene {...mapProps} compact onClockChange={onClockChange} onOpenFullMap={()=>navigate('map')}/>
         <div className="preview-footer"><span><span className="legend-circle warm"/> Vòng nhiệt theo bán kính nguồn</span><span><span className="legend-circle blue"/> Công trình khởi đầu</span><span className="preview-warning">Địa hình giả lập · Fog mặc định</span></div>
       </div>
-      <SiteInspector siteId={selected}/>
+      <div className="overview-inspector-desktop"><EntityInspector entity={selectedEntity}/></div>
+      <details className="responsive-inspector" open={mapProps.inspectorOpen} onToggle={event=>mapProps.onInspectorOpenChange(event.currentTarget.open)}><summary>{selectedEntity?.name ?? 'Thông tin địa điểm được chọn'}</summary><EntityInspector entity={selectedEntity}/></details>
     </section>
     <section className="bottom-cards">
       <div className="panel feature-card"><div className="feature-icon"><Flame size={22}/></div><h3>Sinh tồn đầu tiên</h3><p>Quản lý nguồn nhiệt, lương thực và nơi trú. Có điều khiển tốc độ đồng hồ hiển thị; tiêu hao và cơ chế game vẫn chưa kết nối.</p><button className="text-button" onClick={()=>navigate('territory')}>Xem giao diện lãnh địa <ChevronRight size={15}/></button></div>
@@ -149,17 +163,21 @@ function Overview({ selected, select, navigate, clockSeconds, onClockChange }: {
     </section>
   </div>;
 }
-function MapPage({ selected, select, clockSeconds, onClockChange }: {selected:SiteKind;select:(v:SiteKind)=>void;clockSeconds:number;onClockChange:(s:number)=>void}) {
+function MapPage({ selectedEntity, mapProps }: {selectedEntity:EntityView|null;mapProps:MapStateProps}) {
   return <div className="page-sections">
-    <div className="notice-row"><Info size={17}/><span>Các điểm neo, điểm tài nguyên và cache lấy tọa độ từ WORLD-PACKAGE-LL01-1.0. Địa hình và các điểm mặt đất nằm trong vùng sáng được mô phỏng trên bản đồ. Các điểm chưa thăm dò không tự động cấp quyền khai thác, mở rương hoặc xác định nội dung.</span></div>
-    <div className="map-page-grid"><div className="panel map-full"><MapScene selected={selected} onSelect={select} clockSeconds={clockSeconds} onClockChange={onClockChange}/></div><div className="map-page-side"><SiteInspector siteId={selected}/><div className="panel help-panel"><h3><Compass size={18}/> Cách điều khiển</h3><p>Giữ chuột trái và kéo bản đồ. Cuộn chuột trực tiếp trên bản đồ để phóng/thu mà không cuộn trang. Thu rất xa sẽ chuyển sang bản đồ thế giới; nút định khung nhiệt luôn giữ bản đồ địa phương. Có thể đổi chế độ bằng nút bản đồ thế giới.</p><p>Ban ngày nhìn xa hơn, ban đêm chỉ nhìn được trong vùng ánh sáng của Lửa Sinh Tồn. Tăng Cấp xem trước mở rộng vùng nhìn thấy và có thể làm lộ các dấu tích/điểm mặt đất; phần thưởng và dữ liệu dưới đất vẫn bị khóa. Xem atlas nguồn là công cụ debug, không phải hành động chơi.</p></div></div></div>
+    <div className="notice-row"><Info size={17}/><span>Map demo · Vị trí đã biết đến từ projection fixture. Ánh sáng, kéo bản đồ và atlas debug không khám phá hoặc thay đổi trạng thái.</span></div>
+    <div className="map-page-grid"><div className="panel map-full"><MapScene {...mapProps}/></div><div className="map-page-side">
+      <details className="map-inspector-desktop" open><summary>{selectedEntity?.name ?? 'Thông tin điểm được chọn'}</summary><EntityInspector entity={selectedEntity}/></details>
+      <details className="map-inspector-mobile" open={mapProps.inspectorOpen} onToggle={event=>mapProps.onInspectorOpenChange(event.currentTarget.open)}><summary>{selectedEntity?.name ?? 'Thông tin điểm được chọn'}</summary><EntityInspector entity={selectedEntity}/></details>
+      <details className="panel help-panel"><summary><h3><Compass size={18}/> Cách điều khiển</h3></summary><p>Kéo để di chuyển, cuộn trên mặt bản đồ để thu phóng và dùng các phím mũi tên / cộng trừ khi bản đồ được chọn.</p><p>Chế độ thế giới giữ riêng camera địa phương. Các nút lớp và công cụ xem thử thay đổi hình chiếu; chúng không thực hiện khám phá, khai thác hoặc lưu tiến trình.</p></details>
+    </div></div>
   </div>;
 }
-function Inventory({ selected, select }: {selected:string;select:(id:string)=>void}) {
+function Inventory({ items, selectedEntity, selectEntity, inspectorOpen, onInspectorOpenChange }: {items:PlayerView['items'];selectedEntity:EntityView|null;selectEntity:(ref:EntityRef)=>void;inspectorOpen:boolean;onInspectorOpenChange:(open:boolean)=>void}) {
   const [search,setSearch]=useState('');
   const [category,setCategory]=useState<'Tất cả'|ItemKind>('Tất cả');
-  const filtered=useMemo(()=>itemExamples.filter(i=>(category==='Tất cả'||i.kind===category)&&(`${i.name} ${i.note}`.toLowerCase().includes(search.toLowerCase()))),[search,category]);
-  const current=itemExamples.find(i=>i.id===selected)||itemExamples[0];
+  const filtered=useMemo(()=>items.filter(i=>(category==='Tất cả'||i.kind===category)&&(`${i.name} ${i.note}`.toLowerCase().includes(search.toLowerCase()))),[items,search,category]);
+  const selectedItemId=selectedEntity?.ref.type==='item'?selectedEntity.ref.id:null;
   return <div className="page-sections">
     <div className="notice-row"><AlertTriangle size={17}/><span>Toàn bộ thẻ dưới đây là <b>mẫu vật phẩm và artwork</b>, không phải vật phẩm đã nhận. Tồn kho hiện tại chưa được liên kết.</span></div>
     <div className="inventory-layout">
@@ -167,61 +185,47 @@ function Inventory({ selected, select }: {selected:string;select:(id:string)=>vo
         <div className="inventory-toolbar"><div><span className="eyebrow">THƯ VIỆN MINH HỌA</span><h2>Vật phẩm & trang bị</h2></div><div className="search-box"><Search size={17}/><input aria-label="Tìm vật phẩm" placeholder="Tìm vật phẩm..." value={search} onChange={e=>setSearch(e.target.value)} /></div></div>
         <div className="filter-strip" aria-label="Lọc vật phẩm">{CATEGORIES.map(c=><button key={c} className={category===c?'is-selected':''} onClick={()=>setCategory(c)}>{c}</button>)}</div>
         <div className="inventory-count">{filtered.length} mẫu được hiển thị <span>· Chưa có dữ liệu số lượng sở hữu</span></div>
-        {filtered.length ? <div className="item-grid">{filtered.map(item=><button className={`item-tile ${current.id===item.id?'item-tile--active':''}`} key={item.id} onClick={()=>select(item.id)}>
+        {filtered.length ? <div className="item-grid">{filtered.map(item=><button className={`item-tile ${selectedItemId===item.id?'item-tile--active':''}`} key={item.id} onClick={()=>selectEntity({type:'item',id:item.id})}>
           <div className="item-icon"><ItemArt symbol={item.symbol} size={84}/></div><strong>{item.name}</strong><span>{item.kind}</span>
         </button>)}</div> : <div className="empty-search">Không có mẫu nào khớp bộ lọc.</div>}
       </section>
-      <aside className="panel item-detail">
-        <span className="eyebrow">CHI TIẾT VẬT PHẨM · MẪU</span>
-        <div className="detail-art"><ItemArt symbol={current.symbol} size={168}/></div>
-        <span className="item-type">{current.kind} · {current.origin}</span>
-        <h2>{current.name}</h2><p className="muted-text">{current.note}</p>
-        <div className="inspector-divider"/>
-        <div className="detail-line"><span>Trạng thái sở hữu</span><strong>Chưa xác định</strong></div>
-        <div className="detail-line"><span>Số lượng</span><strong>—</strong></div>
-        <div className="detail-line"><span>Phẩm</span><strong>Chưa có dữ liệu</strong></div>
-        <p className="inspector-description">{current.detail}</p>
-        <div className="unavailable-action"><Info size={15}/> Các thao tác trang bị / sử dụng chưa kết nối</div>
-      </aside>
+      <div className="inspector-desktop"><EntityInspector entity={selectedEntity}/></div>
+      <details className="responsive-inspector" open={inspectorOpen} onToggle={event=>onInspectorOpenChange(event.currentTarget.open)}><summary>{selectedEntity?.name ?? 'Thông tin địa điểm được chọn'}</summary><EntityInspector entity={selectedEntity}/></details>
     </div>
   </div>;
 }
-function Buildings({ selected, select, navigate }: {selected:SiteKind;select:(id:SiteKind)=>void;navigate:(v:Screen)=>void}) {
+function Buildings({ sites, selectedEntity, selectEntity, navigate, inspectorOpen, onInspectorOpenChange }: {sites:readonly Site[];selectedEntity:EntityView|null;selectEntity:(ref:EntityRef)=>void;navigate:(v:Screen)=>void;inspectorOpen:boolean;onInspectorOpenChange:(open:boolean)=>void}) {
   return <div className="page-sections">
     <div className="notice-row"><Info size={17}/><span>Bốn công trình khởi đầu được đặt ở đúng tọa độ LL01 cố định tương đối với ngọn lửa H0. Không có công trình mới được xây.</span></div>
-    <div className="building-page-grid"><div className="building-grid">{sites.map(site=><button key={site.id} onClick={()=>select(site.id)} className={`panel building-card ${selected===site.id?'building-card--selected':''}`}>
+    <div className="building-page-grid"><div className="building-grid">{sites.map(site=><button key={site.id} onClick={()=>selectEntity(site.entityRef)} className={`panel building-card ${sameEntityRef(selectedEntity?.ref,site.entityRef)?'building-card--selected':''}`}>
       <div className="building-thumb"><span className="building-grid-overlay"/><Sigil kind={site.id}/></div>
       <div className="building-info"><span>{site.subtitle}</span><h3>{site.name}</h3><p>{site.status}</p><span className="building-open">Xem chi tiết <ChevronRight size={15}/></span></div>
-    </button>)}</div><div><SiteInspector siteId={selected}/><button className="nav-next" onClick={()=>navigate('map')}>Xem vị trí cố định trên bản đồ <ChevronRight size={17}/></button></div></div>
+    </button>)}</div><div><div className="inspector-desktop"><EntityInspector entity={selectedEntity}/></div><details className="responsive-inspector" open={inspectorOpen} onToggle={event=>onInspectorOpenChange(event.currentTarget.open)}><summary>{selectedEntity?.name ?? 'Thông tin địa điểm được chọn'}</summary><EntityInspector entity={selectedEntity}/></details><button className="nav-next" onClick={()=>navigate('map')}>Xem vị trí cố định trên bản đồ <ChevronRight size={17}/></button></div></div>
   </div>;
 }
-function Forces() {
-  const sample = [{ icon:Shield, title:'Quân Ngôi Mộ', text:'Được tạo thông qua công trình binh chủng, không nhận XP phản chiếu của Tử Phục.' },
-    { icon:Sparkles, title:'Tử thi Tử Phục', text:'Chỉ xuất hiện từ xác thật hợp lệ đã được Lí Lan chuyển hóa; danh tính từng đơn vị được bảo toàn.' },
-    { icon:Users, title:'Anh hùng', text:'Đơn vị có danh tính, xuất thân và năng lực thực tế; không được phát miễn phí từ khung thẻ.' }];
+function Forces({ samples }: {samples:PlayerView['forces']}) {
+  const icons={shield:Shield,sparkles:Sparkles,users:Users};
   return <div className="page-sections">
     <div className="stats-grid force-stats"><StatCard icon={Shield} label="Đơn vị tại khởi đầu" value="0" note="Không có lực lượng được tạo"/><StatCard icon={Sparkles} label="Thiên phú chính" value="SSS" note="Tử Phục Linh Sư" tone="ice"/><StatCard icon={Activity} label="Đội đang hoạt động" value="Chưa có" note="Không mô phỏng lệnh chiến đấu"/><StatCard icon={Layers} label="Sổ đơn vị" value="Chờ engine" note="ID và XP cần nguồn xác thực" tone="warm"/></div>
     <div className="panel empty-army"><div className="empty-army-illustration"><Shield size={52} strokeWidth={1}/><span>0</span></div><h2>Chưa có đơn vị tại thời điểm khởi đầu</h2><p>Đây là trạng thái mở đầu. Không sử dụng quân lực hoặc nhân vật từ những lần chạy thử trước.</p></div>
     <BlockTitle title="Các kiểu thẻ quân lực sẽ hỗ trợ" eyebrow="BỐ CỤC XEM TRƯỚC"/>
-    <div className="sample-force-grid">{sample.map(({icon:Icon,title,text})=><div className="panel force-sample" key={title}><span className="sample-ribbon">KHÔNG SỞ HỮU</span><Icon size={35} strokeWidth={1.25}/><h3>{title}</h3><p>{text}</p><span className="muted-text">Mẫu cấu trúc hiển thị · Không có unit ID</span></div>)}</div>
+    <div className="sample-force-grid">{samples.map(({icon,title,text})=>{const Icon=icons[icon];return <div className="panel force-sample" key={title}><span className="sample-ribbon">KHÔNG SỞ HỮU</span><Icon size={35} strokeWidth={1.25}/><h3>{title}</h3><p>{text}</p><span className="muted-text">Mẫu cấu trúc hiển thị · Không có unit ID</span></div>;})}</div>
   </div>;
 }
-function Territory({ navigate, select }: { navigate:(s:Screen)=>void; select:(id:SiteKind)=>void }) {
-  const objectives=[{id:'fire' as SiteKind,title:'Duy trì Lửa Sinh Tồn',detail:'Quản trị nhiên liệu và nhiệt độ sau khi runtime được triển khai.',icon:Flame},
-    {id:'house' as SiteKind,title:'Tu sửa Nhà Lãnh Chúa',detail:'Điều kiện gốc: 20 Gỗ và 10 Đá. Chưa thể thực hiện trong demo.',icon:Hammer},
-    {id:'tomb' as SiteKind,title:'Quản lý Ngôi Mộ',detail:'Cơ chế sinh quân riêng; không tự động tạo đơn vị ở khởi đầu.',icon:Shield}];
+function Territory({ navigate, objectives, sites, selectEntity }: {navigate:(s:Screen)=>void;objectives:PlayerView['territoryObjectives'];sites:readonly Site[];selectEntity:(ref:EntityRef)=>void}) {
+  const icons={fire:Flame,house:Hammer,tomb:Shield,supply:Box};
   return <div className="page-sections">
     <section className="territory-intro panel"><div><span className="eyebrow">ĐIỂM KHỞI ĐẦU</span><h2>Một ngọn lửa giữa băng nguyên</h2><p>Chức năng này sẽ tập hợp kho vận, dân cư, nhiệt, lịch xây dựng và an ninh lãnh địa. Trong bản xem thử, các thao tác chỉ mở màn hình giới thiệu.</p><DemoLabel subtle/></div><span className="territory-decoration"><Snowflake size={98} strokeWidth={.7}/></span></section>
     <BlockTitle title="Những giao diện ưu tiên" eyebrow="QUẢN LÝ KHỞI ĐẦU"/>
-    <div className="territory-objectives">{objectives.map(({id,title,detail,icon:Icon},index)=><button className="panel objective-card" key={id} onClick={()=>{select(id);navigate('buildings');}}>
-      <span className="objective-number">0{index+1}</span><span className="objective-icon"><Icon size={26}/></span><span className="objective-copy"><strong>{title}</strong><small>{detail}</small></span><ChevronRight size={20}/></button>)}</div>
+    <div className="territory-objectives">{objectives.map(({id,title,detail},index)=>{const Icon=icons[id];const site=sites.find(value=>value.id===id);return <button className="panel objective-card" key={id} onClick={()=>{if(site)selectEntity(site.entityRef);navigate('buildings');}}>
+      <span className="objective-number">0{index+1}</span><span className="objective-icon"><Icon size={26}/></span><span className="objective-copy"><strong>{title}</strong><small>{detail}</small></span><ChevronRight size={20}/></button>;})}</div>
     <div className="panel roadmap-panel"><h3><Layers size={19}/> Kết nối trong các giai đoạn tiếp theo</h3><div className="roadmap-grid"><span>Kho thực tế <small>Chờ dữ liệu trạng thái</small></span><span>Phân công lao động <small>Chờ job scheduler</small></span><span>Đường vận chuyển <small>Chờ tuyến đường thực</small></span><span>Sản xuất & tiêu hao <small>Chờ giao dịch nguyên tử</small></span></div></div>
   </div>;
 }
-function Journal() {
+function Journal({ entries }: {entries:PlayerView['journal']}) {
   const [filter,setFilter]=useState('Tất cả');
   const categories=['Tất cả','Bối cảnh','Hệ thống','Giao diện'];
-  const events=mockJournal.filter(e=>filter==='Tất cả'||e.category===filter);
+  const events=entries.filter(e=>filter==='Tất cả'||e.category===filter);
   return <div className="page-sections"><div className="notice-row"><Info size={17}/><span>Không có event ledger đang chạy. Những mục bên dưới là thông tin giới thiệu đã xác lập hoặc hướng dẫn giao diện.</span></div>
     <section className="panel journal-panel"><div className="inventory-toolbar"><div><span className="eyebrow">BIÊN NIÊN · BẢN MẪU</span><h2>Thông tin mở đầu</h2></div><div className="filter-strip journal-filter">{categories.map(c=><button className={filter===c?'is-selected':''} onClick={()=>setFilter(c)} key={c}>{c}</button>)}</div></div>
     <div className="timeline">{events.map(e=><article className="timeline-event" key={e.title}><span className="timeline-dot"/><div className="timeline-time">{e.time}<small>{e.category}</small></div><div className="timeline-body"><h3>{e.title}</h3><p>{e.text}</p></div></article>)}</div></section>
@@ -231,12 +235,43 @@ export default function App() {
   const [screen,setScreen]=useState<Screen>('overview');
   const [sidebarOpen,setSidebarOpen]=useState(false);
   const [notificationOpen,setNotificationOpen]=useState(false);
-  const [selectedSite,setSelectedSite]=useState<SiteKind>('fire');
-  const [selectedItem,setSelectedItem]=useState<DemoItem['id']>('wood');
+  const [playerView,setPlayerView]=useState<PlayerView>(()=>demoGameClient.getPlayerView());
+  const [selection,setSelection]=useState<EntityRef|null>({type:'site',id:'SITE-LL01-000'});
+  const [inspectorOpen,setInspectorOpen]=useState(true);
+  const [camera,setCamera]=useState<SharedMapCamera>(INITIAL_CAMERA);
+  const [fireLevel,setFireLevel]=useState(1);
+  const [fireActive,setFireActive]=useState(true);
+  const [sourceAtlas,setSourceAtlas]=useState(false);
+  const [showHeat,setShowHeat]=useState(true);
+  const [showExploration,setShowExploration]=useState(true);
   const [clockSeconds,setClockSeconds]=useState(INITIAL_CLOCK_SECONDS);
   const [speed,setSpeed]=useState<ClockSpeed>('Frozen');
   const [customSpeed,setCustomSpeed]=useState(10);
   const multiplier=speedMultiplier(speed,customSpeed);
+  const mapMinutes=Math.floor((clockSeconds%86400)/60);
+  const visibleMap=useMemo(()=>demoGameClient.getVisibleMap({
+    clockMinutes:mapMinutes,fireLevel,fireActive,sourceAtlas,
+  }),[mapMinutes,fireLevel,fireActive,sourceAtlas]);
+  const selectedEntity=selection
+    ? visibleMap.entities.find(entity=>sameEntityRef(entity.ref,selection)) ?? demoGameClient.inspectEntity(selection)
+    : null;
+  const selectEntity=(ref:EntityRef)=>{setSelection(ref);setInspectorOpen(true);};
+  const mapProps:MapStateProps={
+    selectedEntity:selection,onSelectEntity:selectEntity,inspectorOpen,onInspectorOpenChange:setInspectorOpen,clockSeconds,onClockChange:setClockSeconds,
+    visibleMap,camera,onCameraChange:setCamera,fireLevel,onFireLevelChange:setFireLevel,
+    fireActive,onFireActiveChange:setFireActive,sourceAtlas,onSourceAtlasChange:setSourceAtlas,
+    showHeat,onShowHeatChange:setShowHeat,showExploration,onShowExplorationChange:setShowExploration,
+  };
+  const navigate=(next:Screen)=>{setScreen(next);setSidebarOpen(false);};
+  useEffect(()=>demoGameClient.subscribe(setPlayerView),[]);
+  useEffect(()=>{
+    const onKeyDown=(event:KeyboardEvent)=>{
+      if(event.key!=='Escape')return;
+      setSelection(null);setInspectorOpen(false);setSidebarOpen(false);setNotificationOpen(false);
+    };
+    window.addEventListener('keydown',onKeyDown);
+    return()=>window.removeEventListener('keydown',onKeyDown);
+  },[]);
   useEffect(()=>{
     if(multiplier===0)return;
     let last=performance.now();
@@ -248,18 +283,18 @@ export default function App() {
     return ()=>clearInterval(interval);
   },[multiplier]);
   return <div className="app-shell">
-    <Sidebar current={screen} navigate={setScreen} open={sidebarOpen} close={()=>setSidebarOpen(false)}/>
+    <Sidebar current={screen} screens={playerView.screens} navigate={navigate} open={sidebarOpen} close={()=>setSidebarOpen(false)}/>
     <div className="app-main">
-      <Header screen={screen} onMenu={()=>setSidebarOpen(true)} notifications={notificationOpen} onNotifications={()=>setNotificationOpen(v=>!v)} clockSeconds={clockSeconds} speed={speed} changeSpeed={setSpeed} customSpeed={customSpeed} setCustomSpeed={setCustomSpeed}/>
+      <Header screen={screen} screens={playerView.screens} onMenu={()=>setSidebarOpen(true)} notifications={notificationOpen} onNotifications={()=>setNotificationOpen(v=>!v)} clockSeconds={clockSeconds} speed={speed} changeSpeed={setSpeed} customSpeed={customSpeed} setCustomSpeed={setCustomSpeed}/>
       {notificationOpen && <div className="notification-popover" role="status"><div><Bell size={17}/><strong>Trạng thái bản xem thử</strong><button className="icon-button" aria-label="Đóng thông báo" onClick={()=>setNotificationOpen(false)}><X size={17}/></button></div><p>Chưa kết nối bộ mô phỏng hoặc dữ liệu lưu. Mọi thao tác ở đây chỉ thay đổi màn hình hiển thị.</p></div>}
       <main className="page-content">
-        {screen==='overview'&&<Overview selected={selectedSite} select={setSelectedSite} navigate={setScreen} clockSeconds={clockSeconds} onClockChange={setClockSeconds}/>}
-        {screen==='territory'&&<Territory navigate={setScreen} select={setSelectedSite}/>}
-        {screen==='map'&&<MapPage selected={selectedSite} select={setSelectedSite} clockSeconds={clockSeconds} onClockChange={setClockSeconds}/>}
-        {screen==='inventory'&&<Inventory selected={selectedItem} select={setSelectedItem}/>}
-        {screen==='forces'&&<Forces/>}
-        {screen==='buildings'&&<Buildings selected={selectedSite} select={setSelectedSite} navigate={setScreen}/>}
-        {screen==='journal'&&<Journal/>}
+        {screen==='overview'&&<Overview selectedEntity={selectedEntity} mapProps={mapProps} navigate={navigate} clockSeconds={clockSeconds} onClockChange={setClockSeconds}/>}
+        {screen==='territory'&&<Territory navigate={navigate} objectives={playerView.territoryObjectives} sites={playerView.sites} selectEntity={selectEntity}/>}
+        {screen==='map'&&<MapPage selectedEntity={selectedEntity} mapProps={mapProps}/>}
+        {screen==='inventory'&&<Inventory items={playerView.items} selectedEntity={selectedEntity} selectEntity={selectEntity} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen}/>}
+        {screen==='forces'&&<Forces samples={playerView.forces}/>}
+        {screen==='buildings'&&<Buildings sites={playerView.buildings} selectedEntity={selectedEntity} selectEntity={selectEntity} navigate={navigate} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen}/>}
+        {screen==='journal'&&<Journal entries={playerView.journal}/>}
       </main>
       <footer className="app-footer"><span><Emblem size={21}/> ICE AGE LORD · FRONTEND PROTOTYPE</span><span>Chế độ demo · Không lưu tiến trình · Không sửa dữ liệu nguồn</span></footer>
     </div>

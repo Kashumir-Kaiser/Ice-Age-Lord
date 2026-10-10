@@ -1,3 +1,4 @@
+import type { EntityRef } from './game/GameClient';
 
 export type Screen = 'overview' | 'territory' | 'map' | 'inventory' | 'forces' | 'buildings' | 'journal';
 export type ItemKind = 'Tài nguyên' | 'Trang bị' | 'Vật phẩm' | 'Bản vẽ';
@@ -5,6 +6,7 @@ export type ItemSymbol = 'wood' | 'stone' | 'ore' | 'bread' | 'cloak' | 'staff' 
 export type SiteKind = 'fire' | 'house' | 'tomb' | 'supply';
 export type Site = {
   id: SiteKind;
+  entityRef: EntityRef;
   name: string;
   subtitle: string;
   description: string;
@@ -34,22 +36,22 @@ export const screens: { id: Screen; name: string; hint: string }[] = [
 /** Opening site positions are exact LL01 registry coordinates in metres (+X east, +Y north).\n * They are read-only frontend projections; the site IDs and canonical registry remain authority. */
 export const sites: Site[] = [
   {
-    id: 'fire', name: 'Lửa Trại Cấp 1', subtitle: 'Lửa Sinh Tồn',
+    id: 'fire', entityRef: {type:'site',id:'SITE-LL01-000'}, name: 'Lửa Trại Cấp 1', subtitle: 'Lửa Sinh Tồn',
     description: 'Nguồn nhiệt sinh tồn khởi đầu. Đây là giao diện mô phỏng vị trí và tương tác; quy mô, nhiên liệu và thời gian phải do bộ mô phỏng cung cấp.',
     status: 'Đã xác nhận trong thiết lập khởi đầu', x: 0, y: 0, label: 'Lửa Trại',
   },
   {
-    id: 'house', name: 'Nhà Lãnh Chúa Hư Hại', subtitle: 'Công trình khởi đầu',
+    id: 'house', entityRef: {type:'site',id:'SITE-LL01-001'}, name: 'Nhà Lãnh Chúa Hư Hại', subtitle: 'Công trình khởi đầu',
     description: 'Một ngôi nhà bị hư hại cần tu sửa. Công thức gốc: 20 Gỗ và 10 Đá. Nút sửa chữa chưa hoạt động trong bản xem thử.',
     status: 'Chưa tu sửa tại khởi đầu', x: 40, y: 20, label: 'Nhà Lãnh Chúa',
   },
   {
-    id: 'tomb', name: 'Ngôi Mộ Bậc 1', subtitle: 'Công trình binh chủng',
+    id: 'tomb', entityRef: {type:'site',id:'SITE-LL01-003'}, name: 'Ngôi Mộ Bậc 1', subtitle: 'Công trình binh chủng',
     description: 'Đường tạo quân của Ngôi Mộ tách biệt hoàn toàn với Tử Phục xác thật của Lí Lan. Bản đồ minh họa không cho thấy quân đã được tạo.',
     status: 'Tồn tại tại khởi đầu', x: -20, y: 30, label: 'Ngôi Mộ',
   },
   {
-    id: 'supply', name: 'Hòm Vật Tư Lãnh Địa', subtitle: 'Hòm khởi đầu',
+    id: 'supply', entityRef: {type:'site',id:'SITE-LL01-002'}, name: 'Hòm Vật Tư Lãnh Địa', subtitle: 'Hòm khởi đầu',
     description: 'Điểm chứa vật tư khởi đầu. Nội dung cụ thể phải lấy từ snapshot sạch và bộ mô phỏng, không suy từ dữ liệu kiểm thử.',
     status: 'Chưa mô phỏng thao tác', x: 30, y: -10, label: 'Hòm Vật Tư',
   },

@@ -3,61 +3,74 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-const root=fileURLToPath(new URL('../',import.meta.url));
-const src=join(root,'src');
-const read=(path)=>readFileSync(join(root,path),'utf8');
-const source=readdirSync(src).filter(f=>/\.(ts|tsx)$/.test(f)).map(f=>read('src/'+f)).join('\n');
-test('seven demo screens remain reachable',()=>{
-  for(const id of ['overview','territory','map','inventory','forces','buildings','journal']) assert.match(read('src/demoData.ts'),new RegExp("id: '"+id+"'"));
+
+const root = fileURLToPath(new URL('../', import.meta.url));
+const read = path => readFileSync(join(root, path), 'utf8');
+const filesUnder = dir => readdirSync(join(root, dir), { withFileTypes: true }).flatMap(entry => {
+  const path = join(dir, entry.name);
+  return entry.isDirectory() ? filesUnder(path) : /\.(ts|tsx)$/.test(entry.name) ? [read(path)] : [];
 });
-test('demo does not fetch, store, mutate canonical extraction or persist saves',()=>{
-  assert.doesNotMatch(source,/from\s+['"][^'"]*(?:research|references\/canonical|data\/events|runtime\/saves)/);
-  assert.doesNotMatch(source,/\b(fetch|XMLHttpRequest|localStorage|sessionStorage|indexedDB|WebSocket)\b/);
-  assert.doesNotMatch(source,/Math\.random\s*\(/);
-});
-test('opening character, paused clock and sample inventory remain isolated',()=>{
-  assert.match(read('src/App.tsx'),/useState\(INITIAL_CLOCK_SECONDS\)/);
-  assert.match(read('src/App.tsx'),/useState<ClockSpeed>\('Frozen'\)/);
-  assert.doesNotMatch(read('src/App.tsx'),/>T0(?:\s|<)/);
-  assert.match(read('src/App.tsx'),/0 đơn vị/);
-  assert.match(read('src/App.tsx'),/không phải vật phẩm đã nhận/);
-  assert.match(read('src/MapScene.tsx'),/Tọa độ nguồn cố định/);
-});
-test('map enforces fog before markers, fog never disabled, and supports dragging',()=>{
-  const map=read('src/MapScene.tsx');
-  assert.match(map,/onPointerDown=\{pointerDown\}/);
-  assert.match(map,/onPointerMove=\{pointerMove\}/);
-  assert.match(map,/onPointerUp=\{pointerUp\}/);
-  assert.match(map,/addEventListener\('wheel',onWheel,\{passive:false\}\)/);
-  assert.match(map,/FogMask id=\{unique\} discs=\{discs\}/);
-  assert.match(map,/visibleMapSpots\(minutes,level,survey\)/);
-  assert.match(read('src/worldFeatures.ts'),/CANONICAL_CHEST_CACHES\.map/);
-  assert.match(read('src/worldFeatures.ts'),/CANONICAL_RESOURCES\.map/);
-  assert.match(map,/map-survey-switch/);
-  assert.doesNotMatch(map,/<button[^>]*>.*?Tắt sương mù/);
-});
-test('fire circle and time lighting are bound to rule-based data',()=>{
-  const map=read('src/MapScene.tsx');
-  assert.match(map,/const radius=heatRadiusM\(level\)/);
-  assert.match(map,/r=\{radius\}/);
-  assert.match(map,/dayOverlayOpacity\(minutes\)/);
-  assert.match(map,/const phase=dayPhase\(minutes\)/);
-  assert.match(map,/current\.amount\?\.toLocaleString/);
-  assert.match(map,/setViewMode\('local'\);setCx\(DEMO_CAMP/);
-  assert.match(read('src/worldFeatures.ts'),/hidden:/);
-});
-test('CI runs after each frontend push and declares midnight ICT cron',()=>{
-  const workflow=read('../.github/workflows/frontend-demo.yml');
-  assert.match(workflow,/push:/);
-  assert.match(workflow,/frontend\/\*\*/);
-  assert.match(workflow,/schedule:/);
-  assert.match(workflow,/cron: '0 17 \* \* \*'/);
-  assert.match(workflow,/npm run build/);
-  assert.match(workflow,/npm test/);
+const source = filesUnder('src').join('\n');
+
+test('all seven destinations are supplied through the shared player view', () => {
+  const client = read('src/game/GameClient.ts');
+  const screens = read('src/demoData.ts');
+  for (const id of ['overview', 'territory', 'map', 'inventory', 'forces', 'buildings', 'journal']) {
+    assert.match(screens, new RegExp(`id: '${id}'`));
+  }
+  assert.match(client, /export type PlayerView/);
+  assert.match(client, /screens: readonly/);
+  assert.match(read('src/App.tsx'), /screens=\{playerView\.screens\}/);
 });
 
-test('sidebar navigation scrolls independently of page body',()=>{
-  const css=read('src/styles.css');
-  assert.match(css,/\.sidebar-nav\s*\{[^}]*overflow-y:auto/);
-  assert.match(css,/\.sidebar-nav\s*\{[^}]*min-height:0/);
+test('selection and camera live above screens and the map consumes the shared projection', () => {
+  const app = read('src/App.tsx');
+  const map = read('src/MapScene.tsx');
+  assert.match(app, /useState<EntityRef\s*\|\s*null>/);
+  assert.match(app, /useState<SharedMapCamera>/);
+  assert.match(app, /event\.key!=='Escape'/);
+  assert.match(app, /setSelection\(null\)/);
+  assert.match(app, /sameEntityRef\(selectedEntity\?\.ref,site\.entityRef\)/);
+  assert.match(map, /visibleMap\.entities/);
+  assert.doesNotMatch(map, /from '\.\/canonicalGeography'/);
+  assert.match(map, /onPointerUp=\{finishPointer\}/);
+  assert.match(map, /onPointerCancel=\{cancelPointer\}/);
+  assert.match(map, /onLostPointerCapture=\{lostPointerCapture\}/);
+  assert.match(map, /zoomAtScreenPoint\(/);
+  assert.match(map, /scaleBar\(/);
+});
+
+test('demo-only restrictions apply to the adapter and unsupported commands are denied', () => {
+  const adapter = read('src/game/DemoGameClient.ts');
+  assert.match(adapter, /implements GameClient/);
+  assert.match(adapter, /accepted: false/);
+  assert.match(adapter, /demo-command-unsupported/);
+  assert.doesNotMatch(adapter, /\b(fetch|XMLHttpRequest|localStorage|sessionStorage|indexedDB|WebSocket)\b/);
+  assert.doesNotMatch(source, /Math\.random\s*\(/);
+  assert.match(read('src/game/GameClient.ts'), /export type CommandRequest/);
+  assert.match(read('src/game/GameClient.ts'), /export type CommandReceipt/);
+});
+
+test('presentation preserves the opening state and frozen display clock', () => {
+  const app = read('src/App.tsx');
+  assert.match(app, /useState\(INITIAL_CLOCK_SECONDS\)/);
+  assert.match(app, /useState<ClockSpeed>\('Frozen'\)/);
+  assert.match(app, /0 đơn vị/);
+  assert.match(app, /không phải vật phẩm đã nhận/);
+  assert.doesNotMatch(app, />T0(?:\s|<)/);
+});
+
+test('workflow lockfile install and dispatch trigger are explicit', () => {
+  const workflow = read('../.github/workflows/frontend-demo.yml');
+  assert.match(workflow, /workflow_dispatch:/);
+  assert.match(workflow, /npm ci --no-audit --no-fund/);
+  assert.match(workflow, /npm run build/);
+  assert.match(workflow, /npm test/);
+  assert.doesNotMatch(workflow, /\\n/);
+  assert.match(read('package-lock.json'), /"lockfileVersion"/);
+});
+
+test('sidebar navigation remains independently scrollable', () => {
+  assert.match(read('src/styles.css'), /\.sidebar-nav\s*\{[^}]*overflow-y:auto/);
+  assert.match(read('src/styles.css'), /\.sidebar-nav\s*\{[^}]*min-height:0/);
 });

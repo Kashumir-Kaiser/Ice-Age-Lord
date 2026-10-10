@@ -6,7 +6,8 @@ on:
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend-demo.yml'
-  # GitHub only executes scheduled workflows from the default branch.\n  # Kept here as a ready-to-enable schedule without modifying main.\n  # 17:00 UTC = 00:00 Asia/Ho_Chi_Minh (UTC+7), next calendar day.\n  schedule:\n    - cron: '0 17 * * *'\n  workflow_dispatch:
+  # Scheduled workflows run only from the default branch; keep them inactive on this feature branch.
+  workflow_dispatch:
 concurrency:
   group: frontend-prototype-${{ github.ref }}
   cancel-in-progress: true
@@ -21,7 +22,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install --no-audit --no-fund
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
       - run: npm run build
       - run: npm test
       - run: npx playwright install --with-deps chromium

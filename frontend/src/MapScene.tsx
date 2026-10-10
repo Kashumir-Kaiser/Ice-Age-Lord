@@ -1,357 +1,425 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import type { PointerEvent as ReactPointerEvent } from 'react';
-import { ArrowDownRight, Compass, Eye, EyeOff, Maximize2, Minus, Plus, Snowflake, Sun, Moon, ThermometerSun, MapPinned, Globe2 } from 'lucide-react';
-import { sites } from './demoData';
-import type { SiteKind } from './demoData';
-import {
-  dayOverlayOpacity, dayPhase, DEMO_CAMP, fireForm,
-  formatClock, formatDistance, heatRadiusM, shouldEnterWorldMap, visibilityDiscs, fogOpacityAt, WORLD_ZOOM,
-} from './mapModel';
-import { CANONICAL_SITES, CANONICAL_MAP_RADIUS_M, knownOpeningSites } from './canonicalGeography';
-import TerrainDetails from './TerrainDetails';
-import { visibleMapSpots, visibleMapViewport } from './worldFeatures';
+import type { Dispatch, PointerEvent as ReactPointerEvent, SetStateAction } from 'react';
+import { Compass, Eye, EyeOff, Globe2, Layers3, Maximize2, Minus, Moon, Mountain, Plus, Snowflake, Sun, ThermometerSun, TreePine } from 'lucide-react';
+import { dayOverlayOpacity, dayPhase, fireForm, formatClock, formatDistance, heatRadiusM, shouldEnterWorldMap, shouldReturnToLocalMap } from './mapModel';
+import type { EntityRef, EntityView, VisibleMap } from './game/GameClient';
+import { sameEntityRef } from './game/GameClient';
+import { clusterMarkers, collisionFreeLabels } from './map/clusterMarkers';
+import type { ScreenCluster } from './map/clusterMarkers';
+import { BASE_VIEW_HEIGHT_M, MAX_ZOOM, MIN_LOCAL_ZOOM, WORLD_HALF_SPAN_M, fitCircle, mapToScreen, scaleBar, screenToMap, viewBox, viewSize, worldToMap, zoomAtScreenPoint } from './map/camera';
+import type { CameraView, Rect, SharedMapCamera } from './map/camera';
+import { FogDefinitions, MapEntityGlyph, TerrainLayer } from './map/MapLayers';
 import './map-refinement.css';
 
-type Props = { selected: SiteKind; onSelect: (id: SiteKind) => void; compact?: boolean; clockSeconds:number; onClockChange:(seconds:number)=>void };
+type LayerState = { buildings: boolean; resources: boolean; discoveries: boolean };
+type PointerPoint = { x: number; y: number; pointerType: string };
+type Gesture =
+  | { kind: 'pan'; pointerId: number; start: PointerPoint; origin: CameraView; moved: boolean }
+  | { kind: 'pinch'; pointerIds: [number, number]; startDistance: number; anchor: { x: number; y: number }; origin: CameraView; moved: boolean };
+
+type Props = {
+  selectedEntity: EntityRef | null;
+  onSelectEntity: (ref: EntityRef) => void;
+  compact?: boolean;
+  clockSeconds: number;
+  onClockChange: (seconds: number) => void;
+  visibleMap: VisibleMap;
+  camera: SharedMapCamera;
+  onCameraChange: Dispatch<SetStateAction<SharedMapCamera>>;
+  fireLevel: number;
+  onFireLevelChange: (level: number) => void;
+  fireActive: boolean;
+  onFireActiveChange: (active: boolean) => void;
+  sourceAtlas: boolean;
+  onSourceAtlasChange: (active: boolean) => void;
+  showHeat: boolean;
+  onShowHeatChange: (active: boolean) => void;
+  showExploration: boolean;
+  onShowExplorationChange: (active: boolean) => void;
+  onOpenFullMap?: () => void;
+};
+
 const TIMES = [420, 720, 990, 1005, 1140, 60] as const;
 const LEVELS = [1, 2, 3, 4, 5, 6, 7, 10, 11, 16, 21, 26, 30] as const;
-const FIRST_SITES = sites.map(site=>({...site,renderY:-site.y}));
-const SNOW_PARTICLES=Array.from({length:44},(_,i)=>({
-  x:((i*131+37)%900)-450,
-  y:((i*179+13)%650)-325,
-  r:i%4===0?1.3:.75,
-  delay:(i%15)*-.55,
+const SNOW_PARTICLES = Array.from({ length: 44 }, (_, i) => ({
+  x: (i * 131 + 37) % 900,
+  y: (i * 179 + 13) % 650,
+  r: i % 4 === 0 ? 1.3 : .75,
+  delay: (i % 15) * -.55,
 }));
-/** Exact positions from the LL01 registry, not generated geographical features.
- * Snow and shading are aesthetic cartography; no coastlines, hills, roads or biome
- * polygon boundaries are claimed where the source supplies only point anchors. */
-function Terrain({id,world}:{id:string;world:boolean}) {
-  const pines=CANONICAL_SITES.find(s=>s.id==='SITE-LL01-040')!;
-  const stone=CANONICAL_SITES.find(s=>s.id==='SITE-LL01-041')!;
-  const ford=CANONICAL_SITES.find(s=>s.id==='SITE-LL01-042')!;
-  return <>
-    <defs>
-      <radialGradient id={`${id}-ground`}><stop stopColor="#88aab0"/><stop offset=".4" stopColor="#577d89"/><stop offset="1" stopColor="#23465b"/></radialGradient>
-      <radialGradient id={`${id}-landshade`}><stop stopColor="#c7dce0" stopOpacity=".36"/><stop offset=".6" stopColor="#a2c2cb" stopOpacity=".12"/><stop offset="1" stopColor="#6b9ca9" stopOpacity="0"/></radialGradient>
-      <radialGradient id={`${id}-treezone`}><stop stopColor="#184149" stopOpacity=".7"/><stop offset="1" stopColor="#254a53" stopOpacity="0"/></radialGradient>
-      <radialGradient id={`${id}-rockzone`}><stop stopColor="#293c4b" stopOpacity=".85"/><stop offset="1" stopColor="#718e9d" stopOpacity="0"/></radialGradient>
-      <radialGradient id={`${id}-icewater`}><stop stopColor="#b8e3ec" stopOpacity=".45"/><stop offset="1" stopColor="#588f9b" stopOpacity="0"/></radialGradient>
-      <pattern id={`${id}-frost`} width="58" height="47" patternUnits="userSpaceOnUse">
-        <path d="m4 9 6-2m21 28 5-3m-17-12 3 4" stroke="#e4f3ed" strokeOpacity=".17" strokeWidth=".9"/>
-        <circle cx="16" cy="16" r=".9" fill="#eef9f5" opacity=".35"/>
-      </pattern>
-      <pattern id={`${id}-cart-grid`} width="10000" height="10000" patternUnits="userSpaceOnUse">
-        <path d="M10000 0H0V10000" fill="none" stroke="#a1c1ce" strokeWidth="35" strokeOpacity=".28"/>
-      </pattern>
-    </defs>
-    <rect x="-300000" y="-300000" width="600000" height="600000" fill="#112b3c"/>
-    <circle r={CANONICAL_MAP_RADIUS_M} fill={`url(#${id}-ground)`}/>
-    <circle r={CANONICAL_MAP_RADIUS_M} fill={`url(#${id}-cart-grid)`}/>
-    <circle r={CANONICAL_MAP_RADIUS_M} fill="none" stroke="#8cb7bb" strokeWidth="200" strokeOpacity=".35" strokeDasharray="950 750"/>
-    <TerrainDetails world={world}/>
-    {/* Regions radiate out from exact source point anchors; their artwork boundaries are schematic. */}
-    <ellipse cx={pines.x} cy={-pines.y} rx="1600" ry="1900" fill={`url(#${id}-treezone)`}/>
-    <ellipse cx={stone.x} cy={-stone.y} rx="1300" ry="1100" fill={`url(#${id}-rockzone)`}/>
-    <ellipse cx={ford.x} cy={-ford.y} rx="2100" ry="1200" fill={`url(#${id}-icewater)`}/>
-    <circle r="1300" fill={`url(#${id}-landshade)`}/>
-    {!world&&<>
-      <rect x="-1400" y="-1200" width="2800" height="2400" fill={`url(#${id}-frost)`}/>
-      <g opacity=".22" fill="none" stroke="#e1f1eb" strokeLinecap="round">
-        <path d="M-1200-140Q-650-290-300-120T480-150 1300-100" strokeWidth="22"/>
-        <path d="M-1160-117Q-640-268-295-101T485-125 1320-80" strokeWidth="2.5"/>
-        <path d="M-950 490Q-600 360-260 485T430 380 1190 390" strokeWidth="12"/>
-      </g>
-      <g opacity=".24" stroke="#b8d0ca" strokeWidth="2" fill="none">
-        <path d="M-78-42q51 16 90-31m-42 129 64 42m-77-17 20 29"/>
-        <path d="M-290 200q23-34 55-29m-22 32 32 22"/>
-      </g>
-    </>}
-    {world&&[3000,10000,25000,60000,96000].map(r=><circle key={r} r={r} fill="none"
-      stroke="#bdcdd0" strokeWidth="135" strokeOpacity=".08" strokeDasharray="350 550"/>)}
-  </>;
-}
-function MarkerGraphic({kind}:{kind:string}) {
-  if(kind==='fire') return <g><path d="m-11 10 22 0m-19 4 16-6" stroke="#7b5142" strokeWidth="4" strokeLinecap="round"/><path d="M-1 12C-19-1-3-14-2-22 0-12 10-13 9-23c13 16 10 25-2 35Z" fill="#eaa05d" stroke="#ffe3a3" strokeWidth="1.5"/><path d="M1 10Q-5 0 3-11Q12 2 1 10" fill="#fff0b4"/></g>;
-  if(kind==='house') return <g><path d="m-15-1 15-13L15-1v17h-30Z" fill="#617b84" stroke="#d4e1dd" strokeWidth="1.5"/><path d="M-19 1 0-18 19 1" fill="none" stroke="#d7e9e3" strokeWidth="4"/><path d="M-4 16V4h8v12M6-11l-8 8 5 5-3 6" fill="none" stroke="#2a404b" strokeWidth="2.5"/></g>;
-  if(kind==='tomb') return <g><path d="M-15 17V-2a15 15 0 0 1 30 0v19Z" fill="#465b6c" stroke="#c7d7d9" strokeWidth="2"/><path d="M-8 16V-2a8 8 0 0 1 16 0v18Z" fill="#1b3140"/><path d="M0-8V10M-7 0h14" stroke="#bdd6d8" strokeWidth="2.5"/><path d="M-19 19h38" stroke="#c1d8d6" strokeWidth="3"/></g>;
-  if(kind==='supply'||kind==='chest') return <g><rect x="-15" y="-9" width="30" height="24" rx="2" fill="#785a43" stroke="#ead09f" strokeWidth="2"/><path d="M-16-8Q-14-22 0-22T16-8Z" fill="#b18b5c" stroke="#e8d39f" strokeWidth="2"/><path d="M-10-9v24M10-9v24M-15 0h30" stroke="#d5b17a" strokeWidth="3"/><rect x="-3" y="-3" width="6" height="10" fill="#ffe1a1" stroke="#926b45"/></g>;
-  if(kind==='wood') return <g><path d="m0-20-13 18h6L-16 9h9l-5 10h24L7 9h9L7-2h6Z" fill="#305a4f" stroke="#b3d4bd" strokeWidth="2"/><path d="M0-20V19m-10-9 10-9 10 9" fill="none" stroke="#d9eee0" strokeWidth="2"/></g>;
-  if(kind==='stone') return <g><path d="m-18 15 7-21L0-19 11-9 19 15Z" fill="#7895a2" stroke="#e0eeea" strokeWidth="2"/><path d="M0-19-2 5l-16 10m16-10 21 10M-11-6 9-7" fill="none" stroke="#b5d4d5" strokeWidth="2"/></g>;
-  if(kind==='ore') return <g><path d="m-18 13 8-24 12-11 15 15 4 20Z" fill="#516a79" stroke="#a6ccd4" strokeWidth="2"/><path d="m-10-11 12 13v-24m0 24 15-9M2 2l-1 11" stroke="#84d4e4" strokeWidth="3"/><path d="m-2-4 7 8" stroke="#d1f3ef" strokeWidth="3"/></g>;
-  if(kind==='site') return <g><path d="M-16 15V-8l7-8 11 8 8-13 9 7V15Z" fill="#637985" stroke="#d2e3db" strokeWidth="1.6"/><path d="M-21 15h44M-7 15v-13h8v13m10-20-7 4" fill="none" stroke="#9ebcbe" strokeWidth="3"/></g>;
-  if(kind==='salt') return <g><path d="m-16 14 6-18 10-14 10 10 8 22Z" fill="#bed7ce" stroke="#f8efe0" strokeWidth="2"/><path d="m0-18 0 31m-10-17 10 5 10-9M-16 14 0 1l18 13" fill="none" stroke="#e5f0e1" strokeWidth="2"/><path d="m-5-12 5-6 6 6" fill="none" stroke="#fff9e8" strokeWidth="2"/></g>;
-  if(kind==='herbs') return <g><path d="M0 18V-13m0 24q-12-3-12-18Q1-5 0 11Zm0-10q5-18 16-20 1 17-16 20" fill="#618e7f" stroke="#d2e8d8" strokeWidth="2"/><path d="m-15 18 30 0" stroke="#d3e5d8" strokeWidth="2"/></g>;
-  return <g><path d="m-18 9 5-16 18-11 15 14-7 19-20 5Z" fill="#93c9d5" stroke="#e6f9f8" strokeWidth="2"/><path d="m5-18-2 16 17-2M3-2-7 20m10-22-21 11" fill="none" stroke="#d2ffff" strokeWidth="2"/></g>;
-}
-function FogMask({id,discs,viewport}:{id:string;discs:readonly {x:number;y:number;clear:number;fade:number}[];viewport:{x:number;y:number;width:number;height:number}}) {
-  return <defs>
-    {discs.map((disc,i)=><radialGradient id={`${id}-reveal-${i}`} key={i}>
-      <stop offset="0%" stopColor="black"/>
-      <stop offset={`${100*disc.clear/disc.fade}%`} stopColor="black"/>
-      <stop offset="87%" stopColor="#aaa"/>
-      <stop offset="100%" stopColor="white"/>
-    </radialGradient>)}
-    {discs.map((disc,i)=><radialGradient id={`${id}-known-${i}`} key={`known-${i}`}>
-      <stop offset="0%" stopColor="white"/>
-      <stop offset={`${100*disc.clear/disc.fade}%`} stopColor="white"/>
-      <stop offset="87%" stopColor="#555"/>
-      <stop offset="100%" stopColor="black"/>
-    </radialGradient>)}
-    <mask id={`${id}-fog-mask`} maskUnits="userSpaceOnUse" {...viewport}>
-      <rect {...viewport} fill="white"/>
-      {discs.map((disc,i)=><circle key={i} cx={disc.x} cy={-disc.y} r={disc.fade} fill={`url(#${id}-reveal-${i})`}/>)}
-    </mask>
-    <mask id={`${id}-known-mask`} maskUnits="userSpaceOnUse" {...viewport}>
-      <rect {...viewport} fill="black"/>
-      {discs.map((disc,i)=><circle key={i} cx={disc.x} cy={-disc.y} r={disc.fade} fill={`url(#${id}-known-${i})`}/>)}
-    </mask>
-    <radialGradient id={`${id}-heat`}>
-      <stop stopColor="#ffd58b" stopOpacity=".5"/><stop offset=".75" stopColor="#e9ab5a" stopOpacity=".25"/>
-      <stop offset="1" stopColor="#f5bf76" stopOpacity=".12"/>
-    </radialGradient>
-    <radialGradient id={`${id}-halo`}>
-      <stop stopColor="#e5eef0" stopOpacity="0"/><stop offset=".65" stopColor="#d5e6e9" stopOpacity="0"/>
-      <stop offset=".87" stopColor="#d7eef1" stopOpacity=".065"/><stop offset="1" stopColor="#c5dce4" stopOpacity="0"/>
-    </radialGradient>
-  </defs>;
-}
-export default function MapScene({selected,onSelect,compact=false,clockSeconds,onClockChange}:Props){
-  const unique=useId().replace(/[^a-zA-Z0-9]/g,'')||'map';
-  const root=useRef<HTMLDivElement>(null);
-  const svgRef=useRef<SVGSVGElement>(null);
-  const drag=useRef<{x:number;y:number;cx:number;cy:number;travel:number}|null>(null);
-  const ignoreNextClick=useRef(false);
-  const [aspect,setAspect]=useState(1.65);
-  const [zoom,setZoom]=useState(1);
-  const [viewMode,setViewMode]=useState<'local'|'world'>('local');
-  const [cx,setCx]=useState(0);
-  const [cy,setCy]=useState(0);
-  const [survey,setSurvey]=useState(false);
-  const [labels,setLabels]=useState(true);
-  const minutes=Math.floor((clockSeconds%86400)/60);
-  const [level,setLevel]=useState(1);
-  const [inspected,setInspected]=useState<string|null>(null);
-  const radius=heatRadiusM(level);
-  const phase=dayPhase(minutes);
-  const viewHeight=172/zoom;
-  const viewWidth=viewHeight*aspect;
-  const viewport={x:cx-viewWidth/2,y:cy-viewHeight/2,width:viewWidth,height:viewHeight};
-  const vb=`${viewport.x} ${viewport.y} ${viewWidth} ${viewHeight}`;
-  const [mapHeight,setMapHeight]=useState(550);
-  const discs=useMemo(()=>visibilityDiscs(minutes,level,survey),[minutes,level,survey]);
-  // Firelight reveals the physical area. Model-generated vegetation and surface
-  // relics are visible without debug. Buried/sealed locations remain hidden.
-  const visibleSpots=useMemo(()=>visibleMapSpots(minutes,level,survey),[minutes,level,survey]);
-  const markers=useMemo(()=>{
-    const visible=visibleMapViewport(visibleSpots,cx,cy,viewWidth,viewHeight);
-    if(zoom>=.075)return visible.map(spot=>({...spot,count:1}));
-    // Spatial grouping changes visualization only, never world-resource instances.
-    const bin=Math.max(1,viewHeight/Math.max(mapHeight,100)*32);
-    const groups=new Map<string,typeof visible>();
-    for(const point of visible){
-      const key=point.kind+':'+Math.floor(point.x/bin)+':'+Math.floor(point.y/bin);
-      const group=groups.get(key);
-      if(group)group.push(point);else groups.set(key,[point]);
-    }
-    return [...groups.values()].map(points=>{
-      const first=points.find(p=>p.provenance==='canonical')??points[0];
-      const count=points.length;
-      const amount=first.kind==='chest'||first.kind==='site'?null:
-        points.reduce((total,p)=>total+(p.amount??0),0);
-      return {...first,count,amount,label:count>1?first.label+' ×'+count:first.label};
-    });
-  },[visibleSpots,cx,cy,viewWidth,viewHeight,zoom,mapHeight]);
-  const current=markers.find(m=>m.id===inspected);
-  const world=viewMode==='world';
-  const knownSites=knownOpeningSites();
+const entityKey = (entity: EntityView) => entity.ref.type + ':' + entity.ref.id;
+const localPoint = (event: ReactPointerEvent<SVGSVGElement>): PointerPoint => {
+  const rect = event.currentTarget.getBoundingClientRect();
+  return { x: event.clientX - rect.left, y: event.clientY - rect.top, pointerType: event.pointerType };
+};
+const distance = (a: PointerPoint, b: PointerPoint) => Math.hypot(a.x - b.x, a.y - b.y);
+const midpoint = (a: PointerPoint, b: PointerPoint): PointerPoint => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, pointerType: 'touch' });
 
-  useEffect(()=>{
-    if(!root.current) return;
-    const observer=new ResizeObserver(entries=>{
-      const {width,height}=entries[0].contentRect;
-      if(width>0 && height>0){setAspect(width/height);setMapHeight(height);}
+export default function MapScene({
+  selectedEntity, onSelectEntity, compact = false, clockSeconds, onClockChange, visibleMap, camera, onCameraChange,
+  fireLevel, onFireLevelChange, fireActive, onFireActiveChange, sourceAtlas, onSourceAtlasChange,
+  showHeat, onShowHeatChange, showExploration, onShowExplorationChange, onOpenFullMap,
+}: Props) {
+  const unique = useId().replace(/[^a-zA-Z0-9]/g, '') || 'map';
+  const rootRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const pointers = useRef(new Map<number, PointerPoint>());
+  const gesture = useRef<Gesture | null>(null);
+  const ignoreNextClick = useRef(false);
+  const [size, setSize] = useState({ width: 880, height: 550 });
+  const [labels, setLabels] = useState(true);
+  const [layers, setLayers] = useState<LayerState>({ buildings: true, resources: true, discoveries: true });
+  const [clusterMembers, setClusterMembers] = useState<string[] | null>(null);
+
+  const minutes = Math.floor((clockSeconds % 86400) / 60);
+  const phase = dayPhase(minutes);
+  const radius = heatRadiusM(fireLevel, fireActive);
+  const world = camera.mode === 'world';
+  const activeCamera = world ? camera.world : camera.local;
+  const viewHeight = BASE_VIEW_HEIGHT_M / Math.max(MIN_LOCAL_ZOOM, activeCamera.zoom);
+  const viewport = useMemo(() => viewBox(activeCamera, size.width, size.height), [activeCamera.x, activeCamera.y, activeCamera.zoom, size.width, size.height]);
+  const screenRect: Rect = useMemo(() => ({ x: 0, y: 0, width: size.width, height: size.height }), [size.width, size.height]);
+  const currentSightOpacity = dayOverlayOpacity(minutes);
+
+  useEffect(() => {
+    const node = rootRef.current;
+    if (!node) return;
+    const observer = new ResizeObserver(entries => {
+      const box = entries[0]?.contentRect;
+      if (box && box.width > 0 && box.height > 0) setSize({ width: box.width, height: box.height });
     });
-    observer.observe(root.current);
-    return ()=>observer.disconnect();
-  },[]);
-  const enterWorld=()=>{setViewMode('world');setZoom(WORLD_ZOOM);setCx(0);setCy(0);setInspected(null);};
-  const enterLocal=()=>{setViewMode('local');setZoom(1);setCx(0);setCy(0);setInspected(null);};
-  const setZoomBound=(value:number,allowWorldTransition:boolean)=>{
-    const next=Math.max(WORLD_ZOOM*.8,Math.min(6,value));
-    if(allowWorldTransition && viewMode==='local' && next<zoom && shouldEnterWorldMap(next,radius)){
-      enterWorld();return;
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  const filteredEntities = useMemo(() => visibleMap.entities.filter(entity => {
+    if (entity.ref.type === 'site' && !layers.buildings) return false;
+    if ((entity.ref.type === 'resource' || entity.ref.type === 'cache') && !layers.resources) return false;
+    if (entity.knowledge === 'remembered' && !layers.discoveries) return false;
+    return true;
+  }), [visibleMap.entities, layers]);
+  const screenMarkers = useMemo(() => filteredEntities.filter(entity => Number.isFinite(entity.x) && Number.isFinite(entity.y)).map(entity => {
+    const mapPoint = worldToMap({ x: entity.x!, y: entity.y! });
+    const screen = mapToScreen(mapPoint, activeCamera, screenRect);
+    return { id: entityKey(entity), kind: entity.iconKind, value: entity, x: screen.x, y: screen.y, worldX: entity.x!, worldY: entity.y! };
+  }).filter(marker => marker.x >= -64 && marker.x <= size.width + 64 && marker.y >= -64 && marker.y <= size.height + 64), [filteredEntities, activeCamera, screenRect.width, screenRect.height, size.width, size.height]);
+  const clustered = useMemo(() => clusterMarkers(screenMarkers, 58), [screenMarkers]);
+  const visibleLabelIds = useMemo(() => {
+    const candidates = filteredEntities.filter(entity => Number.isFinite(entity.x) && Number.isFinite(entity.y)).map(entity => {
+      const point = mapToScreen(worldToMap({ x: entity.x!, y: entity.y! }), activeCamera, screenRect);
+      const selected = sameEntityRef(entity.ref, selectedEntity);
+      return {
+        id: entityKey(entity),
+        text: entity.label,
+        x: point.x,
+        y: point.y + 34,
+        priority: selected ? 100 : entity.ref.type === 'site' ? 60 : entity.knowledge === 'remembered' ? 15 : 35,
+      };
+    });
+    return collisionFreeLabels(candidates);
+  }, [filteredEntities, activeCamera, screenRect.width, screenRect.height, selectedEntity]);
+  const clusterEntityByKey = useMemo(() => new Map(filteredEntities.map(entity => [entityKey(entity), entity])), [filteredEntities]);
+  const expandedMembers = clusterMembers?.map(key => clusterEntityByKey.get(key)).filter((entity): entity is EntityView => Boolean(entity)) ?? [];
+  const scale = Math.max(.08, Math.min(200, viewHeight / Math.max(1, size.height) * 1.12));
+  const metresPerPixel = viewHeight / Math.max(1, size.height);
+  const scaleMeasure = scaleBar(metresPerPixel);
+  const scaleDistance = scaleMeasure.distance;
+  const scaleWidth = scaleMeasure.pixels;
+  const allLayers = filteredEntities;
+
+  const withZoom = (next: CameraView, oldZoom = activeCamera.zoom) => {
+    onCameraChange(previous => {
+      const mode = previous.mode;
+      if (mode === 'local' && next.zoom < oldZoom && shouldEnterWorldMap(next.zoom, radius)) {
+        return { ...previous, mode: 'world', world: next };
+      }
+      if (mode === 'world' && next.zoom > oldZoom && shouldReturnToLocalMap(next.zoom)) {
+        return { ...previous, mode: 'local', local: next };
+      }
+      return mode === 'local' ? { ...previous, local: next } : { ...previous, world: next };
+    });
+  };
+
+  const zoomBy = (factor: number) => {
+    const nextZoom = Math.max(MIN_LOCAL_ZOOM, Math.min(MAX_ZOOM, activeCamera.zoom * factor));
+    withZoom({ ...activeCamera, zoom: nextZoom });
+  };
+  const enterWorldOverview = () => {
+    const fitted = fitCircle(WORLD_HALF_SPAN_M, screenRect, 56);
+    onCameraChange(previous => ({ ...previous, mode: 'world', world: fitted }));
+  };
+  const returnToLocal = () => onCameraChange(previous => ({ ...previous, mode: 'local', local: previous.local }));
+  const resetToCamp = () => onCameraChange(previous => ({ ...previous, mode: 'local', local: { x: 0, y: 0, zoom: 1 } }));
+  const fitHeat = () => {
+    const fitted = fitCircle(radius, screenRect, 56);
+    onCameraChange(previous => ({ ...previous, mode: 'local', local: fitted }));
+  };
+
+  const pointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
+    if (event.button !== 0 && event.pointerType !== 'touch') return;
+    const point = localPoint(event);
+    pointers.current.set(event.pointerId, point);
+    const activeTouches = [...pointers.current.entries()].filter(([, value]) => value.pointerType === 'touch');
+    if (activeTouches.length >= 2) {
+      const first = activeTouches[activeTouches.length - 2];
+      const second = activeTouches[activeTouches.length - 1];
+      const center = midpoint(first[1], second[1]);
+      gesture.current = {
+        kind: 'pinch',
+        pointerIds: [first[0], second[0]],
+        startDistance: Math.max(1, distance(first[1], second[1])),
+        anchor: screenToMap(center, activeCamera, screenRect),
+        origin: activeCamera,
+        moved: false,
+      };
+    } else if (!gesture.current) {
+      gesture.current = { kind: 'pan', pointerId: event.pointerId, start: point, origin: activeCamera, moved: false };
+      const target = event.target;
+      const onMarker = target instanceof Element && Boolean(target.closest('[role="button"]'));
+      if (!onMarker) {
+        try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* Pointer may have ended during the gesture start. */ }
+      }
     }
-    setZoom(next);
   };
-  const zoomBy=(factor:number)=>{
-    if(viewMode==='world' && factor>1){enterLocal();return;}
-    setZoomBound(zoom*factor,factor<1);
+
+  const pointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
+    const point = localPoint(event);
+    if (!pointers.current.has(event.pointerId)) return;
+    pointers.current.set(event.pointerId, point);
+    const activeGesture = gesture.current;
+    const rect = event.currentTarget.getBoundingClientRect();
+    if (activeGesture?.kind === 'pinch') {
+      const [firstId, secondId] = activeGesture.pointerIds;
+      const first = pointers.current.get(firstId), second = pointers.current.get(secondId);
+      if (!first || !second) return;
+      try {
+        if (!event.currentTarget.hasPointerCapture(firstId)) event.currentTarget.setPointerCapture(firstId);
+        if (!event.currentTarget.hasPointerCapture(secondId)) event.currentTarget.setPointerCapture(secondId);
+      } catch { /* A touch may have been canceled by the platform. */ }
+      const center = midpoint(first, second);
+      const nextZoom = Math.max(.0007, Math.min(6, activeGesture.origin.zoom * distance(first, second) / activeGesture.startDistance));
+      const nextSize = viewSize({ ...activeGesture.origin, zoom: nextZoom }, rect.width, rect.height);
+      const ratioX = center.x / rect.width, ratioY = center.y / rect.height;
+      const next = {
+        zoom: nextZoom,
+        x: activeGesture.anchor.x - (ratioX - .5) * nextSize.width,
+        y: activeGesture.anchor.y - (ratioY - .5) * nextSize.height,
+      };
+      activeGesture.moved = true;
+      withZoom(next, activeGesture.origin.zoom);
+      return;
+    }
+    if (activeGesture?.kind !== 'pan' || activeGesture.pointerId !== event.pointerId) return;
+    const dx = point.x - activeGesture.start.x, dy = point.y - activeGesture.start.y;
+    if (!activeGesture.moved && Math.hypot(dx, dy) <= 5) return;
+    activeGesture.moved = true;
+    try { if (!event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.setPointerCapture(event.pointerId); } catch { /* Pointer may have left the surface. */ }
+    withZoom({
+      ...activeGesture.origin,
+      x: activeGesture.origin.x - dx * (viewport.width / Math.max(1, rect.width)),
+      y: activeGesture.origin.y - dy * (viewport.height / Math.max(1, rect.height)),
+    }, activeGesture.origin.zoom);
   };
-  const reset=()=>{viewMode==='world'?enterWorld():enterLocal();};
-  const fitHeat=()=>{
-    // Explicit camera framing MUST stay local, regardless of how large radius becomes.
-    setViewMode('local');setCx(DEMO_CAMP.x);setCy(-DEMO_CAMP.y);
-    setZoom(Math.max(WORLD_ZOOM*.8,Math.min(6,172/(Math.max(80,radius*2.5)))));
-    setInspected(null);
+
+  const finishPointer = (event: ReactPointerEvent<SVGSVGElement>) => {
+    const activeGesture = gesture.current;
+    if (activeGesture?.kind === 'pan' && activeGesture.pointerId === event.pointerId && activeGesture.moved) ignoreNextClick.current = true;
+    if (activeGesture?.kind === 'pinch' && activeGesture.pointerIds.includes(event.pointerId) && activeGesture.moved) ignoreNextClick.current = true;
+    pointers.current.delete(event.pointerId);
+    try { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* already released */ }
+    if (activeGesture?.kind === 'pinch' && pointers.current.size === 1) {
+      const [remainingId, remainingPoint] = [...pointers.current.entries()][0];
+      gesture.current = { kind: 'pan', pointerId: remainingId, start: remainingPoint, origin: activeCamera, moved: true };
+    } else if (pointers.current.size === 0 || activeGesture?.kind === 'pinch') {
+      gesture.current = null;
+    } else if (activeGesture?.kind === 'pan' && activeGesture.pointerId === event.pointerId) {
+      gesture.current = null;
+    }
+    if (ignoreNextClick.current) window.setTimeout(() => { ignoreNextClick.current = false; }, 0);
   };
-  const pointerDown=(e:ReactPointerEvent<SVGSVGElement>)=>{
-    if(e.button!==0) return;
-    drag.current={x:e.clientX,y:e.clientY,cx,cy,travel:0};
-    ignoreNextClick.current=false;
-    // Do not capture on pointer-down: small clicks must reach site/resource icons.
-    // Capture only after the gesture is clearly a drag.
+  const cancelPointer = (event: ReactPointerEvent<SVGSVGElement>) => {
+    pointers.current.clear();
+    gesture.current = null;
+    ignoreNextClick.current = false;
+    try { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* already released */ }
   };
-  const pointerMove=(e:ReactPointerEvent<SVGSVGElement>)=>{
-    if(!drag.current)return;
-    const rect=e.currentTarget.getBoundingClientRect();
-    const dx=e.clientX-drag.current.x,dy=e.clientY-drag.current.y;
-    drag.current.travel=Math.max(drag.current.travel,Math.hypot(dx,dy));
-    if(drag.current.travel<=5) return; // click tolerance in CSS pixels
-    if(!e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.setPointerCapture(e.pointerId);
-    setCx(drag.current.cx-dx*viewWidth/rect.width);
-    setCy(drag.current.cy-dy*viewHeight/rect.height);
+  const lostPointerCapture = (event: ReactPointerEvent<SVGSVGElement>) => {
+    if (pointers.current.has(event.pointerId)) {
+      pointers.current.clear();
+      gesture.current = null;
+      ignoreNextClick.current = false;
+    }
   };
-  const pointerUp=(e:ReactPointerEvent<SVGSVGElement>)=>{
-    if(drag.current && drag.current.travel>5) ignoreNextClick.current=true;
-    drag.current=null;
-    if(e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+  const clickCapture = (event: React.MouseEvent<SVGSVGElement>) => {
+    if (!ignoreNextClick.current) return;
+    ignoreNextClick.current = false;
+    event.preventDefault();
+    event.stopPropagation();
   };
-  // React 18 installs passive wheel handlers. Native non-passive listener is required
-  // to stop browser-page scrolling while the cursor is over the map viewport.
-  useEffect(()=>{
-    const node=root.current;
-    if(!node)return;
-    const onWheel=(e:WheelEvent)=>{
-      if(e.target instanceof Element&&e.target.closest('button,select,option'))return;
-      e.preventDefault();
-      const rect=svgRef.current?.getBoundingClientRect();
-      if(!rect||!rect.width||!rect.height)return;
-      if(viewMode==='world'&&e.deltaY<0){enterLocal();return;}
-      const factor=e.deltaY<0?1.2:1/1.2;
-      const next=Math.max(WORLD_ZOOM*.85,Math.min(6,zoom*factor));
-      if(viewMode==='local'&&e.deltaY>0&&shouldEnterWorldMap(next,radius)){enterWorld();return;}
-      const x=(e.clientX-rect.left)/rect.width-.5;
-      const y=(e.clientY-rect.top)/rect.height-.5;
-      const nextHeight=172/next;
-      setCx(c=>c+x*(viewWidth-nextHeight*aspect));
-      setCy(c=>c+y*(viewHeight-nextHeight));
-      setZoom(next);
+
+  useEffect(() => {
+    const node = rootRef.current;
+    if (!node) return;
+    const onWheel = (event: WheelEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element) || !target.closest('svg.terrain-svg--deep')) return;
+      if (target.closest('button,select,input,textarea,[contenteditable="true"]')) return;
+      const rect = svgRef.current?.getBoundingClientRect();
+      if (!rect || !rect.width || !rect.height) return;
+      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? rect.height : 1;
+      const delta = Math.max(-480, Math.min(480, event.deltaY * unit));
+      const factor = Math.exp(-delta * .00145);
+      const nextZoom = Math.max(MIN_LOCAL_ZOOM, Math.min(MAX_ZOOM, activeCamera.zoom * factor));
+      const localRect: Rect = { x: 0, y: 0, width: rect.width, height: rect.height };
+      const pointer = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+      const next = zoomAtScreenPoint(activeCamera, localRect, pointer, nextZoom);
+      event.preventDefault();
+      withZoom(next);
     };
-    node.addEventListener('wheel',onWheel,{passive:false});
-    return ()=>node.removeEventListener('wheel',onWheel);
-  },[zoom,viewMode,radius,viewWidth,viewHeight,aspect]);
-  const inspectSite=(id:SiteKind)=>{
-    if(ignoreNextClick.current){ignoreNextClick.current=false;return;}
-    setInspected(null);onSelect(id);
+    node.addEventListener('wheel', onWheel, { passive: false });
+    return () => node.removeEventListener('wheel', onWheel);
+  }, [activeCamera, radius, viewport.width, viewport.height]);
+
+  const keyDown = (event: React.KeyboardEvent<SVGSVGElement>) => {
+    const target = event.target;
+    if (target instanceof Element && target.closest('input,textarea,select,[contenteditable="true"]')) return;
+    const step = viewHeight * .12;
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      event.preventDefault();
+      const x = event.key === 'ArrowLeft' ? step : event.key === 'ArrowRight' ? -step : 0;
+      const y = event.key === 'ArrowUp' ? step : event.key === 'ArrowDown' ? -step : 0;
+      onCameraChange(previous => previous.mode === 'local'
+        ? { ...previous, local: { ...previous.local, x: previous.local.x + x, y: previous.local.y + y } }
+        : { ...previous, world: { ...previous.world, x: previous.world.x + x, y: previous.world.y + y } });
+    } else if (event.key === '+' || event.key === '=') {
+      event.preventDefault();
+      zoomBy(1.2);
+    } else if (event.key === '-') {
+      event.preventDefault();
+      zoomBy(1 / 1.2);
+    }
   };
-  const inspectMarker=(id:string)=>{
-    if(ignoreNextClick.current){ignoreNextClick.current=false;return;}
-    setInspected(id);
+
+  const selectedText = selectedEntity ? `${selectedEntity.type}:${selectedEntity.id}` : '';
+  const labelFor = (entity: EntityView) => entity.knowledge === 'remembered' || !entity.currentSight
+    ? 'Vị trí đã biết lần cuối: ' + entity.name
+    : 'Kiểm tra ' + entity.name;
+  const changeLayer = (key: keyof LayerState) => setLayers(current => ({ ...current, [key]: !current[key] }));
+  const clusterList = (cluster: ScreenCluster<EntityView>) => {
+    if (cluster.type !== 'cluster') return;
+    setClusterMembers(cluster.memberIds);
   };
-  const clearSurvey=()=>{
-    setSurvey(s=>!s);setInspected(null);
-  };
-  const allIcons=Math.max(.17,Math.min(600,viewHeight/Math.max(100,mapHeight)*.66));
-  return <div className={`map-experience ${compact?'map-experience--compact':''}`}>
-    {!compact&&<div className="map-toolbar">
+  const toggleMode = () => world ? returnToLocal() : enterWorldOverview();
+
+  return <div className={'map-experience' + (compact ? ' map-experience--compact' : '')}>
+    {!compact && <div className="map-toolbar">
       <div className="map-toolbar-main">
         <span className="map-eyebrow"><Snowflake size={14}/> BĂNG NGUYÊN · BẢN XEM THỬ</span>
-        <span className="map-time-flag"><span className={`map-phase-symbol phase-${phase}`}>{phase==='day'?<Sun size={15}/>:<Moon size={15}/>}</span>{formatClock(minutes)} · {phase==='day'?'Ban ngày':phase==='twilight'?'Chạng vạng':'Ban đêm'}</span>
+        <span className="map-time-flag"><span className={'map-phase-symbol phase-' + phase}>{phase === 'day' ? <Sun size={15}/> : <Moon size={15}/>}</span>{formatClock(minutes)} · {phase === 'day' ? 'Ban ngày' : phase === 'twilight' ? 'Chạng vạng' : 'Ban đêm'}</span>
+        <span className="map-revision" data-testid="map-state-revision">Bản xem {visibleMap.revision}</span>
       </div>
-      <div className="map-toolbar-actions">
-        <label className="map-control-label" htmlFor={`${unique}-time`}>Thử ánh sáng</label>
-        <select id={`${unique}-time`} value={TIMES.includes(minutes as typeof TIMES[number])?minutes:-1} onChange={e=>onClockChange(Math.floor(clockSeconds/86400)*86400+Number(e.target.value)*60)} aria-label="Mô phỏng giờ hiển thị">
-          {!TIMES.includes(minutes as typeof TIMES[number])&&<option value={-1}>{formatClock(minutes)}</option>}
-          {TIMES.map(t=><option value={t} key={t}>{formatClock(t)}</option>)}
-        </select>
-        <label className="map-control-label" htmlFor={`${unique}-level`}>Xem vùng nhiệt</label>
-        <select id={`${unique}-level`} value={level} onChange={e=>setLevel(Number(e.target.value))} aria-label="Xem thử vùng nhiệt theo cấp">
-          {LEVELS.map(l=><option value={l} key={l}>Cấp {l}</option>)}
-        </select>
-        <button className="map-survey-switch" onClick={()=>setLabels(v=>!v)} aria-pressed={labels} aria-label="Hiện hoặc ẩn nhãn biểu tượng">{labels?<Eye size={15}/>:<EyeOff size={15}/>} {labels?'Ẩn nhãn':'Hiện nhãn'}</button>
-        <button className={`map-survey-switch ${survey?'is-on':''}`} onClick={clearSurvey} aria-pressed={survey}>
-          <MapPinned size={15}/> {survey?'Ẩn atlas nguồn':'Xem atlas nguồn (debug)'}
-        </button>
-        <button className={`map-survey-switch ${world?'is-on':''}`} onClick={world?enterLocal:enterWorld} aria-pressed={world} aria-label={world?'Chuyển sang bản đồ địa phương':'Chuyển sang bản đồ thế giới'}><Globe2 size={15}/> {world?'Bản đồ địa phương':'Bản đồ thế giới'}</button>
+      <div className="map-layer-controls" role="group" aria-label="Lớp bản đồ">
+        <button type="button" aria-pressed={layers.buildings} onClick={() => changeLayer('buildings')}><Layers3 size={14}/> Công trình</button>
+        <button type="button" aria-pressed={layers.resources} onClick={() => changeLayer('resources')}><Mountain size={14}/> Tài nguyên</button>
+        <button type="button" aria-pressed={layers.discoveries} onClick={() => changeLayer('discoveries')}><Eye size={14}/> Đã ghi nhớ</button>
+        <button type="button" disabled title="Chưa có dữ liệu tuyến đường trong bản demo" aria-label="Tuyến đường chưa khả dụng: Chưa có dữ liệu trong bản demo">Tuyến đường</button>
+        <button type="button" disabled title="Chưa có đội quân hoặc đơn vị trong bản demo" aria-label="Đơn vị chưa khả dụng: Chưa có dữ liệu trong bản demo">Đơn vị</button>
+        <button type="button" aria-pressed={showHeat} onClick={() => onShowHeatChange(!showHeat)}><ThermometerSun size={14}/> Nhiệt</button>
+        <button type="button" aria-pressed={showExploration} onClick={() => onShowExplorationChange(!showExploration)}><EyeOff size={14}/> Ký ức</button>
       </div>
+      <details className="map-developer-tools">
+        <summary>Công cụ xem thử · Demo only</summary>
+        <div className="map-developer-controls">
+          <label htmlFor={unique + '-time'}>Ánh sáng</label>
+          <select id={unique + '-time'} aria-label="Mô phỏng giờ hiển thị" value={TIMES.includes(minutes as typeof TIMES[number]) ? minutes : -1} onChange={event => onClockChange(Math.floor(clockSeconds / 86400) * 86400 + Number(event.target.value) * 60)}>
+            {!TIMES.includes(minutes as typeof TIMES[number]) && <option value={-1}>{formatClock(minutes)}</option>}
+            {TIMES.map(time => <option value={time} key={time}>{formatClock(time)}</option>)}
+          </select>
+          <label htmlFor={unique + '-level'}>Vùng nhiệt</label>
+          <select id={unique + '-level'} aria-label="Xem thử vùng nhiệt theo cấp" value={fireLevel} onChange={event => onFireLevelChange(Number(event.target.value))}>
+            {LEVELS.map(level => <option value={level} key={level}>Cấp {level}</option>)}
+          </select>
+          <label className="map-fire-toggle"><input type="checkbox" checked={fireActive} onChange={event => onFireActiveChange(event.target.checked)}/> Lửa đang bật</label>
+          <label className="map-atlas-toggle"><input type="checkbox" checked={sourceAtlas} onChange={event => onSourceAtlasChange(event.target.checked)}/> Bật atlas debug</label>
+          <button type="button" className={labels ? 'is-on' : ''} aria-pressed={labels} onClick={() => setLabels(value => !value)}>{labels ? <Eye size={14}/> : <EyeOff size={14}/>} Nhãn</button>
+        </div>
+        <p>Ánh sáng, cấp lửa và atlas chỉ thay đổi hình chiếu. Không khám phá, sửa dữ liệu hoặc thay đổi phiên bản trạng thái.</p>
+      </details>
     </div>}
-    <div className={`map-scene map-scene--deep ${compact?'map-scene--compact':''}`} ref={root}>
-      <svg ref={svgRef} className="terrain-svg terrain-svg--deep" viewBox={vb} aria-label="Bản đồ băng nguyên với lớp sương mù khám phá, giữ chuột trái và kéo để di chuyển"
-        onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp}>
-        <Terrain id={unique} world={world}/>
-        <FogMask id={unique} discs={discs} viewport={viewport}/>
-        <rect {...viewport} fill="#081527" opacity={dayOverlayOpacity(minutes)} pointerEvents="none"/>
-        {discs.map((d,i)=>
-          <circle key={i} cx={d.x} cy={-d.y} r={d.fade+27} fill={`url(#${unique}-halo)`} pointerEvents="none"/>)}
-        <rect {...viewport} fill="#01040a" mask={`url(#${unique}-fog-mask)`} pointerEvents="none"/>
-        <circle cx="0" cy="0" r={radius} fill={`url(#${unique}-heat)`} opacity={phase==='night'?.8:.16} mask={`url(#${unique}-known-mask)`} pointerEvents="none"/>
-        <circle cx="0" cy="0" r={radius} fill="none" stroke="#edbc77" strokeWidth={Math.max(.8,Math.min(750,viewHeight/245))} strokeDasharray={`${Math.max(4,viewHeight/70)} ${Math.max(3,viewHeight/100)}`} strokeOpacity=".88" pointerEvents="none"/>
-        <circle cx="0" cy="0" r={Math.min(radius,Math.max(3,radius*.18))} fill="none" stroke="#ffc881" strokeOpacity=".23" strokeWidth="2" pointerEvents="none"/>
-        {FIRST_SITES.filter(site=>(!world||site.id==='fire') && knownSites.some(known=>known.x===site.x&&known.y===site.y) && fogOpacityAt(site.x,site.y,survey,minutes,level)<.92).map(site=><g key={site.id} className={`map-site map-site--deep ${selected===site.id&&!inspected?'map-site--selected':''}`}
-           transform={`translate(${site.x} ${site.renderY}) scale(${allIcons})`}
-           role="button" aria-label={`Xem ${site.name}`} tabIndex={0}
-           onClick={()=>inspectSite(site.id)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inspectSite(site.id);}}}>
-          <circle r="23" fill="#0e2531" opacity=".92" stroke={selected===site.id&&!inspected?'#eccd91':'#9bc7c9'} strokeWidth="1.7"/>
-          <circle r="28" fill="none" stroke="#b8c8bd" strokeOpacity=".23" strokeWidth="1" strokeDasharray="3 5"/>
-          <MarkerGraphic kind={site.id}/>
-          {labels && zoom>.7 && <g transform="translate(0 33)">
-            <rect x={-Math.max(27,site.label.length*3.6)} y="-6" width={Math.max(54,site.label.length*7.2)} height="17" rx="4" fill="#091721" stroke="#a5c6c9" strokeOpacity=".3"/>
-            <text textAnchor="middle" fontSize="13" fill="#f3f1e8" y="5">{site.label}</text>
-          </g>}
+
+    <div className="map-scene map-scene--deep" ref={rootRef}>
+      <svg ref={svgRef} className="terrain-svg terrain-svg--deep" viewBox={viewport.x + ' ' + viewport.y + ' ' + viewport.width + ' ' + viewport.height}
+        aria-label="Bản đồ băng nguyên. Dùng các phím mũi tên để di chuyển, cộng trừ để thu phóng."
+        tabIndex={0} onKeyDown={keyDown} onPointerDown={pointerDown} onPointerMove={pointerMove}
+        onPointerUp={finishPointer} onPointerCancel={cancelPointer} onLostPointerCapture={lostPointerCapture} onClickCapture={clickCapture}>
+        <TerrainLayer id={unique} world={world} viewport={viewport} viewHeight={viewHeight} landmarks={visibleMap.terrain}/>
+        <FogDefinitions id={unique} discs={visibleMap.sight} memory={visibleMap.explored} viewport={viewport}/>
+        <rect {...viewport} fill="#081527" opacity={currentSightOpacity} pointerEvents="none"/>
+        {visibleMap.sight.map((disc, i) => <circle key={'halo-' + i} cx={disc.x} cy={-disc.y} r={disc.fade + 27} fill={'url(#' + unique + '-halo)'} pointerEvents="none"/>)}
+        <rect {...viewport} fill="#01040a" mask={'url(#' + unique + '-fog-mask)'} pointerEvents="none"/>
+        {showExploration && <rect {...viewport} fill="#69828a" opacity=".38" mask={'url(#' + unique + '-known-mask)'} pointerEvents="none"/>}
+        {showHeat && radius > 0 && <circle cx="0" cy="0" r={radius} fill={'url(#' + unique + '-heat)'} opacity={phase === 'night' ? .8 : .16} pointerEvents="none"/>}
+        {showHeat && radius > 0 && <circle cx="0" cy="0" r={radius} fill="none" stroke="#edbc77" strokeWidth={Math.max(.8, Math.min(750, viewHeight / 245))} strokeDasharray={Math.max(4, viewHeight / 70) + ' ' + Math.max(3, viewHeight / 100)} strokeOpacity=".88" pointerEvents="none"/>}
+        {showHeat && radius > 0 && <circle cx="0" cy="0" r={Math.min(radius, Math.max(3, radius * .18))} fill="none" stroke="#ffc881" strokeOpacity=".23" strokeWidth="2" pointerEvents="none"/>}
+        {sourceAtlas && visibleMap.developerEntities?.map(entity => <g key={entityKey(entity)} aria-hidden="true" pointerEvents="none" opacity=".36">
+          <MapEntityGlyph entity={entity} scale={scale}/><circle cx={entity.x} cy={-(entity.y ?? 0)} r={29 * scale} fill="none" stroke="#e8c895" strokeDasharray="3 5" strokeWidth={1.4 * scale}/>
         </g>)}
-        {markers.map(marker=><g key={marker.id} className={`map-resource-marker ${inspected===marker.id?'map-resource-marker--selected':''}`}
-          transform={`translate(${marker.x} ${-marker.y}) scale(${allIcons})`}
-          role="button" tabIndex={0} data-kind={marker.kind} data-provenance={marker.provenance}
-          aria-label={`Kiểm tra ${survey?marker.name:marker.kind==='chest'?'Dấu rương chưa khảo sát':marker.kind==='site'?'Dấu tích chưa khảo sát':marker.name}`} onClick={()=>inspectMarker(marker.id)}
-          onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inspectMarker(marker.id);}}}>
-          <circle r="21" fill={marker.provenance==='modeled'?'#203f41':'#0b2933'} stroke={inspected===marker.id?'#f0c88b':marker.provenance==='canonical'?'#f1c991':'#b4d3c7'} strokeWidth="1.6"/>
-          <circle r="26" fill="none" stroke="#b4d9d9" strokeOpacity=".18" strokeDasharray="2 4"/>
-          <MarkerGraphic kind={marker.kind}/>
-          {marker.count>1&&<g><rect x="7" y="-29" width="26" height="13" rx="6" fill="#edc994" stroke="#193541" strokeWidth="1"/><text x="20" y="-19" fontSize="9" fontWeight="800" textAnchor="middle" fill="#182d37">×{marker.count}</text></g>}
-          {labels && zoom>.075&&<text y="36" textAnchor="middle" fontSize="14" fill="#e5efea" stroke="#091d27" strokeWidth="3" paintOrder="stroke">{marker.kind==='chest'?'Dấu rương':marker.label}</text>}
+        {clustered.map(marker => marker.type === 'cluster' ? <g key={marker.id} className={'map-cluster' + (marker.memberIds.includes(selectedText) ? ' is-selected' : '')}
+          transform={'translate(' + marker.worldX + ' ' + (-marker.worldY) + ') scale(' + scale + ')'} role="button" tabIndex={0}
+          data-cluster-id={marker.id} aria-label={'Mở danh sách cụm có ' + marker.count + ' địa điểm'}
+          onClick={() => clusterList(marker)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); clusterList(marker); } }}>
+          <circle r="24" fill="#143a46" stroke={marker.memberIds.includes(selectedText) ? '#ffe0a4' : '#c4dad0'} strokeWidth="2.3"/>
+          <circle r="29" fill="none" stroke="#f2d59c" strokeOpacity=".55" strokeDasharray="3 4" strokeWidth="1.3"/>
+          <text y="5" textAnchor="middle" fontSize="15" fontWeight="800" fill="#fff0cd">×{marker.count}</text>
+        </g> : <g key={marker.id} className={'map-entity-marker' + (sameEntityRef(marker.value.ref, selectedEntity) ? ' is-selected' : '') + (marker.value.knowledge === 'remembered' ? ' is-remembered' : '')}
+          role="button" tabIndex={0} data-entity-id={marker.value.ref.id} data-entity-type={marker.value.ref.type} data-knowledge={marker.value.knowledge}
+          aria-label={labelFor(marker.value)} onClick={() => { onSelectEntity(marker.value.ref); setClusterMembers(null); }}
+          onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectEntity(marker.value.ref); setClusterMembers(null); } }}>
+          <MapEntityGlyph entity={marker.value} scale={scale} selected={sameEntityRef(marker.value.ref, selectedEntity)} remembered={marker.value.knowledge === 'remembered' || !marker.value.currentSight}/>
+          <circle transform={'translate(' + marker.value.x + ' ' + (-(marker.value.y ?? 0)) + ')'} r={24 * scale} fill="transparent" pointerEvents="all"/>
+          {labels && visibleLabelIds.has(marker.id) && <text transform={'translate(' + marker.value.x + ' ' + (-(marker.value.y ?? 0)) + ') scale(' + scale + ')'} y="38" textAnchor="middle" fontSize="11" fill="#e5efea" stroke="#091d27" strokeWidth="2.5" paintOrder="stroke">{marker.value.label}</text>}
         </g>)}
-        <g className="map-snow-particles" pointerEvents="none">
-          {SNOW_PARTICLES.map((p,i)=><circle key={i} cx={p.x} cy={p.y} r={p.r} fill="#eaf5ee" opacity=".63" style={{animationDelay:`${p.delay}s`}} />)}
-        </g>
       </svg>
       <div className="map-vignette" aria-hidden="true"/>
-      <div className="map-corner-title"><span><Compass size={13}/> PHƯƠNG BẮC ↑</span><strong>{world?'Bản đồ thế giới · LL01':'Đồng bằng Cổ Chiến Trường'}</strong><small>{world?'Phạm vi nguồn · bán kính 96 km':'Tọa độ nguồn cố định · Đường viền địa hình minh họa'}</small></div>
-      <div className="map-corner-controls">
-        <button onClick={()=>zoomBy(.74)} aria-label="Thu nhỏ" title="Thu nhỏ"><Minus size={17}/></button>
-        <span aria-live="polite">{zoom>=.1?Math.round(zoom*100)+'%':'1:'+Math.round(1/zoom)}</span>
-        <button onClick={()=>zoomBy(1.34)} aria-label="Phóng to" title="Phóng to"><Plus size={17}/></button>
-        <button onClick={reset} aria-label="Trở về tâm lãnh địa" title="Trở về tâm lãnh địa"><Maximize2 size={17}/></button>
-        <button onClick={fitHeat} aria-label="Xem toàn bộ vòng nhiệt" title="Xem toàn bộ vòng nhiệt"><ThermometerSun size={17}/></button>
-        <button onClick={world?enterLocal:enterWorld} aria-label={world?'Chuyển sang bản đồ địa phương':'Chuyển sang bản đồ thế giới'} title="Đổi chế độ bản đồ"><Globe2 size={17}/></button>
+      <svg className="map-snow-overlay" viewBox={`0 0 ${size.width} ${size.height}`} preserveAspectRatio="none" aria-hidden="true" focusable="false">
+        {SNOW_PARTICLES.map((particle,index)=><circle key={index} cx={particle.x/900*size.width} cy={particle.y/650*size.height} r={particle.r} fill="#eaf5ee" opacity=".48" style={{animationDelay:particle.delay+'s'}}/>)}
+      </svg>
+      <div className="map-corner-title"><span><Compass size={13}/> PHƯƠNG BẮC ↑</span><strong>{world ? 'Bản đồ thế giới · LL01' : 'Đồng bằng Cổ Chiến Trường'}</strong><small>{world ? 'Phạm vi nguồn · bán kính 96 km' : 'Tọa độ nguồn cố định · địa hình băng nguyên minh họa'}</small></div>
+      <div className="map-corner-controls" aria-label="Điều khiển bản đồ">
+        <button type="button" onClick={() => zoomBy(1 / 1.22)} aria-label="Thu nhỏ" title="Thu nhỏ"><Minus size={17}/></button>
+        <span aria-live="polite">{activeCamera.zoom >= .1 ? Math.round(activeCamera.zoom * 100) + '%' : '1:' + Math.round(1 / activeCamera.zoom)}</span>
+        <button type="button" onClick={() => zoomBy(1.22)} aria-label="Phóng to" title="Phóng to"><Plus size={17}/></button>
+        <button type="button" onClick={resetToCamp} aria-label="Về lãnh địa" title="Về lãnh địa"><Maximize2 size={17}/></button>
+        <button type="button" onClick={fitHeat} aria-label="Xem toàn bộ vòng nhiệt" title="Xem toàn bộ vòng nhiệt"><ThermometerSun size={17}/></button>
+        <button type="button" onClick={toggleMode} aria-label={world ? 'Chuyển sang bản đồ địa phương' : 'Chuyển sang bản đồ thế giới'} title={world ? 'Trở lại chế độ địa phương' : 'Xem toàn bộ thế giới'}><Globe2 size={17}/></button>
       </div>
-      {current&&!compact&&<div className="map-entity-popover" role="region" aria-label="Thông tin điểm được chọn">
-        <div className="map-entity-kicker">{current.kind==='chest'?'DẤU HIỆU RƯƠNG':current.kind==='site'?'DẤU TÍCH CÔNG TRÌNH':'ĐIỂM THU THẬP'} <span>{current.provenance==='canonical'?'NGUỒN':'DỰNG THÊM'}</span></div>
-        <h3>{!survey&&current.kind==='site'?'Dấu tích công trình chưa khảo sát':!survey&&current.kind==='chest'?'Dấu rương chưa khảo sát':current.name}</h3>
-        {current.count>1&&<p className="map-cluster-note">Cụm bản đồ · {current.count} điểm gần nhau. Phóng to để kiểm tra riêng từng điểm.</p>}
-        {current.kind==='chest'||current.kind==='site'?<>
-          <div className="map-entity-quantity">{current.kind==='chest'?'Chưa khai quật · Chưa xác định bên trong':'Chưa khảo sát · Chưa thể tương tác'}</div>
-          <p>{current.kind==='site'?'Ánh sáng cho thấy dấu tích trên mặt băng; cần khảo sát mới xác nhận danh tính và cửa tiếp cận.':'Tọa độ dấu rương từ gói thế giới. Ánh sáng không tự khai quật, xác minh Phẩm hoặc mở phần thưởng.'}</p>
-        </>:<>
-          <div className="map-entity-quantity">{current.amount?.toLocaleString('vi-VN')??'—'} {current.unit} <small>ước lượng ban đầu</small></div>
-          <div className="map-resource-progress"><span style={{width:'100%'}} /></div>
-          <p>{current.detail}</p>
-        </>}
-        <small>{current.provenance==='canonical'?'Điểm cố định từ WORLD-PACKAGE-LL01-1.0.':'Tọa độ và trữ lượng dựng thêm hợp lý, chưa xác lập canon.'} Không cộng vật phẩm hay trừ kho; tình trạng cần xác minh bằng hành động chơi.</small>
-        <button onClick={()=>setInspected(null)}>Đóng <ArrowDownRight size={15}/></button>
+      {expandedMembers.length > 0 && <div className="map-cluster-list" role="region" aria-label="Các điểm trong cụm">
+        <div><strong>{expandedMembers.length} địa điểm</strong><button type="button" aria-label="Đóng danh sách cụm" onClick={() => setClusterMembers(null)}>×</button></div>
+        {expandedMembers.map(entity => <button type="button" key={entityKey(entity)} onClick={() => { onSelectEntity(entity.ref); setClusterMembers(null); }}>
+          <span className="cluster-list-kind">{entity.iconKind}</span><span>{entity.name}</span><small>{entity.knowledge === 'remembered' ? 'Đã ghi nhớ' : entity.provenance === 'canonical' ? 'Nguồn' : 'Fixture demo'}</small>
+        </button>)}
       </div>}
+      <div className="map-scale-bar" data-testid="map-scale-bar" aria-label={'Tỷ lệ bản đồ ' + formatDistance(scaleDistance)}>
+        <span style={{ width: scaleWidth + 'px' }}/><strong>{formatDistance(scaleDistance)}</strong>
+      </div>
       <div className="map-heat-readout">
         <span><ThermometerSun size={15}/> VÙNG NHIỆT</span>
-        <strong>{formatDistance(radius)} <small>bán kính</small></strong>
-        <em>{fireForm(level)} Cấp {level} {level!==1?'· Xem trước':''}</em>
+        <strong>{fireActive ? formatDistance(radius) : 'Tắt'} <small>bán kính xem thử</small></strong>
+        <em>{fireForm(fireLevel)} Cấp {fireLevel} · Chỉ hiển thị</em>
       </div>
-      {!compact&&<div className="map-drag-hint">{world?'Vùng tối chưa được khảo sát · Bản đồ không tự khám phá':'Kéo để di chuyển · Cuộn chuột để thu phóng, không cuộn trang'}</div>}
-      {compact&&<span className="map-compact-label">SƯƠNG MÙ KHÁM PHÁ</span>}
+      {compact && onOpenFullMap && <button type="button" className="map-open-full" onClick={onOpenFullMap}>Mở bản đồ đầy đủ</button>}
+      {!compact && <div className="map-drag-hint">{world ? 'Vùng tối chưa được khảo sát · Bản đồ không tự khám phá' : 'Kéo để di chuyển · Cuộn chuột để thu phóng'}</div>}
+      {compact && <span className="map-compact-label">SƯƠNG MÙ KHÁM PHÁ</span>}
+      <ul className="map-accessible-entities" aria-label="Các địa điểm đã biết">
+        {allLayers.map(entity => <li key={entityKey(entity)}><button type="button" onClick={() => onSelectEntity(entity.ref)}>{labelFor(entity)}</button></li>)}
+      </ul>
     </div>
-    {!compact&&<div className="map-footer-bar">
+    {!compact && <div className="map-footer-bar">
       <span><span className="map-dot mapped"/> Vùng đang nhìn thấy</span>
-      <span><span className="map-dot fogged"/> Chưa khám phá</span>
-      {survey&&<span><span className="map-dot sample"/> Atlas nguồn (không phải kiến thức nhân vật)</span>}
-      <span className="map-footer-aside">{survey?'Atlas nguồn chỉ phục vụ kiểm tra':'Địa vật mặt đất hiện khi đủ sáng'} · Rương dưới đất cần khảo sát</span>
+      <span><span className="map-dot fogged"/> Vùng chưa biết</span>
+      {showExploration && <span><span className="map-dot sample"/> Địa hình được ghi nhớ</span>}
+      {sourceAtlas && <span><TreePine size={12}/> Atlas debug không phải khám phá</span>}
+      <span className="map-footer-aside">Đồng hồ và ánh sáng chỉ là bản xem thử · Không xử lý hành động</span>
     </div>}
   </div>;
 }

@@ -36,18 +36,19 @@ test('world-clock light phases respect campaign dawn, sunset and night boundarie
   assert.throws(()=>model.dayPhase(1440),RangeError);
 });
 test('daylight, twilight and night fog contracts around source heat radius',()=>{
-  assert.equal(model.fogOpacityAt(0,0,false,420,1),0);
-  assert.equal(model.fogOpacityAt(250,0,false,720,1),0);
-  assert.ok(model.fogOpacityAt(430,0,false,720,1)>0);
-  assert.ok(model.fogOpacityAt(430,0,false,720,1)<1);
-  assert.equal(model.fogOpacityAt(800,0,false,720,1),1);
-  assert.equal(model.fogOpacityAt(300,0,false,1005,1),1); // dusk is contracted
-  assert.equal(model.fogOpacityAt(9,0,false,1140,1),0);
-  assert.equal(model.fogOpacityAt(50,0,false,1140,1),1);
-  assert.equal(model.fogOpacityAt(24000,0,false,1140,30),0);
-  assert.equal(model.fogOpacityAt(25060,0,false,1140,30),1);
-  assert.equal(model.fogOpacityAt(24000,0,true,1140,30),0);
-  assert.equal(model.fogOpacityAt(24000,0,false,1140,1),1);
+  assert.equal(model.fogOpacityAt(0,0,420,1),0);
+  assert.equal(model.fogOpacityAt(250,0,720,1),0);
+  assert.ok(model.fogOpacityAt(430,0,720,1)>0);
+  assert.ok(model.fogOpacityAt(430,0,720,1)<1);
+  assert.equal(model.fogOpacityAt(800,0,720,1),1);
+  assert.equal(model.fogOpacityAt(300,0,1005,1),1); // dusk is contracted
+  assert.equal(model.fogOpacityAt(9,0,1140,1),0);
+  assert.equal(model.fogOpacityAt(50,0,1140,1),1);
+  assert.equal(model.fogOpacityAt(24000,0,1140,30),0);
+  assert.equal(model.fogOpacityAt(25060,0,1140,30),1);
+  assert.equal(model.fogOpacityAt(24000,0,1140,1),1);
+  assert.equal(model.fogOpacityAt(0,0,1140,1,false),1);
+  assert.deepEqual(model.visibilityDiscs(1140,1,false),[]);
 });
 test('world atlas transition waits until entire source heat area is visible',()=>{
   assert.equal(model.shouldEnterWorldMap(.5,10),false);
@@ -57,17 +58,15 @@ test('world atlas transition waits until entire source heat area is visible',()=
   assert.equal(model.shouldEnterWorldMap(.01,10),true);
   assert.ok(model.WORLD_ZOOM<.002);
 });
-test('chests and resource spot quantities are withheld before survey preview',()=>{
-  assert.deepEqual(model.visibleDemoMarkers(false),[]);
-  const shown=model.visibleDemoMarkers(true);
-  for(const kind of ['wood','stone','ore','herbs','water','chest']) assert.ok(shown.some(x=>x.kind===kind),kind);
-  for(const marker of shown) assert.equal(marker.demoOnly,true);
-  const chest=shown.find(x=>x.kind==='chest');
-  assert.equal(model.displayRemaining(chest),null);
-  assert.equal(chest.contentsKnown,false);
-  const wood=shown.find(x=>x.kind==='wood');
-  assert.match(model.displayRemaining(wood),/480.*620.*Gỗ/);
-  assert.equal(model.DEMO_MAP_MARKERS.length,shown.length);
+test('visibility sources union instead of hiding one another and gradients stay ordered',()=>{
+  const sources=[{x:0,y:0,clear:70,fade:130},{x:105,y:0,clear:60,fade:120}];
+  assert.equal(model.fogOpacityForDiscs(0,0,sources),0);
+  assert.equal(model.fogOpacityForDiscs(0,0,[...sources].reverse()),0);
+  for(const radius of [10,2500,25000]){
+    const disc={x:0,y:0,clear:radius,fade:radius+Math.min(36,Math.max(2,radius*.008))};
+    const stops=model.fogGradientStops(disc);
+    assert.ok(0<=stops.clear&&stops.clear<=stops.transition&&stops.transition<=stops.edge&&stops.edge===100);
+  }
 });
 test('metres are used for geometric radius and formatted in Vietnamese',()=>{
   assert.equal(model.formatDistance(10),'10 m');

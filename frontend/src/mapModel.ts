@@ -55,35 +55,57 @@ export const PRESENTATION_SIGHT = {
   night:{clear:0,fade:0},
 } as const;
 export const OPENING_OBSERVED: readonly FogDisc[] = [{x:0,y:0,clear:58,fade:108}];
-/** Survey preview is a separate developer showcase, NOT discovery in the game. */
-export const DEMO_SURVEYED: readonly FogDisc[] = [
+/** Fixed fixture memory. These observations are distinct from the light preview below. */
+export const DEMO_EXPLORED: readonly FogDisc[] = [
   ...OPENING_OBSERVED,
-  {x:-75,y:54,clear:68,fade:104},
-  {x:122,y:68,clear:66,fade:102},
-  {x:68,y:-115,clear:67,fade:100},
-  {x:-297,y:98,clear:72,fade:118},
-  {x:205,y:-75,clear:63,fade:104},
+  {x:-31,y:52,clear:22,fade:48},
 ];
-export function visibilityDiscs(minutes:number,level:number,surveyPreview=false,fireActive=true):readonly FogDisc[] {
+export function visibilityDiscs(minutes:number,level:number,fireActive=true):readonly FogDisc[] {
   const phase=dayPhase(minutes),radius=heatRadiusM(level,fireActive);
   const sight=PRESENTATION_SIGHT[phase];
   // The radius is fully visible; atmospheric falloff begins OUTSIDE this edge.
   const heat=radius>0?[{x:0,y:0,clear:radius,fade:radius+Math.min(36,Math.max(2,radius*.008))}]:[];
   // Daylight eyesight is separate from explored-map knowledge.
   const daylight=phase==='night'?[]:[{x:0,y:0,clear:radius+sight.clear,fade:radius+sight.fade}];
-  const preview=surveyPreview && phase!=='night'?DEMO_SURVEYED.slice(1):[];
-  return [...daylight,...preview,...heat];
+  return [...daylight,...heat];
 }
 function smoothstep(a:number,b:number,value:number):number {
+  if(b<=a)return value<=a?0:1;
   const t=Math.max(0,Math.min(1,(value-a)/(b-a)));
   return t*t*(3-2*t);
 }
-/** 0 visible; 1 absolute night/unseen black. */
-export function fogOpacityAt(x:number,y:number,surveyPreview=false,minutes=420,level=1):number {
-  return visibilityDiscs(minutes,level,surveyPreview).reduce((opacity,disc)=>{
+/** 0 visible; 1 fully fogged. Independent visibility sources combine by union. */
+export function fogOpacityForDiscs(x:number,y:number,discs:readonly FogDisc[]):number {
+  return discs.reduce((opacity,disc)=>{
     const dist=Math.hypot(x-disc.x,y-disc.y);
     return Math.min(opacity,smoothstep(disc.clear,disc.fade,dist));
   },1);
+}
+/** 0 visible; 1 absolute night/unseen black. */
+export function fogOpacityAt(x:number,y:number,minutes=420,level=1,fireActive=true):number {
+  return fogOpacityForDiscs(x,y,visibilityDiscs(minutes,level,fireActive));
+}
+/** A retained observation makes terrain legible in darkness without making it current. */
+export function exploredOpacityAt(x:number,y:number):number {
+  return DEMO_EXPLORED.reduce((opacity,disc)=>{
+    const dist=Math.hypot(x-disc.x,y-disc.y);
+    return Math.min(opacity,smoothstep(disc.clear,disc.fade,dist));
+  },1);
+}
+/** Combined fog uses the same minimum-union rule as the numeric sight model. */
+export function combinedFogOpacityAt(x:number,y:number,minutes=420,level=1,fireActive=true):number {
+  const live=fogOpacityAt(x,y,minutes,level,fireActive);
+  const memory=exploredOpacityAt(x,y)*.68;
+  return Math.min(live,memory);
+}
+/** Ordered SVG stop positions. Large fire radii cannot put a dynamic clear stop
+ * after a fixed fade stop, which previously made the gradient non-monotonic.
+ */
+export function fogGradientStops(disc:FogDisc) {
+  const fade=disc.fade<=0?1:disc.fade;
+  const clear=Math.max(0,Math.min(100,100*disc.clear/fade));
+  const transition=Math.max(clear,Math.min(99,87));
+  return {clear,transition,edge:100};
 }
 /** Automatic overview is triggered only by an intentional zoom-OUT gesture.
  * Fitting heat is a different camera action and NEVER invokes this transition.
@@ -93,33 +115,5 @@ export function shouldEnterWorldMap(zoom:number,heatRadius:number):boolean{
   const viewHeight=172/zoom;
   return zoom<.02 && viewHeight>=Math.max(12000,heatRadius*2.65);
 }
+export function shouldReturnToLocalMap(zoom:number):boolean { return zoom>.035; }
 export const WORLD_ZOOM = 172/(192000*1.12);
-export type HarvestKind='wood'|'stone'|'ore'|'herbs'|'water';
-export type MapResource = {
-  id:string; kind:HarvestKind; name:string; x:number;y:number;
-  remaining:number; capacity:number; unit:string; description:string;
-  /** Fixture numbers intentionally not canonical and are never written to inventory. */
-  demoOnly:true;
-};
-export type MapChest = {
-  id:string;kind:'chest';name:string;x:number;y:number;
-  opened:false;contentsKnown:false;demoOnly:true;
-};
-export type ResourceOrChest=MapResource|MapChest;
-export const DEMO_MAP_MARKERS: readonly ResourceOrChest[] = [
-  {id:'example-wood-01',kind:'wood',name:'Lâm địa phủ tuyết',x:-48,y:55,remaining:480,capacity:620,unit:'Gỗ',description:'Gỗ có thể thu hoạch tại điểm được khảo sát trong kịch bản minh họa.',demoOnly:true},
-  {id:'example-stone-01',kind:'stone',name:'Vỉa đá lộ thiên',x:123,y:67,remaining:270,capacity:350,unit:'Đá',description:'Lượng đá khả dụng để minh họa panel kiểm kê mỏ.',demoOnly:true},
-  {id:'example-ore-01',kind:'ore',name:'Mạch quặng trong băng',x:-298,y:99,remaining:65,capacity:110,unit:'Quặng Sắt',description:'Một mạch quặng giả lập, không áp vào kho hay world package.',demoOnly:true},
-  {id:'example-herbs-01',kind:'herbs',name:'Địa y băng nguyên',x:59,y:-125,remaining:28,capacity:40,unit:'Bó',description:'Điểm thu hái vật phẩm sinh thái minh họa.',demoOnly:true},
-  {id:'example-water-01',kind:'water',name:'Băng sạch khai thác',x:79,y:-98,remaining:900,capacity:1200,unit:'Đơn vị băng',description:'Trữ lượng mẫu phục vụ UI. Không phải nước uống được cấp sẵn.',demoOnly:true},
-  {id:'example-chest-01',kind:'chest',name:'Rương chưa mở (minh họa)',x:204,y:-76,opened:false,contentsKnown:false,demoOnly:true},
-  // Intentionally undisclosed to the renderer until a later observed map projection.
-];
-/** Application-level visibility gate: unknown or out-of-sight markers NEVER become icons. */
-export function visibleDemoMarkers(surveyPreview:boolean):readonly ResourceOrChest[] {
-  if(!surveyPreview) return [];
-  return DEMO_MAP_MARKERS.filter(marker=>fogOpacityAt(marker.x,marker.y,true)<=.08);
-}
-export function displayRemaining(marker:ResourceOrChest):string|null {
-  return marker.kind==='chest' ? null : `${marker.remaining.toLocaleString('vi-VN')} / ${marker.capacity.toLocaleString('vi-VN')} ${marker.unit}`;
-}
