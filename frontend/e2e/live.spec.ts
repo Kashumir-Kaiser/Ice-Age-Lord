@@ -150,7 +150,7 @@ test('live mode uses Stage 03 API and keeps map and settlement campfire on one e
   await page.getByLabel('Khóa chủ sở hữu').fill('local-owner-key');
   await page.getByRole('button', { name: 'Kết nối API' }).click();
   await expect(page.getByText('Đã khôi phục đúng lượt lưu từ API.')).toBeVisible();
-  await expect(page.getByText('snapshot revision 2')).toBeVisible();
+  await expect(page.getByRole('banner')).toContainText('revision 2');
   await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Bản đồ/ }).click();
   await expect(page.getByTestId('map-campfire-marker')).toHaveAttribute('data-entity-ref', fireKey);
 });

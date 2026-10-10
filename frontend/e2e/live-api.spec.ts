@@ -17,7 +17,8 @@ test('Chromium runs the server-owned clock, completes a Tomb job once, and recov
   await expect(page.getByText(/Clean game đã được tạo và commit/)).toBeVisible();
   await expect(page.getByText('Ngày 1 · 07:00')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Công trình' }).click();
+  await page.getByRole('navigation', { name: 'Màn hình game' })
+    .getByRole('button', { name: 'Công trình Trạng thái API' }).click();
   await page.getByRole('button', { name: 'Xếp một Cương Thi tiêu chuẩn' }).click();
   await expect(page.getByText(/Đang sản xuất · TOMB-UNIT-/)).toBeVisible();
 
@@ -31,8 +32,8 @@ test('Chromium runs the server-owned clock, completes a Tomb job once, and recov
   await expect(page.getByText('Ngày 1 · 07:20')).toBeVisible();
   await expect(page.getByText(/Cương Thi 1 · Bậc 0 · Thường/)).toHaveCount(1);
 
-  const preReloadText = await page.locator('.live-plain-list').innerText();
-  expect((preReloadText.match(/TOMB_QUEUE/g) ?? []).length).toBe(1);
+  const completedJob = page.locator('.live-plain-list').filter({ hasText: /completed · TOMB-UNIT-/ });
+  await expect(completedJob).toHaveCount(1);
 
   await page.reload();
   await page.getByLabel('Khóa chủ sở hữu').fill(ownerKey!);
@@ -40,6 +41,5 @@ test('Chromium runs the server-owned clock, completes a Tomb job once, and recov
   await expect(page.getByText('Đã khôi phục đúng lượt lưu từ API.')).toBeVisible();
   await page.getByRole('button', { name: 'Quân lực' }).click();
   await expect(page.getByText(/Cương Thi 1 · Bậc 0 · Thường/)).toHaveCount(1);
-  const reloadedText = await page.locator('.live-plain-list').innerText();
-  expect((reloadedText.match(/TOMB_QUEUE/g) ?? []).length).toBe(1);
+  await expect(page.locator('.live-plain-list').filter({ hasText: /completed · TOMB-UNIT-/ })).toHaveCount(1);
 });

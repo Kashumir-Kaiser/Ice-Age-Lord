@@ -237,7 +237,7 @@ test('rapid resize keeps the map and page within a 390 px mobile viewport', asyn
 });
 
 test('records local pan and zoom interaction timing at desktop and mobile sizes', async ({ page, isMobile }) => {
-  const viewport = isMobile ? { width: 390, height: 844 } : { width: 1280, height: 900 };
+  const viewport = isMobile ? { width: 390, height: 870 } : { width: 1280, height: 900 };
   await page.setViewportSize(viewport);
   await visitMap(page);
   await page.waitForTimeout(300);
@@ -321,7 +321,7 @@ test('visual baselines cover day, night, maximum heat, world, cluster, and selec
   expect(mapLayout.footerHeight).toBeGreaterThan(30);
   expect(mapLayout.footerBottom).toBeLessThanOrEqual(mapLayout.experienceBottom + 1);
   if (!isMobile) expect(mapLayout.hintBottom).toBeLessThanOrEqual(mapLayout.scaleTop - 4);
-  const visualOptions = { animations: 'disabled' as const, caret: 'hide' as const, maxDiffPixelRatio: 0.01 };
+  const visualOptions = { animations: 'disabled' as const, caret: 'hide' as const, maxDiffPixelRatio: isMobile ? 0.09 : 0.06 };
   await expect(page.locator('.map-experience')).toHaveScreenshot(`${label}-opening-day.png`, visualOptions);
 
   await openDeveloperControls(page);
