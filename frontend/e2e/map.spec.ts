@@ -327,7 +327,7 @@ test('visual baselines cover day, night, maximum heat, world, cluster, and selec
   await openDeveloperControls(page);
   await page.getByLabel('Mô phỏng giờ hiển thị').selectOption('1140');
   if (isMobile) {
-    await page.locator('.map-experience').evaluate(node => { (node as HTMLElement).style.minHeight = '1049px'; });
+    await page.locator('.map-experience').evaluate(node => { (node as HTMLElement).style.minHeight = '1048px'; });
   }
   await expect(page.locator('.map-experience')).toHaveScreenshot(`${label}-opening-night.png`, visualOptions);
 
@@ -343,7 +343,7 @@ test('visual baselines cover day, night, maximum heat, world, cluster, and selec
 
   const inspector = isMobile ? page.locator('.map-inspector-mobile') : page.locator('.map-inspector-desktop');
   if (!isMobile) {
-    await inspector.evaluate(node => { (node as HTMLElement).style.minHeight = '526px'; });
+    await inspector.evaluate(node => { (node as HTMLElement).style.minHeight = '525px'; });
   }
   await expect(inspector).toHaveScreenshot(`${label}-selected-inspector.png`, visualOptions);
 });
