@@ -172,7 +172,26 @@ export default function TerritoryScene({ settlement, placementDefinitions, camer
     setMessage(`Thử bố trí: ${definition.name}. Bản nháp không tạo công trình.`);
   };
   const cancelPlacement=()=>{setPlacingId(null);setGhostWorld(null);setMessage('Đã hủy chế độ thử bố trí.');};
-  const rotatePlacement=()=>setPlacingOrientation(previous=>orientationCycle[(orientationCycle.indexOf(previous)+1)%orientationCycle.length]);
+  const rotatePlacement=()=>{
+    const allowed=orientationCycle.filter(orientation=>activeDefinition?.orientations.includes(orientation));
+    if(allowed.length<2)return;
+    setPlacingOrientation(previous=>allowed[(allowed.indexOf(previous)+1)%allowed.length]??allowed[0]);
+  };
+  useEffect(()=>{
+    if(!activeDefinition)return;
+    const onPlacementKeyDown=(event:KeyboardEvent)=>{
+      const target=event.target;
+      const editing=target instanceof Element&&Boolean(target.closest('input,select,textarea,[contenteditable="true"],[role="textbox"]'));
+      if(event.key==='Escape'){
+        event.preventDefault();event.stopPropagation();cancelPlacement();return;
+      }
+      if(event.key.toLowerCase()==='r'&&!event.repeat&&!editing&&!event.altKey&&!event.ctrlKey&&!event.metaKey){
+        event.preventDefault();event.stopPropagation();rotatePlacement();
+      }
+    };
+    document.addEventListener('keydown',onPlacementKeyDown,true);
+    return()=>document.removeEventListener('keydown',onPlacementKeyDown,true);
+  },[activeDefinition,cancelPlacement,rotatePlacement]);
   const localPointer=(event:ReactPointerEvent<SVGSVGElement>)=>{const rect=event.currentTarget.getBoundingClientRect();return {x:event.clientX-rect.left,y:event.clientY-rect.top};};
   const pointerDown=(event:ReactPointerEvent<SVGSVGElement>)=>{
     if(event.button!==0&&event.pointerType!=='touch')return;
@@ -219,8 +238,6 @@ export default function TerritoryScene({ settlement, placementDefinitions, camer
   const keyDown=(event:React.KeyboardEvent<SVGSVGElement>)=>{
     const target=event.target;
     if(target instanceof Element&&target.closest('input,select,textarea,[contenteditable="true"]'))return;
-    if(event.key==='Escape'&&activeDefinition){event.preventDefault();event.stopPropagation();cancelPlacement();return;}
-    if((event.key==='r'||event.key==='R')&&activeDefinition){event.preventDefault();rotatePlacement();return;}
     if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)){
       event.preventDefault();if(followPlayer)onFollowPlayerChange(false);const amount=48;
       const dx=event.key==='ArrowLeft'?-amount:event.key==='ArrowRight'?amount:0;
@@ -338,7 +355,7 @@ export default function TerritoryScene({ settlement, placementDefinitions, camer
             <button onClick={()=>startPlacement(definition)} aria-label={`Thử bố trí ${definition.name}`}>Đặt thử</button>
           </article>;
         })}</div>
-        {placingId&&<div className="territory-placement-controls"><span><b>{activeDefinition?.name}</b> · hướng {ORIENTATION_LABEL[placingOrientation]} · lưới 1 m</span><button onClick={rotatePlacement} disabled={activeDefinition?.orientations.length===1}><RotateCw size={15}/> Xoay 90° <kbd>R</kbd></button><button onClick={cancelPlacement}><X size={15}/> Hủy</button></div>}
+        {placingId&&<div className="territory-placement-controls"><span><b>{activeDefinition?.name}</b> · hướng {ORIENTATION_LABEL[placingOrientation]} · lưới 1 m</span><button onClick={rotatePlacement} disabled={(activeDefinition?.orientations.length??0)<2}><RotateCw size={15}/> Xoay 90° <kbd>R</kbd></button><button onClick={cancelPlacement}><X size={15}/> Hủy</button></div>}
         <p className="territory-fixture-note"><AlertTriangle size={14}/> Mặt bằng và chi phí vật liệu đang được hoàn thiện. Vùng nhiệt không tự quyết định quyền xây.</p>
       </section>
       <section className="panel territory-instance-panel">
