@@ -18,7 +18,7 @@ test('Chromium runs the server-owned clock, completes a Tomb job once, and recov
   await expect(page.getByText('Ngày 1 · 07:00')).toBeVisible();
 
   await page.getByRole('navigation', { name: 'Màn hình game' })
-    .getByRole('button', { name: 'Công trình Trạng thái API' }).click();
+    .getByRole('button', { name: /^Công trình(?: Trạng thái API)?$/ }).click();
   await page.getByRole('button', { name: 'Xếp một Cương Thi tiêu chuẩn' }).click();
   await expect(page.getByText(/Đang sản xuất · TOMB-UNIT-/)).toBeVisible();
 
