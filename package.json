@@ -1,0 +1,10 @@
+{
+  "name": "ice-age-lord-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "content:compile": "node --experimental-strip-types packages/content/tools/compile-content.ts",
+    "test:stage02": "node --experimental-strip-types packages/sim/test/stage02.test.ts"
+  }
+}
