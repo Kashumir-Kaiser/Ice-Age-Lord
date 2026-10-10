@@ -1,6 +1,6 @@
 import { itemExamples, mockJournal, screens, sites } from '../demoData';
 import { CANONICAL_SITES } from '../canonicalGeography';
-import { DEMO_EXPLORED, fogOpacityAt, visibilityDiscs } from '../mapModel';
+import { DEMO_EXPLORED, fogOpacityAt, heatRadiusM, visibilityDiscs } from '../mapModel';
 import { visibleMapSpots } from '../worldFeatures';
 import type { EntityRef, EntityView, GameClient, PlayerView, PreviewMapSettings, VisibleMap } from './GameClient';
 
@@ -27,7 +27,8 @@ function siteView(site: typeof sites[number]): EntityView {
 }
 
 function spotView(spot: ReturnType<typeof visibleMapSpots>[number], currentSight: boolean): EntityView {
-  const ref: EntityRef = spot.kind === 'chest' ? { type: 'cache', id: spot.id } : { type: 'resource', id: spot.id };
+  const ref: EntityRef = spot.kind === 'chest' ? { type: 'cache', id: spot.id }
+    : spot.kind === 'site' ? { type: 'site', id: spot.id } : { type: 'resource', id: spot.id };
   let resourceBalance: EntityView['resourceBalance'];
   if (spot.id === 'MODELED-SALVAGE-01') resourceBalance = { material: 'Gỗ', unit: 'Gỗ', remaining: 0, capacity: 18, reserved: 0, reachable: true };
   if (spot.id === 'MODELED-STONE-01') resourceBalance = { material: 'Đá', unit: 'Đá', remaining: 18, capacity: 40, reserved: 6, reachable: false };
@@ -65,6 +66,32 @@ function itemView(item: typeof itemExamples[number]): EntityView {
 }
 
 const openingSites = sites.map(siteView);
+const openingBuildings = sites.map(site => ({
+  id: site.entityRef.id,
+  settlementId: 'SETTLEMENT-LL01-H0',
+  ref: site.entityRef,
+  definitionId: `FIXTURE-${site.id.toUpperCase()}-LL01`,
+  name: site.name,
+  x: site.x,
+  y: site.y,
+  orientation: 'north' as const,
+  footprint: {
+    kind: 'rectangle' as const,
+    widthM: site.id === 'fire' ? 2 : site.id === 'tomb' ? 6 : site.id === 'house' ? 4 : 3,
+    depthM: site.id === 'fire' ? 2 : site.id === 'tomb' ? 5 : site.id === 'house' ? 4 : 3,
+    provenance: 'frontend-fixture' as const,
+    assumptionId: 'TERRITORY-FOOTPRINTS-V1',
+    note: 'Kích thước đặt hình tạm để kiểm tra bố cục; chưa phải hợp đồng vật lý nguồn.',
+  },
+  assetId: site.id === 'fire' ? 'campfire-start' : site.id === 'house' ? 'lord-house-damaged' : site.id === 'tomb' ? 'tomb-entry' : 'supply-crate',
+  heightM: null,
+  state: site.id === 'house' ? 'Hư hại' : site.id === 'fire' ? 'Đang cháy · chỉ hình chiếu' : 'Tồn tại tại khởi đầu',
+}));
+const placementDefinitions = [
+  { id:'fixture-low-house', name:'Nhà thấp · fixture', assetId:'lord-house-damaged', footprint:{kind:'rectangle' as const,widthM:4,depthM:4,provenance:'frontend-fixture' as const,assumptionId:'TERRITORY-FOOTPRINTS-V1',note:'4 × 4 m là kích thước giả định để thử bố trí, không phải kích thước luật.'}, orientations:['north','east','south','west'] as const, status:'fixture-only' as const },
+  { id:'fixture-tall-tower', name:'Tháp cao · fixture', assetId:'fixture-tall-tower', footprint:{kind:'rectangle' as const,widthM:5,depthM:4,provenance:'frontend-fixture' as const,assumptionId:'TERRITORY-FOOTPRINTS-V1',note:'5 × 4 m là kích thước giả định để thử bố trí, không phải kích thước luật.'}, orientations:['north','east','south','west'] as const, status:'fixture-only' as const },
+  { id:'fixture-fire-max', name:'Mẫu lửa tối đa · fixture', assetId:'fixture-fire-max', footprint:{kind:'rectangle' as const,widthM:8,depthM:8,provenance:'frontend-fixture' as const,assumptionId:'TERRITORY-FOOTPRINTS-V1',note:'8 × 8 m là kích thước giả định để thử bố trí, không phải kích thước luật.'}, orientations:['north','east','south','west'] as const, status:'fixture-only' as const },
+];
 const itemViews = itemExamples.map(itemView);
 const visibleTerrain = {
   forest: CANONICAL_SITES.find(site => site.id === 'SITE-LL01-040')!,
@@ -102,6 +129,19 @@ export class DemoGameClient implements GameClient {
       items: itemExamples,
       journal: mockJournal,
       forces: forceFixtures,
+      units: [],
+      settlement: {
+        id: 'SETTLEMENT-LL01-H0',
+        worldOrigin: { x: 0, y: 0 },
+        fireRef: { type: 'site', id: 'SITE-LL01-000' },
+        fireLevel: 1,
+        fireActive: true,
+        heatRadiusM: heatRadiusM(1, true),
+        buildings: openingBuildings,
+        obstacles: [],
+        knowledge: 'demo-fixture',
+      },
+      placementDefinitions,
       territoryObjectives,
       visibleMap,
     };
@@ -111,10 +151,12 @@ export class DemoGameClient implements GameClient {
 
   getVisibleMap(settings: PreviewMapSettings): VisibleMap {
     const spots = visibleMapSpots(false);
-    const projectedSites = openingSites.map(site => ({
-      ...site,
-      currentSight: fogOpacityAt(site.x ?? 0, site.y ?? 0, settings.clockMinutes, settings.fireLevel, settings.fireActive) < .12,
-    }));
+    const settlementSite = openingSites.find(site => site.ref.id === 'SITE-LL01-000')!;
+    const projectedSites = [{
+      ...settlementSite,
+      settlementId: 'SETTLEMENT-LL01-H0',
+      currentSight: fogOpacityAt(settlementSite.x ?? 0, settlementSite.y ?? 0, settings.clockMinutes, settings.fireLevel, settings.fireActive) < .12,
+    }];
     const entities = [
       ...projectedSites,
       ...spots.map(spot => spotView(spot, fogOpacityAt(spot.x, spot.y, settings.clockMinutes, settings.fireLevel, settings.fireActive) < .12)),

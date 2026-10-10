@@ -1,5 +1,8 @@
 import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { installLocalPreviewRoute } from './localPreviewRoute';
+
+test.beforeEach(async ({ page }) => installLocalPreviewRoute(page));
 
 async function visitMap(page: Page) {
   await page.goto('/');
@@ -46,7 +49,8 @@ test('map uses the shared known projection and shows a physical scale bar', asyn
   await visitMap(page);
   await expect(page.getByText('Đồng bằng Cổ Chiến Trường')).toBeVisible();
   await expect(page.locator('[data-testid="map-scale-bar"]')).toContainText(/m|km/);
-  await expect(page.getByRole('button', { name: /Mở danh sách cụm/ })).toBeVisible();
+  await expect(page.locator('.map-entity-marker[data-entity-id="SITE-LL01-000"]')).toHaveCount(1);
+  for (const id of ['SITE-LL01-001','SITE-LL01-002','SITE-LL01-003']) await expect(page.locator(`.map-entity-marker[data-entity-id="${id}"]`)).toHaveCount(0);
   await expect(page.locator('.map-accessible-entities')).toContainText('Lửa Trại');
 });
 
@@ -114,8 +118,8 @@ test('pointer drag pans without activating a marker, and the next marker click s
   }
   await expect.poll(() => svg.getAttribute('viewBox')).not.toBe(before);
   await expect(page.locator('.entity-inspector:visible[data-entity-id="SITE-LL01-000"]')).toBeVisible();
-  await page.locator('.map-entity-marker[data-entity-id="SITE-LL01-002"]').click();
-  await expect(page.locator('.entity-inspector:visible[data-entity-id="SITE-LL01-002"]')).toBeVisible();
+  await page.locator('.map-entity-marker[data-entity-id="MODELED-STONE-01"]').click();
+  await expect(page.locator('.entity-inspector:visible[data-entity-id="MODELED-STONE-01"]')).toBeVisible();
 });
 
 test('two-finger pinch changes zoom around its moving midpoint', async ({ page, isMobile }) => {
@@ -158,18 +162,19 @@ test('cluster expansion lists stable member entities without combining their val
   await expect(cluster).toBeVisible();
   await cluster.click();
   const list = page.getByRole('region', { name: 'Các điểm trong cụm' });
-  await expect(list).toContainText('Lửa Trại Cấp 1');
-  await expect(list).toContainText('Hòm Vật Tư Lãnh Địa');
-  await list.getByRole('button', { name: /Hòm Vật Tư Lãnh Địa/ }).click();
-  await expect(page.locator('.entity-inspector:visible[data-entity-id="SITE-LL01-002"]')).toBeVisible();
+  await expect(list).not.toContainText('Lửa Trại Cấp 1');
+  await expect(list).toContainText('Mảnh gỗ đen');
+  await expect(list).toContainText('Đá nhô khỏi băng');
+  await list.getByRole('button', { name: /Đá nhô khỏi băng/ }).click();
+  await expect(page.locator('.entity-inspector:visible[data-entity-id="MODELED-STONE-01"]')).toBeVisible();
 });
 
 test('selection survives screen changes, highlights the matching building, and Escape clears it', async ({ page }) => {
   await visitMap(page);
-  await page.locator('.map-entity-marker[data-entity-id="SITE-LL01-002"]').click();
+  await page.locator('.map-entity-marker[data-entity-id="SITE-LL01-000"]').click();
   await navigateTo(page, /Công trình/);
-  await expect(page.locator('.building-card--selected')).toContainText('Hòm Vật Tư Lãnh Địa');
-  await expect(page.locator('.entity-inspector:visible[data-entity-id="SITE-LL01-002"]')).toBeVisible();
+  await expect(page.locator('.building-card--selected')).toContainText('Lửa Trại Cấp 1');
+  await expect(page.locator('.entity-inspector:visible[data-entity-id="SITE-LL01-000"]')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.locator('.building-card--selected')).toHaveCount(0);
   if (await page.locator('.map-inspector-mobile').isVisible()) await expect(page.locator('.map-inspector-mobile')).not.toHaveAttribute('open', '');
@@ -200,13 +205,13 @@ test('night and source-atlas previews keep hidden entities out of player selecti
   await openDeveloperControls(page);
   await page.getByLabel('Mô phỏng giờ hiển thị').selectOption('1140');
   await page.getByLabel('Lửa đang bật').uncheck();
-  await expect(page.locator('.map-entity-marker[data-entity-id="SITE-LL01-002"]')).toHaveAttribute('aria-label', /Vị trí đã biết lần cuối: Hòm Vật Tư/);
+  await expect(page.locator('.map-entity-marker[data-entity-id="MODELED-STONE-01"]')).toHaveAttribute('aria-label', /Vị trí đã biết lần cuối: Đá nhô khỏi băng/);
   const ordinaryIds = await page.locator('.map-accessible-entities').innerText();
   await page.getByLabel('Bật atlas debug').check();
   await expect(page.getByText('Atlas debug không phải khám phá')).toBeVisible();
   expect(await page.locator('.map-accessible-entities').innerText()).toBe(ordinaryIds);
   await expect(page.getByRole('button', { name: /Kiểm tra Hào Nông Sora/ })).toHaveCount(0);
-  await expect(page.locator('.entity-inspector:visible[data-entity-id="SITE-LL01-002"]')).toHaveCount(0);
+  await expect(page.locator('.entity-inspector:visible[data-entity-id="MODELED-STONE-01"]')).toHaveCount(0);
 });
 
 test('rapid resize keeps the map and page within a 390 px mobile viewport', async ({ page, isMobile }) => {

@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const localChromiumPath = process.env.CHROMIUM_EXECUTABLE_PATH;
 const productionPreview = process.env.PLAYWRIGHT_PREVIEW === '1';
+const inMemoryPreview = process.env.PLAYWRIGHT_IN_MEMORY === '1';
 const localBaseURL = productionPreview ? 'http://127.0.0.1:4173' : 'http://127.0.0.1:5173';
 
 export default defineConfig({
@@ -24,10 +25,10 @@ export default defineConfig({
     { name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
     { name: 'mobile-chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true } },
   ],
-  webServer: {
+  ...(!inMemoryPreview ? { webServer: {
     command: productionPreview ? 'npm run preview -- --host 127.0.0.1 --port 4173' : 'npm run dev -- --host 127.0.0.1',
     url: localBaseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 90_000,
-  },
+  } } : {}),
 });

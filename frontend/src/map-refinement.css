@@ -143,6 +143,7 @@
 .map-developer-tools p { color:#829fa9; font-size:10px; margin:4px 0 0; }
 .map-scene--deep .terrain-svg--deep { display:block; }
 .map-entity-marker,.map-cluster { cursor:pointer; outline:none; }
+.map-callout-leader { fill:none; stroke:#e6c78f; stroke-width:1.2; stroke-dasharray:4 4; stroke-opacity:.72; vector-effect:non-scaling-stroke; }
 .map-entity-marker:focus-visible>g:first-child>circle:first-child,.map-cluster:focus-visible>circle:first-child { stroke:#ffe3ae; stroke-width:3; }
 .map-entity-marker.is-selected>g:first-child>circle:first-child { stroke:#ffe2a7; stroke-width:2.5; filter:drop-shadow(0 0 7px #eac37e); }
 .map-cluster.is-selected>circle:first-child { stroke:#ffe2a7; stroke-width:3; }

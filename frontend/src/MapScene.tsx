@@ -13,6 +13,9 @@ import './map-refinement.css';
 
 type LayerState = { buildings: boolean; resources: boolean; discoveries: boolean };
 type PointerPoint = { x: number; y: number; pointerType: string };
+type DisplayMarker = ScreenCluster<EntityView> & {
+  leader?: { from: { x: number; y: number }; to: { x: number; y: number } };
+};
 type Gesture =
   | { kind: 'pan'; pointerId: number; start: PointerPoint; origin: CameraView; moved: boolean }
   | { kind: 'pinch'; pointerIds: [number, number]; startDistance: number; anchor: { x: number; y: number }; origin: CameraView; moved: boolean };
@@ -103,7 +106,32 @@ export default function MapScene({
     const screen = mapToScreen(mapPoint, activeCamera, screenRect);
     return { id: entityKey(entity), kind: entity.iconKind, value: entity, x: screen.x, y: screen.y, worldX: entity.x!, worldY: entity.y! };
   }).filter(marker => marker.x >= -64 && marker.x <= size.width + 64 && marker.y >= -64 && marker.y <= size.height + 64), [filteredEntities, activeCamera, screenRect.width, screenRect.height, size.width, size.height]);
-  const clustered = useMemo(() => clusterMarkers(screenMarkers, 58), [screenMarkers]);
+  const clustered = useMemo<DisplayMarker[]>(() => {
+    const settlementMarkers = screenMarkers.filter(marker => Boolean(marker.value.settlementId));
+    const featureMarkers = screenMarkers.filter(marker => !marker.value.settlementId);
+    const stableSettlementMarkers: DisplayMarker[] = settlementMarkers.map(marker => ({
+      type: 'marker', id: marker.id, value: marker.value, x: marker.x, y: marker.y, worldX: marker.worldX, worldY: marker.worldY,
+    }));
+    const camp = settlementMarkers[0];
+    let calloutIndex = 0;
+    const separatedFeatures: DisplayMarker[] = clusterMarkers(featureMarkers, 58).map(marker => {
+      if (!camp || Math.hypot(marker.x - camp.x, marker.y - camp.y) >= 72) return marker;
+      const index = calloutIndex++;
+      let direction = marker.x < camp.x ? -1 : 1;
+      if (camp.x < 76) direction = 1;
+      if (camp.x > size.width - 76) direction = -1;
+      let display = { x: camp.x + direction * 76, y: camp.y + index * 58 };
+      if (display.x < 34 || display.x > size.width - 34) {
+        display = { x: camp.x, y: camp.y + (index % 2 === 0 ? -1 : 1) * 76 };
+      }
+      const mapPoint = screenToMap(display, activeCamera, screenRect);
+      const from = marker.type === 'cluster'
+        ? { x: marker.worldX, y: -marker.worldY }
+        : { x: marker.value.x ?? 0, y: -(marker.value.y ?? 0) };
+      return { ...marker, x: display.x, y: display.y, worldX: mapPoint.x, worldY: -mapPoint.y, leader: { from, to: mapPoint } };
+    });
+    return [...separatedFeatures, ...stableSettlementMarkers].sort((a, b) => a.id.localeCompare(b.id));
+  }, [screenMarkers, activeCamera, screenRect, size.width, size.height]);
   const visibleLabelIds = useMemo(() => {
     const candidates = filteredEntities.filter(entity => Number.isFinite(entity.x) && Number.isFinite(entity.y)).map(entity => {
       const point = mapToScreen(worldToMap({ x: entity.x!, y: entity.y! }), activeCamera, screenRect);
@@ -364,6 +392,10 @@ export default function MapScene({
         {sourceAtlas && visibleMap.developerEntities?.map(entity => <g key={entityKey(entity)} aria-hidden="true" pointerEvents="none" opacity=".36">
           <MapEntityGlyph entity={entity} scale={scale}/><circle cx={entity.x} cy={-(entity.y ?? 0)} r={29 * scale} fill="none" stroke="#e8c895" strokeDasharray="3 5" strokeWidth={1.4 * scale}/>
         </g>)}
+        {clustered.filter(marker => marker.leader).map(marker => <line key={'leader-' + marker.id}
+          x1={marker.leader!.from.x} y1={marker.leader!.from.y}
+          x2={marker.leader!.to.x} y2={marker.leader!.to.y}
+          className="map-callout-leader" pointerEvents="none"/>)}
         {clustered.map(marker => marker.type === 'cluster' ? <g key={marker.id} className={'map-cluster' + (marker.memberIds.includes(selectedText) ? ' is-selected' : '')}
           transform={'translate(' + marker.worldX + ' ' + (-marker.worldY) + ') scale(' + scale + ')'} role="button" tabIndex={0}
           data-cluster-id={marker.id} aria-label={'Mở danh sách cụm có ' + marker.count + ' địa điểm'}
@@ -371,7 +403,7 @@ export default function MapScene({
           <circle r="24" fill="#143a46" stroke={marker.memberIds.includes(selectedText) ? '#ffe0a4' : '#c4dad0'} strokeWidth="2.3"/>
           <circle r="29" fill="none" stroke="#f2d59c" strokeOpacity=".55" strokeDasharray="3 4" strokeWidth="1.3"/>
           <text y="5" textAnchor="middle" fontSize="15" fontWeight="800" fill="#fff0cd">×{marker.count}</text>
-        </g> : <g key={marker.id} className={'map-entity-marker' + (sameEntityRef(marker.value.ref, selectedEntity) ? ' is-selected' : '') + (marker.value.knowledge === 'remembered' ? ' is-remembered' : '')}
+        </g> : <g key={marker.id} transform={`translate(${marker.worldX - (marker.value.x ?? 0)} ${(marker.value.y ?? 0) - marker.worldY})`} className={'map-entity-marker' + (sameEntityRef(marker.value.ref, selectedEntity) ? ' is-selected' : '') + (marker.value.knowledge === 'remembered' ? ' is-remembered' : '')}
           role="button" tabIndex={0} data-entity-id={marker.value.ref.id} data-entity-type={marker.value.ref.type} data-knowledge={marker.value.knowledge}
           aria-label={labelFor(marker.value)} onClick={() => { onSelectEntity(marker.value.ref); setClusterMembers(null); }}
           onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectEntity(marker.value.ref); setClusterMembers(null); } }}>
@@ -407,7 +439,7 @@ export default function MapScene({
         <strong>{fireActive ? formatDistance(radius) : 'Tắt'} <small>bán kính xem thử</small></strong>
         <em>{fireForm(fireLevel)} Cấp {fireLevel} · Chỉ hiển thị</em>
       </div>
-      {compact && onOpenFullMap && <button type="button" className="map-open-full" onClick={onOpenFullMap}>Mở bản đồ đầy đủ</button>}
+      {compact && onOpenFullMap && <button type="button" className="map-open-full" onClick={onOpenFullMap}>Mở lãnh địa</button>}
       {!compact && <div className="map-drag-hint">{world ? 'Vùng tối chưa được khảo sát · Bản đồ không tự khám phá' : 'Kéo để di chuyển · Cuộn chuột để thu phóng'}</div>}
       {compact && <span className="map-compact-label">SƯƠNG MÙ KHÁM PHÁ</span>}
       <ul className="map-accessible-entities" aria-label="Các địa điểm đã biết">

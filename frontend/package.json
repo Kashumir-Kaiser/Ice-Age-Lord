@@ -4,9 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
+    "dev": "vite --host 127.0.0.1",
+    "predev": "node scripts/sync-assets.mjs",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --host 0.0.0.0",
+    "prebuild": "node scripts/sync-assets.mjs",
+    "preview": "vite preview --host 127.0.0.1",
+    "assets:sync": "node scripts/sync-assets.mjs",
+    "qa:territory": "npm run build && node scripts/territory-visual-qa.mjs",
     "test": "node --test tests/*.test.mjs",
     "test:e2e": "playwright test"
   },

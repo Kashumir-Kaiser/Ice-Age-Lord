@@ -1,0 +1,726 @@
+{
+  "schemaVersion": 1,
+  "coordinateConvention": "World metres (+X east, +Y north); art ground anchor normalized to logical canvas.",
+  "assets": [
+    {
+      "assetId": "campfire-start",
+      "definitionId": "SITE-LL01-000",
+      "variant": "placeholder-original",
+      "orientation": "north",
+      "revision": 1,
+      "layers": {
+        "uiIcon": "/assets/buildings/campfire-start/icon.svg",
+        "body": "/assets/buildings/campfire-start/body.svg",
+        "base": "/assets/buildings/campfire-start/base.svg",
+        "upper": "/assets/buildings/campfire-start/upper.svg",
+        "shadow": "/assets/buildings/campfire-start/shadow.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 240,
+        "height": 200
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.22,
+          0.78
+        ],
+        [
+          0.5,
+          0.92
+        ],
+        [
+          0.78,
+          0.78
+        ],
+        [
+          0.5,
+          0.64
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.13,
+        "minY": 0.05,
+        "maxX": 0.87,
+        "maxY": 0.96
+      },
+      "hitPolygon": [
+        [
+          0.22,
+          0.78
+        ],
+        [
+          0.5,
+          0.92
+        ],
+        [
+          0.78,
+          0.78
+        ],
+        [
+          0.5,
+          0.64
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.28,
+            0.72
+          ],
+          [
+            0.3,
+            0.31
+          ],
+          [
+            0.5,
+            0.08
+          ],
+          [
+            0.72,
+            0.31
+          ],
+          [
+            0.73,
+            0.72
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.84
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "TERRITORY-FOOTPRINTS-V1",
+        "widthM": 2,
+        "depthM": 2
+      },
+      "source": "assets/source/buildings/campfire-start.svg",
+      "provenance": "Original authored SVG placeholder",
+      "license": "Original work created for this repository; permitted for this project.",
+      "status": "placeholder",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/buildings/campfire-start/body.svg",
+          "base": "/assets/buildings/campfire-start/base.svg",
+          "upper": "/assets/buildings/campfire-start/upper.svg",
+          "shadow": "/assets/buildings/campfire-start/shadow.svg"
+        },
+        "district": {
+          "icon": "/assets/buildings/campfire-start/icon.svg"
+        },
+        "regional": {
+          "icon": "/assets/buildings/campfire-start/icon.svg"
+        }
+      }
+    },
+    {
+      "assetId": "lord-house-damaged",
+      "definitionId": "SITE-LL01-001",
+      "variant": "placeholder-original",
+      "orientation": "north",
+      "revision": 1,
+      "layers": {
+        "uiIcon": "/assets/buildings/lord-house-damaged/icon.svg",
+        "body": "/assets/buildings/lord-house-damaged/body.svg",
+        "base": "/assets/buildings/lord-house-damaged/base.svg",
+        "upper": "/assets/buildings/lord-house-damaged/upper.svg",
+        "shadow": "/assets/buildings/lord-house-damaged/shadow.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 240,
+        "height": 200
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.22,
+          0.78
+        ],
+        [
+          0.5,
+          0.92
+        ],
+        [
+          0.78,
+          0.78
+        ],
+        [
+          0.5,
+          0.64
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.13,
+        "minY": 0.05,
+        "maxX": 0.87,
+        "maxY": 0.96
+      },
+      "hitPolygon": [
+        [
+          0.22,
+          0.78
+        ],
+        [
+          0.5,
+          0.92
+        ],
+        [
+          0.78,
+          0.78
+        ],
+        [
+          0.5,
+          0.64
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.28,
+            0.72
+          ],
+          [
+            0.3,
+            0.31
+          ],
+          [
+            0.5,
+            0.08
+          ],
+          [
+            0.72,
+            0.31
+          ],
+          [
+            0.73,
+            0.72
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.84
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "TERRITORY-FOOTPRINTS-V1",
+        "widthM": 4,
+        "depthM": 4
+      },
+      "source": "assets/source/buildings/lord-house-damaged.svg",
+      "provenance": "Original authored SVG placeholder",
+      "license": "Original work created for this repository; permitted for this project.",
+      "status": "placeholder",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/buildings/lord-house-damaged/body.svg",
+          "base": "/assets/buildings/lord-house-damaged/base.svg",
+          "upper": "/assets/buildings/lord-house-damaged/upper.svg",
+          "shadow": "/assets/buildings/lord-house-damaged/shadow.svg"
+        },
+        "district": {
+          "icon": "/assets/buildings/lord-house-damaged/icon.svg"
+        },
+        "regional": {
+          "icon": "/assets/buildings/lord-house-damaged/icon.svg"
+        }
+      }
+    },
+    {
+      "assetId": "tomb-entry",
+      "definitionId": "SITE-LL01-003",
+      "variant": "placeholder-original",
+      "orientation": "north",
+      "revision": 1,
+      "layers": {
+        "uiIcon": "/assets/buildings/tomb-entry/icon.svg",
+        "body": "/assets/buildings/tomb-entry/body.svg",
+        "base": "/assets/buildings/tomb-entry/base.svg",
+        "upper": "/assets/buildings/tomb-entry/upper.svg",
+        "shadow": "/assets/buildings/tomb-entry/shadow.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 240,
+        "height": 200
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.22,
+          0.78
+        ],
+        [
+          0.5,
+          0.92
+        ],
+        [
+          0.78,
+          0.78
+        ],
+        [
+          0.5,
+          0.64
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.13,
+        "minY": 0.05,
+        "maxX": 0.87,
+        "maxY": 0.96
+      },
+      "hitPolygon": [
+        [
+          0.22,
+          0.78
+        ],
+        [
+          0.5,
+          0.92
+        ],
+        [
+          0.78,
+          0.78
+        ],
+        [
+          0.5,
+          0.64
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.28,
+            0.72
+          ],
+          [
+            0.3,
+            0.31
+          ],
+          [
+            0.5,
+            0.08
+          ],
+          [
+            0.72,
+            0.31
+          ],
+          [
+            0.73,
+            0.72
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.84
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "TERRITORY-FOOTPRINTS-V1",
+        "widthM": 6,
+        "depthM": 5
+      },
+      "source": "assets/source/buildings/tomb-entry.svg",
+      "provenance": "Original authored SVG placeholder",
+      "license": "Original work created for this repository; permitted for this project.",
+      "status": "placeholder",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/buildings/tomb-entry/body.svg",
+          "base": "/assets/buildings/tomb-entry/base.svg",
+          "upper": "/assets/buildings/tomb-entry/upper.svg",
+          "shadow": "/assets/buildings/tomb-entry/shadow.svg"
+        },
+        "district": {
+          "icon": "/assets/buildings/tomb-entry/icon.svg"
+        },
+        "regional": {
+          "icon": "/assets/buildings/tomb-entry/icon.svg"
+        }
+      }
+    },
+    {
+      "assetId": "supply-crate",
+      "definitionId": "SITE-LL01-002",
+      "variant": "placeholder-original",
+      "orientation": "north",
+      "revision": 1,
+      "layers": {
+        "uiIcon": "/assets/buildings/supply-crate/icon.svg",
+        "body": "/assets/buildings/supply-crate/body.svg",
+        "base": "/assets/buildings/supply-crate/base.svg",
+        "upper": "/assets/buildings/supply-crate/upper.svg",
+        "shadow": "/assets/buildings/supply-crate/shadow.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 240,
+        "height": 200
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.22,
+          0.78
+        ],
+        [
+          0.5,
+          0.92
+        ],
+        [
+          0.78,
+          0.78
+        ],
+        [
+          0.5,
+          0.64
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.13,
+        "minY": 0.05,
+        "maxX": 0.87,
+        "maxY": 0.96
+      },
+      "hitPolygon": [
+        [
+          0.22,
+          0.78
+        ],
+        [
+          0.5,
+          0.92
+        ],
+        [
+          0.78,
+          0.78
+        ],
+        [
+          0.5,
+          0.64
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.28,
+            0.72
+          ],
+          [
+            0.3,
+            0.31
+          ],
+          [
+            0.5,
+            0.08
+          ],
+          [
+            0.72,
+            0.31
+          ],
+          [
+            0.73,
+            0.72
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.84
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "TERRITORY-FOOTPRINTS-V1",
+        "widthM": 3,
+        "depthM": 3
+      },
+      "source": "assets/source/buildings/supply-crate.svg",
+      "provenance": "Original authored SVG placeholder",
+      "license": "Original work created for this repository; permitted for this project.",
+      "status": "placeholder",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/buildings/supply-crate/body.svg",
+          "base": "/assets/buildings/supply-crate/base.svg",
+          "upper": "/assets/buildings/supply-crate/upper.svg",
+          "shadow": "/assets/buildings/supply-crate/shadow.svg"
+        },
+        "district": {
+          "icon": "/assets/buildings/supply-crate/icon.svg"
+        },
+        "regional": {
+          "icon": "/assets/buildings/supply-crate/icon.svg"
+        }
+      }
+    },
+    {
+      "assetId": "fixture-tall-tower",
+      "definitionId": "FIXTURE-TALL-TOWER",
+      "variant": "placeholder-original",
+      "orientation": "north",
+      "revision": 1,
+      "layers": {
+        "uiIcon": "/assets/buildings/fixture-tall-tower/icon.svg",
+        "body": "/assets/buildings/fixture-tall-tower/body.svg",
+        "base": "/assets/buildings/fixture-tall-tower/base.svg",
+        "upper": "/assets/buildings/fixture-tall-tower/upper.svg",
+        "shadow": "/assets/buildings/fixture-tall-tower/shadow.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 240,
+        "height": 200
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.22,
+          0.78
+        ],
+        [
+          0.5,
+          0.92
+        ],
+        [
+          0.78,
+          0.78
+        ],
+        [
+          0.5,
+          0.64
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.13,
+        "minY": 0.05,
+        "maxX": 0.87,
+        "maxY": 0.96
+      },
+      "hitPolygon": [
+        [
+          0.22,
+          0.78
+        ],
+        [
+          0.5,
+          0.92
+        ],
+        [
+          0.78,
+          0.78
+        ],
+        [
+          0.5,
+          0.64
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.28,
+            0.72
+          ],
+          [
+            0.3,
+            0.31
+          ],
+          [
+            0.5,
+            0.08
+          ],
+          [
+            0.72,
+            0.31
+          ],
+          [
+            0.73,
+            0.72
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.84
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "TERRITORY-FOOTPRINTS-V1",
+        "widthM": 5,
+        "depthM": 4
+      },
+      "source": "assets/source/buildings/fixture-tall-tower.svg",
+      "provenance": "Original authored SVG placeholder",
+      "license": "Original work created for this repository; permitted for this project.",
+      "status": "placeholder",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/buildings/fixture-tall-tower/body.svg",
+          "base": "/assets/buildings/fixture-tall-tower/base.svg",
+          "upper": "/assets/buildings/fixture-tall-tower/upper.svg",
+          "shadow": "/assets/buildings/fixture-tall-tower/shadow.svg"
+        },
+        "district": {
+          "icon": "/assets/buildings/fixture-tall-tower/icon.svg"
+        },
+        "regional": {
+          "icon": "/assets/buildings/fixture-tall-tower/icon.svg"
+        }
+      }
+    },
+    {
+      "assetId": "fixture-fire-max",
+      "definitionId": "FIXTURE-FIRE-MAX",
+      "variant": "placeholder-original",
+      "orientation": "north",
+      "revision": 1,
+      "layers": {
+        "uiIcon": "/assets/buildings/fixture-fire-max/icon.svg",
+        "body": "/assets/buildings/fixture-fire-max/body.svg",
+        "base": "/assets/buildings/fixture-fire-max/base.svg",
+        "upper": "/assets/buildings/fixture-fire-max/upper.svg",
+        "shadow": "/assets/buildings/fixture-fire-max/shadow.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 240,
+        "height": 200
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.22,
+          0.78
+        ],
+        [
+          0.5,
+          0.92
+        ],
+        [
+          0.78,
+          0.78
+        ],
+        [
+          0.5,
+          0.64
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.13,
+        "minY": 0.05,
+        "maxX": 0.87,
+        "maxY": 0.96
+      },
+      "hitPolygon": [
+        [
+          0.22,
+          0.78
+        ],
+        [
+          0.5,
+          0.92
+        ],
+        [
+          0.78,
+          0.78
+        ],
+        [
+          0.5,
+          0.64
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.28,
+            0.72
+          ],
+          [
+            0.3,
+            0.31
+          ],
+          [
+            0.5,
+            0.08
+          ],
+          [
+            0.72,
+            0.31
+          ],
+          [
+            0.73,
+            0.72
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.84
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "TERRITORY-FOOTPRINTS-V1",
+        "widthM": 8,
+        "depthM": 8
+      },
+      "source": "assets/source/buildings/fixture-fire-max.svg",
+      "provenance": "Original authored SVG placeholder",
+      "license": "Original work created for this repository; permitted for this project.",
+      "status": "placeholder",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/buildings/fixture-fire-max/body.svg",
+          "base": "/assets/buildings/fixture-fire-max/base.svg",
+          "upper": "/assets/buildings/fixture-fire-max/upper.svg",
+          "shadow": "/assets/buildings/fixture-fire-max/shadow.svg"
+        },
+        "district": {
+          "icon": "/assets/buildings/fixture-fire-max/icon.svg"
+        },
+        "regional": {
+          "icon": "/assets/buildings/fixture-fire-max/icon.svg"
+        }
+      }
+    }
+  ]
+}

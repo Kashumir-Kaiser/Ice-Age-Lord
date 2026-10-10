@@ -18,6 +18,11 @@ import { INITIAL_CAMERA } from './map/camera';
 import type { SharedMapCamera } from './map/camera';
 import EntityInspector from './inspectors/EntityInspector';
 import type { Dispatch, SetStateAction } from 'react';
+import TerritoryScene from './territory/TerritoryScene';
+import type { TerritoryCamera } from './territory/projection';
+import type { LayoutDraft } from './game/GameClient';
+import type { ReadabilityMode } from './territory/BuildingSprite';
+import { livingUnitGroups, visibleRaceFilters } from './game/unitGroups';
 
 const NAV_ICONS: Record<Screen, LucideIcon> = {
   overview: LayoutDashboard, territory: Crown, map: MapIcon, inventory: Archive,
@@ -149,8 +154,8 @@ function Overview({ selectedEntity, mapProps, navigate, clockSeconds, onClockCha
     </section>
     <section className="overview-columns">
       <div className="panel map-preview-panel">
-        <BlockTitle title="Vùng lãnh địa" eyebrow="BẢN ĐỒ" action={<button className="text-button" onClick={()=>navigate('map')}>Xem toàn màn hình <ChevronRight size={15}/></button>}/>
-        <MapScene {...mapProps} compact onClockChange={onClockChange} onOpenFullMap={()=>navigate('map')}/>
+        <BlockTitle title="Vùng lãnh địa" eyebrow="BẢN ĐỒ" action={<button className="text-button" onClick={()=>navigate('territory')}>Mở lãnh địa <ChevronRight size={15}/></button>}/>
+        <MapScene {...mapProps} compact onClockChange={onClockChange} onOpenFullMap={()=>navigate('territory')}/>
         <div className="preview-footer"><span><span className="legend-circle warm"/> Vòng nhiệt theo bán kính nguồn</span><span><span className="legend-circle blue"/> Công trình khởi đầu</span><span className="preview-warning">Địa hình giả lập · Fog mặc định</span></div>
       </div>
       <div className="overview-inspector-desktop"><EntityInspector entity={selectedEntity}/></div>
@@ -163,12 +168,12 @@ function Overview({ selectedEntity, mapProps, navigate, clockSeconds, onClockCha
     </section>
   </div>;
 }
-function MapPage({ selectedEntity, mapProps }: {selectedEntity:EntityView|null;mapProps:MapStateProps}) {
+function MapPage({ selectedEntity, mapProps, onOpenSettlement }: {selectedEntity:EntityView|null;mapProps:MapStateProps;onOpenSettlement:()=>void}) {
   return <div className="page-sections">
     <div className="notice-row"><Info size={17}/><span>Map demo · Vị trí đã biết đến từ projection fixture. Ánh sáng, kéo bản đồ và atlas debug không khám phá hoặc thay đổi trạng thái.</span></div>
     <div className="map-page-grid"><div className="panel map-full"><MapScene {...mapProps}/></div><div className="map-page-side">
-      <details className="map-inspector-desktop" open><summary>{selectedEntity?.name ?? 'Thông tin điểm được chọn'}</summary><EntityInspector entity={selectedEntity}/></details>
-      <details className="map-inspector-mobile" open={mapProps.inspectorOpen} onToggle={event=>mapProps.onInspectorOpenChange(event.currentTarget.open)}><summary>{selectedEntity?.name ?? 'Thông tin điểm được chọn'}</summary><EntityInspector entity={selectedEntity}/></details>
+      <details className="map-inspector-desktop" open><summary>{selectedEntity?.name ?? 'Thông tin điểm được chọn'}</summary><EntityInspector entity={selectedEntity} onOpenSettlement={onOpenSettlement}/></details>
+      <details className="map-inspector-mobile" open={mapProps.inspectorOpen} onToggle={event=>mapProps.onInspectorOpenChange(event.currentTarget.open)}><summary>{selectedEntity?.name ?? 'Thông tin điểm được chọn'}</summary><EntityInspector entity={selectedEntity} onOpenSettlement={onOpenSettlement}/></details>
       <details className="panel help-panel"><summary><h3><Compass size={18}/> Cách điều khiển</h3></summary><p>Kéo để di chuyển, cuộn trên mặt bản đồ để thu phóng và dùng các phím mũi tên / cộng trừ khi bản đồ được chọn.</p><p>Chế độ thế giới giữ riêng camera địa phương. Các nút lớp và công cụ xem thử thay đổi hình chiếu; chúng không thực hiện khám phá, khai thác hoặc lưu tiến trình.</p></details>
     </div></div>
   </div>;
@@ -194,32 +199,49 @@ function Inventory({ items, selectedEntity, selectEntity, inspectorOpen, onInspe
     </div>
   </div>;
 }
-function Buildings({ sites, selectedEntity, selectEntity, navigate, inspectorOpen, onInspectorOpenChange }: {sites:readonly Site[];selectedEntity:EntityView|null;selectEntity:(ref:EntityRef)=>void;navigate:(v:Screen)=>void;inspectorOpen:boolean;onInspectorOpenChange:(open:boolean)=>void}) {
+function Buildings({ sites, selectedEntity, selectEntity, navigate, onFocusBuilding, inspectorOpen, onInspectorOpenChange }: {sites:readonly Site[];selectedEntity:EntityView|null;selectEntity:(ref:EntityRef)=>void;navigate:(v:Screen)=>void;onFocusBuilding:(site:Site)=>void;inspectorOpen:boolean;onInspectorOpenChange:(open:boolean)=>void}) {
   return <div className="page-sections">
     <div className="notice-row"><Info size={17}/><span>Bốn công trình khởi đầu được đặt ở đúng tọa độ LL01 cố định tương đối với ngọn lửa H0. Không có công trình mới được xây.</span></div>
     <div className="building-page-grid"><div className="building-grid">{sites.map(site=><button key={site.id} onClick={()=>selectEntity(site.entityRef)} className={`panel building-card ${sameEntityRef(selectedEntity?.ref,site.entityRef)?'building-card--selected':''}`}>
       <div className="building-thumb"><span className="building-grid-overlay"/><Sigil kind={site.id}/></div>
       <div className="building-info"><span>{site.subtitle}</span><h3>{site.name}</h3><p>{site.status}</p><span className="building-open">Xem chi tiết <ChevronRight size={15}/></span></div>
-    </button>)}</div><div><div className="inspector-desktop"><EntityInspector entity={selectedEntity}/></div><details className="responsive-inspector" open={inspectorOpen} onToggle={event=>onInspectorOpenChange(event.currentTarget.open)}><summary>{selectedEntity?.name ?? 'Thông tin địa điểm được chọn'}</summary><EntityInspector entity={selectedEntity}/></details><button className="nav-next" onClick={()=>navigate('map')}>Xem vị trí cố định trên bản đồ <ChevronRight size={17}/></button></div></div>
+    </button>)}</div><div><div className="inspector-desktop"><EntityInspector entity={selectedEntity}/></div><details className="responsive-inspector" open={inspectorOpen} onToggle={event=>onInspectorOpenChange(event.currentTarget.open)}><summary>{selectedEntity?.name ?? 'Thông tin địa điểm được chọn'}</summary><EntityInspector entity={selectedEntity}/></details><button className="nav-next" onClick={()=>{const site=sites.find(item=>sameEntityRef(item.entityRef,selectedEntity?.ref))??sites[0];onFocusBuilding(site);navigate('territory');}}>Đến công trình trong lãnh địa <ChevronRight size={17}/></button></div></div>
   </div>;
 }
-function Forces({ samples }: {samples:PlayerView['forces']}) {
+function Forces({ samples, units }: {samples:PlayerView['forces'];units:PlayerView['units']}) {
   const icons={shield:Shield,sparkles:Sparkles,users:Users};
+  const [raceFilter,setRaceFilter]=useState('all');
+  const living=livingUnitGroups(units);
+  const races=visibleRaceFilters(units);
+  const filtered=living.filter(unit=>raceFilter==='all'||unit.raceId===raceFilter);
+  useEffect(()=>{if(raceFilter!=='all'&&!races.some(race=>race.id===raceFilter))setRaceFilter('all');},[raceFilter,races.map(race=>race.id).join('|')]);
+  const livingCount=living.reduce((sum,unit)=>sum+unit.alive,0);
   return <div className="page-sections">
-    <div className="stats-grid force-stats"><StatCard icon={Shield} label="Đơn vị tại khởi đầu" value="0" note="Không có lực lượng được tạo"/><StatCard icon={Sparkles} label="Thiên phú chính" value="SSS" note="Tử Phục Linh Sư" tone="ice"/><StatCard icon={Activity} label="Đội đang hoạt động" value="Chưa có" note="Không mô phỏng lệnh chiến đấu"/><StatCard icon={Layers} label="Sổ đơn vị" value="Chờ engine" note="ID và XP cần nguồn xác thực" tone="warm"/></div>
-    <div className="panel empty-army"><div className="empty-army-illustration"><Shield size={52} strokeWidth={1}/><span>0</span></div><h2>Chưa có đơn vị tại thời điểm khởi đầu</h2><p>Đây là trạng thái mở đầu. Không sử dụng quân lực hoặc nhân vật từ những lần chạy thử trước.</p></div>
+    <div className="stats-grid force-stats"><StatCard icon={Shield} label="Đơn vị đang sống" value={String(livingCount)} note={livingCount?'Theo player view hiện tại':'Không có lực lượng được tạo'}/><StatCard icon={Sparkles} label="Thiên phú chính" value="SSS" note="Tử Phục Linh Sư" tone="ice"/><StatCard icon={Activity} label="Đội đang hoạt động" value="Chưa có" note="Không mô phỏng lệnh chiến đấu"/><StatCard icon={Layers} label="Sổ đơn vị" value="Chờ engine" note="ID và XP cần nguồn xác thực" tone="warm"/></div>
+    <section className="panel force-roster" aria-label="Đơn vị đang sống">
+      <div className="inventory-toolbar"><div><span className="eyebrow">LỰC LƯỢNG ĐANG SỐNG</span><h2>Đơn vị theo chủng tộc</h2></div><span className="muted-text">{livingCount} đơn vị · {living.length} nhóm</span></div>
+      <div className="force-race-filter" role="group" aria-label="Lọc đơn vị theo chủng tộc"><button className={raceFilter==='all'?'is-selected':''} aria-pressed={raceFilter==='all'} onClick={()=>setRaceFilter('all')}>Tất cả</button>{races.map(race=><button key={race.id} className={raceFilter===race.id?'is-selected':''} aria-pressed={raceFilter===race.id} onClick={()=>setRaceFilter(race.id)}>{race.label}</button>)}</div>
+      {filtered.length?<div className="force-unit-grid">{filtered.map(unit=><article className="force-unit-card" key={unit.id}><span className="eyebrow">{unit.raceLabel.toUpperCase()}</span><h3>{unit.name}</h3><p>{unit.role}</p><small>{unit.alive} còn sống · {unit.available} có thể điều động</small></article>)}</div>:<div className="empty-army force-empty"><div className="empty-army-illustration"><Shield size={52} strokeWidth={1}/><span>0</span></div><h2>Chưa có đơn vị đang sống</h2><p>Tab “Tất cả” chỉ lọc các nhóm còn sống. Nút chủng tộc sẽ xuất hiện khi chủng tộc đó có đơn vị.</p></div>}
+    </section>
     <BlockTitle title="Các kiểu thẻ quân lực sẽ hỗ trợ" eyebrow="BỐ CỤC XEM TRƯỚC"/>
     <div className="sample-force-grid">{samples.map(({icon,title,text})=>{const Icon=icons[icon];return <div className="panel force-sample" key={title}><span className="sample-ribbon">KHÔNG SỞ HỮU</span><Icon size={35} strokeWidth={1.25}/><h3>{title}</h3><p>{text}</p><span className="muted-text">Mẫu cấu trúc hiển thị · Không có unit ID</span></div>;})}</div>
   </div>;
 }
-function Territory({ navigate, objectives, sites, selectEntity }: {navigate:(s:Screen)=>void;objectives:PlayerView['territoryObjectives'];sites:readonly Site[];selectEntity:(ref:EntityRef)=>void}) {
-  const icons={fire:Flame,house:Hammer,tomb:Shield,supply:Box};
+function Territory({ settlement, placementDefinitions, selectedEntity, units, camera, onCameraChange, drafts, onDraftsChange, focusedBuildingId, onFocusHandled, readability, onReadabilityChange, selectEntity, inspectorOpen, onInspectorOpenChange }: {
+  settlement:PlayerView['settlement'];placementDefinitions:PlayerView['placementDefinitions'];selectedEntity:EntityView|null;units:PlayerView['units'];
+  camera:TerritoryCamera|null;onCameraChange:Dispatch<SetStateAction<TerritoryCamera|null>>;drafts:readonly LayoutDraft[];onDraftsChange:Dispatch<SetStateAction<LayoutDraft[]>>;
+  focusedBuildingId:string|null;onFocusHandled:()=>void;readability:ReadabilityMode;onReadabilityChange:(mode:ReadabilityMode)=>void;
+  selectEntity:(ref:EntityRef)=>void;inspectorOpen:boolean;onInspectorOpenChange:(open:boolean)=>void;
+}) {
   return <div className="page-sections">
-    <section className="territory-intro panel"><div><span className="eyebrow">ĐIỂM KHỞI ĐẦU</span><h2>Một ngọn lửa giữa băng nguyên</h2><p>Chức năng này sẽ tập hợp kho vận, dân cư, nhiệt, lịch xây dựng và an ninh lãnh địa. Trong bản xem thử, các thao tác chỉ mở màn hình giới thiệu.</p><DemoLabel subtle/></div><span className="territory-decoration"><Snowflake size={98} strokeWidth={.7}/></span></section>
-    <BlockTitle title="Những giao diện ưu tiên" eyebrow="QUẢN LÝ KHỞI ĐẦU"/>
-    <div className="territory-objectives">{objectives.map(({id,title,detail},index)=>{const Icon=icons[id];const site=sites.find(value=>value.id===id);return <button className="panel objective-card" key={id} onClick={()=>{if(site)selectEntity(site.entityRef);navigate('buildings');}}>
-      <span className="objective-number">0{index+1}</span><span className="objective-icon"><Icon size={26}/></span><span className="objective-copy"><strong>{title}</strong><small>{detail}</small></span><ChevronRight size={20}/></button>;})}</div>
-    <div className="panel roadmap-panel"><h3><Layers size={19}/> Kết nối trong các giai đoạn tiếp theo</h3><div className="roadmap-grid"><span>Kho thực tế <small>Chờ dữ liệu trạng thái</small></span><span>Phân công lao động <small>Chờ job scheduler</small></span><span>Đường vận chuyển <small>Chờ tuyến đường thực</small></span><span>Sản xuất & tiêu hao <small>Chờ giao dịch nguyên tử</small></span></div></div>
+    <div className="notice-row"><Compass size={17}/><span>Lãnh địa dùng vị trí LL01 và H0 từ cùng bản xem người chơi. Bản đồ chiến lược chỉ đặt một dấu Lửa Trại cho cụm này; footprint và thẻ xây dưới đây là fixture để thử bố cục.</span></div>
+    <div className="territory-layout">
+      <div className="territory-layout-main"><TerritoryScene settlement={settlement} placementDefinitions={placementDefinitions} camera={camera} onCameraChange={onCameraChange} drafts={drafts} onDraftsChange={onDraftsChange} selectedRef={selectedEntity?.ref??null} onSelectEntity={selectEntity} focusedBuildingId={focusedBuildingId} onFocusHandled={onFocusHandled} readability={readability} onReadabilityChange={onReadabilityChange}/></div>
+      <aside className="territory-layout-side">
+        <details className="territory-inspector-details" open={inspectorOpen} onToggle={event=>onInspectorOpenChange(event.currentTarget.open)}><summary>{selectedEntity?.name??'Thông tin công trình hoặc điểm được chọn'}</summary><EntityInspector entity={selectedEntity} units={units}/></details>
+        <div className="panel territory-contract-note"><span className="eyebrow">RANH GIỚI DỮ LIỆU</span><h3>Bố trí trong bản xem thử</h3><p>Nguồn cung cấp vị trí và danh tính. Hình footprint hiện là giả định giao diện có phiên bản. Lối vào, vật cản, quyền xây và đơn vị tại chỗ chưa có nguồn xác thực.</p><div><span><Flame size={14}/> {settlement.fireActive?`${settlement.heatRadiusM} m nhiệt thật`:'Lửa tắt'}</span><span><ShieldCheck size={14}/> {settlement.buildings.length} instance đã biết</span></div></div>
+      </aside>
+    </div>
   </div>;
 }
 function Journal({ entries }: {entries:PlayerView['journal']}) {
@@ -239,6 +261,10 @@ export default function App() {
   const [selection,setSelection]=useState<EntityRef|null>({type:'site',id:'SITE-LL01-000'});
   const [inspectorOpen,setInspectorOpen]=useState(true);
   const [camera,setCamera]=useState<SharedMapCamera>(INITIAL_CAMERA);
+  const [territoryCamera,setTerritoryCamera]=useState<TerritoryCamera|null>(null);
+  const [layoutDrafts,setLayoutDrafts]=useState<LayoutDraft[]>([]);
+  const [territoryFocusId,setTerritoryFocusId]=useState<string|null>(null);
+  const [territoryReadability,setTerritoryReadability]=useState<ReadabilityMode>('normal');
   const [fireLevel,setFireLevel]=useState(1);
   const [fireActive,setFireActive]=useState(true);
   const [sourceAtlas,setSourceAtlas]=useState(false);
@@ -263,6 +289,8 @@ export default function App() {
     showHeat,onShowHeatChange:setShowHeat,showExploration,onShowExplorationChange:setShowExploration,
   };
   const navigate=(next:Screen)=>{setScreen(next);setSidebarOpen(false);};
+  const focusBuilding=(site:Site)=>{selectEntity(site.entityRef);setTerritoryFocusId(site.entityRef.id);};
+  const handleTerritoryFocusHandled=()=>setTerritoryFocusId(null);
   useEffect(()=>demoGameClient.subscribe(setPlayerView),[]);
   useEffect(()=>{
     const onKeyDown=(event:KeyboardEvent)=>{
@@ -289,11 +317,11 @@ export default function App() {
       {notificationOpen && <div className="notification-popover" role="status"><div><Bell size={17}/><strong>Trạng thái bản xem thử</strong><button className="icon-button" aria-label="Đóng thông báo" onClick={()=>setNotificationOpen(false)}><X size={17}/></button></div><p>Chưa kết nối bộ mô phỏng hoặc dữ liệu lưu. Mọi thao tác ở đây chỉ thay đổi màn hình hiển thị.</p></div>}
       <main className="page-content">
         {screen==='overview'&&<Overview selectedEntity={selectedEntity} mapProps={mapProps} navigate={navigate} clockSeconds={clockSeconds} onClockChange={setClockSeconds}/>}
-        {screen==='territory'&&<Territory navigate={navigate} objectives={playerView.territoryObjectives} sites={playerView.sites} selectEntity={selectEntity}/>}
-        {screen==='map'&&<MapPage selectedEntity={selectedEntity} mapProps={mapProps}/>}
+        {screen==='territory'&&<Territory settlement={playerView.settlement} placementDefinitions={playerView.placementDefinitions} selectedEntity={selectedEntity} units={playerView.units} camera={territoryCamera} onCameraChange={setTerritoryCamera} drafts={layoutDrafts} onDraftsChange={setLayoutDrafts} focusedBuildingId={territoryFocusId} onFocusHandled={handleTerritoryFocusHandled} readability={territoryReadability} onReadabilityChange={setTerritoryReadability} selectEntity={selectEntity} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen}/>}
+        {screen==='map'&&<MapPage selectedEntity={selectedEntity} mapProps={mapProps} onOpenSettlement={()=>navigate('territory')}/>}
         {screen==='inventory'&&<Inventory items={playerView.items} selectedEntity={selectedEntity} selectEntity={selectEntity} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen}/>}
-        {screen==='forces'&&<Forces samples={playerView.forces}/>}
-        {screen==='buildings'&&<Buildings sites={playerView.buildings} selectedEntity={selectedEntity} selectEntity={selectEntity} navigate={navigate} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen}/>}
+        {screen==='forces'&&<Forces samples={playerView.forces} units={playerView.units}/>}
+        {screen==='buildings'&&<Buildings sites={playerView.buildings} selectedEntity={selectedEntity} selectEntity={selectEntity} navigate={navigate} onFocusBuilding={focusBuilding} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen}/>}
         {screen==='journal'&&<Journal entries={playerView.journal}/>}
       </main>
       <footer className="app-footer"><span><Emblem size={21}/> ICE AGE LORD · FRONTEND PROTOTYPE</span><span>Chế độ demo · Không lưu tiến trình · Không sửa dữ liệu nguồn</span></footer>

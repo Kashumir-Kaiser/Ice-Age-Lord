@@ -9,7 +9,8 @@ const vite = await createServer({
   root,
   appType: 'custom',
   logLevel: 'error',
-  server: { middlewareMode: true },
+  server: { middlewareMode: true, hmr: false, watch: null },
+  optimizeDeps: { noDiscovery: true, include: [] },
 });
 const { DemoGameClient } = await vite.ssrLoadModule('/src/game/DemoGameClient.ts');
 const { visibleMapSpots } = await vite.ssrLoadModule('/src/worldFeatures.ts');
@@ -32,6 +33,10 @@ test('active map projection shows explicit known fixtures only; debug atlas is s
   assert.deepEqual(debug.discoveryIds, normal.discoveryIds);
   assert.deepEqual(debug.sight, client.getVisibleMap({ clockMinutes: 420, fireLevel: 30, fireActive: true, sourceAtlas: false }).sight);
   assert.equal(client.inspectEntity(debug.developerEntities[0].ref), null);
+  const openingSettlementMarkers=normal.entities.filter(entity=>entity.ref.id==='SITE-LL01-000'||entity.settlementId);
+  assert.equal(openingSettlementMarkers.length,1);
+  assert.equal(openingSettlementMarkers[0].settlementId,'SETTLEMENT-LL01-H0');
+  assert.equal(normal.entities.some(entity=>['SITE-LL01-001','SITE-LL01-002','SITE-LL01-003'].includes(entity.ref.id)),false);
 });
 
 test('light and fire previews update sight only, never known entity IDs or state revision', () => {
@@ -42,8 +47,21 @@ test('light and fire previews update sight only, never known entity IDs or state
   assert.deepEqual(wideHeat.discoveryIds, start.discoveryIds);
   assert.equal(start.revision, night.revision);
   assert.equal(start.revision, wideHeat.revision);
-  assert.equal(night.entities.find(entity => entity.ref.id === 'SITE-LL01-001').currentSight, false);
-  assert.equal(wideHeat.entities.find(entity => entity.ref.id === 'SITE-LL01-001').currentSight, true);
+  assert.equal(night.entities.find(entity => entity.ref.id === 'SITE-LL01-000').currentSight, false);
+  assert.equal(wideHeat.entities.find(entity => entity.ref.id === 'SITE-LL01-000').currentSight, true);
+  assert.equal(client.getPlayerView().settlement.heatRadiusM,10);
+});
+
+test('one clean player snapshot links four exact opening instances and starts without living units', () => {
+  const view=client.getPlayerView();
+  assert.equal(view.units.length,0);
+  assert.equal(view.settlement.id,'SETTLEMENT-LL01-H0');
+  assert.equal(view.settlement.buildings.length,4);
+  assert.deepEqual(view.settlement.buildings.map(building=>[building.ref.id,building.x,building.y]),[
+    ['SITE-LL01-000',0,0],['SITE-LL01-001',40,20],['SITE-LL01-003',-20,30],['SITE-LL01-002',30,-10],
+  ]);
+  assert.ok(view.settlement.buildings.every(building=>building.settlementId===view.settlement.id&&building.footprint.provenance==='frontend-fixture'));
+  assert.deepEqual(view.placementDefinitions.map(definition=>definition.assetId),['lord-house-damaged','fixture-tall-tower','fixture-fire-max']);
 });
 
 test('known resource inspectors distinguish depleted, reserved, unreachable, and unknown quantities', () => {
@@ -54,14 +72,15 @@ test('known resource inspectors distinguish depleted, reserved, unreachable, and
   assert.equal(depleted.resourceBalance.capacity, 18);
   assert.equal(reserved.resourceBalance.reserved, 6);
   assert.equal(reserved.resourceBalance.reachable, false);
-  assert.equal(view.entities.find(entity => entity.ref.id === 'SITE-LL01-002').ref.type, 'site');
+  assert.equal(view.entities.some(entity => entity.ref.id === 'SITE-LL01-002'), false);
+  assert.equal(client.inspectEntity({type:'site',id:'SITE-LL01-002'}).ref.type, 'site');
   assert.equal(view.developerEntities.find(entity => entity.ref.type === 'cache')?.resourceBalance, undefined);
 });
 
 test('commands are rejected without changing view revision or fixture balances', async () => {
   const before = client.getPlayerView();
   const result = await client.submitCommand({
-    type: 'harvest', entity: { type: 'resource', id: 'MODELED-SALVAGE-01' }, material: 'Gỗ', amount: 5,
+    type: 'harvest', entity: { type: 'resource', id: 'MODELED-SALVAGE-01' }, material: 'Gỗ', amount: 5, unitGroupId: 'fixture-unit', unitCount: 2,
   });
   const after = client.getPlayerView();
   assert.equal(result.accepted, false);
