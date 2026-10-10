@@ -48,6 +48,7 @@ test('live mode uses Stage 03 API and keeps map and settlement campfire on one e
   let saves: unknown[] = [];
   let created = false;
   let commands = 0;
+  let expectedRevision: number | null = null;
 
   await page.route('**/api/v1/**', async route => {
     const request = route.request();
@@ -94,6 +95,7 @@ test('live mode uses Stage 03 API and keeps map and settlement campfire on one e
     }
     if (pathname.endsWith('/commands')) {
       commands += 1;
+      expectedRevision = request.postDataJSON().expectedRevision;
       currentView = playerView(1);
       await route.fulfill({ json: { receipt: { commandId: request.postDataJSON().commandId, accepted: true, revision: 1, eventSequence: 1, code: 'OK', message: 'Đã commit' }, revision: 1, view: currentView } });
       return;
@@ -123,6 +125,7 @@ test('live mode uses Stage 03 API and keeps map and settlement campfire on one e
   await expect(page.getByText('Đã commit · revision 1 đã commit.')).toBeVisible();
   expect(created).toBe(true);
   expect(commands).toBe(1);
+  expect(expectedRevision).toBe(0);
 
   await page.reload();
   await page.getByLabel('Khóa chủ sở hữu').fill('local-owner-key');
