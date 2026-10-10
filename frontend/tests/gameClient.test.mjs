@@ -61,7 +61,10 @@ test('one clean player snapshot links four exact opening instances and starts wi
     ['SITE-LL01-000',0,0],['SITE-LL01-001',40,20],['SITE-LL01-003',-20,30],['SITE-LL01-002',30,-10],
   ]);
   assert.ok(view.settlement.buildings.every(building=>building.settlementId===view.settlement.id&&building.footprint.provenance==='frontend-fixture'));
-  assert.deepEqual(view.placementDefinitions.map(definition=>definition.assetId),['lord-house-damaged','fixture-tall-tower','fixture-fire-max']);
+  assert.deepEqual(view.placementDefinitions.map(definition=>definition.assetId),[
+    'polar-farmhouse-l01','opening-palisade-wall','opening-timber-gate',
+    'lord-house-damaged','fixture-tall-tower','fixture-fire-max',
+  ]);
 });
 
 test('known resource inspectors distinguish depleted, reserved, unreachable, and unknown quantities', () => {
