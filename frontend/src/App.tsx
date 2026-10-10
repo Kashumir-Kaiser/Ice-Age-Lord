@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   Activity, AlertTriangle, Archive, Bell, BookOpen, Box, ChevronRight, Clock3,
   Compass, Crown, Flame, Hammer, Info, Layers, LayoutDashboard, Map as MapIcon,
-  Menu, Package, Search, Shield, ShieldCheck, Snowflake, Sparkles, Users, X,
+  LocateFixed, Menu, Package, Search, Shield, ShieldCheck, Snowflake, Sparkles, UserRound, Users, X,
   type LucideIcon,
 } from 'lucide-react';
 import MapScene from './MapScene';
@@ -72,9 +72,15 @@ type MapStateProps = {
   onShowHeatChange:(active:boolean)=>void;
   showExploration:boolean;
   onShowExplorationChange:(active:boolean)=>void;
+  playerName:string;
+  playerPosition:PlayerView['player']['position'];
+  followPlayer:boolean;
+  onFollowPlayerChange:(active:boolean)=>void;
+  onOpenPlayerProfile:()=>void;
 };
-function Header({ screen, screens, onMenu, notifications, onNotifications, clockSeconds, speed, changeSpeed, customSpeed, setCustomSpeed }: {
+function Header({ screen, screens, player, onMenu, onOpenPlayerProfile, profileOpen, notifications, onNotifications, clockSeconds, speed, changeSpeed, customSpeed, setCustomSpeed }: {
   screens:PlayerView['screens'];
+  player:PlayerView['player']; profileOpen:boolean; onOpenPlayerProfile:()=>void;
   screen:Screen; onMenu:()=>void; notifications:boolean; onNotifications:()=>void; clockSeconds:number; speed:ClockSpeed; changeSpeed:(speed:ClockSpeed)=>void; customSpeed:number; setCustomSpeed:(speed:number)=>void;
 }) {
   const heading = HEADINGS[screen];
@@ -91,9 +97,29 @@ function Header({ screen, screens, onMenu, notifications, onNotifications, clock
         <small className="clock-sim-label">Đồng hồ hiển thị · Không chạy engine</small>
       </div>
       <button className={`icon-button ${notifications?'icon-button--active':''}`} onClick={onNotifications} aria-label="Thông tin bản demo" aria-expanded={notifications}><Bell size={18}/></button>
-      <div className="profile-mini" aria-label="Lí Lan — người chơi"><img className="profile-portrait" src="/assets/characters/li-lan-t0-portrait.svg" width={38} height={38} alt="Chân dung Lí Lan"/><span className="profile-name">Lí Lan<small>Người chơi</small></span></div>
+      <button type="button" className="profile-mini" onClick={onOpenPlayerProfile} aria-haspopup="dialog" aria-expanded={profileOpen} aria-label={`Mở hồ sơ người chơi: ${player.name}`}><img className="profile-portrait" src="/assets/characters/li-lan-t0-portrait.svg" width={38} height={38} alt="Chân dung Lí Lan"/><span className="profile-name">{player.name}<small>Người chơi</small></span></button>
     </div>
   </header>;
+}
+function PlayerProfile({ player, open, followPlayer, onClose, onFollowChange, onLocate }: {
+  player:PlayerView['player']; open:boolean; followPlayer:boolean; onClose:()=>void; onFollowChange:(active:boolean)=>void; onLocate:(view:'territory'|'world')=>void;
+}) {
+  if(!open)return null;
+  return <div className="player-profile-backdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget)onClose();}}>
+    <section className="player-profile-dialog" role="dialog" aria-modal="true" aria-labelledby="player-profile-title">
+      <header className="player-profile-heading"><div><span className="eyebrow">HỒ SƠ NGƯỜI CHƠI · MỐC T0</span><h2 id="player-profile-title">Hồ sơ {player.name}</h2></div><button type="button" className="icon-button" aria-label="Đóng hồ sơ" onClick={onClose}><X size={18}/></button></header>
+      <div className="player-profile-identity"><img className="player-profile-avatar" src="/assets/characters/li-lan-t0-portrait.svg" width={66} height={66} alt="Chân dung Lí Lan"/><div><h3>{player.name}</h3><p>Lãnh chúa · H0 · Cấp {player.level}</p><span className="player-profile-talent"><Sparkles size={14}/> {player.title} · {player.grade}</span></div></div>
+      <div className="player-profile-stats" aria-label="Chỉ số hồ sơ">
+        <article><span>Tuổi</span><strong>{player.age}</strong></article><article><span>Kinh nghiệm</span><strong>{player.xp.toLocaleString('vi-VN')} XP</strong></article>
+        <article><span>Mana</span><strong>{player.mana.current} / {player.mana.max}</strong></article>
+      </div>
+      <section className="player-profile-follow"><div><strong>Khóa góc nhìn vào người chơi</strong><p>Giữ camera trên Lí Lan khi đổi giữa lãnh địa và bản đồ thế giới. Kéo bản đồ để mở khóa và di chuyển.</p></div>
+        <button type="button" className={`player-profile-toggle${followPlayer?' is-active':''}`} aria-pressed={followPlayer} onClick={()=>onFollowChange(!followPlayer)}><LocateFixed size={16}/>{followPlayer?'Đang khóa':'Khóa camera'}</button>
+      </section>
+      <div className="player-profile-map-actions"><button type="button" onClick={()=>onLocate('territory')}><Crown size={16}/> Định vị ở lãnh địa</button><button type="button" onClick={()=>onLocate('world')}><Compass size={16}/> Định vị trên bản đồ thế giới</button></div>
+      <small className="player-profile-note"><UserRound size={13}/> Vị trí hiển thị theo neo H0 của bản demo; khóa camera không thay đổi vị trí hay trạng thái game.</small>
+    </section>
+  </div>;
 }
 function Sidebar({ current, screens, navigate, open, close }: {
   screens:PlayerView['screens'];
@@ -216,16 +242,17 @@ function Forces({ samples, units }: {samples:PlayerView['forces'];units:PlayerVi
     <div className="sample-force-grid">{samples.map(({icon,title,text})=>{const Icon=icons[icon];return <div className="panel force-sample" key={title}><span className="sample-ribbon">KHÔNG SỞ HỮU</span><Icon size={35} strokeWidth={1.25}/><h3>{title}</h3><p>{text}</p><span className="muted-text">Mẫu cấu trúc hiển thị · Không có unit ID</span></div>;})}</div>
   </div>;
 }
-function Territory({ settlement, placementDefinitions, selectedEntity, units, camera, onCameraChange, drafts, onDraftsChange, focusedBuildingId, onFocusHandled, readability, onReadabilityChange, selectEntity, inspectorOpen, onInspectorOpenChange }: {
+function Territory({ settlement, placementDefinitions, selectedEntity, units, camera, onCameraChange, drafts, onDraftsChange, focusedBuildingId, onFocusHandled, readability, onReadabilityChange, selectEntity, inspectorOpen, onInspectorOpenChange, player, followPlayer, onFollowPlayerChange, onOpenPlayerProfile }: {
   settlement:PlayerView['settlement'];placementDefinitions:PlayerView['placementDefinitions'];selectedEntity:EntityView|null;units:PlayerView['units'];
   camera:TerritoryCamera|null;onCameraChange:Dispatch<SetStateAction<TerritoryCamera|null>>;drafts:readonly LayoutDraft[];onDraftsChange:Dispatch<SetStateAction<LayoutDraft[]>>;
   focusedBuildingId:string|null;onFocusHandled:()=>void;readability:ReadabilityMode;onReadabilityChange:(mode:ReadabilityMode)=>void;
   selectEntity:(ref:EntityRef)=>void;inspectorOpen:boolean;onInspectorOpenChange:(open:boolean)=>void;
+  player:PlayerView['player'];followPlayer:boolean;onFollowPlayerChange:(active:boolean)=>void;onOpenPlayerProfile:()=>void;
 }) {
   return <div className="page-sections">
     <div className="notice-row"><Compass size={17}/><span>Lãnh địa dùng vị trí LL01 và H0 từ cùng bản xem người chơi. Bản đồ chiến lược chỉ đặt một dấu Lửa Trại cho cụm này; footprint và thẻ xây dưới đây là fixture để thử bố cục.</span></div>
     <div className="territory-layout">
-      <div className="territory-layout-main"><TerritoryScene settlement={settlement} placementDefinitions={placementDefinitions} camera={camera} onCameraChange={onCameraChange} drafts={drafts} onDraftsChange={onDraftsChange} selectedRef={selectedEntity?.ref??null} onSelectEntity={selectEntity} focusedBuildingId={focusedBuildingId} onFocusHandled={onFocusHandled} readability={readability} onReadabilityChange={onReadabilityChange}/></div>
+      <div className="territory-layout-main"><TerritoryScene settlement={settlement} placementDefinitions={placementDefinitions} camera={camera} onCameraChange={onCameraChange} drafts={drafts} onDraftsChange={onDraftsChange} selectedRef={selectedEntity?.ref??null} onSelectEntity={selectEntity} focusedBuildingId={focusedBuildingId} onFocusHandled={onFocusHandled} readability={readability} onReadabilityChange={onReadabilityChange} playerName={player.name} playerPosition={player.position} followPlayer={followPlayer} onFollowPlayerChange={onFollowPlayerChange} onOpenPlayerProfile={onOpenPlayerProfile}/></div>
       <aside className="territory-layout-side">
         <details className="territory-inspector-details" open={inspectorOpen} onToggle={event=>onInspectorOpenChange(event.currentTarget.open)}><summary>{selectedEntity?.name??'Thông tin công trình hoặc điểm được chọn'}</summary><EntityInspector entity={selectedEntity} units={units}/></details>
         <div className="panel territory-contract-note"><span className="eyebrow">RANH GIỚI DỮ LIỆU</span><h3>Bố trí trong bản xem thử</h3><p>Nguồn cung cấp vị trí và danh tính. Hình footprint hiện là giả định giao diện có phiên bản. Lối vào, vật cản, quyền xây và đơn vị tại chỗ chưa có nguồn xác thực.</p><div><span><Flame size={14}/> {settlement.fireActive?`${settlement.heatRadiusM} m nhiệt thật`:'Lửa tắt'}</span><span><ShieldCheck size={14}/> {settlement.buildings.length} instance đã biết</span></div></div>
@@ -246,6 +273,8 @@ export default function App() {
   const [screen,setScreen]=useState<Screen>('overview');
   const [sidebarOpen,setSidebarOpen]=useState(false);
   const [notificationOpen,setNotificationOpen]=useState(false);
+  const [playerProfileOpen,setPlayerProfileOpen]=useState(false);
+  const [followPlayer,setFollowPlayer]=useState(false);
   const [playerView,setPlayerView]=useState<PlayerView>(()=>demoGameClient.getPlayerView());
   const [selection,setSelection]=useState<EntityRef|null>({type:'site',id:'SITE-LL01-000'});
   const [inspectorOpen,setInspectorOpen]=useState(true);
@@ -276,15 +305,27 @@ export default function App() {
     visibleMap,camera,onCameraChange:setCamera,fireLevel,onFireLevelChange:setFireLevel,
     fireActive,onFireActiveChange:setFireActive,sourceAtlas,onSourceAtlasChange:setSourceAtlas,
     showHeat,onShowHeatChange:setShowHeat,showExploration,onShowExplorationChange:setShowExploration,
+    playerName:playerView.player.name,playerPosition:playerView.player.position,followPlayer,onFollowPlayerChange:setFollowPlayer,onOpenPlayerProfile:()=>setPlayerProfileOpen(true),
   };
   const navigate=(next:Screen)=>{setScreen(next);setSidebarOpen(false);};
+  const locatePlayer=(view:'territory'|'world')=>{
+    const position=playerView.player.position;
+    setFollowPlayer(true);setPlayerProfileOpen(false);
+    if(view==='world'){
+      setCamera(previous=>({...previous,mode:'world',world:{...previous.world,x:position.x,y:-position.y}}));
+      navigate('map');
+    }else{
+      setTerritoryCamera(previous=>({x:position.x,y:position.y,zoom:Math.max(.78,previous?.zoom??.78)}));
+      navigate('territory');
+    }
+  };
   const focusBuilding=(site:Site)=>{selectEntity(site.entityRef);setTerritoryFocusId(site.entityRef.id);};
   const handleTerritoryFocusHandled=()=>setTerritoryFocusId(null);
   useEffect(()=>demoGameClient.subscribe(setPlayerView),[]);
   useEffect(()=>{
     const onKeyDown=(event:KeyboardEvent)=>{
       if(event.key!=='Escape')return;
-      setSelection(null);setInspectorOpen(false);setSidebarOpen(false);setNotificationOpen(false);
+      setSelection(null);setInspectorOpen(false);setSidebarOpen(false);setNotificationOpen(false);setPlayerProfileOpen(false);
     };
     window.addEventListener('keydown',onKeyDown);
     return()=>window.removeEventListener('keydown',onKeyDown);
@@ -302,11 +343,12 @@ export default function App() {
   return <div className="app-shell">
     <Sidebar current={screen} screens={playerView.screens} navigate={navigate} open={sidebarOpen} close={()=>setSidebarOpen(false)}/>
     <div className="app-main">
-      <Header screen={screen} screens={playerView.screens} onMenu={()=>setSidebarOpen(true)} notifications={notificationOpen} onNotifications={()=>setNotificationOpen(v=>!v)} clockSeconds={clockSeconds} speed={speed} changeSpeed={setSpeed} customSpeed={customSpeed} setCustomSpeed={setCustomSpeed}/>
+      <Header screen={screen} screens={playerView.screens} player={playerView.player} profileOpen={playerProfileOpen} onOpenPlayerProfile={()=>setPlayerProfileOpen(true)} onMenu={()=>setSidebarOpen(true)} notifications={notificationOpen} onNotifications={()=>setNotificationOpen(v=>!v)} clockSeconds={clockSeconds} speed={speed} changeSpeed={setSpeed} customSpeed={customSpeed} setCustomSpeed={setCustomSpeed}/>
+      <PlayerProfile player={playerView.player} open={playerProfileOpen} followPlayer={followPlayer} onClose={()=>setPlayerProfileOpen(false)} onFollowChange={setFollowPlayer} onLocate={locatePlayer}/>
       {notificationOpen && <div className="notification-popover" role="status"><div><Bell size={17}/><strong>Trạng thái bản xem thử</strong><button className="icon-button" aria-label="Đóng thông báo" onClick={()=>setNotificationOpen(false)}><X size={17}/></button></div><p>Chưa kết nối bộ mô phỏng hoặc dữ liệu lưu. Mọi thao tác ở đây chỉ thay đổi màn hình hiển thị.</p></div>}
       <main className="page-content">
         {screen==='overview'&&<Overview selectedEntity={selectedEntity} mapProps={mapProps} navigate={navigate} clockSeconds={clockSeconds} onClockChange={setClockSeconds}/>}
-        {screen==='territory'&&<Territory settlement={playerView.settlement} placementDefinitions={playerView.placementDefinitions} selectedEntity={selectedEntity} units={playerView.units} camera={territoryCamera} onCameraChange={setTerritoryCamera} drafts={layoutDrafts} onDraftsChange={setLayoutDrafts} focusedBuildingId={territoryFocusId} onFocusHandled={handleTerritoryFocusHandled} readability={territoryReadability} onReadabilityChange={setTerritoryReadability} selectEntity={selectEntity} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen}/>}
+        {screen==='territory'&&<Territory settlement={playerView.settlement} placementDefinitions={playerView.placementDefinitions} selectedEntity={selectedEntity} units={playerView.units} camera={territoryCamera} onCameraChange={setTerritoryCamera} drafts={layoutDrafts} onDraftsChange={setLayoutDrafts} focusedBuildingId={territoryFocusId} onFocusHandled={handleTerritoryFocusHandled} readability={territoryReadability} onReadabilityChange={setTerritoryReadability} selectEntity={selectEntity} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen} player={playerView.player} followPlayer={followPlayer} onFollowPlayerChange={setFollowPlayer} onOpenPlayerProfile={()=>setPlayerProfileOpen(true)}/>}
         {screen==='map'&&<MapPage selectedEntity={selectedEntity} mapProps={mapProps} onOpenSettlement={()=>navigate('territory')}/>}
         {screen==='inventory'&&<Inventory items={playerView.items} selectedEntity={selectedEntity} selectEntity={selectEntity} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen}/>}
         {screen==='forces'&&<Forces samples={playerView.forces} units={playerView.units}/>}

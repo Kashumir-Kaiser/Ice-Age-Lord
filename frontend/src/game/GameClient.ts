@@ -114,6 +114,18 @@ export type TerritoryObjective = { id: SiteKind; title: string; detail: string }
 export type PlayerView = {
   revision: number;
   demoMode: true;
+  player: {
+    name: string;
+    age: number;
+    level: number;
+    xp: number;
+    title: string;
+    grade: 'SSS';
+    mana: { current: number; max: number };
+    /** Fixture anchor for camera focus; coordinates are world metres. */
+    position: { x: number; y: number };
+    settlementId: string;
+  };
   screens: readonly { id: Screen; name: string; hint: string }[];
   sites: readonly Site[];
   buildings: readonly Site[];

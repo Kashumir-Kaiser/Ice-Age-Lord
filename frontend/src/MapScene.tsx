@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { Dispatch, PointerEvent as ReactPointerEvent, SetStateAction } from 'react';
-import { Compass, Eye, EyeOff, Globe2, Layers3, Maximize2, Minus, Moon, Mountain, Plus, Snowflake, Sun, ThermometerSun, TreePine } from 'lucide-react';
+import { Compass, Eye, EyeOff, Globe2, Layers3, LocateFixed, Maximize2, Minus, Moon, Mountain, Plus, Snowflake, Sun, ThermometerSun, TreePine } from 'lucide-react';
 import { dayOverlayOpacity, dayPhase, fireForm, formatClock, formatDistance, heatRadiusM, shouldEnterWorldMap, shouldReturnToLocalMap } from './mapModel';
 import type { EntityRef, EntityView, VisibleMap } from './game/GameClient';
 import { sameEntityRef } from './game/GameClient';
@@ -39,6 +39,11 @@ type Props = {
   onShowHeatChange: (active: boolean) => void;
   showExploration: boolean;
   onShowExplorationChange: (active: boolean) => void;
+  playerName: string;
+  playerPosition: { x: number; y: number };
+  followPlayer: boolean;
+  onFollowPlayerChange: (active: boolean) => void;
+  onOpenPlayerProfile: () => void;
   onOpenFullMap?: () => void;
 };
 
@@ -61,7 +66,8 @@ const midpoint = (a: PointerPoint, b: PointerPoint): PointerPoint => ({ x: (a.x 
 export default function MapScene({
   selectedEntity, onSelectEntity, compact = false, clockSeconds, onClockChange, visibleMap, camera, onCameraChange,
   fireLevel, onFireLevelChange, fireActive, onFireActiveChange, sourceAtlas, onSourceAtlasChange,
-  showHeat, onShowHeatChange, showExploration, onShowExplorationChange, onOpenFullMap,
+  showHeat, onShowHeatChange, showExploration, onShowExplorationChange, playerName, playerPosition,
+  followPlayer, onFollowPlayerChange, onOpenPlayerProfile, onOpenFullMap,
 }: Props) {
   const unique = useId().replace(/[^a-zA-Z0-9]/g, '') || 'map';
   const rootRef = useRef<HTMLDivElement>(null);
@@ -83,6 +89,7 @@ export default function MapScene({
   const viewport = useMemo(() => viewBox(activeCamera, size.width, size.height), [activeCamera.x, activeCamera.y, activeCamera.zoom, size.width, size.height]);
   const screenRect: Rect = useMemo(() => ({ x: 0, y: 0, width: size.width, height: size.height }), [size.width, size.height]);
   const currentSightOpacity = dayOverlayOpacity(minutes);
+  const playerMapPoint = worldToMap(playerPosition);
 
   useEffect(() => {
     const node = rootRef.current;
@@ -94,6 +101,12 @@ export default function MapScene({
     observer.observe(node);
     return () => observer.disconnect();
   }, []);
+  useEffect(() => {
+    if (!followPlayer) return;
+    onCameraChange(previous => previous.mode === 'local'
+      ? { ...previous, local: { ...previous.local, x: playerMapPoint.x, y: playerMapPoint.y } }
+      : { ...previous, world: { ...previous.world, x: playerMapPoint.x, y: playerMapPoint.y } });
+  }, [followPlayer, playerMapPoint.x, playerMapPoint.y]);
 
   const filteredEntities = useMemo(() => visibleMap.entities.filter(entity => {
     if (entity.ref.type === 'site' && !layers.buildings) return false;
@@ -174,11 +187,16 @@ export default function MapScene({
   };
   const enterWorldOverview = () => {
     const fitted = fitCircle(WORLD_HALF_SPAN_M, screenRect, 56);
-    onCameraChange(previous => ({ ...previous, mode: 'world', world: fitted }));
+    onCameraChange(previous => ({ ...previous, mode: 'world', world: followPlayer ? { ...fitted, x: playerMapPoint.x, y: playerMapPoint.y } : fitted }));
   };
-  const returnToLocal = () => onCameraChange(previous => ({ ...previous, mode: 'local', local: previous.local }));
-  const resetToCamp = () => onCameraChange(previous => ({ ...previous, mode: 'local', local: { x: 0, y: 0, zoom: 1 } }));
+  const returnToLocal = () => onCameraChange(previous => ({
+    ...previous,
+    mode: 'local',
+    local: followPlayer ? { ...previous.local, x: playerMapPoint.x, y: playerMapPoint.y } : previous.local,
+  }));
+  const resetToCamp = () => onCameraChange(previous => ({ ...previous, mode: 'local', local: { x: followPlayer ? playerMapPoint.x : 0, y: followPlayer ? playerMapPoint.y : 0, zoom: 1 } }));
   const fitHeat = () => {
+    if (followPlayer) onFollowPlayerChange(false);
     const fitted = fitCircle(radius, screenRect, 56);
     onCameraChange(previous => ({ ...previous, mode: 'local', local: fitted }));
   };
@@ -233,6 +251,7 @@ export default function MapScene({
         x: activeGesture.anchor.x - (ratioX - .5) * nextSize.width,
         y: activeGesture.anchor.y - (ratioY - .5) * nextSize.height,
       };
+      if (!activeGesture.moved && followPlayer) onFollowPlayerChange(false);
       activeGesture.moved = true;
       withZoom(next, activeGesture.origin.zoom);
       return;
@@ -240,6 +259,7 @@ export default function MapScene({
     if (activeGesture?.kind !== 'pan' || activeGesture.pointerId !== event.pointerId) return;
     const dx = point.x - activeGesture.start.x, dy = point.y - activeGesture.start.y;
     if (!activeGesture.moved && Math.hypot(dx, dy) <= 5) return;
+    if (!activeGesture.moved && followPlayer) onFollowPlayerChange(false);
     activeGesture.moved = true;
     try { if (!event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.setPointerCapture(event.pointerId); } catch { /* Pointer may have left the surface. */ }
     withZoom({
@@ -299,14 +319,16 @@ export default function MapScene({
       const factor = Math.exp(-delta * .00145);
       const nextZoom = Math.max(MIN_LOCAL_ZOOM, Math.min(MAX_ZOOM, activeCamera.zoom * factor));
       const localRect: Rect = { x: 0, y: 0, width: rect.width, height: rect.height };
-      const pointer = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+      const pointer = followPlayer
+        ? { x: rect.width / 2, y: rect.height / 2 }
+        : { x: event.clientX - rect.left, y: event.clientY - rect.top };
       const next = zoomAtScreenPoint(activeCamera, localRect, pointer, nextZoom);
       event.preventDefault();
       withZoom(next);
     };
     node.addEventListener('wheel', onWheel, { passive: false });
     return () => node.removeEventListener('wheel', onWheel);
-  }, [activeCamera, radius, viewport.width, viewport.height]);
+  }, [activeCamera, radius, viewport.width, viewport.height, followPlayer]);
 
   const keyDown = (event: React.KeyboardEvent<SVGSVGElement>) => {
     const target = event.target;
@@ -314,6 +336,7 @@ export default function MapScene({
     const step = viewHeight * .12;
     if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'ArrowDown') {
       event.preventDefault();
+      if (followPlayer) onFollowPlayerChange(false);
       const x = event.key === 'ArrowLeft' ? step : event.key === 'ArrowRight' ? -step : 0;
       const y = event.key === 'ArrowUp' ? step : event.key === 'ArrowDown' ? -step : 0;
       onCameraChange(previous => previous.mode === 'local'
@@ -411,12 +434,24 @@ export default function MapScene({
           <circle transform={'translate(' + marker.value.x + ' ' + (-(marker.value.y ?? 0)) + ')'} r={24 * scale} fill="transparent" pointerEvents="all"/>
           {labels && visibleLabelIds.has(marker.id) && <text transform={'translate(' + marker.value.x + ' ' + (-(marker.value.y ?? 0)) + ') scale(' + scale + ')'} y="38" textAnchor="middle" fontSize="11" fill="#e5efea" stroke="#091d27" strokeWidth="2.5" paintOrder="stroke">{marker.value.label}</text>}
         </g>)}
+        {followPlayer && <g className="map-player-marker" transform={`translate(${playerMapPoint.x} ${playerMapPoint.y}) scale(${scale})`}
+          role="button" tabIndex={0} aria-label={`${playerName} — mở hồ sơ người chơi`} onClick={onOpenPlayerProfile}
+          onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onOpenPlayerProfile(); } }}>
+          <circle r="24" fill="#123c4b" stroke="#ffe1a9" strokeWidth="2.2"/>
+          <circle r="19" fill="none" stroke="#a6d7d2" strokeWidth="1.2" strokeDasharray="3 3"/>
+          <circle cy="-5" r="5.2" fill="#f4d39b"/>
+          <path d="M-9 10c1-7 5-10 9-10s8 3 9 10" fill="#7fc0bd" stroke="#e0ece1" strokeWidth="1.4" strokeLinecap="round"/>
+          <text y="38" textAnchor="middle" fontSize="11" fontWeight="700" fill="#fff0cd" stroke="#0a1d27" strokeWidth="3" paintOrder="stroke">{playerName}</text>
+        </g>}
       </svg>
       <div className="map-vignette" aria-hidden="true"/>
       <svg className="map-snow-overlay" viewBox={`0 0 ${size.width} ${size.height}`} preserveAspectRatio="none" aria-hidden="true" focusable="false">
         {SNOW_PARTICLES.map((particle,index)=><circle key={index} cx={particle.x/900*size.width} cy={particle.y/650*size.height} r={particle.r} fill="#eaf5ee" opacity=".48" style={{animationDelay:particle.delay+'s'}}/>)}
       </svg>
       <div className="map-corner-title"><span><Compass size={13}/> PHƯƠNG BẮC ↑</span><strong>{world ? 'Bản đồ thế giới · LL01' : 'Đồng bằng Cổ Chiến Trường'}</strong><small>{world ? 'Phạm vi nguồn · bán kính 96 km' : 'Tọa độ nguồn cố định · địa hình băng nguyên minh họa'}</small></div>
+      {followPlayer && <button type="button" className="map-follow-status" aria-pressed="true" onClick={() => onFollowPlayerChange(false)}>
+        <LocateFixed size={14}/> Theo dõi {playerName}<span>Mở khóa</span>
+      </button>}
       <div className="map-corner-controls" aria-label="Điều khiển bản đồ">
         <button type="button" onClick={() => zoomBy(1 / 1.22)} aria-label="Thu nhỏ" title="Thu nhỏ"><Minus size={17}/></button>
         <span aria-live="polite">{activeCamera.zoom >= .1 ? Math.round(activeCamera.zoom * 100) + '%' : '1:' + Math.round(1 / activeCamera.zoom)}</span>

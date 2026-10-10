@@ -35,6 +35,11 @@
 .map-corner-controls button { display:grid; place-items:center; color:#d1e8e6; width:31px; height:31px; border:0; background:transparent; border-radius:6px; }
 .map-corner-controls button:hover { color:#ffe3af; background:rgba(184,220,219,.17); }
 .map-corner-controls span { color:#b1c6c9; font-size:10px; min-width:37px; text-align:center; }
+.map-player-marker { cursor:pointer; outline:none; filter:drop-shadow(0 2px 5px rgba(0,0,0,.55)); }
+.map-player-marker:focus-visible circle:first-child { stroke:#fff4d6; stroke-width:3.4; }
+.map-follow-status { position:absolute; z-index:4; top:89px; left:18px; display:flex; align-items:center; gap:7px; padding:8px 10px; border:1px solid rgba(211,183,132,.42); border-radius:7px; background:rgba(11,31,41,.9); color:#f0d4a3; font-size:10px; box-shadow:0 3px 14px rgba(0,0,0,.24); }
+.map-follow-status span { padding-left:7px; border-left:1px solid rgba(211,183,132,.32); color:#aec6c6; font-size:9px; }
+.map-follow-status:hover { border-color:rgba(243,207,143,.76); background:rgba(24,51,60,.96); }
 .map-heat-readout { position:absolute; z-index:3; bottom:19px; left:20px; display:flex; flex-direction:column; align-items:flex-start; gap:5px; padding:12px 14px; border:1px solid rgba(244,192,118,.35); border-radius:8px; background:linear-gradient(132deg,rgba(55,53,47,.91),rgba(19,36,44,.9)); box-shadow:0 4px 22px rgba(0,0,0,.22); backdrop-filter:blur(9px); pointer-events:none; }
 .map-heat-readout>span { display:flex; align-items:center; gap:6px; color:#f0c78d; font-size:9px; font-weight:800; letter-spacing:1.2px; }
 .map-heat-readout strong { color:#fff0cc; font:normal 25px Georgia,"Times New Roman",serif; white-space:nowrap; }
@@ -208,6 +213,7 @@
   .map-corner-title strong { font-size:14px; }
   .map-corner-title small { display:none; }
   .map-corner-controls { max-width:48%; top:12px; bottom:auto; right:8px; gap:1px; padding:3px; }
+  .map-follow-status { top:92px; left:8px; max-width:calc(100% - 16px); padding:7px 8px; font-size:9px; }
   .map-corner-controls button { width:40px; height:40px; }
   .map-corner-controls span { min-width:34px; }
   .map-experience--compact .map-corner-controls { top:auto; bottom:11px; }

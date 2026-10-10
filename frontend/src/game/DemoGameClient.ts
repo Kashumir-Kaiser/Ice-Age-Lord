@@ -127,6 +127,17 @@ export class DemoGameClient implements GameClient {
     this.view = {
       revision: 0,
       demoMode: true,
+      player: {
+        name: 'Lí Lan',
+        age: 24,
+        level: 1,
+        xp: 0,
+        title: 'Tử Phục Linh Sư',
+        grade: 'SSS',
+        mana: { current: 236, max: 236 },
+        position: { x: 0, y: 0 },
+        settlementId: 'SETTLEMENT-LL01-H0',
+      },
       screens,
       sites,
       buildings: sites,
