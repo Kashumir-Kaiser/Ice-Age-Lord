@@ -46,9 +46,9 @@ export default function BuildingSprite({ id, name, asset, assetId, point, footpr
   ];
   const polygon = corners.map(p => `${p.x},${p.y}`).join(' ');
   const visualScale = asset?.presentationScale ?? 1;
-// Distinct development stages can be taller in screen pixels while their
-// world footprints, heat geometry, depth anchor, and click polygons stay authoritative.
-const spriteWidth = Math.max(30, Math.min(260, 98 * Math.sqrt(camera.zoom) * visualScale));
+  // Distinct development stages can be taller in screen pixels while their
+  // world footprints, heat geometry, depth anchor, and click polygons stay authoritative.
+  const spriteWidth = Math.max(30, Math.min(260, 98 * Math.sqrt(camera.zoom) * visualScale));
   const spriteHeight = spriteWidth * (asset?.logicalCanvas.height ?? 200) / (asset?.logicalCanvas.width ?? 240);
   const x = ground.x - spriteWidth * (asset?.groundAnchor.x ?? .5);
   const y = ground.y - spriteHeight * (asset?.groundAnchor.y ?? .82);
@@ -56,22 +56,16 @@ const spriteWidth = Math.max(30, Math.min(260, 98 * Math.sqrt(camera.zoom) * vis
   const imageTransform = `rotate(${angle} ${ground.x} ${ground.y})`;
   const upperOpacity = mode === 'planning' ? 0 : mode === 'focus' && faded ? .24 : 1;
   const body = layerPath(asset, 'body', camera.zoom < .35 ? 'district' : 'close');
-  const base = layerPath(asset, 'base', camera.zoom < .35 ? 'district' : 'close');
-  const upper = layerPath(asset, 'upper', camera.zoom < .35 ? 'district' : 'close');
-  const shadow = layerPath(asset, 'shadow', camera.zoom < .35 ? 'district' : 'close');
   const vfx = layerPath(asset, 'vfx', camera.zoom < .35 ? 'district' : 'close');
+  const bodyOpacity = draft ? .55 : mode === 'focus' && faded ? .24 : mode === 'planning' ? .9 : 1;
   const onError = () => setMissing(true);
   const handleClick = (event: React.MouseEvent<SVGGElement>) => { event.stopPropagation(); onSelect?.(); };
   return <g className={`territory-building${selected?' is-selected':''}${draft?' is-draft':''}${blocked?' is-blocked':''}`} data-building-id={id}
     role={onSelect?'button':undefined} tabIndex={onSelect?0:undefined} aria-label={onSelect?`Chọn ${name}`:undefined}
     onKeyDown={onSelect?event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();onSelect();}}:undefined}>
-    {mode !== 'planning' && !missing && shadow && <image href={shadow} x={x} y={y} width={spriteWidth} height={spriteHeight} transform={imageTransform} opacity={draft ? .34 : .32} pointerEvents="none" onError={onError}/>}
-    {mode !== 'planning' && !missing && camera.zoom < .35 && body && <image href={body} x={x} y={y} width={spriteWidth} height={spriteHeight} transform={imageTransform} opacity={draft ? .65 : 1} pointerEvents="none" onError={onError}/>}
-    {mode !== 'planning' && !missing && camera.zoom >= .35 && base && <image href={base} x={x} y={y} width={spriteWidth} height={spriteHeight} transform={imageTransform} opacity={draft ? .65 : 1} pointerEvents="none" onError={onError}/>}
-    {mode !== 'planning' && !missing && camera.zoom >= .35 && upper && <image href={upper} x={x} y={y} width={spriteWidth} height={spriteHeight} transform={imageTransform} opacity={draft ? .48 : upperOpacity} pointerEvents="none" onError={onError}/>}
+    {!missing && body && <image href={body} x={x} y={y} width={spriteWidth} height={spriteHeight} transform={imageTransform} opacity={bodyOpacity} pointerEvents="none" onError={onError}/>}
     {mode !== 'planning' && !missing && activeEffect && vfx && <image href={vfx} x={x} y={y} width={spriteWidth} height={spriteHeight} transform={imageTransform} opacity={draft ? .48 : faded && mode === 'focus' ? .24 : 1} pointerEvents="none" onError={onError}/>}
-    {mode === 'planning' && !missing && asset && base && <image href={base} x={x} y={y} width={spriteWidth} height={spriteHeight} transform={imageTransform} opacity={draft ? .52 : .9} pointerEvents="none" onError={onError}/>}
-    {(missing || !asset || (mode === 'planning' && !base)) && <g transform={`translate(${ground.x} ${ground.y}) rotate(${angle})`} pointerEvents="none">{fallbackShape(assetId)}</g>}
+    {(missing || !asset || !body) && <g transform={`translate(${ground.x} ${ground.y}) rotate(${angle})`} pointerEvents="none">{fallbackShape(assetId)}</g>}
     <polygon points={polygon} className="territory-footprint" fill={selected?'rgba(238,194,126,.2)':draft?'rgba(127,197,195,.16)':'rgba(143,190,193,.02)'} stroke={blocked?'#e98272':selected?'#f2ce93':draft?'#83cebe':'#789a9d'} strokeDasharray={draft?'5 4':'none'} strokeWidth={selected?2.5:1.5}
       onClick={onSelect?handleClick:undefined} pointerEvents="all"/>
     {mode !== 'planning' && upperOpacity > .8 && <path className="territory-art-hit" transform={`translate(${ground.x} ${ground.y}) rotate(${angle})`} d={assetId.includes('tower')||assetId.includes('tomb')?'M-20 2 -16-43 0-62 18-43 20 2Z':assetId.includes('fire')?'M-22 1c-12-17 2-27 7-41 6 11 7 19 6 27 9-14 5-23 14-38 16 23 17 43 4 54 14-7 16-16 16-22 15 25-1 34-24 35-16 1-27-6-23-15Z':'M-38 3v-30L0-65 42-32V3Z'} fill="transparent" stroke="transparent" strokeWidth="2" onClick={onSelect?handleClick:undefined} pointerEvents={onSelect?'all':'none'}/>} 
