@@ -5,7 +5,7 @@ import {
   MapPin, PackageOpen, RefreshCw, ScrollText, Shield, Sparkles, Users,
 } from 'lucide-react';
 import type {
-  ActionAvailability, CommandEnvelope, CommandPayloadByType, CommandType,
+  ActionAvailability, ClockSpeedSelection, CommandEnvelope, CommandPayloadByType, CommandType,
   EntityRef, PlayerEntityView, PlayerView,
 } from '../../packages/contracts/src/index.ts';
 import type { PlayerEvent, SaveSummary } from '../../packages/contracts/src/api.ts';
@@ -78,6 +78,48 @@ function StatusBanner({ feedback, retry }: { feedback: Feedback; retry?: () => v
   </div>;
 }
 
+function elapsedLabel(elapsedMs: number | null): string {
+  if (elapsedMs === null) return 'chưa có mốc';
+  const hours = Math.floor(elapsedMs / 3_600_000);
+  const minutes = Math.floor((elapsedMs % 3_600_000) / 60_000);
+  return `T+${hours}h${String(minutes).padStart(2, '0')}`;
+}
+
+function Stage04Strip({ view }: { view: PlayerView }) {
+  const { survivalFire, tomb } = view.territory;
+  const dayTime = `Ngày ${view.worldClock.day} · ${String(view.worldClock.hour).padStart(2, '0')}:${String(view.worldClock.minute).padStart(2, '0')}`;
+  const cold = view.survival.coldStatus === 'weather_unresolved'
+    ? 'Chưa có weather record T0'
+    : `ColdLoad ${view.survival.coldLoad?.toFixed(1) ?? '—'} · ${view.survival.coldStatus}`;
+  const fuel = survivalFire.fuelRemaining === null ? 'T0 chưa rõ' : `${survivalFire.fuelRemaining} gỗ`;
+  const catchingUp = view.clockStatus.catchingUp
+    ? `Đang quyết toán tới ${elapsedLabel(view.clockStatus.targetSimElapsedMs)}`
+    : `${dayTime} · T+${elapsedLabel(view.simElapsedMs).slice(2)}`;
+  return <section className="live-stage-strip" aria-label="Trạng thái mô phỏng Stage 04">
+    <div><span>Thế giới</span><strong>{catchingUp}</strong><small>{view.worldClock.lightPhase} · Bậc 0 là cấp đầu ra Mộ</small></div>
+    <div><span>Lửa trại</span><strong>{survivalFire.active ? 'Đang hoạt động' : 'Đã tắt'} · {fuel}</strong><small>{survivalFire.fuelBlocker || `Bán kính nhiệt ${survivalFire.heatRadiusMetres} m · mốc đốt ${elapsedLabel(survivalFire.nextFuelConsumptionAtElapsedMs)}`}</small></div>
+    <div><span>Sinh tồn</span><strong>{cold}</strong><small>{view.survival.blocker || `Đói: ${view.survival.hungerState}`}</small></div>
+    <div><span>Mộ</span><strong>{tomb.activeCount}/{tomb.productionSlots} ô · {tomb.deathQi.current}/{tomb.deathQi.capacity} Tử Khí</strong><small>{tomb.queuedCount} chờ · hoàn tất {elapsedLabel(tomb.nextCompletionAtElapsedMs)} · {view.units.length} đơn vị</small></div>
+  </section>;
+}
+
+function TombQueueList({ view, working, blocked, onCancel }: {
+  view: PlayerView;
+  working: boolean;
+  blocked: boolean;
+  onCancel: (jobId: string) => void;
+}) {
+  if (view.territory.tomb.queue.length === 0) return <p className="live-empty-state">Hàng đợi Mộ đang trống.</p>;
+  return <ul className="live-plain-list">{view.territory.tomb.queue.map(job => {
+    const progress = view.jobs.find(item => item.id === job.id)?.progressPercent;
+    return <li key={job.id}>
+      <strong>{job.status === 'active' ? 'Đang sản xuất' : job.status === 'blocked' ? 'Đang chặn' : job.status === 'queued' ? 'Đang chờ ô' : job.status} · {job.outputUnitId}</strong>
+      <span>{job.status === 'active' ? `${Math.floor(progress ?? 0)}% · xong ${elapsedLabel(job.completesAtElapsedMs)}` : `Tử Khí giữ ${job.reservedDeathQi}`}</span>
+      {(job.status === 'queued' || job.status === 'blocked') && <button className="live-text-button" disabled={working || blocked} onClick={() => onCancel(job.id)}>Hủy</button>}
+    </li>;
+  })}</ul>;
+}
+
 function LiveApp() {
   const [client] = useState(() => new HttpGameClient());
   const [apiState, setApiState] = useState<'checking' | 'ready' | 'disconnected'>('checking');
@@ -95,6 +137,8 @@ function LiveApp() {
   const [feedback, setFeedback] = useState<Feedback>({ kind: 'idle', text: '' });
   const [manifest, setManifest] = useState<AssetManifest | null>(null);
   const [manifestError, setManifestError] = useState(false);
+  const [customSpeed, setCustomSpeed] = useState('10');
+  const [customSelection, setCustomSelection] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -119,6 +163,31 @@ function LiveApp() {
     });
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    if (!authenticated || !view) return;
+    let active = true;
+    let inFlight = false;
+    const refreshClock = async () => {
+      if (inFlight || working) return;
+      inFlight = true;
+      try {
+        await client.heartbeatClock();
+        const nextView = await client.getView();
+        if (active) setView(nextView);
+      } catch (error) {
+        if (active) setFeedback({
+          kind: error instanceof GameApiError && error.code === 'API_DISCONNECTED' ? 'disconnected' : 'rejected',
+          text: errorMessage(error),
+        });
+      } finally {
+        inFlight = false;
+      }
+    };
+    void refreshClock();
+    const timer = window.setInterval(() => { void refreshClock(); }, 1000);
+    return () => { active = false; window.clearInterval(timer); };
+  }, [authenticated, client, view?.saveId, working]);
 
   async function checkApi() {
     setApiState('checking');
@@ -311,6 +380,27 @@ function LiveApp() {
     void sendCommand(commandFor(view, 'inspect_entity', { entity: entity.ref }));
   }
 
+  function changeClockSpeed(speed: ClockSpeedSelection, stopCondition = view?.clockControl.stopCondition ?? 'none') {
+    if (!view) return;
+    const payload: CommandPayloadByType['set_clock_speed'] = {
+      speed,
+      stopCondition,
+      ...(speed === 'custom' ? { customMultiplier: Number(customSpeed) } : {}),
+    };
+    void sendCommand(commandFor(view, 'set_clock_speed', payload));
+  }
+
+  function changeStopCondition(stopCondition: 'none' | 'next_completion' | 'danger') {
+    if (!view) return;
+    const speed = view.clockControl.selection;
+    changeClockSpeed(speed, stopCondition);
+  }
+
+  function cancelTombJob(jobId: string) {
+    if (!view) return;
+    void sendCommand(commandFor(view, 'cancel_tomb', { jobId }));
+  }
+
   function retryPending() {
     if (pendingCommand) void sendCommand(pendingCommand, true);
   }
@@ -395,13 +485,16 @@ function LiveApp() {
 
   function pageContent(): ReactNode {
     if (!view) return null;
+    const woodFuel = view.inventory.containers.flatMap(container => container.items
+      .filter(item => item.label === 'WOOD' && item.quantity > 0)
+      .map(item => ({ containerId: container.id, itemId: item.itemId, quantity: item.quantity })))[0];
     if (screen === 'overview') {
       return <div className="live-section-stack">
         <section className="live-hero">
           <div>
-            <span className="live-eyebrow">STAGE 03 · CLEAN GAME</span>
+          <span className="live-eyebrow">STAGE 04 · AUTHORITATIVE SIMULATION</span>
             <h2>{view.player.name}</h2>
-            <p>Đây là snapshot từ API. Đồng hồ mô phỏng đang tạm dừng; mở màn hình để đọc dữ liệu không thay đổi trạng thái.</p>
+          <p>Thời gian, Tử Khí, hồi Mana và sản xuất đều lấy từ snapshot máy chủ. Lượt mới vẫn bắt đầu ở ngày 1 lúc 07:00.</p>
           </div>
           <div className="live-hero-mark"><Sparkles size={34} /><span>H0</span></div>
         </section>
@@ -428,8 +521,9 @@ function LiveApp() {
           </section>
         </div>
         <section className="live-panel">
-          <div className="live-panel-heading"><div><span className="live-eyebrow">SESSION</span><h3>Trạng thái lượt lưu</h3></div><span className="live-data-chip">Stage 03 · thời gian tạm dừng</span></div>
+          <div className="live-panel-heading"><div><span className="live-eyebrow">SESSION</span><h3>Trạng thái lượt lưu</h3></div><span className="live-data-chip">Stage 04 · đồng hồ máy chủ</span></div>
           <p>Save ID: <code>{view.saveId}</code> · Event sequence: {view.lastEventSequence} · API revision: {view.revision}</p>
+          <p>Quyền đồng hồ: {view.clockStatus.driver} · {view.clockControl.status} · {view.clockControl.speedPermille / 1000}× · {view.clockStatus.catchingUp ? 'đang quyết toán' : 'đã đồng bộ'}</p>
         </section>
       </div>;
     }
@@ -467,6 +561,15 @@ function LiveApp() {
             <h3>{entityLabel(fireEntity)}</h3>
             <p>Cấp {view.territory.survivalFire.level} · bán kính nhiệt {view.territory.survivalFire.heatRadiusMetres} m</p>
             <p>Bảo vệ: {view.territory.survivalFire.protection}</p>
+            <p>Nhiên liệu đã biết: {view.territory.survivalFire.fuelRemaining ?? 'chưa xác định'} · lần tiêu thụ kế: {elapsedLabel(view.territory.survivalFire.nextFuelConsumptionAtElapsedMs)}</p>
+            {view.territory.survivalFire.fuelBlocker && <p className="live-muted">Chặn nhiên liệu: {view.territory.survivalFire.fuelBlocker}</p>}
+            <div className="live-button-row">
+              {fireEntity && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void runInspection(fireEntity)}><Eye size={15} /> Kiểm tra lửa</button>}
+              <button className="live-button live-button--secondary" title={view.territory.survivalFire.fuelKnowledge !== 'known' ? 'Không thể tính tổng nhiên liệu chính xác khi lượng gỗ mở đầu chưa được ghi nhận.' : woodFuel ? 'Chuyển 1 gỗ đã quan sát vào lửa.' : 'Không có gỗ đã quan sát trong container sở hữu và có thể truy cập.'} disabled={working || Boolean(pendingCommand) || !woodFuel || view.territory.survivalFire.fuelKnowledge !== 'known'} onClick={() => woodFuel && void sendCommand(commandFor(view, 'refuel_fire', { containerId: woodFuel.containerId, itemId: woodFuel.itemId, quantity: 1 }))}>Nạp 1 gỗ</button>
+              {view.territory.survivalFire.active
+                ? <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'extinguish_fire', {}))}>Tắt lửa</button>
+                : <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || (view.territory.survivalFire.fuelRemaining ?? 0) < 1} onClick={() => void sendCommand(commandFor(view, 'light_fire', {}))}>Nhóm lửa</button>}
+            </div>
             {fireEntity && <button className="live-button live-button--secondary" onClick={() => setScreen('map')}>Chọn cùng entity trên bản đồ <ArrowRight size={15} /></button>}
           </section>
           <section className="live-panel">
@@ -509,18 +612,27 @@ function LiveApp() {
       return <section className="live-panel">
         <div className="live-panel-heading"><div><span className="live-eyebrow">OWNED UNITS</span><h2>Quân lực</h2></div><Users size={22} /></div>
         {view.units.length
-          ? <ul className="live-plain-list">{view.units.map(unit => <li key={unit.id}><strong>{unit.name}</strong><span>{unit.creationRoute}</span></li>)}</ul>
+          ? <ul className="live-plain-list">{view.units.map(unit => <li key={unit.id}><strong>{unit.name} · Bậc {unit.sourceStats.formTier} · {unit.sourceStats.grade}</strong><span>{unit.creationRoute} · {unit.baseLaborRateWuPerHour} WU/h · XP {unit.xp}{unit.xpMirrorEligible ? ' · XP mirror' : ' · không XP mirror'}</span></li>)}</ul>
           : <p className="live-empty-state">Snapshot không có đơn vị thuộc sở hữu người chơi.</p>}
+        <h3>Việc Mộ đang chờ</h3>
+        <TombQueueList view={view} working={working} blocked={Boolean(pendingCommand)} onCancel={cancelTombJob} />
       </section>;
     }
 
     if (screen === 'buildings') {
-      return <section className="live-panel">
+      return <div className="live-section-stack"><section className="live-panel">
         <div className="live-panel-heading"><div><span className="live-eyebrow">KNOWN BUILDINGS</span><h2>Công trình</h2></div><Hammer size={22} /></div>
         {view.territory.buildings.length
           ? <ul className="live-plain-list">{view.territory.buildings.map(building => <li key={building.id}><strong>{building.name}</strong><span>{building.status}</span></li>)}</ul>
           : <p className="live-empty-state">API chưa trả về công trình đã biết.</p>}
-      </section>;
+      </section>
+      <section className="live-panel">
+        <div className="live-panel-heading"><div><span className="live-eyebrow">TOMB · SOURCE-LOCKED STANDARD OUTPUT</span><h2>Hàng đợi Mộ Bậc {view.territory.tomb.level}</h2></div><Shield size={22} /></div>
+        <p>Đầu ra: Bậc {view.territory.tomb.output.formTier} · {view.territory.tomb.output.grade} · cấp {view.territory.tomb.output.level} · {view.territory.tomb.output.baseLaborRateWuPerHour} WU/giờ.</p>
+        <p>{view.territory.tomb.deathQi.current}/{view.territory.tomb.deathQi.capacity} Tử Khí · {view.territory.tomb.activeCount}/{view.territory.tomb.productionSlots} ô đang chạy · hồi lúc T+{elapsedLabel(view.territory.tomb.deathQi.nextRefillAtElapsedMs)}</p>
+        <div className="live-button-row"><button className="live-button" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'enqueue_tomb', { blueprintId: 'LL-TOMB-ZOMBIE-STANDARD-01' }))}>Xếp một Cương Thi tiêu chuẩn</button></div>
+        <TombQueueList view={view} working={working} blocked={Boolean(pendingCommand)} onCancel={cancelTombJob} />
+      </section></div>;
     }
 
     return <section className="live-panel">
@@ -536,7 +648,7 @@ function LiveApp() {
   if (!authenticated) {
     return <main className="live-start-page">
       <section className="live-start-card">
-        <span className="live-eyebrow">STAGE 03 · LOCAL OWNER SESSION</span>
+        <span className="live-eyebrow">STAGE 04 · LOCAL OWNER SESSION</span>
         <h1>Kết nối game API</h1>
         <p>Chế độ live chỉ dùng API SQLite cục bộ. Khóa chủ sở hữu chỉ được gửi tới API để tạo bearer session và không được lưu trong trình duyệt.</p>
         <div className={'live-api-status live-api-status--' + apiState}>
@@ -553,7 +665,7 @@ function LiveApp() {
           </button>
         </form>
         <StatusBanner feedback={feedback} />
-        <p className="live-footnote">Thời gian mô phỏng không chạy trong Stage 03. Lỗi API sẽ dừng thao tác tại đây.</p>
+        <p className="live-footnote">Thời gian mô phỏng do máy chủ quyết toán. Lỗi API sẽ dừng thao tác tại đây.</p>
       </section>
     </main>;
   }
@@ -582,7 +694,7 @@ function LiveApp() {
 
   return <div className="live-shell">
     <aside className="live-sidebar">
-      <div className="live-brand"><span className="live-brand-mark"><Flame size={19} /></span><div><strong>ICE AGE LORD</strong><small>LIVE · STAGE 03</small></div></div>
+      <div className="live-brand"><span className="live-brand-mark"><Flame size={19} /></span><div><strong>ICE AGE LORD</strong><small>LIVE · STAGE 04</small></div></div>
       <div className="live-sidebar-status"><span className="live-status-dot" /> SQLite API · connected</div>
       <nav className="live-nav" aria-label="Màn hình game">
         {navigation.map(item => {
@@ -592,18 +704,33 @@ function LiveApp() {
           </button>;
         })}
       </nav>
-      <div className="live-sidebar-footer"><span>Simulation clock</span><strong>PAUSED · Stage 03</strong></div>
+      <div className="live-sidebar-footer"><span>Simulation clock</span><strong>{view.clockControl.status.toUpperCase()} · Stage 04</strong></div>
     </aside>
     <main className="live-main">
       <header className="live-topbar">
-        <div><span className="live-eyebrow">H0 · LOCAL CAMPAIGN</span><h1>{navigation.find(item => item.id === screen)?.name}</h1><p>{selectedSave?.slotName || view.player.name} · snapshot revision {view.revision}</p></div>
+        <div><span className="live-eyebrow">H0 · LOCAL CAMPAIGN</span><h1>{navigation.find(item => item.id === screen)?.name}</h1><p>{selectedSave?.slotName || view.player.name} · Ngày {view.worldClock.day} {String(view.worldClock.hour).padStart(2, '0')}:{String(view.worldClock.minute).padStart(2, '0')} · revision {view.revision}</p></div>
         <div className="live-header-actions">
           <span className="live-data-chip">EVENT {view.lastEventSequence}</span>
+          <div className="live-clock-controls" aria-label="Điều khiển đồng hồ mô phỏng">
+            <select aria-label="Tốc độ mô phỏng" value={customSelection ? 'custom' : view.clockControl.selection} disabled={working || Boolean(pendingCommand) || view.clockStatus.driver !== 'active'} onChange={event => {
+              const speed = event.target.value as ClockSpeedSelection;
+              if (speed === 'custom') setCustomSelection(true);
+              else { setCustomSelection(false); changeClockSpeed(speed); }
+            }}>
+              <option value="paused">Đóng băng</option><option value="1x">1×</option><option value="2x">2×</option><option value="5x">5×</option><option value="custom">Tùy chỉnh</option>
+            </select>
+            {(customSelection || view.clockControl.selection === 'custom') && <><input aria-label="Tốc độ tùy chỉnh" type="number" min="0.1" max="3600" step="0.1" value={customSpeed} onChange={event => setCustomSpeed(event.target.value)} disabled={view.clockStatus.driver !== 'active'} /><button className="live-clock-apply" disabled={working || Boolean(pendingCommand) || view.clockStatus.driver !== 'active' || Number(customSpeed) < 0.1 || Number(customSpeed) > 3600} onClick={() => { setCustomSelection(true); changeClockSpeed('custom'); }}>Áp dụng</button></>}
+            <select aria-label="Điều kiện tự dừng" value={view.clockControl.stopCondition} disabled={working || Boolean(pendingCommand) || view.clockStatus.driver !== 'active'} onChange={event => changeStopCondition(event.target.value as 'none' | 'next_completion' | 'danger')}>
+              <option value="none">Không tự dừng</option><option value="next_completion">Dừng khi xong</option><option value="danger">Dừng khi nguy hiểm</option>
+            </select>
+          </div>
+          {view.clockStatus.driver === 'observing' && <span className="live-driver-label">Tab khác đang giữ quyền</span>}
           <button className="live-icon-button" aria-label="Tải lại từ API" onClick={() => void loadLatest()} disabled={working}><RefreshCw size={17} /></button>
         </div>
       </header>
       <div className="live-content">
         <StatusBanner feedback={feedback} retry={pendingCommand ? retryPending : undefined} />
+        <Stage04Strip view={view} />
         {pageContent()}
       </div>
       <footer className="live-footer"><span>LIVE · API PLAYER VIEW</span><span>Save {view.saveId} · revision {view.revision}</span></footer>

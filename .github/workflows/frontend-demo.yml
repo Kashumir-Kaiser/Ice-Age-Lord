@@ -1,12 +1,17 @@
-name: Stage 03 live frontend and Chromium checks
+name: Stage 04 authoritative clock and Chromium checks
 on:
   push:
     branches:
+      - main
       - 'frontend/**'
     paths:
       - 'frontend/**'
+      - 'packages/**'
+      - 'references/**'
+      - 'docs/implementation/STAGE-03.md'
+      - 'docs/implementation/STAGE-04.md'
+      - 'package.json'
       - '.github/workflows/frontend-demo.yml'
-  # Scheduled workflows run only from the default branch; keep them inactive on this feature branch.
   workflow_dispatch:
 concurrency:
   group: frontend-prototype-${{ github.ref }}
@@ -19,7 +24,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - run: npm run test:stage02
       - run: npm run test:stage03
+      - run: npm run test:stage04
   frontend:
     needs: backend
     runs-on: ubuntu-latest
@@ -38,7 +45,7 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm run build
       - run: npm test
-      - name: Prepare Stage 03 local API
+      - name: Prepare Stage 04 local API
         run: |
           cd ..
           npm run owner:key:create
@@ -46,7 +53,7 @@ jobs:
           ILL_TEST_OWNER_KEY="$(cat .local/owner-key)"
           echo "::add-mask::$ILL_TEST_OWNER_KEY"
           echo "ILL_TEST_OWNER_KEY=$ILL_TEST_OWNER_KEY" >> "$GITHUB_ENV"
-      - name: Start Stage 03 local API
+      - name: Start Stage 04 local API
         run: |
           cd ..
           nohup env ILL_ALLOWED_ORIGIN=http://localhost:5173 npm run api:start > /tmp/ill-api.log 2>&1 < /dev/null &

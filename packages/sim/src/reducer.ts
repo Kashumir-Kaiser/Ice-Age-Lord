@@ -3,12 +3,17 @@ import { validateCommandEnvelope } from '../../contracts/src/index.ts';
 import { canonicalStateHash } from './hash.ts';
 import { canAccessStarterContainer } from './access.ts';
 import { entityKey } from './view.ts';
+import { cancelTombJob, enqueueTombJob, selectedSpeed, TOMB_STANDARD_BLUEPRINT_ID } from './time.ts';
 
 const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | 'inspect_starter_container' | 'inspect_career_card'>, { code: string; message: string }>> = {
   activate_career_card: { code: 'CAREER_CARD_FLOW_NOT_IMPLEMENTED', message: 'Career activation is unavailable until its verified flow is implemented.' },
   set_clock_speed: { code: 'AUTHORITATIVE_TIME_STAGE_04', message: 'Clock control becomes available with the authoritative time system.' },
   advance_to_boundary: { code: 'AUTHORITATIVE_TIME_STAGE_04', message: 'Time boundaries are settled by the server time system.' },
   enqueue_tomb: { code: 'TOMB_QUEUE_STAGE_04', message: 'Tomb production is unavailable until its queue rules are implemented.' },
+  cancel_tomb: { code: 'TOMB_QUEUE_STAGE_04', message: 'Tomb cancellation is unavailable until its queue rules are implemented.' },
+  refuel_fire: { code: 'FIRE_FUEL_STAGE_04', message: 'Fire refuelling is unavailable until the authoritative fuel ledger is implemented.' },
+  extinguish_fire: { code: 'FIRE_FUEL_STAGE_04', message: 'Fire control is unavailable until the authoritative fuel ledger is implemented.' },
+  light_fire: { code: 'FIRE_FUEL_STAGE_04', message: 'Fire control is unavailable until the authoritative fuel ledger is implemented.' },
   move: { code: 'MOVEMENT_RULES_STAGE_05', message: 'Travel is unavailable until routes, access and settlement rules are implemented.' },
   survey: { code: 'SURVEY_RULES_STAGE_05', message: 'Surveying is unavailable until its source-locked contracts are implemented.' },
   search: { code: 'SEARCH_RULES_STAGE_05', message: 'Searching is unavailable until spatial sweep and target rules are implemented.' },
@@ -32,6 +37,10 @@ function staticAvailability(type: CommandType): ActionAvailability {
 }
 
 export function actionAvailability(type: CommandType): ActionAvailability {
+  if (type === 'set_clock_speed' || type === 'advance_to_boundary' || type === 'enqueue_tomb'
+    || type === 'cancel_tomb' || type === 'refuel_fire' || type === 'extinguish_fire' || type === 'light_fire') {
+    return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
+  }
   if (type === 'inspect_entity') return { actionId: type, enabled: true, reasonCode: null, requirements: ['The entity must already be known to the player.'] };
   if (type === 'inspect_starter_container') return { actionId: type, enabled: true, reasonCode: null, requirements: ['The container must be in reach and belong to the player.'] };
   if (type === 'inspect_career_card') return { actionId: type, enabled: true, reasonCode: null, requirements: ['The sealed opening card must still be available.'] };
@@ -56,13 +65,21 @@ function isKnownEntity(ref: EntityRef, state: GameState): boolean {
   }
 }
 
-export function previewCommand(state: GameState, input: unknown, world: WorldDefinition): ActionAvailability {
+export function previewCommand(
+  state: GameState,
+  input: unknown,
+  world: WorldDefinition,
+  options: { allowSystemOnlyRevisionAdvance?: boolean } = {},
+): ActionAvailability {
   const validation = validateCommandEnvelope(input);
   if (!validation.success) return { actionId: 'invalid', enabled: false, reasonCode: 'INVALID_COMMAND', requirements: [validation.issue.message] };
   const command = validation.data;
   if (command.saveId !== state.saveId) return { actionId: command.type, enabled: false, reasonCode: 'SAVE_ID_MISMATCH', requirements: ['The command must target the selected save.'] };
   if (world.id !== state.worldPackageId) return { actionId: command.type, enabled: false, reasonCode: 'CONTENT_MISMATCH', requirements: ['The save content package is unavailable.'] };
-  if (command.expectedRevision !== state.revision) return { actionId: command.type, enabled: false, reasonCode: 'STALE_REVISION', requirements: [`Current revision is ${state.revision}.`] };
+  if (command.expectedRevision !== state.revision
+    && !(options.allowSystemOnlyRevisionAdvance && command.expectedRevision < state.revision)) {
+    return { actionId: command.type, enabled: false, reasonCode: 'STALE_REVISION', requirements: [`Current revision is ${state.revision}.`] };
+  }
   if (command.type === 'inspect_entity') {
     const ref = command.payload.entity;
     return isKnownEntity(ref, state)
@@ -79,6 +96,35 @@ export function previewCommand(state: GameState, input: unknown, world: WorldDef
     return state.player.career.state === 'unemployed_card_sealed'
       ? actionAvailability(command.type)
       : { actionId: command.type, enabled: false, reasonCode: 'NOT_ACCESSIBLE', requirements: ['The opening card is no longer available.'] };
+  }
+  if (command.type === 'set_clock_speed' || command.type === 'advance_to_boundary') return actionAvailability(command.type);
+  if (command.type === 'enqueue_tomb') {
+    if (command.payload.blueprintId !== TOMB_STANDARD_BLUEPRINT_ID) return { actionId: command.type, enabled: false, reasonCode: 'TOMB_BLUEPRINT_UNKNOWN', requirements: ['Only the source-locked T0 standard output is compiled.'] };
+    return actionAvailability(command.type);
+  }
+  if (command.type === 'cancel_tomb') {
+    const entry = state.territory.tomb.queue.find(item => item.id === command.payload.jobId);
+    return entry && (entry.status === 'queued' || entry.status === 'blocked') && entry.reservedDeathQi === 0
+      ? actionAvailability(command.type)
+      : { actionId: command.type, enabled: false, reasonCode: 'TOMB_ACTIVE_CANCEL_UNRESOLVED', requirements: ['Only jobs that have not reserved Tử Khí can be cancelled.'] };
+  }
+  if (command.type === 'refuel_fire') {
+    const container = state.inventory.containers.find(item => item.id === command.payload.containerId);
+    const accessible = Boolean(container && (canAccessStarterContainer(container.id, state)
+      || (container.location.kind === 'carried' && container.location.ownerId === state.player.id)));
+    const wood = container?.stacks.find(item => item.itemId === command.payload.itemId && item.templateId === 'WOOD');
+    return state.territory.survivalFire.fuelKnowledge === 'known' && accessible && container?.observed && wood && wood.quantity >= command.payload.quantity
+      ? actionAvailability(command.type)
+      : { actionId: command.type, enabled: false, reasonCode: state.territory.survivalFire.fuelKnowledge !== 'known' ? 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED' : 'FUEL_NOT_ACCESSIBLE', requirements: [state.territory.survivalFire.fuelKnowledge !== 'known' ? 'The opening fire fuel amount is unknown, so an exact remaining-fuel total cannot be calculated.' : 'Accessible, observed WOOD must be present in an owned container.'] };
+  }
+  if (command.type === 'extinguish_fire') {
+    return state.territory.survivalFire.active ? actionAvailability(command.type)
+      : { actionId: command.type, enabled: false, reasonCode: 'FIRE_ALREADY_OFF', requirements: ['The fire is already off.'] };
+  }
+  if (command.type === 'light_fire') {
+    return !state.territory.survivalFire.active && (state.territory.survivalFire.fuelRemaining ?? 0) > 0
+      ? actionAvailability(command.type)
+      : { actionId: command.type, enabled: false, reasonCode: state.territory.survivalFire.fuelRemaining === null ? 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED' : 'FUEL_REQUIRED', requirements: ['Known assigned wood is required to light the fire.'] };
   }
   return staticAvailability(command.type);
 }
@@ -122,7 +168,26 @@ function acceptMutation(state: GameState, command: CommandEnvelope, requestSha25
   return { state: nextState, events: [event], receipt };
 }
 
-export function reduceCommand(state: GameState, input: unknown, world: WorldDefinition): CommandReduction {
+function acceptMutationMany(state: GameState, command: CommandEnvelope, requestSha256: string, nextState: GameState, events: readonly { type: string; occurredAtElapsedMs: number; payload: Record<string, unknown> }[], code: string, message: string): CommandReduction {
+  if (events.length === 0) throw new Error('COMMAND_MUTATION_REQUIRES_EVENT');
+  const revision = state.revision + 1;
+  const sequencedEvents = events.map((event, index) => ({ ...event, sequence: state.lastEventSequence + index + 1 }));
+  const finalState: GameState = {
+    ...nextState,
+    revision,
+    lastEventSequence: state.lastEventSequence + events.length,
+  };
+  const receipt = receiptFor(command.commandId, true, revision, sequencedEvents.at(-1)!.sequence, code, message);
+  finalState.receipts = [...state.receipts, { commandId: command.commandId, requestSha256, receipt }];
+  return { state: finalState, events: sequencedEvents, receipt };
+}
+
+export function reduceCommand(
+  state: GameState,
+  input: unknown,
+  world: WorldDefinition,
+  options: { allowSystemOnlyRevisionAdvance?: boolean } = {},
+): CommandReduction {
   const validation = validateCommandEnvelope(input);
   const commandId = typeof input === 'object' && input !== null && 'commandId' in input
     ? String((input as { commandId?: unknown }).commandId ?? '')
@@ -137,7 +202,10 @@ export function reduceCommand(state: GameState, input: unknown, world: WorldDefi
   }
   if (world.id !== state.worldPackageId) return reject(state, command.commandId, 'CONTENT_MISMATCH', 'The save is bound to a different world package.', requestSha256);
   if (command.saveId !== state.saveId) return reject(state, command.commandId, 'SAVE_ID_MISMATCH', 'Command targets a different save.', requestSha256);
-  if (command.expectedRevision !== state.revision) return reject(state, command.commandId, 'STALE_REVISION', 'The save changed; refresh the player view and retry with the current revision.', requestSha256);
+  if (command.expectedRevision !== state.revision
+    && !(options.allowSystemOnlyRevisionAdvance && command.expectedRevision < state.revision)) {
+    return reject(state, command.commandId, 'STALE_REVISION', 'The save changed; refresh the player view and retry with the current revision.', requestSha256);
+  }
 
   if (command.type === 'inspect_entity') {
     const ref = command.payload.entity;
@@ -166,6 +234,88 @@ export function reduceCommand(state: GameState, input: unknown, world: WorldDefi
     return acceptMutation(state, command, requestSha256, {
       playerKnowledge: { ...state.playerKnowledge, careerCardObserved: true },
     }, 'career_card_inspected', {}, 'CAREER_CARD_INSPECTED', 'The sealed career card was inspected; the career remains inactive.');
+  }
+
+  if (command.type === 'set_clock_speed') {
+    let clockControl;
+    try { clockControl = selectedSpeed(command.payload.speed, command.payload.customMultiplier); }
+    catch { return reject(state, command.commandId, 'CLOCK_SPEED_INVALID', 'The requested clock speed is outside the supported range.', requestSha256); }
+    clockControl.stopCondition = command.payload.stopCondition ?? (clockControl.status === 'paused' ? 'none' : state.clockControl.stopCondition);
+    return acceptMutation(state, command, requestSha256, { clockControl }, 'clock_speed_changed', {
+      selection: clockControl.selection,
+      speedPermille: clockControl.speedPermille,
+      stopCondition: clockControl.stopCondition,
+    }, 'CLOCK_SPEED_CHANGED', clockControl.status === 'paused' ? 'Simulation paused.' : 'Simulation speed accepted.');
+  }
+
+  if (command.type === 'advance_to_boundary') {
+    const stopCondition = command.payload.boundaryId;
+    return acceptMutation(state, command, requestSha256, {
+      clockControl: { ...state.clockControl, stopCondition },
+    }, 'clock_stop_condition_set', { stopCondition }, 'CLOCK_STOP_CONDITION_SET', 'The server will pause at the selected condition.');
+  }
+
+  if (command.type === 'enqueue_tomb') {
+    if (command.payload.blueprintId !== TOMB_STANDARD_BLUEPRINT_ID) return reject(state, command.commandId, 'TOMB_BLUEPRINT_UNKNOWN', 'Only the source-locked standard T0 Tomb output is available.', requestSha256);
+    const idHash = canonicalStateHash({ saveId: state.saveId, commandId: command.commandId }).slice(0, 20).toUpperCase();
+    try {
+      const result = enqueueTombJob(state, `TOMB-JOB-${idHash}`, `TOMB-UNIT-${idHash}`);
+      return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'TOMB_JOB_ENQUEUED', 'The standard Tomb output was added to the queue.');
+    } catch { return reject(state, command.commandId, 'TOMB_JOB_INVALID', 'The Tomb job could not be added.', requestSha256); }
+  }
+
+  if (command.type === 'cancel_tomb') {
+    try {
+      const result = cancelTombJob(state, command.payload.jobId);
+      return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'TOMB_JOB_CANCELLED', 'The unstarted Tomb job was cancelled.');
+    } catch (error) {
+      const code = error instanceof Error && error.message === 'TOMB_ACTIVE_CANCEL_UNRESOLVED' ? 'TOMB_ACTIVE_CANCEL_UNRESOLVED' : 'TOMB_JOB_NOT_CANCELLABLE';
+      return reject(state, command.commandId, code, 'Only queued or blocked jobs without reserved inputs can be cancelled.', requestSha256);
+    }
+  }
+
+  if (command.type === 'refuel_fire') {
+    const container = state.inventory.containers.find(item => item.id === command.payload.containerId);
+    const accessible = Boolean(container && (canAccessStarterContainer(container.id, state)
+      || (container.location.kind === 'carried' && container.location.ownerId === state.player.id)));
+    const stack = container?.stacks.find(item => item.itemId === command.payload.itemId && item.templateId === 'WOOD');
+    if (state.territory.survivalFire.fuelKnowledge !== 'known' || state.territory.survivalFire.fuelRemaining === null) {
+      return reject(state, command.commandId, 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED', 'The opening fire fuel amount is unknown, so an exact remaining-fuel total cannot be calculated.', requestSha256);
+    }
+    if (!container || !stack || !accessible || !container.observed) return reject(state, command.commandId, 'FUEL_NOT_ACCESSIBLE', 'Accessible, observed WOOD is required.', requestSha256);
+    if (stack.quantity < command.payload.quantity) return reject(state, command.commandId, 'INSUFFICIENT_WOOD', 'The container does not hold enough WOOD.', requestSha256);
+    const containers = state.inventory.containers.map(item => item.id === container.id ? {
+      ...item,
+      stacks: item.stacks.map(stackItem => stackItem.itemId === stack.itemId ? { ...stackItem, quantity: stackItem.quantity - command.payload.quantity } : stackItem),
+    } : item);
+    const fire = state.territory.survivalFire;
+    const knownFuel = fire.fuelRemaining + command.payload.quantity;
+    return acceptMutation(state, command, requestSha256, {
+      inventory: { ...state.inventory, containers },
+      territory: { ...state.territory, survivalFire: {
+        ...fire,
+        fuelRemaining: knownFuel,
+        fuelKnowledge: 'known',
+        fuelBlocker: null,
+        nextFuelConsumptionAtElapsedMs: fire.active ? (fire.nextFuelConsumptionAtElapsedMs ?? state.simElapsedMs + 15 * 60_000) : null,
+      } },
+    }, 'fire_refuelled', { itemId: stack.itemId, quantity: command.payload.quantity, remaining: knownFuel }, 'FIRE_REFUELLED', 'WOOD was transferred to the survival fire.');
+  }
+
+  if (command.type === 'extinguish_fire') {
+    if (!state.territory.survivalFire.active) return reject(state, command.commandId, 'FIRE_ALREADY_OFF', 'The survival fire is already off.', requestSha256);
+    return acceptMutation(state, command, requestSha256, {
+      territory: { ...state.territory, survivalFire: { ...state.territory.survivalFire, active: false, nextFuelConsumptionAtElapsedMs: null } },
+    }, 'survival_fire_extinguished', { reason: 'player_command' }, 'FIRE_EXTINGUISHED', 'The fire is off; remaining fuel was retained.');
+  }
+
+  if (command.type === 'light_fire') {
+    if (state.territory.survivalFire.fuelRemaining === null) return reject(state, command.commandId, 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED', 'Known assigned WOOD is required before the fire can be lit.', requestSha256);
+    if (state.territory.survivalFire.fuelRemaining < 1) return reject(state, command.commandId, 'FUEL_REQUIRED', 'At least one WOOD is required before the fire can be lit.', requestSha256);
+    if (state.territory.survivalFire.active) return reject(state, command.commandId, 'FIRE_ALREADY_ON', 'The survival fire is already active.', requestSha256);
+    return acceptMutation(state, command, requestSha256, {
+      territory: { ...state.territory, survivalFire: { ...state.territory.survivalFire, active: true, fuelBlocker: null, nextFuelConsumptionAtElapsedMs: state.simElapsedMs + 15 * 60_000 } },
+    }, 'survival_fire_lit', {}, 'FIRE_LIT', 'The fire was lit using assigned WOOD.');
   }
 
   const reason = disabledReasons[command.type];

@@ -1,4 +1,5 @@
 export const CONTRACT_SCHEMA_VERSION = 1 as const;
+export const GAME_STATE_SCHEMA_VERSION = 2 as const;
 
 export type Id = string;
 export type EntityRef =
@@ -173,6 +174,12 @@ export type PlayerUnitState = {
   position: CoordinateMm | null;
   location: { kind: 'site'; siteId: Id } | { kind: 'travel'; orderId: Id } | { kind: 'building'; buildingId: Id };
   equipmentIds: readonly Id[];
+  sourceStats: { formTier: number; grade: string; level: number; xp: number; faction: string; hero: boolean; loyalty: string };
+  anatomyTemplateId: Id;
+  equipmentRequirements: { status: 'source_profile_not_compiled'; requiredSlotIds: readonly Id[] };
+  xpMirrorEligible: boolean;
+  baseLaborRateWuPerHour: number;
+  laborRuleVersion: 'TOMB-ZOMBIE-LABOR-1.0' | string;
 };
 
 export type RuntimeJobState = {
@@ -215,7 +222,41 @@ export type QuestProgressState = {
 
 export type ShopOfferState = { id: Id; status: 'scheduled' | 'active' | 'expired' | 'closed'; availableAtElapsedMs: number; expiresAtElapsedMs: number | null };
 export type CurrencyBalance = { currencyId: Id; amount: number };
-export type TombQueueEntry = { id: Id; recipeId: Id; status: 'queued' | 'active' | 'blocked'; reservedDeathQi: number; enqueuedAtElapsedMs: number };
+export type TombQueueEntry = {
+  id: Id;
+  recipeId: Id;
+  blueprintId: Id;
+  status: 'queued' | 'active' | 'blocked' | 'completed' | 'cancelled';
+  reservedDeathQi: number;
+  enqueuedAtElapsedMs: number;
+  slotId: number | null;
+  startedAtElapsedMs: number | null;
+  completesAtElapsedMs: number | null;
+  progressCarryMs: number;
+  outputUnitId: Id;
+};
+
+export type ClockSpeedSelection = 'paused' | '1x' | '2x' | '5x' | 'custom';
+export type ClockStopCondition = 'none' | 'next_completion' | 'danger';
+export type ClockControl = { status: 'paused' | 'running'; selection: ClockSpeedSelection; speedPermille: number; stopCondition: ClockStopCondition };
+export type ColdEnvironment = {
+  apparentTemperatureC: number;
+  windKph: number;
+  wetness: number;
+  activityFactor: 0.7 | 1 | 1.3;
+  insulation: number;
+  shelter: number;
+};
+export type ColdStatus = 'weather_unresolved' | 'clear' | 'warning' | 'danger';
+export type TimeBoundaryState = {
+  nextHourlySettlementAtElapsedMs: number;
+  nextMidnightAtElapsedMs: number;
+  nextDailySettlementAtElapsedMs: number;
+  nextSunsetAtElapsedMs: number;
+  nextTwilightEndAtElapsedMs: number;
+  nextDawnAtElapsedMs: number;
+  protectionExpiryAtElapsedMs: number | null;
+};
 
 export type WorldDefinition = {
   id: 'WORLD-PACKAGE-LL01-1.0';
@@ -241,7 +282,6 @@ export type WorldDefinition = {
   contentSha256: string;
 };
 
-export type ClockControl = { status: 'paused' | 'running'; speedPermille: number };
 export type ActionAvailability = {
   actionId: string;
   enabled: boolean;
@@ -280,6 +320,9 @@ export type PlayerView = {
   lastEventSequence: number;
   simElapsedMs: number;
   clockControl: ClockControl;
+  clockStatus: { driver: 'active' | 'observing' | 'unclaimed'; catchingUp: boolean; targetSimElapsedMs: number; leaseRemainingMs: number };
+  worldClock: { day: number; hour: number; minute: number; lightPhase: 'daylight' | 'twilight' | 'night' };
+  survival: { coldLoad: number | null; coldStatus: ColdStatus; blocker: string | null; hungerState: 'FED' | 'unknown' };
   player: {
     id: Id;
     name: string;
@@ -299,21 +342,41 @@ export type PlayerView = {
     id: Id;
     stage: 'H0';
     position: CoordinateMm;
-    survivalFire: { ref: EntityRef; level: number; active: boolean; heatRadiusMetres: number; protection: 'pending-opening-settlement' | 'active' | 'expired' };
+    survivalFire: {
+      ref: EntityRef;
+      level: number;
+      active: boolean;
+      heatRadiusMetres: number;
+      fuelRemaining: number | null;
+      fuelKnowledge: 'state_unobserved' | 'known';
+      nextFuelConsumptionAtElapsedMs: number | null;
+      fuelBlocker: string | null;
+      protection: 'pending-opening-settlement' | 'active' | 'expired';
+    };
+    tomb: {
+      level: number;
+      deathQi: { current: number; capacity: number; nextRefillAtElapsedMs: number };
+      productionSlots: number;
+      activeCount: number;
+      queuedCount: number;
+      nextCompletionAtElapsedMs: number | null;
+      queue: readonly TombQueueEntry[];
+      output: GameState['territory']['tomb']['output'];
+    };
     buildings: readonly { id: Id; name: string; status: string }[];
   };
   inventory: {
     inspectableContainers: readonly { containerId: Id; label: string; kind: 'territory_supply' | 'carried_bag' }[];
     containers: readonly { id: Id; label: string; slots: number; items: readonly { itemId: Id; label: string; quantity: number }[] }[];
   };
-  units: readonly { id: Id; name: string; creationRoute: string }[];
-  jobs: readonly { id: Id; status: string }[];
+  units: readonly PlayerUnitState[];
+  jobs: readonly (RuntimeJobState & { progressPercent: number | null })[];
   visibleMap: VisibleMap;
   journal: readonly { sequence: number; category: string; title: string; text: string }[];
 };
 
 export type GameState = {
-  schemaVersion: typeof CONTRACT_SCHEMA_VERSION;
+  schemaVersion: typeof GAME_STATE_SCHEMA_VERSION;
   saveId: Id;
   campaignId: Id;
   worldPackageId: WorldDefinition['id'];
@@ -325,6 +388,15 @@ export type GameState = {
   lastEventSequence: number;
   simElapsedMs: number;
   clockControl: ClockControl;
+  timeBoundaries: TimeBoundaryState;
+  survival: {
+    coldLoadMicro: number;
+    coldLoadRemainder: number;
+    coldStatus: ColdStatus;
+    environment: ColdEnvironment | null;
+    blocker: string | null;
+    hungerState: 'FED' | 'unknown';
+  };
   player: {
     id: 'LI_LAN';
     name: 'Lí Lan';
@@ -354,6 +426,8 @@ export type GameState = {
       heatDeltaCelsius: { min: 5; max: 20 };
       fuelRemaining: number | null;
       fuelKnowledge: 'state_unobserved' | 'known';
+      nextFuelConsumptionAtElapsedMs: number | null;
+      fuelBlocker: string | null;
       protectedThroughElapsedMs: number;
       protectionEventId: Id;
       protectionStatus: 'pending_opening_settlement' | 'active' | 'expired';
@@ -362,7 +436,7 @@ export type GameState = {
     supplyContainerId: Id;
     tombId: Id;
     tomb: {
-      deathQi: { current: number; capacity: number; refillAtWorldTime: string };
+      deathQi: { current: number; capacity: number; refillAtWorldTime: string; nextRefillAtElapsedMs: number };
       queue: readonly TombQueueEntry[];
       output: { formTier: number; grade: string; level: number; xp: number; faction: string; hero: boolean; loyalty: string; xpMirrorEligible: boolean; baseLaborRateWuPerHour: number };
     };
@@ -410,6 +484,10 @@ export type CommandType =
   | 'set_clock_speed'
   | 'advance_to_boundary'
   | 'enqueue_tomb'
+  | 'cancel_tomb'
+  | 'refuel_fire'
+  | 'extinguish_fire'
+  | 'light_fire'
   | 'move'
   | 'survey'
   | 'search'
@@ -428,9 +506,13 @@ export type CommandPayloadByType = {
   inspect_starter_container: { containerId: Id };
   inspect_career_card: Record<never, never>;
   activate_career_card: { cardId: Id };
-  set_clock_speed: { speed: 'paused' | '1x' | '2x' | '5x' };
+  set_clock_speed: { speed: ClockSpeedSelection; customMultiplier?: number; stopCondition?: ClockStopCondition };
   advance_to_boundary: { boundaryId: Id };
   enqueue_tomb: { blueprintId: Id };
+  cancel_tomb: { jobId: Id };
+  refuel_fire: { containerId: Id; itemId: Id; quantity: number };
+  extinguish_fire: Record<never, never>;
+  light_fire: Record<never, never>;
   move: { actorId: Id; destinationId: Id };
   survey: { actorId: Id; targetId: Id };
   search: { actorId: Id; targetId: Id; searchType: string };
@@ -498,7 +580,7 @@ export interface GameClient {
 
 const commandTypes = new Set<CommandType>([
   'inspect_entity', 'inspect_starter_container', 'inspect_career_card', 'activate_career_card', 'set_clock_speed',
-  'advance_to_boundary', 'enqueue_tomb', 'move', 'survey', 'search', 'harvest',
+  'advance_to_boundary', 'enqueue_tomb', 'cancel_tomb', 'refuel_fire', 'extinguish_fire', 'light_fire', 'move', 'survey', 'search', 'harvest',
   'open_cache', 'repair', 'build', 'craft', 'revive', 'equip', 'attack', 'shop_transaction',
 ]);
 
@@ -510,6 +592,10 @@ const payloadFields: Readonly<Record<CommandType, readonly string[]>> = {
   set_clock_speed: ['speed'],
   advance_to_boundary: ['boundaryId'],
   enqueue_tomb: ['blueprintId'],
+  cancel_tomb: ['jobId'],
+  refuel_fire: ['containerId', 'itemId', 'quantity'],
+  extinguish_fire: [],
+  light_fire: [],
   move: ['actorId', 'destinationId'],
   survey: ['actorId', 'targetId'],
   search: ['actorId', 'targetId', 'searchType'],
@@ -551,7 +637,7 @@ export function validateCommandEnvelope(input: unknown): CommandValidationResult
   }
   if (input.schemaVersion !== CONTRACT_SCHEMA_VERSION) return issue('COMMAND_SCHEMA_UNSUPPORTED', '$.schemaVersion', 'Unsupported command schema version.');
   for (const key of ['saveId', 'commandId'] as const) {
-    if (typeof input[key] !== 'string' || input[key].trim() === '') return issue('COMMAND_ENVELOPE_INVALID', `$.${key}`, 'Expected a non-empty string.');
+    if (typeof input[key] !== 'string' || input[key].trim() === '' || input[key].length > 160) return issue('COMMAND_ENVELOPE_INVALID', `$.${key}`, 'Expected a non-empty string no longer than 160 characters.');
   }
   if (!Number.isSafeInteger(input.expectedRevision) || Number(input.expectedRevision) < 0) {
     return issue('COMMAND_ENVELOPE_INVALID', '$.expectedRevision', 'Expected a non-negative safe integer.');
@@ -573,19 +659,36 @@ export function validateCommandEnvelope(input: unknown): CommandValidationResult
   for (const key of required) {
     if (!(key in payload)) return issue('COMMAND_PAYLOAD_INVALID', `$.payload.${key}`, 'Required command field is missing.');
   }
+  const allowed = commandType === 'set_clock_speed' ? ['speed', 'customMultiplier', 'stopCondition'] : required;
   for (const key of Object.keys(payload)) {
-    if (!required.includes(key)) return issue('COMMAND_PAYLOAD_FIELD_UNKNOWN', `$.payload.${key}`, 'Command payload contains an unregistered field.');
+    if (!allowed.includes(key)) return issue('COMMAND_PAYLOAD_FIELD_UNKNOWN', `$.payload.${key}`, 'Command payload contains an unregistered field.');
   }
   if (input.type === 'inspect_entity' && !validEntityRef(payload.entity)) {
     return issue('COMMAND_PAYLOAD_INVALID', '$.payload.entity', 'Expected a registered entity reference.');
   }
-  if (input.type === 'set_clock_speed' && !['paused', '1x', '2x', '5x'].includes(String(payload.speed))) {
-    return issue('COMMAND_PAYLOAD_INVALID', '$.payload.speed', 'Expected one of paused, 1x, 2x or 5x.');
+  if (input.type === 'set_clock_speed') {
+    if (!['paused', '1x', '2x', '5x', 'custom'].includes(String(payload.speed))) {
+      return issue('COMMAND_PAYLOAD_INVALID', '$.payload.speed', 'Expected paused, 1x, 2x, 5x or custom.');
+    }
+    if (payload.speed === 'custom') {
+      if (!('customMultiplier' in payload) || typeof payload.customMultiplier !== 'number'
+        || !Number.isFinite(payload.customMultiplier) || payload.customMultiplier < 0.1 || payload.customMultiplier > 3600) {
+        return issue('COMMAND_PAYLOAD_INVALID', '$.payload.customMultiplier', 'Custom speed must be finite and between 0.1 and 3600.');
+      }
+    } else if ('customMultiplier' in payload) {
+      return issue('COMMAND_PAYLOAD_FIELD_UNKNOWN', '$.payload.customMultiplier', 'A custom multiplier is only valid with custom speed.');
+    }
+    if ('stopCondition' in payload && !['none', 'next_completion', 'danger'].includes(String(payload.stopCondition))) {
+      return issue('COMMAND_PAYLOAD_INVALID', '$.payload.stopCondition', 'Expected none, next_completion or danger.');
+    }
+  }
+  if (input.type === 'advance_to_boundary' && !['next_completion', 'danger'].includes(String(payload.boundaryId))) {
+    return issue('COMMAND_PAYLOAD_INVALID', '$.payload.boundaryId', 'Expected next_completion or danger.');
   }
   if (input.type === 'attack' && (!Array.isArray(payload.actorIds) || payload.actorIds.length === 0 || payload.actorIds.some(id => typeof id !== 'string' || id.length === 0))) {
     return issue('COMMAND_PAYLOAD_INVALID', '$.payload.actorIds', 'Expected one or more actor IDs.');
   }
-  if (input.type === 'shop_transaction' && (!Number.isSafeInteger(payload.quantity) || Number(payload.quantity) < 1)) {
+  if (['shop_transaction', 'refuel_fire'].includes(String(input.type)) && (!Number.isSafeInteger(payload.quantity) || Number(payload.quantity) < 1)) {
     return issue('COMMAND_PAYLOAD_INVALID', '$.payload.quantity', 'Expected a positive integer quantity.');
   }
   for (const key of required.filter(field => field !== 'entity' && field !== 'actorIds' && field !== 'quantity')) {

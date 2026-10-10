@@ -41,11 +41,15 @@ const API_ROOT = (import.meta.env.VITE_API_BASE_URL || '/api/v1').replace(/\/+$/
 export class HttpGameClient {
   private accessToken: string | null = null;
   private selectedSaveId: string | null = null;
+  private readonly clockDriverId = crypto.randomUUID();
 
   private async request<T>(path: string, init: RequestInit = {}, authenticated = true): Promise<T> {
     const headers = new Headers(init.headers);
     if (init.body !== undefined && !headers.has('content-type')) headers.set('content-type', 'application/json');
-    if (authenticated && this.accessToken) headers.set('authorization', 'Bearer ' + this.accessToken);
+    if (authenticated && this.accessToken) {
+      headers.set('authorization', 'Bearer ' + this.accessToken);
+      headers.set('x-clock-driver-id', this.clockDriverId);
+    }
 
     let response: Response;
     try {
@@ -109,6 +113,11 @@ export class HttpGameClient {
   async selectSave(saveId: string): Promise<void> {
     await this.request('/saves/' + encodeURIComponent(saveId) + '/session', { method: 'POST' });
     this.selectedSaveId = saveId;
+  }
+
+  async heartbeatClock(): Promise<{ driver: 'active' | 'observing' | 'unclaimed'; catchingUp: boolean; targetSimElapsedMs: number; leaseRemainingMs: number; sessionTokenIsDriver: boolean }> {
+    const saveId = this.requireSelectedSave();
+    return this.request('/saves/' + encodeURIComponent(saveId) + '/heartbeat', { method: 'POST' });
   }
 
   async getView(): Promise<PlayerView> {

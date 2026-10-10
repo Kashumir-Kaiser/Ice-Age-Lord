@@ -3,14 +3,17 @@ import { expect, test } from '@playwright/test';
 const fireRef = { type: 'site', id: 'SITE-LL01-000' };
 const fireKey = 'site:SITE-LL01-000';
 
-function playerView(revision = 0) {
+function playerView(revision = 1) {
   return {
     schemaVersion: 1,
     saveId: 'save-live-01',
     revision,
     lastEventSequence: revision,
     simElapsedMs: 0,
-    clockControl: { status: 'paused', speedPermille: 0 },
+    clockControl: { status: 'paused', selection: 'paused', speedPermille: 0, stopCondition: 'none' },
+    clockStatus: { driver: 'active', catchingUp: false, targetSimElapsedMs: 0, leaseRemainingMs: 5000 },
+    worldClock: { day: 1, hour: 7, minute: 0, lightPhase: 'daylight' },
+    survival: { coldLoad: null, coldStatus: 'weather_unresolved', blocker: 'OPENING_WEATHER_RECORD_NOT_SEEDED', hungerState: 'FED' },
     player: {
       id: 'LI_LAN', name: 'Lí Lan', level: 1, xp: 0, formTier: 1,
       talent: { name: 'Tử Phục Linh Sư', grade: 'SSS' },
@@ -19,7 +22,17 @@ function playerView(revision = 0) {
     careerCard: { observed: false, career: null },
     territory: {
       id: 'H0', stage: 'H0', position: { xMm: 0, yMm: 0 },
-      survivalFire: { ref: fireRef, level: 1, active: true, heatRadiusMetres: 10, protection: 'pending-opening-settlement' },
+      survivalFire: { ref: fireRef, level: 1, active: true, heatRadiusMetres: 10, fuelRemaining: null, fuelKnowledge: 'state_unobserved', nextFuelConsumptionAtElapsedMs: null, fuelBlocker: 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED', protection: 'active' },
+      tomb: {
+        level: 1,
+        deathQi: { current: 20, capacity: 20, nextRefillAtElapsedMs: 61200000 },
+        productionSlots: 2,
+        activeCount: 0,
+        queuedCount: 0,
+        nextCompletionAtElapsedMs: null,
+        queue: [],
+        output: { formTier: 0, grade: 'Thường', level: 1, xp: 0, faction: 'DARK', hero: false, loyalty: 'ABSOLUTE_TO_LI_LAN', xpMirrorEligible: false, baseLaborRateWuPerHour: 1 },
+      },
       buildings: [{ id: 'LL-BLD-FIRE-01', name: 'Lửa Trại', status: 'active' }],
     },
     inventory: {
@@ -69,7 +82,7 @@ test('live mode uses Stage 03 API and keeps map and settlement campfire on one e
     if (pathname.endsWith('/saves') && request.method() === 'POST') {
       created = true;
       const save = {
-        saveId: 'save-live-01', slotName: 'Lãnh Địa Mới', revision: 0, lastEventSequence: 0,
+        saveId: 'save-live-01', slotName: 'Lãnh Địa Mới', revision: 1, lastEventSequence: 1,
         worldPackageId: 'WORLD-PACKAGE-LL01-1.0', contentVersion: 'test', rulesetVersion: 'test',
         createdAtUtc: '2026-10-10T00:00:00.000Z', updatedAtUtc: '2026-10-10T00:00:00.000Z', forkedFrom: null,
       };
@@ -78,7 +91,11 @@ test('live mode uses Stage 03 API and keeps map and settlement campfire on one e
       return;
     }
     if (pathname.endsWith('/session') && request.method() === 'POST') {
-      await route.fulfill({ json: { saveId: 'save-live-01', revision: currentView.revision, lastEventSequence: currentView.lastEventSequence, sessionExpiresAtUtc: '2026-10-10T01:00:00.000Z' } });
+      await route.fulfill({ json: { saveId: 'save-live-01', revision: currentView.revision, lastEventSequence: currentView.lastEventSequence, sessionExpiresAtUtc: '2026-10-10T01:00:00.000Z', clockDriver: { driver: 'active', catchingUp: false, targetSimElapsedMs: 0, leaseRemainingMs: 5000, sessionTokenIsDriver: true } } });
+      return;
+    }
+    if (pathname.endsWith('/heartbeat') && request.method() === 'POST') {
+      await route.fulfill({ json: { driver: 'active', catchingUp: false, targetSimElapsedMs: currentView.simElapsedMs, leaseRemainingMs: 5000, sessionTokenIsDriver: true } });
       return;
     }
     if (pathname.endsWith('/view')) {
@@ -86,7 +103,9 @@ test('live mode uses Stage 03 API and keeps map and settlement campfire on one e
       return;
     }
     if (pathname.endsWith('/events')) {
-      await route.fulfill({ json: { events: commands ? [{ sequence: 1, eventId: 'event-1', type: 'entity_inspected', category: 'world', title: 'Đã kiểm tra điểm', text: 'Lửa Trại Cấp 1' }] : [], afterSequence: 0, nextSequence: commands, hasMore: false } });
+      const events = [{ sequence: 1, eventId: 'event-1', type: 'opening_protection_started', category: 'survival', title: 'Bảo hộ mở đầu', text: 'EV00-SAFE-FIRE' }];
+      if (commands) events.push({ sequence: 2, eventId: 'event-2', type: 'entity_inspected', category: 'world', title: 'Đã kiểm tra điểm', text: 'Lửa Trại Cấp 1' });
+      await route.fulfill({ json: { events, afterSequence: 0, nextSequence: currentView.lastEventSequence, hasMore: false } });
       return;
     }
     if (pathname.endsWith('/commands/preview')) {
@@ -96,8 +115,8 @@ test('live mode uses Stage 03 API and keeps map and settlement campfire on one e
     if (pathname.endsWith('/commands')) {
       commands += 1;
       expectedRevision = request.postDataJSON().expectedRevision;
-      currentView = playerView(1);
-      await route.fulfill({ json: { receipt: { commandId: request.postDataJSON().commandId, accepted: true, revision: 1, eventSequence: 1, code: 'OK', message: 'Đã commit' }, revision: 1, view: currentView } });
+      currentView = playerView(2);
+      await route.fulfill({ json: { receipt: { commandId: request.postDataJSON().commandId, accepted: true, revision: 2, eventSequence: 2, code: 'OK', message: 'Đã commit' }, revision: 2, view: currentView } });
       return;
     }
     await route.fulfill({ status: 404, json: { error: { code: 'NOT_FOUND', message: 'missing', displayText: 'missing' } } });
@@ -109,7 +128,7 @@ test('live mode uses Stage 03 API and keeps map and settlement campfire on one e
   await page.getByRole('button', { name: 'Kết nối API' }).click();
   await expect(page.getByRole('heading', { name: 'Chọn hoặc tạo lượt lưu' })).toBeVisible();
   await page.getByRole('button', { name: 'Tạo lượt chơi sạch' }).click();
-  await expect(page.getByText('Clean game đã được tạo và commit. Revision 0.')).toBeVisible();
+  await expect(page.getByText('Clean game đã được tạo và commit. Revision 1.')).toBeVisible();
 
   await page.getByRole('button', { name: 'Lãnh địa' }).click();
   const territoryCampfire = page.getByTestId('territory-campfire-structure');
@@ -122,16 +141,16 @@ test('live mode uses Stage 03 API and keeps map and settlement campfire on one e
   await expect(mapCampfire).toBeVisible();
   await mapCampfire.click();
   await page.getByRole('button', { name: 'Kiểm tra điểm đã chọn' }).click();
-  await expect(page.getByText('Đã commit · revision 1 đã commit.')).toBeVisible();
+  await expect(page.getByText('Đã commit · revision 2 đã commit.')).toBeVisible();
   expect(created).toBe(true);
   expect(commands).toBe(1);
-  expect(expectedRevision).toBe(0);
+  expect(expectedRevision).toBe(1);
 
   await page.reload();
   await page.getByLabel('Khóa chủ sở hữu').fill('local-owner-key');
   await page.getByRole('button', { name: 'Kết nối API' }).click();
   await expect(page.getByText('Đã khôi phục đúng lượt lưu từ API.')).toBeVisible();
-  await expect(page.getByText('snapshot revision 1')).toBeVisible();
+  await expect(page.getByText('snapshot revision 2')).toBeVisible();
   await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Bản đồ/ }).click();
   await expect(page.getByTestId('map-campfire-marker')).toHaveAttribute('data-entity-ref', fireKey);
 });

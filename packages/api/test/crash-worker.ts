@@ -10,7 +10,7 @@ const command = {
   schemaVersion: 1 as const,
   saveId,
   commandId: `crash-${killPhase}`,
-  expectedRevision: 0,
+  expectedRevision: 1,
   type: 'inspect_career_card' as const,
   payload: {},
 };

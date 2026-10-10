@@ -1,4 +1,4 @@
-import type { GameState, WorldDefinition } from '../../contracts/src/index.ts';
+import { GAME_STATE_SCHEMA_VERSION, type GameState, type WorldDefinition } from '../../contracts/src/index.ts';
 import { assertCompiledWorld } from '../../content/src/compiler.ts';
 import { RULESET_VERSION } from '../../content/src/sourceLock.ts';
 import { canonicalStateHash } from './hash.ts';
@@ -46,7 +46,7 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
   ] as const;
 
   const state: GameState = {
-    schemaVersion: 1,
+    schemaVersion: GAME_STATE_SCHEMA_VERSION,
     saveId: options.saveId,
     campaignId: options.campaignId,
     worldPackageId: world.id,
@@ -57,7 +57,24 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
     revision: 0,
     lastEventSequence: 0,
     simElapsedMs: 0,
-    clockControl: { status: 'paused', speedPermille: 0 },
+    clockControl: { status: 'paused', selection: 'paused', speedPermille: 0, stopCondition: 'none' },
+    timeBoundaries: {
+      nextHourlySettlementAtElapsedMs: hourMs,
+      nextMidnightAtElapsedMs: 17 * hourMs,
+      nextDailySettlementAtElapsedMs: 24 * hourMs,
+      nextSunsetAtElapsedMs: 9.5 * hourMs,
+      nextTwilightEndAtElapsedMs: 10 * hourMs,
+      nextDawnAtElapsedMs: 24 * hourMs,
+      protectionExpiryAtElapsedMs: 144 * hourMs,
+    },
+    survival: {
+      coldLoadMicro: 0,
+      coldLoadRemainder: 0,
+      coldStatus: 'weather_unresolved',
+      environment: null,
+      blocker: 'OPENING_WEATHER_RECORD_NOT_SEEDED',
+      hungerState: 'FED',
+    },
     player: {
       id: 'LI_LAN',
       name: 'Lí Lan',
@@ -87,6 +104,8 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
         heatDeltaCelsius: { min: 5, max: 20 },
         fuelRemaining: null,
         fuelKnowledge: 'state_unobserved',
+        nextFuelConsumptionAtElapsedMs: null,
+        fuelBlocker: 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED',
         protectedThroughElapsedMs: 144 * hourMs,
         protectionEventId: 'EV00-SAFE-FIRE',
         protectionStatus: 'pending_opening_settlement',
@@ -95,7 +114,7 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
       supplyContainerId,
       tombId: 'LL-BLD-TOMB-01',
       tomb: {
-        deathQi: { current: 20, capacity: 20, refillAtWorldTime: '00:00' },
+        deathQi: { current: 20, capacity: 20, refillAtWorldTime: '00:00', nextRefillAtElapsedMs: 17 * hourMs },
         queue: empty,
         output: {
           formTier: 0,

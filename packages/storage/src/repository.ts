@@ -6,6 +6,7 @@ import { DatabaseSync } from 'node:sqlite';
 import type { CommandEnvelope, CommandEvent, CommandReceipt, GameState, StoredCommandReceipt } from '../../contracts/src/index.ts';
 import type { BackupEnvelope, CheckpointSummary, SaveSummary } from '../../contracts/src/api.ts';
 import { canonicalStateHash } from '../../sim/src/hash.ts';
+import { upgradeGameState } from '../../sim/src/upgrade.ts';
 
 const ownerRow = 'local-owner';
 const MAX_CHECKPOINTS_PER_SAVE = 50;
@@ -206,8 +207,11 @@ export class SqliteRepository {
   }
 
   private getStateFromRow(row: SaveRow): GameState {
-    const aggregate = parseJson<GameState>(row.state_json, 'SAVE_STATE_CORRUPT');
-    if (canonicalStateHash(aggregate) !== row.state_sha256) throw new RepositoryError('SAVE_CHECKSUM_MISMATCH', 'The stored save checksum does not match.', 500);
+    const storedAggregate = parseJson<unknown>(row.state_json, 'SAVE_STATE_CORRUPT');
+    if (canonicalStateHash(storedAggregate) !== row.state_sha256) throw new RepositoryError('SAVE_CHECKSUM_MISMATCH', 'The stored save checksum does not match.', 500);
+    let aggregate: GameState;
+    try { aggregate = upgradeGameState(storedAggregate); }
+    catch { throw new RepositoryError('SAVE_STATE_SCHEMA_UNSUPPORTED', 'The stored save schema cannot be migrated safely.', 500); }
     if (aggregate.saveId !== row.save_id || aggregate.revision !== row.revision || aggregate.lastEventSequence !== row.event_sequence
       || aggregate.worldPackageId !== row.world_package_id || aggregate.contentVersion !== row.content_version || aggregate.rulesetVersion !== row.ruleset_version) {
       throw new RepositoryError('SAVE_INDEX_MISMATCH', 'Save index metadata does not match the aggregate.', 500);
@@ -378,6 +382,94 @@ export class SqliteRepository {
     });
   }
 
+  commitSystemTransition(input: {
+    ownerId: string;
+    saveId: string;
+    transition: (state: GameState) => { state: GameState; events: readonly CommandEvent[] };
+    projectPlayerEvent: (event: CommandEvent, eventId: string, state: GameState) => unknown;
+  }): { state: GameState; summary: SaveSummary } {
+    return this.transaction('system-transition', () => {
+      const row = this.rowForSave(input.saveId, input.ownerId);
+      if (!row) throw new RepositoryError('SAVE_NOT_FOUND', 'The save was not found.', 404);
+      const state = this.getStateFromRow(row);
+      const transition = input.transition(state);
+      if (transition.events.length === 0) {
+        if (canonicalStateHash(transition.state) !== canonicalStateHash(state)) {
+          throw new RepositoryError('SYSTEM_TRANSITION_WITHOUT_EVENT', 'A system transition that changes state must append an event.', 500);
+        }
+        return { state, summary: summaryFromRow(row) };
+      }
+
+      if (transition.state.saveId !== state.saveId || transition.state.revision !== state.revision
+        || transition.state.lastEventSequence !== state.lastEventSequence) {
+        throw new RepositoryError('SYSTEM_TRANSITION_STATE_INVALID', 'A system transition may not assign revisions or event sequences.', 500);
+      }
+      let expectedSequence = state.lastEventSequence + 1;
+      const receipts = transition.events.map((event, index) => {
+        if (event.sequence !== expectedSequence) throw new RepositoryError('EVENT_SEQUENCE_INVALID', 'System event sequences must increase by one.', 500);
+        const commandId = `SYSTEM:${input.saveId}:${String(event.sequence).padStart(12, '0')}`;
+        const requestSha256 = canonicalStateHash({ saveId: input.saveId, event });
+        const receipt = {
+          commandId,
+          accepted: true,
+          revision: state.revision + index + 1,
+          eventSequence: event.sequence,
+          code: 'SYSTEM_TRANSITION_COMMITTED',
+          message: 'An authoritative simulation transition was committed.',
+        } satisfies CommandReceipt;
+        expectedSequence += 1;
+        return { commandId, requestSha256, receipt };
+      });
+      const nextState: GameState = {
+        ...transition.state,
+        revision: state.revision + transition.events.length,
+        lastEventSequence: state.lastEventSequence + transition.events.length,
+        receipts: [...state.receipts, ...receipts],
+      };
+      for (const record of receipts) {
+        this.db.prepare('INSERT INTO command_receipts(save_id, command_id, request_sha256, receipt_json, created_at_utc) VALUES (?, ?, ?, ?, ?)')
+          .run(input.saveId, record.commandId, record.requestSha256, JSON.stringify(record.receipt), utcNow());
+      }
+      const stored = serializedAggregate(nextState);
+      const updated = this.db.prepare(`UPDATE saves SET revision = ?, event_sequence = ?, state_json = ?, state_sha256 = ?, updated_at_utc = ?
+        WHERE save_id = ? AND owner_id = ? AND revision = ?`).run(
+        nextState.revision,
+        nextState.lastEventSequence,
+        stored.json,
+        stored.sha256,
+        utcNow(),
+        input.saveId,
+        input.ownerId,
+        state.revision,
+      );
+      if (Number(updated.changes) !== 1) throw new RepositoryError('STALE_REVISION', 'The save changed before the system transition could commit.');
+
+      for (const [index, event] of transition.events.entries()) {
+        const eventId = `${input.saveId}:event:${String(event.sequence).padStart(12, '0')}`;
+        const playerEvent = input.projectPlayerEvent(event, eventId, nextState);
+        this.db.prepare(`INSERT INTO domain_events(
+          save_id, event_sequence, event_id, occurred_at_elapsed_ms, causal_command_id,
+          payload_schema_version, ruleset_version, content_version, event_type, payload_json, player_event_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+          input.saveId,
+          event.sequence,
+          eventId,
+          event.occurredAtElapsedMs,
+          receipts[index].commandId,
+          1,
+          nextState.rulesetVersion,
+          nextState.contentVersion,
+          event.type,
+          JSON.stringify(event.payload),
+          JSON.stringify(playerEvent),
+        );
+      }
+      const freshRow = this.rowForSave(input.saveId, input.ownerId);
+      if (!freshRow) throw new RepositoryError('SAVE_NOT_FOUND', 'The save could not be reloaded.', 500);
+      return { state: this.getStateFromRow(freshRow), summary: summaryFromRow(freshRow) };
+    });
+  }
+
   getCommandReceipt(ownerId: string, saveId: string, commandId: string): { requestSha256: string; receipt: CommandReceipt; currentRevision: number } {
     return this.readTransaction(() => {
       const row = this.rowForSave(saveId, ownerId);
@@ -447,8 +539,12 @@ export class SqliteRepository {
     return this.readTransaction(() => {
     const row = this.rowForSave(saveId, ownerId);
     if (!row) throw new RepositoryError('SAVE_NOT_FOUND', 'The save was not found.', 404);
-    const state = parseJson<GameState>(row.state_json, 'SAVE_STATE_CORRUPT');
-    if (canonicalStateHash(state) !== row.state_sha256 || state.saveId !== row.save_id || state.revision !== row.revision
+    const storedState = parseJson<unknown>(row.state_json, 'SAVE_STATE_CORRUPT');
+    if (canonicalStateHash(storedState) !== row.state_sha256) {
+      throw new RepositoryError('SAVE_CHECKSUM_MISMATCH', 'The stored save checksum or index does not match.', 500);
+    }
+    const state = upgradeGameState(storedState);
+    if (state.saveId !== row.save_id || state.revision !== row.revision
       || state.lastEventSequence !== row.event_sequence || state.worldPackageId !== row.world_package_id
       || state.contentVersion !== row.content_version || state.rulesetVersion !== row.ruleset_version) {
       throw new RepositoryError('SAVE_CHECKSUM_MISMATCH', 'The stored save checksum or index does not match.', 500);
@@ -466,7 +562,7 @@ export class SqliteRepository {
       exportedAtUtc: utcNow(),
       save: summaryFromRow(row),
       state,
-      stateSha256: row.state_sha256,
+      stateSha256: canonicalStateHash(aggregateForStorage(state)),
       receipts: receipts.map(item => ({ commandId: item.command_id, requestSha256: item.request_sha256, receipt: parseJson(item.receipt_json, 'RECEIPT_CORRUPT'), createdAtUtc: item.created_at_utc })),
       events: events.map(item => ({
         eventSequence: item.event_sequence,

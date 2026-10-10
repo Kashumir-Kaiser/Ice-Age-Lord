@@ -89,7 +89,7 @@ export function createApiServer(service: GameApplicationService, options: ApiSer
         throw jsonError(403, 'ORIGIN_FORBIDDEN', 'This Origin is not allowed by the local API.', 'Nguồn truy cập không được cho phép.');
       }
       const corsHeaders: Record<string, string> = origin === allowedOrigin
-        ? { 'access-control-allow-origin': allowedOrigin, 'access-control-allow-headers': 'authorization, content-type, if-none-match', 'access-control-allow-methods': 'GET, POST, OPTIONS', vary: 'Origin' }
+        ? { 'access-control-allow-origin': allowedOrigin, 'access-control-allow-headers': 'authorization, content-type, if-none-match, x-clock-driver-id', 'access-control-allow-methods': 'GET, POST, OPTIONS', vary: 'Origin' }
         : {};
       if (request.method === 'OPTIONS') {
         response.writeHead(204, { ...corsHeaders, 'cache-control': 'no-store' });
@@ -145,10 +145,13 @@ export function createApiServer(service: GameApplicationService, options: ApiSer
       const saveId = parts[3];
       if (!saveId) throw jsonError(404, 'NOT_FOUND', 'The requested save route was not found.', 'Không tìm thấy lượt lưu.');
       if (parts.length === 5 && parts[4] === 'session' && method === 'POST') {
-        const loaded = service.loadSave(saveId);
+        service.loadSave(saveId);
         const selected = sessions.selectSave(authenticated.token, saveId);
         if (!selected) throw jsonError(401, 'UNAUTHORIZED', 'The local owner session has expired.', 'Phiên chủ sở hữu đã hết hạn.');
-        sendJson(response, 200, { saveId, revision: loaded.state.revision, lastEventSequence: loaded.state.lastEventSequence, sessionExpiresAtUtc: new Date(selected.expiresAtMs).toISOString() }, corsHeaders);
+        const driverId = typeof request.headers['x-clock-driver-id'] === 'string' ? request.headers['x-clock-driver-id'] : authenticated.token;
+        const clockDriver = await service.heartbeatClock(saveId, authenticated.token, driverId);
+        const loaded = service.loadSave(saveId, authenticated.token, driverId);
+        sendJson(response, 200, { saveId, revision: loaded.state.revision, lastEventSequence: loaded.state.lastEventSequence, sessionExpiresAtUtc: new Date(selected.expiresAtMs).toISOString(), clockDriver }, corsHeaders);
         return;
       }
 
@@ -156,8 +159,13 @@ export function createApiServer(service: GameApplicationService, options: ApiSer
         throw jsonError(403, 'UNAUTHORIZED', 'Select this save in the current session before using it.', 'Hãy mở lượt lưu trong phiên hiện tại trước khi dùng.');
       }
 
+      const driverId = typeof request.headers['x-clock-driver-id'] === 'string' ? request.headers['x-clock-driver-id'] : authenticated.token;
+      if (parts.length === 5 && parts[4] === 'heartbeat' && method === 'POST') {
+        sendJson(response, 200, await service.heartbeatClock(saveId, authenticated.token, driverId), corsHeaders);
+        return;
+      }
       if (parts.length === 5 && parts[4] === 'view' && method === 'GET') {
-        const loaded = service.loadSave(saveId);
+        const loaded = service.loadSave(saveId, authenticated.token, driverId);
         const etag = `"${saveId}:r${loaded.state.revision}"`;
         if (request.headers['if-none-match'] === etag) {
           response.writeHead(304, { ...corsHeaders, etag, 'cache-control': 'no-store' });
@@ -174,11 +182,11 @@ export function createApiServer(service: GameApplicationService, options: ApiSer
         return;
       }
       if (parts.length === 6 && parts[4] === 'commands' && parts[5] === 'preview' && method === 'POST') {
-        sendJson(response, 200, service.preview(saveId, await readJson(request, JSON_LIMIT_BYTES)), corsHeaders);
+        sendJson(response, 200, service.preview(saveId, await readJson(request, JSON_LIMIT_BYTES), authenticated.token, driverId), corsHeaders);
         return;
       }
       if (parts.length === 5 && parts[4] === 'commands' && method === 'POST') {
-        sendJson(response, 200, await service.executeCommand(saveId, await readJson(request, JSON_LIMIT_BYTES)), corsHeaders);
+        sendJson(response, 200, await service.executeCommand(saveId, await readJson(request, JSON_LIMIT_BYTES), { sessionToken: authenticated.token, driverId }), corsHeaders);
         return;
       }
       if (parts.length === 6 && parts[4] === 'commands' && method === 'GET') {
@@ -215,5 +223,6 @@ export function createApiServer(service: GameApplicationService, options: ApiSer
       else response.destroy();
     }
   });
+  server.on('close', () => { void service.shutdownClockDrivers().catch(() => undefined); });
   return { server, sessions };
 }

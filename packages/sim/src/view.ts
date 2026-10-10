@@ -1,5 +1,6 @@
 import type { EntityRef, GameState, PlayerView, WorldDefinition } from '../../contracts/src/index.ts';
 import { canAccessStarterContainer } from './access.ts';
+import { elapsedMsToWorldClock } from './time.ts';
 
 export function entityKey(ref: EntityRef): string {
   return `${ref.type}:${ref.id}`;
@@ -51,6 +52,14 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
     lastEventSequence: state.lastEventSequence,
     simElapsedMs: state.simElapsedMs,
     clockControl: state.clockControl,
+    clockStatus: { driver: 'unclaimed', catchingUp: false, targetSimElapsedMs: state.simElapsedMs, leaseRemainingMs: 0 },
+    worldClock: elapsedMsToWorldClock(state.simElapsedMs),
+    survival: {
+      coldLoad: state.survival.coldStatus === 'weather_unresolved' ? null : state.survival.coldLoadMicro / 1_000_000,
+      coldStatus: state.survival.coldStatus,
+      blocker: state.survival.blocker,
+      hungerState: state.survival.hungerState,
+    },
     player: {
       id: state.player.id,
       name: state.player.name,
@@ -71,9 +80,29 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
         level: state.territory.survivalFire.level,
         active: state.territory.survivalFire.active,
         heatRadiusMetres: state.territory.survivalFire.heatRadiusMetres,
+        fuelRemaining: state.territory.survivalFire.fuelRemaining,
+        fuelKnowledge: state.territory.survivalFire.fuelKnowledge,
+        nextFuelConsumptionAtElapsedMs: state.territory.survivalFire.nextFuelConsumptionAtElapsedMs,
+        fuelBlocker: state.territory.survivalFire.fuelBlocker,
         protection: state.territory.survivalFire.protectionStatus === 'pending_opening_settlement'
           ? 'pending-opening-settlement'
           : state.territory.survivalFire.protectionStatus,
+      },
+      tomb: {
+        level: state.buildings.find(building => building.id === state.territory.tombId)?.level ?? 1,
+        deathQi: {
+          current: state.territory.tomb.deathQi.current,
+          capacity: state.territory.tomb.deathQi.capacity,
+          nextRefillAtElapsedMs: state.territory.tomb.deathQi.nextRefillAtElapsedMs,
+        },
+        productionSlots: Math.min(8, (state.buildings.find(building => building.id === state.territory.tombId)?.level ?? 1) + 1),
+        activeCount: state.territory.tomb.queue.filter(entry => entry.status === 'active').length,
+        queuedCount: state.territory.tomb.queue.filter(entry => entry.status === 'queued' || entry.status === 'blocked').length,
+        nextCompletionAtElapsedMs: state.territory.tomb.queue
+          .filter(entry => entry.status === 'active' && entry.completesAtElapsedMs !== null)
+          .reduce<number | null>((lowest, entry) => lowest === null ? entry.completesAtElapsedMs : Math.min(lowest, entry.completesAtElapsedMs as number), null),
+        queue: state.territory.tomb.queue,
+        output: state.territory.tomb.output,
       },
       buildings: knownBuildings,
     },
@@ -96,8 +125,16 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
       })),
       containers: knownContainers,
     },
-    units: [],
-    jobs: [],
+    units: state.ownedUnits,
+    jobs: state.jobs.map(job => {
+      const queueEntry = state.territory.tomb.queue.find(entry => entry.id === job.id);
+      const progressPercent = queueEntry?.status === 'completed' ? 100
+        : queueEntry?.status === 'active' && queueEntry.startedAtElapsedMs !== null && queueEntry.completesAtElapsedMs !== null
+          ? Math.max(0, Math.min(100, (state.simElapsedMs - queueEntry.startedAtElapsedMs)
+            / Math.max(1, queueEntry.completesAtElapsedMs - queueEntry.startedAtElapsedMs) * 100))
+          : null;
+      return { ...job, progressPercent };
+    }),
     visibleMap: {
       coordinateSystem: world.coordinateSystem,
       coordinateEncoding: world.coordinateEncoding,
@@ -111,7 +148,7 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
         return route ? [{ id, label: route.description }] : [];
       }),
       activeOrders: [],
-      heatOverlays: [{ center: world.origin, radiusMm: 10_000, minCelsius: 5, maxCelsius: 20 }],
+      heatOverlays: state.territory.survivalFire.active ? [{ center: world.origin, radiusMm: 10_000, minCelsius: 5, maxCelsius: 20 }] : [],
     },
     journal: [],
   };

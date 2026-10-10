@@ -8,6 +8,7 @@ export type ApiErrorCode =
   | 'RULE_NOT_READY'
   | 'CONTENT_MISMATCH'
   | 'COMMAND_ID_REUSED'
+  | 'CLOCK_DRIVER_BUSY'
   | 'IDEMPOTENCY_KEY_REUSED'
   | 'NOT_FOUND'
   | 'UNAUTHORIZED'
@@ -44,7 +45,7 @@ export type CreateSaveRequest = { creationKey: string; slotName: string };
 export type CreateSaveResponse = { created: boolean; save: SaveSummary; view: PlayerView };
 export type SessionBootstrapRequest = { ownerKey: string };
 export type SessionBootstrapResponse = { accessToken: string; expiresAtUtc: string; tokenType: 'Bearer' };
-export type SaveSessionResponse = { saveId: string; revision: number; lastEventSequence: number; sessionExpiresAtUtc: string };
+export type SaveSessionResponse = { saveId: string; revision: number; lastEventSequence: number; sessionExpiresAtUtc: string; clockDriver?: { driver: 'active' | 'observing' | 'unclaimed'; catchingUp: boolean; targetSimElapsedMs: number; leaseRemainingMs: number; sessionTokenIsDriver: boolean } };
 export type ViewResponse = { view: PlayerView };
 export type PlayerEvent = { sequence: number; eventId: string; type: string; category: string; title: string; text: string };
 export type EventPage = { events: readonly PlayerEvent[]; afterSequence: number; nextSequence: number; hasMore: boolean };

@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
 
-test('Chromium creates a clean save, inspects a starter container, and recovers it after reload', async ({ page }) => {
+test('Chromium runs the server-owned clock, completes a Tomb job once, and recovers it after reload', async ({ page }) => {
   const ownerKey = process.env.ILL_TEST_OWNER_KEY;
-  expect(ownerKey, 'CI must provide the ephemeral Stage 03 owner key').toBeTruthy();
+  expect(ownerKey, 'CI must provide the ephemeral Stage 04 owner key').toBeTruthy();
 
   await page.goto('/?mode=live');
   await expect(page.getByRole('heading', { name: 'Kết nối game API' })).toBeVisible();
@@ -15,27 +15,31 @@ test('Chromium creates a clean save, inspects a starter container, and recovers 
   await page.getByLabel('Tên lượt lưu mới').fill(slotName);
   await page.getByRole('button', { name: 'Tạo lượt chơi sạch' }).click();
   await expect(page.getByText(/Clean game đã được tạo và commit/)).toBeVisible();
+  await expect(page.getByText('Ngày 1 · 07:00')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Lãnh địa' }).click();
-  const territoryFire = page.getByTestId('territory-campfire-structure');
-  await expect(territoryFire).toHaveAttribute('data-entity-ref', 'site:SITE-LL01-000');
-  await expect(territoryFire.locator('img').first()).toBeVisible();
+  await page.getByRole('button', { name: 'Công trình' }).click();
+  await page.getByRole('button', { name: 'Xếp một Cương Thi tiêu chuẩn' }).click();
+  await expect(page.getByText(/Đang sản xuất · TOMB-UNIT-/)).toBeVisible();
 
-  await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Bản đồ/ }).click();
-  const mapFire = page.getByTestId('map-campfire-marker');
-  await expect(mapFire).toHaveAttribute('data-entity-ref', 'site:SITE-LL01-000');
+  await page.getByLabel('Điều kiện tự dừng').selectOption('next_completion');
+  await page.getByLabel('Tốc độ mô phỏng').selectOption('custom');
+  await page.getByLabel('Tốc độ tùy chỉnh').fill('3600');
+  await page.getByRole('button', { name: 'Áp dụng' }).click();
 
-  await page.getByRole('button', { name: 'Kho vật phẩm' }).click();
-  const inspectButton = page.getByRole('button', { name: 'Kiểm tra' });
-  await expect(inspectButton).toBeVisible();
-  await inspectButton.click();
-  await expect(page.getByRole('heading', { name: 'Bịch đồ ăn' })).toBeVisible();
+  await page.getByRole('button', { name: 'Quân lực' }).click();
+  await expect(page.getByText(/TOMB_QUEUE · 1 WU\/h · XP 0 · không XP mirror/)).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText('Ngày 1 · 07:20')).toBeVisible();
+  await expect(page.getByText(/Cương Thi 1 · Bậc 0 · Thường/)).toHaveCount(1);
+
+  const preReloadText = await page.locator('.live-plain-list').innerText();
+  expect((preReloadText.match(/TOMB_QUEUE/g) ?? []).length).toBe(1);
 
   await page.reload();
   await page.getByLabel('Khóa chủ sở hữu').fill(ownerKey!);
   await page.getByRole('button', { name: 'Kết nối API' }).click();
   await expect(page.getByText('Đã khôi phục đúng lượt lưu từ API.')).toBeVisible();
-  await page.getByRole('button', { name: 'Kho vật phẩm' }).click();
-  await expect(page.getByRole('heading', { name: 'Bịch đồ ăn' })).toBeVisible();
-  await expect(page.getByText('chưa quan sát')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Quân lực' }).click();
+  await expect(page.getByText(/Cương Thi 1 · Bậc 0 · Thường/)).toHaveCount(1);
+  const reloadedText = await page.locator('.live-plain-list').innerText();
+  expect((reloadedText.match(/TOMB_QUEUE/g) ?? []).length).toBe(1);
 });

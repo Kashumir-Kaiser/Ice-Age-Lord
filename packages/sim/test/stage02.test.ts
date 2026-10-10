@@ -107,7 +107,7 @@ test('clean initializer is deterministic and uses one source ledger for starter 
   assert.equal(first.territory.survivalFire.fuelRemaining, null);
   assert.equal(first.territory.survivalFire.protectedThroughElapsedMs, 144 * 60 * 60 * 1000);
   assert.equal(first.territory.survivalFire.protectionStatus, 'pending_opening_settlement');
-  assert.deepEqual(first.territory.tomb.deathQi, { current: 20, capacity: 20, refillAtWorldTime: '00:00' });
+  assert.deepEqual(first.territory.tomb.deathQi, { current: 20, capacity: 20, refillAtWorldTime: '00:00', nextRefillAtElapsedMs: 17 * 60 * 60 * 1000 });
   assert.deepEqual(first.territory.tomb.queue, []);
   assert.equal(first.territory.tomb.output.xpMirrorEligible, false);
   assert.equal(first.corpses.length, 6);

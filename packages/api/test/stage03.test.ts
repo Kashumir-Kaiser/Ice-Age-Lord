@@ -120,18 +120,18 @@ test('HTTP persistence, owner boundary, idempotency, player-safe polling, fork a
   await selectSave(fixture, token, selectedSaveId);
   const viewResponse = await jsonRequest(fixture, `/saves/${selectedSaveId}/view`, { headers: auth(token) });
   assert.equal(viewResponse.status, 200);
-  assert.equal(viewResponse.headers.get('etag'), `"${created.save.saveId}:r0"`);
+  assert.equal(viewResponse.headers.get('etag'), `"${created.save.saveId}:r1"`);
   const initial = await parse<{ view: { revision: number; careerCard: { observed: boolean; career: unknown }; inventory: { containers: unknown[]; inspectableContainers: Array<{ containerId: string }> } } }>(viewResponse);
-  assert.equal(initial.view.revision, 0);
+  assert.equal(initial.view.revision, 1);
   assert.equal(initial.view.careerCard.observed, false);
   assert.equal(initial.view.careerCard.career, null);
   assert.deepEqual(initial.view.inventory.containers, []);
   assert.deepEqual(initial.view.inventory.inspectableContainers.map(container => container.containerId), ['LL-CNT-CARRIED-FOOD-BAG-01']);
   assert.ok(!JSON.stringify(initial.view).includes('JOB-SUM-NECRO-01'));
-  assert.equal((await jsonRequest(fixture, `/saves/${selectedSaveId}/view`, { headers: { ...auth(token), 'if-none-match': `"${selectedSaveId}:r0"` } })).status, 304);
+  assert.equal((await jsonRequest(fixture, `/saves/${selectedSaveId}/view`, { headers: { ...auth(token), 'if-none-match': `"${selectedSaveId}:r1"` } })).status, 304);
 
   const bagCommand = {
-    schemaVersion: 1, saveId: selectedSaveId, commandId: 'inspect-bag-01', expectedRevision: 0,
+    schemaVersion: 1, saveId: selectedSaveId, commandId: 'inspect-bag-01', expectedRevision: 1,
     type: 'inspect_starter_container', payload: { containerId: 'LL-CNT-CARRIED-FOOD-BAG-01' },
   };
   const bagResponse = await jsonRequest(fixture, `/saves/${selectedSaveId}/commands`, {
@@ -140,8 +140,8 @@ test('HTTP persistence, owner boundary, idempotency, player-safe polling, fork a
   assert.equal(bagResponse.status, 200);
   const bagResult = await parse<{ receipt: { accepted: boolean; revision: number; eventSequence: number }; revision: number; view: { inventory: { containers: Array<{ id: string; items: Array<{ quantity: number }> }> } } }>(bagResponse);
   assert.equal(bagResult.receipt.accepted, true);
-  assert.equal(bagResult.revision, 1);
-  assert.equal(bagResult.receipt.eventSequence, 1);
+  assert.equal(bagResult.revision, 2);
+  assert.equal(bagResult.receipt.eventSequence, 2);
   assert.equal(bagResult.view.inventory.containers[0].id, 'LL-CNT-CARRIED-FOOD-BAG-01');
 
   const retry = await jsonRequest(fixture, `/saves/${selectedSaveId}/commands`, {
@@ -163,25 +163,25 @@ test('HTTP persistence, owner boundary, idempotency, player-safe polling, fork a
   assert.equal(stale.status, 409);
   const staleProblem = await parse<{ error: { code: string; currentRevision: number } }>(stale);
   assert.equal(staleProblem.error.code, 'STALE_REVISION');
-  assert.equal(staleProblem.error.currentRevision, 1);
+  assert.equal(staleProblem.error.currentRevision, 2);
 
-  const cardCommand = { schemaVersion: 1, saveId: selectedSaveId, commandId: 'inspect-card-01', expectedRevision: 1, type: 'inspect_career_card', payload: {} };
+  const cardCommand = { schemaVersion: 1, saveId: selectedSaveId, commandId: 'inspect-card-01', expectedRevision: 2, type: 'inspect_career_card', payload: {} };
   const card = await jsonRequest(fixture, `/saves/${selectedSaveId}/commands`, {
     method: 'POST', headers: { ...auth(token), 'content-type': 'application/json' }, body: JSON.stringify(cardCommand),
   });
   assert.equal(card.status, 200);
   const cardResult = await parse<{ revision: number; view: { careerCard: { observed: boolean; career: { id: string } | null } } }>(card);
-  assert.equal(cardResult.revision, 2);
+  assert.equal(cardResult.revision, 3);
   assert.equal(cardResult.view.careerCard.observed, true);
   assert.equal(cardResult.view.careerCard.career?.id, 'JOB-SUM-NECRO-01');
   const reloadedView = await jsonRequest(fixture, `/saves/${selectedSaveId}/view`, { headers: auth(token) });
   const reloaded = await parse<{ view: { revision: number; careerCard: { observed: boolean }; inventory: { containers: Array<{ id: string }> } } }>(reloadedView);
-  assert.equal(reloaded.view.revision, 2);
+  assert.equal(reloaded.view.revision, 3);
   assert.equal(reloaded.view.careerCard.observed, true);
   assert.equal(reloaded.view.inventory.containers[0].id, 'LL-CNT-CARRIED-FOOD-BAG-01');
   const inaccessibleSupply = await jsonRequest(fixture, `/saves/${selectedSaveId}/commands`, {
     method: 'POST', headers: { ...auth(token), 'content-type': 'application/json' },
-    body: JSON.stringify({ schemaVersion: 1, saveId: selectedSaveId, commandId: 'inspect-supply-01', expectedRevision: 2, type: 'inspect_starter_container', payload: { containerId: 'LL-CNT-SUPPLY-01' } }),
+    body: JSON.stringify({ schemaVersion: 1, saveId: selectedSaveId, commandId: 'inspect-supply-01', expectedRevision: 3, type: 'inspect_starter_container', payload: { containerId: 'LL-CNT-SUPPLY-01' } }),
   });
   assert.equal(inaccessibleSupply.status, 404);
   assert.equal((await parse<{ error: { code: string } }>(inaccessibleSupply)).error.code, 'NOT_ACCESSIBLE');
@@ -204,14 +204,14 @@ test('HTTP persistence, owner boundary, idempotency, player-safe polling, fork a
   });
   assert.equal(checkpointResponse.status, 201);
   const checkpoint = (await parse<{ checkpoint: { checkpointId: string; revision: number; stateSha256: string } }>(checkpointResponse)).checkpoint;
-  assert.equal(checkpoint.revision, 2);
+  assert.equal(checkpoint.revision, 3);
   assert.match(checkpoint.stateSha256, /^[a-f0-9]{64}$/);
   const listCheckpoint = await jsonRequest(fixture, `/saves/${selectedSaveId}/checkpoints`, { headers: auth(token) });
   assert.equal((await parse<{ checkpoints: unknown[] }>(listCheckpoint)).checkpoints.length, 1);
 
   const knownEntity = await jsonRequest(fixture, `/saves/${selectedSaveId}/commands`, {
     method: 'POST', headers: { ...auth(token), 'content-type': 'application/json' },
-    body: JSON.stringify({ schemaVersion: 1, saveId: selectedSaveId, commandId: 'inspect-known-site', expectedRevision: 2, type: 'inspect_entity', payload: { entity: { type: 'site', id: 'SITE-LL01-000' } } }),
+    body: JSON.stringify({ schemaVersion: 1, saveId: selectedSaveId, commandId: 'inspect-known-site', expectedRevision: 3, type: 'inspect_entity', payload: { entity: { type: 'site', id: 'SITE-LL01-000' } } }),
   });
   assert.equal(knownEntity.status, 200);
   const restore = await jsonRequest(fixture, `/saves/${selectedSaveId}/checkpoints/${checkpoint.checkpointId}/restore`, {
@@ -239,12 +239,12 @@ test('HTTP persistence, owner boundary, idempotency, player-safe polling, fork a
   assert.equal(importResponse.status, 201);
   const imported = await parse<{ save: { saveId: string; revision: number }; view: { careerCard: { observed: boolean }; inventory: { containers: unknown[] } } }>(importResponse);
   assert.notEqual(imported.save.saveId, selectedSaveId);
-  assert.equal(imported.save.revision, 3);
+  assert.equal(imported.save.revision, 4);
   assert.equal(imported.view.careerCard.observed, true);
   assert.equal(imported.view.inventory.containers.length, 1);
   const importedEventsResponse = await jsonRequest(fixture, `/saves/${imported.save.saveId}/events`, { headers: auth(token) });
   const importedEvents = await parse<{ events: Array<{ eventId: string; sequence: number }> }>(importedEventsResponse);
-  assert.equal(importedEvents.events.length, 3);
+  assert.equal(importedEvents.events.length, 4);
   assert.ok(importedEvents.events.every(event => event.eventId.startsWith(`${imported.save.saveId}:event:`)));
 
   const listBeforeInvalidImport = await jsonRequest(fixture, '/saves', { headers: auth(token) });
@@ -269,13 +269,13 @@ test('HTTP persistence, owner boundary, idempotency, player-safe polling, fork a
   const second = await createSave(fixture, token, 'Second');
   const crossSave = await jsonRequest(fixture, `/saves/${selectedSaveId}/view`, { headers: auth(token) });
   assert.equal(crossSave.status, 403);
-  assert.equal(second.save.revision, 0);
+  assert.equal(second.save.revision, 1);
   await selectSave(fixture, token, second.save.saveId);
   const secondView = await jsonRequest(fixture, `/saves/${second.save.saveId}/view`, { headers: auth(token) });
-  assert.equal(secondView.headers.get('etag'), `"${second.save.saveId}:r0"`);
+  assert.equal(secondView.headers.get('etag'), `"${second.save.saveId}:r1"`);
   await selectSave(fixture, token, selectedSaveId);
   const firstView = await jsonRequest(fixture, `/saves/${selectedSaveId}/view`, { headers: auth(token) });
-  assert.equal(firstView.headers.get('etag'), `"${selectedSaveId}:r3"`);
+  assert.equal(firstView.headers.get('etag'), `"${selectedSaveId}:r4"`);
 });
 
 test('concurrent distinct commands with one expected revision cannot both commit', async t => {
@@ -285,17 +285,17 @@ test('concurrent distinct commands with one expected revision cannot both commit
   const { save } = await createSave(fixture, token);
   await selectSave(fixture, token, save.saveId);
   const commands = [
-    { schemaVersion: 1, saveId: save.saveId, commandId: 'parallel-card', expectedRevision: 0, type: 'inspect_career_card', payload: {} },
-    { schemaVersion: 1, saveId: save.saveId, commandId: 'parallel-site', expectedRevision: 0, type: 'inspect_entity', payload: { entity: { type: 'site', id: 'SITE-LL01-000' } } },
+    { schemaVersion: 1, saveId: save.saveId, commandId: 'parallel-card', expectedRevision: 1, type: 'inspect_career_card', payload: {} },
+    { schemaVersion: 1, saveId: save.saveId, commandId: 'parallel-site', expectedRevision: 1, type: 'inspect_entity', payload: { entity: { type: 'site', id: 'SITE-LL01-000' } } },
   ];
   const responses = await Promise.all(commands.map(command => jsonRequest(fixture, `/saves/${save.saveId}/commands`, {
     method: 'POST', headers: { ...auth(token), 'content-type': 'application/json' }, body: JSON.stringify(command),
   })));
   assert.deepEqual(responses.map(response => response.status).sort(), [200, 409]);
   const view = await jsonRequest(fixture, `/saves/${save.saveId}/view`, { headers: auth(token) });
-  assert.equal(view.headers.get('etag'), `"${save.saveId}:r1"`);
+  assert.equal(view.headers.get('etag'), `"${save.saveId}:r2"`);
   const events = await jsonRequest(fixture, `/saves/${save.saveId}/events`, { headers: auth(token) });
-  assert.equal((await parse<{ events: unknown[] }>(events)).events.length, 1);
+  assert.equal((await parse<{ events: unknown[] }>(events)).events.length, 2);
 });
 
 test('process death around commit recovers either the complete old or complete new transaction', t => {
@@ -319,13 +319,13 @@ test('process death around commit recovers either the complete old or complete n
       const loaded = recovered.loadSave('local-owner', saveId);
       const events = recovered.getPlayerEvents('local-owner', saveId, 0, 20);
       if (phase === 'before_commit') {
-        assert.equal(loaded.state.revision, 0);
-        assert.equal(loaded.state.receipts.length, 0);
-        assert.equal(events.events.length, 0);
-      } else {
         assert.equal(loaded.state.revision, 1);
         assert.equal(loaded.state.receipts.length, 1);
         assert.equal(events.events.length, 1);
+      } else {
+        assert.equal(loaded.state.revision, 2);
+        assert.equal(loaded.state.receipts.length, 2);
+        assert.equal(events.events.length, 2);
       }
     } finally { recovered.close(); }
   }
