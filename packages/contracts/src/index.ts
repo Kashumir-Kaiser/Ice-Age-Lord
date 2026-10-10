@@ -606,6 +606,6 @@ export function validateCommandEnvelope(input: unknown): CommandValidationResult
       expectedRevision: Number(input.expectedRevision),
       type: input.type as CommandType,
       payload,
-    },
+    } as CommandEnvelope,
   };
 }
