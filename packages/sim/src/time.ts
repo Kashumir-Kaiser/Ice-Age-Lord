@@ -1,5 +1,6 @@
 import type { ClockControl, ColdEnvironment, GameState, PlayerUnitState, WorldDefinition } from '../../contracts/src/index.ts';
 import { integrateSpatialTo, nextSpatialBoundary, settleSpatialBoundary } from './spatial.ts';
+import { integrateConstructionWork, nextConstructionCompletionAt, nextHeaterServiceCompletionAt, settleConstructionCompletions, settleHeaterServices } from './construction.ts';
 
 export const MINUTE_MS = 60_000;
 export const HOUR_MS = 60 * MINUTE_MS;
@@ -82,6 +83,7 @@ function integrateSegment(state: GameState, target: number, coldRateMicroPerMinu
   state.territory.tomb.queue = state.territory.tomb.queue.map(entry => entry.status === 'active' && entry.startedAtElapsedMs !== null
     ? { ...entry, progressCarryMs: Math.min(TOMB_STANDARD_DURATION_MS, Math.max(0, target - entry.startedAtElapsedMs)) }
     : entry);
+  integrateConstructionWork(state, from, target);
   if (world) integrateSpatialTo(state, world, target);
   else state.simElapsedMs = target;
 }
@@ -120,6 +122,7 @@ function createTombUnit(state: GameState, unitId: string): PlayerUnitState {
     xpMirrorEligible: false,
     baseLaborRateWuPerHour: output.baseLaborRateWuPerHour,
     laborRuleVersion: 'TOMB-ZOMBIE-LABOR-1.0',
+    constructionModifiers: { health: 1, stamina: 1, skill: 1, tool: 1, weather: 1, shelter: 1, command: 1 },
   };
 }
 
@@ -226,6 +229,10 @@ function nextEventTime(state: GameState, target: number, coldRate: number, world
     state.territory.survivalFire.nextFuelConsumptionAtElapsedMs ?? Number.MAX_SAFE_INTEGER,
     ...state.territory.tomb.queue.filter(entry => entry.status === 'active' && entry.completesAtElapsedMs !== null).map(entry => entry.completesAtElapsedMs as number),
   ];
+  const constructionCompletion = nextConstructionCompletionAt(state);
+  if (constructionCompletion !== null) candidates.push(constructionCompletion);
+  const heaterCompletion = nextHeaterServiceCompletionAt(state);
+  if (heaterCompletion !== null) candidates.push(heaterCompletion);
   const coldThreshold = nextColdThresholdAt(state, coldRate);
   if (coldThreshold !== null) candidates.push(coldThreshold);
   if (world) {
@@ -257,6 +264,13 @@ function processBoundary(state: GameState, at: number, events: SettledEvent[], w
 
   completed = completeTombJobs(state, at, events) || completed;
   if (completed) startWaitingTombJobs(state, at, events);
+
+  const constructionEvents = settleConstructionCompletions(state, at);
+  events.push(...constructionEvents);
+  if (constructionEvents.length > 0) completed = true;
+  const heaterEvents = settleHeaterServices(state, at);
+  events.push(...heaterEvents);
+  if (heaterEvents.length > 0) completed = true;
 
   const boundaries = state.timeBoundaries;
   if (boundaries.nextMidnightAtElapsedMs === at) {
@@ -343,6 +357,8 @@ export function advanceTo(
       state.timeBoundaries.protectionExpiryAtElapsedMs,
       state.territory.survivalFire.nextFuelConsumptionAtElapsedMs,
       ...state.territory.tomb.queue.filter(entry => entry.status === 'active').map(entry => entry.completesAtElapsedMs),
+      nextConstructionCompletionAt(state),
+      nextHeaterServiceCompletionAt(state),
       nextColdThresholdAt(state, coldRate),
       spatialBoundary,
     ].includes(at);

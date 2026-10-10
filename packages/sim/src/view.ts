@@ -1,6 +1,8 @@
 import type { ActionAvailability, CoordinateMm, EntityRef, GameState, PlayerEntityView, PlayerView, WorldDefinition } from '../../contracts/src/index.ts';
 import { canAccessStarterContainer } from './access.ts';
 import { currentSight, previewMovement, startHarvestJob } from './spatial.ts';
+import { OPENING_BUILDINGS } from '../../content/src/buildings.ts';
+import { constructionWorkRate, farmhouseCapacity } from './construction.ts';
 import { elapsedMsToWorldClock } from './time.ts';
 
 export function entityKey(ref: EntityRef): string {
@@ -136,18 +138,21 @@ function progressFor(state: GameState, jobId: string): number | null {
     const distance = harvest.stage === 'outbound' ? harvest.routeOutDistanceMm : harvest.routeReturnDistanceMm;
     return distance === 0 ? 100 : Math.max(0, Math.min(100, harvest.routeProgressMm / distance * 100));
   }
+  const construction = state.construction.jobs.find(job => job.id === jobId);
+  if (construction) return construction.workUnitsRequired === 0 ? 100 : Math.max(0, Math.min(100, construction.progressTicks / (construction.workUnitsRequired * 300) * 100));
+  const service = (state.construction.operatingServices ?? []).find(job => job.id === jobId);
+  if (service) return Math.max(0, Math.min(100, (state.simElapsedMs - service.startedAtElapsedMs) / (service.completesAtElapsedMs - service.startedAtElapsedMs) * 100));
   return null;
 }
 
 export function projectPlayerView(state: GameState, world: WorldDefinition): PlayerView {
   if (state.worldPackageId !== world.id) throw new Error('PLAYER_VIEW_WORLD_PACKAGE_MISMATCH');
   const entities = [...siteEntities(state, world), ...resourceEntities(state, world), ...cacheEntities(state, world)];
-  const knownBuildings = state.buildings.filter(building => state.playerKnowledge.knownSiteIds.some(siteId => {
-    if (building.kind === 'lord_house') return siteId === 'SITE-LL01-001';
-    if (building.kind === 'survival_fire') return siteId === 'SITE-LL01-000';
-    if (building.kind === 'tomb') return siteId === 'SITE-LL01-003';
-    return false;
-  })).map(building => ({ id: building.id, name: building.name, status: building.status }));
+  const knownBuildings = state.buildings.map(building => ({
+    id: building.id, name: building.name, status: building.status, kind: building.kind, level: building.level,
+    ...(building.siteId ? { siteId: building.siteId } : {}), ...(building.position ? { position: building.position } : {}),
+    ...(building.footprintAreaM2 !== undefined ? { footprintAreaM2: building.footprintAreaM2 } : {}),
+  }));
   const fireEntity = entities.find(entity => entity.ref.type === 'site' && entity.position?.xMm === state.territory.position.xMm && entity.position?.yMm === state.territory.position.yMm);
   if (!fireEntity) throw new Error('PLAYER_VIEW_SURVIVAL_FIRE_REFERENCE_MISSING');
   const knownContainers = state.inventory.containers.filter(container => container.observed).map(container => ({
@@ -155,8 +160,11 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
     kind: container.kind,
     label: container.kind === 'territory_supply' ? 'Territory supply chest' : container.kind === 'carried_bag' ? 'Carried food bag' : container.kind,
     slots: container.capacitySlots ?? 0,
+    occupiedSlots: container.stacks.length,
+    capacitySlots: container.capacitySlots,
     accessible: canAccessStarterContainer(container.id, state, world),
-    items: container.stacks.map(stack => ({ itemId: stack.itemId, label: stack.templateId, quantity: stack.quantity })),
+    location: container.location,
+    items: container.stacks.map(stack => ({ itemId: stack.itemId, label: stack.templateId, quantity: stack.quantity, reservedQuantity: stack.reservedQuantity ?? 0, unit: stack.unit ?? null, quality: stack.quality ?? null, ownerId: stack.ownerId ?? null, equipped: stack.equipped, equippedSlotId: stack.equippedSlotId ?? null, foodUnitsPerItem: stack.foodUnitsPerItem ?? null, provenance: stack.provenance })),
   }));
   const sights = currentSight(state, world);
 
@@ -213,6 +221,23 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
         output: state.territory.tomb.output,
       },
       buildings: knownBuildings,
+    },
+    construction: {
+      unlockedBlueprintIds: state.construction.unlockedBlueprintIds,
+      blueprints: OPENING_BUILDINGS,
+      jobs: state.construction.jobs.map(job => {
+        const workUnitsPerHour = constructionWorkRate(state, job);
+        const remaining = Math.max(0, job.workUnitsRequired - job.progressTicks / 300);
+        const estimatedCompletionAtElapsedMs = workUnitsPerHour > 0
+          ? state.simElapsedMs + Math.ceil(remaining * 3_600_000 / workUnitsPerHour)
+          : null;
+        return { ...job, workUnitsPerHour, estimatedCompletionAtElapsedMs };
+      }),
+      residents: state.construction.residents,
+      rewardEntitlements: state.construction.rewardEntitlements,
+      operatingServices: (state.construction.operatingServices ?? []).map(service => ({ ...service, remainingMs: Math.max(0, service.completesAtElapsedMs - state.simElapsedMs) })),
+      farmerHouseCapacity: farmhouseCapacity(state),
+      occupiedHousing: state.construction.residents.length,
     },
     careerCard: {
       observed: state.playerKnowledge.careerCardObserved,

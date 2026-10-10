@@ -1,5 +1,5 @@
 export const CONTRACT_SCHEMA_VERSION = 1 as const;
-export const GAME_STATE_SCHEMA_VERSION = 3 as const;
+export const GAME_STATE_SCHEMA_VERSION = 4 as const;
 
 export type Id = string;
 export type EntityRef =
@@ -194,7 +194,7 @@ export type InventoryContainerState = {
   occupiedSlots: number | null;
   location: { kind: 'site'; siteId: Id } | { kind: 'carried'; ownerId: Id } | { kind: 'building'; buildingId: Id } | { kind: 'unit'; unitId: Id };
   observed: boolean;
-  stacks: readonly { itemId: Id; templateId: Id; quantity: number; equipped: boolean; provenance: ProvenanceClass }[];
+  stacks: readonly { itemId: Id; templateId: Id; quantity: number; reservedQuantity?: number; unit?: string; ownerId?: Id; equipped: boolean; equippedSlotId?: Id | null; quality?: number | null; foodUnitsPerItem?: number; provenance: ProvenanceClass }[];
 };
 
 export type PlayerUnitState = {
@@ -214,6 +214,7 @@ export type PlayerUnitState = {
   xpMirrorEligible: boolean;
   baseLaborRateWuPerHour: number;
   laborRuleVersion: 'TOMB-ZOMBIE-LABOR-1.0' | string;
+  constructionModifiers?: { health?: number; stamina?: number; skill?: number; tool?: number; weather?: number; shelter?: number; command?: number };
 };
 
 export type RuntimeJobState = {
@@ -233,6 +234,63 @@ export type BuildingState = {
   level: number;
   status: 'damaged' | 'active' | 'under_construction' | 'disabled' | 'destroyed';
   repairRequirements: readonly { itemId: Id; quantity: number }[];
+  siteId?: Id;
+  position?: CoordinateMm;
+  blueprintId?: Id;
+  footprintAreaM2?: number | null;
+  constructionRuleVersion?: string;
+};
+
+export type ConstructionJobState = {
+  id: Id;
+  kind: 'repair' | 'build';
+  status: 'active' | 'paused' | 'blocked' | 'completed' | 'cancelled';
+  buildingId: Id;
+  blueprintId: Id | null;
+  siteId: Id;
+  position: CoordinateMm;
+  workUnitsRequired: number;
+  progressTicks: number;
+  progressRemainder: number;
+  workerIds: readonly Id[];
+  costReservations: readonly { containerId: Id; itemId: Id; templateId: Id; quantity: number }[];
+  toolReservations: readonly { workerId: Id; containerId: Id; itemId: Id; templateId: Id; quantity: number }[];
+  cancellationPolicy: string;
+  blocker: string | null;
+  startedAtElapsedMs: number;
+  completedAtElapsedMs: number | null;
+};
+export type ConstructionResidentState = { id: Id; name: string; buildingId: Id; createdAtElapsedMs: number; foodUnitsPaid: number; upkeepStatus: 'not_compiled'; provenance: 'campaign_fixed' };
+export type ConstructionRewardEntitlement = { id: Id; achievementId: Id; status: 'pending' | 'blocked' | 'claimed'; reward: readonly { templateId: Id; quantity: number }[]; rewardContract?: string; blocker: string | null; createdAtElapsedMs: number; receiptId: Id | null };
+export type OperatingServiceState = { id: Id; kind: 'heater'; buildingId: Id; status: 'active' | 'completed'; startedAtElapsedMs: number; completesAtElapsedMs: number; fuelReservations: readonly { containerId: Id; itemId: Id; templateId: Id; quantity: number }[]; heatDeltaCelsius: { min: number; max: number }; roomAreaCapM2: number };
+export type ConstructionBlueprintView = {
+  id: Id;
+  name: string;
+  family: string;
+  level: 1;
+  provenance: ProvenanceClass;
+  sourceRegistry: string;
+  footprint: { areaM2: number | null; lengthM: number | null; geometryPolicy: string };
+  buildCost: readonly { materialId: string; quantity: number; unit: 'item' | 'segment' }[];
+  workUnits: number;
+  maxWorkers: number;
+  tools: { status: 'not_specified_by_source'; requiredTemplateIds: readonly string[] };
+  outputs: readonly string[];
+  operatingNeeds: readonly string[];
+  prerequisite: string;
+  upgrade: null | { toLevel: 2; cost: readonly { materialId: string; quantity: number; unit: 'item' | 'segment' }[]; workUnits: number; maxWorkers: number; prerequisite: string | null };
+  buildableFromThisEvidence: true;
+};
+export type ConstructionState = {
+  registryVersion: string;
+  placementOverlayVersion: string;
+  laborOverlayVersion: string;
+  unlockedBlueprintIds: readonly Id[];
+  jobs: readonly ConstructionJobState[];
+  residents: readonly ConstructionResidentState[];
+  firstBuildReceiptIds: readonly Id[];
+  rewardEntitlements: readonly ConstructionRewardEntitlement[];
+  operatingServices?: readonly OperatingServiceState[];
 };
 
 export type FieldChestLifecycleState = { chestId: Id; state: 'unopened' | 'opened' | 'destroyed'; openedAtElapsedMs: number | null };
@@ -517,11 +575,21 @@ export type PlayerView = {
       queue: readonly TombQueueEntry[];
       output: GameState['territory']['tomb']['output'];
     };
-    buildings: readonly { id: Id; name: string; status: string }[];
+    buildings: readonly { id: Id; name: string; status: string; kind: string; level: number; siteId?: Id; position?: CoordinateMm; footprintAreaM2?: number | null }[];
+  };
+  construction: {
+    unlockedBlueprintIds: readonly Id[];
+    blueprints: readonly ConstructionBlueprintView[];
+    jobs: readonly (ConstructionJobState & { workUnitsPerHour: number; estimatedCompletionAtElapsedMs: number | null })[];
+    residents: readonly ConstructionResidentState[];
+    rewardEntitlements: readonly ConstructionRewardEntitlement[];
+    operatingServices: readonly (OperatingServiceState & { remainingMs: number })[];
+    farmerHouseCapacity: number;
+    occupiedHousing: number;
   };
   inventory: {
     inspectableContainers: readonly { containerId: Id; label: string; kind: 'territory_supply' | 'carried_bag' }[];
-    containers: readonly { id: Id; kind: InventoryContainerState['kind']; label: string; slots: number; accessible: boolean; items: readonly { itemId: Id; label: string; quantity: number }[] }[];
+    containers: readonly { id: Id; kind: InventoryContainerState['kind']; label: string; slots: number; occupiedSlots: number; capacitySlots: number | null; accessible: boolean; location: InventoryContainerState['location']; items: readonly { itemId: Id; label: string; quantity: number; reservedQuantity: number; unit: string | null; quality: number | null; ownerId: Id | null; equipped: boolean; equippedSlotId: Id | null; foodUnitsPerItem: number | null; provenance: ProvenanceClass }[] }[];
   };
   units: readonly PlayerUnitState[];
   jobs: readonly (RuntimeJobState & { progressPercent: number | null })[];
@@ -585,6 +653,7 @@ export type GameState = {
     };
     position: CoordinateMm;
     location: { kind: 'site'; siteId: Id } | { kind: 'travel'; orderId: Id } | { kind: 'field'; coordinate: CoordinateMm };
+    constructionModifiers?: { health?: number; stamina?: number; skill?: number; tool?: number; weather?: number; shelter?: number; command?: number };
     relationships: readonly { id: Id; actorId: Id; kind: string; status: string }[];
   };
   territory: {
@@ -617,6 +686,7 @@ export type GameState = {
   inventory: { containers: readonly InventoryContainerState[] };
   ownedUnits: readonly PlayerUnitState[];
   buildings: readonly BuildingState[];
+  construction: ConstructionState;
   jobs: readonly RuntimeJobState[];
   travel: { activeOrderId: Id | null; routeId: Id | null; orders: readonly MovementOrderState[] };
   exploration: { exploredGeometry: readonly { id: Id; kind: 'circle' | 'polygon'; points: readonly CoordinateMm[]; radiusMm?: number }[]; searchHistory: readonly { searchId: Id; startedAtElapsedMs: number; status: string }[] };
@@ -683,7 +753,15 @@ export type CommandType =
   | 'revive'
   | 'equip'
   | 'attack'
-  | 'shop_transaction';
+  | 'shop_transaction'
+  | 'assign_construction_workers'
+  | 'cancel_construction_job'
+  | 'recruit_resident'
+  | 'operate_heater'
+  | 'split_stack'
+  | 'merge_stacks'
+  | 'consume_item'
+  | 'unequip_item';
 
 export type CommandPayloadByType = {
   inspect_entity: { entity: EntityRef };
@@ -705,8 +783,16 @@ export type CommandPayloadByType = {
   cancel_spatial_job: { jobId: Id };
   transfer_item: { actorId: Id; sourceContainerId: Id; destinationContainerId: Id; itemId: Id; quantity: number };
   open_cache: { actorId: Id; chestId: Id };
-  repair: { actorId: Id; buildingId: Id };
-  build: { actorId: Id; blueprintId: Id; siteId: Id };
+  repair: { actorId: Id; buildingId: Id; containerId: Id };
+  build: { actorId: Id; blueprintId: Id; siteId: Id; containerId: Id; position: CoordinateMm };
+  assign_construction_workers: { jobId: Id; workerIds: readonly Id[] };
+  cancel_construction_job: { jobId: Id };
+  recruit_resident: { buildingId: Id; containerId: Id; quantity: number };
+  operate_heater: { actorId: Id; buildingId: Id; containerId: Id };
+  split_stack: { actorId: Id; containerId: Id; itemId: Id; quantity: number };
+  merge_stacks: { actorId: Id; containerId: Id; sourceItemId: Id; targetItemId: Id };
+  consume_item: { actorId: Id; containerId: Id; itemId: Id; quantity: number };
+  unequip_item: { unitId: Id; itemId: Id };
   craft: { actorId: Id; recipeId: Id };
   revive: { actorId: Id; corpseId: Id };
   equip: { unitId: Id; itemId: Id; slotId: Id };
@@ -768,7 +854,7 @@ export interface GameClient {
 const commandTypes = new Set<CommandType>([
   'inspect_entity', 'inspect_starter_container', 'inspect_career_card', 'activate_career_card', 'set_clock_speed',
   'advance_to_boundary', 'enqueue_tomb', 'cancel_tomb', 'refuel_fire', 'extinguish_fire', 'light_fire', 'move', 'cancel_travel', 'survey', 'search', 'harvest', 'cancel_spatial_job', 'transfer_item',
-  'open_cache', 'repair', 'build', 'craft', 'revive', 'equip', 'attack', 'shop_transaction',
+  'open_cache', 'repair', 'build', 'craft', 'revive', 'equip', 'attack', 'shop_transaction', 'assign_construction_workers', 'cancel_construction_job', 'recruit_resident', 'operate_heater', 'split_stack', 'merge_stacks', 'consume_item', 'unequip_item',
 ]);
 
 const payloadFields: Readonly<Record<CommandType, readonly string[]>> = {
@@ -791,13 +877,21 @@ const payloadFields: Readonly<Record<CommandType, readonly string[]>> = {
   cancel_spatial_job: ['jobId'],
   transfer_item: ['actorId', 'sourceContainerId', 'destinationContainerId', 'itemId', 'quantity'],
   open_cache: ['actorId', 'chestId'],
-  repair: ['actorId', 'buildingId'],
-  build: ['actorId', 'blueprintId', 'siteId'],
+  repair: ['actorId', 'buildingId', 'containerId'],
+  build: ['actorId', 'blueprintId', 'siteId', 'containerId', 'position'],
   craft: ['actorId', 'recipeId'],
   revive: ['actorId', 'corpseId'],
   equip: ['unitId', 'itemId', 'slotId'],
   attack: ['actorIds', 'targetId'],
   shop_transaction: ['offerId', 'quantity'],
+  assign_construction_workers: ['jobId', 'workerIds'],
+  cancel_construction_job: ['jobId'],
+  recruit_resident: ['buildingId', 'containerId', 'quantity'],
+  operate_heater: ['actorId', 'buildingId', 'containerId'],
+  split_stack: ['actorId', 'containerId', 'itemId', 'quantity'],
+  merge_stacks: ['actorId', 'containerId', 'sourceItemId', 'targetItemId'],
+  consume_item: ['actorId', 'containerId', 'itemId', 'quantity'],
+  unequip_item: ['unitId', 'itemId'],
 };
 
 const forbiddenClientFields = new Set([
@@ -882,6 +976,15 @@ export function validateCommandEnvelope(input: unknown): CommandValidationResult
   if (input.type === 'advance_to_boundary' && !['next_completion', 'danger'].includes(String(payload.boundaryId))) {
     return issue('COMMAND_PAYLOAD_INVALID', '$.payload.boundaryId', 'Expected next_completion or danger.');
   }
+  if (input.type === 'build' && !validCoordinate(payload.position)) {
+    return issue('COMMAND_PAYLOAD_INVALID', '$.payload.position', 'A server-previewed construction position is required.');
+  }
+  if (input.type === 'assign_construction_workers' && (!Array.isArray(payload.workerIds) || payload.workerIds.some(id => typeof id !== 'string' || id.trim() === '') || new Set(payload.workerIds).size !== payload.workerIds.length)) {
+    return issue('COMMAND_PAYLOAD_INVALID', '$.payload.workerIds', 'Worker IDs must be a unique string list; an empty list pauses the job.');
+  }
+  if (input.type === 'recruit_resident' && (!Number.isSafeInteger(payload.quantity) || Number(payload.quantity) < 1 || Number(payload.quantity) > 4)) {
+    return issue('COMMAND_PAYLOAD_INVALID', '$.payload.quantity', 'Recruitment quantity must be a whole number from 1 to 4.');
+  }
   if (input.type === 'move') {
     const hasId = typeof payload.destinationId === 'string' && payload.destinationId.trim() !== '';
     const hasCoordinate = validCoordinate(payload.destination);
@@ -898,14 +1001,15 @@ export function validateCommandEnvelope(input: unknown): CommandValidationResult
   if (input.type === 'attack' && (!Array.isArray(payload.actorIds) || payload.actorIds.length === 0 || payload.actorIds.some(id => typeof id !== 'string' || id.length === 0))) {
     return issue('COMMAND_PAYLOAD_INVALID', '$.payload.actorIds', 'Expected one or more actor IDs.');
   }
-  if (['shop_transaction', 'refuel_fire', 'transfer_item'].includes(String(input.type)) && (!Number.isSafeInteger(payload.quantity) || Number(payload.quantity) < 1)) {
+  if (['shop_transaction', 'refuel_fire', 'transfer_item', 'recruit_resident', 'split_stack', 'consume_item'].includes(String(input.type)) && (!Number.isSafeInteger(payload.quantity) || Number(payload.quantity) < 1)) {
     return issue('COMMAND_PAYLOAD_INVALID', '$.payload.quantity', 'Expected a positive integer quantity.');
   }
-  for (const key of required.filter(field => !['entity', 'actorIds', 'quantity', 'center', 'radiusMm'].includes(field))) {
+  for (const key of required.filter(field => !['entity', 'actorIds', 'workerIds', 'quantity', 'center', 'radiusMm', 'position'].includes(field))) {
     if (typeof payload[key] !== 'string' || String(payload[key]).trim() === '') {
       return issue('COMMAND_PAYLOAD_INVALID', `$.payload.${key}`, 'Expected a non-empty string.');
     }
   }
+  if (input.type === 'build' && !validCoordinate(payload.position)) return issue('COMMAND_PAYLOAD_INVALID', '$.payload.position', 'Expected an integer map coordinate.');
   for (const [key, value] of Object.entries(payload)) {
     if (typeof value === 'number' && !Number.isFinite(value)) return issue('COMMAND_PAYLOAD_INVALID', `$.payload.${key}`, 'Numbers must be finite.');
   }

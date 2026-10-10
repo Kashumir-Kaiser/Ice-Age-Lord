@@ -1,5 +1,6 @@
 import { GAME_STATE_SCHEMA_VERSION, type GameState, type WorldDefinition } from '../../contracts/src/index.ts';
 import { ACTIVE_WORLD_PACKAGE } from '../../content/src/index.ts';
+import { OPENING_BUILDINGS_RULE_VERSION, PLACEMENT_OVERLAY_VERSION, LABOR_OVERLAY_VERSION } from '../../content/src/buildings.ts';
 import { DAY_MS, HOUR_MS, nextMidnightAfter } from './time.ts';
 import { seedSpatialKnowledge } from './spatial.ts';
 
@@ -99,7 +100,7 @@ function migrateV2ToV3(candidate: Record<string, any>, world: WorldDefinition): 
     }));
   const migrated: Record<string, any> = {
     ...candidate,
-    schemaVersion: GAME_STATE_SCHEMA_VERSION,
+    schemaVersion: 3,
     player: {
       ...candidate.player,
       position: playerPosition,
@@ -139,10 +140,37 @@ function migrateV2ToV3(candidate: Record<string, any>, world: WorldDefinition): 
   return migrated as unknown as GameState;
 }
 
+function migrateV3ToV4(candidate: Record<string, any>, world: WorldDefinition): Record<string, any> {
+  if (candidate.worldPackageId !== world.id) throw new Error('SAVE_STATE_SCHEMA_MIGRATION_WORLD_UNSUPPORTED');
+  const byKind: Record<string, string> = { lord_house: 'SITE-LL01-001', survival_fire: 'SITE-LL01-000', tomb: 'SITE-LL01-003' };
+  const buildings = (candidate.buildings ?? []).map((building: Record<string, any>) => {
+    const siteId = building.siteId ?? byKind[building.kind];
+    const position = building.position ?? world.sites.find(site => site.id === siteId)?.position ?? (building.kind === 'survival_fire' ? candidate.territory.position : undefined);
+    return { ...building, ...(siteId ? { siteId } : {}), ...(position ? { position } : {}) };
+  });
+  const unlockedBlueprintIds = candidate.territory?.repaired
+    ? ['BP-OPEN-HEATER-01', 'BP-OPEN-KITCHEN-01', 'BP-OPEN-WOODWORKS-01', 'BP-OPEN-TAILOR-01', 'BP-OPEN-OREWORKS-01', 'BP-OPEN-FORGE-01', 'BP-OPEN-FARMHOUSE-01', 'BP-OPEN-INFIRMARY-01', 'BP-OPEN-SHELTER-01', 'BP-OPEN-WALL-01', 'BP-OPEN-GATE-01']
+    : [];
+  return {
+    ...candidate,
+    schemaVersion: GAME_STATE_SCHEMA_VERSION,
+    buildings,
+    construction: candidate.construction ?? {
+      registryVersion: OPENING_BUILDINGS_RULE_VERSION,
+      placementOverlayVersion: PLACEMENT_OVERLAY_VERSION,
+      laborOverlayVersion: LABOR_OVERLAY_VERSION,
+      unlockedBlueprintIds,
+      jobs: [], residents: [], firstBuildReceiptIds: [], rewardEntitlements: [], operatingServices: [],
+    },
+  };
+}
+
 export function upgradeGameState(value: unknown, world: WorldDefinition = ACTIVE_WORLD_PACKAGE): GameState {
   let candidate = asRecord(value);
   if (candidate.schemaVersion === 1) candidate = migrateV1ToV2(candidate);
   if (candidate.schemaVersion === 2) candidate = migrateV2ToV3(candidate, world);
+  if (candidate.schemaVersion === 3) candidate = migrateV3ToV4(candidate, world);
   if (candidate.schemaVersion !== GAME_STATE_SCHEMA_VERSION) throw new Error('SAVE_STATE_SCHEMA_UNSUPPORTED');
+  if (candidate.construction && !Array.isArray(candidate.construction.operatingServices)) candidate.construction.operatingServices = [];
   return candidate as unknown as GameState;
 }

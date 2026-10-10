@@ -310,6 +310,7 @@ export function actorAvailability(state: GameState, actorId: string): string | n
   if (state.travel.orders.some(order => order.actorIds.includes(actorId) && order.status === 'active')) return 'ACTOR_ALREADY_TRAVELLING';
   if (state.spatial.searchJobs.some(job => job.actorIds.includes(actorId) && job.status === 'active')) return 'ACTOR_ASSIGNED_TO_SEARCH';
   if (state.spatial.harvestJobs.some(job => job.actorIds.includes(actorId) && job.status === 'active')) return 'ACTOR_ASSIGNED_TO_HARVEST';
+  if (state.construction.jobs.some(job => job.workerIds.includes(actorId) && (job.status === 'active' || job.status === 'blocked'))) return 'ACTOR_ASSIGNED_TO_CONSTRUCTION';
   return null;
 }
 
@@ -526,7 +527,7 @@ function updateKnowledgeAt(state: GameState, world: WorldDefinition, at: number)
       }
     }
     knownRouteIds.push(...worldRouteIdsNear(world, observer.position, world.navigationOverlay.signalRangeMm));
-    const geometryId = `OBS-${observer.id}-${at}`;
+    const geometryId = `OBS-${observer.id}-${observer.position.xMm}-${observer.position.yMm}-${observer.position.sourceZMetres ?? 0}-${sightRangeMm}`;
     if (!state.exploration.exploredGeometry.some(area => area.id === geometryId)) {
       state.exploration = {
         ...state.exploration,
@@ -601,7 +602,7 @@ function addCargo(state: GameState, actorId: string, jobId: string, materialId: 
   state.inventory = {
     containers: state.inventory.containers.map(candidate => candidate.id === container.id ? {
       ...candidate,
-      stacks: [...candidate.stacks, { itemId, templateId: materialId, quantity: 1, equipped: false, provenance: 'immutable_source_fact' as const }],
+      stacks: [...candidate.stacks, { itemId, templateId: materialId, quantity: 1, reservedQuantity: 0, unit: 'item', ownerId: actorId, equipped: false, equippedSlotId: null, quality: null, provenance: 'immutable_source_fact' as const }],
     } : candidate),
   };
   return true;
@@ -757,7 +758,7 @@ export function transferItem(state: GameState, world: WorldDefinition, actorId: 
   };
   if (!isContainerReachable(sourceContainerId) || !isContainerReachable(destinationContainerId)) return { state, code: 'CONTAINER_NOT_ACCESSIBLE' };
   const stack = source.stacks.find(candidate => candidate.itemId === itemId);
-  if (!stack || !Number.isSafeInteger(quantity) || quantity < 1 || stack.quantity < quantity) return { state, code: 'ITEM_QUANTITY_UNAVAILABLE' };
+  if (!stack || !Number.isSafeInteger(quantity) || quantity < 1 || stack.quantity - (stack.reservedQuantity ?? 0) < quantity) return { state, code: 'ITEM_QUANTITY_UNAVAILABLE' };
   if (sourceContainerId === destinationContainerId) return { state, code: 'CONTAINER_TRANSFER_SAME_SOURCE' };
   const movedItemId = quantity === stack.quantity ? itemId : `${itemId}-MOVE-${canonicalStateHash({ itemId, quantity, rev: state.revision }).slice(0, 12).toUpperCase()}`;
   if (destination.stacks.some(candidate => candidate.itemId === movedItemId)) return { state, code: 'ITEM_ID_COLLISION' };
@@ -773,7 +774,7 @@ export function transferItem(state: GameState, world: WorldDefinition, actorId: 
       if (container.id === destinationContainerId) return {
         ...container,
         observed: true,
-        stacks: [...container.stacks, { ...stack, itemId: movedItemId, quantity, equipped: false }],
+        stacks: [...container.stacks, { ...stack, itemId: movedItemId, quantity, reservedQuantity: 0, ownerId: container.location.kind === 'carried' ? container.location.ownerId : container.location.kind === 'unit' ? container.location.unitId : 'H0', equipped: false, equippedSlotId: null }],
       };
       return container;
     }),

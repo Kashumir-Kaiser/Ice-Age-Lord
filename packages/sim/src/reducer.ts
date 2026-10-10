@@ -4,6 +4,8 @@ import { canonicalStateHash } from './hash.ts';
 import { canAccessStarterContainer } from './access.ts';
 import { entityKey } from './view.ts';
 import { cancelTombJob, enqueueTombJob, selectedSpeed, TOMB_STANDARD_BLUEPRINT_ID } from './time.ts';
+import { assignConstructionWorkers, cancelConstructionJob, previewBuild, previewHeaterService, previewRepair, recruitResidents, startConstructionJob, startHeaterService } from './construction.ts';
+import { consumeItem, equipmentBlocker, mergeStacks, splitStack } from './inventory.ts';
 import {
   actorAvailability,
   cancelSpatialJob,
@@ -33,9 +35,16 @@ const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | '
   cancel_spatial_job: { code: 'SPATIAL_JOB_NOT_ACTIVE', message: 'The selected spatial job is no longer active.' },
   transfer_item: { code: 'CONTAINER_NOT_ACCESSIBLE', message: 'Both containers must be accessible to the player.' },
   open_cache: { code: 'CHEST_LIFECYCLE_STAGE_05', message: 'Field chests cannot be opened until access and reward commitments are implemented.' },
-  repair: { code: 'CONSTRUCTION_ECONOMY_STAGE_06', message: 'Repair is unavailable until reservations and work settlement are implemented.' },
-  build: { code: 'CONSTRUCTION_ECONOMY_STAGE_06', message: 'Construction is unavailable until blueprint, site and worker contracts are implemented.' },
-  craft: { code: 'CONSTRUCTION_ECONOMY_STAGE_06', message: 'Crafting is unavailable until recipe and reservation contracts are implemented.' },
+  repair: { code: 'HOUSE_REPAIR_CONTRACT_UNAVAILABLE', message: 'The damaged Lord House repair contract, accessible workers and reserved inputs are required.' },
+  build: { code: 'BUILDING_BLUEPRINT_OR_PLACEMENT_INVALID', message: 'A source-defined unlocked blueprint and server-approved footprint are required.' },
+  assign_construction_workers: { code: 'CONSTRUCTION_JOB_NOT_ACTIVE', message: 'Choose an active construction job.' },
+  cancel_construction_job: { code: 'CONSTRUCTION_JOB_NOT_CANCELLABLE', message: 'Choose an active construction job.' },
+  recruit_resident: { code: 'FARMHOUSE_NOT_ACTIVE', message: 'Build the polar farmhouse before recruiting residents.' },
+  operate_heater: { code: 'HEATER_NOT_ACTIVE', message: 'Construct the Level 1 heater before operating it.' },
+  split_stack: { code: 'ITEM_CANNOT_BE_SPLIT', message: 'The accessible stack must have unreserved items and free container capacity.' },
+  merge_stacks: { code: 'STACKS_NOT_COMPATIBLE', message: 'Only compatible unreserved stacks can be merged.' },
+  consume_item: { code: 'ITEM_CONSUMPTION_CONTRACT_NOT_COMPILED', message: 'Only food with a compiled consumption contract can be consumed.' },
+  unequip_item: { code: 'EQUIPMENT_PROFILE_NOT_COMPILED', message: 'The unit equipment slot profile is not compiled.' },
   revive: { code: 'REVIVAL_RULES_STAGE_07', message: 'Revival is unavailable until corpse identity and eligibility rules are implemented.' },
   equip: { code: 'EQUIPMENT_RULES_STAGE_07', message: 'Equipment changes are unavailable until the item and unit ledgers are implemented.' },
   attack: { code: 'COMBAT_RULES_STAGE_07', message: 'Combat is unavailable until encounters and deterministic resolution are implemented.' },
@@ -61,6 +70,7 @@ export function actionAvailability(type: CommandType): ActionAvailability {
   if (type === 'move' || type === 'search' || type === 'harvest' || type === 'cancel_travel' || type === 'cancel_spatial_job' || type === 'transfer_item' || type === 'open_cache') {
     return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
   }
+  if (type === 'split_stack' || type === 'merge_stacks' || type === 'consume_item') return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
   return staticAvailability(type);
 }
 
@@ -204,6 +214,43 @@ export function previewCommand(
   if (command.type === 'transfer_item') {
     const result = transferItem(state, world, command.payload.actorId, command.payload.sourceContainerId, command.payload.destinationContainerId, command.payload.itemId, command.payload.quantity);
     return result.code ? unavailable(command.type, result.code, 'Check the item quantity, container access, and available storage slots.') : actionAvailability(command.type);
+  }
+  if (command.type === 'repair') return previewRepair(state, world, command.payload);
+  if (command.type === 'build') return previewBuild(state, world, command.payload);
+  if (command.type === 'assign_construction_workers') {
+    const result = assignConstructionWorkers(state, world, command.payload.jobId, command.payload.workerIds);
+    return result.code ? unavailable(command.type, result.code, 'Workers must be owned, unassigned, within 5 m, and within the blueprint maximum.') : actionAvailability(command.type);
+  }
+  if (command.type === 'cancel_construction_job') {
+    const result = cancelConstructionJob(state, command.payload.jobId);
+    return result.code ? unavailable(command.type, result.code, 'Only an active, paused, or blocked construction job can be cancelled.') : actionAvailability(command.type);
+  }
+  if (command.type === 'recruit_resident') {
+    const result = recruitResidents(state, world, { ...command.payload, commandId: 'PREVIEW' });
+    return result.code ? unavailable(command.type, result.code, 'An active farmhouse, available housing, and exactly five accessible FOOD units per resident are required.') : actionAvailability(command.type);
+  }
+  if (command.type === 'operate_heater') {
+    return previewHeaterService(state, world, command.payload);
+  }
+  if (command.type === 'split_stack') {
+    const result = splitStack(state, world, { ...command.payload, newItemId: 'PREVIEW-SPLIT-ITEM' });
+    return result.code ? unavailable(command.type, result.code, 'The observed stack must have enough unreserved quantity and the container must have a free slot.') : actionAvailability(command.type);
+  }
+  if (command.type === 'merge_stacks') {
+    const result = mergeStacks(state, world, command.payload);
+    return result.code ? unavailable(command.type, result.code, 'Both stacks must be compatible, accessible, unequipped, and unreserved.') : actionAvailability(command.type);
+  }
+  if (command.type === 'consume_item') {
+    const result = consumeItem(state, world, command.payload);
+    return result.code ? unavailable(command.type, result.code, 'The food item must be observed, accessible, unreserved, and have a consumption contract.') : actionAvailability(command.type);
+  }
+  if (command.type === 'equip') {
+    const reason = equipmentBlocker(state, command.payload.unitId, command.payload.itemId);
+    return unavailable(command.type, reason ?? 'EQUIPMENT_SLOT_RULE_NOT_COMPILED', 'The unit anatomy and compatible equipment slot contract must be compiled.');
+  }
+  if (command.type === 'unequip_item') {
+    const reason = equipmentBlocker(state, command.payload.unitId, command.payload.itemId);
+    return unavailable(command.type, reason ?? 'EQUIPMENT_SLOT_RULE_NOT_COMPILED', 'The unit anatomy and compatible equipment slot contract must be compiled.');
   }
   if (command.type === 'open_cache') {
     const chest = world.fieldChests.find(candidate => candidate.id === command.payload.chestId && state.playerKnowledge.knownChestIds.includes(candidate.id));
@@ -414,6 +461,69 @@ export function reduceCommand(
     }, 'ITEM_TRANSFERRED', 'The item was transferred.');
   }
 
+  if (command.type === 'repair') {
+    const idHash = canonicalStateHash({ saveId: state.saveId, commandId: command.commandId }).slice(0, 20).toUpperCase();
+    const result = startConstructionJob(state, world, { id: `CONSTRUCTION-${idHash}`, kind: 'repair', ...command.payload });
+    if (result.code) return reject(state, command.commandId, result.code, 'House repair requirements changed; refresh the preview.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'HOUSE_REPAIR_STARTED', 'The damaged Lord House repair job was started with reserved materials.');
+  }
+
+  if (command.type === 'build') {
+    const idHash = canonicalStateHash({ saveId: state.saveId, commandId: command.commandId }).slice(0, 20).toUpperCase();
+    const result = startConstructionJob(state, world, { id: `CONSTRUCTION-${idHash}`, kind: 'build', ...command.payload });
+    if (result.code) return reject(state, command.commandId, result.code, 'Construction requirements changed; refresh the server placement and cost preview.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'CONSTRUCTION_STARTED', 'The construction job was started with reserved materials.');
+  }
+
+  if (command.type === 'assign_construction_workers') {
+    const result = assignConstructionWorkers(state, world, command.payload.jobId, command.payload.workerIds);
+    if (result.code) return reject(state, command.commandId, result.code, 'Workers could not be assigned to this construction job.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'CONSTRUCTION_WORKERS_ASSIGNED', 'The construction workforce assignment was updated.');
+  }
+
+  if (command.type === 'cancel_construction_job') {
+    const result = cancelConstructionJob(state, command.payload.jobId);
+    if (result.code) return reject(state, command.commandId, result.code, 'The construction job is no longer cancellable.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'CONSTRUCTION_CANCELLED', 'Work progress was lost and all unconsumed reservations were released.');
+  }
+
+  if (command.type === 'recruit_resident') {
+    const result = recruitResidents(state, world, { ...command.payload, commandId: command.commandId });
+    if (result.code) return reject(state, command.commandId, result.code, 'Recruitment did not consume food or change the roster.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'RESIDENTS_RECRUITED', 'The farmhouse recruited residents using its source-defined food cost.');
+  }
+
+  if (command.type === 'operate_heater') {
+    const idHash = canonicalStateHash({ saveId: state.saveId, commandId: command.commandId }).slice(0, 20).toUpperCase();
+    const result = startHeaterService(state, world, { id: `HEATER-SERVICE-${idHash}`, ...command.payload });
+    if (result.code) return reject(state, command.commandId, result.code, 'The heater requires an active building, reachable worker, accessible WOOD, and no active fuel cycle.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'HEATER_SERVICE_STARTED', 'One WOOD was reserved for the source-defined twenty-minute heating service.');
+  }
+
+  if (command.type === 'split_stack') {
+    const newItemId = `ITEM-SPLIT-${canonicalStateHash({ saveId: state.saveId, commandId: command.commandId }).slice(0, 20).toUpperCase()}`;
+    const result = splitStack(state, world, { ...command.payload, newItemId });
+    if (result.code || !result.event) return reject(state, command.commandId, result.code ?? 'ITEM_CANNOT_BE_SPLIT', 'The item stack could not be split.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'STACK_SPLIT', 'The stack was split without changing its total quantity.');
+  }
+
+  if (command.type === 'merge_stacks') {
+    const result = mergeStacks(state, world, command.payload);
+    if (result.code || !result.event) return reject(state, command.commandId, result.code ?? 'STACKS_NOT_COMPATIBLE', 'The item stacks could not be merged.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'STACKS_MERGED', 'The compatible stacks were merged.');
+  }
+
+  if (command.type === 'consume_item') {
+    const result = consumeItem(state, world, command.payload);
+    if (result.code || !result.event) return reject(state, command.commandId, result.code ?? 'ITEM_CONSUMPTION_CONTRACT_NOT_COMPILED', 'The item could not be consumed.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'ITEM_CONSUMED', 'The food item was consumed and removed from inventory.');
+  }
+
+  if (command.type === 'equip' || command.type === 'unequip_item') {
+    const reason = equipmentBlocker(state, command.payload.unitId, command.payload.itemId);
+    return reject(state, command.commandId, reason ?? 'EQUIPMENT_SLOT_RULE_NOT_COMPILED', 'Equipment was not changed because the source anatomy and slot contract is unavailable.', requestSha256);
+  }
+
   if (command.type === 'open_cache') {
     const chest = world.fieldChests.find(candidate => candidate.id === command.payload.chestId && state.playerKnowledge.knownChestIds.includes(candidate.id));
     const position = actorPosition(state, command.payload.actorId);
@@ -469,10 +579,10 @@ export function reduceCommand(
       return reject(state, command.commandId, 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED', 'The opening fire fuel amount is unknown, so an exact remaining-fuel total cannot be calculated.', requestSha256);
     }
     if (!container || !stack || !accessible || !container.observed) return reject(state, command.commandId, 'FUEL_NOT_ACCESSIBLE', 'Accessible, observed WOOD is required.', requestSha256);
-    if (stack.quantity < command.payload.quantity) return reject(state, command.commandId, 'INSUFFICIENT_WOOD', 'The container does not hold enough WOOD.', requestSha256);
+    if (stack.quantity - (stack.reservedQuantity ?? 0) < command.payload.quantity) return reject(state, command.commandId, 'INSUFFICIENT_WOOD', 'The container does not hold enough unreserved WOOD.', requestSha256);
     const containers = state.inventory.containers.map(item => item.id === container.id ? {
       ...item,
-      stacks: item.stacks.map(stackItem => stackItem.itemId === stack.itemId ? { ...stackItem, quantity: stackItem.quantity - command.payload.quantity } : stackItem),
+      stacks: item.stacks.flatMap(stackItem => stackItem.itemId !== stack.itemId ? [stackItem] : stackItem.quantity === command.payload.quantity ? [] : [{ ...stackItem, quantity: stackItem.quantity - command.payload.quantity }]),
     } : item);
     const fire = state.territory.survivalFire;
     const knownFuel = fire.fuelRemaining + command.payload.quantity;

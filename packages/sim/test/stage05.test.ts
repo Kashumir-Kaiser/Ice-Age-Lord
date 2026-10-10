@@ -52,7 +52,7 @@ test('schema 2 saves migrate into the persistent spatial state without changing 
   delete legacy.playerKnowledge.knownSignalIds;
 
   const upgraded = upgradeGameState(legacy, world);
-  assert.equal(upgraded.schemaVersion, 3);
+  assert.equal(upgraded.schemaVersion, 4);
   assert.deepEqual(upgraded.player.position, world.origin);
   assert.deepEqual(upgraded.territory.position, world.origin);
   assert.deepEqual(upgraded.travel.orders, []);

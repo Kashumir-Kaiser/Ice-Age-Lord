@@ -122,6 +122,17 @@
 .live-destination-preview span { color:#aabbbc; font-size:10px; }
 .live-inline-field { display:flex; align-items:center; gap:8px; color:#9cb1b5; font-size:11px; }
 .live-inline-field select { padding:8px 10px; border:1px solid rgba(150,184,185,.2); border-radius:6px; color:#d5dfd9; background:#102934; }
+.live-building-form { display:flex; align-items:flex-end; flex-wrap:wrap; gap:10px; margin:12px 0; }
+.live-building-form .live-inline-field { align-items:flex-start; flex-direction:column; gap:6px; }
+.live-building-form select,.live-building-form input { min-height:38px; min-width:180px; padding:8px 10px; border:1px solid rgba(150,184,185,.22); border-radius:6px; color:#d5dfd9; background:#102934; }
+.live-building-form input { min-width:88px; width:100px; }
+.live-construction-card { margin-top:14px; padding:16px; border:1px solid rgba(207,176,125,.18); border-radius:9px; background:rgba(14,31,41,.48); }
+.live-preview-success { padding:10px 12px; border:1px solid rgba(122,189,143,.24); border-radius:7px; color:#bce0c8!important; background:rgba(70,134,91,.1); }
+.live-job-list { display:flex; flex-direction:column; gap:10px; margin:12px 0 0; padding:0; list-style:none; }
+.live-construction-job { display:flex; flex-direction:column; align-items:flex-start; gap:8px; padding:13px; border:1px solid rgba(156,187,189,.12); border-radius:8px; color:#d9e1db; background:rgba(6,20,29,.28); }
+.live-construction-job>strong { color:#e4d2ad; font-size:11px; }
+.live-construction-job>span,.live-construction-job>small { color:#91a8ad; font-size:10px; line-height:1.6; overflow-wrap:anywhere; }
+.live-construction-job .live-button-row { margin-top:3px; }
 .live-map-crosshair { position:absolute; inset:50% auto auto 50%; width:14px; height:14px; border:1px solid rgba(219,195,148,.38); border-radius:50%; transform:translate(-50%,-50%); }
 .live-map-crosshair:before,.live-map-crosshair:after { content:""; position:absolute; background:rgba(219,195,148,.28); }
 .live-map-crosshair:before { width:1px; height:35px; left:6px; top:-12px; }

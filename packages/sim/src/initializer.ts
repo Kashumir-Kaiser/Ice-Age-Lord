@@ -1,6 +1,7 @@
 import { GAME_STATE_SCHEMA_VERSION, type GameState, type WorldDefinition } from '../../contracts/src/index.ts';
 import { assertCompiledWorld } from '../../content/src/compiler.ts';
 import { RULESET_VERSION } from '../../content/src/sourceLock.ts';
+import { OPENING_BUILDINGS_RULE_VERSION, PLACEMENT_OVERLAY_VERSION, LABOR_OVERLAY_VERSION } from '../../content/src/buildings.ts';
 import { canonicalStateHash } from './hash.ts';
 import { seedConvenienceBag } from './bag.ts';
 import { seedSpatialKnowledge } from './spatial.ts';
@@ -146,7 +147,13 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
             itemId,
             templateId,
             quantity,
+            reservedQuantity: 0,
+            unit: 'item',
+            ownerId: 'H0',
             equipped: false as const,
+            equippedSlotId: null,
+            quality: null,
+            ...(templateId === 'BREAD' ? { foodUnitsPerItem: 1 } : {}),
             provenance: 'immutable_source_fact' as const,
           })),
         },
@@ -161,6 +168,12 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
             itemId: item.itemId,
             templateId: item.templateId,
             quantity: item.quantity,
+            reservedQuantity: 0,
+            unit: 'item',
+            ownerId: 'LI_LAN',
+            equippedSlotId: null,
+            quality: null,
+            foodUnitsPerItem: item.units,
             equipped: false as const,
             provenance: 'campaign_fixed' as const,
           })),
@@ -169,10 +182,16 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
     },
     ownedUnits: empty,
     buildings: [
-      { id: 'LL-BLD-HOUSE-01', kind: 'lord_house', name: 'Nhà Lãnh Chúa Hư Hại', level: 1, status: 'damaged', repairRequirements: [{ itemId: 'STONE', quantity: 10 }, { itemId: 'WOOD', quantity: 20 }] },
-      { id: 'LL-BLD-FIRE-01', kind: 'survival_fire', name: 'Lửa Trại', level: 1, status: 'active', repairRequirements: empty },
-      { id: 'LL-BLD-TOMB-01', kind: 'tomb', name: 'Ngôi Mộ', level: 1, status: 'active', repairRequirements: empty },
+      { id: 'LL-BLD-HOUSE-01', kind: 'lord_house', name: 'Nhà Lãnh Chúa Hư Hại', level: 1, status: 'damaged', repairRequirements: [{ itemId: 'STONE', quantity: 10 }, { itemId: 'WOOD', quantity: 20 }], siteId: 'SITE-LL01-001', position: world.sites.find(site => site.id === 'SITE-LL01-001')?.position ?? world.origin, footprintAreaM2: 30 },
+      { id: 'LL-BLD-FIRE-01', kind: 'survival_fire', name: 'Lửa Trại', level: 1, status: 'active', repairRequirements: empty, siteId: 'SITE-LL01-000', position: world.origin, footprintAreaM2: null },
+      { id: 'LL-BLD-TOMB-01', kind: 'tomb', name: 'Ngôi Mộ', level: 1, status: 'active', repairRequirements: empty, siteId: 'SITE-LL01-003', position: world.sites.find(site => site.id === 'SITE-LL01-003')?.position, footprintAreaM2: null },
     ],
+    construction: {
+      registryVersion: OPENING_BUILDINGS_RULE_VERSION,
+      placementOverlayVersion: PLACEMENT_OVERLAY_VERSION,
+      laborOverlayVersion: LABOR_OVERLAY_VERSION,
+      unlockedBlueprintIds: empty, jobs: empty, residents: empty, firstBuildReceiptIds: empty, rewardEntitlements: empty, operatingServices: empty,
+    },
     jobs: empty,
     travel: { activeOrderId: null, routeId: null, orders: empty },
     exploration: { exploredGeometry: empty, searchHistory: empty },
