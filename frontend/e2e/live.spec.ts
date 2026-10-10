@@ -116,7 +116,7 @@ test('live mode uses Stage 03 API and keeps map and settlement campfire on one e
   await expect(territoryCampfire).toHaveAttribute('data-entity-ref', fireKey);
   await expect(territoryCampfire.locator('img').first()).toBeVisible();
 
-  await page.getByRole('button', { name: 'Bản đồ' }).click();
+  await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Bản đồ/ }).click();
   const mapCampfire = page.getByTestId('map-campfire-marker');
   await expect(mapCampfire).toHaveAttribute('data-entity-ref', fireKey);
   await expect(mapCampfire).toBeVisible();
@@ -132,7 +132,7 @@ test('live mode uses Stage 03 API and keeps map and settlement campfire on one e
   await page.getByRole('button', { name: 'Kết nối API' }).click();
   await expect(page.getByText('Đã khôi phục đúng lượt lưu từ API.')).toBeVisible();
   await expect(page.getByText('snapshot revision 1')).toBeVisible();
-  await page.getByRole('button', { name: 'Bản đồ' }).click();
+  await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Bản đồ/ }).click();
   await expect(page.getByTestId('map-campfire-marker')).toHaveAttribute('data-entity-ref', fireKey);
 });
 

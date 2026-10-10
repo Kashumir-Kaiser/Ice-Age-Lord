@@ -6,6 +6,8 @@ test.beforeEach(async ({ page }) => installLocalPreviewRoute(page));
 
 async function visitMap(page: Page) {
   await page.goto('/');
+  await expect(page.locator('.app-shell')).toBeVisible();
+  await page.evaluate(() => document.fonts.ready);
   const menu = page.getByRole('button', { name: 'Mở điều hướng' });
   if (await menu.isVisible()) await menu.click();
   await page.getByRole('navigation', { name: 'Các mục giao diện' }).getByRole('button', { name: /Bản đồ/ }).click();
@@ -21,6 +23,7 @@ async function openDeveloperControls(page: Page) {
 }
 
 async function navigateTo(page: Page, name: RegExp) {
+  await expect(page.locator('.app-shell')).toBeVisible();
   const menu = page.getByRole('button', { name: 'Mở điều hướng' });
   if (await menu.isVisible()) await menu.click();
   await page.getByRole('navigation', { name: 'Các mục giao diện' }).getByRole('button', { name }).click();

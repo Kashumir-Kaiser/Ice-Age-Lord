@@ -21,7 +21,7 @@ test('Chromium creates a clean save, inspects a starter container, and recovers 
   await expect(territoryFire).toHaveAttribute('data-entity-ref', 'site:SITE-LL01-000');
   await expect(territoryFire.locator('img').first()).toBeVisible();
 
-  await page.getByRole('button', { name: 'Bản đồ' }).click();
+  await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Bản đồ/ }).click();
   const mapFire = page.getByTestId('map-campfire-marker');
   await expect(mapFire).toHaveAttribute('data-entity-ref', 'site:SITE-LL01-000');
 

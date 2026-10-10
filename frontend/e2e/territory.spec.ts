@@ -5,6 +5,8 @@ test.beforeEach(async ({page})=>installLocalPreviewRoute(page));
 
 async function goTo(page:import('@playwright/test').Page,screen:RegExp){
   await page.goto('/');
+  await expect(page.locator('.app-shell')).toBeVisible();
+  await page.evaluate(() => document.fonts.ready);
   const menu=page.getByRole('button',{name:'Mở điều hướng'});
   if(await menu.isVisible())await menu.click();
   await page.getByRole('navigation',{name:'Các mục giao diện'}).getByRole('button',{name:screen}).click();
