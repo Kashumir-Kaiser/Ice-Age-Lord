@@ -20,6 +20,14 @@ test('speed selection includes frozen and the three named rates plus bounded cus
   assert.equal(clock.speedMultiplier('Custom',100000),3600);
   assert.equal(clock.speedMultiplier('Custom',0),.1);
 });
+test('display refresh interval tracks the selected game-clock rate',()=>{
+  assert.equal(clock.displayUpdateIntervalMs(1),1000);
+  assert.equal(clock.displayUpdateIntervalMs(2),500);
+  assert.equal(clock.displayUpdateIntervalMs(5),200);
+  assert.equal(clock.displayUpdateIntervalMs(.1),10000);
+  assert.equal(clock.displayUpdateIntervalMs(3600),16);
+  assert.throws(()=>clock.displayUpdateIntervalMs(0),RangeError);
+});
 test('elapsed time advances the view clock only by speed multiplier, without a simulation action',()=>{
   const start=clock.INITIAL_CLOCK_SECONDS;
   assert.equal(start,7*3600);

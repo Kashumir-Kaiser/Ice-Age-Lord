@@ -20,7 +20,7 @@ const CREATE_KEY_PREFIX = 'ice-age-lord.live.create-key:';
 
 const navigation: { id: Screen; name: string; hint: string; icon: typeof Sparkles }[] = [
   { id: 'overview', name: 'Tổng quan', hint: 'Trạng thái phiên', icon: Sparkles },
-  { id: 'territory', name: 'Lãnh địa', hint: 'H0 · công trình', icon: Shield },
+  { id: 'territory', name: 'Lãnh địa', hint: 'Công trình chính', icon: Shield },
   { id: 'map', name: 'Bản đồ', hint: 'Dữ liệu đã biết', icon: MapIcon },
   { id: 'inventory', name: 'Kho vật phẩm', hint: 'Đã quan sát', icon: PackageOpen },
   { id: 'forces', name: 'Quân lực', hint: 'Đơn vị sở hữu', icon: Users },
@@ -89,13 +89,13 @@ function RuntimeStrip({ view }: { view: PlayerView }) {
   const { survivalFire, tomb } = view.territory;
   const dayTime = `Ngày ${view.worldClock.day} · ${String(view.worldClock.hour).padStart(2, '0')}:${String(view.worldClock.minute).padStart(2, '0')}`;
   const cold = view.survival.coldStatus === 'weather_unresolved'
-    ? 'Chưa có weather record T0'
+    ? 'Chưa có thông tin thời tiết ban đầu'
     : `ColdLoad ${view.survival.coldLoad?.toFixed(1) ?? '—'} · ${view.survival.coldStatus}`;
-  const fuel = survivalFire.fuelRemaining === null ? 'T0 chưa rõ' : `${survivalFire.fuelRemaining} gỗ`;
+  const fuel = survivalFire.fuelRemaining === null ? 'Chưa rõ lượng nhiên liệu' : `${survivalFire.fuelRemaining} gỗ`;
   const catchingUp = view.clockStatus.catchingUp
     ? `Đang quyết toán tới ${elapsedLabel(view.clockStatus.targetSimElapsedMs)}`
     : `${dayTime} · T+${elapsedLabel(view.simElapsedMs).slice(2)}`;
-  return <section className="live-stage-strip" aria-label="Stage 05 simulation status">
+  return <section className="live-stage-strip" aria-label="Trạng thái thế giới">
     <div><span>Thế giới</span><strong>{catchingUp}</strong><small>{view.worldClock.lightPhase} · Bậc 0 là cấp đầu ra Mộ</small></div>
     <div><span>Lửa trại</span><strong>{survivalFire.active ? 'Đang hoạt động' : 'Đã tắt'} · {fuel}</strong><small>{survivalFire.fuelBlocker || `Bán kính nhiệt ${survivalFire.heatRadiusMetres} m · mốc đốt ${elapsedLabel(survivalFire.nextFuelConsumptionAtElapsedMs)}`}</small></div>
     <div><span>Sinh tồn</span><strong>{cold}</strong><small>{view.survival.blocker || `Đói: ${view.survival.hungerState}`}</small></div>
@@ -511,7 +511,7 @@ function LiveApp() {
           <span className="live-data-chip">Center · {center.xMm}, {center.yMm} mm</span>
         </div>
         {chooseDestination && <p className="live-map-hint">Click an empty map coordinate to preview an order. Confirming travel is a separate action.</p>}
-        {fireRef && !fireEntity && <div className="live-inline-error" role="alert">The H0 fire reference is missing from the player map projection.</div>}
+        {fireRef && !fireEntity && <div className="live-inline-error" role="alert">Không tìm thấy Lửa Sinh Tồn trên bản đồ hiện tại.</div>}
         <div className="live-map-canvas" data-testid="live-map">
           <div className="live-map-crosshair" aria-hidden="true" />
           <svg className="live-map-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
@@ -612,11 +612,11 @@ function LiveApp() {
       return <div className="live-section-stack">
         <section className="live-hero">
           <div>
-          <span className="live-eyebrow">STAGE 05 · MAP AND LOGISTICS</span>
+          <span className="live-eyebrow">BẢN ĐỒ VÀ HẬU CẦN</span>
             <h2>{view.player.name}</h2>
           <p>Thời gian, Tử Khí, hồi Mana và sản xuất đều lấy từ snapshot máy chủ. Lượt mới vẫn bắt đầu ở ngày 1 lúc 07:00.</p>
           </div>
-          <div className="live-hero-mark"><Sparkles size={34} /><span>H0</span></div>
+          <div className="live-hero-mark"><Sparkles size={34} /><span>LL</span></div>
         </section>
         <div className="live-stat-grid">
           <article className="live-stat"><span>Cấp độ</span><strong>{view.player.level}</strong></article>
@@ -641,7 +641,7 @@ function LiveApp() {
           </section>
         </div>
         <section className="live-panel">
-          <div className="live-panel-heading"><div><span className="live-eyebrow">SESSION</span><h3>Trạng thái lượt lưu</h3></div><span className="live-data-chip">Stage 05 · server clock</span></div>
+            <div className="live-panel-heading"><div><span className="live-eyebrow">PHIÊN CHƠI</span><h3>Trạng thái lượt lưu</h3></div><span className="live-data-chip">Đồng hồ máy chủ</span></div>
           <p>Save ID: <code>{view.saveId}</code> · Event sequence: {view.lastEventSequence} · API revision: {view.revision}</p>
           <p>Quyền đồng hồ: {view.clockStatus.driver} · {view.clockControl.status} · {view.clockControl.speedPermille / 1000}× · {view.clockStatus.catchingUp ? 'đang quyết toán' : 'đã đồng bộ'}</p>
         </section>
@@ -652,7 +652,7 @@ function LiveApp() {
       return <div className="live-section-stack">
         <section className="live-panel">
           <div className="live-panel-heading">
-            <div><span className="live-eyebrow">H0 · SETTLEMENT VIEW</span><h2>Lãnh địa</h2></div>
+            <div><span className="live-eyebrow">LÃNH ĐỊA</span><h2>Lãnh địa</h2></div>
             <span className="live-data-chip">Ref {fireRef ? entityRefKey(fireRef) : 'chưa có'}</span>
           </div>
           <p className="live-muted">Ảnh cấu trúc lấy từ asset manifest; trạng thái và cấp độ lấy từ cùng PlayerView với bản đồ.</p>
@@ -784,7 +784,7 @@ function LiveApp() {
   if (!authenticated) {
     return <main className="live-start-page">
       <section className="live-start-card">
-        <span className="live-eyebrow">STAGE 05 · LOCAL OWNER SESSION</span>
+        <span className="live-eyebrow">PHIÊN CHƠI CỤC BỘ</span>
         <h1>Kết nối game API</h1>
         <p>Chế độ live chỉ dùng API SQLite cục bộ. Khóa chủ sở hữu chỉ được gửi tới API để tạo bearer session và không được lưu trong trình duyệt.</p>
         <div className={'live-api-status live-api-status--' + apiState}>
@@ -830,8 +830,8 @@ function LiveApp() {
 
   return <div className="live-shell">
     <aside className="live-sidebar">
-      <div className="live-brand"><span className="live-brand-mark"><Flame size={19} /></span><div><strong>ICE AGE LORD</strong><small>LIVE · STAGE 05</small></div></div>
-      <div className="live-sidebar-status"><span className="live-status-dot" /> SQLite API · connected</div>
+      <div className="live-brand"><span className="live-brand-mark"><Flame size={19} /></span><div><strong>ICE AGE LORD</strong><small>TRỰC TUYẾN</small></div></div>
+      <div className="live-sidebar-status"><span className="live-status-dot" /> Đã kết nối · SQLite API</div>
       <nav className="live-nav" aria-label="Màn hình game">
         {navigation.map(item => {
           const Icon = item.icon;
@@ -840,11 +840,11 @@ function LiveApp() {
           </button>;
         })}
       </nav>
-      <div className="live-sidebar-footer"><span>Simulation clock</span><strong>{view.clockControl.status.toUpperCase()} · Stage 05</strong></div>
+      <div className="live-sidebar-footer"><span>Đồng hồ thế giới</span><strong>{view.clockControl.status.toUpperCase()}</strong></div>
     </aside>
     <main className="live-main">
       <header className="live-topbar">
-        <div><span className="live-eyebrow">H0 · LOCAL CAMPAIGN</span><h1>{navigation.find(item => item.id === screen)?.name}</h1><p>{selectedSave?.slotName || view.player.name} · Ngày {view.worldClock.day} {String(view.worldClock.hour).padStart(2, '0')}:{String(view.worldClock.minute).padStart(2, '0')} · revision {view.revision}</p></div>
+        <div><span className="live-eyebrow">CUỘC HÀNH TRÌNH</span><h1>{navigation.find(item => item.id === screen)?.name}</h1><p>{selectedSave?.slotName || view.player.name} · Ngày {view.worldClock.day} {String(view.worldClock.hour).padStart(2, '0')}:{String(view.worldClock.minute).padStart(2, '0')} · revision {view.revision}</p></div>
         <div className="live-header-actions">
           <span className="live-data-chip">EVENT {view.lastEventSequence}</span>
           <div className="live-clock-controls" aria-label="Điều khiển đồng hồ mô phỏng">

@@ -12,10 +12,10 @@ const filesUnder = dir => readdirSync(join(root, dir), { withFileTypes: true }).
 });
 const source = filesUnder('src').join('\n');
 
-test('all seven destinations are supplied through the shared player view', () => {
+test('all eight destinations are supplied through the shared player view', () => {
   const client = read('src/game/GameClient.ts');
   const screens = read('src/demoData.ts');
-  for (const id of ['overview', 'territory', 'map', 'inventory', 'forces', 'buildings', 'journal']) {
+  for (const id of ['overview', 'character', 'territory', 'map', 'inventory', 'forces', 'buildings', 'journal']) {
     assert.match(screens, new RegExp(`id: '${id}'`));
   }
   assert.match(client, /export type PlayerView/);
@@ -56,7 +56,7 @@ test('presentation preserves the opening state and frozen display clock', () => 
   assert.match(app, /useState\(INITIAL_CLOCK_SECONDS\)/);
   assert.match(app, /useState<ClockSpeed>\('Frozen'\)/);
   assert.match(app, /0 đơn vị/);
-  assert.match(app, /không phải vật phẩm đã nhận/);
+  assert.match(app, /Vật phẩm Lí Lan đang sở hữu sẽ xuất hiện tại đây khi có dữ liệu/);
   assert.doesNotMatch(app, />T0(?:\s|<)/);
 });
 

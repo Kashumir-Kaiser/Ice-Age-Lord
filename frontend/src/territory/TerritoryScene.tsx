@@ -11,6 +11,7 @@ import { fitWorldBounds, isoToWorld, screenToWorld, worldToIso, worldToScreen, z
 import type { TerritoryCamera, WorldPoint } from './projection';
 
 const PX_PER_ISO_METRE = 3;
+const ORIENTATION_LABEL:Record<LayoutDraft['orientation'],string>={north:'Bắc',east:'Đông',south:'Nam',west:'Tây'};
 const fixtureFootprint = { kind:'rectangle' as const, widthM:2, depthM:2, provenance:'frontend-fixture' as const, assumptionId:'TERRITORY-QA-V1', note:'Kích thước giả định cho fixture QA.' };
 type PanGesture = { pointerId:number; x:number; y:number; origin:TerritoryCamera; moved:boolean; playerMarker:boolean };
 type Props = {
@@ -78,6 +79,12 @@ export default function TerritoryScene({ settlement, placementDefinitions, camer
     const node=rootRef.current;if(!node)return;
     const observer=new ResizeObserver(entries=>{const box=entries[0]?.contentRect;if(box?.width&&box.height)setSize({width:box.width,height:box.height});});
     observer.observe(node);return()=>observer.disconnect();
+  },[]);
+  useEffect(()=>{
+    const node=rootRef.current;if(!node)return;
+    const preventSelection=(event:Event)=>event.preventDefault();
+    node.addEventListener('selectstart',preventSelection);
+    return()=>node.removeEventListener('selectstart',preventSelection);
   },[]);
   useEffect(()=>{let active=true;loadAssetManifest().then(value=>{if(active)setManifest(value);}).catch(()=>{if(active)setManifestError(true);});return()=>{active=false;};},[]);
   useEffect(()=>{
@@ -249,18 +256,18 @@ export default function TerritoryScene({ settlement, placementDefinitions, camer
     setDenseQa(true);
     const points=denseFixture.flatMap(item=>[{x:origin.x+item.x-1,y:origin.y+item.y-1},{x:origin.x+item.x+1,y:origin.y+item.y+1}]);
     onCameraChange(fitWorldBounds(points,size,65,PX_PER_ISO_METRE));
-    setMessage('Đang xem cụm QA 520 fixture tĩnh; đây không phải dữ liệu người chơi.');
+    setMessage('Đang xem nhóm 520 công trình minh họa.');
   };
   const assetIds=manifest?.assets.map(asset=>asset.assetId)??[];
   const selectedCalibrationAsset=findAsset(manifest,calibrationAssetId);
-  const densityLabel=activeCamera.zoom<.035?'Tổng quan · không gắn từng sprite':activeCamera.zoom<.16?'Quận · biểu tượng gọn':'Gần · lớp công trình';
+  const densityLabel=activeCamera.zoom<.035?'Toàn cảnh · bố cục tổng thể':activeCamera.zoom<.16?'Khu vực · biểu tượng gọn':'Cận cảnh · công trình';
   const fireNorth=worldToScreen({x:origin.x,y:origin.y+Math.max(actualRadius,10)},activeCamera,size,PX_PER_ISO_METRE);
   const buildingLayer=[...visibleBuildings.map(building=>({id:building.id,name:building.name,assetId:building.assetId,visualState:building.visualState,point:{x:origin.x+building.x,y:origin.y+building.y},footprint:building.footprint,orientation:building.orientation,ref:building.ref,draft:false,blocked:false})),
     ...visibleDrafts.map(draft=>({id:draft.id,name:placementDefinitions.find(def=>def.id===draft.definitionId)?.name??'Bản nháp',assetId:draft.assetId,visualState:undefined,point:{x:origin.x+draft.x,y:origin.y+draft.y},footprint:draft.footprint,orientation:draft.orientation,ref:null,draft:true,blocked:validatePlacement({point:{x:draft.x,y:draft.y},footprint:draft.footprint,orientation:draft.orientation,heatRadiusM:actualRadius,heatActive:settlement.fireActive,existing:[...settlement.buildings,...drafts],ignoreId:draft.id}).blockers.length>0}))];
 
   return <section className="territory-scene-shell" aria-label="Bố cục lãnh địa">
     <div className="territory-toolbar">
-      <div className="territory-toolbar-title"><span className="territory-eyebrow"><Snowflake size={14}/> LÃNH ĐỊA · H0 · DEMO</span><strong>{densityLabel}</strong></div>
+      <div className="territory-toolbar-title"><span className="territory-eyebrow"><Snowflake size={14}/> LÃNH ĐỊA</span><strong>{densityLabel}</strong></div>
       <div className="territory-camera-actions" role="group" aria-label="Khung nhìn lãnh địa">
         {followPlayer&&<button className="territory-follow-button" aria-pressed="true" onClick={()=>onFollowPlayerChange(false)}><LocateFixed size={15}/> Theo dõi {playerName} · Mở khóa</button>}
         <button onClick={fitFire} title="Về lửa trại"><Flame size={15}/> Về lửa trại</button>
@@ -274,7 +281,7 @@ export default function TerritoryScene({ settlement, placementDefinitions, camer
       <span><ThermometerSun size={14}/> Nhiệt thật: <b>{settlement.fireActive?`${settlement.heatRadiusM} m`:'Tắt'}</b></span>
       <span className={heatPreview==='actual'?'':'is-preview'}>Hiển thị: {displayedRadius>=1000?`${(displayedRadius/1000).toLocaleString('vi-VN')} km`:`${displayedRadius} m`}{heatPreview!=='actual'?' · xem thử':''}</span>
       <span><Compass size={14}/> Bao phủ nền: {actualInside} trong · {actualPartial} giao cắt · {actualOutside} ngoài · luật chưa xác định</span>
-      <label className="territory-heat-preview">Xem thử vùng nhiệt <select aria-label="Xem thử vùng nhiệt" value={heatPreview} onChange={event=>setHeatPreview(event.target.value as typeof heatPreview)}><option value="actual">Nguồn thực tế</option><option value="2500">2.5 km · fixture</option><option value="25000">25 km · fixture</option><option value="off">Tắt · fixture</option></select></label>
+      <label className="territory-heat-preview">Xem thử vùng nhiệt <select aria-label="Xem thử vùng nhiệt" value={heatPreview} onChange={event=>setHeatPreview(event.target.value as typeof heatPreview)}><option value="actual">Nguồn thực tế</option><option value="2500">2.5 km · minh họa</option><option value="25000">25 km · minh họa</option><option value="off">Tắt · minh họa</option></select></label>
     </div>
     <div className="territory-stage" ref={rootRef}>
       <svg ref={svgRef} className="territory-scene-svg" viewBox={`0 0 ${size.width} ${size.height}`} role="img" aria-label="Lãnh địa theo phối cảnh isometric cố định. Kéo để di chuyển, cuộn để thu phóng, dùng phím mũi tên để điều hướng."
@@ -316,40 +323,40 @@ export default function TerritoryScene({ settlement, placementDefinitions, camer
         {settlement.buildings.map(building=>{const point=toMini({x:origin.x+building.x,y:origin.y+building.y});return <circle key={building.id} cx={point.x} cy={point.y} r={building.id===settlement.fireRef.id?3.2:2.3} fill={building.id===settlement.fireRef.id?'#edaa63':'#add0cc'} pointerEvents="none"/>;})}
         <polygon points={miniViewport} fill="rgba(147,202,196,.08)" stroke="#d1e5dc" strokeWidth="1.2" pointerEvents="none"/>
       </svg></div>
-      {activeDefinition&&<div className={`territory-placement-status ${validation?.blockers.length?'is-blocked':''}`} role="status"><strong>{validation?.blockers.length?'Bị chặn · bản nháp':validation?.heat==='inside'?'Nằm trong vùng nhiệt':'Cảnh báo · luật chưa xác định'}</strong>
-        <span>{validation?.blockers.join(' · ')||validation?.warnings.join(' ')}</span><small>Vị trí thử: {currentPlacementLocal.x.toFixed(0)}, {currentPlacementLocal.y.toFixed(0)} m · không tạo công trình</small></div>}
+      {activeDefinition&&<div className={`territory-placement-status ${validation?.blockers.length?'is-blocked':''}`} role="status"><strong>{validation?.blockers.length?'Vị trí bị cản trở':validation?.heat==='inside'?'Nằm trong vùng nhiệt':'Điều kiện xây dựng chưa xác định'}</strong>
+        <span>{validation?.blockers.join(' · ')||validation?.warnings.join(' ')}</span><small>Vị trí xem trước: {currentPlacementLocal.x.toFixed(0)}, {currentPlacementLocal.y.toFixed(0)} m · chưa tạo công trình</small></div>}
     </div>
-    <div className="territory-legend"><span><i className="heat-legend"/> Vùng nhiệt</span><span><i className="footprint-legend"/> Nền công trình</span><span><i className="unknown-legend"/> Điều kiện xây dựng chưa biết</span><span><i className="memory-legend"/> Terrain knowledge chưa được cung cấp</span></div>
+    <div className="territory-legend"><span><i className="heat-legend"/> Vùng nhiệt</span><span><i className="footprint-legend"/> Nền công trình</span><span><i className="unknown-legend"/> Điều kiện xây dựng chưa biết</span><span><i className="memory-legend"/> Địa hình chưa được khảo sát</span></div>
     <div className="territory-workbench">
       <section className="panel territory-build-tray">
-        <div className="territory-section-heading"><div><span className="eyebrow">THỬ BỐ TRÍ · KHÔNG XÂY THẬT</span><h3>Khay công trình</h3></div>{placingId&&<button className="text-button" onClick={cancelPlacement}><X size={14}/> Hủy placement</button>}</div>
+        <div className="territory-section-heading"><div><span className="eyebrow">BỐ TRÍ MINH HỌA</span><h3>Công trình</h3></div>{placingId&&<button className="text-button" onClick={cancelPlacement}><X size={14}/> Hủy</button>}</div>
         <div className="territory-definition-grid">{placementDefinitions.map(definition=>{
           const artwork=findAsset(manifest,definition.assetId);
           return <article className={`territory-definition${placingId===definition.id?' is-active':''}`} key={definition.id}>
             <img src={artwork?.layers.body??artwork?.layers.uiIcon??'/assets/buildings/lord-house-damaged/icon.svg'} alt=""/>
-            <div><strong>{definition.name}</strong><small>{definition.footprint.widthM} × {definition.footprint.depthM} m · giả định UI</small><small>Chi phí: chưa có nguồn</small></div>
+            <div><strong>{definition.name}</strong><small>{definition.footprint.widthM} × {definition.footprint.depthM} m · kích thước minh họa</small><small>Chi phí: chưa xác định</small></div>
             <button onClick={()=>startPlacement(definition)} aria-label={`Thử bố trí ${definition.name}`}>Đặt thử</button>
           </article>;
         })}</div>
-        {placingId&&<div className="territory-placement-controls"><span><b>{activeDefinition?.name}</b> · hướng {placingOrientation} · lưới 1 m</span><button onClick={rotatePlacement} disabled={activeDefinition?.orientations.length===1}><RotateCw size={15}/> Xoay 90° <kbd>R</kbd></button><button onClick={cancelPlacement}><X size={15}/> Hủy</button></div>}
-        <p className="territory-fixture-note"><AlertTriangle size={14}/> Các hình chữ nhật và chi phí là fixture phiên bản TERRITORY-FOOTPRINTS-V1. Ranh nhiệt không tự quyết định quyền xây.</p>
+        {placingId&&<div className="territory-placement-controls"><span><b>{activeDefinition?.name}</b> · hướng {ORIENTATION_LABEL[placingOrientation]} · lưới 1 m</span><button onClick={rotatePlacement} disabled={activeDefinition?.orientations.length===1}><RotateCw size={15}/> Xoay 90° <kbd>R</kbd></button><button onClick={cancelPlacement}><X size={15}/> Hủy</button></div>}
+        <p className="territory-fixture-note"><AlertTriangle size={14}/> Mặt bằng và chi phí vật liệu đang được hoàn thiện. Vùng nhiệt không tự quyết định quyền xây.</p>
       </section>
       <section className="panel territory-instance-panel">
-        <div className="territory-section-heading"><div><span className="eyebrow">CÙNG ĐỊNH DANH NGUỒN</span><h3>Công trình tại lãnh địa</h3></div><label className="territory-search"><Search size={14}/><input aria-label="Tìm công trình trong lãnh địa" placeholder="Lọc công trình" value={search} onChange={event=>setSearch(event.target.value)}/></label></div>
+        <div className="territory-section-heading"><div><span className="eyebrow">CÔNG TRÌNH ĐÃ BIẾT</span><h3>Công trình tại lãnh địa</h3></div><label className="territory-search"><Search size={14}/><input aria-label="Tìm công trình trong lãnh địa" placeholder="Lọc công trình" value={search} onChange={event=>setSearch(event.target.value)}/></label></div>
         <div className="territory-instance-list" role="list">{filteredBuildings.map(building=>{
           const heat=footprintHeatRelation({x:building.x,y:building.y},building.footprint,building.orientation,actualRadius,settlement.fireActive);
           const selected=selectedRef?.id===building.ref.id;
           const artwork=findAsset(manifest,resolveSettlementAssetId(manifest,building.assetId,settlement.fireLevel,building.ref.id===settlement.fireRef.id,building.visualState));
-          return <div className={`territory-instance${selected?' is-selected':''}`} key={building.id} role="listitem"><button className="territory-instance-main" onClick={()=>focusBuilding(building)}><span className="territory-instance-icon"><img src={artwork?.layers.body??artwork?.layers.uiIcon??'/assets/buildings/survival-fire-l01/icon.svg'} alt=""/></span><span><b>{building.name}</b><small>{building.x>=0?'+':''}{building.x}, {building.y>=0?'+':''}{building.y} m · {heat==='inside'?'Trong nhiệt':heat==='partial'?'Giao cắt':'Ngoài nhiệt'}</small></span><LocateFixed size={15}/></button><button className="territory-instance-focus" onClick={()=>{focusBuilding(building);setMessage(`Đang xem ${building.name}; vị trí nguồn không đổi.`);}}>Đến</button><small className="territory-instance-state">{building.state} · footprint là giả định fixture</small></div>;
+          return <div className={`territory-instance${selected?' is-selected':''}`} key={building.id} role="listitem"><button className="territory-instance-main" onClick={()=>focusBuilding(building)}><span className="territory-instance-icon"><img src={artwork?.layers.body??artwork?.layers.uiIcon??'/assets/buildings/survival-fire-l01/icon.svg'} alt=""/></span><span><b>{building.name}</b><small>{building.x>=0?'+':''}{building.x}, {building.y>=0?'+':''}{building.y} m · {heat==='inside'?'Trong nhiệt':heat==='partial'?'Giao cắt':'Ngoài nhiệt'}</small></span><LocateFixed size={15}/></button><button className="territory-instance-focus" onClick={()=>{focusBuilding(building);setMessage(`Đang xem ${building.name}; vị trí nguồn không đổi.`);}}>Đến</button><small className="territory-instance-state">{building.state} · kích thước mặt bằng tạm tính</small></div>;
         })}{filteredBuildings.length===0&&<p className="muted-text">Không có công trình khớp bộ lọc.</p>}</div>
-        {drafts.length>0&&<div className="territory-draft-list"><div><b>Bản nháp trong phiên này</b><button className="text-button" onClick={()=>{onDraftsChange([]);setMessage('Đã xóa toàn bộ bản nháp.');}}>Xóa tất cả</button></div>{drafts.map(draft=>{const validation=validatePlacement({point:{x:draft.x,y:draft.y},footprint:draft.footprint,orientation:draft.orientation,heatRadiusM:actualRadius,heatActive:settlement.fireActive,existing:[...settlement.buildings,...drafts],ignoreId:draft.id});return <div key={draft.id}><span>{draft.definitionId} · ({draft.x}, {draft.y}) m · {validation.blockers.length?'bị chặn':'đang thử'}</span><button aria-label={`Xoay ${draft.id}`} onClick={()=>onDraftsChange(previous=>previous.map(item=>item.id===draft.id?{...item,orientation:orientationCycle[(orientationCycle.indexOf(item.orientation)+1)%orientationCycle.length]}:item))}><RotateCw size={14}/></button><button aria-label={`Xóa ${draft.id}`} onClick={()=>onDraftsChange(previous=>previous.filter(item=>item.id!==draft.id))}><X size={14}/></button></div>;})}</div>}
+        {drafts.length>0&&<div className="territory-draft-list"><div><b>Bố trí đang xem trước</b><button className="text-button" onClick={()=>{onDraftsChange([]);setMessage('Đã xóa mọi bố trí xem trước.');}}>Xóa tất cả</button></div>{drafts.map(draft=>{const validation=validatePlacement({point:{x:draft.x,y:draft.y},footprint:draft.footprint,orientation:draft.orientation,heatRadiusM:actualRadius,heatActive:settlement.fireActive,existing:[...settlement.buildings,...drafts],ignoreId:draft.id});const definitionName=placementDefinitions.find(item=>item.id===draft.definitionId)?.name??'Công trình';return <div key={draft.id}><span>{definitionName} · ({draft.x}, {draft.y}) m · {validation.blockers.length?'bị cản trở':'có thể đặt'}</span><button aria-label={`Xoay ${definitionName}`} onClick={()=>onDraftsChange(previous=>previous.map(item=>item.id===draft.id?{...item,orientation:orientationCycle[(orientationCycle.indexOf(item.orientation)+1)%orientationCycle.length]}:item))}><RotateCw size={14}/></button><button aria-label={`Xóa ${definitionName}`} onClick={()=>onDraftsChange(previous=>previous.filter(item=>item.id!==draft.id))}><X size={14}/></button></div>;})}</div>}
       </section>
     </div>
-    <details className="panel territory-calibration" open={calibrationOpen} onToggle={event=>setCalibrationOpen(event.currentTarget.open)}><summary><span><EyeOff size={15}/> Hiệu chỉnh artwork · QA only</span><small>Không thêm vào dữ liệu lãnh địa</small></summary>
-      <div className="territory-calibration-body"><div className="territory-calibration-preview"><svg viewBox="0 0 240 200" aria-label="Asset calibration view"><defs><pattern id="asset-cal-grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#86a6aa" strokeOpacity=".25"/></pattern></defs><rect width="240" height="200" fill="#102a37"/><rect width="240" height="200" fill="url(#asset-cal-grid)"/><image href={selectedCalibrationAsset?.layers.shadow??''} width="240" height="200"/><image href={selectedCalibrationAsset?.layers.base??''} width="240" height="200"/><image href={selectedCalibrationAsset?.layers.upper??''} width="240" height="200"/><line x1="120" y1="0" x2="120" y2="200" stroke="#e4ba7f" strokeDasharray="3 4"/><line x1="0" y1="164" x2="240" y2="164" stroke="#e4ba7f" strokeDasharray="3 4"/><circle cx="120" cy="164" r="5" fill="#ffd897"/></svg><span>Grid · anchor · bounds · layers</span></div>
-        <div className="territory-calibration-info"><label>Asset fixture <select value={calibrationAssetId} onChange={event=>setCalibrationAssetId(event.target.value)}>{assetIds.map(id=><option key={id}>{id}</option>)}</select></label><p>Anchor: {selectedCalibrationAsset?`${Math.round(selectedCalibrationAsset.groundAnchor.x*100)}%, ${Math.round(selectedCalibrationAsset.groundAnchor.y*100)}%`:'fallback'} · logical canvas 240 × 200</p><p>Hit polygon, occlusion region, art footprint và physical footprint có registration riêng trong manifest.</p><label className="territory-qa-toggle"><input type="checkbox" checked={denseQa} onChange={event=>setDenseQa(event.target.checked)}/> Hiện fixture QA 520 công trình</label><button className="text-button" onClick={frameDenseQa}>Đến cụm QA 520</button><span>Đang gắn {visibleQa.length} / {denseQa?520:0} fixture nhìn thấy; sprite ngoài viewport bị loại.</span><span>{manifestError?'Không tải được manifest; dùng placeholder vector.':`Manifest đã tải: ${manifest?.assets.length??0} assets.`}</span></div>
+    <details className="panel territory-calibration" open={calibrationOpen} onToggle={event=>setCalibrationOpen(event.currentTarget.open)}><summary><span><EyeOff size={15}/> Hiệu chỉnh hình minh họa</span><small>Chỉ thay đổi cách hiển thị</small></summary>
+      <div className="territory-calibration-body"><div className="territory-calibration-preview"><svg viewBox="0 0 240 200" aria-label="Hiệu chỉnh vị trí hình ảnh"><defs><pattern id="asset-cal-grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#86a6aa" strokeOpacity=".25"/></pattern></defs><rect width="240" height="200" fill="#102a37"/><rect width="240" height="200" fill="url(#asset-cal-grid)"/><image href={selectedCalibrationAsset?.layers.shadow??''} width="240" height="200"/><image href={selectedCalibrationAsset?.layers.base??''} width="240" height="200"/><image href={selectedCalibrationAsset?.layers.upper??''} width="240" height="200"/><line x1="120" y1="0" x2="120" y2="200" stroke="#e4ba7f" strokeDasharray="3 4"/><line x1="0" y1="164" x2="240" y2="164" stroke="#e4ba7f" strokeDasharray="3 4"/><circle cx="120" cy="164" r="5" fill="#ffd897"/></svg><span>Lưới · điểm neo · lớp hình ảnh</span></div>
+        <div className="territory-calibration-info"><label>Hình minh họa <select value={calibrationAssetId} onChange={event=>setCalibrationAssetId(event.target.value)}>{assetIds.map(id=><option key={id}>{id}</option>)}</select></label><p>Điểm neo: {selectedCalibrationAsset?`${Math.round(selectedCalibrationAsset.groundAnchor.x*100)}%, ${Math.round(selectedCalibrationAsset.groundAnchor.y*100)}%`:'mặc định'} · khung 240 × 200</p><p>Vùng chọn, che khuất và kích thước hiển thị được căn chỉnh riêng trong thư viện hình ảnh.</p><label className="territory-qa-toggle"><input type="checkbox" checked={denseQa} onChange={event=>setDenseQa(event.target.checked)}/> Hiện 520 công trình minh họa</label><button className="text-button" onClick={frameDenseQa}>Xem nhóm công trình minh họa</button><span>Đang hiển thị {visibleQa.length} / {denseQa?520:0} công trình minh họa.</span><span>{manifestError?'Không tải được thư viện hình ảnh; dùng hình thay thế.':`Đã tải ${manifest?.assets.length??0} hình ảnh.`}</span></div>
       </div>
     </details>
-    <div className="territory-accessible-status" role="status" aria-live="polite">{message||'Bản xem thử chỉ hiển thị vị trí và bố trí; không xử lý lệnh gameplay.'}</div>
+    <div className="territory-accessible-status" role="status" aria-live="polite">{message||'Bản xem thử chỉ hiển thị vị trí và bố trí; không thực hiện lệnh trong thế giới.'}</div>
   </section>;
 }

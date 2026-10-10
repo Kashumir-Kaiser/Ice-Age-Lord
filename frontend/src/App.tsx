@@ -1,13 +1,13 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
-  Activity, AlertTriangle, Archive, Bell, BookOpen, Box, ChevronRight, Clock3,
+  Activity, AlertTriangle, Archive, Award, Bell, BookOpen, Box, ChevronRight, Clock3,
   Compass, Crown, Flame, Hammer, Info, Layers, LayoutDashboard, Map as MapIcon,
-  LocateFixed, Menu, Package, Search, Shield, ShieldCheck, Snowflake, Sparkles, UserRound, Users, X,
+  Footprints, Gem, Hand, LocateFixed, Menu, Package, Search, Shield, ShieldCheck, Shirt, Snowflake, Sparkles, Sword, UserRound, Users, X,
   type LucideIcon,
 } from 'lucide-react';
 import MapScene from './MapScene';
-import { INITIAL_CLOCK_SECONDS, speedMultiplier, advanceDisplayClock, displayClock, displayDay, customMultiplier } from './demoClock';
+import { INITIAL_CLOCK_SECONDS, speedMultiplier, advanceDisplayClock, displayClock, displayDay, customMultiplier, displayUpdateIntervalMs } from './demoClock';
 import type { ClockSpeed } from './demoClock';
 import ItemArt from './ItemArt';
 import type { ItemKind, Screen, Site, SiteKind } from './demoData';
@@ -25,19 +25,27 @@ import type { ReadabilityMode } from './territory/BuildingSprite';
 import { livingUnitGroups, visibleRaceFilters } from './game/unitGroups';
 
 const NAV_ICONS: Record<Screen, LucideIcon> = {
-  overview: LayoutDashboard, territory: Crown, map: MapIcon, inventory: Archive,
+  overview: LayoutDashboard, character: UserRound, territory: Crown, map: MapIcon, inventory: Archive,
   forces: Shield, buildings: Hammer, journal: BookOpen,
 };
 const HEADINGS: Record<Screen, { title: string; description: string }> = {
   overview: { title:'Tổng quan lãnh địa', description:'Cảnh khởi đầu · Đồng bằng Cổ Chiến Trường' },
+  character: { title:'Nhân vật', description:'Trang bị, phụ kiện, thành tựu và danh hiệu của Lí Lan' },
   territory: { title:'Quản lý lãnh địa', description:'Theo dõi công trình, ưu tiên và các tuyến sinh tồn' },
-  map: { title:'Bản đồ thám hiểm', description:'Tọa độ từ gói thế giới LL01; sương mù theo ánh sáng và kiến thức' },
+  map: { title:'Bản đồ thám hiểm', description:'Khám phá những vùng đất đã biết; màn sương đổi theo ánh sáng' },
   inventory: { title:'Kho vật phẩm', description:'Thư viện thẻ vật phẩm mẫu · Chưa phải kho của nhân vật' },
-  forces: { title:'Quân lực', description:'Sổ đơn vị và hệ thống triệu hoán · Chưa kết nối bộ mô phỏng' },
+  forces: { title:'Quân lực', description:'Theo dõi lực lượng và khả năng triệu hồi' },
   buildings: { title:'Kiến trúc', description:'Các công trình đã được xác lập trong thiết lập mở đầu' },
   journal: { title:'Nhật ký thế giới', description:'Trình bày thông tin đã biết, chưa phải lịch sử các lượt chơi' },
 };
 const CATEGORIES: ('Tất cả' | ItemKind)[] = ['Tất cả', 'Tài nguyên', 'Trang bị', 'Vật phẩm', 'Bản vẽ'];
+const EQUIPMENT_SLOTS: { label:string; icon:LucideIcon }[] = [
+  { label:'Mũ', icon:Shield }, { label:'Áo choàng', icon:Shirt }, { label:'Găng tay', icon:Hand },
+  { label:'Vũ khí', icon:Sword }, { label:'Tay phụ', icon:ShieldCheck }, { label:'Giày', icon:Footprints },
+];
+const ACCESSORY_SLOTS: { label:string; icon:LucideIcon }[] = [
+  { label:'Nhẫn', icon:Gem }, { label:'Dây chuyền', icon:Gem }, { label:'Bùa hộ mệnh', icon:Sparkles }, { label:'Phụ kiện', icon:Gem },
+];
 
 function Emblem({ size=36 }: { size?:number }) {
   return <img src="./crest.svg" width={size} height={size} alt="Biểu tượng Ice Age Lord" />;
@@ -88,15 +96,15 @@ function Header({ screen, screens, player, onMenu, onOpenPlayerProfile, profileO
     <button className="icon-button mobile-menu" aria-label="Mở điều hướng" onClick={onMenu}><Menu size={21}/></button>
     <div className="topbar-heading"><span className="breadcrumb">ICE AGE LORD <ChevronRight size={13}/> {screen==='overview'?'CĂN CỨ':screens.find(s=>s.id===screen)?.name.toUpperCase()}</span><h1>{heading.title}</h1><p>{heading.description}</p></div>
     <div className="topbar-actions">
-      <div className="clock-player" aria-label="Đồng hồ mô phỏng">
+      <div className="clock-player" aria-label="Đồng hồ trong trò chơi">
         <span className="clock-chip" aria-live="off"><Clock3 size={14}/> Ngày {displayDay(clockSeconds)} · {displayClock(clockSeconds)}</span>
         <label className="clock-speed-wrap"><span>Tốc độ</span><select aria-label="Tốc độ thời gian" value={speed} onChange={e=>changeSpeed(e.target.value as ClockSpeed)}>
           <option value="Frozen">Frozen</option><option value="1x">1×</option><option value="2x">2×</option><option value="5x">5×</option><option value="Custom">Tùy chọn</option>
         </select></label>
         {speed==='Custom'&&<label className="custom-clock-wrap"><span>Hệ số</span><input type="number" min=".1" max="3600" step=".1" aria-label="Hệ số tốc độ tùy chọn" value={customSpeed} onChange={e=>setCustomSpeed(customMultiplier(Number(e.target.value)))} /></label>}
-        <small className="clock-sim-label">Đồng hồ hiển thị · Không chạy engine</small>
+        <small className="clock-sim-label">Đồng hồ hiển thị</small>
       </div>
-      <button className={`icon-button ${notifications?'icon-button--active':''}`} onClick={onNotifications} aria-label="Thông tin bản demo" aria-expanded={notifications}><Bell size={18}/></button>
+      <button className={`icon-button ${notifications?'icon-button--active':''}`} onClick={onNotifications} aria-label="Thông tin trò chơi" aria-expanded={notifications}><Bell size={18}/></button>
       <button type="button" className="profile-mini" onClick={onOpenPlayerProfile} aria-haspopup="dialog" aria-expanded={profileOpen} aria-label={`Mở hồ sơ người chơi: ${player.name}`}><img className="profile-portrait" src="/assets/characters/li-lan-t0-portrait.svg?v=20261010" width={38} height={38} alt="Chân dung Lí Lan"/><span className="profile-name">{player.name}<small>Người chơi</small></span></button>
     </div>
   </header>;
@@ -107,8 +115,8 @@ function PlayerProfile({ player, open, followPlayer, onClose, onFollowChange, on
   if(!open)return null;
   return <div className="player-profile-backdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget)onClose();}}>
     <section className="player-profile-dialog" role="dialog" aria-modal="true" aria-labelledby="player-profile-title">
-      <header className="player-profile-heading"><div><span className="eyebrow">HỒ SƠ NGƯỜI CHƠI · MỐC T0</span><h2 id="player-profile-title">Hồ sơ {player.name}</h2></div><button type="button" className="icon-button" aria-label="Đóng hồ sơ" onClick={onClose}><X size={18}/></button></header>
-      <div className="player-profile-identity"><img className="player-profile-avatar" src="/assets/characters/li-lan-t0-portrait.svg?v=20261010" width={66} height={66} alt="Chân dung Lí Lan"/><div><h3>{player.name}</h3><p>Lãnh chúa · H0 · Cấp {player.level}</p><span className="player-profile-talent"><Sparkles size={14}/> {player.title} · {player.grade}</span></div></div>
+      <header className="player-profile-heading"><div><span className="eyebrow">HỒ SƠ NGƯỜI CHƠI</span><h2 id="player-profile-title">Hồ sơ {player.name}</h2></div><button type="button" className="icon-button" aria-label="Đóng hồ sơ" onClick={onClose}><X size={18}/></button></header>
+      <div className="player-profile-identity"><img className="player-profile-avatar" src="/assets/characters/li-lan-t0-portrait.svg?v=20261010" width={66} height={66} alt="Chân dung Lí Lan"/><div><h3>{player.name}</h3><p>Lãnh chúa · Cấp {player.level}</p><span className="player-profile-talent"><Sparkles size={14}/> {player.title} · {player.grade}</span></div></div>
       <div className="player-profile-stats" aria-label="Chỉ số hồ sơ">
         <article><span>Tuổi</span><strong>{player.age}</strong></article><article><span>Kinh nghiệm</span><strong>{player.xp.toLocaleString('vi-VN')} XP</strong></article>
         <article><span>Mana</span><strong>{player.mana.current} / {player.mana.max}</strong></article>
@@ -117,8 +125,35 @@ function PlayerProfile({ player, open, followPlayer, onClose, onFollowChange, on
         <button type="button" className={`player-profile-toggle${followPlayer?' is-active':''}`} aria-pressed={followPlayer} onClick={()=>onFollowChange(!followPlayer)}><LocateFixed size={16}/>{followPlayer?'Đang khóa':'Khóa camera'}</button>
       </section>
       <div className="player-profile-map-actions"><button type="button" onClick={()=>onLocate('territory')}><Crown size={16}/> Định vị ở lãnh địa</button><button type="button" onClick={()=>onLocate('world')}><Compass size={16}/> Định vị trên bản đồ thế giới</button></div>
-      <small className="player-profile-note"><UserRound size={13}/> Vị trí hiển thị theo neo H0 của bản demo; khóa camera không thay đổi vị trí hay trạng thái game.</small>
+      <small className="player-profile-note"><UserRound size={13}/> Camera theo vị trí hiện tại của Lí Lan; tính năng này không thay đổi trạng thái thế giới.</small>
     </section>
+  </div>;
+}
+function EquipmentSocket({ label, icon:Icon, accessory=false }: {label:string;icon:LucideIcon;accessory?:boolean}) {
+  return <div className={`equipment-socket${accessory?' equipment-socket--accessory':''}`} role="img" aria-label={`${label}: đang trống`}>
+    <span className="equipment-socket-icon"><Icon size={accessory?18:20} strokeWidth={1.5}/></span>
+    <span className="equipment-socket-copy"><strong>{label}</strong><small>Trống</small></span>
+  </div>;
+}
+function CharacterEquipment({ player }: {player:PlayerView['player']}) {
+  const equipmentLeft=EQUIPMENT_SLOTS.slice(0,3);
+  const equipmentRight=EQUIPMENT_SLOTS.slice(3);
+  return <div className="page-sections character-page">
+    <section className="panel character-loadout-panel">
+      <div className="character-section-heading"><div><span className="eyebrow">TRANG BỊ NHÂN VẬT</span><h2>{player.name} · Cấp {player.level}</h2></div><span className="character-loadout-status">Chưa trang bị vật phẩm</span></div>
+      <div className="character-equipment-layout">
+        <div className="equipment-socket-column">{equipmentLeft.map(slot=><EquipmentSocket key={slot.label} {...slot}/>)}</div>
+        <div className="character-center-column">
+          <figure className="character-fullbody-art"><img src="/assets/characters/li-lan-t0-fullbody.svg?v=20261010" alt={`Toàn thân ${player.name}`}/><figcaption>{player.name}</figcaption></figure>
+          <section className="character-accessories" aria-labelledby="character-accessories-title"><h3 id="character-accessories-title">Phụ kiện</h3><div className="character-accessory-row">{ACCESSORY_SLOTS.map(slot=><EquipmentSocket key={slot.label} {...slot} accessory/>)}</div></section>
+        </div>
+        <div className="equipment-socket-column">{equipmentRight.map(slot=><EquipmentSocket key={slot.label} {...slot}/>)}</div>
+      </div>
+    </section>
+    <div className="character-details-grid">
+      <section className="panel character-details-card" aria-labelledby="character-achievements-title"><div className="character-details-heading"><Award size={19}/><div><span className="eyebrow">THÀNH TỰU</span><h2 id="character-achievements-title">Thành tựu đã đạt</h2></div></div><div className="character-empty-state"><Sparkles size={21}/><p>Chưa có thành tựu được ghi nhận.</p></div></section>
+      <section className="panel character-details-card" aria-labelledby="character-titles-title"><div className="character-details-heading"><Crown size={19}/><div><span className="eyebrow">DANH HIỆU</span><h2 id="character-titles-title">Danh hiệu của {player.name}</h2></div></div><div className="character-title-card"><span className="character-title-mark"><Sparkles size={17}/></span><div><strong>{player.title}</strong><small>Danh hiệu hiện tại · {player.grade}</small></div><span className="character-title-active">Đang dùng</span></div></section>
+    </div>
   </div>;
 }
 function Sidebar({ current, screens, navigate, open, close }: {
@@ -133,15 +168,15 @@ function Sidebar({ current, screens, navigate, open, close }: {
       <nav className="sidebar-nav" aria-label="Các mục giao diện">
         {screens.map(nav=>{
           const Icon=NAV_ICONS[nav.id];
-          return <button key={nav.id} className={`nav-link ${current===nav.id?'nav-link--active':''}`} onClick={()=>{navigate(nav.id);close();}} aria-current={current===nav.id?'page':undefined}>
+          return <button key={nav.id} className={`nav-link ${current===nav.id?'nav-link--active':''}`} title={nav.name} aria-label={nav.name} onClick={()=>{navigate(nav.id);close();}} aria-current={current===nav.id?'page':undefined}>
             <Icon size={19} strokeWidth={1.8}/><span>{nav.name}<small>{nav.hint}</small></span>{current===nav.id&&<span className="nav-diamond"/>}
           </button>;
         })}
       </nav>
       <div className="sidebar-bottom">
         <div className="weather-box"><Snowflake size={22}/><div><strong>Kỷ nguyên băng phong</strong><span>Không gian sinh tồn khắc nghiệt</span></div></div>
-        <div className="sidebar-caption"><span className="signal-dot"/> Frontend prototype v0.1</div>
-        <p>Không kết nối save · Không xử lý lượt chơi</p>
+        <div className="sidebar-caption"><span className="signal-dot"/> ICE AGE LORD</div>
+        <p>Chưa lưu tiến trình · Chưa xử lý lượt chơi</p>
       </div>
     </aside>
   </>;
@@ -179,17 +214,17 @@ function Overview({ selectedEntity, mapProps, navigate, clockSeconds, onClockCha
     <section className="bottom-cards">
       <div className="panel feature-card"><div className="feature-icon"><Flame size={22}/></div><h3>Sinh tồn đầu tiên</h3><p>Quản lý nguồn nhiệt, lương thực và nơi trú. Có điều khiển tốc độ đồng hồ hiển thị; tiêu hao và cơ chế game vẫn chưa kết nối.</p><button className="text-button" onClick={()=>navigate('territory')}>Xem giao diện lãnh địa <ChevronRight size={15}/></button></div>
       <div className="panel feature-card"><div className="feature-icon"><Sparkles size={22}/></div><h3>SSS · Tử Phục Linh Sư</h3><p>Thiên phú của Lí Lan đã được xác lập. Tử Phục xác thật không đồng nhất với lính Ngôi Mộ.</p><button className="text-button" onClick={()=>navigate('forces')}>Xem hệ thống quân lực <ChevronRight size={15}/></button></div>
-      <div className="panel feature-card"><div className="feature-icon"><Box size={22}/></div><h3>Thư viện vật phẩm</h3><p>Khung thẻ, biểu tượng và lọc danh mục có thể thử ngay; dữ liệu sở hữu chưa được nối vào engine.</p><button className="text-button" onClick={()=>navigate('inventory')}>Mở bộ sưu tập mẫu <ChevronRight size={15}/></button></div>
+      <div className="panel feature-card"><div className="feature-icon"><Box size={22}/></div><h3>Thư viện vật phẩm</h3><p>Khung thẻ, biểu tượng và bộ lọc danh mục đã sẵn sàng; vật phẩm hiện có sẽ xuất hiện khi dữ liệu được cập nhật.</p><button className="text-button" onClick={()=>navigate('inventory')}>Mở bộ sưu tập mẫu <ChevronRight size={15}/></button></div>
     </section>
   </div>;
 }
 function MapPage({ selectedEntity, mapProps, onOpenSettlement }: {selectedEntity:EntityView|null;mapProps:MapStateProps;onOpenSettlement:()=>void}) {
   return <div className="page-sections">
-    <div className="notice-row"><Info size={17}/><span>Map demo · Vị trí đã biết đến từ projection fixture. Ánh sáng, kéo bản đồ và atlas debug không khám phá hoặc thay đổi trạng thái.</span></div>
+    <div className="notice-row"><Info size={17}/><span>Bản đồ hiển thị những địa điểm đã biết. Ánh sáng và thao tác di chuyển không tự khám phá hay lưu tiến trình.</span></div>
     <div className="map-page-grid"><div className="panel map-full"><MapScene {...mapProps}/></div><div className="map-page-side">
       <details className="map-inspector-desktop" open><summary>{selectedEntity?.name ?? 'Thông tin điểm được chọn'}</summary><EntityInspector entity={selectedEntity} onOpenSettlement={onOpenSettlement}/></details>
       <details className="map-inspector-mobile" open={mapProps.inspectorOpen} onToggle={event=>mapProps.onInspectorOpenChange(event.currentTarget.open)}><summary>{selectedEntity?.name ?? 'Thông tin điểm được chọn'}</summary><EntityInspector entity={selectedEntity} onOpenSettlement={onOpenSettlement}/></details>
-      <details className="panel help-panel"><summary><h3><Compass size={18}/> Cách điều khiển</h3></summary><p>Kéo để di chuyển, cuộn trên mặt bản đồ để thu phóng và dùng các phím mũi tên / cộng trừ khi bản đồ được chọn.</p><p>Chế độ thế giới giữ riêng camera địa phương. Các nút lớp và công cụ xem thử thay đổi hình chiếu; chúng không thực hiện khám phá, khai thác hoặc lưu tiến trình.</p></details>
+      <details className="panel help-panel"><summary><h3><Compass size={18}/> Cách điều khiển</h3></summary><p>Kéo để di chuyển, cuộn trên mặt bản đồ để thu phóng và dùng các phím mũi tên / cộng trừ khi bản đồ được chọn.</p><p>Chế độ thế giới giữ riêng góc nhìn địa phương. Các nút lớp và công cụ xem thử chỉ thay đổi cách hiển thị; chúng không thực hiện khám phá, khai thác hoặc lưu tiến trình.</p></details>
     </div></div>
   </div>;
 }
@@ -199,7 +234,7 @@ function Inventory({ items, selectedEntity, selectEntity, inspectorOpen, onInspe
   const filtered=useMemo(()=>items.filter(i=>(category==='Tất cả'||i.kind===category)&&(`${i.name} ${i.note}`.toLowerCase().includes(search.toLowerCase()))),[items,search,category]);
   const selectedItemId=selectedEntity?.ref.type==='item'?selectedEntity.ref.id:null;
   return <div className="page-sections">
-    <div className="notice-row"><AlertTriangle size={17}/><span>Toàn bộ thẻ dưới đây là <b>mẫu vật phẩm và artwork</b>, không phải vật phẩm đã nhận. Tồn kho hiện tại chưa được liên kết.</span></div>
+    <div className="notice-row"><AlertTriangle size={17}/><span>Các thẻ dưới đây minh họa vật phẩm và trang bị. Vật phẩm Lí Lan đang sở hữu sẽ xuất hiện tại đây khi có dữ liệu.</span></div>
     <div className="inventory-layout">
       <section className="panel inventory-list">
         <div className="inventory-toolbar"><div><span className="eyebrow">THƯ VIỆN MINH HỌA</span><h2>Vật phẩm & trang bị</h2></div><div className="search-box"><Search size={17}/><input aria-label="Tìm vật phẩm" placeholder="Tìm vật phẩm..." value={search} onChange={e=>setSearch(e.target.value)} /></div></div>
@@ -216,7 +251,7 @@ function Inventory({ items, selectedEntity, selectEntity, inspectorOpen, onInspe
 }
 function Buildings({ sites, selectedEntity, selectEntity, navigate, onFocusBuilding, inspectorOpen, onInspectorOpenChange }: {sites:readonly Site[];selectedEntity:EntityView|null;selectEntity:(ref:EntityRef)=>void;navigate:(v:Screen)=>void;onFocusBuilding:(site:Site)=>void;inspectorOpen:boolean;onInspectorOpenChange:(open:boolean)=>void}) {
   return <div className="page-sections">
-    <div className="notice-row"><Info size={17}/><span>Bốn công trình khởi đầu được đặt ở đúng tọa độ LL01 cố định tương đối với ngọn lửa H0. Không có công trình mới được xây.</span></div>
+    <div className="notice-row"><Info size={17}/><span>Bốn công trình khởi đầu được bố trí quanh Lửa Sinh Tồn. Chưa có công trình mới được xây.</span></div>
     <div className="building-page-grid"><div className="building-grid">{sites.map(site=><button key={site.id} onClick={()=>selectEntity(site.entityRef)} className={`panel building-card ${sameEntityRef(selectedEntity?.ref,site.entityRef)?'building-card--selected':''}`}>
       <div className="building-thumb"><span className="building-grid-overlay"/><Sigil kind={site.id}/></div>
       <div className="building-info"><span>{site.subtitle}</span><h3>{site.name}</h3><p>{site.status}</p><span className="building-open">Xem chi tiết <ChevronRight size={15}/></span></div>
@@ -232,14 +267,14 @@ function Forces({ samples, units }: {samples:PlayerView['forces'];units:PlayerVi
   useEffect(()=>{if(raceFilter!=='all'&&!races.some(race=>race.id===raceFilter))setRaceFilter('all');},[raceFilter,races.map(race=>race.id).join('|')]);
   const livingCount=living.reduce((sum,unit)=>sum+unit.alive,0);
   return <div className="page-sections">
-    <div className="stats-grid force-stats"><StatCard icon={Shield} label="Đơn vị đang sống" value={String(livingCount)} note={livingCount?'Theo player view hiện tại':'Không có lực lượng được tạo'}/><StatCard icon={Sparkles} label="Thiên phú chính" value="SSS" note="Tử Phục Linh Sư" tone="ice"/><StatCard icon={Activity} label="Đội đang hoạt động" value="Chưa có" note="Không mô phỏng lệnh chiến đấu"/><StatCard icon={Layers} label="Sổ đơn vị" value="Chờ engine" note="ID và XP cần nguồn xác thực" tone="warm"/></div>
+    <div className="stats-grid force-stats"><StatCard icon={Shield} label="Đơn vị đang sống" value={String(livingCount)} note={livingCount?'Lực lượng hiện có':'Chưa có lực lượng'}/><StatCard icon={Sparkles} label="Thiên phú chính" value="SSS" note="Tử Phục Linh Sư" tone="ice"/><StatCard icon={Activity} label="Đội đang hoạt động" value="Chưa có" note="Chưa có lệnh chiến đấu"/><StatCard icon={Layers} label="Thông tin đơn vị" value="Chưa có" note="Chưa có dữ liệu chi tiết" tone="warm"/></div>
     <section className="panel force-roster" aria-label="Đơn vị đang sống">
       <div className="inventory-toolbar"><div><span className="eyebrow">LỰC LƯỢNG ĐANG SỐNG</span><h2>Đơn vị theo chủng tộc</h2></div><span className="muted-text">{livingCount} đơn vị · {living.length} nhóm</span></div>
       {living.length>0&&<div className="force-race-filter" role="group" aria-label="Lọc đơn vị theo chủng tộc"><button className={raceFilter==='all'?'is-selected':''} aria-pressed={raceFilter==='all'} onClick={()=>setRaceFilter('all')}>Tất cả</button>{races.map(race=><button key={race.id} className={raceFilter===race.id?'is-selected':''} aria-pressed={raceFilter===race.id} onClick={()=>setRaceFilter(race.id)}>{race.label}</button>)}</div>}
       {filtered.length?<div className="force-unit-grid">{filtered.map(unit=><article className="force-unit-card" key={unit.id}><span className="eyebrow">{unit.raceLabel.toUpperCase()}</span><h3>{unit.name}</h3><p>{unit.role}</p><small>{unit.alive} còn sống · {unit.available} có thể điều động</small></article>)}</div>:<div className="empty-army force-empty"><div className="empty-army-illustration"><Shield size={52} strokeWidth={1}/><span>0</span></div><h2>Chưa có đơn vị đang sống</h2><p>Bộ lọc chủng tộc sẽ xuất hiện khi có đơn vị đang sống.</p></div>}
     </section>
     <BlockTitle title="Các kiểu thẻ quân lực sẽ hỗ trợ" eyebrow="BỐ CỤC XEM TRƯỚC"/>
-    <div className="sample-force-grid">{samples.map(({icon,title,text,art})=>{const Icon=icons[icon];return <div className="panel force-sample" key={title}><span className="sample-ribbon">MẪU ART · KHÔNG SỞ HỮU</span>{art?<img className="force-sample-art" src={art} alt="" aria-hidden="true"/>:<Icon size={35} strokeWidth={1.25}/>}<h3>{title}</h3><p>{text}</p><span className="muted-text">Mẫu thị giác · Lực lượng hiện tại vẫn bằng 0</span></div>;})}</div>
+      <div className="sample-force-grid">{samples.map(({icon,title,text,art})=>{const Icon=icons[icon];return <div className="panel force-sample" key={title}><span className="sample-ribbon">HÌNH MINH HỌA · CHƯA SỞ HỮU</span>{art?<img className="force-sample-art" src={art} alt="" aria-hidden="true"/>:<Icon size={35} strokeWidth={1.25}/>}<h3>{title}</h3><p>{text}</p><span className="muted-text">Lực lượng hiện tại: 0</span></div>;})}</div>
   </div>;
 }
 function Territory({ settlement, placementDefinitions, selectedEntity, units, camera, onCameraChange, drafts, onDraftsChange, focusedBuildingId, onFocusHandled, readability, onReadabilityChange, selectEntity, inspectorOpen, onInspectorOpenChange, player, followPlayer, onFollowPlayerChange, onOpenPlayerProfile }: {
@@ -250,7 +285,7 @@ function Territory({ settlement, placementDefinitions, selectedEntity, units, ca
   player:PlayerView['player'];followPlayer:boolean;onFollowPlayerChange:(active:boolean)=>void;onOpenPlayerProfile:()=>void;
 }) {
   return <div className="page-sections">
-    <div className="notice-row"><Compass size={17}/><span>Lãnh địa dùng vị trí LL01 và H0 từ cùng bản xem người chơi. Bản đồ chiến lược chỉ đặt một dấu Lửa Trại cho cụm này; footprint và thẻ xây dưới đây là fixture để thử bố cục.</span></div>
+    <div className="notice-row"><Compass size={17}/><span>Lãnh địa hiển thị vị trí khởi đầu của Lí Lan. Bản đồ lớn đánh dấu Lửa Trại; bố trí công trình bên dưới giúp hình dung cách sắp xếp khu vực.</span></div>
     <div className="territory-layout">
       <div className="territory-layout-main"><TerritoryScene settlement={settlement} placementDefinitions={placementDefinitions} camera={camera} onCameraChange={onCameraChange} drafts={drafts} onDraftsChange={onDraftsChange} selectedRef={selectedEntity?.ref??null} onSelectEntity={selectEntity} focusedBuildingId={focusedBuildingId} onFocusHandled={onFocusHandled} readability={readability} onReadabilityChange={onReadabilityChange} playerName={player.name} playerPosition={player.position} followPlayer={followPlayer} onFollowPlayerChange={onFollowPlayerChange} onOpenPlayerProfile={onOpenPlayerProfile}/></div>
       <aside className="territory-layout-side">
@@ -337,7 +372,7 @@ export default function App() {
       const now=performance.now();
       setClockSeconds(previous=>advanceDisplayClock(previous,now-last,multiplier));
       last=now;
-    },180);
+    },displayUpdateIntervalMs(multiplier));
     return ()=>clearInterval(interval);
   },[multiplier]);
   return <div className="app-shell">
@@ -345,9 +380,10 @@ export default function App() {
     <div className="app-main">
       <Header screen={screen} screens={playerView.screens} player={playerView.player} profileOpen={playerProfileOpen} onOpenPlayerProfile={()=>setPlayerProfileOpen(true)} onMenu={()=>setSidebarOpen(true)} notifications={notificationOpen} onNotifications={()=>setNotificationOpen(v=>!v)} clockSeconds={clockSeconds} speed={speed} changeSpeed={setSpeed} customSpeed={customSpeed} setCustomSpeed={setCustomSpeed}/>
       <PlayerProfile player={playerView.player} open={playerProfileOpen} followPlayer={followPlayer} onClose={()=>setPlayerProfileOpen(false)} onFollowChange={setFollowPlayer} onLocate={locatePlayer}/>
-      {notificationOpen && <div className="notification-popover" role="status"><div><Bell size={17}/><strong>Trạng thái bản xem thử</strong><button className="icon-button" aria-label="Đóng thông báo" onClick={()=>setNotificationOpen(false)}><X size={17}/></button></div><p>Chưa kết nối bộ mô phỏng hoặc dữ liệu lưu. Mọi thao tác ở đây chỉ thay đổi màn hình hiển thị.</p></div>}
+      {notificationOpen && <div className="notification-popover" role="status"><div><Bell size={17}/><strong>Trạng thái trò chơi</strong><button className="icon-button" aria-label="Đóng thông báo" onClick={()=>setNotificationOpen(false)}><X size={17}/></button></div><p>Lượt chơi chưa được lưu. Các thao tác hiện tại chỉ thay đổi cách xem.</p></div>}
       <main className="page-content">
         {screen==='overview'&&<Overview selectedEntity={selectedEntity} mapProps={mapProps} navigate={navigate} clockSeconds={clockSeconds} onClockChange={setClockSeconds}/>}
+        {screen==='character'&&<CharacterEquipment player={playerView.player}/>}
         {screen==='territory'&&<Territory settlement={playerView.settlement} placementDefinitions={playerView.placementDefinitions} selectedEntity={selectedEntity} units={playerView.units} camera={territoryCamera} onCameraChange={setTerritoryCamera} drafts={layoutDrafts} onDraftsChange={setLayoutDrafts} focusedBuildingId={territoryFocusId} onFocusHandled={handleTerritoryFocusHandled} readability={territoryReadability} onReadabilityChange={setTerritoryReadability} selectEntity={selectEntity} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen} player={playerView.player} followPlayer={followPlayer} onFollowPlayerChange={setFollowPlayer} onOpenPlayerProfile={()=>setPlayerProfileOpen(true)}/>}
         {screen==='map'&&<MapPage selectedEntity={selectedEntity} mapProps={mapProps} onOpenSettlement={()=>navigate('territory')}/>}
         {screen==='inventory'&&<Inventory items={playerView.items} selectedEntity={selectedEntity} selectEntity={selectEntity} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen}/>}
@@ -355,7 +391,7 @@ export default function App() {
         {screen==='buildings'&&<Buildings sites={playerView.buildings} selectedEntity={selectedEntity} selectEntity={selectEntity} navigate={navigate} onFocusBuilding={focusBuilding} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen}/>}
         {screen==='journal'&&<Journal entries={playerView.journal}/>}
       </main>
-      <footer className="app-footer"><span><Emblem size={21}/> ICE AGE LORD · FRONTEND PROTOTYPE</span><span>Chế độ demo · Không lưu tiến trình · Không sửa dữ liệu nguồn</span></footer>
+      <footer className="app-footer"><span><Emblem size={21}/> ICE AGE LORD</span><span>Bản xem thử · Không lưu tiến trình</span></footer>
     </div>
   </div>;
 }

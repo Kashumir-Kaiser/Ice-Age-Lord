@@ -5,7 +5,7 @@ import { visibleMapSpots } from '../worldFeatures';
 import type { EntityRef, EntityView, GameClient, PlayerView, PreviewMapSettings, VisibleMap } from './GameClient';
 
 const denied = (action: string, reason: string) => ({ action, enabled: false, reason });
-const readOnlyActions = [denied('gameplay', 'Bộ mô phỏng chưa kết nối; thao tác chỉ được xem trong bản demo.')];
+const readOnlyActions = [denied('gameplay', 'Chức năng này hiện chỉ cho phép xem.')];
 const keyOf = (ref: EntityRef) => `${ref.type}:${ref.id}`;
 
 function siteView(site: typeof sites[number]): EntityView {
@@ -38,7 +38,7 @@ function spotView(spot: ReturnType<typeof visibleMapSpots>[number], currentSight
     iconKind: spot.kind,
     label: spot.label,
     description: spot.detail,
-    status: spot.knowledge === 'remembered' ? 'Thông tin lần cuối nhìn thấy' : 'Fixture bản demo',
+    status: spot.knowledge === 'remembered' ? 'Thông tin lần cuối nhìn thấy' : 'Thông tin tham khảo',
     provenance: spot.provenance,
     knowledge: spot.knowledge,
     currentSight,
@@ -89,12 +89,12 @@ const openingBuildings = sites.map(site => ({
   state: site.id === 'house' ? 'Hư hại' : site.id === 'fire' ? 'Đang cháy · chỉ hình chiếu' : 'Tồn tại tại khởi đầu',
 }));
 const placementDefinitions = [
-  { id:'fixture-polar-farmhouse', name:'Nhà Nông Phu Cực Địa · mẫu ảnh', assetId:'polar-farmhouse-l01', footprint:{kind:'rectangle' as const,widthM:4,depthM:3,provenance:'frontend-fixture' as const,assumptionId:'ART-ONLY-PREVIEW-FOOTPRINT-V1',note:'Diện tích 12 m² theo nguồn; kích thước 4 × 3 m chỉ để xem thử.'},orientations:['north'] as const,status:'fixture-only' as const },
-  { id:'fixture-palisade-wall', name:'Tường Rào · mẫu ảnh', assetId:'opening-palisade-wall', footprint:{kind:'rectangle' as const,widthM:10,depthM:1,provenance:'frontend-fixture' as const,assumptionId:'ART-ONLY-PREVIEW-FOOTPRINT-V1',note:'10 m dài theo nguồn; bề dày 1 m chỉ để xem thử.'},orientations:['north'] as const,status:'fixture-only' as const },
+  { id:'fixture-polar-farmhouse', name:'Nhà Nông Phu Cực Địa', assetId:'polar-farmhouse-l01', footprint:{kind:'rectangle' as const,widthM:4,depthM:3,provenance:'frontend-fixture' as const,assumptionId:'ART-ONLY-PREVIEW-FOOTPRINT-V1',note:'Diện tích 12 m² theo nguồn; kích thước 4 × 3 m chỉ để xem thử.'},orientations:['north'] as const,status:'fixture-only' as const },
+  { id:'fixture-palisade-wall', name:'Tường Rào', assetId:'opening-palisade-wall', footprint:{kind:'rectangle' as const,widthM:10,depthM:1,provenance:'frontend-fixture' as const,assumptionId:'ART-ONLY-PREVIEW-FOOTPRINT-V1',note:'10 m dài theo nguồn; bề dày 1 m chỉ để xem thử.'},orientations:['north'] as const,status:'fixture-only' as const },
   { id:'fixture-timber-gate', name:'Cổng Gỗ · mẫu ảnh', assetId:'opening-timber-gate', footprint:{kind:'rectangle' as const,widthM:3,depthM:2,provenance:'frontend-fixture' as const,assumptionId:'ART-ONLY-PREVIEW-FOOTPRINT-V1',note:'Rộng 3 m theo nguồn; bề dày 2 m là mẫu thử.'},orientations:['north'] as const,status:'fixture-only' as const },
-  { id:'fixture-low-house', name:'Nhà thấp · fixture', assetId:'lord-house-damaged', footprint:{kind:'rectangle' as const,widthM:4,depthM:4,provenance:'frontend-fixture' as const,assumptionId:'TERRITORY-FOOTPRINTS-V1',note:'4 × 4 m là kích thước giả định để thử bố trí, không phải kích thước luật.'}, orientations:['north','east','south','west'] as const, status:'fixture-only' as const },
-  { id:'fixture-tall-tower', name:'Tháp cao · fixture', assetId:'fixture-tall-tower', footprint:{kind:'rectangle' as const,widthM:5,depthM:4,provenance:'frontend-fixture' as const,assumptionId:'TERRITORY-FOOTPRINTS-V1',note:'5 × 4 m là kích thước giả định để thử bố trí, không phải kích thước luật.'}, orientations:['north','east','south','west'] as const, status:'fixture-only' as const },
-  { id:'fixture-fire-max', name:'Mẫu lửa tối đa · fixture', assetId:'fixture-fire-max', footprint:{kind:'rectangle' as const,widthM:8,depthM:8,provenance:'frontend-fixture' as const,assumptionId:'TERRITORY-FOOTPRINTS-V1',note:'8 × 8 m là kích thước giả định để thử bố trí, không phải kích thước luật.'}, orientations:['north','east','south','west'] as const, status:'fixture-only' as const },
+  { id:'fixture-low-house', name:'Nhà thấp · minh họa', assetId:'lord-house-damaged', footprint:{kind:'rectangle' as const,widthM:4,depthM:4,provenance:'frontend-fixture' as const,assumptionId:'TERRITORY-FOOTPRINTS-V1',note:'4 × 4 m là kích thước giả định để thử bố trí, không phải kích thước luật.'}, orientations:['north','east','south','west'] as const, status:'fixture-only' as const },
+  { id:'fixture-tall-tower', name:'Tháp cao · minh họa', assetId:'fixture-tall-tower', footprint:{kind:'rectangle' as const,widthM:5,depthM:4,provenance:'frontend-fixture' as const,assumptionId:'TERRITORY-FOOTPRINTS-V1',note:'5 × 4 m là kích thước giả định để thử bố trí, không phải kích thước luật.'}, orientations:['north','east','south','west'] as const, status:'fixture-only' as const },
+  { id:'fixture-fire-max', name:'Mẫu lửa tối đa', assetId:'fixture-fire-max', footprint:{kind:'rectangle' as const,widthM:8,depthM:8,provenance:'frontend-fixture' as const,assumptionId:'TERRITORY-FOOTPRINTS-V1',note:'8 × 8 m là kích thước giả định để thử bố trí, không phải kích thước luật.'}, orientations:['north','east','south','west'] as const, status:'fixture-only' as const },
 ];
 const itemViews = itemExamples.map(itemView);
 const visibleTerrain = {
@@ -103,7 +103,7 @@ const visibleTerrain = {
   water: CANONICAL_SITES.find(site => site.id === 'SITE-LL01-042')!,
 };
 const forceFixtures = [
-  { icon: 'shield' as const, title: 'Zombie Ngôi Mộ · T0', art: '/assets/units/tomb-zombie-t0.svg', text: 'Mẫu đơn vị Thường do Ngôi Mộ tạo. Đây là hình thiết kế, không phải quân đã được sinh tại T0.' },
+  { icon: 'shield' as const, title: 'Zombie Ngôi Mộ', art: '/assets/units/tomb-zombie-t0.svg', text: 'Đơn vị do Ngôi Mộ tạo. Hình minh họa này chưa phải quân trong lực lượng của Lí Lan.' },
   { icon: 'sparkles' as const, title: 'Tử thi Tử Phục', art: '/assets/units/direct-revived-cadaver.svg', text: 'Mẫu một thi thể được Tử Phục; diện mạo thật phải theo chính thi thể và trang bị nguồn.' },
   { icon: 'users' as const, title: 'Nông Phu Cực Địa', art: '/assets/units/polar-farmer-t1.svg', text: 'Mẫu cư dân lao động. Tuyển mộ chỉ mở sau khi Nhà Lãnh Chúa được tu sửa và có nhà dân hợp lệ.' },
 ];
@@ -202,7 +202,7 @@ export class DemoGameClient implements GameClient {
       accepted: false,
       revision: this.view.revision,
       code: 'demo-command-unsupported',
-      message: 'Bản demo không thực hiện lệnh chơi hoặc thay đổi trạng thái.',
+      message: 'Chức năng này hiện chưa khả dụng.',
     };
   }
 

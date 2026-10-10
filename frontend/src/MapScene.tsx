@@ -373,13 +373,13 @@ export default function MapScene({
         <button type="button" aria-pressed={layers.buildings} onClick={() => changeLayer('buildings')}><Layers3 size={14}/> Công trình</button>
         <button type="button" aria-pressed={layers.resources} onClick={() => changeLayer('resources')}><Mountain size={14}/> Tài nguyên</button>
         <button type="button" aria-pressed={layers.discoveries} onClick={() => changeLayer('discoveries')}><Eye size={14}/> Đã ghi nhớ</button>
-        <button type="button" disabled title="Chưa có dữ liệu tuyến đường trong bản demo" aria-label="Tuyến đường chưa khả dụng: Chưa có dữ liệu trong bản demo">Tuyến đường</button>
-        <button type="button" disabled title="Chưa có đội quân hoặc đơn vị trong bản demo" aria-label="Đơn vị chưa khả dụng: Chưa có dữ liệu trong bản demo">Đơn vị</button>
+        <button type="button" disabled title="Chưa có dữ liệu tuyến đường" aria-label="Tuyến đường chưa khả dụng: Chưa có dữ liệu">Tuyến đường</button>
+        <button type="button" disabled title="Chưa có đội quân hoặc đơn vị" aria-label="Đơn vị chưa khả dụng: Chưa có dữ liệu">Đơn vị</button>
         <button type="button" aria-pressed={showHeat} onClick={() => onShowHeatChange(!showHeat)}><ThermometerSun size={14}/> Nhiệt</button>
         <button type="button" aria-pressed={showExploration} onClick={() => onShowExplorationChange(!showExploration)}><EyeOff size={14}/> Ký ức</button>
       </div>
       <details className="map-developer-tools">
-        <summary>Công cụ xem thử · Demo only</summary>
+        <summary>Công cụ bản đồ</summary>
         <div className="map-developer-controls">
           <label htmlFor={unique + '-time'}>Ánh sáng</label>
           <select id={unique + '-time'} aria-label="Mô phỏng giờ hiển thị" value={TIMES.includes(minutes as typeof TIMES[number]) ? minutes : -1} onChange={event => onClockChange(Math.floor(clockSeconds / 86400) * 86400 + Number(event.target.value) * 60)}>
@@ -391,10 +391,10 @@ export default function MapScene({
             {LEVELS.map(level => <option value={level} key={level}>Cấp {level}</option>)}
           </select>
           <label className="map-fire-toggle"><input type="checkbox" checked={fireActive} onChange={event => onFireActiveChange(event.target.checked)}/> Lửa đang bật</label>
-          <label className="map-atlas-toggle"><input type="checkbox" checked={sourceAtlas} onChange={event => onSourceAtlasChange(event.target.checked)}/> Bật atlas debug</label>
+          <label className="map-atlas-toggle"><input type="checkbox" checked={sourceAtlas} onChange={event => onSourceAtlasChange(event.target.checked)}/> Hiện lớp dữ liệu tham khảo</label>
           <button type="button" className={labels ? 'is-on' : ''} aria-pressed={labels} onClick={() => setLabels(value => !value)}>{labels ? <Eye size={14}/> : <EyeOff size={14}/>} Nhãn</button>
         </div>
-        <p>Ánh sáng, cấp lửa và atlas chỉ thay đổi hình chiếu. Không khám phá, sửa dữ liệu hoặc thay đổi phiên bản trạng thái.</p>
+        <p>Ánh sáng, cấp lửa và dữ liệu tham khảo chỉ đổi cách hiển thị; không khám phá hay lưu tiến trình.</p>
       </details>
     </div>}
 
@@ -448,7 +448,7 @@ export default function MapScene({
       <svg className="map-snow-overlay" viewBox={`0 0 ${size.width} ${size.height}`} preserveAspectRatio="none" aria-hidden="true" focusable="false">
         {SNOW_PARTICLES.map((particle,index)=><circle key={index} cx={particle.x/900*size.width} cy={particle.y/650*size.height} r={particle.r} fill="#eaf5ee" opacity=".48" style={{animationDelay:particle.delay+'s'}}/>)}
       </svg>
-      <div className="map-corner-title"><span><Compass size={13}/> PHƯƠNG BẮC ↑</span><strong>{world ? 'Bản đồ thế giới · LL01' : 'Đồng bằng Cổ Chiến Trường'}</strong><small>{world ? 'Phạm vi nguồn · bán kính 96 km' : 'Tọa độ nguồn cố định · địa hình băng nguyên minh họa'}</small></div>
+      <div className="map-corner-title"><span><Compass size={13}/> PHƯƠNG BẮC ↑</span><strong>{world ? 'Bản đồ thế giới' : 'Đồng bằng Cổ Chiến Trường'}</strong><small>{world ? 'Vùng đất đã biết · bán kính 96 km' : 'Địa hình băng nguyên minh họa'}</small></div>
       {followPlayer && <button type="button" className="map-follow-status" aria-pressed="true" onClick={() => onFollowPlayerChange(false)}>
         <LocateFixed size={14}/> Theo dõi {playerName}<span>Mở khóa</span>
       </button>}
@@ -463,7 +463,7 @@ export default function MapScene({
       {expandedMembers.length > 0 && <div className="map-cluster-list" role="region" aria-label="Các điểm trong cụm">
         <div><strong>{expandedMembers.length} địa điểm</strong><button type="button" aria-label="Đóng danh sách cụm" onClick={() => setClusterMembers(null)}>×</button></div>
         {expandedMembers.map(entity => <button type="button" key={entityKey(entity)} onClick={() => { onSelectEntity(entity.ref); setClusterMembers(null); }}>
-          <span className="cluster-list-kind">{entity.iconKind}</span><span>{entity.name}</span><small>{entity.knowledge === 'remembered' ? 'Đã ghi nhớ' : entity.provenance === 'canonical' ? 'Nguồn' : 'Fixture demo'}</small>
+          <span className="cluster-list-kind">{entity.iconKind}</span><span>{entity.name}</span><small>{entity.knowledge === 'remembered' ? 'Đã ghi nhớ' : entity.provenance === 'canonical' ? 'Nguồn' : 'Thông tin tham khảo'}</small>
         </button>)}
       </div>}
       <div className="map-scale-bar" data-testid="map-scale-bar" aria-label={'Tỷ lệ bản đồ ' + formatDistance(scaleDistance)}>
@@ -485,7 +485,7 @@ export default function MapScene({
       <span><span className="map-dot mapped"/> Vùng đang nhìn thấy</span>
       <span><span className="map-dot fogged"/> Vùng chưa biết</span>
       {showExploration && <span><span className="map-dot sample"/> Địa hình được ghi nhớ</span>}
-      {sourceAtlas && <span><TreePine size={12}/> Atlas debug không phải khám phá</span>}
+      {sourceAtlas && <span><TreePine size={12}/> Lớp dữ liệu tham khảo không mở vùng chưa biết</span>}
       <span className="map-footer-aside">Đồng hồ và ánh sáng chỉ là bản xem thử · Không xử lý hành động</span>
     </div>}
   </div>;

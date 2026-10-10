@@ -15,6 +15,10 @@ export function speedMultiplier(speed:ClockSpeed,custom:number):number{
   if(speed==='5x')return 5;
   return customMultiplier(custom);
 }
+export function displayUpdateIntervalMs(speed:number):number{
+  if(!Number.isFinite(speed)||speed<=0)throw new RangeError('Clock speed must be finite and positive');
+  return Math.max(16,1000/speed);
+}
 export function advanceDisplayClock(seconds:number,elapsedMs:number,speed:number):number{
   if(!Number.isFinite(seconds)||!Number.isFinite(elapsedMs)||elapsedMs<0||!Number.isFinite(speed)||speed<0)
     throw new RangeError('Clock input must be finite and nonnegative');
