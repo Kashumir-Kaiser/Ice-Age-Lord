@@ -727,7 +727,7 @@
       "definitionId": "SITE-LL01-000",
       "variant": "winter-ink-painted-true-vector-v2",
       "orientation": "north",
-      "revision": 2,
+      "revision": 3,
       "layers": {
         "uiIcon": "/assets/buildings/survival-fire-l01/icon.svg",
         "body": "/assets/buildings/survival-fire-l01/body.svg",
@@ -824,7 +824,7 @@
         "depthM": 2
       },
       "source": "assets/source/buildings/survival-fire-l01.svg",
-      "provenance": "Original project concept illustration, converted to independently editable SVG color paths; cleaned unlit architecture and separate live flame effect.",
+      "provenance": "Original project concept illustration, converted to independently editable SVG color paths; cleaned unlit architecture and separate live flame effect. Hand-refined with winter-ink architectural contour, snow strokes, and animated separately switchable embers (2026-10-10).",
       "license": "Original art concept made for this project; traced vector adaptation for Ice Age Lord.",
       "status": "draft",
       "lodVariants": {
@@ -849,7 +849,7 @@
       "definitionId": "SITE-LL01-000",
       "variant": "winter-ink-painted-true-vector-v2",
       "orientation": "north",
-      "revision": 2,
+      "revision": 3,
       "layers": {
         "uiIcon": "/assets/buildings/survival-fire-l06/icon.svg",
         "body": "/assets/buildings/survival-fire-l06/body.svg",
@@ -946,7 +946,7 @@
         "depthM": 2
       },
       "source": "assets/source/buildings/survival-fire-l06.svg",
-      "provenance": "Original project concept illustration, converted to independently editable SVG color paths; cleaned unlit architecture and separate live flame effect.",
+      "provenance": "Original project concept illustration, converted to independently editable SVG color paths; cleaned unlit architecture and separate live flame effect. Hand-refined with winter-ink architectural contour, snow strokes, and animated separately switchable embers (2026-10-10).",
       "license": "Original art concept made for this project; traced vector adaptation for Ice Age Lord.",
       "status": "draft",
       "lodVariants": {
@@ -971,7 +971,7 @@
       "definitionId": "SITE-LL01-000",
       "variant": "winter-ink-painted-true-vector-v2",
       "orientation": "north",
-      "revision": 2,
+      "revision": 3,
       "layers": {
         "uiIcon": "/assets/buildings/survival-fire-l11/icon.svg",
         "body": "/assets/buildings/survival-fire-l11/body.svg",
@@ -1068,7 +1068,7 @@
         "depthM": 2
       },
       "source": "assets/source/buildings/survival-fire-l11.svg",
-      "provenance": "Original project concept illustration, converted to independently editable SVG color paths; cleaned unlit architecture and separate live flame effect.",
+      "provenance": "Original project concept illustration, converted to independently editable SVG color paths; cleaned unlit architecture and separate live flame effect. Hand-refined with winter-ink architectural contour, snow strokes, and animated separately switchable embers (2026-10-10).",
       "license": "Original art concept made for this project; traced vector adaptation for Ice Age Lord.",
       "status": "draft",
       "lodVariants": {
@@ -1093,7 +1093,7 @@
       "definitionId": "SITE-LL01-000",
       "variant": "winter-ink-painted-true-vector-v2",
       "orientation": "north",
-      "revision": 2,
+      "revision": 3,
       "layers": {
         "uiIcon": "/assets/buildings/survival-fire-l16/icon.svg",
         "body": "/assets/buildings/survival-fire-l16/body.svg",
@@ -1190,7 +1190,7 @@
         "depthM": 2
       },
       "source": "assets/source/buildings/survival-fire-l16.svg",
-      "provenance": "Original project concept illustration, converted to independently editable SVG color paths; cleaned unlit architecture and separate live flame effect.",
+      "provenance": "Original project concept illustration, converted to independently editable SVG color paths; cleaned unlit architecture and separate live flame effect. Hand-refined with winter-ink architectural contour, snow strokes, and animated separately switchable embers (2026-10-10).",
       "license": "Original art concept made for this project; traced vector adaptation for Ice Age Lord.",
       "status": "draft",
       "lodVariants": {
@@ -1215,7 +1215,7 @@
       "definitionId": "SITE-LL01-000",
       "variant": "winter-ink-painted-true-vector-v2",
       "orientation": "north",
-      "revision": 2,
+      "revision": 3,
       "layers": {
         "uiIcon": "/assets/buildings/survival-fire-l21/icon.svg",
         "body": "/assets/buildings/survival-fire-l21/body.svg",
@@ -1312,7 +1312,7 @@
         "depthM": 2
       },
       "source": "assets/source/buildings/survival-fire-l21.svg",
-      "provenance": "Original project concept illustration, converted to independently editable SVG color paths; cleaned unlit architecture and separate live flame effect.",
+      "provenance": "Original project concept illustration, converted to independently editable SVG color paths; cleaned unlit architecture and separate live flame effect. Hand-refined with winter-ink architectural contour, snow strokes, and animated separately switchable embers (2026-10-10).",
       "license": "Original art concept made for this project; traced vector adaptation for Ice Age Lord.",
       "status": "draft",
       "lodVariants": {
@@ -1337,7 +1337,7 @@
       "definitionId": "SITE-LL01-000",
       "variant": "winter-ink-painted-true-vector-v2",
       "orientation": "north",
-      "revision": 2,
+      "revision": 3,
       "layers": {
         "uiIcon": "/assets/buildings/survival-fire-l26/icon.svg",
         "body": "/assets/buildings/survival-fire-l26/body.svg",
@@ -1434,7 +1434,7 @@
         "depthM": 2
       },
       "source": "assets/source/buildings/survival-fire-l26.svg",
-      "provenance": "Original project concept illustration, converted to independently editable SVG color paths; cleaned unlit architecture and separate live flame effect.",
+      "provenance": "Original project concept illustration, converted to independently editable SVG color paths; cleaned unlit architecture and separate live flame effect. Hand-refined with winter-ink architectural contour, snow strokes, and animated separately switchable embers (2026-10-10).",
       "license": "Original art concept made for this project; traced vector adaptation for Ice Age Lord.",
       "status": "draft",
       "lodVariants": {
