@@ -1940,6 +1940,974 @@
           "icon": "/assets/buildings/opening-timber-gate/icon.svg"
         }
       }
+    },
+    {
+      "assetId": "opening-simple-heater",
+      "definitionId": "ART-REFERENCE:OPENING-SIMPLE-HEATER",
+      "variant": "winter-ink-handpainted-architecture-v1",
+      "orientation": "north",
+      "revision": 1,
+      "presentationScale": 1,
+      "layers": {
+        "uiIcon": "/assets/buildings/opening-simple-heater/icon.svg",
+        "body": "/assets/buildings/opening-simple-heater/body.svg",
+        "base": "/assets/buildings/opening-simple-heater/base.svg",
+        "upper": "/assets/buildings/opening-simple-heater/upper.svg",
+        "shadow": "/assets/buildings/opening-simple-heater/shadow.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 480,
+        "height": 400
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.17,
+          0.72
+        ],
+        [
+          0.5,
+          0.91
+        ],
+        [
+          0.83,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.1,
+        "minY": 0.13,
+        "maxX": 0.9,
+        "maxY": 0.91
+      },
+      "hitPolygon": [
+        [
+          0.17,
+          0.72
+        ],
+        [
+          0.5,
+          0.91
+        ],
+        [
+          0.83,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.2,
+            0.73
+          ],
+          [
+            0.22,
+            0.25
+          ],
+          [
+            0.5,
+            0.13
+          ],
+          [
+            0.78,
+            0.25
+          ],
+          [
+            0.82,
+            0.73
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.83
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+        "widthM": 2,
+        "depthM": 2
+      },
+      "source": "assets/source/buildings/opening-simple-heater.svg",
+      "provenance": "Source-registered opening building category; stylized SVG art preview only. Physical footprint dimensions are not authoritative.",
+      "license": "Original art authored for Ice Age Lord",
+      "status": "draft",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/buildings/opening-simple-heater/body.svg",
+          "base": "/assets/buildings/opening-simple-heater/base.svg",
+          "upper": "/assets/buildings/opening-simple-heater/upper.svg",
+          "shadow": "/assets/buildings/opening-simple-heater/shadow.svg"
+        },
+        "district": {
+          "icon": "/assets/buildings/opening-simple-heater/icon.svg"
+        },
+        "regional": {
+          "icon": "/assets/buildings/opening-simple-heater/icon.svg"
+        }
+      }
+    },
+    {
+      "assetId": "opening-simple-kitchen",
+      "definitionId": "ART-REFERENCE:OPENING-SIMPLE-KITCHEN",
+      "variant": "winter-ink-handpainted-architecture-v1",
+      "orientation": "north",
+      "revision": 1,
+      "presentationScale": 1.15,
+      "layers": {
+        "uiIcon": "/assets/buildings/opening-simple-kitchen/icon.svg",
+        "body": "/assets/buildings/opening-simple-kitchen/body.svg",
+        "base": "/assets/buildings/opening-simple-kitchen/base.svg",
+        "upper": "/assets/buildings/opening-simple-kitchen/upper.svg",
+        "shadow": "/assets/buildings/opening-simple-kitchen/shadow.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 480,
+        "height": 400
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.17,
+          0.72
+        ],
+        [
+          0.5,
+          0.91
+        ],
+        [
+          0.83,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.1,
+        "minY": 0.13,
+        "maxX": 0.9,
+        "maxY": 0.91
+      },
+      "hitPolygon": [
+        [
+          0.17,
+          0.72
+        ],
+        [
+          0.5,
+          0.91
+        ],
+        [
+          0.83,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.2,
+            0.73
+          ],
+          [
+            0.22,
+            0.25
+          ],
+          [
+            0.5,
+            0.13
+          ],
+          [
+            0.78,
+            0.25
+          ],
+          [
+            0.82,
+            0.73
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.83
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+        "widthM": 3,
+        "depthM": 3
+      },
+      "source": "assets/source/buildings/opening-simple-kitchen.svg",
+      "provenance": "Source-registered opening building category; stylized SVG art preview only. Physical footprint dimensions are not authoritative.",
+      "license": "Original art authored for Ice Age Lord",
+      "status": "draft",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/buildings/opening-simple-kitchen/body.svg",
+          "base": "/assets/buildings/opening-simple-kitchen/base.svg",
+          "upper": "/assets/buildings/opening-simple-kitchen/upper.svg",
+          "shadow": "/assets/buildings/opening-simple-kitchen/shadow.svg"
+        },
+        "district": {
+          "icon": "/assets/buildings/opening-simple-kitchen/icon.svg"
+        },
+        "regional": {
+          "icon": "/assets/buildings/opening-simple-kitchen/icon.svg"
+        }
+      }
+    },
+    {
+      "assetId": "opening-woodshop",
+      "definitionId": "ART-REFERENCE:OPENING-WOODSHOP",
+      "variant": "winter-ink-handpainted-architecture-v1",
+      "orientation": "north",
+      "revision": 1,
+      "presentationScale": 1.24,
+      "layers": {
+        "uiIcon": "/assets/buildings/opening-woodshop/icon.svg",
+        "body": "/assets/buildings/opening-woodshop/body.svg",
+        "base": "/assets/buildings/opening-woodshop/base.svg",
+        "upper": "/assets/buildings/opening-woodshop/upper.svg",
+        "shadow": "/assets/buildings/opening-woodshop/shadow.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 480,
+        "height": 400
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.17,
+          0.72
+        ],
+        [
+          0.5,
+          0.91
+        ],
+        [
+          0.83,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.1,
+        "minY": 0.13,
+        "maxX": 0.9,
+        "maxY": 0.91
+      },
+      "hitPolygon": [
+        [
+          0.17,
+          0.72
+        ],
+        [
+          0.5,
+          0.91
+        ],
+        [
+          0.83,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.2,
+            0.73
+          ],
+          [
+            0.22,
+            0.25
+          ],
+          [
+            0.5,
+            0.13
+          ],
+          [
+            0.78,
+            0.25
+          ],
+          [
+            0.82,
+            0.73
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.83
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+        "widthM": 6,
+        "depthM": 5
+      },
+      "source": "assets/source/buildings/opening-woodshop.svg",
+      "provenance": "Source-registered opening building category; stylized SVG art preview only. Physical footprint dimensions are not authoritative.",
+      "license": "Original art authored for Ice Age Lord",
+      "status": "draft",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/buildings/opening-woodshop/body.svg",
+          "base": "/assets/buildings/opening-woodshop/base.svg",
+          "upper": "/assets/buildings/opening-woodshop/upper.svg",
+          "shadow": "/assets/buildings/opening-woodshop/shadow.svg"
+        },
+        "district": {
+          "icon": "/assets/buildings/opening-woodshop/icon.svg"
+        },
+        "regional": {
+          "icon": "/assets/buildings/opening-woodshop/icon.svg"
+        }
+      }
+    },
+    {
+      "assetId": "opening-tailor",
+      "definitionId": "ART-REFERENCE:OPENING-TAILOR",
+      "variant": "winter-ink-handpainted-architecture-v1",
+      "orientation": "north",
+      "revision": 1,
+      "presentationScale": 1.23,
+      "layers": {
+        "uiIcon": "/assets/buildings/opening-tailor/icon.svg",
+        "body": "/assets/buildings/opening-tailor/body.svg",
+        "base": "/assets/buildings/opening-tailor/base.svg",
+        "upper": "/assets/buildings/opening-tailor/upper.svg",
+        "shadow": "/assets/buildings/opening-tailor/shadow.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 480,
+        "height": 400
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.17,
+          0.72
+        ],
+        [
+          0.5,
+          0.91
+        ],
+        [
+          0.83,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.1,
+        "minY": 0.13,
+        "maxX": 0.9,
+        "maxY": 0.91
+      },
+      "hitPolygon": [
+        [
+          0.17,
+          0.72
+        ],
+        [
+          0.5,
+          0.91
+        ],
+        [
+          0.83,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.2,
+            0.73
+          ],
+          [
+            0.22,
+            0.25
+          ],
+          [
+            0.5,
+            0.13
+          ],
+          [
+            0.78,
+            0.25
+          ],
+          [
+            0.82,
+            0.73
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.83
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+        "widthM": 6,
+        "depthM": 5
+      },
+      "source": "assets/source/buildings/opening-tailor.svg",
+      "provenance": "Source-registered opening building category; stylized SVG art preview only. Physical footprint dimensions are not authoritative.",
+      "license": "Original art authored for Ice Age Lord",
+      "status": "draft",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/buildings/opening-tailor/body.svg",
+          "base": "/assets/buildings/opening-tailor/base.svg",
+          "upper": "/assets/buildings/opening-tailor/upper.svg",
+          "shadow": "/assets/buildings/opening-tailor/shadow.svg"
+        },
+        "district": {
+          "icon": "/assets/buildings/opening-tailor/icon.svg"
+        },
+        "regional": {
+          "icon": "/assets/buildings/opening-tailor/icon.svg"
+        }
+      }
+    },
+    {
+      "assetId": "opening-oreworks",
+      "definitionId": "ART-REFERENCE:OPENING-OREWORKS",
+      "variant": "winter-ink-handpainted-architecture-v1",
+      "orientation": "north",
+      "revision": 1,
+      "presentationScale": 1.34,
+      "layers": {
+        "uiIcon": "/assets/buildings/opening-oreworks/icon.svg",
+        "body": "/assets/buildings/opening-oreworks/body.svg",
+        "base": "/assets/buildings/opening-oreworks/base.svg",
+        "upper": "/assets/buildings/opening-oreworks/upper.svg",
+        "shadow": "/assets/buildings/opening-oreworks/shadow.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 480,
+        "height": 400
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.17,
+          0.72
+        ],
+        [
+          0.5,
+          0.91
+        ],
+        [
+          0.83,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.1,
+        "minY": 0.13,
+        "maxX": 0.9,
+        "maxY": 0.91
+      },
+      "hitPolygon": [
+        [
+          0.17,
+          0.72
+        ],
+        [
+          0.5,
+          0.91
+        ],
+        [
+          0.83,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.2,
+            0.73
+          ],
+          [
+            0.22,
+            0.25
+          ],
+          [
+            0.5,
+            0.13
+          ],
+          [
+            0.78,
+            0.25
+          ],
+          [
+            0.82,
+            0.73
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.83
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+        "widthM": 10,
+        "depthM": 5
+      },
+      "source": "assets/source/buildings/opening-oreworks.svg",
+      "provenance": "Source-registered opening building category; stylized SVG art preview only. Physical footprint dimensions are not authoritative.",
+      "license": "Original art authored for Ice Age Lord",
+      "status": "draft",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/buildings/opening-oreworks/body.svg",
+          "base": "/assets/buildings/opening-oreworks/base.svg",
+          "upper": "/assets/buildings/opening-oreworks/upper.svg",
+          "shadow": "/assets/buildings/opening-oreworks/shadow.svg"
+        },
+        "district": {
+          "icon": "/assets/buildings/opening-oreworks/icon.svg"
+        },
+        "regional": {
+          "icon": "/assets/buildings/opening-oreworks/icon.svg"
+        }
+      }
+    },
+    {
+      "assetId": "opening-forge",
+      "definitionId": "ART-REFERENCE:OPENING-FORGE",
+      "variant": "winter-ink-handpainted-architecture-v1",
+      "orientation": "north",
+      "revision": 1,
+      "presentationScale": 1.35,
+      "layers": {
+        "uiIcon": "/assets/buildings/opening-forge/icon.svg",
+        "body": "/assets/buildings/opening-forge/body.svg",
+        "base": "/assets/buildings/opening-forge/base.svg",
+        "upper": "/assets/buildings/opening-forge/upper.svg",
+        "shadow": "/assets/buildings/opening-forge/shadow.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 480,
+        "height": 400
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.17,
+          0.72
+        ],
+        [
+          0.5,
+          0.91
+        ],
+        [
+          0.83,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.1,
+        "minY": 0.13,
+        "maxX": 0.9,
+        "maxY": 0.91
+      },
+      "hitPolygon": [
+        [
+          0.17,
+          0.72
+        ],
+        [
+          0.5,
+          0.91
+        ],
+        [
+          0.83,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.2,
+            0.73
+          ],
+          [
+            0.22,
+            0.25
+          ],
+          [
+            0.5,
+            0.13
+          ],
+          [
+            0.78,
+            0.25
+          ],
+          [
+            0.82,
+            0.73
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.83
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+        "widthM": 6,
+        "depthM": 5
+      },
+      "source": "assets/source/buildings/opening-forge.svg",
+      "provenance": "Source-registered opening building category; stylized SVG art preview only. Physical footprint dimensions are not authoritative.",
+      "license": "Original art authored for Ice Age Lord",
+      "status": "draft",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/buildings/opening-forge/body.svg",
+          "base": "/assets/buildings/opening-forge/base.svg",
+          "upper": "/assets/buildings/opening-forge/upper.svg",
+          "shadow": "/assets/buildings/opening-forge/shadow.svg"
+        },
+        "district": {
+          "icon": "/assets/buildings/opening-forge/icon.svg"
+        },
+        "regional": {
+          "icon": "/assets/buildings/opening-forge/icon.svg"
+        }
+      }
+    },
+    {
+      "assetId": "opening-medical-station",
+      "definitionId": "ART-REFERENCE:OPENING-MEDICAL-STATION",
+      "variant": "winter-ink-handpainted-architecture-v1",
+      "orientation": "north",
+      "revision": 1,
+      "presentationScale": 1.22,
+      "layers": {
+        "uiIcon": "/assets/buildings/opening-medical-station/icon.svg",
+        "body": "/assets/buildings/opening-medical-station/body.svg",
+        "base": "/assets/buildings/opening-medical-station/base.svg",
+        "upper": "/assets/buildings/opening-medical-station/upper.svg",
+        "shadow": "/assets/buildings/opening-medical-station/shadow.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 480,
+        "height": 400
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.17,
+          0.72
+        ],
+        [
+          0.5,
+          0.91
+        ],
+        [
+          0.83,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.1,
+        "minY": 0.13,
+        "maxX": 0.9,
+        "maxY": 0.91
+      },
+      "hitPolygon": [
+        [
+          0.17,
+          0.72
+        ],
+        [
+          0.5,
+          0.91
+        ],
+        [
+          0.83,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.2,
+            0.73
+          ],
+          [
+            0.22,
+            0.25
+          ],
+          [
+            0.5,
+            0.13
+          ],
+          [
+            0.78,
+            0.25
+          ],
+          [
+            0.82,
+            0.73
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.83
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+        "widthM": 4,
+        "depthM": 3
+      },
+      "source": "assets/source/buildings/opening-medical-station.svg",
+      "provenance": "Source-registered opening building category; stylized SVG art preview only. Physical footprint dimensions are not authoritative.",
+      "license": "Original art authored for Ice Age Lord",
+      "status": "draft",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/buildings/opening-medical-station/body.svg",
+          "base": "/assets/buildings/opening-medical-station/base.svg",
+          "upper": "/assets/buildings/opening-medical-station/upper.svg",
+          "shadow": "/assets/buildings/opening-medical-station/shadow.svg"
+        },
+        "district": {
+          "icon": "/assets/buildings/opening-medical-station/icon.svg"
+        },
+        "regional": {
+          "icon": "/assets/buildings/opening-medical-station/icon.svg"
+        }
+      }
+    },
+    {
+      "assetId": "opening-small-shelter",
+      "definitionId": "ART-REFERENCE:OPENING-SMALL-SHELTER",
+      "variant": "winter-ink-handpainted-architecture-v1",
+      "orientation": "north",
+      "revision": 1,
+      "presentationScale": 1.14,
+      "layers": {
+        "uiIcon": "/assets/buildings/opening-small-shelter/icon.svg",
+        "body": "/assets/buildings/opening-small-shelter/body.svg",
+        "base": "/assets/buildings/opening-small-shelter/base.svg",
+        "upper": "/assets/buildings/opening-small-shelter/upper.svg",
+        "shadow": "/assets/buildings/opening-small-shelter/shadow.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 480,
+        "height": 400
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.17,
+          0.72
+        ],
+        [
+          0.5,
+          0.91
+        ],
+        [
+          0.83,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.1,
+        "minY": 0.13,
+        "maxX": 0.9,
+        "maxY": 0.91
+      },
+      "hitPolygon": [
+        [
+          0.17,
+          0.72
+        ],
+        [
+          0.5,
+          0.91
+        ],
+        [
+          0.83,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.2,
+            0.73
+          ],
+          [
+            0.22,
+            0.25
+          ],
+          [
+            0.5,
+            0.13
+          ],
+          [
+            0.78,
+            0.25
+          ],
+          [
+            0.82,
+            0.73
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.83
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+        "widthM": 4,
+        "depthM": 3
+      },
+      "source": "assets/source/buildings/opening-small-shelter.svg",
+      "provenance": "Source-registered opening building category; stylized SVG art preview only. Physical footprint dimensions are not authoritative.",
+      "license": "Original art authored for Ice Age Lord",
+      "status": "draft",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/buildings/opening-small-shelter/body.svg",
+          "base": "/assets/buildings/opening-small-shelter/base.svg",
+          "upper": "/assets/buildings/opening-small-shelter/upper.svg",
+          "shadow": "/assets/buildings/opening-small-shelter/shadow.svg"
+        },
+        "district": {
+          "icon": "/assets/buildings/opening-small-shelter/icon.svg"
+        },
+        "regional": {
+          "icon": "/assets/buildings/opening-small-shelter/icon.svg"
+        }
+      }
     }
   ],
   "fireProgression": [
