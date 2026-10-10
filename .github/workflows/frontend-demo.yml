@@ -1,4 +1,4 @@
-name: Frontend demo build (isolated)
+name: Stage 03 live frontend and demo checks
 on:
   push:
     branches:
@@ -12,8 +12,20 @@ concurrency:
   group: frontend-prototype-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  frontend:
+  backend:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm run test:stage02
+      - run: npm run test:stage03
+  frontend:
+    needs: backend
+    runs-on: ubuntu-latest
+    env:
+      VITE_GAME_MODE: demo
     defaults:
       run:
         working-directory: frontend
@@ -21,12 +33,30 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci --no-audit --no-fund
       - run: npm run build
       - run: npm test
+      - name: Prepare Stage 03 local API
+        run: |
+          cd ..
+          npm run owner:key:create
+          npm run db:migrate
+          ILL_TEST_OWNER_KEY="$(cat .local/owner-key)"
+          echo "::add-mask::$ILL_TEST_OWNER_KEY"
+          echo "ILL_TEST_OWNER_KEY=$ILL_TEST_OWNER_KEY" >> "$GITHUB_ENV"
+      - name: Start Stage 03 local API
+        run: |
+          cd ..
+          nohup env ILL_ALLOWED_ORIGIN=http://localhost:5173 npm run api:start > /tmp/ill-api.log 2>&1 < /dev/null &
+          for attempt in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:8081/api/v1/health > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ill-api.log
+          exit 1
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
