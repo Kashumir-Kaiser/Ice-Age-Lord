@@ -13,6 +13,9 @@ for (const folder of sourceFolders) {
 for (const asset of manifest.assets) {
   const source = resolve(repo, asset.source);
   if (!existsSync(source)) throw new Error(`Missing source master for ${asset.assetId}: ${asset.source}`);
+  if (asset.referenceSource && !existsSync(resolve(repo, asset.referenceSource))) {
+    throw new Error(`Missing concept reference for ${asset.assetId}: ${asset.referenceSource}`);
+  }
   const registeredPaths = [...Object.values(asset.layers), ...Object.values(asset.lodVariants).flatMap(lod => Object.values(lod))];
   for (const layer of new Set(registeredPaths)) {
     if (typeof layer !== 'string') continue;
@@ -22,6 +25,13 @@ for (const asset of manifest.assets) {
     const viewBox = svg.match(/viewBox="([^"]+)"/)?.[1].split(/\s+/).map(Number);
     if (!viewBox || viewBox.length !== 4 || viewBox[2] !== asset.logicalCanvas.width || viewBox[3] !== asset.logicalCanvas.height) {
       throw new Error(`Runtime layer registration does not match the manifest for ${asset.assetId}: ${layer}`);
+    }
+    if (/<image\b/.test(svg)) throw new Error(`Raster image embedded in SVG layer for ${asset.assetId}: ${layer}`);
+    for (const [, reference] of svg.matchAll(/<use\b[^>]*href="([^"]+)"/g)) {
+      const target = reference.split('#', 1)[0];
+      if (target && !existsSync(resolve(dirname(output), target))) {
+        throw new Error(`Missing linked SVG layer for ${asset.assetId}: ${layer} -> ${reference}`);
+      }
     }
   }
 }
@@ -36,6 +46,22 @@ for (const portrait of manifest.characterArt ?? []) {
       throw new Error('Invalid SVG portrait art: ' + portrait.id);
   }
 }
+for (const illustration of [...(manifest.itemArt ?? []), ...(manifest.unitArt ?? [])]) {
+  const source = resolve(repo, illustration.source);
+  const output = resolve(repo, 'frontend/public' + illustration.src);
+  if (!existsSync(source)) throw new Error(`Missing illustration master for ${illustration.assetId}: ${illustration.source}`);
+  if (illustration.referenceSource && !existsSync(resolve(repo, illustration.referenceSource))) {
+    throw new Error(`Missing concept reference for ${illustration.assetId}: ${illustration.referenceSource}`);
+  }
+  const svg = readFileSync(source, 'utf8');
+  const viewBox = svg.match(/viewBox="([^"]+)"/)?.[1].split(/\s+/).map(Number);
+  if (!viewBox || viewBox.length !== 4 || viewBox[2] !== illustration.canvas.width
+    || viewBox[3] !== illustration.canvas.height || /<image\b/.test(svg)) {
+    throw new Error(`Invalid standalone SVG illustration: ${illustration.assetId}`);
+  }
+  mkdirSync(dirname(output), { recursive: true });
+  copyFileSync(source, output);
+}
 mkdirSync(dirname(publicManifest), { recursive: true });
 copyFileSync(manifestPath, publicManifest);
-console.log(`Validated ${manifest.assets.length} registered SVG assets.`);
+console.log(`Validated ${manifest.assets.length} structure assets, ${(manifest.itemArt ?? []).length} item illustrations, and ${(manifest.unitArt ?? []).length} unit illustrations.`);

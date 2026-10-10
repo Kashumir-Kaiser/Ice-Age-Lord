@@ -55,6 +55,24 @@ export const TerrainLayer = memo(function TerrainLayer({ id, world, viewport, vi
 });
 
 export function MarkerGraphic({ kind }: { kind: string }) {
+  const illustrations: Record<string, string> = {
+    fire: '/assets/buildings/survival-fire-l01/icon.svg',
+    house: '/assets/buildings/lord-house-damaged/icon.svg',
+    tomb: '/assets/buildings/tomb-entry/icon.svg',
+    supply: '/assets/items/supply-coffer.svg',
+    chest: '/assets/items/chest.svg',
+    wood: '/assets/items/wood.svg',
+    stone: '/assets/items/stone.svg',
+    ore: '/assets/items/ore.svg',
+    salt: '/assets/items/salt.svg',
+    herbs: '/assets/items/herbs.svg',
+    water: '/assets/items/water.svg',
+  };
+  const illustration = illustrations[kind];
+  if (illustration) {
+    const size = kind === 'fire' || kind === 'house' || kind === 'tomb' ? 40 : 34;
+    return <image href={illustration} x={-size / 2} y={-size / 2} width={size} height={size} preserveAspectRatio="xMidYMid meet"/>;
+  }
   if (kind === 'fire') return <g><path d="m-11 10 22 0m-19 4 16-6" stroke="#7b5142" strokeWidth="4" strokeLinecap="round"/><path d="M-1 12C-19-1-3-14-2-22 0-12 10-13 9-23c13 16 10 25-2 35Z" fill="#eaa05d" stroke="#ffe3a3" strokeWidth="1.5"/><path d="M1 10Q-5 0 3-11Q12 2 1 10" fill="#fff0b4"/></g>;
   if (kind === 'house') return <g><path d="m-15-1 15-13L15-1v17h-30Z" fill="#617b84" stroke="#d4e1dd" strokeWidth="1.5"/><path d="M-19 1 0-18 19 1" fill="none" stroke="#d7e9e3" strokeWidth="4"/><path d="M-4 16V4h8v12M6-11l-8 8 5 5-3 6" fill="none" stroke="#2a404b" strokeWidth="2.5"/></g>;
   if (kind === 'tomb') return <g><path d="M-15 17V-2a15 15 0 0 1 30 0v19Z" fill="#465b6c" stroke="#c7d7d9" strokeWidth="2"/><path d="M-8 16V-2a8 8 0 0 1 16 0v18Z" fill="#1b3140"/><path d="M0-8V10M-7 0h14" stroke="#bdd6d8" strokeWidth="2.5"/><path d="M-19 19h38" stroke="#c1d8d6" strokeWidth="3"/></g>;

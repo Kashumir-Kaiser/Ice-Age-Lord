@@ -18,13 +18,34 @@ export type AssetManifestEntry = {
   drawDepthAnchor: { x: number; y: number };
   compatiblePhysicalFootprint: { assumptionId: string; widthM: number; depthM: number };
   source: string;
+  referenceSource?: string;
   provenance: string;
   license: string;
   status: 'placeholder' | 'draft' | 'approved';
   lodVariants: { close: AssetLayerPaths; district: AssetLayerPaths; regional: AssetLayerPaths };
 };
 export type FireArtStage = { minLevel: number; maxLevel: number; assetId: string };
-export type AssetManifest = { schemaVersion: number; coordinateConvention: string; assets: readonly AssetManifestEntry[]; fireProgression?: readonly FireArtStage[] };
+export type StandaloneArtEntry = {
+  assetId: string;
+  name: string;
+  source: string;
+  src: string;
+  canvas: { width: number; height: number };
+  style: 'ink' | 'semi-realistic';
+  provenance: string;
+  license: string;
+  status: 'draft' | 'approved';
+  referenceSource?: string;
+  note?: string;
+};
+export type AssetManifest = {
+  schemaVersion: number;
+  coordinateConvention: string;
+  assets: readonly AssetManifestEntry[];
+  fireProgression?: readonly FireArtStage[];
+  itemArt?: readonly StandaloneArtEntry[];
+  unitArt?: readonly StandaloneArtEntry[];
+};
 
 const isFinitePoint = (value: unknown): value is { x: number; y: number } => Boolean(value && typeof value === 'object'
   && Number.isFinite((value as {x?:unknown}).x) && Number.isFinite((value as {y?:unknown}).y));

@@ -2,7 +2,11 @@ import type { EntityRef } from './game/GameClient';
 
 export type Screen = 'overview' | 'territory' | 'map' | 'inventory' | 'forces' | 'buildings' | 'journal';
 export type ItemKind = 'Tài nguyên' | 'Trang bị' | 'Vật phẩm' | 'Bản vẽ';
-export type ItemSymbol = 'wood' | 'stone' | 'ore' | 'bread' | 'cloak' | 'staff' | 'axe' | 'chest' | 'scroll' | 'potion' | 'sword' | 'ring';
+export type ItemSymbol = 'wood' | 'stone' | 'ore' | 'bread' | 'cloak' | 'staff' | 'axe' | 'chest' | 'scroll' | 'potion' | 'sword' | 'ring'
+  | 'iron-pot' | 'stone-hammer' | 'round-shield' | 'convenience-bag' | 'herbs' | 'water' | 'salt' | 'supply-coffer'
+  | 'chest-moc' | 'chest-bronze' | 'chest-silver' | 'chest-gold' | 'chest-moon'
+  | 'main-meal-box' | 'two-baozi' | 'packaged-sandwich' | 'cup-noodles' | 'cracker-packet' | 'roasted-seeds-packet'
+  | 'chocolate-bar' | 'potato-chip-packet' | 'bottled-water' | 'tea-bottle' | 'coffee-can' | 'napkin-chopsticks';
 export type SiteKind = 'fire' | 'house' | 'tomb' | 'supply';
 export type Site = {
   id: SiteKind;
@@ -59,12 +63,25 @@ export const sites: Site[] = [
 export const itemExamples: DemoItem[] = [
   { id:'wood', name:'Gỗ', kind:'Tài nguyên', symbol:'wood', note:'Vật liệu xây dựng', detail:'Mẫu hiển thị tài nguyên gỗ. Không ngụ ý người chơi đang sở hữu số lượng nào.', origin:'Nguồn thiết kế' },
   { id:'stone', name:'Đá', kind:'Tài nguyên', symbol:'stone', note:'Vật liệu công trình', detail:'Đá dùng trong nhiều hợp đồng xây dựng; kiểm tra tồn kho chỉ khi runtime có dữ liệu.', origin:'Nguồn thiết kế' },
-  { id:'ore', name:'Quặng Sắt', kind:'Tài nguyên', symbol:'ore', note:'Nguyên liệu luyện kim', detail:'Minh họa vật phẩm quặng; không khẳng định xuất hiện trong kho tại khởi đầu.', origin:'Mẫu thị giác' },
-  { id:'bread', name:'Bánh Mì', kind:'Vật phẩm', symbol:'bread', note:'Lương thực', detail:'Mẫu giao diện thức ăn. Không đưa phần thưởng hoặc chiến lợi phẩm vào kho tự động.', origin:'Nguồn thiết kế' },
+  { id:'ore', name:'Than Nâu', kind:'Tài nguyên', symbol:'ore', note:'Vỉa than nâu', detail:'Mẫu vật liệu theo RES-LL01-04. Hình minh họa không khẳng định đã khảo sát hay thu thập.', origin:'Nguồn thiết kế' },
+  { id:'herbs', name:'Cỏ Tuyết', kind:'Tài nguyên', symbol:'herbs', note:'Thảo dược dại', detail:'Mẫu thực vật theo hệ vật liệu sinh tồn; không ngụ ý đã thu hoạch.', origin:'Nguồn thiết kế' },
+  { id:'water', name:'Băng Nước Sạch', kind:'Tài nguyên', symbol:'water', note:'Nguồn nước đóng băng', detail:'Mẫu nước dạng băng. Nguồn tại Bến Cạn phải được đun hoặc lọc.', origin:'Nguồn thiết kế' },
+  { id:'salt', name:'Muối', kind:'Tài nguyên', symbol:'salt', note:'Nguồn muối tự nhiên', detail:'Mẫu theo RES-LL01-05; việc khai thác cần lao động và nhiên liệu nấu.', origin:'Nguồn thiết kế' },
+  { id:'bread', name:'Bánh Mì', kind:'Vật phẩm', symbol:'bread', note:'Trong Hòm Vật Tư khởi đầu', detail:'Kho nguồn ghi 20 bánh mì trong Hòm Vật Tư Lãnh Địa. Thẻ này là mẫu artwork, không phải sổ sở hữu của bản demo.', origin:'Nguồn thiết kế' },
+  { id:'iron-pot', name:'Nồi Sắt', kind:'Vật phẩm', symbol:'iron-pot', note:'Trong Hòm Vật Tư khởi đầu', detail:'Một nồi sắt được ghi trong bộ vật tư mở màn. Hình không khẳng định kích cỡ hay tình trạng khác.', origin:'Nguồn thiết kế' },
+  { id:'axe', name:'Rìu Đá', kind:'Trang bị', symbol:'axe', note:'Công cụ bằng đá buộc cán', detail:'Bốn rìu đá nằm trong định suất Hòm Vật Tư. Không phải rìu sắt.', origin:'Nguồn thiết kế' },
+  { id:'stone-hammer', name:'Búa Đá', kind:'Trang bị', symbol:'stone-hammer', note:'Công cụ xây dựng', detail:'Bốn búa đá nằm trong định suất Hòm Vật Tư. Mẫu hình giữ đầu đá ghè thô.', origin:'Nguồn thiết kế' },
+  { id:'round-shield', name:'Khiên Tròn Gỗ', kind:'Trang bị', symbol:'round-shield', note:'Khiên gỗ ghép ván', detail:'Một khiên tròn gỗ nằm trong định suất Hòm Vật Tư. Không thêm viền kim loại hoặc năng lực chưa được ghi nguồn.', origin:'Nguồn thiết kế' },
   { id:'cloak', name:'Áo Choàng Chống Lạnh', kind:'Trang bị', symbol:'cloak', note:'Trang bị sinh tồn', detail:'Tên trang bị được nhắc trong tài liệu thiết kế. Bản demo không cấp vật phẩm này cho Lí Lan.', origin:'Nguồn thiết kế' },
-  { id:'staff', name:'Trượng Gỗ', kind:'Trang bị', symbol:'staff', note:'Vũ khí / pháp khí', detail:'Mẫu thẻ trang bị. Mọi thuộc tính và quyền sở hữu cần dữ liệu runtime.', origin:'Mẫu thị giác' },
-  { id:'axe', name:'Rìu Sắt', kind:'Trang bị', symbol:'axe', note:'Công cụ khai thác', detail:'Một ví dụ về công cụ có thể xuất hiện trong danh mục. Không được tạo ra bởi việc mở màn hình.', origin:'Nguồn thiết kế' },
-  { id:'chest', name:'Rương Báu', kind:'Vật phẩm', symbol:'chest', note:'Giao diện chiến lợi phẩm', detail:'Hình mẫu rương dùng để kiểm tra thẻ UI. Không hiển thị hoặc suy đoán nội dung của rương đã khóa.', origin:'Nguồn thiết kế' },
+  { id:'staff', name:'Trượng Gỗ', kind:'Trang bị', symbol:'staff', note:'Trong Hòm Vật Tư khởi đầu', detail:'Một trượng gỗ nằm trong định suất Hòm Vật Tư. Mẫu trượng không có đá phép hay hiệu ứng.', origin:'Nguồn thiết kế' },
+  { id:'supply-coffer', name:'Hòm Vật Tư Lãnh Địa', kind:'Vật phẩm', symbol:'supply-coffer', note:'Kho 40 ngăn khởi đầu', detail:'Hòm vật tư tại T0, chứa bộ vật tư mở màn đã khóa trong nguồn. Thiết kế này tách biệt với Rương Báu.', origin:'Nguồn thiết kế' },
+  { id:'convenience-bag', name:'Bịch Đồ Ăn Từ Lam Tinh', kind:'Vật phẩm', symbol:'convenience-bag', note:'Nội dung chưa kiểm kê', detail:'Các món đã được seed trước T0 nhưng giữ trạng thái chưa quan sát đến khi Lí Lan kiểm tra. Artwork cố ý giữ kín bên trong.', origin:'Nguồn thiết kế' },
+  { id:'chest', name:'Rương Báu · chưa giám định', kind:'Vật phẩm', symbol:'chest', note:'Mẫu vỏ kín', detail:'Cache chưa mở; hình chỉ mô tả chiếc rương đóng. Không suy đoán phẩm, khóa hoặc vật bên trong.', origin:'Nguồn thiết kế' },
+  { id:'chest-moc', name:'Rương Báu · Mộc', kind:'Vật phẩm', symbol:'chest-moc', note:'Mốc phẩm trong hệ rương', detail:'Biến thể artwork theo mốc phẩm Mộc. Không gắn rương này với một cache hoặc chiến lợi phẩm cụ thể.', origin:'Nguồn thiết kế' },
+  { id:'chest-bronze', name:'Rương Báu · Thanh Đồng', kind:'Vật phẩm', symbol:'chest-bronze', note:'Mốc phẩm trong hệ rương', detail:'Biến thể artwork theo mốc phẩm Thanh Đồng. Không suy đoán nội dung hoặc trạng thái sở hữu.', origin:'Nguồn thiết kế' },
+  { id:'chest-silver', name:'Rương Báu · Bạch Ngân', kind:'Vật phẩm', symbol:'chest-silver', note:'Mốc phẩm trong hệ rương', detail:'Biến thể artwork theo mốc phẩm Bạch Ngân. Không suy đoán nội dung hoặc trạng thái sở hữu.', origin:'Nguồn thiết kế' },
+  { id:'chest-gold', name:'Rương Báu · Hoàng Kim', kind:'Vật phẩm', symbol:'chest-gold', note:'Mốc phẩm trong hệ rương', detail:'Biến thể artwork theo mốc phẩm Hoàng Kim. Không suy đoán nội dung hoặc trạng thái sở hữu.', origin:'Nguồn thiết kế' },
+  { id:'chest-moon', name:'Rương Báu · Hạo Nguyệt', kind:'Vật phẩm', symbol:'chest-moon', note:'Mốc phẩm trong hệ rương', detail:'Biến thể artwork theo mốc phẩm Hạo Nguyệt. Không thêm hào quang hay hiệu ứng mở rương.', origin:'Nguồn thiết kế' },
   { id:'scroll', name:'Bản Vẽ Công Trình', kind:'Bản vẽ', symbol:'scroll', note:'Bản vẽ minh họa', detail:'Không phải một bản vẽ đã học, sở hữu hoặc có hiệu lực xây dựng. Chỉ minh họa khung thẻ.', origin:'Mẫu thị giác' },
   { id:'potion', name:'Dược Tề', kind:'Vật phẩm', symbol:'potion', note:'Vật phẩm tiêu hao', detail:'Mẫu lọ thuốc không có hiệu ứng/cấp/phẩm. Không thể sử dụng trong bản demo.', origin:'Mẫu thị giác' },
   { id:'sword', name:'Kiếm Sắt', kind:'Trang bị', symbol:'sword', note:'Thẻ vũ khí', detail:'Mẫu artwork để kiểm tra vật phẩm cận chiến. Đây không phải trang bị của Lí Lan.', origin:'Mẫu thị giác' },

@@ -1,11 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400"><title>Ice Age Lord · tomb-entry · shadow · winter-ink</title><defs>
-<linearGradient id="slate" x1="0" y1="0" x2=".85" y2="1"><stop stop-color="#a6b4b4"/><stop offset=".24" stop-color="#667c87"/><stop offset=".65" stop-color="#2c4551"/><stop offset="1" stop-color="#162a35"/></linearGradient>
-<linearGradient id="snow" x1=".08" y1="0" x2=".85" y2="1"><stop stop-color="#f1ede0"/><stop offset=".46" stop-color="#cbd7d6"/><stop offset="1" stop-color="#718e9c"/></linearGradient>
-<linearGradient id="wood" x1="0" y1="0" x2="1" y2=".8"><stop stop-color="#a29b88"/><stop offset=".21" stop-color="#756c62"/><stop offset=".58" stop-color="#3c4447"/><stop offset="1" stop-color="#1b2932"/></linearGradient>
-<linearGradient id="roof" x1=".18" y1="0" x2=".8" y2="1"><stop stop-color="#96a5a9"/><stop offset=".25" stop-color="#61727c"/><stop offset=".54" stop-color="#394a54"/><stop offset="1" stop-color="#172933"/></linearGradient>
-<linearGradient id="iron" x1="0" y1="0" x2=".86" y2="1"><stop stop-color="#758992"/><stop offset=".31" stop-color="#30454e"/><stop offset=".69" stop-color="#1a2933"/><stop offset="1" stop-color="#081820"/></linearGradient>
-<linearGradient id="bone" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c4c2ae"/><stop offset="1" stop-color="#4e6067"/></linearGradient>
-<radialGradient id="warm" cx=".47" cy=".52" r=".55"><stop stop-color="#dd985b" stop-opacity=".67"/><stop offset=".5" stop-color="#aa6b41" stop-opacity=".31"/><stop offset="1" stop-color="#aa6b41" stop-opacity="0"/></radialGradient>
-<clipPath id="roofLeft"><path d="M121 194L237 126 246 200 146 239Z"/></clipPath>
-<clipPath id="roofRight"><path d="M237 126L361 195 337 240 246 200Z"/></clipPath>
-</defs><g stroke-linecap="round" stroke-linejoin="round"><g><ellipse cx="243" cy="317" rx="147" ry="31" fill="#071925" opacity=".48"/></g></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Bóng tiếp xúc · Ngôi Mộ Bậc 1">
+<title>Bóng tiếp xúc · Ngôi Mộ Bậc 1</title>
+<defs><radialGradient id="ground-shadow"><stop stop-color="#101820" stop-opacity=".42"/><stop offset=".68" stop-color="#101820" stop-opacity=".24"/><stop offset="1" stop-color="#101820" stop-opacity="0"/></radialGradient></defs>
+<ellipse cx="240" cy="342" rx="190" ry="36" fill="url(#ground-shadow)"/>
+</svg>

@@ -103,9 +103,9 @@ const visibleTerrain = {
   water: CANONICAL_SITES.find(site => site.id === 'SITE-LL01-042')!,
 };
 const forceFixtures = [
-  { icon: 'shield' as const, title: 'Quân Ngôi Mộ', text: 'Được tạo thông qua công trình binh chủng, không nhận XP phản chiếu của Tử Phục.' },
-  { icon: 'sparkles' as const, title: 'Tử thi Tử Phục', text: 'Chỉ xuất hiện từ xác thật hợp lệ đã được Lí Lan chuyển hóa; danh tính từng đơn vị được bảo toàn.' },
-  { icon: 'users' as const, title: 'Anh hùng', text: 'Đơn vị có danh tính, xuất thân và năng lực thực tế; không được phát miễn phí từ khung thẻ.' },
+  { icon: 'shield' as const, title: 'Zombie Ngôi Mộ · T0', art: '/assets/units/tomb-zombie-t0.svg', text: 'Mẫu đơn vị Thường do Ngôi Mộ tạo. Đây là hình thiết kế, không phải quân đã được sinh tại T0.' },
+  { icon: 'sparkles' as const, title: 'Tử thi Tử Phục', art: '/assets/units/direct-revived-cadaver.svg', text: 'Mẫu một thi thể được Tử Phục; diện mạo thật phải theo chính thi thể và trang bị nguồn.' },
+  { icon: 'users' as const, title: 'Nông Phu Cực Địa', art: '/assets/units/polar-farmer-t1.svg', text: 'Mẫu cư dân lao động. Tuyển mộ chỉ mở sau khi Nhà Lãnh Chúa được tu sửa và có nhà dân hợp lệ.' },
 ];
 const territoryObjectives = [
   { id: 'fire' as const, title: 'Duy trì Lửa Sinh Tồn', detail: 'Quản trị nhiên liệu và nhiệt độ sau khi runtime được triển khai.' },

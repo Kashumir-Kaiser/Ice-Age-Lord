@@ -47,7 +47,7 @@ export type VisibleMap = {
   terrain: { forest: { x: number; y: number }; stone: { x: number; y: number }; water: { x: number; y: number } };
 };
 export type PreviewMapSettings = { clockMinutes: number; fireLevel: number; fireActive: boolean; sourceAtlas: boolean };
-export type DemoForce = { icon: 'shield' | 'sparkles' | 'users'; title: string; text: string };
+export type DemoForce = { icon: 'shield' | 'sparkles' | 'users'; title: string; text: string; art?: string };
 export type UnitGroupView = {
   id: string;
   name: string;

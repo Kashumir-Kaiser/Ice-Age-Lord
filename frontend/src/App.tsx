@@ -206,7 +206,7 @@ function Inventory({ items, selectedEntity, selectEntity, inspectorOpen, onInspe
         <div className="filter-strip" aria-label="Lọc vật phẩm">{CATEGORIES.map(c=><button key={c} className={category===c?'is-selected':''} onClick={()=>setCategory(c)}>{c}</button>)}</div>
         <div className="inventory-count">{filtered.length} mẫu được hiển thị <span>· Chưa có dữ liệu số lượng sở hữu</span></div>
         {filtered.length ? <div className="item-grid">{filtered.map(item=><button className={`item-tile ${selectedItemId===item.id?'item-tile--active':''}`} key={item.id} onClick={()=>selectEntity({type:'item',id:item.id})}>
-          <div className="item-icon"><ItemArt symbol={item.symbol} size={84}/></div><strong>{item.name}</strong><span>{item.kind}</span>
+          <div className="item-icon"><ItemArt symbol={item.symbol} label={item.name} size={84}/></div><strong>{item.name}</strong><span>{item.kind}</span>
         </button>)}</div> : <div className="empty-search">Không có mẫu nào khớp bộ lọc.</div>}
       </section>
       <div className="inspector-desktop"><EntityInspector entity={selectedEntity}/></div>
@@ -239,7 +239,7 @@ function Forces({ samples, units }: {samples:PlayerView['forces'];units:PlayerVi
       {filtered.length?<div className="force-unit-grid">{filtered.map(unit=><article className="force-unit-card" key={unit.id}><span className="eyebrow">{unit.raceLabel.toUpperCase()}</span><h3>{unit.name}</h3><p>{unit.role}</p><small>{unit.alive} còn sống · {unit.available} có thể điều động</small></article>)}</div>:<div className="empty-army force-empty"><div className="empty-army-illustration"><Shield size={52} strokeWidth={1}/><span>0</span></div><h2>Chưa có đơn vị đang sống</h2><p>Tab “Tất cả” chỉ lọc các nhóm còn sống. Nút chủng tộc sẽ xuất hiện khi chủng tộc đó có đơn vị.</p></div>}
     </section>
     <BlockTitle title="Các kiểu thẻ quân lực sẽ hỗ trợ" eyebrow="BỐ CỤC XEM TRƯỚC"/>
-    <div className="sample-force-grid">{samples.map(({icon,title,text})=>{const Icon=icons[icon];return <div className="panel force-sample" key={title}><span className="sample-ribbon">KHÔNG SỞ HỮU</span><Icon size={35} strokeWidth={1.25}/><h3>{title}</h3><p>{text}</p><span className="muted-text">Mẫu cấu trúc hiển thị · Không có unit ID</span></div>;})}</div>
+    <div className="sample-force-grid">{samples.map(({icon,title,text,art})=>{const Icon=icons[icon];return <div className="panel force-sample" key={title}><span className="sample-ribbon">MẪU ART · KHÔNG SỞ HỮU</span>{art?<img className="force-sample-art" src={art} alt="" aria-hidden="true"/>:<Icon size={35} strokeWidth={1.25}/>}<h3>{title}</h3><p>{text}</p><span className="muted-text">Mẫu thị giác · Lực lượng hiện tại vẫn bằng 0</span></div>;})}</div>
   </div>;
 }
 function Territory({ settlement, placementDefinitions, selectedEntity, units, camera, onCameraChange, drafts, onDraftsChange, focusedBuildingId, onFocusHandled, readability, onReadabilityChange, selectEntity, inspectorOpen, onInspectorOpenChange, player, followPlayer, onFollowPlayerChange, onOpenPlayerProfile }: {

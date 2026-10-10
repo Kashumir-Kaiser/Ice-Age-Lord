@@ -5,20 +5,20 @@
     {
       "assetId": "campfire-start",
       "definitionId": "SITE-LL01-000",
-      "variant": "placeholder-original",
+      "variant": "winter-ink-painted-true-vector-v2",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
       "layers": {
-        "uiIcon": "/assets/buildings/campfire-start/icon.svg",
-        "body": "/assets/buildings/campfire-start/body.svg",
-        "base": "/assets/buildings/campfire-start/base.svg",
-        "upper": "/assets/buildings/campfire-start/upper.svg",
-        "shadow": "/assets/buildings/campfire-start/shadow.svg",
-        "vfx": null
+        "uiIcon": "/assets/buildings/survival-fire-l01/icon.svg",
+        "body": "/assets/buildings/survival-fire-l01/body.svg",
+        "base": "/assets/buildings/survival-fire-l01/base.svg",
+        "upper": "/assets/buildings/survival-fire-l01/upper.svg",
+        "shadow": "/assets/buildings/survival-fire-l01/shadow.svg",
+        "vfx": "/assets/buildings/survival-fire-l01/vfx.svg"
       },
       "logicalCanvas": {
-        "width": 240,
-        "height": 200
+        "width": 480,
+        "height": 400
       },
       "trimOffset": {
         "x": 0,
@@ -30,27 +30,27 @@
       },
       "artFootprint": [
         [
-          0.22,
-          0.78
+          0.2,
+          0.8
         ],
         [
           0.5,
-          0.92
+          0.95
         ],
         [
-          0.78,
-          0.78
+          0.8,
+          0.8
         ],
         [
           0.5,
-          0.64
+          0.66
         ]
       ],
       "visualBounds": {
-        "minX": 0.13,
-        "minY": 0.05,
-        "maxX": 0.87,
-        "maxY": 0.96
+        "minX": 0.05,
+        "minY": 0.09,
+        "maxX": 0.95,
+        "maxY": 0.92
       },
       "hitPolygon": [
         [
@@ -73,24 +73,24 @@
       "occlusionRegion": {
         "upper": [
           [
-            0.28,
-            0.72
+            0.2,
+            0.75
           ],
           [
-            0.3,
-            0.31
+            0.28,
+            0.2
           ],
           [
             0.5,
-            0.08
+            0.06
           ],
           [
-            0.72,
-            0.31
+            0.75,
+            0.2
           ],
           [
-            0.73,
-            0.72
+            0.82,
+            0.75
           ]
         ]
       },
@@ -99,35 +99,37 @@
         "y": 0.84
       },
       "compatiblePhysicalFootprint": {
-        "assumptionId": "TERRITORY-FOOTPRINTS-V1",
+        "assumptionId": "ART-ONLY-NOT-CANONICAL-PHYSICAL-FOOTPRINT",
         "widthM": 2,
         "depthM": 2
       },
-      "source": "assets/source/buildings/campfire-start.svg",
-      "provenance": "Original authored SVG placeholder",
-      "license": "Original work created for this repository; permitted for this project.",
-      "status": "placeholder",
+      "source": "assets/source/buildings/survival-fire-l01.svg",
+      "provenance": "Original project concept illustration, converted to independently editable SVG color paths; cleaned unlit architecture and separate live flame effect. Hand-refined with winter-ink architectural contour, snow strokes, and animated separately switchable embers (2026-10-10).",
+      "license": "Original art concept made for this project; traced vector adaptation for Ice Age Lord.",
+      "status": "draft",
       "lodVariants": {
         "close": {
-          "body": "/assets/buildings/campfire-start/body.svg",
-          "base": "/assets/buildings/campfire-start/base.svg",
-          "upper": "/assets/buildings/campfire-start/upper.svg",
-          "shadow": "/assets/buildings/campfire-start/shadow.svg"
+          "body": "/assets/buildings/survival-fire-l01/body.svg",
+          "base": "/assets/buildings/survival-fire-l01/base.svg",
+          "upper": "/assets/buildings/survival-fire-l01/upper.svg",
+          "shadow": "/assets/buildings/survival-fire-l01/shadow.svg",
+          "vfx": "/assets/buildings/survival-fire-l01/vfx.svg"
         },
         "district": {
-          "icon": "/assets/buildings/campfire-start/icon.svg"
+          "icon": "/assets/buildings/survival-fire-l01/icon.svg"
         },
         "regional": {
-          "icon": "/assets/buildings/campfire-start/icon.svg"
+          "icon": "/assets/buildings/survival-fire-l01/icon.svg"
         }
-      }
+      },
+      "presentationScale": 0.9
     },
     {
       "assetId": "lord-house-damaged",
       "definitionId": "SITE-LL01-001",
-      "variant": "winter-ink-handpainted-architecture-v1",
+      "variant": "winter-ink-painted-concept-trace-v2",
       "orientation": "north",
-      "revision": 3,
+      "revision": 5,
       "presentationScale": 1.22,
       "layers": {
         "uiIcon": "/assets/buildings/lord-house-damaged/icon.svg",
@@ -168,10 +170,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.11,
-        "minY": 0.13,
-        "maxX": 0.89,
-        "maxY": 0.9
+        "minX": 0.12083333333333333,
+        "minY": 0.0825,
+        "maxX": 0.8791666666666667,
+        "maxY": 0.92
       },
       "hitPolygon": [
         [
@@ -225,8 +227,8 @@
         "depthM": 4
       },
       "source": "assets/source/buildings/lord-house-damaged.svg",
-      "provenance": "Original authored winter-ink SVG art, aesthetic study based on approved Ice Age Lord palette; draft until browser visual QA.",
-      "license": "Original art authored for this repository.",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into editable SVG color paths. Layered to preserve the original camera, anchor, selection footprint, and plan-mode visibility.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -237,20 +239,25 @@
         },
         "district": {
           "body": "/assets/buildings/lord-house-damaged/district.svg",
-          "icon": "/assets/buildings/lord-house-damaged/district.svg"
+          "base": "/assets/buildings/lord-house-damaged/district-base.svg",
+          "shadow": "/assets/buildings/lord-house-damaged/shadow.svg",
+          "icon": "/assets/buildings/lord-house-damaged/icon.svg"
         },
         "regional": {
           "body": "/assets/buildings/lord-house-damaged/district.svg",
-          "icon": "/assets/buildings/lord-house-damaged/district.svg"
+          "base": "/assets/buildings/lord-house-damaged/district-base.svg",
+          "shadow": "/assets/buildings/lord-house-damaged/shadow.svg",
+          "icon": "/assets/buildings/lord-house-damaged/icon.svg"
         }
-      }
+      },
+      "referenceSource": "assets/source/concepts/opening-settlement-buildings.png"
     },
     {
       "assetId": "tomb-entry",
       "definitionId": "SITE-LL01-003",
-      "variant": "winter-ink-handpainted-architecture-v1",
+      "variant": "winter-ink-painted-concept-trace-v2",
       "orientation": "north",
-      "revision": 3,
+      "revision": 5,
       "presentationScale": 1.27,
       "layers": {
         "uiIcon": "/assets/buildings/tomb-entry/icon.svg",
@@ -291,10 +298,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.11,
-        "minY": 0.13,
-        "maxX": 0.89,
-        "maxY": 0.9
+        "minX": 0.07083333333333333,
+        "minY": 0.09,
+        "maxX": 0.9270833333333334,
+        "maxY": 0.91
       },
       "hitPolygon": [
         [
@@ -348,8 +355,8 @@
         "depthM": 5
       },
       "source": "assets/source/buildings/tomb-entry.svg",
-      "provenance": "Original authored winter-ink SVG art, aesthetic study based on approved Ice Age Lord palette; draft until browser visual QA.",
-      "license": "Original art authored for this repository.",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into editable SVG color paths. Layered to preserve the original camera, anchor, selection footprint, and plan-mode visibility.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -360,20 +367,25 @@
         },
         "district": {
           "body": "/assets/buildings/tomb-entry/district.svg",
-          "icon": "/assets/buildings/tomb-entry/district.svg"
+          "base": "/assets/buildings/tomb-entry/district-base.svg",
+          "shadow": "/assets/buildings/tomb-entry/shadow.svg",
+          "icon": "/assets/buildings/tomb-entry/icon.svg"
         },
         "regional": {
           "body": "/assets/buildings/tomb-entry/district.svg",
-          "icon": "/assets/buildings/tomb-entry/district.svg"
+          "base": "/assets/buildings/tomb-entry/district-base.svg",
+          "shadow": "/assets/buildings/tomb-entry/shadow.svg",
+          "icon": "/assets/buildings/tomb-entry/icon.svg"
         }
-      }
+      },
+      "referenceSource": "assets/source/concepts/opening-settlement-buildings.png"
     },
     {
       "assetId": "supply-crate",
       "definitionId": "SITE-LL01-002",
-      "variant": "winter-ink-handpainted-architecture-v1",
+      "variant": "winter-ink-painted-concept-trace-v2",
       "orientation": "north",
-      "revision": 3,
+      "revision": 5,
       "presentationScale": 1.02,
       "layers": {
         "uiIcon": "/assets/buildings/supply-crate/icon.svg",
@@ -414,10 +426,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.11,
-        "minY": 0.13,
-        "maxX": 0.89,
-        "maxY": 0.9
+        "minX": 0.07291666666666667,
+        "minY": 0.1425,
+        "maxX": 0.9270833333333334,
+        "maxY": 0.8575
       },
       "hitPolygon": [
         [
@@ -471,8 +483,8 @@
         "depthM": 3
       },
       "source": "assets/source/buildings/supply-crate.svg",
-      "provenance": "Original authored winter-ink SVG art, aesthetic study based on approved Ice Age Lord palette; draft until browser visual QA.",
-      "license": "Original art authored for this repository.",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into editable SVG color paths. Layered to preserve the original camera, anchor, selection footprint, and plan-mode visibility.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -483,13 +495,18 @@
         },
         "district": {
           "body": "/assets/buildings/supply-crate/district.svg",
-          "icon": "/assets/buildings/supply-crate/district.svg"
+          "base": "/assets/buildings/supply-crate/district-base.svg",
+          "shadow": "/assets/buildings/supply-crate/shadow.svg",
+          "icon": "/assets/buildings/supply-crate/icon.svg"
         },
         "regional": {
           "body": "/assets/buildings/supply-crate/district.svg",
-          "icon": "/assets/buildings/supply-crate/district.svg"
+          "base": "/assets/buildings/supply-crate/district-base.svg",
+          "shadow": "/assets/buildings/supply-crate/shadow.svg",
+          "icon": "/assets/buildings/supply-crate/icon.svg"
         }
-      }
+      },
+      "referenceSource": "assets/source/concepts/opening-settlement-buildings.png"
     },
     {
       "assetId": "fixture-tall-tower",
@@ -1466,9 +1483,9 @@
     {
       "assetId": "lord-house-repaired",
       "definitionId": "SITE-LL01-001",
-      "variant": "winter-ink-handpainted-architecture-v1",
+      "variant": "winter-ink-painted-concept-trace-v2",
       "orientation": "north",
-      "revision": 2,
+      "revision": 4,
       "presentationScale": 1.22,
       "layers": {
         "uiIcon": "/assets/buildings/lord-house-repaired/icon.svg",
@@ -1509,10 +1526,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.11,
-        "minY": 0.13,
-        "maxX": 0.89,
-        "maxY": 0.9
+        "minX": 0.11875,
+        "minY": 0.08,
+        "maxX": 0.8791666666666667,
+        "maxY": 0.92
       },
       "hitPolygon": [
         [
@@ -1566,8 +1583,8 @@
         "depthM": 4
       },
       "source": "assets/source/buildings/lord-house-repaired.svg",
-      "provenance": "Original authored winter-ink SVG art, aesthetic study based on approved Ice Age Lord palette; draft until browser visual QA.",
-      "license": "Original art authored for this repository.",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into editable SVG color paths. Layered to preserve the original camera, anchor, selection footprint, and plan-mode visibility.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -1578,20 +1595,25 @@
         },
         "district": {
           "body": "/assets/buildings/lord-house-repaired/district.svg",
-          "icon": "/assets/buildings/lord-house-repaired/district.svg"
+          "base": "/assets/buildings/lord-house-repaired/district-base.svg",
+          "shadow": "/assets/buildings/lord-house-repaired/shadow.svg",
+          "icon": "/assets/buildings/lord-house-repaired/icon.svg"
         },
         "regional": {
           "body": "/assets/buildings/lord-house-repaired/district.svg",
-          "icon": "/assets/buildings/lord-house-repaired/district.svg"
+          "base": "/assets/buildings/lord-house-repaired/district-base.svg",
+          "shadow": "/assets/buildings/lord-house-repaired/shadow.svg",
+          "icon": "/assets/buildings/lord-house-repaired/icon.svg"
         }
-      }
+      },
+      "referenceSource": "assets/source/concepts/opening-settlement-buildings.png"
     },
     {
       "assetId": "polar-farmhouse-l01",
       "definitionId": "ART-REFERENCE:POLAR-FARMHOUSE-L1",
-      "variant": "winter-ink-handpainted-architecture-v1",
+      "variant": "winter-ink-painted-concept-trace-v2",
       "orientation": "north",
-      "revision": 2,
+      "revision": 4,
       "presentationScale": 1.17,
       "layers": {
         "uiIcon": "/assets/buildings/polar-farmhouse-l01/icon.svg",
@@ -1632,10 +1654,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.11,
-        "minY": 0.13,
-        "maxX": 0.89,
-        "maxY": 0.9
+        "minX": 0.07083333333333333,
+        "minY": 0.09,
+        "maxX": 0.9270833333333334,
+        "maxY": 0.91
       },
       "hitPolygon": [
         [
@@ -1689,8 +1711,8 @@
         "depthM": 3
       },
       "source": "assets/source/buildings/polar-farmhouse-l01.svg",
-      "provenance": "Original authored winter-ink SVG art, aesthetic study based on approved Ice Age Lord palette; draft until browser visual QA.",
-      "license": "Original art authored for this repository.",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into editable SVG color paths. Layered to preserve the original camera, anchor, selection footprint, and plan-mode visibility.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -1701,20 +1723,25 @@
         },
         "district": {
           "body": "/assets/buildings/polar-farmhouse-l01/district.svg",
-          "icon": "/assets/buildings/polar-farmhouse-l01/district.svg"
+          "base": "/assets/buildings/polar-farmhouse-l01/district-base.svg",
+          "shadow": "/assets/buildings/polar-farmhouse-l01/shadow.svg",
+          "icon": "/assets/buildings/polar-farmhouse-l01/icon.svg"
         },
         "regional": {
           "body": "/assets/buildings/polar-farmhouse-l01/district.svg",
-          "icon": "/assets/buildings/polar-farmhouse-l01/district.svg"
+          "base": "/assets/buildings/polar-farmhouse-l01/district-base.svg",
+          "shadow": "/assets/buildings/polar-farmhouse-l01/shadow.svg",
+          "icon": "/assets/buildings/polar-farmhouse-l01/icon.svg"
         }
-      }
+      },
+      "referenceSource": "assets/source/concepts/opening-settlement-buildings.png"
     },
     {
       "assetId": "opening-palisade-wall",
       "definitionId": "ART-REFERENCE:OPENING-FENCE-L1",
-      "variant": "winter-ink-handpainted-architecture-v1",
+      "variant": "winter-ink-painted-concept-trace-v2",
       "orientation": "north",
-      "revision": 2,
+      "revision": 4,
       "presentationScale": 1.24,
       "layers": {
         "uiIcon": "/assets/buildings/opening-palisade-wall/icon.svg",
@@ -1755,10 +1782,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.11,
-        "minY": 0.13,
-        "maxX": 0.89,
-        "maxY": 0.9
+        "minX": 0.1125,
+        "minY": 0.0825,
+        "maxX": 0.8854166666666666,
+        "maxY": 0.92
       },
       "hitPolygon": [
         [
@@ -1812,8 +1839,8 @@
         "depthM": 1
       },
       "source": "assets/source/buildings/opening-palisade-wall.svg",
-      "provenance": "Original authored winter-ink SVG art, aesthetic study based on approved Ice Age Lord palette; draft until browser visual QA.",
-      "license": "Original art authored for this repository.",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into editable SVG color paths. Layered to preserve the original camera, anchor, selection footprint, and plan-mode visibility.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -1824,20 +1851,25 @@
         },
         "district": {
           "body": "/assets/buildings/opening-palisade-wall/district.svg",
-          "icon": "/assets/buildings/opening-palisade-wall/district.svg"
+          "base": "/assets/buildings/opening-palisade-wall/district-base.svg",
+          "shadow": "/assets/buildings/opening-palisade-wall/shadow.svg",
+          "icon": "/assets/buildings/opening-palisade-wall/icon.svg"
         },
         "regional": {
           "body": "/assets/buildings/opening-palisade-wall/district.svg",
-          "icon": "/assets/buildings/opening-palisade-wall/district.svg"
+          "base": "/assets/buildings/opening-palisade-wall/district-base.svg",
+          "shadow": "/assets/buildings/opening-palisade-wall/shadow.svg",
+          "icon": "/assets/buildings/opening-palisade-wall/icon.svg"
         }
-      }
+      },
+      "referenceSource": "assets/source/concepts/opening-settlement-buildings.png"
     },
     {
       "assetId": "opening-timber-gate",
       "definitionId": "ART-REFERENCE:OPENING-GATE-L1",
-      "variant": "winter-ink-handpainted-architecture-v1",
+      "variant": "winter-ink-painted-concept-trace-v2",
       "orientation": "north",
-      "revision": 2,
+      "revision": 4,
       "presentationScale": 1.22,
       "layers": {
         "uiIcon": "/assets/buildings/opening-timber-gate/icon.svg",
@@ -1878,10 +1910,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.11,
-        "minY": 0.13,
-        "maxX": 0.89,
-        "maxY": 0.9
+        "minX": 0.10833333333333334,
+        "minY": 0.0825,
+        "maxX": 0.89375,
+        "maxY": 0.9175
       },
       "hitPolygon": [
         [
@@ -1935,8 +1967,8 @@
         "depthM": 2
       },
       "source": "assets/source/buildings/opening-timber-gate.svg",
-      "provenance": "Original authored winter-ink SVG art, aesthetic study based on approved Ice Age Lord palette; draft until browser visual QA.",
-      "license": "Original art authored for this repository.",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into editable SVG color paths. Layered to preserve the original camera, anchor, selection footprint, and plan-mode visibility.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -1947,20 +1979,25 @@
         },
         "district": {
           "body": "/assets/buildings/opening-timber-gate/district.svg",
-          "icon": "/assets/buildings/opening-timber-gate/district.svg"
+          "base": "/assets/buildings/opening-timber-gate/district-base.svg",
+          "shadow": "/assets/buildings/opening-timber-gate/shadow.svg",
+          "icon": "/assets/buildings/opening-timber-gate/icon.svg"
         },
         "regional": {
           "body": "/assets/buildings/opening-timber-gate/district.svg",
-          "icon": "/assets/buildings/opening-timber-gate/district.svg"
+          "base": "/assets/buildings/opening-timber-gate/district-base.svg",
+          "shadow": "/assets/buildings/opening-timber-gate/shadow.svg",
+          "icon": "/assets/buildings/opening-timber-gate/icon.svg"
         }
-      }
+      },
+      "referenceSource": "assets/source/concepts/opening-settlement-buildings.png"
     },
     {
       "assetId": "opening-simple-heater",
       "definitionId": "ART-REFERENCE:OPENING-SIMPLE-HEATER",
-      "variant": "winter-ink-handpainted-architecture-v1",
+      "variant": "winter-ink-painted-concept-trace-v2",
       "orientation": "north",
-      "revision": 2,
+      "revision": 4,
       "presentationScale": 1,
       "layers": {
         "uiIcon": "/assets/buildings/opening-simple-heater/icon.svg",
@@ -2001,10 +2038,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.1,
-        "minY": 0.13,
-        "maxX": 0.9,
-        "maxY": 0.91
+        "minX": 0.15833333333333333,
+        "minY": 0.0775,
+        "maxX": 0.8416666666666667,
+        "maxY": 0.9225
       },
       "hitPolygon": [
         [
@@ -2058,8 +2095,8 @@
         "depthM": 2
       },
       "source": "assets/source/buildings/opening-simple-heater.svg",
-      "provenance": "Source-registered opening building category; stylized SVG art preview only. Physical footprint dimensions are not authoritative.",
-      "license": "Original art authored for Ice Age Lord",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into editable SVG color paths. Layered to preserve the original camera, anchor, selection footprint, and plan-mode visibility.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -2070,20 +2107,25 @@
         },
         "district": {
           "body": "/assets/buildings/opening-simple-heater/district.svg",
-          "icon": "/assets/buildings/opening-simple-heater/district.svg"
+          "base": "/assets/buildings/opening-simple-heater/district-base.svg",
+          "shadow": "/assets/buildings/opening-simple-heater/shadow.svg",
+          "icon": "/assets/buildings/opening-simple-heater/icon.svg"
         },
         "regional": {
           "body": "/assets/buildings/opening-simple-heater/district.svg",
-          "icon": "/assets/buildings/opening-simple-heater/district.svg"
+          "base": "/assets/buildings/opening-simple-heater/district-base.svg",
+          "shadow": "/assets/buildings/opening-simple-heater/shadow.svg",
+          "icon": "/assets/buildings/opening-simple-heater/icon.svg"
         }
-      }
+      },
+      "referenceSource": "assets/source/concepts/opening-settlement-buildings.png"
     },
     {
       "assetId": "opening-simple-kitchen",
       "definitionId": "ART-REFERENCE:OPENING-SIMPLE-KITCHEN",
-      "variant": "winter-ink-handpainted-architecture-v1",
+      "variant": "winter-ink-painted-concept-trace-v2",
       "orientation": "north",
-      "revision": 2,
+      "revision": 4,
       "presentationScale": 1.15,
       "layers": {
         "uiIcon": "/assets/buildings/opening-simple-kitchen/icon.svg",
@@ -2124,10 +2166,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.1,
-        "minY": 0.13,
-        "maxX": 0.9,
-        "maxY": 0.91
+        "minX": 0.07708333333333334,
+        "minY": 0.085,
+        "maxX": 0.9229166666666667,
+        "maxY": 0.915
       },
       "hitPolygon": [
         [
@@ -2181,8 +2223,8 @@
         "depthM": 3
       },
       "source": "assets/source/buildings/opening-simple-kitchen.svg",
-      "provenance": "Source-registered opening building category; stylized SVG art preview only. Physical footprint dimensions are not authoritative.",
-      "license": "Original art authored for Ice Age Lord",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into editable SVG color paths. Layered to preserve the original camera, anchor, selection footprint, and plan-mode visibility.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -2193,20 +2235,25 @@
         },
         "district": {
           "body": "/assets/buildings/opening-simple-kitchen/district.svg",
-          "icon": "/assets/buildings/opening-simple-kitchen/district.svg"
+          "base": "/assets/buildings/opening-simple-kitchen/district-base.svg",
+          "shadow": "/assets/buildings/opening-simple-kitchen/shadow.svg",
+          "icon": "/assets/buildings/opening-simple-kitchen/icon.svg"
         },
         "regional": {
           "body": "/assets/buildings/opening-simple-kitchen/district.svg",
-          "icon": "/assets/buildings/opening-simple-kitchen/district.svg"
+          "base": "/assets/buildings/opening-simple-kitchen/district-base.svg",
+          "shadow": "/assets/buildings/opening-simple-kitchen/shadow.svg",
+          "icon": "/assets/buildings/opening-simple-kitchen/icon.svg"
         }
-      }
+      },
+      "referenceSource": "assets/source/concepts/opening-workshops.png"
     },
     {
       "assetId": "opening-woodshop",
       "definitionId": "ART-REFERENCE:OPENING-WOODSHOP",
-      "variant": "winter-ink-handpainted-architecture-v1",
+      "variant": "winter-ink-painted-concept-trace-v2",
       "orientation": "north",
-      "revision": 2,
+      "revision": 4,
       "presentationScale": 1.24,
       "layers": {
         "uiIcon": "/assets/buildings/opening-woodshop/icon.svg",
@@ -2247,10 +2294,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.1,
-        "minY": 0.13,
-        "maxX": 0.9,
-        "maxY": 0.91
+        "minX": 0.075,
+        "minY": 0.085,
+        "maxX": 0.925,
+        "maxY": 0.9125
       },
       "hitPolygon": [
         [
@@ -2304,8 +2351,8 @@
         "depthM": 5
       },
       "source": "assets/source/buildings/opening-woodshop.svg",
-      "provenance": "Source-registered opening building category; stylized SVG art preview only. Physical footprint dimensions are not authoritative.",
-      "license": "Original art authored for Ice Age Lord",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into editable SVG color paths. Layered to preserve the original camera, anchor, selection footprint, and plan-mode visibility.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -2316,20 +2363,25 @@
         },
         "district": {
           "body": "/assets/buildings/opening-woodshop/district.svg",
-          "icon": "/assets/buildings/opening-woodshop/district.svg"
+          "base": "/assets/buildings/opening-woodshop/district-base.svg",
+          "shadow": "/assets/buildings/opening-woodshop/shadow.svg",
+          "icon": "/assets/buildings/opening-woodshop/icon.svg"
         },
         "regional": {
           "body": "/assets/buildings/opening-woodshop/district.svg",
-          "icon": "/assets/buildings/opening-woodshop/district.svg"
+          "base": "/assets/buildings/opening-woodshop/district-base.svg",
+          "shadow": "/assets/buildings/opening-woodshop/shadow.svg",
+          "icon": "/assets/buildings/opening-woodshop/icon.svg"
         }
-      }
+      },
+      "referenceSource": "assets/source/concepts/opening-workshops.png"
     },
     {
       "assetId": "opening-tailor",
       "definitionId": "ART-REFERENCE:OPENING-TAILOR",
-      "variant": "winter-ink-handpainted-architecture-v1",
+      "variant": "winter-ink-painted-concept-trace-v2",
       "orientation": "north",
-      "revision": 2,
+      "revision": 4,
       "presentationScale": 1.23,
       "layers": {
         "uiIcon": "/assets/buildings/opening-tailor/icon.svg",
@@ -2370,10 +2422,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.1,
-        "minY": 0.13,
-        "maxX": 0.9,
-        "maxY": 0.91
+        "minX": 0.08125,
+        "minY": 0.085,
+        "maxX": 0.9145833333333333,
+        "maxY": 0.915
       },
       "hitPolygon": [
         [
@@ -2427,8 +2479,8 @@
         "depthM": 5
       },
       "source": "assets/source/buildings/opening-tailor.svg",
-      "provenance": "Source-registered opening building category; stylized SVG art preview only. Physical footprint dimensions are not authoritative.",
-      "license": "Original art authored for Ice Age Lord",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into editable SVG color paths. Layered to preserve the original camera, anchor, selection footprint, and plan-mode visibility.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -2439,20 +2491,25 @@
         },
         "district": {
           "body": "/assets/buildings/opening-tailor/district.svg",
-          "icon": "/assets/buildings/opening-tailor/district.svg"
+          "base": "/assets/buildings/opening-tailor/district-base.svg",
+          "shadow": "/assets/buildings/opening-tailor/shadow.svg",
+          "icon": "/assets/buildings/opening-tailor/icon.svg"
         },
         "regional": {
           "body": "/assets/buildings/opening-tailor/district.svg",
-          "icon": "/assets/buildings/opening-tailor/district.svg"
+          "base": "/assets/buildings/opening-tailor/district-base.svg",
+          "shadow": "/assets/buildings/opening-tailor/shadow.svg",
+          "icon": "/assets/buildings/opening-tailor/icon.svg"
         }
-      }
+      },
+      "referenceSource": "assets/source/concepts/opening-workshops.png"
     },
     {
       "assetId": "opening-oreworks",
       "definitionId": "ART-REFERENCE:OPENING-OREWORKS",
-      "variant": "winter-ink-handpainted-architecture-v1",
+      "variant": "winter-ink-painted-concept-trace-v2",
       "orientation": "north",
-      "revision": 2,
+      "revision": 4,
       "presentationScale": 1.34,
       "layers": {
         "uiIcon": "/assets/buildings/opening-oreworks/icon.svg",
@@ -2493,10 +2550,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.1,
-        "minY": 0.13,
-        "maxX": 0.9,
-        "maxY": 0.91
+        "minX": 0.09375,
+        "minY": 0.085,
+        "maxX": 0.9041666666666667,
+        "maxY": 0.915
       },
       "hitPolygon": [
         [
@@ -2550,8 +2607,8 @@
         "depthM": 5
       },
       "source": "assets/source/buildings/opening-oreworks.svg",
-      "provenance": "Source-registered opening building category; stylized SVG art preview only. Physical footprint dimensions are not authoritative.",
-      "license": "Original art authored for Ice Age Lord",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into editable SVG color paths. Layered to preserve the original camera, anchor, selection footprint, and plan-mode visibility.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -2562,20 +2619,25 @@
         },
         "district": {
           "body": "/assets/buildings/opening-oreworks/district.svg",
-          "icon": "/assets/buildings/opening-oreworks/district.svg"
+          "base": "/assets/buildings/opening-oreworks/district-base.svg",
+          "shadow": "/assets/buildings/opening-oreworks/shadow.svg",
+          "icon": "/assets/buildings/opening-oreworks/icon.svg"
         },
         "regional": {
           "body": "/assets/buildings/opening-oreworks/district.svg",
-          "icon": "/assets/buildings/opening-oreworks/district.svg"
+          "base": "/assets/buildings/opening-oreworks/district-base.svg",
+          "shadow": "/assets/buildings/opening-oreworks/shadow.svg",
+          "icon": "/assets/buildings/opening-oreworks/icon.svg"
         }
-      }
+      },
+      "referenceSource": "assets/source/concepts/opening-workshops.png"
     },
     {
       "assetId": "opening-forge",
       "definitionId": "ART-REFERENCE:OPENING-FORGE",
-      "variant": "winter-ink-handpainted-architecture-v1",
+      "variant": "winter-ink-painted-concept-trace-v2",
       "orientation": "north",
-      "revision": 2,
+      "revision": 4,
       "presentationScale": 1.35,
       "layers": {
         "uiIcon": "/assets/buildings/opening-forge/icon.svg",
@@ -2616,10 +2678,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.1,
-        "minY": 0.13,
-        "maxX": 0.9,
-        "maxY": 0.91
+        "minX": 0.13958333333333334,
+        "minY": 0.08,
+        "maxX": 0.8708333333333333,
+        "maxY": 0.92
       },
       "hitPolygon": [
         [
@@ -2673,8 +2735,8 @@
         "depthM": 5
       },
       "source": "assets/source/buildings/opening-forge.svg",
-      "provenance": "Source-registered opening building category; stylized SVG art preview only. Physical footprint dimensions are not authoritative.",
-      "license": "Original art authored for Ice Age Lord",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into editable SVG color paths. Layered to preserve the original camera, anchor, selection footprint, and plan-mode visibility.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -2685,20 +2747,25 @@
         },
         "district": {
           "body": "/assets/buildings/opening-forge/district.svg",
-          "icon": "/assets/buildings/opening-forge/district.svg"
+          "base": "/assets/buildings/opening-forge/district-base.svg",
+          "shadow": "/assets/buildings/opening-forge/shadow.svg",
+          "icon": "/assets/buildings/opening-forge/icon.svg"
         },
         "regional": {
           "body": "/assets/buildings/opening-forge/district.svg",
-          "icon": "/assets/buildings/opening-forge/district.svg"
+          "base": "/assets/buildings/opening-forge/district-base.svg",
+          "shadow": "/assets/buildings/opening-forge/shadow.svg",
+          "icon": "/assets/buildings/opening-forge/icon.svg"
         }
-      }
+      },
+      "referenceSource": "assets/source/concepts/opening-workshops.png"
     },
     {
       "assetId": "opening-medical-station",
       "definitionId": "ART-REFERENCE:OPENING-MEDICAL-STATION",
-      "variant": "winter-ink-handpainted-architecture-v1",
+      "variant": "winter-ink-painted-concept-trace-v2",
       "orientation": "north",
-      "revision": 2,
+      "revision": 4,
       "presentationScale": 1.22,
       "layers": {
         "uiIcon": "/assets/buildings/opening-medical-station/icon.svg",
@@ -2739,10 +2806,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.1,
-        "minY": 0.13,
-        "maxX": 0.9,
-        "maxY": 0.91
+        "minX": 0.10625,
+        "minY": 0.0825,
+        "maxX": 0.89375,
+        "maxY": 0.9175
       },
       "hitPolygon": [
         [
@@ -2796,8 +2863,8 @@
         "depthM": 3
       },
       "source": "assets/source/buildings/opening-medical-station.svg",
-      "provenance": "Source-registered opening building category; stylized SVG art preview only. Physical footprint dimensions are not authoritative.",
-      "license": "Original art authored for Ice Age Lord",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into editable SVG color paths. Layered to preserve the original camera, anchor, selection footprint, and plan-mode visibility.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -2808,20 +2875,25 @@
         },
         "district": {
           "body": "/assets/buildings/opening-medical-station/district.svg",
-          "icon": "/assets/buildings/opening-medical-station/district.svg"
+          "base": "/assets/buildings/opening-medical-station/district-base.svg",
+          "shadow": "/assets/buildings/opening-medical-station/shadow.svg",
+          "icon": "/assets/buildings/opening-medical-station/icon.svg"
         },
         "regional": {
           "body": "/assets/buildings/opening-medical-station/district.svg",
-          "icon": "/assets/buildings/opening-medical-station/district.svg"
+          "base": "/assets/buildings/opening-medical-station/district-base.svg",
+          "shadow": "/assets/buildings/opening-medical-station/shadow.svg",
+          "icon": "/assets/buildings/opening-medical-station/icon.svg"
         }
-      }
+      },
+      "referenceSource": "assets/source/concepts/opening-workshops.png"
     },
     {
       "assetId": "opening-small-shelter",
       "definitionId": "ART-REFERENCE:OPENING-SMALL-SHELTER",
-      "variant": "winter-ink-handpainted-architecture-v1",
+      "variant": "winter-ink-painted-concept-trace-v2",
       "orientation": "north",
-      "revision": 2,
+      "revision": 4,
       "presentationScale": 1.14,
       "layers": {
         "uiIcon": "/assets/buildings/opening-small-shelter/icon.svg",
@@ -2862,10 +2934,10 @@
         ]
       ],
       "visualBounds": {
-        "minX": 0.1,
-        "minY": 0.13,
-        "maxX": 0.9,
-        "maxY": 0.91
+        "minX": 0.07083333333333333,
+        "minY": 0.0925,
+        "maxX": 0.9291666666666667,
+        "maxY": 0.905
       },
       "hitPolygon": [
         [
@@ -2919,8 +2991,8 @@
         "depthM": 3
       },
       "source": "assets/source/buildings/opening-small-shelter.svg",
-      "provenance": "Source-registered opening building category; stylized SVG art preview only. Physical footprint dimensions are not authoritative.",
-      "license": "Original art authored for Ice Age Lord",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into editable SVG color paths. Layered to preserve the original camera, anchor, selection footprint, and plan-mode visibility.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
       "status": "draft",
       "lodVariants": {
         "close": {
@@ -2931,13 +3003,18 @@
         },
         "district": {
           "body": "/assets/buildings/opening-small-shelter/district.svg",
-          "icon": "/assets/buildings/opening-small-shelter/district.svg"
+          "base": "/assets/buildings/opening-small-shelter/district-base.svg",
+          "shadow": "/assets/buildings/opening-small-shelter/shadow.svg",
+          "icon": "/assets/buildings/opening-small-shelter/icon.svg"
         },
         "regional": {
           "body": "/assets/buildings/opening-small-shelter/district.svg",
-          "icon": "/assets/buildings/opening-small-shelter/district.svg"
+          "base": "/assets/buildings/opening-small-shelter/district-base.svg",
+          "shadow": "/assets/buildings/opening-small-shelter/shadow.svg",
+          "icon": "/assets/buildings/opening-small-shelter/icon.svg"
         }
-      }
+      },
+      "referenceSource": "assets/source/concepts/opening-workshops.png"
     }
   ],
   "fireProgression": [
@@ -2998,6 +3075,757 @@
         "height": 640
       },
       "status": "draft"
+    }
+  ],
+  "itemArt": [
+    {
+      "assetId": "axe",
+      "name": "Rìu Đá",
+      "source": "assets/source/items/axe.svg",
+      "src": "/assets/items/axe.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/opening-kit.png"
+    },
+    {
+      "assetId": "bottled-water",
+      "name": "Chai Nước 500 ml",
+      "source": "assets/source/items/bottled-water.svg",
+      "src": "/assets/items/bottled-water.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/convenience-bag-contents.png"
+    },
+    {
+      "assetId": "bread",
+      "name": "Bánh Mì",
+      "source": "assets/source/items/bread.svg",
+      "src": "/assets/items/bread.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/opening-kit.png"
+    },
+    {
+      "assetId": "chest",
+      "name": "Rương Báu Chưa Giám Định",
+      "source": "assets/source/items/chest.svg",
+      "src": "/assets/items/chest.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/ungraded-chest.png"
+    },
+    {
+      "assetId": "chest-bronze",
+      "name": "Rương Báu Thanh Đồng",
+      "source": "assets/source/items/chest-bronze.svg",
+      "src": "/assets/items/chest-bronze.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/treasure-chests.png"
+    },
+    {
+      "assetId": "chest-gold",
+      "name": "Rương Báu Hoàng Kim",
+      "source": "assets/source/items/chest-gold.svg",
+      "src": "/assets/items/chest-gold.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/treasure-chests.png"
+    },
+    {
+      "assetId": "chest-moc",
+      "name": "Rương Báu Mộc",
+      "source": "assets/source/items/chest-moc.svg",
+      "src": "/assets/items/chest-moc.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/treasure-chests.png"
+    },
+    {
+      "assetId": "chest-moon",
+      "name": "Rương Báu Hạo Nguyệt",
+      "source": "assets/source/items/chest-moon.svg",
+      "src": "/assets/items/chest-moon.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/treasure-chests.png"
+    },
+    {
+      "assetId": "chest-silver",
+      "name": "Rương Báu Bạch Ngân",
+      "source": "assets/source/items/chest-silver.svg",
+      "src": "/assets/items/chest-silver.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/treasure-chests.png"
+    },
+    {
+      "assetId": "chocolate-bar",
+      "name": "Thanh Chocolate",
+      "source": "assets/source/items/chocolate-bar.svg",
+      "src": "/assets/items/chocolate-bar.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/convenience-bag-contents.png"
+    },
+    {
+      "assetId": "cloak",
+      "name": "Áo Choàng",
+      "source": "assets/source/items/cloak.svg",
+      "src": "/assets/items/cloak.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/sample-items.png"
+    },
+    {
+      "assetId": "coffee-can",
+      "name": "Lon Cà Phê 330 ml",
+      "source": "assets/source/items/coffee-can.svg",
+      "src": "/assets/items/coffee-can.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/convenience-bag-contents.png"
+    },
+    {
+      "assetId": "convenience-bag",
+      "name": "Bịch Đồ Ăn Từ Lam Tinh",
+      "source": "assets/source/items/convenience-bag.svg",
+      "src": "/assets/items/convenience-bag.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/opening-kit.png"
+    },
+    {
+      "assetId": "cracker-packet",
+      "name": "Gói Bánh Quy",
+      "source": "assets/source/items/cracker-packet.svg",
+      "src": "/assets/items/cracker-packet.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/convenience-bag-contents.png"
+    },
+    {
+      "assetId": "cup-noodles",
+      "name": "Mì Ăn Liền Cốc",
+      "source": "assets/source/items/cup-noodles.svg",
+      "src": "/assets/items/cup-noodles.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/convenience-bag-contents.png"
+    },
+    {
+      "assetId": "herbs",
+      "name": "Cỏ Tuyết",
+      "source": "assets/source/items/herbs.svg",
+      "src": "/assets/items/herbs.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/opening-materials.png"
+    },
+    {
+      "assetId": "iron-pot",
+      "name": "Nồi Sắt",
+      "source": "assets/source/items/iron-pot.svg",
+      "src": "/assets/items/iron-pot.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/opening-kit.png"
+    },
+    {
+      "assetId": "main-meal-box",
+      "name": "Hộp Cơm Tiện Lợi",
+      "source": "assets/source/items/main-meal-box.svg",
+      "src": "/assets/items/main-meal-box.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/convenience-bag-contents.png"
+    },
+    {
+      "assetId": "napkin-chopsticks",
+      "name": "Khăn Giấy và Đũa Dùng Một Lần",
+      "source": "assets/source/items/napkin-chopsticks.svg",
+      "src": "/assets/items/napkin-chopsticks.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/convenience-bag-contents.png"
+    },
+    {
+      "assetId": "ore",
+      "name": "Than Nâu",
+      "source": "assets/source/items/ore.svg",
+      "src": "/assets/items/ore.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/opening-materials.png"
+    },
+    {
+      "assetId": "packaged-sandwich",
+      "name": "Sandwich Đóng Gói",
+      "source": "assets/source/items/packaged-sandwich.svg",
+      "src": "/assets/items/packaged-sandwich.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/convenience-bag-contents.png"
+    },
+    {
+      "assetId": "potato-chip-packet",
+      "name": "Gói Khoai Tây Lát",
+      "source": "assets/source/items/potato-chip-packet.svg",
+      "src": "/assets/items/potato-chip-packet.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/convenience-bag-contents.png"
+    },
+    {
+      "assetId": "potion",
+      "name": "Lọ Thuốc",
+      "source": "assets/source/items/potion.svg",
+      "src": "/assets/items/potion.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/sample-items.png"
+    },
+    {
+      "assetId": "ring",
+      "name": "Nhẫn",
+      "source": "assets/source/items/ring.svg",
+      "src": "/assets/items/ring.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/sample-items.png"
+    },
+    {
+      "assetId": "roasted-seeds-packet",
+      "name": "Gói Hạt Rang",
+      "source": "assets/source/items/roasted-seeds-packet.svg",
+      "src": "/assets/items/roasted-seeds-packet.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/convenience-bag-contents.png"
+    },
+    {
+      "assetId": "round-shield",
+      "name": "Khiên Tròn Gỗ",
+      "source": "assets/source/items/round-shield.svg",
+      "src": "/assets/items/round-shield.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/opening-kit.png"
+    },
+    {
+      "assetId": "salt",
+      "name": "Muối",
+      "source": "assets/source/items/salt.svg",
+      "src": "/assets/items/salt.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/opening-materials.png"
+    },
+    {
+      "assetId": "scroll",
+      "name": "Bản Vẽ",
+      "source": "assets/source/items/scroll.svg",
+      "src": "/assets/items/scroll.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/sample-items.png"
+    },
+    {
+      "assetId": "staff",
+      "name": "Trượng Gỗ",
+      "source": "assets/source/items/staff.svg",
+      "src": "/assets/items/staff.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/opening-kit.png"
+    },
+    {
+      "assetId": "stone",
+      "name": "Đá",
+      "source": "assets/source/items/stone.svg",
+      "src": "/assets/items/stone.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/opening-materials.png"
+    },
+    {
+      "assetId": "stone-hammer",
+      "name": "Búa Đá",
+      "source": "assets/source/items/stone-hammer.svg",
+      "src": "/assets/items/stone-hammer.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/opening-kit.png"
+    },
+    {
+      "assetId": "supply-coffer",
+      "name": "Hòm Vật Tư Lãnh Địa",
+      "source": "assets/source/items/supply-coffer.svg",
+      "src": "/assets/items/supply-coffer.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/opening-kit.png"
+    },
+    {
+      "assetId": "sword",
+      "name": "Kiếm Sắt",
+      "source": "assets/source/items/sword.svg",
+      "src": "/assets/items/sword.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/sample-items.png"
+    },
+    {
+      "assetId": "tea-bottle",
+      "name": "Chai Trà Không Đường 500 ml",
+      "source": "assets/source/items/tea-bottle.svg",
+      "src": "/assets/items/tea-bottle.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/convenience-bag-contents.png"
+    },
+    {
+      "assetId": "two-baozi",
+      "name": "Hai Bánh Bao Nhân",
+      "source": "assets/source/items/two-baozi.svg",
+      "src": "/assets/items/two-baozi.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/convenience-bag-contents.png"
+    },
+    {
+      "assetId": "water",
+      "name": "Băng Nước Sạch",
+      "source": "assets/source/items/water.svg",
+      "src": "/assets/items/water.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/opening-materials.png"
+    },
+    {
+      "assetId": "wood",
+      "name": "Gỗ",
+      "source": "assets/source/items/wood.svg",
+      "src": "/assets/items/wood.svg",
+      "canvas": {
+        "width": 256,
+        "height": 256
+      },
+      "style": "ink",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/opening-materials.png"
+    }
+  ],
+  "unitArt": [
+    {
+      "assetId": "polar-farmer-t1",
+      "name": "Nông Phu Cực Địa · hình mẫu cư dân",
+      "note": "Mẫu vai trò chung, không đại diện cho một cư dân đã được tuyển mộ.",
+      "canvas": {
+        "width": 320,
+        "height": 400
+      },
+      "style": "semi-realistic",
+      "source": "assets/source/units/polar-farmer-t1.svg",
+      "src": "/assets/units/polar-farmer-t1.svg",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/early-unit-studies.png"
+    },
+    {
+      "assetId": "tomb-zombie-t0",
+      "name": "Zombie Ngôi Mộ · mẫu Thường T0",
+      "note": "Mẫu thị giác cho đầu ra Ngôi Mộ; không mô tả quân đã sinh tại T0.",
+      "canvas": {
+        "width": 320,
+        "height": 400
+      },
+      "style": "semi-realistic",
+      "source": "assets/source/units/tomb-zombie-t0.svg",
+      "src": "/assets/units/tomb-zombie-t0.svg",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/early-unit-studies.png"
+    },
+    {
+      "assetId": "direct-revived-cadaver",
+      "name": "Tử Phục · hình mẫu thi thể",
+      "note": "Một study chung; unit thực tế giữ ngoại hình theo corpse record và loadout của nó.",
+      "canvas": {
+        "width": 320,
+        "height": 400
+      },
+      "style": "semi-realistic",
+      "source": "assets/source/units/direct-revived-cadaver.svg",
+      "src": "/assets/units/direct-revived-cadaver.svg",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/early-unit-studies.png"
+    },
+    {
+      "assetId": "snow-hare-r0",
+      "name": "Thỏ Băng · ecology T0",
+      "note": "Study thư viện cho loài được nguồn canon ghi nhận ở T0; chưa quan sát, không tiết lộ bản đồ và không tạo encounter hoặc force.",
+      "canvas": {
+        "width": 320,
+        "height": 400
+      },
+      "style": "semi-realistic",
+      "source": "assets/source/units/snow-hare-r0.svg",
+      "src": "/assets/units/snow-hare-r0.svg",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/early-ecology-studies.png"
+    },
+    {
+      "assetId": "snow-fox-r0",
+      "name": "Cáo Tuyết · ecology T0",
+      "note": "Study thư viện cho loài được nguồn canon ghi nhận ở T0; chưa quan sát, không tiết lộ bản đồ và không tạo encounter hoặc force.",
+      "canvas": {
+        "width": 320,
+        "height": 400
+      },
+      "style": "semi-realistic",
+      "source": "assets/source/units/snow-fox-r0.svg",
+      "src": "/assets/units/snow-fox-r0.svg",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/early-ecology-studies.png"
+    },
+    {
+      "assetId": "mist-deer-r0",
+      "name": "Hươu Sương · ecology T0",
+      "note": "Study thư viện cho loài được nguồn canon ghi nhận ở T0; chưa quan sát, không tiết lộ bản đồ và không tạo encounter hoặc force.",
+      "canvas": {
+        "width": 320,
+        "height": 400
+      },
+      "style": "semi-realistic",
+      "source": "assets/source/units/mist-deer-r0.svg",
+      "src": "/assets/units/mist-deer-r0.svg",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/early-ecology-studies.png"
+    },
+    {
+      "assetId": "ice-burrowing-worm-r0",
+      "name": "Sâu Đào Băng · ecology T0",
+      "note": "Study thư viện cho loài được nguồn canon ghi nhận ở T0; chưa quan sát, không tiết lộ bản đồ và không tạo encounter hoặc force.",
+      "canvas": {
+        "width": 320,
+        "height": 400
+      },
+      "style": "semi-realistic",
+      "source": "assets/source/units/ice-burrowing-worm-r0.svg",
+      "src": "/assets/units/ice-burrowing-worm-r0.svg",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/early-ecology-studies.png"
+    },
+    {
+      "assetId": "snow-wolf-r1",
+      "name": "Sói Tuyết · ecology R1",
+      "note": "Study thư viện cho loài được nguồn canon ghi nhận ở R1; chưa quan sát, không tiết lộ bản đồ và không tạo encounter hoặc force.",
+      "canvas": {
+        "width": 320,
+        "height": 400
+      },
+      "style": "semi-realistic",
+      "source": "assets/source/units/snow-wolf-r1.svg",
+      "src": "/assets/units/snow-wolf-r1.svg",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/early-ecology-studies.png"
+    },
+    {
+      "assetId": "carrion-crow-r1",
+      "name": "Quạ Xác · ecology R1",
+      "note": "Study thư viện cho loài được nguồn canon ghi nhận ở R1; chưa quan sát, không tiết lộ bản đồ và không tạo encounter hoặc force.",
+      "canvas": {
+        "width": 320,
+        "height": 400
+      },
+      "style": "semi-realistic",
+      "source": "assets/source/units/carrion-crow-r1.svg",
+      "src": "/assets/units/carrion-crow-r1.svg",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/early-ecology-studies.png"
+    },
+    {
+      "assetId": "long-haired-ox-r2",
+      "name": "Bò Lông Dài · ecology R2",
+      "note": "Study thư viện cho loài được nguồn canon ghi nhận ở R2; chưa quan sát, không tiết lộ bản đồ và không tạo encounter hoặc force.",
+      "canvas": {
+        "width": 320,
+        "height": 400
+      },
+      "style": "semi-realistic",
+      "source": "assets/source/units/long-haired-ox-r2.svg",
+      "src": "/assets/units/long-haired-ox-r2.svg",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/early-ecology-studies.png"
+    },
+    {
+      "assetId": "ice-cave-bear-r3",
+      "name": "Gấu Hang Băng · ecology R3",
+      "note": "Study thư viện cho loài được nguồn canon ghi nhận ở R3; chưa quan sát, không tiết lộ bản đồ và không tạo encounter hoặc force.",
+      "canvas": {
+        "width": 320,
+        "height": 400
+      },
+      "style": "semi-realistic",
+      "source": "assets/source/units/ice-cave-bear-r3.svg",
+      "src": "/assets/units/ice-cave-bear-r3.svg",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/early-ecology-studies.png"
+    },
+    {
+      "assetId": "wild-undead-r3",
+      "name": "Undead Hoang · ecology R3",
+      "note": "Study thư viện cho loài được nguồn canon ghi nhận ở R3; chưa quan sát, không tiết lộ bản đồ và không tạo encounter hoặc force.",
+      "canvas": {
+        "width": 320,
+        "height": 400
+      },
+      "style": "semi-realistic",
+      "source": "assets/source/units/wild-undead-r3.svg",
+      "src": "/assets/units/wild-undead-r3.svg",
+      "provenance": "Original OpenAI ImageGen concept sheet generated for this project on 2026-10-10; palette-traced into standalone editable SVG paths.",
+      "license": "Original generated concept derivative created for this project; permitted for this project.",
+      "status": "draft",
+      "referenceSource": "assets/source/concepts/early-ecology-studies.png"
     }
   ]
 }
