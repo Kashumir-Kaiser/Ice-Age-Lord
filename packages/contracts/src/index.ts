@@ -291,6 +291,10 @@ export type PlayerView = {
     mana: { current: number; max: number };
     careerState: 'unemployed' | 'active';
   };
+  careerCard: {
+    observed: boolean;
+    career: null | { id: Id; name: string; openingSkillId: Id; growthAllocation: 'SPI/PRE' };
+  };
   territory: {
     id: Id;
     stage: 'H0';
@@ -298,7 +302,10 @@ export type PlayerView = {
     survivalFire: { level: 1; active: true; heatRadiusMetres: 10; protection: 'pending-opening-settlement' };
     buildings: readonly { id: Id; name: string; status: string }[];
   };
-  inventory: { containers: readonly { id: Id; label: string; slots: number; items: readonly { itemId: Id; label: string; quantity: number }[] }[] };
+  inventory: {
+    inspectableContainers: readonly { containerId: Id; label: string; kind: 'territory_supply' | 'carried_bag' }[];
+    containers: readonly { id: Id; label: string; slots: number; items: readonly { itemId: Id; label: string; quantity: number }[] }[];
+  };
   units: readonly { id: Id; name: string; creationRoute: string }[];
   jobs: readonly { id: Id; status: string }[];
   visibleMap: VisibleMap;
@@ -373,6 +380,7 @@ export type GameState = {
     knownLairIds: readonly Id[];
     knownResourceIds: readonly Id[];
     knownRouteIds: readonly Id[];
+    careerCardObserved: boolean;
     lastSeenByEntity: Readonly<Record<string, { observedAtElapsedMs: number; knowledge: KnowledgeStatus }>>;
     lastInspectedEntityIds: readonly Id[];
   };
@@ -397,6 +405,7 @@ export type GameState = {
 export type CommandType =
   | 'inspect_entity'
   | 'inspect_starter_container'
+  | 'inspect_career_card'
   | 'activate_career_card'
   | 'set_clock_speed'
   | 'advance_to_boundary'
@@ -417,6 +426,7 @@ export type CommandType =
 export type CommandPayloadByType = {
   inspect_entity: { entity: EntityRef };
   inspect_starter_container: { containerId: Id };
+  inspect_career_card: Record<never, never>;
   activate_career_card: { cardId: Id };
   set_clock_speed: { speed: 'paused' | '1x' | '2x' | '5x' };
   advance_to_boundary: { boundaryId: Id };
@@ -487,7 +497,7 @@ export interface GameClient {
 }
 
 const commandTypes = new Set<CommandType>([
-  'inspect_entity', 'inspect_starter_container', 'activate_career_card', 'set_clock_speed',
+  'inspect_entity', 'inspect_starter_container', 'inspect_career_card', 'activate_career_card', 'set_clock_speed',
   'advance_to_boundary', 'enqueue_tomb', 'move', 'survey', 'search', 'harvest',
   'open_cache', 'repair', 'build', 'craft', 'revive', 'equip', 'attack', 'shop_transaction',
 ]);
@@ -495,6 +505,7 @@ const commandTypes = new Set<CommandType>([
 const payloadFields: Readonly<Record<CommandType, readonly string[]>> = {
   inspect_entity: ['entity'],
   inspect_starter_container: ['containerId'],
+  inspect_career_card: [],
   activate_career_card: ['cardId'],
   set_clock_speed: ['speed'],
   advance_to_boundary: ['boundaryId'],
