@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 640" role="img" aria-label="Lí Lan trong trang phục khởi đầu, ink full body">
+<title>Lí Lan — T0 full-body concept, ink style</title><defs>
+<linearGradient id="ink" x1=".12" y1=".1" x2=".86" y2="1"><stop stop-color="#415768"/><stop offset=".29" stop-color="#182733"/><stop offset=".72" stop-color="#0b1923"/><stop offset="1" stop-color="#334b57"/></linearGradient>
+<linearGradient id="face" x1=".12" y1="0" x2=".87" y2=".97"><stop stop-color="#d7c9b8"/><stop offset=".3" stop-color="#c3b8ab"/><stop offset=".67" stop-color="#a39790"/><stop offset="1" stop-color="#6b7379"/></linearGradient>
+<linearGradient id="hood" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#465b66"/><stop offset=".23" stop-color="#20333f"/><stop offset=".7" stop-color="#0b1721"/><stop offset="1" stop-color="#111b26"/></linearGradient>
+<linearGradient id="hair" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#354451"/><stop offset=".28" stop-color="#151f2a"/><stop offset=".85" stop-color="#090f18"/><stop offset="1" stop-color="#293c45"/></linearGradient>
+<linearGradient id="snow" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#eef0e5"/><stop offset="1" stop-color="#718994"/></linearGradient>
+<radialGradient id="frost" cx=".5" cy=".5" r=".55"><stop stop-color="#a3b4b8" stop-opacity=".32"/><stop offset="1" stop-color="#859ca5" stop-opacity="0"/></radialGradient>
+<linearGradient id="coat" x1=".1" y1=".1" x2="1" y2=".8"><stop stop-color="#59656c"/><stop offset=".24" stop-color="#263541"/><stop offset=".75" stop-color="#101a26"/><stop offset="1" stop-color="#050e19"/></linearGradient>
+<clipPath id="faceclip"><path d="M178 205Q178 154 216 143Q248 128 278 159Q307 180 298 235Q291 295 253 318Q227 334 198 293Q178 261 178 205Z"/></clipPath>
+</defs>
+<ellipse cx="203" cy="593" rx="94" ry="15" fill="#121d26" opacity=".44"/>
+<!-- slim legs and practical shorts: no unsolicited weapons or armor -->
+<path d="M171 382l-4 119-20 81 20 10 35-75 17-92m-1-35 13 112 12 83 24 4-1-94-12-116" fill="#a79d94" stroke="#1f3039" stroke-width="4"/>
+<path d="M155 563l27 3-3 27-21 10-20-6 1-19m110-18 27 2 3 30-19 7-29-7 8-22" fill="url(#ink)" stroke="#20323f" stroke-width="4"/>
+<path d="M153 350l99-5 7 90-50 6-8-45-5 43-42-8Z" fill="#202b36" stroke="#111b27" stroke-width="5"/>
+<path d="M162 421h28m31-1h26" stroke="#8c9ba1" stroke-opacity=".4" stroke-width="2"/>
+<!-- torso hoodie -->
+<path d="M154 184q21-32 45-37l51 2q40 17 51 64l-18 153-131 0-13-145Z" fill="url(#hood)" stroke="#172632" stroke-width="5"/>
+<path d="M160 200l-31 102q-7 35 10 44l25-7 26-83m98-58 28 96q10 35-5 45l-25-4-29-78" fill="url(#coat)" stroke="#152532" stroke-width="5"/>
+<path d="M169 222q21 13 41 7m65-4q-12 15-28 16" fill="none" stroke="#a5b6b5" stroke-opacity=".29" stroke-width="5"/>
+<!-- hands -->
+<path d="M134 333l23 7-1 26q-11 19-23 5Z" fill="url(#face)" stroke="#4b545c" stroke-width="2.4"/>
+<path d="M288 335l25 1-2 30q-13 15-23-7Z" fill="url(#face)" stroke="#4b545c" stroke-width="2.4"/>
+<!-- neck and face -->
+<path d="M199 149v33l25 24 21-26-5-43" fill="url(#face)" stroke="#33414b" stroke-width="3"/>
+<path d="M182 81Q186 40 218 39q46-6 55 43l-4 53q-19 42-45 43-32-7-43-46Z" fill="url(#face)" stroke="#30404b" stroke-width="3.4"/>
+<path d="M177 89Q173 33 222 26q57-1 62 61l-16-23-18-9q-17 20-67 33Z" fill="url(#hair)" stroke="#12202b" stroke-width="5"/>
+<path d="M183 75q-11 52 5 98M278 79q4 44-18 97" fill="none" stroke="#14222c" stroke-width="13"/>
+<path d="M193 109q14-8 28 0m24 0q13-8 25-1" stroke="#16232c" stroke-width="3" fill="none"/>
+<path d="M195 118q11-5 25 0m26-1q9-6 21 0" stroke="#586770" stroke-width="2" fill="none"/>
+<ellipse cx="210" cy="117" rx="3" ry="4" fill="#101822"/><ellipse cx="256" cy="117" rx="3" ry="4" fill="#101822"/>
+<path d="M231 121l-5 19 11 2m-16 11q10 4 18 0" stroke="#64676c" stroke-width="2.2" fill="none"/>
+<path d="M189 132q17 6 32 0m26 1q10 5 21-2" stroke="#56636b" stroke-opacity=".4" stroke-width="3" fill="none"/>
+<!-- hoodie details -->
+<path d="M192 185l32 39 34-39 12 71-43 24-49-27Z" fill="#121d28" stroke="#647985" stroke-width="3"/>
+<path d="M225 228v136M188 248l-12 48m92-46 18 47M151 348h135" stroke="#b4bbae" stroke-width="2.5" stroke-opacity=".44" fill="none"/>
+<path d="M219 193l-4 45m25-44 4 45" stroke="#afb5a9" stroke-opacity=".55" stroke-width="2" fill="none"/>
+<path d="M160 353q64 16 125-2" fill="none" stroke="#131d27" stroke-width="6"/>
+<!-- carried small convenience bag, not pre-revealed contents -->
+<path d="M303 348l32 1 13 55-37 8-15-59Z" fill="#a9b3b1" fill-opacity=".74" stroke="#475b62" stroke-width="2.5"/>
+<path d="M305 352q7-22 25 0" fill="none" stroke="#68777a" stroke-width="3"/>
+<g stroke="#bcc9c2" opacity=".32" fill="none"><path d="M170 296l28 7m41-1 31-10m-89 37 23 4m42-5 21-4M163 403l21 6"/></g>
+</svg>

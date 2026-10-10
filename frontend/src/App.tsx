@@ -91,7 +91,7 @@ function Header({ screen, screens, onMenu, notifications, onNotifications, clock
         <small className="clock-sim-label">Đồng hồ hiển thị · Không chạy engine</small>
       </div>
       <button className={`icon-button ${notifications?'icon-button--active':''}`} onClick={onNotifications} aria-label="Thông tin bản demo" aria-expanded={notifications}><Bell size={18}/></button>
-      <div className="profile-mini" aria-label="Lí Lan — người chơi"><span className="profile-monogram">蘭</span><span className="profile-name">Lí Lan<small>Người chơi</small></span></div>
+      <div className="profile-mini" aria-label="Lí Lan — người chơi"><img className="profile-portrait" src="/assets/characters/li-lan-t0-portrait.svg" width={38} height={38} alt="Chân dung Lí Lan"/><span className="profile-name">Lí Lan<small>Người chơi</small></span></div>
     </div>
   </header>;
 }
@@ -133,18 +133,7 @@ function Overview({ selectedEntity, mapProps, navigate, clockSeconds, onClockCha
         <p>Trên đồng bằng bị chôn dưới lớp băng, Lí Lan bắt đầu với Lửa Sinh Tồn, Nhà Lãnh Chúa hư hại và Ngôi Mộ cổ xưa.</p>
         <button className="hero-link" onClick={()=>navigate('map')}>Khám phá bản đồ <ChevronRight size={18}/></button>
       </div>
-      <div className="hero-art" aria-hidden="true"><svg viewBox="0 0 470 285" preserveAspectRatio="xMidYMid meet">
-        <defs><linearGradient id="bannerMount" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#aac8cf" stopOpacity=".48"/><stop offset="1" stopColor="#487486" stopOpacity=".08"/></linearGradient></defs>
-        <circle cx="305" cy="90" r="73" fill="none" stroke="#9bc1c7" strokeOpacity=".26"/><circle cx="305" cy="90" r="53" fill="#bed6d4" opacity=".13"/>
-        <path d="m0 210 85-90 66 60 90-137 93 119 53-50 83 96v70H0Z" fill="url(#bannerMount)"/>
-        <path d="m185 124 56-81 65 85-57-29-22 16Z" fill="#d4e9e8" opacity=".57"/>
-        <path d="m0 261 107-51 68 19 100-38 104 18 91 17v60H0Z" fill="#244555" opacity=".95"/>
-        <ellipse cx="294" cy="236" rx="82" ry="34" fill="#dfad75" opacity=".08"/>
-        <path d="m267 240 32-7m-21 14 25-15" stroke="#95755e" strokeWidth="8" strokeLinecap="round"/>
-        <path d="M288 233c-21-18-1-29 0-48 6 17 23 25 13 41 16-14 17-28 15-38 25 36 7 49-19 54Z" fill="#e9a568" opacity=".9"/>
-        <path d="M299 235c-10-14-3-24 4-32 7 13 12 23-4 32" fill="#ffe0a1"/>
-        <g fill="#a9d2d1" opacity=".53"><circle cx="380" cy="37" r="2"/><circle cx="191" cy="51" r="1.5"/><circle cx="449" cy="74" r="2"/><circle cx="47" cy="58" r="1.5"/><circle cx="357" cy="166" r="2"/></g>
-      </svg></div>
+      <div className="hero-art hero-art--portrait" aria-hidden="true"><img src="/assets/characters/li-lan-t0-portrait.svg" alt="" loading="eager"/></div>
     </section>
     <section className="stats-grid" aria-label="Trạng thái khởi đầu">
       <StatCard icon={Clock3} label="Thời gian thế giới" value={`Ngày ${displayDay(clockSeconds)} · ${displayClock(clockSeconds)}`} note="Mốc bắt đầu xác lập" tone="ice"/>

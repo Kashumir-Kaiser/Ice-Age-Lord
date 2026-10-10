@@ -6,7 +6,7 @@ const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const manifestPath = resolve(repo, 'assets/manifest.json');
 const publicManifest = resolve(repo, 'frontend/public/assets/manifest.json');
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
-const sourceFolders = ['buildings', 'items', 'terrain', 'units'];
+const sourceFolders = ['buildings', 'items', 'terrain', 'units', 'characters'];
 for (const folder of sourceFolders) {
   if (!existsSync(resolve(repo, `assets/source/${folder}`))) throw new Error(`Missing authoring folder: assets/source/${folder}`);
 }
@@ -23,6 +23,17 @@ for (const asset of manifest.assets) {
     if (!viewBox || viewBox.length !== 4 || viewBox[2] !== asset.logicalCanvas.width || viewBox[3] !== asset.logicalCanvas.height) {
       throw new Error(`Runtime layer registration does not match the manifest for ${asset.assetId}: ${layer}`);
     }
+  }
+}
+for (const portrait of manifest.characterArt ?? []) {
+  const source = resolve(repo, portrait.source);
+  const output = resolve(repo, 'frontend/public' + portrait.src);
+  if (!existsSync(source) || !existsSync(output)) throw new Error('Missing character artwork ' + portrait.id);
+  for (const path of [source, output]) {
+    const svg = readFileSync(path, 'utf8');
+    const box = svg.match(/viewBox="([^"]+)"/)?.[1].split(/\s+/).map(Number);
+    if (!box || box[2] !== portrait.canvas.width || box[3] !== portrait.canvas.height || /<image\b/.test(svg))
+      throw new Error('Invalid SVG portrait art: ' + portrait.id);
   }
 }
 mkdirSync(dirname(publicManifest), { recursive: true });

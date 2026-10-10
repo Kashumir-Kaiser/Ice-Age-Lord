@@ -1486,5 +1486,33 @@
       "maxLevel": 30,
       "assetId": "survival-fire-l26"
     }
+  ],
+  "characterArt": [
+    {
+      "id": "li-lan-t0-portrait",
+      "characterId": "PLAYER-LI-LAN",
+      "state": "T0",
+      "style": "winter-ink",
+      "source": "assets/source/characters/li-lan-t0-portrait.svg",
+      "src": "/assets/characters/li-lan-t0-portrait.svg",
+      "canvas": {
+        "width": 480,
+        "height": 640
+      },
+      "status": "draft"
+    },
+    {
+      "id": "li-lan-t0-fullbody",
+      "characterId": "PLAYER-LI-LAN",
+      "state": "T0",
+      "style": "winter-ink",
+      "source": "assets/source/characters/li-lan-t0-fullbody.svg",
+      "src": "/assets/characters/li-lan-t0-fullbody.svg",
+      "canvas": {
+        "width": 400,
+        "height": 640
+      },
+      "status": "draft"
+    }
   ]
 }
