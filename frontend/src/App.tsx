@@ -97,7 +97,7 @@ function Header({ screen, screens, player, onMenu, onOpenPlayerProfile, profileO
         <small className="clock-sim-label">Đồng hồ hiển thị · Không chạy engine</small>
       </div>
       <button className={`icon-button ${notifications?'icon-button--active':''}`} onClick={onNotifications} aria-label="Thông tin bản demo" aria-expanded={notifications}><Bell size={18}/></button>
-      <button type="button" className="profile-mini" onClick={onOpenPlayerProfile} aria-haspopup="dialog" aria-expanded={profileOpen} aria-label={`Mở hồ sơ người chơi: ${player.name}`}><img className="profile-portrait" src="/assets/characters/li-lan-t0-portrait.svg" width={38} height={38} alt="Chân dung Lí Lan"/><span className="profile-name">{player.name}<small>Người chơi</small></span></button>
+      <button type="button" className="profile-mini" onClick={onOpenPlayerProfile} aria-haspopup="dialog" aria-expanded={profileOpen} aria-label={`Mở hồ sơ người chơi: ${player.name}`}><img className="profile-portrait" src="/assets/characters/li-lan-t0-portrait.svg?v=20261010" width={38} height={38} alt="Chân dung Lí Lan"/><span className="profile-name">{player.name}<small>Người chơi</small></span></button>
     </div>
   </header>;
 }
@@ -108,7 +108,7 @@ function PlayerProfile({ player, open, followPlayer, onClose, onFollowChange, on
   return <div className="player-profile-backdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget)onClose();}}>
     <section className="player-profile-dialog" role="dialog" aria-modal="true" aria-labelledby="player-profile-title">
       <header className="player-profile-heading"><div><span className="eyebrow">HỒ SƠ NGƯỜI CHƠI · MỐC T0</span><h2 id="player-profile-title">Hồ sơ {player.name}</h2></div><button type="button" className="icon-button" aria-label="Đóng hồ sơ" onClick={onClose}><X size={18}/></button></header>
-      <div className="player-profile-identity"><img className="player-profile-avatar" src="/assets/characters/li-lan-t0-portrait.svg" width={66} height={66} alt="Chân dung Lí Lan"/><div><h3>{player.name}</h3><p>Lãnh chúa · H0 · Cấp {player.level}</p><span className="player-profile-talent"><Sparkles size={14}/> {player.title} · {player.grade}</span></div></div>
+      <div className="player-profile-identity"><img className="player-profile-avatar" src="/assets/characters/li-lan-t0-portrait.svg?v=20261010" width={66} height={66} alt="Chân dung Lí Lan"/><div><h3>{player.name}</h3><p>Lãnh chúa · H0 · Cấp {player.level}</p><span className="player-profile-talent"><Sparkles size={14}/> {player.title} · {player.grade}</span></div></div>
       <div className="player-profile-stats" aria-label="Chỉ số hồ sơ">
         <article><span>Tuổi</span><strong>{player.age}</strong></article><article><span>Kinh nghiệm</span><strong>{player.xp.toLocaleString('vi-VN')} XP</strong></article>
         <article><span>Mana</span><strong>{player.mana.current} / {player.mana.max}</strong></article>
@@ -159,7 +159,7 @@ function Overview({ selectedEntity, mapProps, navigate, clockSeconds, onClockCha
         <p>Trên đồng bằng bị chôn dưới lớp băng, Lí Lan bắt đầu với Lửa Sinh Tồn, Nhà Lãnh Chúa hư hại và Ngôi Mộ cổ xưa.</p>
         <button className="hero-link" onClick={()=>navigate('map')}>Khám phá bản đồ <ChevronRight size={18}/></button>
       </div>
-      <div className="hero-art hero-art--portrait" aria-hidden="true"><img src="/assets/characters/li-lan-t0-portrait.svg" alt="" loading="eager"/></div>
+      <div className="hero-art hero-art--portrait" aria-hidden="true"><img src="/assets/characters/li-lan-t0-portrait.svg?v=20261010" alt="" loading="eager"/></div>
     </section>
     <section className="stats-grid" aria-label="Trạng thái khởi đầu">
       <StatCard icon={Clock3} label="Thời gian thế giới" value={`Ngày ${displayDay(clockSeconds)} · ${displayClock(clockSeconds)}`} note="Mốc bắt đầu xác lập" tone="ice"/>

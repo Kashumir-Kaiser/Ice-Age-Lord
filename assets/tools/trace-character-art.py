@@ -1,8 +1,9 @@
-"""Trace the T0 character concept sheet into editable, raster-free SVG art.
+"""Trace the T0 portrait reference into editable, raster-free SVG art.
 
 The source illustration remains in assets/source/concepts. This small adapter
-uses the project's shared cell selector and palette-to-path encoder so the
-registered character art follows the same export approach as other early art.
+uses the project's shared palette-to-path encoder so the portrait follows the
+same export approach as other early art. The older two-view sheet is retained
+for the existing full-body master but is no longer used to regenerate it.
 """
 from __future__ import annotations
 
@@ -21,25 +22,18 @@ if spec is None or spec.loader is None:
 tracer = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(tracer)
 
-SHEET = "li-lan-t0-two-view.png"
-JOBS = [
-    (0, "li-lan-t0-portrait", "Lí Lan at T0 · winter-ink portrait", 480, 640),
-    (1, "li-lan-t0-fullbody", "Lí Lan at T0 · winter-ink full-body", 400, 640),
-]
+SHEET = "li-lan-t0-portrait-generated.png"
 
 
 def main() -> None:
     from PIL import Image
 
     image = Image.open(CONCEPTS / SHEET).convert("RGBA")
-    for column, name, title, width, height in JOBS:
-        crop = tracer.select_component(
-            image, columns=2, rows=1, col=column, row=0, isolate_main=True
-        )
-        svg = tracer.color_path_svg(crop, title, width, height, colors=128)
-        target = CHARACTERS / f"{name}.svg"
-        target.write_text(svg, encoding="utf-8")
-        print(f"{target.relative_to(ROOT)}: {crop.width}x{crop.height} -> {width}x{height}")
+    title = "Lí Lan at T0 · winter-ink portrait"
+    svg = tracer.color_path_svg(image, title, 480, 640, colors=128)
+    target = CHARACTERS / "li-lan-t0-portrait.svg"
+    target.write_text(svg, encoding="utf-8")
+    print(f"{target.relative_to(ROOT)}: {image.width}x{image.height} -> 480x640")
 
 
 if __name__ == "__main__":
