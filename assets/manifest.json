@@ -125,9 +125,10 @@
     {
       "assetId": "lord-house-damaged",
       "definitionId": "SITE-LL01-001",
-      "variant": "placeholder-original",
+      "variant": "winter-ink-handpainted-architecture-v1",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
+      "presentationScale": 1.22,
       "layers": {
         "uiIcon": "/assets/buildings/lord-house-damaged/icon.svg",
         "body": "/assets/buildings/lord-house-damaged/body.svg",
@@ -137,8 +138,8 @@
         "vfx": null
       },
       "logicalCanvas": {
-        "width": 240,
-        "height": 200
+        "width": 480,
+        "height": 400
       },
       "trimOffset": {
         "x": 0,
@@ -150,73 +151,73 @@
       },
       "artFootprint": [
         [
-          0.22,
-          0.78
+          0.16,
+          0.72
         ],
         [
           0.5,
-          0.92
+          0.9
         ],
         [
-          0.78,
-          0.78
+          0.84,
+          0.72
         ],
         [
           0.5,
-          0.64
+          0.54
         ]
       ],
       "visualBounds": {
-        "minX": 0.13,
-        "minY": 0.05,
-        "maxX": 0.87,
-        "maxY": 0.96
+        "minX": 0.11,
+        "minY": 0.13,
+        "maxX": 0.89,
+        "maxY": 0.9
       },
       "hitPolygon": [
         [
-          0.22,
-          0.78
+          0.16,
+          0.72
         ],
         [
           0.5,
-          0.92
+          0.9
         ],
         [
-          0.78,
-          0.78
+          0.84,
+          0.72
         ],
         [
           0.5,
-          0.64
+          0.54
         ]
       ],
       "occlusionRegion": {
         "upper": [
           [
-            0.28,
+            0.18,
             0.72
           ],
           [
-            0.3,
-            0.31
+            0.22,
+            0.24
           ],
           [
             0.5,
-            0.08
+            0.12
           ],
           [
-            0.72,
-            0.31
+            0.78,
+            0.25
           ],
           [
-            0.73,
+            0.82,
             0.72
           ]
         ]
       },
       "drawDepthAnchor": {
         "x": 0.5,
-        "y": 0.84
+        "y": 0.83
       },
       "compatiblePhysicalFootprint": {
         "assumptionId": "TERRITORY-FOOTPRINTS-V1",
@@ -224,9 +225,9 @@
         "depthM": 4
       },
       "source": "assets/source/buildings/lord-house-damaged.svg",
-      "provenance": "Original authored SVG placeholder",
-      "license": "Original work created for this repository; permitted for this project.",
-      "status": "placeholder",
+      "provenance": "Original authored winter-ink SVG art, aesthetic study based on approved Ice Age Lord palette; draft until browser visual QA.",
+      "license": "Original art authored for this repository.",
+      "status": "draft",
       "lodVariants": {
         "close": {
           "body": "/assets/buildings/lord-house-damaged/body.svg",
@@ -245,9 +246,10 @@
     {
       "assetId": "tomb-entry",
       "definitionId": "SITE-LL01-003",
-      "variant": "placeholder-original",
+      "variant": "winter-ink-handpainted-architecture-v1",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
+      "presentationScale": 1.27,
       "layers": {
         "uiIcon": "/assets/buildings/tomb-entry/icon.svg",
         "body": "/assets/buildings/tomb-entry/body.svg",
@@ -257,8 +259,8 @@
         "vfx": null
       },
       "logicalCanvas": {
-        "width": 240,
-        "height": 200
+        "width": 480,
+        "height": 400
       },
       "trimOffset": {
         "x": 0,
@@ -270,73 +272,73 @@
       },
       "artFootprint": [
         [
-          0.22,
-          0.78
+          0.16,
+          0.72
         ],
         [
           0.5,
-          0.92
+          0.9
         ],
         [
-          0.78,
-          0.78
+          0.84,
+          0.72
         ],
         [
           0.5,
-          0.64
+          0.54
         ]
       ],
       "visualBounds": {
-        "minX": 0.13,
-        "minY": 0.05,
-        "maxX": 0.87,
-        "maxY": 0.96
+        "minX": 0.11,
+        "minY": 0.13,
+        "maxX": 0.89,
+        "maxY": 0.9
       },
       "hitPolygon": [
         [
-          0.22,
-          0.78
+          0.16,
+          0.72
         ],
         [
           0.5,
-          0.92
+          0.9
         ],
         [
-          0.78,
-          0.78
+          0.84,
+          0.72
         ],
         [
           0.5,
-          0.64
+          0.54
         ]
       ],
       "occlusionRegion": {
         "upper": [
           [
-            0.28,
+            0.18,
             0.72
           ],
           [
-            0.3,
-            0.31
+            0.22,
+            0.24
           ],
           [
             0.5,
-            0.08
+            0.12
           ],
           [
-            0.72,
-            0.31
+            0.78,
+            0.25
           ],
           [
-            0.73,
+            0.82,
             0.72
           ]
         ]
       },
       "drawDepthAnchor": {
         "x": 0.5,
-        "y": 0.84
+        "y": 0.83
       },
       "compatiblePhysicalFootprint": {
         "assumptionId": "TERRITORY-FOOTPRINTS-V1",
@@ -344,9 +346,9 @@
         "depthM": 5
       },
       "source": "assets/source/buildings/tomb-entry.svg",
-      "provenance": "Original authored SVG placeholder",
-      "license": "Original work created for this repository; permitted for this project.",
-      "status": "placeholder",
+      "provenance": "Original authored winter-ink SVG art, aesthetic study based on approved Ice Age Lord palette; draft until browser visual QA.",
+      "license": "Original art authored for this repository.",
+      "status": "draft",
       "lodVariants": {
         "close": {
           "body": "/assets/buildings/tomb-entry/body.svg",
@@ -365,9 +367,10 @@
     {
       "assetId": "supply-crate",
       "definitionId": "SITE-LL01-002",
-      "variant": "placeholder-original",
+      "variant": "winter-ink-handpainted-architecture-v1",
       "orientation": "north",
-      "revision": 1,
+      "revision": 2,
+      "presentationScale": 1.02,
       "layers": {
         "uiIcon": "/assets/buildings/supply-crate/icon.svg",
         "body": "/assets/buildings/supply-crate/body.svg",
@@ -377,8 +380,8 @@
         "vfx": null
       },
       "logicalCanvas": {
-        "width": 240,
-        "height": 200
+        "width": 480,
+        "height": 400
       },
       "trimOffset": {
         "x": 0,
@@ -390,73 +393,73 @@
       },
       "artFootprint": [
         [
-          0.22,
-          0.78
+          0.16,
+          0.72
         ],
         [
           0.5,
-          0.92
+          0.9
         ],
         [
-          0.78,
-          0.78
+          0.84,
+          0.72
         ],
         [
           0.5,
-          0.64
+          0.54
         ]
       ],
       "visualBounds": {
-        "minX": 0.13,
-        "minY": 0.05,
-        "maxX": 0.87,
-        "maxY": 0.96
+        "minX": 0.11,
+        "minY": 0.13,
+        "maxX": 0.89,
+        "maxY": 0.9
       },
       "hitPolygon": [
         [
-          0.22,
-          0.78
+          0.16,
+          0.72
         ],
         [
           0.5,
-          0.92
+          0.9
         ],
         [
-          0.78,
-          0.78
+          0.84,
+          0.72
         ],
         [
           0.5,
-          0.64
+          0.54
         ]
       ],
       "occlusionRegion": {
         "upper": [
           [
-            0.28,
+            0.18,
             0.72
           ],
           [
-            0.3,
-            0.31
+            0.22,
+            0.24
           ],
           [
             0.5,
-            0.08
+            0.12
           ],
           [
-            0.72,
-            0.31
+            0.78,
+            0.25
           ],
           [
-            0.73,
+            0.82,
             0.72
           ]
         ]
       },
       "drawDepthAnchor": {
         "x": 0.5,
-        "y": 0.84
+        "y": 0.83
       },
       "compatiblePhysicalFootprint": {
         "assumptionId": "TERRITORY-FOOTPRINTS-V1",
@@ -464,9 +467,9 @@
         "depthM": 3
       },
       "source": "assets/source/buildings/supply-crate.svg",
-      "provenance": "Original authored SVG placeholder",
-      "license": "Original work created for this repository; permitted for this project.",
-      "status": "placeholder",
+      "provenance": "Original authored winter-ink SVG art, aesthetic study based on approved Ice Age Lord palette; draft until browser visual QA.",
+      "license": "Original art authored for this repository.",
+      "status": "draft",
       "lodVariants": {
         "close": {
           "body": "/assets/buildings/supply-crate/body.svg",
@@ -1453,6 +1456,490 @@
         }
       },
       "presentationScale": 2.12
+    },
+    {
+      "assetId": "lord-house-repaired",
+      "definitionId": "SITE-LL01-001",
+      "variant": "winter-ink-handpainted-architecture-v1",
+      "orientation": "north",
+      "revision": 1,
+      "presentationScale": 1.22,
+      "layers": {
+        "uiIcon": "/assets/buildings/lord-house-repaired/icon.svg",
+        "body": "/assets/buildings/lord-house-repaired/body.svg",
+        "base": "/assets/buildings/lord-house-repaired/base.svg",
+        "upper": "/assets/buildings/lord-house-repaired/upper.svg",
+        "shadow": "/assets/buildings/lord-house-repaired/shadow.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 480,
+        "height": 400
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.16,
+          0.72
+        ],
+        [
+          0.5,
+          0.9
+        ],
+        [
+          0.84,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.11,
+        "minY": 0.13,
+        "maxX": 0.89,
+        "maxY": 0.9
+      },
+      "hitPolygon": [
+        [
+          0.16,
+          0.72
+        ],
+        [
+          0.5,
+          0.9
+        ],
+        [
+          0.84,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.18,
+            0.72
+          ],
+          [
+            0.22,
+            0.24
+          ],
+          [
+            0.5,
+            0.12
+          ],
+          [
+            0.78,
+            0.25
+          ],
+          [
+            0.82,
+            0.72
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.83
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+        "widthM": 4,
+        "depthM": 4
+      },
+      "source": "assets/source/buildings/lord-house-repaired.svg",
+      "provenance": "Original authored winter-ink SVG art, aesthetic study based on approved Ice Age Lord palette; draft until browser visual QA.",
+      "license": "Original art authored for this repository.",
+      "status": "draft",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/buildings/lord-house-repaired/body.svg",
+          "base": "/assets/buildings/lord-house-repaired/base.svg",
+          "upper": "/assets/buildings/lord-house-repaired/upper.svg",
+          "shadow": "/assets/buildings/lord-house-repaired/shadow.svg"
+        },
+        "district": {
+          "icon": "/assets/buildings/lord-house-repaired/icon.svg"
+        },
+        "regional": {
+          "icon": "/assets/buildings/lord-house-repaired/icon.svg"
+        }
+      }
+    },
+    {
+      "assetId": "polar-farmhouse-l01",
+      "definitionId": "ART-REFERENCE:POLAR-FARMHOUSE-L1",
+      "variant": "winter-ink-handpainted-architecture-v1",
+      "orientation": "north",
+      "revision": 1,
+      "presentationScale": 1.17,
+      "layers": {
+        "uiIcon": "/assets/buildings/polar-farmhouse-l01/icon.svg",
+        "body": "/assets/buildings/polar-farmhouse-l01/body.svg",
+        "base": "/assets/buildings/polar-farmhouse-l01/base.svg",
+        "upper": "/assets/buildings/polar-farmhouse-l01/upper.svg",
+        "shadow": "/assets/buildings/polar-farmhouse-l01/shadow.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 480,
+        "height": 400
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.16,
+          0.72
+        ],
+        [
+          0.5,
+          0.9
+        ],
+        [
+          0.84,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.11,
+        "minY": 0.13,
+        "maxX": 0.89,
+        "maxY": 0.9
+      },
+      "hitPolygon": [
+        [
+          0.16,
+          0.72
+        ],
+        [
+          0.5,
+          0.9
+        ],
+        [
+          0.84,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.18,
+            0.72
+          ],
+          [
+            0.22,
+            0.24
+          ],
+          [
+            0.5,
+            0.12
+          ],
+          [
+            0.78,
+            0.25
+          ],
+          [
+            0.82,
+            0.72
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.83
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+        "widthM": 4,
+        "depthM": 3
+      },
+      "source": "assets/source/buildings/polar-farmhouse-l01.svg",
+      "provenance": "Original authored winter-ink SVG art, aesthetic study based on approved Ice Age Lord palette; draft until browser visual QA.",
+      "license": "Original art authored for this repository.",
+      "status": "draft",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/buildings/polar-farmhouse-l01/body.svg",
+          "base": "/assets/buildings/polar-farmhouse-l01/base.svg",
+          "upper": "/assets/buildings/polar-farmhouse-l01/upper.svg",
+          "shadow": "/assets/buildings/polar-farmhouse-l01/shadow.svg"
+        },
+        "district": {
+          "icon": "/assets/buildings/polar-farmhouse-l01/icon.svg"
+        },
+        "regional": {
+          "icon": "/assets/buildings/polar-farmhouse-l01/icon.svg"
+        }
+      }
+    },
+    {
+      "assetId": "opening-palisade-wall",
+      "definitionId": "ART-REFERENCE:OPENING-FENCE-L1",
+      "variant": "winter-ink-handpainted-architecture-v1",
+      "orientation": "north",
+      "revision": 1,
+      "presentationScale": 1.24,
+      "layers": {
+        "uiIcon": "/assets/buildings/opening-palisade-wall/icon.svg",
+        "body": "/assets/buildings/opening-palisade-wall/body.svg",
+        "base": "/assets/buildings/opening-palisade-wall/base.svg",
+        "upper": "/assets/buildings/opening-palisade-wall/upper.svg",
+        "shadow": "/assets/buildings/opening-palisade-wall/shadow.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 480,
+        "height": 400
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.16,
+          0.72
+        ],
+        [
+          0.5,
+          0.9
+        ],
+        [
+          0.84,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.11,
+        "minY": 0.13,
+        "maxX": 0.89,
+        "maxY": 0.9
+      },
+      "hitPolygon": [
+        [
+          0.16,
+          0.72
+        ],
+        [
+          0.5,
+          0.9
+        ],
+        [
+          0.84,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.18,
+            0.72
+          ],
+          [
+            0.22,
+            0.24
+          ],
+          [
+            0.5,
+            0.12
+          ],
+          [
+            0.78,
+            0.25
+          ],
+          [
+            0.82,
+            0.72
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.83
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+        "widthM": 10,
+        "depthM": 1
+      },
+      "source": "assets/source/buildings/opening-palisade-wall.svg",
+      "provenance": "Original authored winter-ink SVG art, aesthetic study based on approved Ice Age Lord palette; draft until browser visual QA.",
+      "license": "Original art authored for this repository.",
+      "status": "draft",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/buildings/opening-palisade-wall/body.svg",
+          "base": "/assets/buildings/opening-palisade-wall/base.svg",
+          "upper": "/assets/buildings/opening-palisade-wall/upper.svg",
+          "shadow": "/assets/buildings/opening-palisade-wall/shadow.svg"
+        },
+        "district": {
+          "icon": "/assets/buildings/opening-palisade-wall/icon.svg"
+        },
+        "regional": {
+          "icon": "/assets/buildings/opening-palisade-wall/icon.svg"
+        }
+      }
+    },
+    {
+      "assetId": "opening-timber-gate",
+      "definitionId": "ART-REFERENCE:OPENING-GATE-L1",
+      "variant": "winter-ink-handpainted-architecture-v1",
+      "orientation": "north",
+      "revision": 1,
+      "presentationScale": 1.22,
+      "layers": {
+        "uiIcon": "/assets/buildings/opening-timber-gate/icon.svg",
+        "body": "/assets/buildings/opening-timber-gate/body.svg",
+        "base": "/assets/buildings/opening-timber-gate/base.svg",
+        "upper": "/assets/buildings/opening-timber-gate/upper.svg",
+        "shadow": "/assets/buildings/opening-timber-gate/shadow.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 480,
+        "height": 400
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.16,
+          0.72
+        ],
+        [
+          0.5,
+          0.9
+        ],
+        [
+          0.84,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.11,
+        "minY": 0.13,
+        "maxX": 0.89,
+        "maxY": 0.9
+      },
+      "hitPolygon": [
+        [
+          0.16,
+          0.72
+        ],
+        [
+          0.5,
+          0.9
+        ],
+        [
+          0.84,
+          0.72
+        ],
+        [
+          0.5,
+          0.54
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.18,
+            0.72
+          ],
+          [
+            0.22,
+            0.24
+          ],
+          [
+            0.5,
+            0.12
+          ],
+          [
+            0.78,
+            0.25
+          ],
+          [
+            0.82,
+            0.72
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.83
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+        "widthM": 3,
+        "depthM": 2
+      },
+      "source": "assets/source/buildings/opening-timber-gate.svg",
+      "provenance": "Original authored winter-ink SVG art, aesthetic study based on approved Ice Age Lord palette; draft until browser visual QA.",
+      "license": "Original art authored for this repository.",
+      "status": "draft",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/buildings/opening-timber-gate/body.svg",
+          "base": "/assets/buildings/opening-timber-gate/base.svg",
+          "upper": "/assets/buildings/opening-timber-gate/upper.svg",
+          "shadow": "/assets/buildings/opening-timber-gate/shadow.svg"
+        },
+        "district": {
+          "icon": "/assets/buildings/opening-timber-gate/icon.svg"
+        },
+        "regional": {
+          "icon": "/assets/buildings/opening-timber-gate/icon.svg"
+        }
+      }
     }
   ],
   "fireProgression": [

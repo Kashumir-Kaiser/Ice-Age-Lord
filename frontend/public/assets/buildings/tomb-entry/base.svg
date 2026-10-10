@@ -1,1 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200"><g fill="none" stroke-linejoin="round"><path d="M120 137 201 166 120 195 39 166Z" fill="#59696f" stroke="#bbc9c4" stroke-width="3"/><path d="m56 166 64-23 64 23-64 23Z" fill="#303c49" stroke="#899ca3" stroke-width="2"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400"><title>Ice Age Lord · tomb-entry · base · winter-ink</title><defs>
+<linearGradient id="slate" x1="0" y1="0" x2=".85" y2="1"><stop stop-color="#a6b4b4"/><stop offset=".24" stop-color="#667c87"/><stop offset=".65" stop-color="#2c4551"/><stop offset="1" stop-color="#162a35"/></linearGradient>
+<linearGradient id="snow" x1=".08" y1="0" x2=".85" y2="1"><stop stop-color="#f1ede0"/><stop offset=".46" stop-color="#cbd7d6"/><stop offset="1" stop-color="#718e9c"/></linearGradient>
+<linearGradient id="wood" x1="0" y1="0" x2="1" y2=".8"><stop stop-color="#a29b88"/><stop offset=".21" stop-color="#756c62"/><stop offset=".58" stop-color="#3c4447"/><stop offset="1" stop-color="#1b2932"/></linearGradient>
+<linearGradient id="roof" x1=".18" y1="0" x2=".8" y2="1"><stop stop-color="#96a5a9"/><stop offset=".25" stop-color="#61727c"/><stop offset=".54" stop-color="#394a54"/><stop offset="1" stop-color="#172933"/></linearGradient>
+<linearGradient id="iron" x1="0" y1="0" x2=".86" y2="1"><stop stop-color="#758992"/><stop offset=".31" stop-color="#30454e"/><stop offset=".69" stop-color="#1a2933"/><stop offset="1" stop-color="#081820"/></linearGradient>
+<linearGradient id="bone" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c4c2ae"/><stop offset="1" stop-color="#4e6067"/></linearGradient>
+<radialGradient id="warm" cx=".47" cy=".52" r=".55"><stop stop-color="#dd985b" stop-opacity=".67"/><stop offset=".5" stop-color="#aa6b41" stop-opacity=".31"/><stop offset="1" stop-color="#aa6b41" stop-opacity="0"/></radialGradient>
+<clipPath id="roofLeft"><path d="M121 194L237 126 246 200 146 239Z"/></clipPath>
+<clipPath id="roofRight"><path d="M237 126L361 195 337 240 246 200Z"/></clipPath>
+</defs><g stroke-linecap="round" stroke-linejoin="round"><g opacity=".95">
+<path d="M70 311Q145 285 240 283Q329 284 410 312Q351 347 242 352Q137 350 70 311Z" fill="#7b9198" opacity=".16"/>
+<path d="M93 314q22-11 47-5m158 3q29-10 69-1m-237 20q39 15 83 11m75-5 41-8" fill="none" stroke="#e5e9e1" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity=".65"/>
+<path d="M102 323l19-4m177-4-17 6m-136 24 25 1" fill="none" stroke="#637d87" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" opacity=".66"/>
+</g><g><path d="M98 268L239 216 382 267 241 344Z" fill="url(#slate)" stroke="#152b34" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" /><path d="M98 268L241 321 382 267 382 278 240 354 98 278Z" fill="#3c5560" stroke="#182b35" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M108 266L240 225 369 268 240 332Z" fill="#87969a" stroke="#344b56" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M98 274L241 329 381 273M240 332v18M139 287l56-19m106 13 46 14m-108-43 1 73" fill="none" stroke="#223740" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" opacity=".82"/>
+<path d="M105 264l14 5m248-7-18 8m-104 66-16 9" fill="none" stroke="#e0e6dc" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity=".57"/></g><g><path d="M210 302l39-4 37 20-39 16Z" fill="#8e9b9b" stroke="#20343d" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" /><path d="M219 318l29-2 27 14-28 13Z" fill="#6a7c80" stroke="#1e333b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M222 318l27-3 25 14m-55-21 30-2 31 17" fill="none" stroke="#d8dfd6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity=".65"/></g><g><path d="M168 271l-18 20 24 19 28-9-13-27Z" fill="#4b616a" stroke="#1b2d36" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M304 265l25 18-7 19-28 8-20-23Z" fill="#4a5d67" stroke="#172b35" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" />
+<path d="M167 277l22 12m114-12 20 9" fill="none" stroke="#e1e5da" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity=".56"/></g></g></svg>
