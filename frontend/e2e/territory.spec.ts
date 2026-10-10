@@ -66,6 +66,22 @@ test('placement creates reversible drafts without changing the starting building
   await expect(page.locator('.territory-draft-list')).toHaveCount(0);
 });
 
+test('territory drag distance follows the pointer instead of accumulating movement',async({page})=>{
+  await goTo(page,/Lãnh địa/);
+  const scene=page.locator('svg.territory-scene-svg');
+  const fire=scene.locator('circle[fill="#db8c56"]');
+  await expect(fire).toBeVisible();
+  const box=await scene.boundingBox();
+  expect(box).not.toBeNull();
+  const before={x:Number(await fire.getAttribute('cx')),y:Number(await fire.getAttribute('cy'))};
+  const start={x:box!.x+box!.width*.35,y:box!.y+box!.height*.55};
+  await page.mouse.move(start.x,start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x+40,start.y+30,{steps:5});
+  await page.mouse.up();
+  await expect.poll(async()=>({x:Number(await fire.getAttribute('cx')),y:Number(await fire.getAttribute('cy'))})).toEqual({x:before.x+40,y:before.y+30});
+});
+
 test('catalog location action opens and focuses its known instance',async({page})=>{
   await goTo(page,/Công trình/);
   await page.getByRole('button',{name:'Đến công trình trong lãnh địa'}).click();

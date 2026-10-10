@@ -169,10 +169,7 @@ export default function TerritoryScene({ settlement, placementDefinitions, camer
     const dx=point.x-current.x,dy=point.y-current.y;
     if(!current.moved&&Math.hypot(dx,dy)<5)return;
     current.moved=true;
-    onCameraChange(previous=>{
-      const cameraNow=previous??current.origin;
-      return {...screenToWorld({x:size.width/2-dx,y:size.height/2-dy},cameraNow,size,PX_PER_ISO_METRE),zoom:cameraNow.zoom};
-    });
+    onCameraChange(()=>({...screenToWorld({x:size.width/2-dx,y:size.height/2-dy},current.origin,size,PX_PER_ISO_METRE),zoom:current.origin.zoom}));
   };
   const pointerUp=(event:ReactPointerEvent<SVGSVGElement>)=>{
     if(gesture.current?.pointerId===event.pointerId&&gesture.current.moved){ignoreClick.current=true;window.setTimeout(()=>{ignoreClick.current=false;},0);}
