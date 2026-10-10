@@ -2,7 +2,9 @@
 
 ## Scope
 
-This implementation covers the backend persistence and HTTP portions of Stage 03. The React frontend was left unchanged, including the separate `frontend/demo-ui-v0` branch. The existing seven-screen demo still uses its demo adapter; it does not yet call this API. The Stage 03 prompt's `HttpGameClient`, live UI configuration, screen hookup, and browser tests are deferred by the user's backend-only scope.
+Stage 03 includes the SQLite persistence service, local HTTP API, and a live React client. The seven-screen demo remains a separately selected preview. Live mode uses `HttpGameClient` and the API's save/session/view/command/event routes; API errors remain visible and never switch the client to demo fixtures.
+
+The live client supports owner bootstrap, clean-save creation, save selection and reload, authoritative player views, command preview and commit, and player-safe event polling. The map marker and settlement artwork use the same `territory.survivalFire.ref` returned in the API view. The map marker comes from the visible-map projection; the settlement artwork comes from the checked-in asset manifest. Footprints and asset layers do not change game state.
 
 The service does not advance simulation time. Opening a view or polling events is read-only. It supports the opening knowledge commands for the known anchor, carried food bag, and sealed career card. The territory supply chest remains inaccessible: the source describes it as within the fire's 10 m reach, while its compiled coordinate is about 31.6 m from the fire and its access field requires contact. There is no authoritative movement rule in this stage to resolve that conflict.
 
@@ -58,6 +60,20 @@ All routes are under `/api/v1`. JSON errors use this shape:
 
 The display text is Vietnamese. There are no cookies: bootstrap an in-memory one-hour bearer session with `POST /sessions` and the local owner key, then send `Authorization: Bearer <accessToken>`. A session must select a save through `POST /saves/:id/session` before using save-scoped routes. Save IDs do not authenticate a caller. Requests with an `Origin` must match `ILL_ALLOWED_ORIGIN`; no wildcard CORS is sent. Requests without an Origin, such as local command-line requests, still require loopback Host and peer checks, and protected routes still require a bearer session.
 
+## Live frontend
+
+The frontend starts in mode chooser when no mode is configured. Select Live or Demo explicitly, or set `VITE_GAME_MODE=live` / `VITE_GAME_MODE=demo`. A query value `?mode=live` or `?mode=demo` selects one mode for that page. Live mode does not import the demo client at startup.
+
+To run the live client locally:
+
+```sh
+npm run owner:key:create
+npm run db:migrate
+npm run api:start
+```
+
+In another terminal, copy `frontend/.env.example` to `frontend/.env`, keep `VITE_GAME_MODE=live`, then run `cd frontend && npm run dev`. Vite proxies only `/api/v1` to `127.0.0.1:8081` and maps the Vite loopback Origin to the API's default `http://localhost:5173` allowlist. Enter the owner key from `.local/owner-key` in the browser. The key and bearer token are not persisted; after a reload, authenticate again and the client reopens the last selected save from the API.
+
 | Method and path | Behavior |
 |---|---|
 | `GET /health` | Readiness and API/content versions; no private save data |
@@ -98,6 +114,4 @@ npm run test:stage02
 npm run test:stage03
 ```
 
-Stage 03 checks exercise local HTTP authentication and Origin handling, create/list/select, ETags, idempotent creation and commands, stale concurrent writes, safe event polling, bag/card inspection and reload, checkpoint fork, backup validation/import isolation, request size limits, and process termination immediately before and after a SQLite commit against temporary databases. No frontend build, browser test, or live UI journey was run because frontend implementation is outside the requested scope.
-
-The workspace has no TypeScript compiler or linter installed. Runtime tests use Node 24's `--experimental-strip-types`; the Stage 02 contract tests and Stage 03 service tests both passed.
+The frontend branch workflow runs the Stage 03 backend regression suite, builds the client, runs frontend unit tests, and runs Playwright in desktop and mobile Chromium. Its live browser journey starts a local Stage 03 API, creates a clean save, inspects the carried bag, reloads, authenticates again, and confirms the same save and observed container are recovered. A separate browser check verifies that API disconnection stays visible without falling back to demo data.

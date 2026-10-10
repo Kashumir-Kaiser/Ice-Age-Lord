@@ -299,7 +299,7 @@ export type PlayerView = {
     id: Id;
     stage: 'H0';
     position: CoordinateMm;
-    survivalFire: { level: 1; active: true; heatRadiusMetres: 10; protection: 'pending-opening-settlement' };
+    survivalFire: { ref: EntityRef; level: number; active: boolean; heatRadiusMetres: number; protection: 'pending-opening-settlement' | 'active' | 'expired' };
     buildings: readonly { id: Id; name: string; status: string }[];
   };
   inventory: {
@@ -606,6 +606,6 @@ export function validateCommandEnvelope(input: unknown): CommandValidationResult
       expectedRevision: Number(input.expectedRevision),
       type: input.type as CommandType,
       payload,
-    },
+    } as CommandEnvelope,
   };
 }

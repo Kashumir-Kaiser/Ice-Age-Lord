@@ -32,6 +32,11 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
     if (building.kind === 'tomb') return id === 'SITE-LL01-003';
     return false;
   })).map(building => ({ id: building.id, name: building.name, status: building.status }));
+  const fireEntity = entities.find(entity => entity.ref.type === 'site'
+    && entity.position?.xMm === state.territory.position.xMm
+    && entity.position?.yMm === state.territory.position.yMm);
+  if (!fireEntity) throw new Error('PLAYER_VIEW_SURVIVAL_FIRE_REFERENCE_MISSING');
+
   const knownContainers = state.inventory.containers.filter(container => container.observed).map(container => ({
     id: container.id,
     label: container.kind === 'territory_supply' ? 'Hòm Vật Tư Lãnh Địa' : 'Bịch đồ ăn',
@@ -61,7 +66,15 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
       id: state.territory.id,
       stage: 'H0',
       position: state.territory.position,
-      survivalFire: { level: 1, active: true, heatRadiusMetres: 10, protection: 'pending-opening-settlement' },
+      survivalFire: {
+        ref: fireEntity.ref,
+        level: state.territory.survivalFire.level,
+        active: state.territory.survivalFire.active,
+        heatRadiusMetres: state.territory.survivalFire.heatRadiusMetres,
+        protection: state.territory.survivalFire.protectionStatus === 'pending_opening_settlement'
+          ? 'pending-opening-settlement'
+          : state.territory.survivalFire.protectionStatus,
+      },
       buildings: knownBuildings,
     },
     careerCard: {
