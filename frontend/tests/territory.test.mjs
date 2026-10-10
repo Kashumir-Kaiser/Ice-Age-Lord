@@ -13,6 +13,7 @@ async function loadTypeScript(relativePath) {
 const projection = await loadTypeScript('src/territory/projection.ts');
 const placement = await loadTypeScript('src/territory/placement.ts');
 const unitGroups = await loadTypeScript('src/game/unitGroups.ts');
+const assetRegistry = await loadTypeScript('src/assets/assetRegistry.ts');
 
 test('2:1 dimetric ground transform has an exact inverse at source anchors and distant coordinates', () => {
   for (const point of [{x:0,y:0},{x:40,y:20},{x:30,y:-10},{x:-20,y:30},{x:25000,y:-25000}]) {
@@ -143,4 +144,45 @@ test('ink architecture exports are registered and distinct from T0 ownership', (
   assert.ok(clientSource.includes("assetId:'opening-timber-gate'"));
   const registry=readFileSync(resolve(root,'src/assets/assetRegistry.ts'),'utf8');
   assert.ok(registry.includes("visualState === 'repaired'"));
+});
+
+test('early building artwork has compact, complete milestone progressions without changing footprints', () => {
+  const repo=resolve(root,'..');
+  const manifest=JSON.parse(readFileSync(resolve(repo,'assets/manifest.json'),'utf8'));
+  const expected=['lord-house','tomb-entry','polar-farmhouse','opening-palisade-wall','opening-timber-gate','opening-simple-heater','opening-simple-kitchen','opening-woodshop','opening-tailor','opening-oreworks','opening-forge','opening-medical-station','opening-small-shelter'];
+  assert.equal(manifest.buildingProgressions.length,expected.length);
+  assert.deepEqual(JSON.parse(readFileSync(resolve(repo,'frontend/public/assets/manifest.json'),'utf8')),manifest);
+  const milestones=[1,6,11,16,21,26], maxima=[5,10,15,20,25,30];
+  for(const [index,row] of manifest.buildingProgressions.entries()){
+    assert.ok(row.baseAssetIds.some(id=>id.startsWith(expected[index])),expected[index]);
+    assert.deepEqual(row.stages.map(stage=>stage.minLevel),milestones,expected[index]+': starts');
+    assert.deepEqual(row.stages.map(stage=>stage.maxLevel),maxima,expected[index]+': ends');
+    let previousScale=0;
+    for(const stage of row.stages){
+      const asset=manifest.assets.find(candidate=>candidate.assetId===stage.assetId);
+      assert.ok(asset,stage.assetId+': registered stage');
+      assert.equal(asset.status,'draft');
+      assert.ok(asset.presentationScale>previousScale,stage.assetId+': scale increases by stage');
+      previousScale=asset.presentationScale;
+      assert.deepEqual(asset.logicalCanvas,{width:480,height:400});
+      const stageOne=manifest.assets.find(candidate=>candidate.assetId===row.stages[0].assetId);
+      assert.deepEqual(asset.artFootprint,stageOne.artFootprint);
+      assert.deepEqual(asset.compatiblePhysicalFootprint,stageOne.compatiblePhysicalFootprint);
+      if(stage.minLevel===1) continue;
+      assert.ok(asset.source.endsWith('/'+stage.assetId+'.svg'));
+      const source=readFileSync(resolve(repo,asset.source),'utf8');
+      assert.ok(!source.includes('<image'),stage.assetId+': no embedded image');
+      for(const layer of ['body','base','upper','shadow','uiIcon']){
+        const markup=readFileSync(resolve(repo,'frontend/public'+asset.layers[layer]),'utf8');
+        assert.ok(markup.length<15000,stage.assetId+':'+layer+' stays compact');
+        assert.ok(!markup.includes('<image'),stage.assetId+':'+layer+' has no embedded raster');
+        if(layer==='body') assert.ok(markup.includes('<use href="../'),stage.assetId+': linked vector base');
+      }
+    }
+  }
+  assert.equal(assetRegistry.resolveSettlementAssetId(manifest,'polar-farmhouse-l01',1,false,undefined,16),'polar-farmhouse-l16');
+  assert.equal(assetRegistry.resolveSettlementAssetId(manifest,'polar-farmhouse-l01',1,false,undefined,30),'polar-farmhouse-l26');
+  assert.equal(assetRegistry.resolveSettlementAssetId(manifest,'lord-house-damaged',1,false,'damaged',21),'lord-house-damaged');
+  assert.equal(assetRegistry.resolveSettlementAssetId(manifest,'lord-house-damaged',1,false,'repaired',21),'lord-house-l21');
+  assert.equal(assetRegistry.resolveSettlementAssetId(manifest,'campfire-start',16,true),'survival-fire-l16');
 });

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Nhà Lãnh Chúa · phát triển cấp 21 · master">
+<title>Nhà Lãnh Chúa · phát triển cấp 21 · master</title>
+<g id="painted-sprite" shape-rendering="geometricPrecision">
+<use href="../../../frontend/public/assets/buildings/lord-house-repaired/body.svg#painted-sprite"/>
+<g id="upgrade-6"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M119,151l13,-13m-5,21 15,-14 M322,137l12,7m-2,-16 13,7" fill="none" stroke="#665346" stroke-width="3.5"/><path d="M120,148l12,-12m204,-8 11,6" fill="none" stroke="#d9d6cc" stroke-width="2"/></g></g>
+<g id="upgrade-11"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M141,111V48m0,5 -29,4 24,14 -24,5 29,16" fill="none" stroke="#463f3b" stroke-width="3"/><path d="M143,53l-24,4 19,12Z" fill="#875449" stroke="#343b43" stroke-width="1.5"/><path d="M145,56l-15,3 11,7Z" fill="#c58c70" opacity=".86"/></g></g>
+<g id="upgrade-16"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M229,35l10,-12 11,12 -3,8h-15Z" fill="#7c8584"/><path d="M228,35l11,-16 12,16" fill="none" stroke="#eee8db" stroke-width="4"/><path d="M239,25v13m-5,-6h10" fill="none" stroke="#c6965f" stroke-width="2.5"/></g></g>
+<g id="upgrade-21"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M222,157l17,-8 17,8 -3,11h-28Z" fill="#5b6870"/><path d="M226,158l13,-6 13,6 M239,154v12m-6,-6h12" fill="none" stroke="#d8b17a" stroke-width="2.2"/></g></g>
+</g>
+</svg>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Bếp Nấu Đơn Giản · phát triển cấp 6 · master">
+<title>Bếp Nấu Đơn Giản · phát triển cấp 6 · master</title>
+<g id="painted-sprite" shape-rendering="geometricPrecision">
+<use href="../../../frontend/public/assets/buildings/opening-simple-kitchen/body.svg#painted-sprite"/>
+<g id="upgrade-6"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M233,126v34m-9,-1h18m-9,1 0,10m0,-36 -8,-8m8,8 9,-8" fill="none" stroke="#403c38" stroke-width="2.5"/><path d="M225,126q8,-7 16,0" fill="none" stroke="#e8e6dc" stroke-width="3"/></g></g>
+</g>
+</svg>

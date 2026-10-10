@@ -25,6 +25,7 @@ export type AssetManifestEntry = {
   lodVariants: { close: AssetLayerPaths; district: AssetLayerPaths; regional: AssetLayerPaths };
 };
 export type FireArtStage = { minLevel: number; maxLevel: number; assetId: string };
+export type BuildingArtProgression = { baseAssetIds: readonly string[]; stages: readonly FireArtStage[] };
 export type StandaloneArtEntry = {
   assetId: string;
   name: string;
@@ -43,6 +44,7 @@ export type AssetManifest = {
   coordinateConvention: string;
   assets: readonly AssetManifestEntry[];
   fireProgression?: readonly FireArtStage[];
+  buildingProgressions?: readonly BuildingArtProgression[];
   itemArt?: readonly StandaloneArtEntry[];
   unitArt?: readonly StandaloneArtEntry[];
 };
@@ -74,6 +76,26 @@ function validateManifest(value: unknown): AssetManifest {
     }
     if (nextLevel !== 31) throw new Error('Survival Fire artwork is not mapped for all levels 1–30.');
   }
+  if (manifest.buildingProgressions) {
+    const progressedAssetIds = new Set<string>();
+    for (const progression of manifest.buildingProgressions) {
+      if (!Array.isArray(progression.baseAssetIds) || progression.baseAssetIds.length === 0
+        || progression.baseAssetIds.some(assetId => !ids.has(assetId) || progressedAssetIds.has(assetId))) {
+        throw new Error('Building artwork progression has missing or duplicate base assets.');
+      }
+      progression.baseAssetIds.forEach(assetId => progressedAssetIds.add(assetId));
+      let nextLevel = 1;
+      for (const stage of progression.stages) {
+        if (!Number.isInteger(stage.minLevel) || !Number.isInteger(stage.maxLevel)
+          || stage.minLevel !== nextLevel || stage.maxLevel < stage.minLevel
+          || !ids.has(stage.assetId)) {
+          throw new Error('Building artwork progression has a gap or missing asset.');
+        }
+        nextLevel = stage.maxLevel + 1;
+      }
+      if (nextLevel !== 31) throw new Error('Building artwork progression must cover all levels 1–30.');
+    }
+  }
   return manifest;
 }
 
@@ -100,9 +122,18 @@ export function layerPath(asset: AssetManifestEntry | undefined, layer: keyof As
 export function resolveSettlementAssetId(
   manifest: AssetManifest | null, sourceAssetId: string, fireLevel: number, isSurvivalFire: boolean,
   visualState?: 'damaged' | 'repaired',
+  buildingLevel?: number,
 ): string {
-  if (sourceAssetId === 'lord-house-damaged' && visualState === 'repaired' && findAsset(manifest,'lord-house-repaired'))
-    return 'lord-house-repaired';
-  if (!isSurvivalFire || !manifest?.fireProgression || !Number.isInteger(fireLevel)) return sourceAssetId;
-  return manifest.fireProgression.find(stage => fireLevel >= stage.minLevel && fireLevel <= stage.maxLevel)?.assetId ?? sourceAssetId;
+  if (isSurvivalFire) {
+    if (!manifest?.fireProgression || !Number.isInteger(fireLevel)) return sourceAssetId;
+    return manifest.fireProgression.find(stage => fireLevel >= stage.minLevel && fireLevel <= stage.maxLevel)?.assetId ?? sourceAssetId;
+  }
+  let resolvedAssetId = sourceAssetId;
+  if (sourceAssetId === 'lord-house-damaged') {
+    if (visualState !== 'repaired') return sourceAssetId;
+    if (findAsset(manifest, 'lord-house-repaired')) resolvedAssetId = 'lord-house-repaired';
+  }
+  if (typeof buildingLevel !== 'number' || !Number.isInteger(buildingLevel)) return resolvedAssetId;
+  const progression = manifest?.buildingProgressions?.find(row => row.baseAssetIds.includes(resolvedAssetId));
+  return progression?.stages.find(stage => buildingLevel >= stage.minLevel && buildingLevel <= stage.maxLevel)?.assetId ?? resolvedAssetId;
 }

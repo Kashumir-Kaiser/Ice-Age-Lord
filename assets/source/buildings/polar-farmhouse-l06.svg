@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Nhà Nông Phu Cực Địa · phát triển cấp 6 · master">
+<title>Nhà Nông Phu Cực Địa · phát triển cấp 6 · master</title>
+<g id="painted-sprite" shape-rendering="geometricPrecision">
+<use href="../../../frontend/public/assets/buildings/polar-farmhouse-l01/body.svg#painted-sprite"/>
+<g id="upgrade-6"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M318,187l10,-8 M383,205l9,7 M323,201v34 M383,213v31" fill="none" stroke="#57483e" stroke-width="4"/><path d="M319,190q30,-9 66,8" fill="none" stroke="#e8e6dc" stroke-width="4"/></g></g>
+</g>
+</svg>

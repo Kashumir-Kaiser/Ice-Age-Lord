@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Tường Rào · phát triển cấp 6 · master">
+<title>Tường Rào · phát triển cấp 6 · master</title>
+<g id="painted-sprite" shape-rendering="geometricPrecision">
+<use href="../../../frontend/public/assets/buildings/opening-palisade-wall/body.svg#painted-sprite"/>
+<g id="upgrade-6"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M78,151L361,271 M77,171L362,291" fill="none" stroke="#664d3c" stroke-width="10"/><path d="M78,147L361,267" fill="none" stroke="#ddd9cc" stroke-width="3.5"/></g></g>
+</g>
+</svg>

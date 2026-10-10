@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Cửa Mộ · phát triển cấp 6 · body">
+<title>Cửa Mộ · phát triển cấp 6 · body</title>
+<g id="painted-sprite" shape-rendering="geometricPrecision">
+<use href="../tomb-entry/body.svg#painted-sprite"/>
+<g id="upgrade-6"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M226,150l14,-8 14,8 M231,149l9,-5 9,5 M240,146v7m-4,-3h8" fill="none" stroke="#b99368" stroke-width="2.3"/></g></g>
+</g>
+</svg>

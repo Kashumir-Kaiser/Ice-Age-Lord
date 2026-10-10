@@ -77,6 +77,8 @@ export type SettlementBuildingView = {
   orientation: 'north' | 'east' | 'south' | 'west';
   footprint: FootprintView;
   assetId: string;
+  /** Optional authoritative level for selecting visual-only building art. */
+  level?: number;
   /** Authoritative exterior appearance state; does not change building identity or footprint. */
   visualState?: 'damaged' | 'repaired';
   heightM: number | null;

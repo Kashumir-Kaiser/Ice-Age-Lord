@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Xưởng Gỗ · phát triển cấp 6 · master">
+<title>Xưởng Gỗ · phát triển cấp 6 · master</title>
+<g id="painted-sprite" shape-rendering="geometricPrecision">
+<use href="../../../frontend/public/assets/buildings/opening-woodshop/body.svg#painted-sprite"/>
+<g id="upgrade-6"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M307,230q21,-10 43,0v9q-22,10-43,0Z M307,242q21,-10 43,0v9q-22,10-43,0Z" fill="#785a43"/><path d="M310,233q18,-8 37,0 M310,245q18,-8 37,0" fill="none" stroke="#b38e6a" stroke-width="2"/></g></g>
+</g>
+</svg>

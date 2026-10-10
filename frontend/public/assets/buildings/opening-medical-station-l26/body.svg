@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Trạm Y Tế · phát triển cấp 26 · body">
+<title>Trạm Y Tế · phát triển cấp 26 · body</title>
+<g id="painted-sprite" shape-rendering="geometricPrecision">
+<use href="../opening-medical-station/body.svg#painted-sprite"/>
+<g id="upgrade-6"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M163,204q14,-20 29,0t29,0t29,0t29,0" fill="none" stroke="#51473d" stroke-width="2.5"/><path d="M174,206v22m27,-22v20m29,-20v20m28,-20v21" stroke="#7f8f6d" stroke-width="3"/><path d="M173,218q-8,-5 -7,-11m35,17q9,-9 12,-15m16,14q-7,-9 -4,-17m28,16q8,-8 12,-14" fill="none" stroke="#8ba078" stroke-width="2"/></g></g>
+<g id="upgrade-11"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M127,222l18,-18h32 M127,224h51 M132,224v31 M174,224v31" fill="#607178" fill-opacity=".46"/><path d="M125,221l20,-21h32" fill="none" stroke="#e8e6dc" stroke-width="4"/></g></g>
+<g id="upgrade-16"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M281,139h24v28h-24Z" fill="#e5d8bf" stroke="#594a40" stroke-width="2"/><path d="M293,145v16m-8,-8h16" stroke="#9a5b4e" stroke-width="4"/></g></g>
+<g id="upgrade-21"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M322,257h58 M327,253v19 M340,251v20 M353,251v20 M366,252v20" fill="none" stroke="#68533f" stroke-width="3"/><path d="M323,250q27,-7 56,0v8q-29,8-57,0Z" fill="#74866a"/><path d="M330,253v-15m12,15v-19m13,19v-16m12,16v-20" stroke="#93a87f" stroke-width="3"/></g></g>
+<g id="upgrade-26"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M305,183l17,-7v43h-8v-31l-9,4Z" fill="#5d6e72" fill-opacity=".6"/><path d="M307,180l16,-7" stroke="#e8e6dc" stroke-width="4"/><path d="M313,185v27m6,-30v31" stroke="#c3d0c2" stroke-width="2"/></g></g>
+</g>
+</svg>

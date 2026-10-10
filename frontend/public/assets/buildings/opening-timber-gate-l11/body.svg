@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Cổng Gỗ · phát triển cấp 11 · body">
+<title>Cổng Gỗ · phát triển cấp 11 · body</title>
+<g id="painted-sprite" shape-rendering="geometricPrecision">
+<use href="../opening-timber-gate/body.svg#painted-sprite"/>
+<g id="upgrade-6"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M177,183l127,55 M184,174l126,54 M204,179l-7,18 M235,192l-7,18 M266,205l-7,18 M296,217l-7,18" fill="none" stroke="#444b50" stroke-width="4.5"/><path d="M181,175l128,55" fill="none" stroke="#b6bfbd" stroke-width="2"/></g></g>
+<g id="upgrade-11"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M210,189v64" stroke="#41494e" stroke-width="3"/><path d="M220,189v64" stroke="#41494e" stroke-width="3"/><path d="M230,189v64" stroke="#41494e" stroke-width="3"/><path d="M240,189v64" stroke="#41494e" stroke-width="3"/><path d="M250,189v64" stroke="#41494e" stroke-width="3"/><path d="M260,189v64" stroke="#41494e" stroke-width="3"/><path d="M205,192h60 M205,207h60" fill="none" stroke="#41494e" stroke-width="4"/></g></g>
+</g>
+</svg>

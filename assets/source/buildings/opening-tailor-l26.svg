@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Tiệm May · phát triển cấp 26 · master">
+<title>Tiệm May · phát triển cấp 26 · master</title>
+<g id="painted-sprite" shape-rendering="geometricPrecision">
+<use href="../../../frontend/public/assets/buildings/opening-tailor/body.svg#painted-sprite"/>
+<g id="upgrade-6"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M111,161q48,17 87,-2 M112,166q48,18 88,-1" fill="none" stroke="#8d6d5d" stroke-width="2.5"/><path d="M143,164v47m28,-42v43" stroke="#665548" stroke-width="2"/></g></g>
+<g id="upgrade-11"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M212,207q10,-7 20,0v36q-10,7-20,0Z M239,203q10,-6 20,0v38q-10,6-20,0Z" fill="#875953" stroke="#4d4640" stroke-width="2"/><path d="M216,213h12m15,-4h12" stroke="#ddba93" stroke-width="2"/></g></g>
+<g id="upgrade-16"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M300,246h29v25h-29Z M296,244h37v7h-37Z" fill="#735842"/><path d="M305,252h8v15h-8Z M316,252h8v15h-8Z" fill="#855a52"/><path d="M307,256h4m9,0h4" stroke="#d4ab7d" stroke-width="2"/></g></g>
+<g id="upgrade-21"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M113,167l13,8v68 M368,187l-12,9v55" fill="none" stroke="#634d3e" stroke-width="4"/><path d="M115,166l11,7m241,12 -11,8" stroke="#e8e6dc" stroke-width="3"/></g></g>
+<g id="upgrade-26"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M194,208l14,-9h55l14,9 M198,209h74" fill="none" stroke="#e8e6dc" stroke-width="3"/><path d="M220,206l10,-6 10,6 -10,6Z" fill="#8a5c58"/><path d="M230,201v10" stroke="#d6b387" stroke-width="1.5"/></g></g>
+</g>
+</svg>

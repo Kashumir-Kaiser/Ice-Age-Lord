@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Lò Rèn · phát triển cấp 26 · master">
+<title>Lò Rèn · phát triển cấp 26 · master</title>
+<g id="painted-sprite" shape-rendering="geometricPrecision">
+<use href="../../../frontend/public/assets/buildings/opening-forge/body.svg#painted-sprite"/>
+<g id="upgrade-6"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M295,53h37 M294,62h39 M293,71h41 M292,80h43" fill="none" stroke="#9ea9a8" stroke-width="2.2"/><path d="M292,56h43" stroke="#424f57" stroke-width="2"/></g></g>
+<g id="upgrade-11"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M119,234h46 M124,244h41 M129,254h36 M128,228v34m29,-34v34" fill="none" stroke="#56473d" stroke-width="3"/><path d="M133,231l12,9 11,-9m-23,21h20" fill="none" stroke="#a9b0ad" stroke-width="2"/></g></g>
+<g id="upgrade-16"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M211,163q10,-16 20,0 10,-16 20,0 10,-16 20,0" fill="none" stroke="#eea75b" stroke-width="3"/><path d="M221,153l-4,-9m24,8 2,-11m17,15 7,-8" stroke="#e8c187" stroke-width="2"/></g></g>
+<g id="upgrade-21"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M210,156v63 M270,156v63 M210,156h60 M210,219h60" fill="none" stroke="#5c5149" stroke-width="3.5"/><path d="M215,161h50 M215,214h50" stroke="#a9b2b0" stroke-width="2"/></g></g>
+<g id="upgrade-26"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M195,274l30,8m-19,-18 18,5m48,5 31,-8m-35,18 30,-8" fill="none" stroke="#59666d" stroke-width="3"/><path d="M199,271l24,6m50,2 23,-6" stroke="#e8e6dc" stroke-width="2"/></g></g>
+</g>
+</svg>

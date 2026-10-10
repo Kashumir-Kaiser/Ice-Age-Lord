@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Bếp Nấu Đơn Giản · phát triển cấp 21 · body">
+<title>Bếp Nấu Đơn Giản · phát triển cấp 21 · body</title>
+<g id="painted-sprite" shape-rendering="geometricPrecision">
+<use href="../opening-simple-kitchen/body.svg#painted-sprite"/>
+<g id="upgrade-6"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M233,126v34m-9,-1h18m-9,1 0,10m0,-36 -8,-8m8,8 9,-8" fill="none" stroke="#403c38" stroke-width="2.5"/><path d="M225,126q8,-7 16,0" fill="none" stroke="#e8e6dc" stroke-width="3"/></g></g>
+<g id="upgrade-11"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M271,229h49v8h-49Z M277,237v24m37,-24v24" fill="#715840"/><path d="M269,227h53" stroke="#e8e6dc" stroke-width="4"/><path d="M278,224h12m7,0h12" stroke="#b69068" stroke-width="3"/></g></g>
+<g id="upgrade-16"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M279,216q4,-9 9,0v9h-9Z M297,215q4,-11 9,0v10h-9Z M312,218q4,-7 8,0v7h-8Z" fill="#6c5542"/><path d="M281,218q3,-4 5,0m14,-1q3,-5 5,0m14,1q3,-3 5,0" fill="none" stroke="#d7b076" stroke-width="2"/></g></g>
+<g id="upgrade-21"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M319,157l21,-8 7,8v60h-9v-46l-19,7Z" fill="#594d44" fill-opacity=".82"/><path d="M320,154l21,-8 7,8" fill="none" stroke="#e8e6dc" stroke-width="4"/><path d="M330,162v41" stroke="#9d8469" stroke-width="2"/></g></g>
+</g>
+</svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Lều Trú Ẩn · phát triển cấp 11 · body">
+<title>Lều Trú Ẩn · phát triển cấp 11 · body</title>
+<g id="painted-sprite" shape-rendering="geometricPrecision">
+<use href="../opening-small-shelter/body.svg#painted-sprite"/>
+<g id="upgrade-6"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M124,184l114,-99 115,99 M133,190l105,-92 107,92" fill="none" stroke="#66503e" stroke-width="2.5"/><path d="M130,185l108,-94 109,94" fill="none" stroke="#e8e6dc" stroke-width="3"/></g></g>
+<g id="upgrade-11"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M126,194l66,-36 14,8 -68,41Z" fill="#6e5742"/><path d="M128,191l64,-36" stroke="#e8e6dc" stroke-width="4"/><path d="M138,205v37m49,-64v59" stroke="#58483b" stroke-width="3"/></g></g>
+</g>
+</svg>

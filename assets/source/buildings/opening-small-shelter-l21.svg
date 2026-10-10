@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Lều Trú Ẩn · phát triển cấp 21 · master">
+<title>Lều Trú Ẩn · phát triển cấp 21 · master</title>
+<g id="painted-sprite" shape-rendering="geometricPrecision">
+<use href="../../../frontend/public/assets/buildings/opening-small-shelter/body.svg#painted-sprite"/>
+<g id="upgrade-6"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M124,184l114,-99 115,99 M133,190l105,-92 107,92" fill="none" stroke="#66503e" stroke-width="2.5"/><path d="M130,185l108,-94 109,94" fill="none" stroke="#e8e6dc" stroke-width="3"/></g></g>
+<g id="upgrade-11"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M126,194l66,-36 14,8 -68,41Z" fill="#6e5742"/><path d="M128,191l64,-36" stroke="#e8e6dc" stroke-width="4"/><path d="M138,205v37m49,-64v59" stroke="#58483b" stroke-width="3"/></g></g>
+<g id="upgrade-16"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M205.95,217.0V203.25" fill="none" stroke="#4c4642" stroke-width="3"/><path d="M202.1,203.25h7.700000000000001l-1.1,13.750000000000002h-5.5Z" fill="#414c53" stroke="#343b43" stroke-width="2"/><path d="M203.75,204.9h4.4l-0.55,9.900000000000002h-3.3000000000000003Z" fill="#edb76a" stroke="#57473d" stroke-width="1.5"/><path d="M201,202.15h9.9" fill="none" stroke="#e8e6dc" stroke-width="3"/></g></g>
+<g id="upgrade-21"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M285,185l45,35 -11,9 -44,-34Z" fill="#6b5946" fill-opacity=".8"/><path d="M282,183l46,35" stroke="#e8e6dc" stroke-width="3.5"/><path d="M324,218v35m-39,-50v51" stroke="#614d3d" stroke-width="3"/></g></g>
+</g>
+</svg>
