@@ -71,7 +71,7 @@ test('race filter tabs appear only for races with living units', () => {
 test('registered original SVG layers exist and match each manifest canvas', () => {
   const repo=resolve(root,'..');
   const manifest=JSON.parse(readFileSync(resolve(repo,'assets/manifest.json'),'utf8'));
-  assert.equal(manifest.assets.filter(asset=>asset.status==='placeholder').length,6);
+  assert.equal(manifest.assets.filter(asset=>asset.status==='placeholder').length,3);
   assert.equal(manifest.assets.filter(asset=>asset.status==='draft'&&asset.assetId.startsWith('survival-fire-l')).length,6);
   assert.deepEqual(manifest.fireProgression.map(stage=>stage.minLevel),[1,6,11,16,21,26]);
   assert.deepEqual(manifest.fireProgression.map(stage=>stage.maxLevel),[5,10,15,20,25,30]);
@@ -120,4 +120,27 @@ test('painted Survival Fire stages use independent registered true-vector art an
   assert.ok(sprite.includes('asset?.presentationScale ?? 1'));
   assert.match(sprite,/activeEffect && vfx/);
   assert.match(sprite,/mode === 'planning' && !missing && asset && base/);
+});
+
+test('ink architecture exports are registered and distinct from T0 ownership', () => {
+  const repo=resolve(root,'..');
+  const manifest=JSON.parse(readFileSync(resolve(repo,'assets/manifest.json'),'utf8'));
+  const names=['tomb-entry','lord-house-damaged','lord-house-repaired','supply-crate','polar-farmhouse-l01','opening-palisade-wall','opening-timber-gate'];
+  for (const id of names) {
+    const asset=manifest.assets.find(item=>item.assetId===id);
+    assert.ok(asset, id);
+    assert.equal(asset.status,'draft');
+    assert.deepEqual(asset.logicalCanvas,{width:480,height:400});
+    for (const layer of ['body','base','upper','shadow','uiIcon']) {
+      const src=readFileSync(resolve(repo,'frontend/public'+asset.layers[layer]),'utf8');
+      assert.match(src,/<svg[^>]*viewBox="0 0 480 400"/);
+      assert.ok(!/<image\b/.test(src), id + ': no raster-backed SVG');
+    }
+  }
+  const clientSource=readFileSync(resolve(root,'src/game/DemoGameClient.ts'),'utf8');
+  assert.ok(clientSource.includes("visualState: site.id === 'house' ? 'damaged'"));
+  assert.ok(clientSource.includes("status:'fixture-only'"));
+  assert.ok(clientSource.includes("assetId:'opening-timber-gate'"));
+  const registry=readFileSync(resolve(root,'src/assets/assetRegistry.ts'),'utf8');
+  assert.ok(registry.includes("visualState === 'repaired'"));
 });

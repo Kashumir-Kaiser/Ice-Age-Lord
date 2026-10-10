@@ -78,7 +78,10 @@ export function layerPath(asset: AssetManifestEntry | undefined, layer: keyof As
 // footprint, heat radius, fuel and valid structure progression.
 export function resolveSettlementAssetId(
   manifest: AssetManifest | null, sourceAssetId: string, fireLevel: number, isSurvivalFire: boolean,
+  visualState?: 'damaged' | 'repaired',
 ): string {
+  if (sourceAssetId === 'lord-house-damaged' && visualState === 'repaired' && findAsset(manifest,'lord-house-repaired'))
+    return 'lord-house-repaired';
   if (!isSurvivalFire || !manifest?.fireProgression || !Number.isInteger(fireLevel)) return sourceAssetId;
   return manifest.fireProgression.find(stage => fireLevel >= stage.minLevel && fireLevel <= stage.maxLevel)?.assetId ?? sourceAssetId;
 }

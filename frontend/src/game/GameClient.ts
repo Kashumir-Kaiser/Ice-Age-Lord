@@ -77,6 +77,8 @@ export type SettlementBuildingView = {
   orientation: 'north' | 'east' | 'south' | 'west';
   footprint: FootprintView;
   assetId: string;
+  /** Authoritative exterior appearance state; does not change building identity or footprint. */
+  visualState?: 'damaged' | 'repaired';
   heightM: number | null;
   state: string;
 };
