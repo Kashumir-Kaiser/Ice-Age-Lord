@@ -38,8 +38,7 @@ The Rook overlay is labeled `USER-AUTHORIZED-STAGE-07-BALANCE-OVERLAY-1.0`; the 
 - This branch compiles the single user-authorized Rook/snow-hare opening loop, not a general combat engine. Group battles, non-opening wildlife, lair actors, ranged abilities, loot tables, and corpse hauling/excavation remain uncompiled.
 - The authored hare has no loot drop. Its combat result is a corpse and the fixed one-time XP award only.
 - Stage 07 does not add a quest XP producer or invent party contribution rules; combat contribution is unambiguous because the opening encounter requires one actor.
-- The branch workflow runs Stage 02–07 simulation regression, the frontend build and unit tests, and the dedicated Stage 07 desktop Chromium journey. GitHub Actions run [38108698082](https://github.com/Kashumir-Kaiser/Ice-Age-Lord/actions/runs/38108698082) passed on commit `0f8dbad12f41f47d10a862556b4db28a28041c1e`.
-- A separate full Playwright matrix run on commit `bdaf47496216fe8db5a59f781146e723ff5a8eac` remained red: 36 passed, 19 failed, and 5 skipped. Failures included older demo journeys and the Stage 07 mobile viewport. The current acceptance claim is limited to the passing desktop Chromium Stage 07 journey; the full matrix and mobile journey are not verified.
+- The branch workflow runs Stage 02–07 simulation regression, frontend build and unit tests, and the complete desktop/mobile Chromium Playwright matrix. GitHub Actions run [38112692823](https://github.com/Kashumir-Kaiser/Ice-Age-Lord/actions/runs/38112692823) passed with 55 passed and 5 skipped.
 
 ## Regression and browser coverage
 
@@ -47,7 +46,7 @@ The Rook overlay is labeled `USER-AUTHORIZED-STAGE-07-BALANCE-OVERLAY-1.0`; the 
 
 `frontend/e2e/stage07-combat.spec.ts` exercises the real API and browser: inspect/revive Rook, equip the opening gear, observe the target in inventory/map/forces, start combat, settle a round, pause and reload mid-fight, finish it, inspect/revive the resulting hare corpse, and confirm journal entries.
 
-The workflow runs Stage 02–07 simulation regression suites plus the frontend build, browser unit tests, and the dedicated Stage 07 desktop Chromium journey on this branch. The full Playwright matrix was also tried separately and remains red as recorded above.
+The branch workflow runs Stage 02–07 simulation regression suites, frontend build and browser unit tests, and the full Playwright matrix in desktop and mobile Chromium. GitHub Actions run [38112692823](https://github.com/Kashumir-Kaiser/Ice-Age-Lord/actions/runs/38112692823) passed with 55 passed and 5 skipped.
 
 ## Acceptance gate status
 
@@ -59,7 +58,7 @@ The workflow runs Stage 02–07 simulation regression suites plus the frontend b
 | Scheduler-backed attack, damage, defeat, victory, and retreat | Implemented and covered by sim regression |
 | Real target corpse, death history, one-time XP and exact owner mirror | Implemented and covered by sim regression |
 | No target/XP farming; canceled search does not debit prey | Implemented and covered by sim regression |
-| Browser map → combat → reload → corpse → Tử Phục and journal | Passed in the dedicated desktop Chromium journey, GitHub Actions run [38108698082](https://github.com/Kashumir-Kaiser/Ice-Age-Lord/actions/runs/38108698082); mobile and full Playwright matrix are not verified |
+| Browser map → combat → reload → corpse → Tử Phục and journal | Passed in the full desktop and mobile Chromium Playwright matrix: 55 passed, 5 skipped, GitHub Actions run [38112692823](https://github.com/Kashumir-Kaiser/Ice-Age-Lord/actions/runs/38112692823) |
 | Broader wildlife/lair combat, party battles, loot, corpse transport | Explicitly outside this opening encounter implementation |
 | Fixed ecology, established lairs, and lair-unit identities | Canonical definitions remain unchanged |
 

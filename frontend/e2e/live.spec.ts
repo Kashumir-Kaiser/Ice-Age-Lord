@@ -199,22 +199,6 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
 
   await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Bản đồ/ }).click();
   const mapCampfire = page.getByTestId('map-campfire-marker');
-  const mapHitDiagnostic = await page.evaluate(() => {
-    const describe = (element: Element | null) => {
-      if (!element) return null;
-      const rect = element.getBoundingClientRect();
-      const style = getComputedStyle(element);
-      return { tag: element.tagName, className: String((element as HTMLElement).className), text: (element.textContent || '').trim().slice(0, 90),
-        rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
-        style: { position: style.position, zIndex: style.zIndex, pointerEvents: style.pointerEvents, transform: style.transform, overflow: style.overflow, isolation: style.isolation } };
-    };
-    const marker = document.querySelector('[data-testid="map-campfire-marker"]');
-    const box = marker?.getBoundingClientRect();
-    const hit = box ? document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2) : null;
-    return { scrollY: window.scrollY, marker: describe(marker), canvas: describe(document.querySelector('[data-testid="live-map"]')),
-      hit: describe(hit), panelChildren: Array.from(document.querySelector('[data-testid="live-map"]')?.parentElement?.children ?? []).map(describe) };
-  });
-  console.log('MAP_HIT_DIAGNOSTIC', JSON.stringify(mapHitDiagnostic));
   await expect(mapCampfire).toHaveAttribute('data-entity-ref', fireKey);
   await expect(mapCampfire).toBeVisible();
   await page.getByRole('button', { name: 'Zoom in' }).click();
@@ -231,17 +215,6 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
     window.scrollTo(0, 0);
   });
   await mapCampfire.scrollIntoViewIfNeeded();
-  const mapAfterScroll = await page.evaluate(() => {
-    const marker = document.querySelector('[data-testid="map-campfire-marker"]');
-    const rect = marker?.getBoundingClientRect();
-    const hit = rect ? document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2) : null;
-    return { scrollY: window.scrollY, innerHeight: window.innerHeight, rootHeight: document.documentElement.clientHeight,
-      visualViewport: window.visualViewport && { offsetTop: window.visualViewport.offsetTop, height: window.visualViewport.height, scale: window.visualViewport.scale },
-      activeElement: document.activeElement && { tag: document.activeElement.tagName, type: (document.activeElement as HTMLInputElement).type, text: (document.activeElement.textContent || '').trim().slice(0, 40) },
-      marker: rect && { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
-      hit: hit && { tag: hit.tagName, className: String((hit as HTMLElement).className), text: (hit.textContent || '').trim().slice(0, 80) } };
-  });
-  console.log('MAP_AFTER_SCROLL', JSON.stringify(mapAfterScroll));
   await tapVisualCenter(page, mapCampfire, testInfo.project.name === 'mobile-chromium');
   await tapVisualCenter(page, page.getByRole('button', { name: 'Kiểm tra', exact: true }), testInfo.project.name === 'mobile-chromium');
   try {

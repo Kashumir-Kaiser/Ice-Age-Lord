@@ -81,40 +81,12 @@ test('Stage 07 plays and reloads a timed H0 combat encounter through the browser
     window.scrollTo(0, 0);
   });
   await target.scrollIntoViewIfNeeded();
-  const combatMarkerAfterScroll = await page.evaluate(() => {
-    const marker = document.querySelector('[data-testid="map-combat-target"]');
-    const rect = marker?.getBoundingClientRect();
-    const hit = rect ? document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2) : null;
-    return { scrollY: window.scrollY, innerHeight: window.innerHeight, rootHeight: document.documentElement.clientHeight,
-      visualViewport: window.visualViewport && { offsetTop: window.visualViewport.offsetTop, height: window.visualViewport.height, scale: window.visualViewport.scale },
-      activeElement: document.activeElement && { tag: document.activeElement.tagName, type: (document.activeElement as HTMLInputElement).type, text: (document.activeElement.textContent || '').trim().slice(0, 40) },
-      marker: rect && { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
-      hit: hit && { tag: hit.tagName, className: String((hit as HTMLElement).className), text: (hit.textContent || '').trim().slice(0, 80) } };
-  });
-  console.log('COMBAT_MARKER_AFTER_SCROLL', JSON.stringify(combatMarkerAfterScroll));
   await tapVisualCenter(page, target, testInfo.project.name === 'mobile-chromium');
   await expect(page.getByTestId('combat-target-inspector')).toBeVisible();
 
   await page.getByLabel('Điều kiện tự dừng').selectOption('next_completion');
   const engageButton = page.getByRole('button', { name: 'Engage target' });
   await expect(engageButton).toBeEnabled();
-  const engageHitDiagnostic = await page.evaluate(() => {
-    const describe = (element: Element | null) => {
-      if (!element) return null;
-      const rect = element.getBoundingClientRect();
-      const style = getComputedStyle(element);
-      return { tag: element.tagName, className: String((element as HTMLElement).className), text: (element.textContent || '').trim().slice(0, 90),
-        rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
-        style: { position: style.position, zIndex: style.zIndex, pointerEvents: style.pointerEvents, transform: style.transform, overflow: style.overflow, isolation: style.isolation } };
-    };
-    const button = Array.from(document.querySelectorAll('button')).find(item => item.textContent?.includes('Engage target')) ?? null;
-    const box = button?.getBoundingClientRect();
-    const hit = box ? document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2) : null;
-    return { scrollY: window.scrollY, engage: describe(button), inspector: describe(document.querySelector('[data-testid="combat-target-inspector"]')),
-      canvas: describe(document.querySelector('[data-testid="live-map"]')), hit: describe(hit),
-      stack: box ? document.elementsFromPoint(box.x + box.width / 2, box.y + box.height / 2).slice(0, 8).map(describe) : [] };
-  });
-  console.log('ENGAGE_HIT_DIAGNOSTIC', JSON.stringify(engageHitDiagnostic));
   await tapVisualCenter(page, engageButton, testInfo.project.name === 'mobile-chromium');
   await navigation.getByRole('button', { name: /^Quân lực/ }).click();
   const combatPanel = page.getByTestId('stage07-combat-panel');
