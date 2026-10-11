@@ -180,8 +180,17 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
   expect(previews).toBe(1);
   expect(commands).toBe(0);
   await page.getByRole('button', { name: 'Cancel destination selection' }).click();
+  await mapCampfire.scrollIntoViewIfNeeded();
+  const mapAfterScroll = await page.evaluate(() => {
+    const marker = document.querySelector('[data-testid="map-campfire-marker"]');
+    const rect = marker?.getBoundingClientRect();
+    const hit = rect ? document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2) : null;
+    return { scrollY: window.scrollY, visualOffset: window.visualViewport?.offsetTop, marker: rect && { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+      hit: hit && { tag: hit.tagName, className: String((hit as HTMLElement).className), text: (hit.textContent || '').trim().slice(0, 80) } };
+  });
+  console.log('MAP_AFTER_SCROLL', JSON.stringify(mapAfterScroll));
   await mapCampfire.click();
-  await page.getByRole('button', { name: 'Inspect' }).click();
+  await page.getByRole('button', { name: 'Kiểm tra', exact: true }).click();
   try {
     await expect.poll(() => commands).toBe(1);
   } catch (error) {

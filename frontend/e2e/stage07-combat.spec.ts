@@ -30,6 +30,15 @@ test('Stage 07 plays and reloads a timed H0 combat encounter through the browser
   await navigation.getByRole('button', { name: /^Bản đồ/ }).click();
   const target = page.getByTestId('map-combat-target');
   await expect(target).toBeVisible();
+  await target.scrollIntoViewIfNeeded();
+  const combatMarkerAfterScroll = await page.evaluate(() => {
+    const marker = document.querySelector('[data-testid="map-combat-target"]');
+    const rect = marker?.getBoundingClientRect();
+    const hit = rect ? document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2) : null;
+    return { scrollY: window.scrollY, visualOffset: window.visualViewport?.offsetTop, marker: rect && { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+      hit: hit && { tag: hit.tagName, className: String((hit as HTMLElement).className), text: (hit.textContent || '').trim().slice(0, 80) } };
+  });
+  console.log('COMBAT_MARKER_AFTER_SCROLL', JSON.stringify(combatMarkerAfterScroll));
   await target.click();
   await expect(page.getByTestId('combat-target-inspector')).toBeVisible();
 
