@@ -9,8 +9,8 @@
 | `design/buildings/MAGICAL-BUILDING-CATALOG-v0.3.json` | Machine-readable branch catalog | Proposed, partial executable contracts |
 | `design/buildings/SOURCE-GROUNDED-BUILDING-REDESIGN.md` | Source-first functional building distinctions | Reference and proposal |
 | `data/events/EVENT-TIMELINE-v0.6.json` | Reconciled fixed 30-event calendar | New-game candidate, not retroactive live migration |
-| `data/events/EVENT-SOURCE-CATALOG-v4.6.json` + v4.7–v6.8 addenda | Catalog baseline (590 items, 239 effects) plus append-only Rounds 47–68 event/reward addenda | Research, not guaranteed loot |
-| `data/events/EVENT-SOURCE-ITEMS-v6.8.csv` | Cumulative human-review item catalog (1,080 entries through Round 68, Chapters 1092–1101) | Review |
+| `data/events/EVENT-SOURCE-CATALOG-v4.6.json` + v4.7–v6.9 addenda | Catalog baseline (590 items, 239 effects) plus append-only Rounds 47–68 event/reward addenda | Research, not guaranteed loot |
+| `data/events/EVENT-SOURCE-ITEMS-v6.9.csv` | Cumulative human-review item catalog (1,121 entries through Round 69, Chapters 1102–1111) | Review |
 | `data/events/EVENT-TIMELINE-v0.6.csv` | Human-review schedule diff | Review |
 | `data/structures/SOURCE-STRUCTURE-CATALOG-v1.0.json` | Round 46 review: twenty source-observed/reported structures and one route report; updated city operation evidence, no LL01 construction contracts | Research only, not T0 world data |
 | `references/canonical/LORD-DND-01..07.md` | Underlying mechanics, fixed T0, world/hero/lair/quest data | Historical authoritative rules, require typed migration |
@@ -21,7 +21,7 @@
 
 ## Research traceability
 
-- `research/extraction-audits/`: sixty-eight main extraction audits are retained in sequence; `ROUND-29-CONTINUATION-CH721-724-725-v2.9.1.md` remains a separately archived addendum.
+- `research/extraction-audits/`: sixty-nine main extraction audits are retained in sequence; `ROUND-29-CONTINUATION-CH721-724-725-v2.9.1.md` remains a separately archived addendum.
 - `research/extraction-audits/EVENT-TIMELINE-RECONCILIATION-v0.6.md`: chronology corrections and uncertain source cases.
 - `research/extraction-audits/ROUND-34-THIRTY-FOURTH-EXTRACTION.md`: Round 34 audit for Chapters 752–761.
 - `research/extraction-audits/ROUND-35-THIRTY-FIFTH-EXTRACTION.md`: Round 35 audit for Chapters 762–771.
@@ -33,7 +33,7 @@
 - `research/extraction-audits/ROUND-43-FORTY-THIRD-EXTRACTION.md`: Round 43 audit for Chapters 842–851.
 - `research/extraction-audits/ROUND-47-FORTY-SEVENTH-EXTRACTION.md`: Round 47 audit for Chapters 882–891.
 - `research/extraction-audits/ROUND-48-FORTY-EIGHTH-EXTRACTION.md`: Round 48 audit for Chapters 892–901. 
-- `research/extraction-audits/ROUND-49-FORTY-NINTH-EXTRACTION.md`: Round 49 audit for Chapters 902–911.\n- `research/extraction-audits/ROUND-50-FIFTIETH-EXTRACTION.md`: Round 50 audit for Chapters 912–921.\n- `research/extraction-audits/ROUND-51-FIFTY-FIRST-EXTRACTION.md`: Round 51 audit for Chapters 922–931; subsequent rounds continue sequentially through Round 65.
+- `research/extraction-audits/ROUND-49-FORTY-NINTH-EXTRACTION.md`: Round 49 audit for Chapters 902–911.\n- `research/extraction-audits/ROUND-50-FIFTIETH-EXTRACTION.md`: Round 50 audit for Chapters 912–921.\n- `research/extraction-audits/ROUND-51-FIFTY-FIRST-EXTRACTION.md`: Round 51 audit for Chapters 922–931; subsequent rounds continue sequentially through Round 69.
 - `research/extraction-audits/ROUND-66-SIXTY-SIXTH-EXTRACTION.md`: Round 66 audit for Chapters 1072–1081.
 - `research/extraction-audits/ROUND-67-SIXTY-SEVENTH-EXTRACTION.md`: Round 67 audit for Chapters 1082–1091, including cross-site title checks and shop redemptions.
 - `research/snapshots/events/EVENT-SOURCE-CATALOG-v0.1..v4.6.json`: historical extraction datasets (v3.0 unchanged and archived).
@@ -61,3 +61,5 @@ Unknown shop inventory, purchase caps, chance tables and boss drops must remain 
 A standard gameplay engine still requires typed registries, deterministic simulation, database schema, event/shop transaction resolver, combat and production calculators, persistent saves, versioned migrations, UI/UX and tests. Files in this repository are data and design preparation for that implementation, not a finished React project.
 
 - `research/extraction-audits/ROUND-68-SIXTY-EIGHTH-EXTRACTION.md`: Round 68 audit for Chapters 1092–1101; includes conditional ranking reward packages, battle receipts, and event rules.
+
+- `research/extraction-audits/ROUND-69-SIXTY-NINTH-EXTRACTION.md`: Round 69 audit for Chapters 1102–1111; includes pooled war spoils, Dragon Shop purchases, hidden-shop offers, and Phase II repeatable reward rules.
