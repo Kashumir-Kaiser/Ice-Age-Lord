@@ -1,0 +1,150 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-6.6-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-6.5-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 66 sequential review of printed Chapters 1072–1081 using Bqquge. Cumulative ledger is EVENT-SOURCE-ITEMS-v6.6.csv. Catalog baseline remains v4.6 with append-only v4.7–v6.6 addenda; fixed schedule unchanged.",
+  "item_ids": [
+    "SX-0948",
+    "SX-0949",
+    "SX-0950",
+    "SX-0951",
+    "SX-0952",
+    "SX-0953",
+    "SX-0954",
+    "SX-0955",
+    "SX-0956",
+    "SX-0957",
+    "SX-0958",
+    "SX-0959",
+    "SX-0960",
+    "SX-0961",
+    "SX-0962",
+    "SX-0963",
+    "SX-0964",
+    "SX-0965",
+    "SX-0966",
+    "SX-0967",
+    "SX-0968",
+    "SX-0969"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 1072,
+      "event": "Harold restores the Spider Emperor Scepter to Legendary quality; he also completes the newly crafted semi-artifact Bloodwhale armor, named Whale Fall · Deep Sea Bloodsong."
+    },
+    {
+      "chapter": 1073,
+      "event": "Alchemist Francesca's workshop delivers a large batch of potions; nine named receipt groups are explicit, with some mixed-grade totals and omitted intervening items."
+    },
+    {
+      "chapter": 1074,
+      "event": "Supplies are discussed; the divine Blood Elixir and other potion delivery were already received in Ch1073. No additional explicit receipt."
+    },
+    {
+      "chapter": 1075,
+      "event": "Preparations and equipment assignments; no explicit new item receipt."
+    },
+    {
+      "chapter": 1076,
+      "event": "Malinina binds the previously logged Divine Tribulation Sword · Black Grail; Allen consumes a Pure Divine Fire already held, and completes demi-god advancement. No new inventory receipts."
+    },
+    {
+      "chapter": 1077,
+      "event": "Battle aftermath framing; no explicit item acquisition receipt in reviewed pages."
+    },
+    {
+      "chapter": 1078,
+      "event": "Battle spoils grant twelve explicitly named resource and book categories; totals recorded as displayed."
+    },
+    {
+      "chapter": 1079,
+      "event": "The new Ice Dragon campaign and Mirror Territory rules are announced. Rewards described are conditional future outcomes, not acquired items."
+    },
+    {
+      "chapter": 1080,
+      "event": "Version update outlines new professions, ranking reward possibilities, and Ice Dragon Shop opening; preview is available, redemption not yet available."
+    },
+    {
+      "chapter": 1081,
+      "event": "Ice Dragon Shop preview lists redeemable equipment, weapons, blueprints, recruit scrolls, and items, including a server-limited Ice Godhead; no purchase/acquisition occurs in this chapter."
+    }
+  ],
+  "non_receipts": [
+    "Repaired Spider Emperor Scepter is one returned item, not a new item in addition to its damaged state.",
+    "Bloodwhale armor is a newly crafted output from previously supplied hide; the hide is not a new receipt.",
+    "Ch1073 shows additional omitted loot blocks (【获得——】); unshown potion categories are not guessed. Some totals combine two qualities without a grade split.",
+    "Ch1076 sword binding, sword evolution references, and consuming the previously held Pure Divine Fire are not new acquisitions.",
+    "Ch1079 victory rewards and Ch1080 rank rewards are conditional future offers, not claimed.",
+    "Ch1080–1081 Ice Dragon Shop entries are previewed only; no exchanges were made. Catalog prices/limits belong in shop-offer extraction when verified as records."
+  ],
+  "item_receipts": [
+    {
+      "chapter": 1072,
+      "ids": [
+        "SX-0948",
+        "SX-0949"
+      ],
+      "note": "Restored Legendary Spider Emperor Scepter and newly crafted named semi-artifact armor."
+    },
+    {
+      "chapter": 1073,
+      "ids": [
+        "SX-0950",
+        "SX-0951",
+        "SX-0952",
+        "SX-0953",
+        "SX-0954",
+        "SX-0955",
+        "SX-0956",
+        "SX-0957",
+        "SX-0958"
+      ],
+      "note": "Potion shipment receipt groups; mixed quality totals preserved as presented."
+    },
+    {
+      "chapter": 1078,
+      "ids": [
+        "SX-0959",
+        "SX-0960",
+        "SX-0961",
+        "SX-0962",
+        "SX-0963",
+        "SX-0964",
+        "SX-0965",
+        "SX-0966",
+        "SX-0967",
+        "SX-0968",
+        "SX-0969"
+      ],
+      "note": "Twelve explicit battle spoil categories, including Ice Dragon Marks through Advanced Attribute Books."
+    }
+  ],
+  "quest": "Ancient Dragon campaign phase begins. Ice Dragon Shop offers are previewed but no exchange has been recorded. Next unprocessed chapter: 1082.",
+  "inventory_caveat": "All extracted items remain source research, not LL01 initial inventory, guaranteed new-game drops, or active event contracts.",
+  "next_unprocessed_chapter": 1082,
+  "source_urls": [
+    "https://www.bqquge.org/851/227800",
+    "https://www.bqquge.org/851/227801",
+    "https://www.bqquge.org/851/227802",
+    "https://www.bqquge.org/851/227803",
+    "https://www.bqquge.org/851/227804",
+    "https://www.bqquge.org/851/236476",
+    "https://www.bqquge.org/851/236477",
+    "https://www.bqquge.org/851/236478",
+    "https://www.bqquge.org/851/236479",
+    "https://www.bqquge.org/851/236514"
+  ],
+  "mirror_note": "Direct chapter text and all linked continuation pages checked on Bqquge; primary 69shuba chapter sequence remains inaccessible beyond Ch921. Shop preview records are not purchases.",
+  "chapter_source_urls": [
+    "https://www.bqquge.org/851/932667",
+    "https://www.bqquge.org/851/951231",
+    "https://www.bqquge.org/851/960364",
+    "https://www.bqquge.org/851/970138",
+    "https://www.bqquge.org/851/975351",
+    "https://www.bqquge.org/851/992790",
+    "https://www.bqquge.org/851/1011081",
+    "https://www.bqquge.org/851/1132708",
+    "https://www.bqquge.org/851/1224122",
+    "https://www.bqquge.org/851/1296803"
+  ]
+}
