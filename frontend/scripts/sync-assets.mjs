@@ -6,6 +6,7 @@ const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const manifestPath = resolve(repo, 'assets/manifest.json');
 const publicManifest = resolve(repo, 'frontend/public/assets/manifest.json');
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+const referenceFile = reference => reference.split('#', 1)[0];
 const sourceFolders = ['buildings', 'items', 'terrain', 'units', 'characters'];
 for (const folder of sourceFolders) {
   if (!existsSync(resolve(repo, `assets/source/${folder}`))) throw new Error(`Missing authoring folder: assets/source/${folder}`);
@@ -25,7 +26,7 @@ function readSvg(path, label) {
 for (const asset of manifest.assets) {
   const source = resolve(repo, asset.source);
   if (!existsSync(source)) throw new Error(`Missing source master for ${asset.assetId}: ${asset.source}`);
-  if (asset.referenceSource && !existsSync(resolve(repo, asset.referenceSource))) {
+  if (asset.referenceSource && !existsSync(resolve(repo, referenceFile(asset.referenceSource)))) {
     throw new Error(`Missing concept reference for ${asset.assetId}: ${asset.referenceSource}`);
   }
   const registeredPaths = [...Object.values(asset.layers), ...Object.values(asset.lodVariants).flatMap(lod => Object.values(lod))];
@@ -51,7 +52,7 @@ for (const portrait of manifest.characterArt ?? []) {
   const source = resolve(repo, portrait.source);
   const output = resolve(repo, 'frontend/public' + portrait.src);
   if (!existsSync(source)) throw new Error('Missing character artwork ' + portrait.id);
-  if (portrait.referenceSource && !existsSync(resolve(repo, portrait.referenceSource))) {
+  if (portrait.referenceSource && !existsSync(resolve(repo, referenceFile(portrait.referenceSource)))) {
     throw new Error('Missing character concept reference: ' + portrait.referenceSource);
   }
   const svg = readSvg(source, portrait.source);
@@ -65,7 +66,7 @@ for (const illustration of [...(manifest.itemArt ?? []), ...(manifest.unitArt ??
   const source = resolve(repo, illustration.source);
   const output = resolve(repo, 'frontend/public' + illustration.src);
   if (!existsSync(source)) throw new Error(`Missing illustration master for ${illustration.assetId}: ${illustration.source}`);
-  if (illustration.referenceSource && !existsSync(resolve(repo, illustration.referenceSource))) {
+  if (illustration.referenceSource && !existsSync(resolve(repo, referenceFile(illustration.referenceSource)))) {
     throw new Error(`Missing concept reference for ${illustration.assetId}: ${illustration.referenceSource}`);
   }
   const svg = readSvg(source, illustration.source);
