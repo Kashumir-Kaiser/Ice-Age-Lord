@@ -36,7 +36,7 @@ Append-only review of printed Chapters 912–921, continuing from Round 49. The 
 - Do not treat the ale consumed in Ch914, the conditional captives offered in Ch915, or the future crystal suggestion in Ch919 as acquired items.
 - The ring's directional clue does not mean the ancestor's remains were found.
 - Ch920 records inventory use/transfer, not new acquisition.
-- Ch921 remains an unresolved source-access gap. Revisit if the direct text becomes available.
+- The direct 69shuba Ch921 page remains unavailable, but the chapter outcome is now verified through the readable Bqquge mirror.
 
 ## Next boundary
 
