@@ -3,43 +3,45 @@
 ## Scope and release
 
 - Primary reader headings: Chapters 1302–1311 inclusive.
-- Cumulative item ledger: `data/events/EVENT-SOURCE-ITEMS-v7.18.csv`, 1,543 records, 69 columns.
-- Added IDs: SX-1519–SX-1543 (25 records: first-True-God rewards, chest opening, item/skill transformation, battlefield spoils, and corpse conversions).
+- Cumulative item ledger: `data/events/EVENT-SOURCE-ITEMS-v7.18.csv`, 1,543 records and 69 columns.
+- Added IDs: SX-1519–SX-1543 (25 rows).
 - Catalog addendum: `data/events/EVENT-SOURCE-CATALOG-v7.19-ADDENDUM.json`.
 - Next LanaGarden heading: Chapter 1312; next item ID: SX-1544.
 - The fixed 30-event calendar, LL01 starting inventory, and guaranteed new-game loot are unchanged.
 
-## Source numbering
+## Source numbering and alternatives
 
-The ledger retains the chapter number displayed by the primary LanaGarden reader. Independent directory listings checked by exact title show a one-chapter-lower number for several headings in this arc; for example, LanaGarden Chapter 1302 (“Sun and Moon Shine Together, Witness a Miracle, the Saintess Ascends to True God”) appears as Chapter 1301 in ReadNovel and Xiaoxiang. These catalogs corroborate title/order only. Round 89 uses the LanaGarden chapter numbers in the CSV and catalog, and records the alternate numbering in `source_chapter_variant` and the catalog's unresolved conflicts.
+LanaGarden is the body-text source for this round; its book page identifies the novel as completed with 1,358/1,358 chapters. Independent chapter directories/catalogs checked include Bqquge, XS8, ReadNovel, Xiaoxiang, Rongshuxia, and CPXS123. These provide useful title/order checks, but several mirror-local numbers are one chapter below LanaGarden in this arc. For example, the LanaGarden heading for the first-True-God chapter appears as Chapter 1301 in the ReadNovel/Xiaoxiang catalog set and as 1302 in LanaGarden. I matched by the exact Chinese heading and kept the printed LanaGarden number in the data. Catalog listings were not treated as evidence of item receipts or chapter events.
 
 ## Chapter findings
 
-- **1302:** Zhala/Noen Saintess succeeds in the Root Divine Fire trial and becomes the first True God in Cao Xing's territory and the first Lord with True-God combat power. The event has a world-wide system announcement. No item receipt is listed in this chapter.
-- **1303:** The first-True-God Lord reward explicitly includes one random Upper God Artifact chest and the True-God-tier Demon God Warship blueprint. These are received but not opened/built in this chapter.
-- **1304:** The reward inventory lists the blueprint, 10 Demon God Cores, and the random Upper God Artifact chest. The blueprint states five cores per warship; no warship is built. Cao Xing opens the chest; the observed output is one Eternal Freeze Crown, an Upper God Artifact, which he binds in Chapter 1305.
-- **1305:** Cao Xing creates the Upper God skill Twelve Extremes: Extinction Ice Lotus. The existing Snow Burial Star Robe simulates the set-source aura of the already-owned Great Lich Frost Soul Robe for 30 days, activating a set effect; the source says the simulation can be cancelled. No new robe is received.
-- **1306:** The expedition departs for the Ancient War Site while a small force remains to defend the southern front. The chapter establishes a new campaign location and travel plan, with no separate chest/loot receipt.
-- **1307:** The site contains four towers and two temples described as ancient inheritance/trial structures. Entry requires special conditions; trials can grant ancient powers. The site also continuously erodes life. No item receipt is recorded.
-- **1308:** First million Soulless Soldier kills yield 1,440,000 Corroded Ancient Weapon Fragments and 31,525 Faith Crystals. Decomposing fragments yields Ancient Mithril ×1,760,000; Ancient Eternal Gold Ingots ×1,320,000; Void Soulstone ×31,626; Netherworld Black Steel ×24,138; and Hellstar Gold ×15,264. Additional loot includes Ancient Soulstone Fragments ×12,546 and an estimated 47,000 Dim Flame Crystals per million kills. Faith Crystals decompose into faith points; one million Dim Flame Crystals can synthesize one Flawless Divine Fire; 100,000 Ancient Soulstone Fragments fuse into an Ancient Soulstone that grants one level up to level 400. No synthesis is completed here.
-- **1309:** The existing Tomb of Gods converts two previously encountered ancient Divine corpses into obedient Undead God Generals: Candle God (level 265) and Dusk God (level 270). Pooled spoils include Corroded Ancient Weapon Fragments ×15,780,000; Faith Crystals ×425,719; and Ancient Soulstone Fragments ×141,775. The weapon-fragment pile is not decomposed in this range; the chapter's “at least 50 million” rare-material output is only a prospective estimate. A Wind God inheritance site is located.
-- **1310:** A three-part Wind God inheritance trial begins, requiring affinity with Wind Law and the Wind God physique. Completion is pending at the chapter end. No reward is yet claimed.
-- **1311:** The party continues exploring and converting corpses. Four additional corpses raise the Tomb of Gods count to seven; a later wave converts 16 more. The corresponding battle batches yield Corroded Ancient Weapon Fragments ×14,250,000; Faith Crystals ×404,812; Ancient Soulstone Fragments ×251,648; and Dim Flame Crystals ×675,241. Later stock snapshots are 2,430,000 Faith Crystals, 1,120,000 soul fragments, and 3,480,000 Dim Flame Crystals. These snapshots are cumulative, not extra receipts. Total transformed corpses are 23 from the stated batches; the army is nearing 30 by the chapter end.
+- **1302:** Zhala completes the Root Divine Fire trial, becomes the first True God in Cao Xing’s territory, and receives the Ice-Rain War Song title and Ice Spear authority. The system reports +1,500% base stats, +1,000% Divine Power regeneration, and a level cap of 400. No item receipt.
+- **1303:** The first-True-God reward grants one random Upper God Artifact Chest and a True God Demon God Warship blueprint. The chapter does not show the chest opened or a warship built.
+- **1304:** The reward inventory confirms Demon God Cores ×10. The blueprint requires five cores per ship, plus Star Meteorites ×10,000,000, Hellstar Gold ×10,000,000, Netherworld Black Steel ×10,000,000, and World Tree branches ×10. Cao Xing opens the chest and receives the Everfrost Crown (Upper God Artifact, Glacier Godhead); he equips and binds it in this chapter. The blueprint remains unbuilt.
+- **1305:** A hidden Master-level Artifact Resonance/weapon-control life skill awakens. Bound gear gains +50% Intelligence, equipped base stats gain +30%, and its simulation feature lets one or two equipped items imitate another item's aura to activate set effects without changing item identity. Cao Xing creates the Upper God skill Twelve Extremes: Annihilation Ice Lotus (35,000 Divine Power per cast). The already-owned Snow-Burial Star Robe temporarily simulates the Great Lich Frost-Soul Robe set aura for 30 days; it is not a new item receipt.
+- **1306:** The group departs for the God-Battle Site while a small force remains to defend the southern front. A previously recorded Nessa Goddess's Blessing Ring is used as a buff. No new item receipt.
+- **1307:** The site presents six major trial/inheritance structures. First exploration grants 100,000,000 XP and 100,000 reputation. Cao Xing kills 1,214,200 ancient soulless troops for 85,216,000,000 XP; combat participants receive 42,608,000,000 XP. Black energy orbs appear but are not collected. Two corrupted ancient divine corpses emerge; no loot is collected in this chapter.
+- **1308:** The first 1,000,000 ancient soulless troop kills yield Corroded Ancient Weapon Fragments ×1,440,000, Faith Crystals ×31,525, Ancient Soulstone Fragments ×12,546, and Dim Flame Crystals ×47,154. Decomposing the weapon fragments yields Ancient Mithril ×1,760,000; Ancient Eternal Gold Ingots ×1,320,000; Ancient Meteorite Ingots ×141,500; Void Soulstones ×31,626; Netherworld Black Steel ×24,138; Hellstar Gold ×15,264; and Heaven Holy Silver ×65. Decomposing the Faith Crystals yields 26,754,900 faith points. No synthesis is performed.
+- **1309:** Tomb of Gods converts two previously encountered divine corpses into loyal undead generals Candle God (level 265) and Dusk God (level 270). Their cleanup produces Corroded Ancient Weapon Fragments ×15,780,000; Faith Crystals ×425,719; Ancient Soulstone Fragments ×141,775; and Dim Flame Crystals ×802,516. The loot receipt does not state how many kills produced that pickup. The Wind God inheritance is found but not yet entered.
+- **1310:** The group enters the Wind God Silver’s inheritance. Entry dialogue names three trials (Wind Dance, Storm Heart, Wind-Speaker’s Echo) and requires Wind Law affinity and a Wind-God physique; Ellen elects to undertake them. Completion and inheritance rewards remain pending. A hidden level-255 Mid God Fear Wolf God is also captured, converted to the stored undead general Fear Wolf, and the group reaches the sealed Body Tower.
+- **1311:** A further explicit battle-loot receipt lists Corroded Ancient Weapon Fragments ×14,250,000; Faith Crystals ×404,812; Ancient Soulstone Fragments ×251,648; and Dim Flame Crystals ×675,241. Running stock snapshots include fragments ×57,260,000, Faith Crystals ×2,430,000, soulstone fragments ×1,120,000, and Dim Flame Crystals ×3,480,000; these are cumulative and are not counted again. Corpse conversions reach seven on day one and add sixteen on day two; the army later approaches thirty, but the unnamed corpses are not individually listed as new inventory items.
 
 ## Record groups
 
-- SX-1519–SX-1522: first-True-God rewards and observed Upper God chest output.
-- SX-1523–SX-1524: newly created skill and existing robe's temporary set-effect simulation.
-- SX-1525–SX-1533: first-million-soldier receipts and fragment decomposition outputs.
-- SX-1534–SX-1537: pooled battlefield spoils and conversion of two prior corpses.
-- SX-1538–SX-1543: later battlefield batches and additional corpse conversions.
+- SX-1519–SX-1521: first-True-God reward chest, warship blueprint, and Demon God Cores.
+- SX-1522: observed chest output, the bound Everfrost Crown.
+- SX-1523–SX-1524: Artifact Resonance and the created Upper God skill.
+- SX-1525–SX-1528: first-million battlefield loot.
+- SX-1529–SX-1535: explicit fragment-disassembly materials.
+- SX-1536–SX-1539: second cleanup pickup.
+- SX-1540–SX-1543: later battlefield pickup.
 
 ## Audit notes
 
-- Chest receipt, chest opening, and observed output are separate records. No drop probabilities are inferred from the one opening.
-- Ten Demon God Cores and one warship blueprint are not treated as a completed ship.
+- Chest receipt and chest output are separate records; no drop probability is inferred from the one opening.
+- Ten Demon God Cores and a warship blueprint are not treated as a completed ship.
 - Existing inventory transformations and corpse conversions do not imply new-game starting inventory.
-- The 47,000 Dim Flame Crystal figure is explicitly kept as the text's rate estimate.
-- Cumulative stock snapshots in Chapter 1311 are not double-counted as new receipts.
-- No chapter event calendar or LL01 starting-state data changed.
-- All 25 appended CSV rows use the existing 69-column schema, sequential IDs SX-1519–SX-1543, and preserve the full v7.17 byte prefix.
+- Black energy orbs in Chapter 1307 are not recorded as obtained.
+- Chapter 1311 cumulative stock figures are context, not additional receipts.
+- Alternate catalogs are cited only for title/order cross-checks; chapter-body claims use LanaGarden.
+- All 25 CSV rows use the existing 69-column schema, sequential IDs SX-1519–SX-1543, and preserve the entire v7.17 byte prefix.
