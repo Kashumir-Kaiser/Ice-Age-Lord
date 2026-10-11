@@ -34,7 +34,9 @@ test('Stage 07 plays and reloads a timed H0 combat encounter through the browser
   await expect(page.getByTestId('combat-target-inspector')).toBeVisible();
 
   await page.getByLabel('Điều kiện tự dừng').selectOption('next_completion');
-  await page.getByRole('button', { name: 'Engage target' }).click();
+  const engageButton = page.getByRole('button', { name: 'Engage target' });
+  await expect(engageButton).toBeEnabled();
+  await engageButton.click();
   await navigation.getByRole('button', { name: /^Quân lực/ }).click();
   const combatPanel = page.getByTestId('stage07-combat-panel');
   await expect(combatPanel).toContainText(/active/);

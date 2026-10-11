@@ -37,16 +37,17 @@ test('resource inspector shows remembered quantity and an honest harvest plan fl
   await expect(dialog.getByRole('button',{name:'50%'})).toBeVisible();
   await expect(dialog.getByRole('button',{name:'100%'})).toBeVisible();
   await expect(dialog.getByRole('button',{name:'Tùy chỉnh'})).toBeVisible();
-  await expect(dialog).toContainText('Snapshot mở đầu có 0 đơn vị');
+  await expect(dialog).toContainText('Không có đơn vị đang sống');
+  await expect(dialog).toContainText('Chưa thể tiếp cận địa điểm này.');
   await expect(dialog.getByRole('button',{name:/Gửi đi/})).toBeDisabled();
 });
 
-test('unit filters expose All and only races with living groups',async({page})=>{
+test('unit filters stay hidden until at least one race has living units',async({page})=>{
   await goTo(page,/Quân lực/);
   const filters=page.getByRole('group',{name:'Lọc đơn vị theo chủng tộc'});
-  await expect(filters.getByRole('button',{name:'Tất cả'})).toBeVisible();
-  await expect(filters.getByRole('button')).toHaveCount(1);
+  await expect(filters).toHaveCount(0);
   await expect(page.getByText('Chưa có đơn vị đang sống')).toBeVisible();
+  await expect(page.getByText('Bộ lọc chủng tộc sẽ xuất hiện khi có đơn vị đang sống.')).toBeVisible();
 });
 
 test('placement creates reversible drafts without changing the starting buildings',async({page})=>{
@@ -58,7 +59,7 @@ test('placement creates reversible drafts without changing the starting building
   const box=await scene.boundingBox();
   expect(box).not.toBeNull();
   await scene.click({position:{x:box!.width*.52,y:box!.height*.52}});
-  await expect(page.locator('.territory-draft-list')).toContainText('fixture-tall-tower');
+  await expect(page.locator('.territory-draft-list')).toContainText('Tháp cao');
   await expect(page.locator('.territory-building[data-building-id^="SITE-LL01-"]')).toHaveCount(initial);
   await page.getByRole('button',{name:/Xoay 90°/}).click();
   await expect(page.locator('.territory-placement-controls')).toContainText('hướng east');
@@ -121,8 +122,8 @@ test('territory controls fit portrait width and the 520-instance QA fixture is c
     state.__territoryQaStarted=performance.now();state.__territoryQaTasks=[];
     if('PerformanceObserver' in window){const observer=new PerformanceObserver(entries=>{const target=(window as typeof window & {__territoryQaTasks?:Sample[]}).__territoryQaTasks;for(const entry of entries.getEntries())target?.push({duration:entry.duration});});try{observer.observe({type:'longtask',buffered:true});}catch{/* Optional timing API. */}}
   });
-  await page.getByRole('button',{name:'Đến cụm QA 520'}).click();
-  await expect(page.getByText('Đang gắn 520 / 520 fixture nhìn thấy')).toBeVisible();
+  await page.getByRole('button',{name:'Xem nhóm công trình minh họa'}).click();
+  await expect(page.getByText('Đang hiển thị 520 / 520 công trình minh họa.')).toBeVisible();
   const qa=await page.evaluate(async()=>{
     await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));
     const state=window as typeof window & {__territoryQaStarted?:number;__territoryQaTasks?:Array<{duration:number}>};
@@ -132,7 +133,7 @@ test('territory controls fit portrait width and the 520-instance QA fixture is c
   console.log(`TERRITORY_QA viewport=390x844 fixture=520 elapsed_ms=${qa.elapsed} long_tasks=${qa.longTasks.length} max_long_task_ms=${Math.round(Math.max(0,...qa.longTasks.map(task=>task.duration))*10)/10} mounted_svg_instances=${qa.mounted} mounted_dense_instances=${mountedBefore}`);
   expect(mountedBefore).toBe(520);
   await page.getByRole('button',{name:/Về lửa trại/}).click();
-  const cullingStatus=page.locator('.territory-calibration-info').getByText(/Đang gắn/);
+  const cullingStatus=page.locator('.territory-calibration-info').getByText(/Đang hiển thị/);
   await expect(cullingStatus).toBeVisible();
   const mountedAfter=await page.locator('.territory-building[data-building-id^="qa-dense-"]').count();
   console.log(`TERRITORY_QA_RETURN viewport=390x844 mounted_dense_instances=${mountedAfter} status=${await cullingStatus.innerText()}`);

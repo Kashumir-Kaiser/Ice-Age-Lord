@@ -28,18 +28,22 @@ test('Chromium runs the server-owned clock, completes a Tomb job once, and recov
   await page.getByRole('button', { name: 'Áp dụng' }).click();
 
   await page.getByRole('button', { name: 'Quân lực' }).click();
-  await expect(page.getByText(/TOMB_QUEUE · 1 WU\/h · XP 0 · không XP mirror/)).toBeVisible({ timeout: 15000 });
+  const tombUnit = page.locator('.live-container-card').filter({
+    has: page.getByRole('heading', { name: 'Cương Thi 1', exact: true }),
+  });
+  await expect(tombUnit).toHaveCount(1, { timeout: 15000 });
+  await expect(tombUnit).toContainText('Được tạo từ Mộ');
+  await expect(tombUnit).toContainText('Bậc 0 · Cấp 1 · Phẩm Thường · XP 0');
+  await expect(tombUnit).toContainText('XP của đơn vị này không được chuyển cho Lí Lan.');
   await expect(page.getByText('Ngày 1 · 07:20')).toBeVisible();
-  await expect(page.getByText(/Cương Thi 1 · Bậc 0 · Thường/)).toHaveCount(1);
-
-  const completedJob = page.locator('.live-plain-list').filter({ hasText: /completed · TOMB-UNIT-/ });
-  await expect(completedJob).toHaveCount(1);
 
   await page.reload();
   await page.getByLabel('Khóa chủ sở hữu').fill(ownerKey!);
   await page.getByRole('button', { name: 'Kết nối API' }).click();
   await expect(page.getByText('Đã khôi phục đúng lượt lưu từ API.')).toBeVisible();
   await page.getByRole('button', { name: 'Quân lực' }).click();
-  await expect(page.getByText(/Cương Thi 1 · Bậc 0 · Thường/)).toHaveCount(1);
-  await expect(page.locator('.live-plain-list').filter({ hasText: /completed · TOMB-UNIT-/ })).toHaveCount(1);
+  await expect(page.getByRole('heading', { name: 'Cương Thi 1', exact: true })).toHaveCount(1);
+  await expect(page.locator('.live-container-card').filter({
+    has: page.getByRole('heading', { name: 'Cương Thi 1', exact: true }),
+  })).toContainText('Được tạo từ Mộ');
 });

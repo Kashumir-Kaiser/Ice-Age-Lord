@@ -134,7 +134,7 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
   await page.getByRole('button', { name: 'Kết nối API' }).click();
   await expect(page.getByRole('heading', { name: 'Chọn hoặc tạo lượt lưu' })).toBeVisible();
   await page.getByRole('button', { name: 'Tạo lượt chơi sạch' }).click();
-  await expect(page.getByText('Clean game đã được tạo và commit. Revision 1.')).toBeVisible();
+  await expect(page.locator('.live-footer')).toContainText('revision 1');
 
   await page.getByRole('button', { name: 'Lãnh địa' }).click();
   const territoryCampfire = page.getByTestId('territory-campfire-structure');

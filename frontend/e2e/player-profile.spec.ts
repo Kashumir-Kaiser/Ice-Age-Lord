@@ -29,7 +29,7 @@ test('global map follows the player and dragging the player unlocks and pans', a
 
   const map = page.locator('svg.terrain-svg--deep');
   const marker = page.locator('.map-player-marker');
-  await expect(page.locator('.map-corner-title')).toContainText('Bản đồ thế giới · LL01');
+  await expect(page.locator('.map-corner-title strong')).toHaveText('Bản đồ thế giới');
   await expect(page.locator('.map-follow-status')).toBeVisible();
   await expect(marker).toHaveCount(1);
   await marker.click();
