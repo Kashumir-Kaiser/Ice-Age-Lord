@@ -39,7 +39,7 @@ test('resource inspector shows remembered quantity and an honest harvest plan fl
   await expect(dialog.getByRole('button',{name:'Tùy chỉnh'})).toBeVisible();
   await expect(dialog).toContainText('Không có đơn vị đang sống');
   await expect(dialog).toContainText('Chưa thể tiếp cận địa điểm này.');
-  await expect(dialog.getByRole('button',{name:/Gửi đi/})).toBeDisabled();
+  await expect(dialog.getByRole('button',{name:/Thu hoạch · Chưa khả dụng/})).toBeDisabled();
 });
 
 test('unit filters stay hidden until at least one race has living units',async({page})=>{
@@ -62,9 +62,9 @@ test('placement creates reversible drafts without changing the starting building
   await expect(page.locator('.territory-draft-list')).toContainText('Tháp cao');
   await expect(page.locator('.territory-building[data-building-id^="SITE-LL01-"]')).toHaveCount(initial);
   await page.getByRole('button',{name:/Xoay 90°/}).click();
-  await expect(page.locator('.territory-placement-controls')).toContainText('hướng east');
+  await expect(page.locator('.territory-placement-controls')).toContainText('hướng Đông');
   await page.getByRole('button',{name:'Hủy placement'}).click();
-  await expect(page.locator('.territory-draft-list')).toContainText('fixture-tall-tower');
+  await expect(page.locator('.territory-draft-list')).toContainText('Tháp cao');
   await page.getByRole('button',{name:'Xóa tất cả'}).click();
   await expect(page.locator('.territory-draft-list')).toHaveCount(0);
 });

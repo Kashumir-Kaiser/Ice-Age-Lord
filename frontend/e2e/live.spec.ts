@@ -22,7 +22,7 @@ function playerView(revision = 1) {
       attributes: { STR: 8 }, mana: { current: 236, max: 236 }, careerState: 'unemployed',
       position: { xMm: 0, yMm: 0, sourceZMetres: 0 },
     },
-    careerCard: { observed: false, career: null },
+    careerCard: { observed: false, active: false, openingSkillLearned: false, career: null },
     territory: {
       id: 'H0', stage: 'H0', position: { xMm: 0, yMm: 0 },
       survivalFire: { ref: fireRef, level: 1, active: true, heatRadiusMetres: 10, fuelRemaining: null, fuelKnowledge: 'state_unobserved', nextFuelConsumptionAtElapsedMs: null, fuelBlocker: 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED', protection: 'active' },
@@ -36,7 +36,17 @@ function playerView(revision = 1) {
         queue: [],
         output: { formTier: 0, grade: 'Thường', level: 1, xp: 0, faction: 'DARK', hero: false, loyalty: 'ABSOLUTE_TO_LI_LAN', xpMirrorEligible: false, baseLaborRateWuPerHour: 1 },
       },
-      buildings: [{ id: 'LL-BLD-FIRE-01', name: 'Lửa Trại', status: 'active' }],
+      buildings: [{ id: 'LL-BLD-FIRE-01', name: 'Lửa Trại', status: 'active', kind: 'fire', level: 1 }],
+    },
+    construction: {
+      unlockedBlueprintIds: [],
+      blueprints: [],
+      jobs: [],
+      residents: [],
+      rewardEntitlements: [],
+      operatingServices: [],
+      farmerHouseCapacity: 0,
+      occupiedHousing: 0,
     },
     inventory: {
       inspectableContainers: [{ containerId: 'LL-CNT-CARRIED-FOOD-BAG-01', label: 'Bịch đồ ăn', kind: 'carried_bag' }],

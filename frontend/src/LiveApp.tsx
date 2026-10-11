@@ -593,7 +593,13 @@ function LiveApp() {
         </div>
         {chooseDestination && <p className="live-map-hint">Click an empty map coordinate to preview an order. Confirming travel is a separate action.</p>}
         {fireRef && !fireEntity && <div className="live-inline-error" role="alert">Không tìm thấy Lửa Sinh Tồn trên bản đồ hiện tại.</div>}
-        <div className="live-map-canvas" data-testid="live-map">
+        <div className="live-map-canvas" data-testid="live-map" onClick={event => {
+          if (!chooseDestination) return;
+          const rect = event.currentTarget.getBoundingClientRect();
+          const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+          const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+          previewCoordinateDestination({ xMm: Math.round(center.xMm + (x - 0.5) * horizontalSpanMm), yMm: Math.round(center.yMm - (y - 0.5) * spanMm), sourceZMetres: center.sourceZMetres ?? 0 });
+        }}>
           <div className="live-map-crosshair" aria-hidden="true" />
           <svg className="live-map-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
             {view.visibleMap.exploredGeometry.map(area => {
@@ -611,13 +617,6 @@ function LiveApp() {
               return <ellipse key={`${sight.source}-${index}`} className="live-map-sight" cx={projected.x} cy={projected.y} rx={sight.radiusMm / horizontalSpanMm * 100} ry={sight.radiusMm / spanMm * 100} />;
             })}
           </svg>
-          <div className="live-map-click-layer" onClick={event => {
-            if (!chooseDestination) return;
-            const rect = event.currentTarget.getBoundingClientRect();
-            const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
-            const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
-            previewCoordinateDestination({ xMm: Math.round(center.xMm + (x - 0.5) * horizontalSpanMm), yMm: Math.round(center.yMm - (y - 0.5) * spanMm), sourceZMetres: center.sourceZMetres ?? 0 });
-          }} />
           {view.visibleMap.terrain.map(terrain => {
             const projected = point(terrain.position);
             const left = Math.max(2, Math.min(98, projected.x));
@@ -635,7 +634,7 @@ function LiveApp() {
               data-testid={isFire ? 'map-campfire-marker' : undefined}
               data-entity-ref={entityRefKey(entity.ref)}
               style={{ left: left + '%', top: top + '%' }}
-              onClick={event => { event.stopPropagation(); setSelectedRef(entity.ref); }}
+              onClick={event => { event.stopPropagation(); setSelectedRef(entity.ref); setSelectedCombatTargetId(null); }}
               aria-label={entity.label}
               title={entity.label}
             >
@@ -649,7 +648,7 @@ function LiveApp() {
             const top = Math.max(2, Math.min(98, projected.y));
             return <button key={target.targetId} className={'live-map-marker live-map-marker--combat' + (selectedCombatTargetId === target.targetId ? ' is-selected' : '')}
               data-testid="map-combat-target" style={{ left: left + '%', top: top + '%' }}
-              onClick={event => { event.stopPropagation(); setSelectedCombatTargetId(target.targetId); }}
+              onClick={event => { event.stopPropagation(); setSelectedRef(null); setSelectedCombatTargetId(target.targetId); }}
               aria-label={target.label} title={target.label}><MapPin size={19} aria-hidden="true" /><span>{target.label}</span></button>;
           })}
           {view.units.filter(unit => unit.position).map(unit => {
