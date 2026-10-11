@@ -12,7 +12,7 @@ This is a **new game**: do not import earlier campaign inventories, unit rosters
 
 - `references/canonical/`: original Lord DnD source rulebooks and lineage, retained **as references** (not an already-compiled runtime).
 - `design/`: latest web-game content design, magical buildings and source-grounded construction proposals.
-- `data/events/`: cumulative source-item CSV v7.21 with 1,655 rows through Round 92 (LanaGarden displayed Chapters 1332–1341); round audits and catalog addenda are in `research/extraction-audits/` and `data/events/`. The cumulative source catalog JSON remains v4.6 (590 items, 239 effects) with v4.7–v7.22 addenda and the v7.2.1 metadata correction. Catalog numbering varies by one in this arc; align exact titles and see the Round 89–92 audits. The fixed 30-event v0.6 timeline is unchanged. Extracted entries are not automatically obtainable in a new game.
+- `data/events/`: cumulative source-item CSV v7.22 with 1,676 rows through Round 93 (LanaGarden displayed Chapters 1342–1351); round audits and catalog addenda are in `research/extraction-audits/` and `data/events/`. The cumulative source catalog JSON remains v4.6 (590 items, 239 effects) with v4.7–v7.23 addenda and the v7.2.1 metadata correction. Catalog numbering varies by one in this arc; align exact titles and see the Round 89–93 audits. The fixed 30-event v0.6 timeline is unchanged. Extracted entries are not automatically obtainable in a new game.
 - `research/extraction-audits/`: **all eighty-nine extraction rounds**, including the Round 29 continuation addendum (v2.9.1), Round 35, Round 36, Round 38, Round 39, Round 40, Round 41, Round 42, Round 43, and Rounds 44–74 audits, with append-only research and immutable earlier releases.
 - `research/snapshots/`: chronological catalogs and design versions retained for traceability.
 
@@ -111,3 +111,7 @@ The React/Vite visual demo now lives in `frontend/` on `main`. It uses the origi
 - `data/events/EVENT-SOURCE-ITEMS-v7.21.csv`: cumulative source-item ledger through Round 92 (1,655 rows), including four-tower reward reconciliation, battlefield returns, temple rewards, True God breakthroughs and the final invasion event launch from LanaGarden Chapters 1332–1341.
 - `data/events/EVENT-SOURCE-CATALOG-v7.22-ADDENDUM.json`: Round 92 chapter index, reconciled fragment totals and final invasion event mechanics.
 - `research/extraction-audits/ROUND-92-NINETY-SECOND-EXTRACTION.md`: Round 92 audit; resumes at LanaGarden Chapter 1342 / SX-1656.
+
+- `data/events/EVENT-SOURCE-ITEMS-v7.22.csv`: cumulative source-item ledger through Round 93 (1,676 rows), covering the invasion counteroffensive, boss drops, Unity rewards, final campaign mechanics, and postwar recovery from LanaGarden Chapters 1342–1351.
+- `data/events/EVENT-SOURCE-CATALOG-v7.23-ADDENDUM.json`: Round 93 chapter index, receipt groups, and campaign outcome notes.
+- `research/extraction-audits/ROUND-93-NINETY-THIRD-EXTRACTION.md`: Round 93 audit; resumes at LanaGarden Chapter 1352 / SX-1677.
