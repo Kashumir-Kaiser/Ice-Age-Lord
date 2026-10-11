@@ -12,7 +12,7 @@ import type { PlayerEvent, SaveSummary } from '../../packages/contracts/src/api.
 import { findAsset, layerPath, loadAssetManifest } from './assets/assetRegistry';
 import type { AssetManifest } from './assets/assetRegistry';
 import { entityRefKey, GameApiError, HttpGameClient } from './live/HttpGameClient';
-import { SaveResponseScopeGate, type SaveResponseScope } from './live/saveScope';
+import { SaveResponseScopeGate } from './live/saveScope';
 import { LIVE_SCREENS, type LiveScreen } from './live/screens';
 
 type Screen = LiveScreen;
