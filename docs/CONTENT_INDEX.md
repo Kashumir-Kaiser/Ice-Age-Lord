@@ -9,8 +9,8 @@
 | `design/buildings/MAGICAL-BUILDING-CATALOG-v0.3.json` | Machine-readable branch catalog | Proposed, partial executable contracts |
 | `design/buildings/SOURCE-GROUNDED-BUILDING-REDESIGN.md` | Source-first functional building distinctions | Reference and proposal |
 | `data/events/EVENT-TIMELINE-v0.6.json` | Reconciled fixed 30-event calendar | New-game candidate, not retroactive live migration |
-| `data/events/EVENT-SOURCE-CATALOG-v4.6.json` + `data/events/EVENT-SOURCE-CATALOG-v4.7-ADDENDUM.json` | Catalog baseline (590 items, 239 effects) plus Round 47 event/reward addendum for Ch882–891 | Research, not guaranteed loot |
-| `data/events/EVENT-SOURCE-ITEMS-v4.7.csv` | Cumulative human-review item catalog (602 entries; twelve Round 47 receipt rows) | Review |
+| `data/events/EVENT-SOURCE-CATALOG-v4.6.json` + v4.7/v4.8 addenda | Catalog baseline (590 items, 239 effects) plus Round 47–48 event/reward addenda for Ch882–901 | Research, not guaranteed loot |
+| `data/events/EVENT-SOURCE-ITEMS-v4.8.csv` | Cumulative human-review item catalog (615 entries; thirteen Round 48 rows) | Review |
 | `data/events/EVENT-TIMELINE-v0.6.csv` | Human-review schedule diff | Review |
 | `data/structures/SOURCE-STRUCTURE-CATALOG-v1.0.json` | Round 46 review: twenty source-observed/reported structures and one route report; updated city operation evidence, no LL01 construction contracts | Research only, not T0 world data |
 | `references/canonical/LORD-DND-01..07.md` | Underlying mechanics, fixed T0, world/hero/lair/quest data | Historical authoritative rules, require typed migration |
@@ -21,7 +21,7 @@
 
 ## Research traceability
 
-- `research/extraction-audits/ROUND-01-SHOPS-CHESTS.md` through `ROUND-36-THIRTY-SIXTH-EXTRACTION.md`: all forty-four main extraction audits; `ROUND-29-CONTINUATION-CH721-724-725-v2.9.1.md` remains a separately archived addendum.
+- `research/extraction-audits/ROUND-01-SHOPS-CHESTS.md` through `ROUND-36-THIRTY-SIXTH-EXTRACTION.md`: all forty-eight main extraction audits; `ROUND-29-CONTINUATION-CH721-724-725-v2.9.1.md` remains a separately archived addendum.
 - `research/extraction-audits/EVENT-TIMELINE-RECONCILIATION-v0.6.md`: chronology corrections and uncertain source cases.
 - `research/extraction-audits/ROUND-34-THIRTY-FOURTH-EXTRACTION.md`: Round 34 audit for Chapters 752–761.
 - `research/extraction-audits/ROUND-35-THIRTY-FIFTH-EXTRACTION.md`: Round 35 audit for Chapters 762–771.
@@ -31,7 +31,8 @@
 - `research/extraction-audits/ROUND-41-FORTY-FIRST-EXTRACTION.md`: Round 41 audit for Chapters 822–831.
 - `research/extraction-audits/ROUND-42-FORTY-SECOND-EXTRACTION.md`: Round 42 audit for Chapters 832–841.
 - `research/extraction-audits/ROUND-43-FORTY-THIRD-EXTRACTION.md`: Round 43 audit for Chapters 842–851.
-- `research/extraction-audits/ROUND-47-FORTY-SEVENTH-EXTRACTION.md`: current Round 47 audit for Chapters 882–891; resume at Ch892.
+- `research/extraction-audits/ROUND-47-FORTY-SEVENTH-EXTRACTION.md`: Round 47 audit for Chapters 882–891.
+- `research/extraction-audits/ROUND-48-FORTY-EIGHTH-EXTRACTION.md`: current Round 48 audit for Chapters 892–901; resume at Ch902.
 - `research/snapshots/events/EVENT-SOURCE-CATALOG-v0.1..v4.6.json`: historical extraction datasets (v3.0 unchanged and archived).
 - `research/snapshots/events/EVENT-SOURCE-ITEMS-v0.1..v4.6.csv`: corresponding historical review datasets (v3.0 unchanged and archived).
 - `research/snapshots/design/`: previous web-game spec versions retained for forensic comparison, **not** alternative active specs.
