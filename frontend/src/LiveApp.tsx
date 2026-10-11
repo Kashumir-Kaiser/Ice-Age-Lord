@@ -17,6 +17,7 @@ type Screen = 'overview' | 'territory' | 'map' | 'inventory' | 'forces' | 'build
 type Feedback = { kind: 'idle' | 'saving' | 'committed' | 'rejected' | 'disconnected'; text: string };
 const SAVE_KEY = 'ice-age-lord.live.last-save';
 const CREATE_KEY_PREFIX = 'ice-age-lord.live.create-key:';
+const RESOURCE_CARGO_IDS = new Set(['WOOD', 'STONE', 'RAW-ICE-WATER', 'BROWN-COAL', 'RAW-SALT', 'WILD-FOOD']);
 
 const navigation: { id: Screen; name: string; hint: string; icon: typeof Sparkles }[] = [
   { id: 'overview', name: 'Tổng quan', hint: 'Trạng thái phiên', icon: Sparkles },
@@ -51,6 +52,24 @@ function errorMessage(error: unknown): string {
 function availabilityMessage(availability: ActionAvailability): string {
   const reason = availability.reasonCode || availability.requirements.join(' ');
   return reason || 'Hành động hiện không khả dụng.';
+}
+
+function harvestBlockerMessage(availability: ActionAvailability): string {
+  const messages: Readonly<Record<string, string>> = {
+    ACTOR_ALREADY_TRAVELLING: 'This worker is travelling.',
+    ACTOR_ASSIGNED_TO_SEARCH: 'This worker is assigned to a search.',
+    ACTOR_ASSIGNED_TO_HARVEST: 'This worker is already harvesting.',
+    REQUIRED_TOOL_NOT_CARRIED: 'The selected worker is missing the required tool.',
+    LOAD_CAPACITY_EXCEEDED: 'Unload this worker’s cargo before harvesting.',
+    NO_KNOWN_ROUTE: 'No known route currently reaches this deposit.',
+    NO_SUPPORTED_ROUTE: 'The worker has no supported route to this deposit.',
+    UNDERGROUND_ACCESS_REQUIRED: 'This resource requires underground access.',
+    INSUFFICIENT_RESOURCE: 'The remaining stock or today’s quota is reserved or exhausted.',
+    PROSPECTING_CONTRACT_NOT_COMPILED: 'Surveying is required, but that contract is not available yet.',
+    WATER_PREPARATION_CONTRACT_NOT_COMPILED: 'Water preparation is required, but that contract is not available yet.',
+    WORKFORCE_AND_FUEL_REQUIREMENTS_NOT_MET: 'This workfront needs its worker and fuel requirements first.',
+  };
+  return messages[availability.reasonCode ?? ''] ?? availability.requirements[0] ?? availability.reasonCode?.replaceAll('_', ' ').toLocaleLowerCase() ?? 'Harvesting is currently blocked.';
 }
 
 function fireArtwork(manifest: AssetManifest | null, level: number) {
@@ -145,6 +164,9 @@ function LiveApp() {
   const [destinationAvailability, setDestinationAvailability] = useState<ActionAvailability | null>(null);
   const [searchRadiusMetres, setSearchRadiusMetres] = useState(500);
   const [travelActorId, setTravelActorId] = useState('LI_LAN');
+  const [harvestActorId, setHarvestActorId] = useState('LI_LAN');
+  const [harvestQuantity, setHarvestQuantity] = useState(1);
+  const [harvestAvailability, setHarvestAvailability] = useState<Readonly<Record<string, ActionAvailability>>>({});
 
   useEffect(() => {
     let active = true;
@@ -194,6 +216,43 @@ function LiveApp() {
     const timer = window.setInterval(() => { void refreshClock(); }, 1000);
     return () => { active = false; window.clearInterval(timer); };
   }, [authenticated, client, view?.saveId, working]);
+
+  useEffect(() => {
+    if (!view || selectedRef?.type !== 'resource') {
+      setHarvestAvailability({});
+      return;
+    }
+    const entity = view.visibleMap.entities.find(item => item.ref.type === 'resource' && item.ref.id === selectedRef.id);
+    if (!entity?.resourceDeposit) {
+      setHarvestAvailability({});
+      return;
+    }
+    let active = true;
+    setHarvestAvailability({});
+    const workerContainer = view.inventory.containers.find(container => container.ownerId === harvestActorId
+      && (container.kind === 'carried_bag' || container.kind === 'unit_inventory'));
+    void Promise.all(entity.resourceDeposit.materials.map(async material => {
+      const tool = material.requiredToolTemplateId
+        ? workerContainer?.items.find(item => item.label === material.requiredToolTemplateId && item.quantity > 0)
+        : undefined;
+      const command = commandFor(view, 'harvest', {
+        actorId: harvestActorId,
+        resourceId: material.resourceId,
+        materialId: material.materialId,
+        quantity: 1,
+        toolItemId: tool?.itemId ?? (material.requiredToolTemplateId ? '' : 'NONE'),
+      });
+      try {
+        const result = await client.previewCommand(command);
+        return [material.resourceId, result.availability] as const;
+      } catch {
+        return [material.resourceId, { actionId: 'harvest', enabled: false, reasonCode: 'PREVIEW_UNAVAILABLE', requirements: ['The server could not check this harvest right now.'] }] as const;
+      }
+    })).then(entries => {
+      if (active) setHarvestAvailability(Object.fromEntries(entries));
+    });
+    return () => { active = false; };
+  }, [client, harvestActorId, selectedRef?.id, selectedRef?.type, view?.revision, view?.saveId]);
 
   async function checkApi() {
     setApiState('checking');
@@ -430,28 +489,32 @@ function LiveApp() {
     }).catch(error => setFeedback({ kind: 'rejected', text: errorMessage(error) }));
   }
 
-  function harvestSelectedResource(entity: PlayerEntityView) {
+  function harvestSelectedResource(entity: PlayerEntityView, resourceId: string, quantity: number) {
     if (!view || entity.ref.type !== 'resource') return;
-    const availability = entity.actions.find(item => item.actionId === 'harvest');
-    if (!availability?.enabled) {
-      setFeedback({ kind: 'rejected', text: availability ? availabilityMessage(availability) : 'Harvest is not available for this source.' });
+    const workerContainer = view.inventory.containers.find(container => container.ownerId === harvestActorId
+      && (container.kind === 'carried_bag' || container.kind === 'unit_inventory'));
+    const resource = view.spatial.resources.find(item => item.resourceId === resourceId);
+    const tool = resource?.requiredToolTemplateId
+      ? workerContainer?.items.find(item => item.label === resource.requiredToolTemplateId && item.quantity > 0)
+      : undefined;
+    if (!resource || !workerContainer || (resource.requiredToolTemplateId && !tool)) {
+      setFeedback({ kind: 'rejected', text: !workerContainer ? 'Inspect the worker’s inventory before assigning this harvest.' : resource?.requiredToolTemplateId ? `Move a ${resource.requiredToolTemplateId} into this worker’s inventory first.` : 'This material is not currently available.' });
       return;
     }
-    const bag = view.inventory.containers.find(container => container.kind === 'carried_bag');
-    const resource = view.spatial.resources.find(item => item.resourceId === entity.ref.id);
-    const requiredTemplate = resource?.materialId === 'WOOD' ? 'STONE-AXE' : resource?.materialId === 'STONE' ? 'STONE-HAMMER' : null;
-    const tool = bag?.items.find(item => item.label === requiredTemplate && item.quantity > 0);
-    if (!resource || !tool) {
-      setFeedback({ kind: 'rejected', text: 'Move the required tool into the carried bag first.' });
-      return;
-    }
-    void sendCommand(commandFor(view, 'harvest', {
-      actorId: view.player.id,
+    const command = commandFor(view, 'harvest', {
+      actorId: harvestActorId,
       resourceId: resource.resourceId,
       materialId: resource.materialId,
-      quantity: 1,
-      toolItemId: tool.itemId,
-    }));
+      quantity,
+      toolItemId: tool?.itemId ?? 'NONE',
+    });
+    void client.previewCommand(command).then(result => {
+      if (!result.availability.enabled) {
+        setFeedback({ kind: 'rejected', text: availabilityMessage(result.availability) });
+        return;
+      }
+      void sendCommand(command);
+    }).catch(error => setFeedback({ kind: 'rejected', text: errorMessage(error) }));
   }
 
   const selectedEntity = view && selectedRef
@@ -495,6 +558,22 @@ function LiveApp() {
     const selectedInspect = selectedEntity?.actions.find(item => item.actionId === 'inspect_entity');
     const selectedOpen = selectedEntity?.actions.find(item => item.actionId === 'open_cache');
     const selectedHarvest = selectedEntity?.actions.find(item => item.actionId === 'harvest');
+    const resourceDeposit = selectedEntity?.resourceDeposit;
+    const harvestWorkerContainer = view.inventory.containers.find(container => container.ownerId === harvestActorId
+      && (container.kind === 'carried_bag' || container.kind === 'unit_inventory'));
+    const workerCargoUnits = harvestWorkerContainer?.items
+      .filter(item => RESOURCE_CARGO_IDS.has(item.label))
+      .reduce((sum, item) => sum + item.quantity, 0) ?? 0;
+    const maxHarvestQuantity = Math.max(0, (resourceDeposit?.carryCapacityUnits ?? 100_000) - workerCargoUnits);
+    const selectedHarvestQuantity = Math.min(harvestQuantity, Math.max(1, maxHarvestQuantity));
+    const harvestActorBusy = view.spatial.movementOrders.some(order => order.status === 'active' && order.actorIds.includes(harvestActorId))
+      || view.spatial.searchJobs.some(job => job.status === 'active' && job.actorIds.includes(harvestActorId))
+      || view.spatial.harvestJobs.some(job => job.status === 'active' && job.actorIds.includes(harvestActorId));
+    const featurePoint = (position: CoordinateMm) => point(position);
+    const featureRandom = (seed: number) => {
+      const value = Math.sin(seed * 127.19 + 81.37) * 43_758.5453;
+      return value - Math.floor(value);
+    };
     return <div className="live-section-stack">
       <section className="live-panel">
         <div className="live-panel-heading">
@@ -515,6 +594,38 @@ function LiveApp() {
         <div className="live-map-canvas" data-testid="live-map">
           <div className="live-map-crosshair" aria-hidden="true" />
           <svg className="live-map-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            {view.visibleMap.heatOverlays.map((heat, index) => {
+              const centerPoint = point(heat.center);
+              return <ellipse key={`heat-${index}`} className="live-map-heat" cx={centerPoint.x} cy={centerPoint.y}
+                rx={heat.radiusMm / horizontalSpanMm * 100} ry={heat.radiusMm / spanMm * 100} />;
+            })}
+            {view.visibleMap.resourceFeatures.map(feature => {
+              const centerPoint = featurePoint(feature.position);
+              const rx = feature.footprintMm.widthMm / horizontalSpanMm * 50;
+              const ry = feature.footprintMm.depthMm / spanMm * 50;
+              const channelRatio = (channel: string) => feature.channels.find(item => item.channel === channel)?.remainingRatio ?? 1;
+              const canopy = channelRatio('canopy');
+              const groundcover = channelRatio('groundcover');
+              const channel = feature.terrainKind === 'forest' ? 'canopy'
+                : feature.terrainKind === 'outcrop' ? 'rock_mass'
+                  : feature.terrainKind === 'salvage' ? 'salvage'
+                    : feature.terrainKind === 'frozen_water' ? 'ice'
+                      : feature.terrainKind === 'coal_seam' ? 'seam' : 'salt';
+              const countRatio = channelRatio(channel);
+              const visibleCount = Math.ceil(feature.visualElementCount * Math.max(0, countRatio));
+              return <g key={feature.id} className={`live-map-resource-feature live-map-resource-feature--${feature.terrainKind}`}>
+                <ellipse cx={centerPoint.x} cy={centerPoint.y} rx={rx} ry={ry} opacity={.08 + .32 * countRatio} />
+                {feature.terrainKind === 'forest' && <ellipse className="live-map-resource-groundcover" cx={centerPoint.x} cy={centerPoint.y} rx={rx * .82} ry={ry * .82} opacity={.12 + .22 * groundcover} />}
+                {Array.from({ length: visibleCount }, (_, index) => {
+                  const angle = featureRandom(index + feature.id.length * 11) * Math.PI * 2;
+                  const radius = Math.sqrt(.035 + featureRandom(index * 7 + feature.id.length * 31) * .93);
+                  const x = centerPoint.x + Math.cos(angle) * rx * radius;
+                  const y = centerPoint.y + Math.sin(angle) * ry * radius;
+                  const scale = .45 + .55 * countRatio;
+                  return <circle key={index} className="live-map-resource-element" cx={x} cy={y} r={.38 * scale} />;
+                })}
+              </g>;
+            })}
             {view.visibleMap.exploredGeometry.map(area => {
               const centerPoint = area.points[0];
               if (!centerPoint || area.radiusMm === undefined) return null;
@@ -556,7 +667,9 @@ function LiveApp() {
               style={{ left: left + '%', top: top + '%' }}
               onClick={event => { event.stopPropagation(); setSelectedRef(entity.ref); }}
               aria-label={entity.label}
-              title={entity.label}
+              title={entity.resourceDeposit
+                ? `${entity.label} · ${entity.resourceDeposit.materials.map(material => `${material.materialName}: ${material.remaining === null ? 'unknown' : `${material.remaining.toLocaleString()} ${material.unit}`}`).join(' · ')}`
+                : entity.label}
             >
               {isFire && fireIcon ? <img src={fireIcon} alt="" /> : <MapPin size={19} aria-hidden="true" />}
               <span>{entity.label}</span>
@@ -583,12 +696,54 @@ function LiveApp() {
           <div className="live-action-stack">
             {selectedInspect && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !selectedInspect.enabled} onClick={() => void runInspection(selectedEntity)}><Eye size={16} /> Inspect</button>}
             {selectedMove && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || (travelActorId === view.player.id && !selectedMove.enabled)} onClick={() => moveToEntity(selectedEntity)}><ArrowRight size={16} /> Move here {travelActorId === view.player.id && selectedMove.preview?.value ? `· ${selectedMove.preview.value}` : ''}</button>}
-            {selectedHarvest && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !selectedHarvest.enabled} onClick={() => harvestSelectedResource(selectedEntity)}>Harvest one unit</button>}
+            {selectedHarvest && !resourceDeposit && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !selectedHarvest.enabled} onClick={() => harvestSelectedResource(selectedEntity, selectedEntity.ref.id, harvestQuantity)}>Harvest one unit</button>}
             {selectedOpen && <small>{availabilityMessage(selectedOpen)}</small>}
             {selectedInspect && !selectedInspect.enabled && <small>{availabilityMessage(selectedInspect)}</small>}
             {selectedMove && !selectedMove.enabled && <small>{availabilityMessage(selectedMove)}</small>}
-            {selectedHarvest && !selectedHarvest.enabled && <small>{availabilityMessage(selectedHarvest)}</small>}
+            {selectedHarvest && !resourceDeposit && !selectedHarvest.enabled && <small>{availabilityMessage(selectedHarvest)}</small>}
           </div>
+          {resourceDeposit && <div className="live-resource-deposit" data-feature-id={resourceDeposit.featureId}>
+            <p className="live-resource-terrain">{resourceDeposit.terrainKind} · footprint {((resourceDeposit.footprintMm.widthMm / 1_000).toLocaleString())} × {((resourceDeposit.footprintMm.depthMm / 1_000).toLocaleString())} m</p>
+            <div className="live-resource-heat-status">
+              <Flame size={15} />
+              {!resourceDeposit.heatActive
+                ? 'The survival fire is out; this deposit has no heating coverage.'
+                : resourceDeposit.heatCovered
+                ? `Inside the active ${resourceDeposit.heatRadiusMm / 1_000} m heating zone.`
+                : `${(resourceDeposit.distanceFromHeatMm / 1_000).toFixed(0)} m from the fire; outside its ${resourceDeposit.heatRadiusMm / 1_000} m heating zone. Harvesting is allowed, but the worksite is not heated.`}
+            </div>
+            <p className="live-resource-haul">This worker can carry {resourceDeposit.carryCapacityUnits.toLocaleString()} resource units total ({maxHarvestQuantity.toLocaleString()} free). The H0 store holds {resourceDeposit.storageStackSlots ?? 'unlimited'} material stacks.</p>
+            <label className="live-inline-field">Harvest worker <select value={harvestActorId} onChange={event => { setHarvestActorId(event.target.value); setHarvestQuantity(1); }}>
+              <option value={view.player.id}>{view.player.name}</option>
+              {view.units.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
+            </select></label>
+            {harvestActorBusy && <small className="live-resource-access">This worker is already travelling or assigned to another job.</small>}
+            {!harvestWorkerContainer && <small className="live-resource-access">Inspect this worker’s inventory before assigning a harvest.</small>}
+            <label className="live-inline-field live-resource-quantity">Harvest quantity <input type="number" min={1} max={Math.max(1, maxHarvestQuantity)} value={selectedHarvestQuantity} disabled={maxHarvestQuantity < 1} onChange={event => setHarvestQuantity(Math.min(Math.max(1, maxHarvestQuantity), Math.max(1, Number(event.target.value) || 1)))} /></label>
+            <ul className="live-resource-materials">{resourceDeposit.materials.map(material => {
+              const remaining = material.remaining === null ? 'Unknown' : `${material.remaining.toLocaleString()} ${material.unit}`;
+              const renewal = material.renewal === 'none' ? 'Finite stock; does not regenerate.'
+                : material.renewal === 'biological_rate' ? `Regrows ${material.regenerationPerDay.toLocaleString()} ${material.unit}/day.`
+                  : `Daily supply ${material.dailyQuota?.toLocaleString() ?? '—'} ${material.unit}; resets at midnight.`;
+              const workerHasTool = !material.requiredToolTemplateId || Boolean(harvestWorkerContainer?.items.some(item => item.label === material.requiredToolTemplateId && item.quantity > 0));
+              const localBlock = !harvestWorkerContainer || harvestActorBusy || maxHarvestQuantity < 1 || material.access !== 'open_surface' || material.status === 'depleted' || !workerHasTool;
+              const serverAvailability = harvestAvailability[material.resourceId];
+              const blocked = localBlock || Boolean(serverAvailability && !serverAvailability.enabled);
+              return <li key={material.resourceId}>
+                <div><strong>{material.materialName}</strong><span>{remaining} / {material.capacity.toLocaleString()} {material.dailyQuota === null ? 'capacity' : 'daily quota'}{material.reserved ? ` · ${material.reserved.toLocaleString()} reserved` : ''}</span></div>
+                <small>{material.harvestRateUnitsPerHour.toLocaleString()} {material.unit}/worker-hour{material.dailyQuota !== null ? ` · ${material.dailyRemaining?.toLocaleString() ?? 'Unknown'} / ${material.dailyQuota.toLocaleString()} available today` : ''} · {renewal}</small>
+                {material.access !== 'open_surface' && <small className="live-resource-access">{material.accessReason ?? 'This material has an unresolved access requirement.'}</small>}
+                {material.requiredToolTemplateId && <small className="live-resource-access">{workerHasTool ? `Worker carries ${material.requiredToolTemplateId}.` : `This worker needs a ${material.requiredToolTemplateId}.`}</small>}
+                {material.status === 'depleted' && <small className="live-resource-access">{material.dailyQuota === null ? 'This deposit is exhausted.' : 'No usable stock remains today.'}</small>}
+                {maxHarvestQuantity < 1 && <small className="live-resource-access">Unload this worker’s cargo at the territory store before harvesting again.</small>}
+                {!localBlock && serverAvailability && !serverAvailability.enabled && <small className="live-resource-access">{harvestBlockerMessage(serverAvailability)}</small>}
+                <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || blocked}
+                  onClick={() => harvestSelectedResource(selectedEntity, material.resourceId, selectedHarvestQuantity)}>
+                  Harvest {selectedHarvestQuantity} {material.materialName}
+                </button>
+              </li>;
+            })}</ul>
+          </div>}
         </div>}
       </section>
       <section className="live-panel">

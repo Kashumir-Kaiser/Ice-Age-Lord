@@ -13,14 +13,23 @@ import type {
   WorldResource,
 } from '../../contracts/src/index.ts';
 import { canonicalStateHash } from './hash.ts';
+import { harvestProgressionForFireLevel } from '../../content/src/resourceBalance.ts';
 
 export const SPATIAL_TICK_MS = 15 * 60_000;
 export const SEARCH_CELL_MM = 10_000;
-export const MAX_CARRIED_RESOURCE_UNITS = 20;
-export const WORK_MS_PER_RESOURCE_UNIT = 60 * 60_000;
+export const LEGACY_WORK_MS_PER_RESOURCE_UNIT = 60 * 60_000;
 const MM_PER_M = 1_000;
 const MM_PER_KM = 1_000_000;
 const HOUR_MS = 60 * 60_000;
+const RESOURCE_CARGO_TEMPLATES = new Set(['WOOD', 'STONE', 'RAW-ICE-WATER', 'BROWN-COAL', 'RAW-SALT', 'WILD-FOOD']);
+
+export function harvestingRateUnitsPerHour(fireLevel: number): number {
+  return harvestProgressionForFireLevel(fireLevel).unitsPerHour;
+}
+
+export function carryCapacityForFireLevel(fireLevel: number): number {
+  return harvestProgressionForFireLevel(fireLevel).carryCapacity;
+}
 
 export type SpatialEvent = { type: string; occurredAtElapsedMs: number; payload: Record<string, unknown> };
 export type RoutePlan = { points: readonly CoordinateMm[]; distanceMm: number; uncertainty: 'known' | 'uncertain'; sourceRouteIds: readonly string[] };
@@ -317,7 +326,7 @@ function actorLoaded(state: GameState, actorId: string): boolean {
   const container = state.inventory.containers.find(candidate =>
     (candidate.location.kind === 'carried' && candidate.location.ownerId === actorId)
       || (candidate.location.kind === 'unit' && candidate.location.unitId === actorId));
-  return Boolean(container?.stacks.some(stack => stack.templateId.startsWith('RAW-') || stack.templateId === 'WOOD' || stack.templateId === 'STONE'));
+  return Boolean(container?.stacks.some(stack => RESOURCE_CARGO_TEMPLATES.has(stack.templateId)));
 }
 
 export function actorSpeedMmPerHour(state: GameState, world: WorldDefinition, actorId: string): number {
@@ -508,8 +517,11 @@ function updateKnowledgeAt(state: GameState, world: WorldDefinition, at: number)
       if (entry.kind === 'resource') {
         const resource = world.resources.find(candidate => candidate.id === entry.id);
         if (resource && sameLayer(observer.position, resource.location) && distanceMm(observer.position, resource.location) <= sightRangeMm) {
-          knownResourceIds.push(resource.id);
-          lastSeenByEntity[`resource:${resource.id}`] = { observedAtElapsedMs: at, knowledge: 'current' };
+          const siblings = world.resources.filter(candidate => candidate.featureId === resource.featureId);
+          for (const sibling of siblings) {
+            knownResourceIds.push(sibling.id);
+            lastSeenByEntity[`resource:${sibling.id}`] = { observedAtElapsedMs: at, knowledge: 'current' };
+          }
         }
       }
       if (entry.kind === 'cache' && distanceMm(observer.position, entry.position) <= world.navigationOverlay.signalRangeMm) {
@@ -590,18 +602,24 @@ function cellIdsCoveredByLane(from: CoordinateMm, to: CoordinateMm, laneWidthMm:
   return ids;
 }
 
-function addCargo(state: GameState, actorId: string, jobId: string, materialId: string): boolean {
+function carriedResourceUnits(state: GameState, actorId: string): number {
   const container = actorContainer(state, actorId);
-  if (!container) return false;
-  const currentUnits = container.stacks.filter(stack => ['WOOD', 'STONE', 'RAW-ICE-WATER', 'BROWN-COAL', 'RAW-SALT'].includes(stack.templateId))
-    .reduce((sum, stack) => sum + stack.quantity, 0);
-  if (currentUnits + 1 > MAX_CARRIED_RESOURCE_UNITS) return false;
-  const itemOrdinal = (state.spatial.harvestJobs.find(job => job.id === jobId)?.extractedQuantity ?? 0) + 1;
-  const itemId = `${jobId}-CARGO-${String(itemOrdinal).padStart(4, '0')}`;
+  return container?.stacks.filter(stack => RESOURCE_CARGO_TEMPLATES.has(stack.templateId)).reduce((sum, stack) => sum + stack.quantity, 0) ?? 0;
+}
+
+function addCargo(state: GameState, actorId: string, materialId: string, quantity: number): boolean {
+  const container = actorContainer(state, actorId);
+  if (!container || !RESOURCE_CARGO_TEMPLATES.has(materialId) || !Number.isSafeInteger(quantity) || quantity < 1) return false;
+  const capacity = carryCapacityForFireLevel(state.territory.survivalFire.level);
+  const currentUnits = carriedResourceUnits(state, actorId);
+  if (currentUnits + quantity > capacity) return false;
+  const cargoItemId = `HARVEST-CARGO-${actorId}-${materialId}`;
   state.inventory = {
     containers: state.inventory.containers.map(candidate => candidate.id === container.id ? {
       ...candidate,
-      stacks: [...candidate.stacks, { itemId, templateId: materialId, quantity: 1, equipped: false, provenance: 'immutable_source_fact' as const }],
+      stacks: candidate.stacks.some(stack => stack.itemId === cargoItemId)
+        ? candidate.stacks.map(stack => stack.itemId === cargoItemId ? { ...stack, quantity: stack.quantity + quantity } : stack)
+        : [...candidate.stacks, { itemId: cargoItemId, templateId: materialId, quantity, equipped: false, provenance: 'versioned_game_design' as const }],
     } : candidate),
   };
   return true;
@@ -665,19 +683,20 @@ export function startHarvestJob(
   const resource = world.resources.find(candidate => candidate.id === resourceId);
   if (!resource || !state.playerKnowledge.knownResourceIds.includes(resourceId)) return { job: null, code: 'RESOURCE_NOT_ACCESSIBLE' };
   if (resource.materialId !== materialId) return { job: null, code: 'RESOURCE_MATERIAL_MISMATCH' };
-  if (resource.access !== 'open_surface' || !resource.requiredToolTemplateId) {
+  if (resource.access !== 'open_surface') {
     return { job: null, code: resource.access === 'survey_required' ? 'PROSPECTING_CONTRACT_NOT_COMPILED' : resource.access === 'frozen_water' ? 'WATER_PREPARATION_CONTRACT_NOT_COMPILED' : 'WORKFORCE_AND_FUEL_REQUIREMENTS_NOT_MET' };
   }
   const toolContainer = actorContainer(state, actorId);
-  const tool = toolContainer?.stacks.find(stack => stack.itemId === toolItemId && stack.templateId === resource.requiredToolTemplateId && stack.quantity >= 1);
-  if (!tool) return { job: null, code: 'REQUIRED_TOOL_NOT_CARRIED' };
-  if (state.jobs.some(existing => existing.status === 'active' && existing.reservedItemIds.includes(toolItemId))) return { job: null, code: 'TOOL_ALREADY_RESERVED' };
+  if (resource.requiredToolTemplateId) {
+    const tool = toolContainer?.stacks.find(stack => stack.itemId === toolItemId && stack.templateId === resource.requiredToolTemplateId && stack.quantity >= 1);
+    if (!tool) return { job: null, code: 'REQUIRED_TOOL_NOT_CARRIED' };
+    if (state.jobs.some(existing => existing.status === 'active' && existing.reservedItemIds.includes(toolItemId))) return { job: null, code: 'TOOL_ALREADY_RESERVED' };
+  } else if (toolItemId !== 'NONE') return { job: null, code: 'TOOL_NOT_REQUIRED' };
   if (!Number.isSafeInteger(quantity) || quantity < 1) return { job: null, code: 'HARVEST_QUANTITY_INVALID' };
   const balance = state.spatial.resourceBalances.find(candidate => candidate.resourceId === resourceId);
-  if (!balance || balance.remaining - balance.reserved < quantity) return { job: null, code: 'INSUFFICIENT_RESOURCE' };
-  const cargo = actorContainer(state, actorId);
-  const carried = cargo?.stacks.filter(stack => ['WOOD', 'STONE', 'RAW-ICE-WATER', 'BROWN-COAL', 'RAW-SALT'].includes(stack.templateId)).reduce((sum, stack) => sum + stack.quantity, 0) ?? 0;
-  if (carried + quantity > MAX_CARRIED_RESOURCE_UNITS) return { job: null, code: 'LOAD_CAPACITY_EXCEEDED' };
+  const available = balance?.dailyRemaining ?? balance?.remaining ?? 0;
+  if (!balance || available - balance.reserved < quantity) return { job: null, code: 'INSUFFICIENT_RESOURCE' };
+  if (carriedResourceUnits(state, actorId) + quantity > carryCapacityForFireLevel(state.territory.survivalFire.level)) return { job: null, code: 'LOAD_CAPACITY_EXCEEDED' };
   const actor = actorFor(state, actorId)!;
   const workPosition = resourceSite(world, resource);
   const knownWorld = worldWithKnownRoutes(state, world);
@@ -685,6 +704,7 @@ export function startHarvestJob(
   const returnPlan = planRoute(knownWorld, workPosition, actor.position);
   if (!outPlan || !returnPlan) return { job: null, code: 'NO_SUPPORTED_ROUTE' };
   const speed = actorSpeedMmPerHour(state, world, actorId);
+  const workMsPerUnit = Math.max(1, Math.floor(HOUR_MS / harvestingRateUnitsPerHour(state.territory.survivalFire.level)));
   const job: HarvestJobState = {
     id: jobId,
     actorIds: [actorId],
@@ -704,6 +724,7 @@ export function startHarvestJob(
     stage: outPlan.distanceMm > 1 ? 'outbound' : 'working',
     routeProgressMm: 0,
     workProgressMs: 0,
+    workMsPerUnit,
     nextTickAtElapsedMs: state.simElapsedMs + (outPlan.distanceMm > 1 ? Math.ceil(outPlan.distanceMm * HOUR_MS / speed) : 0) + SPATIAL_TICK_MS,
     lastSettledAtElapsedMs: state.simElapsedMs,
     startedAtElapsedMs: state.simElapsedMs,
@@ -749,19 +770,34 @@ export function transferItem(state: GameState, world: WorldDefinition, actorId: 
   const destination = state.inventory.containers.find(container => container.id === destinationContainerId);
   if (!source || !destination) return { state, code: 'CONTAINER_NOT_ACCESSIBLE' };
   const isContainerReachable = (containerId: string): boolean => {
-    if (containerId === 'LL-CNT-CARRIED-FOOD-BAG-01') return destinationContainerId === containerId ? true : sourceContainerId === containerId;
     const container = state.inventory.containers.find(candidate => candidate.id === containerId);
-    if (!container || container.location.kind !== 'site') return false;
-    const target = world.sites.find(site => site.id === container.location.siteId);
-    return Boolean(target && distanceMm(actor.position, target.position) <= world.navigationOverlay.interactionRangeMm && container.observed);
+    if (!container) return false;
+    if (container.location.kind === 'carried') return container.location.ownerId === actorId;
+    if (!container.observed) return false;
+    if (container.location.kind === 'site') {
+      const target = world.sites.find(site => site.id === container.location.siteId);
+      return Boolean(target && distanceMm(actor.position, target.position) <= world.navigationOverlay.interactionRangeMm);
+    }
+    if (container.location.kind === 'unit') {
+      const unit = state.ownedUnits.find(candidate => candidate.id === container.location.unitId);
+      const unitId = container.location.unitId;
+      const busy = state.travel.orders.some(order => order.status === 'active' && order.actorIds.includes(unitId))
+        || state.spatial.searchJobs.some(job => job.status === 'active' && job.actorIds.includes(unitId))
+        || state.spatial.harvestJobs.some(job => job.status === 'active' && job.actorIds.includes(unitId));
+      return Boolean(unit?.position && !busy && distanceMm(actor.position, unit.position) <= world.navigationOverlay.interactionRangeMm);
+    }
+    return false;
   };
   if (!isContainerReachable(sourceContainerId) || !isContainerReachable(destinationContainerId)) return { state, code: 'CONTAINER_NOT_ACCESSIBLE' };
   const stack = source.stacks.find(candidate => candidate.itemId === itemId);
   if (!stack || !Number.isSafeInteger(quantity) || quantity < 1 || stack.quantity < quantity) return { state, code: 'ITEM_QUANTITY_UNAVAILABLE' };
   if (sourceContainerId === destinationContainerId) return { state, code: 'CONTAINER_TRANSFER_SAME_SOURCE' };
+  const mergeTarget = RESOURCE_CARGO_TEMPLATES.has(stack.templateId)
+    ? destination.stacks.find(candidate => candidate.templateId === stack.templateId)
+    : undefined;
   const movedItemId = quantity === stack.quantity ? itemId : `${itemId}-MOVE-${canonicalStateHash({ itemId, quantity, rev: state.revision }).slice(0, 12).toUpperCase()}`;
-  if (destination.stacks.some(candidate => candidate.itemId === movedItemId)) return { state, code: 'ITEM_ID_COLLISION' };
-  if (destination.capacitySlots !== null && destination.stacks.length >= destination.capacitySlots) return { state, code: 'DESTINATION_CAPACITY_FULL' };
+  if (!mergeTarget && destination.stacks.some(candidate => candidate.itemId === movedItemId)) return { state, code: 'ITEM_ID_COLLISION' };
+  if (!mergeTarget && destination.capacitySlots !== null && destination.stacks.length >= destination.capacitySlots) return { state, code: 'DESTINATION_CAPACITY_FULL' };
   const next = structuredClone(state);
   next.inventory = {
     containers: next.inventory.containers.map(container => {
@@ -773,7 +809,9 @@ export function transferItem(state: GameState, world: WorldDefinition, actorId: 
       if (container.id === destinationContainerId) return {
         ...container,
         observed: true,
-        stacks: [...container.stacks, { ...stack, itemId: movedItemId, quantity, equipped: false }],
+        stacks: mergeTarget
+          ? container.stacks.map(candidate => candidate.itemId === mergeTarget.itemId ? { ...candidate, quantity: candidate.quantity + quantity } : candidate)
+          : [...container.stacks, { ...stack, itemId: movedItemId, quantity, equipped: false }],
       };
       return container;
     }),
@@ -989,31 +1027,37 @@ export function settleSpatialBoundary(state: GameState, world: WorldDefinition, 
     if (job.stage === 'working' && job.nextTickAtElapsedMs === at) {
       const balance = state.spatial.resourceBalances.find(candidate => candidate.resourceId === job.resourceId);
       const container = actorContainer(state, job.actorIds[0]);
-      const cargoUnits = container?.stacks.filter(stack => ['WOOD', 'STONE', 'RAW-ICE-WATER', 'BROWN-COAL', 'RAW-SALT'].includes(stack.templateId)).reduce((sum, stack) => sum + stack.quantity, 0) ?? MAX_CARRIED_RESOURCE_UNITS;
+      const capacity = carryCapacityForFireLevel(state.territory.survivalFire.level);
+      const cargoUnits = container ? carriedResourceUnits(state, job.actorIds[0]) : capacity;
+      const available = balance?.dailyRemaining ?? balance?.remaining ?? 0;
+      const unitsDue = Math.max(0, Math.floor(job.workProgressMs / job.workMsPerUnit));
+      const requestedLeft = Math.max(0, job.requestedQuantity - job.extractedQuantity);
+      const cargoRoom = Math.max(0, capacity - cargoUnits);
+      const extractNow = Math.min(unitsDue, requestedLeft, Math.max(0, available), cargoRoom);
       let extracted = job.extractedQuantity;
-      let remainingWork = job.workProgressMs;
+      let remainingWork = job.workProgressMs - extractNow * job.workMsPerUnit;
       let code: string | null = null;
       if (!balance) code = 'RESOURCE_BALANCE_MISSING';
-      if (cargoUnits >= MAX_CARRIED_RESOURCE_UNITS) code = 'LOAD_CAPACITY_EXCEEDED';
-      if (remainingWork >= WORK_MS_PER_RESOURCE_UNIT && balance && balance.remaining > 0) {
-        if (!addCargo(state, job.actorIds[0], job.id, job.materialId)) code = 'LOAD_CAPACITY_EXCEEDED';
-        else {
-          extracted += 1;
-          remainingWork -= WORK_MS_PER_RESOURCE_UNIT;
-          state.spatial = { ...state.spatial, resourceBalances: state.spatial.resourceBalances.map(candidate => candidate.resourceId === job.resourceId ? {
-            ...candidate,
-            remaining: candidate.remaining - 1,
-            reserved: Math.max(0, candidate.reserved - 1),
-            lastSettledAtElapsedMs: at,
-          } : candidate) };
-        }
-      }
+      else if (!container) code = 'CARGO_CONTAINER_MISSING';
+      else if (unitsDue > 0 && cargoRoom === 0) code = 'LOAD_CAPACITY_EXCEEDED';
+      else if (unitsDue > 0 && available === 0) code = balance.dailyQuota === null ? 'RESOURCE_DEPLETED' : 'DAILY_QUOTA_EXHAUSTED';
+      if (!code && extractNow > 0 && addCargo(state, job.actorIds[0], job.materialId, extractNow)) {
+        extracted += extractNow;
+        state.spatial = { ...state.spatial, resourceBalances: state.spatial.resourceBalances.map(candidate => candidate.resourceId === job.resourceId ? {
+          ...candidate,
+          remaining: candidate.dailyRemaining === null ? candidate.remaining - extractNow : candidate.remaining,
+          dailyRemaining: candidate.dailyRemaining === null ? null : candidate.dailyRemaining - extractNow,
+          reserved: Math.max(0, candidate.reserved - extractNow),
+          lastSettledAtElapsedMs: at,
+        } : candidate) };
+      } else if (!code && extractNow > 0) code = 'LOAD_CAPACITY_EXCEEDED';
+      const leftReserved = Math.max(0, job.reservedQuantity - (extracted - job.extractedQuantity));
       if (code) {
         state.spatial = { ...state.spatial, resourceBalances: state.spatial.resourceBalances.map(candidate => candidate.resourceId === job.resourceId ? {
-          ...candidate, reserved: Math.max(0, candidate.reserved - job.reservedQuantity), lastSettledAtElapsedMs: at,
+          ...candidate, reserved: Math.max(0, candidate.reserved - leftReserved), lastSettledAtElapsedMs: at,
         } : candidate) };
         state.spatial.harvestJobs = state.spatial.harvestJobs.map(candidate => candidate.id === job.id ? {
-          ...candidate, status: 'blocked', stage: 'blocked', reservedQuantity: 0, interruptionCode: code,
+          ...candidate, extractedQuantity: extracted, reservedQuantity: 0, workProgressMs: remainingWork, status: 'blocked', stage: 'blocked', interruptionCode: code,
         } : candidate);
         state.jobs = state.jobs.map(candidate => candidate.id === job.id ? { ...candidate, status: 'blocked' } : candidate);
         events.push({ type: 'harvest_job_blocked', occurredAtElapsedMs: at, payload: { jobId: job.id, reason: code, extractedQuantity: extracted } });
@@ -1076,15 +1120,18 @@ export function cancelSpatialJob(state: GameState, jobId: string, at: number): {
 export function accessibleResourceState(state: GameState, world: WorldDefinition, resource: WorldResource) {
   const balance = state.spatial.resourceBalances.find(candidate => candidate.resourceId === resource.id);
   if (!state.playerKnowledge.knownResourceIds.includes(resource.id)) return null;
+  const available = balance ? balance.dailyRemaining ?? balance.remaining : 0;
   return {
     resourceId: resource.id,
     materialId: resource.materialId,
     materialName: resource.materialName,
     unit: resource.unit,
-    remaining: balance?.amountKnowledge === 'known_exact' ? balance.remaining : null,
+    remaining: balance?.amountKnowledge === 'known_exact'
+      ? resource.dailyQuota === null ? balance.remaining : balance.dailyRemaining
+      : null,
     reserved: balance && balance.reserved > 0 ? balance.reserved : null,
     amountKnowledge: balance?.amountKnowledge ?? 'unknown',
-    status: resource.access === 'open_surface' ? (balance && balance.remaining <= 0 ? 'depleted' : 'available') : 'blocked',
+    status: resource.access !== 'open_surface' ? 'blocked' : available <= 0 ? 'depleted' : 'available',
   } as const;
 }
 

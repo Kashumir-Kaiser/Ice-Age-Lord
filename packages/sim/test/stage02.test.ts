@@ -139,7 +139,7 @@ test('player projection excludes unobserved world state and sealed career data',
   const serialized = JSON.stringify(view);
   assert.equal(view.schemaVersion, 1);
   assert.equal(view.simElapsedMs, 0);
-  assert.deepEqual(view.visibleMap.entities.map(entity => entity.ref.id), ['SITE-LL01-000']);
+  assert.deepEqual(view.visibleMap.entities.map(entity => entity.ref.id), ['SITE-LL01-000', 'RES-LL01-06', 'RES-LL01-07']);
   assert.equal(view.visibleMap.heatOverlays[0].radiusMm, 10_000);
   assert.deepEqual(view.inventory.containers, []);
   assert.deepEqual(view.units, []);

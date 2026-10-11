@@ -1,7 +1,8 @@
-import { GAME_STATE_SCHEMA_VERSION, type GameState, type WorldDefinition } from '../../contracts/src/index.ts';
+import { GAME_STATE_SCHEMA_VERSION, UNIT_INVENTORY_CONTAINER_PREFIX, type GameState, type WorldDefinition } from '../../contracts/src/index.ts';
 import { ACTIVE_WORLD_PACKAGE } from '../../content/src/index.ts';
 import { DAY_MS, HOUR_MS, nextMidnightAfter } from './time.ts';
-import { seedSpatialKnowledge } from './spatial.ts';
+import { LEGACY_WORK_MS_PER_RESOURCE_UNIT, seedSpatialKnowledge } from './spatial.ts';
+import { RESOURCE_STORAGE } from '../../content/src/resourceBalance.ts';
 
 function nextDailyBoundary(elapsed: number, offset: number): number {
   return offset + (Math.floor((elapsed - offset) / DAY_MS) + 1) * DAY_MS;
@@ -99,7 +100,7 @@ function migrateV2ToV3(candidate: Record<string, any>, world: WorldDefinition): 
     }));
   const migrated: Record<string, any> = {
     ...candidate,
-    schemaVersion: GAME_STATE_SCHEMA_VERSION,
+    schemaVersion: 3,
     player: {
       ...candidate.player,
       position: playerPosition,
@@ -139,10 +140,84 @@ function migrateV2ToV3(candidate: Record<string, any>, world: WorldDefinition): 
   return migrated as unknown as GameState;
 }
 
+function migrateV3ToV4(candidate: Record<string, any>, world: WorldDefinition): GameState {
+  if (candidate.worldPackageId !== world.id) throw new Error('SAVE_STATE_SCHEMA_MIGRATION_WORLD_UNSUPPORTED');
+  const legacyCapacity: Readonly<Record<string, number>> = {
+    'RES-LL01-01': 780,
+    'RES-LL01-02': 1_240,
+    'RES-LL01-03': 20_000,
+    'RES-LL01-04': 430,
+    'RES-LL01-05': 14,
+  };
+  const oldBalances = new Map<string, Record<string, any>>((candidate.spatial?.resourceBalances ?? []).map((balance: Record<string, any>) => [balance.resourceId, balance]));
+  const elapsed = candidate.simElapsedMs as number;
+  const resourceBalances = world.resources.map(resource => {
+    const prior = oldBalances.get(resource.id);
+    if (!prior) return {
+      resourceId: resource.id,
+      remaining: resource.capacity,
+      reserved: 0,
+      materialId: resource.materialId,
+      unit: resource.unit,
+      lastSettledAtElapsedMs: elapsed,
+      lastRenewedAtElapsedMs: null,
+      dailyRemaining: resource.dailyQuota,
+      dailyResetAtElapsedMs: resource.dailyQuota === null ? null : nextMidnightAfter(elapsed),
+      amountKnowledge: 'unknown',
+    };
+    const oldCap = legacyCapacity[resource.id] ?? resource.capacity;
+    const alreadyHarvested = Math.max(0, oldCap - Number(prior.remaining));
+    return {
+      ...prior,
+      remaining: Math.max(0, Math.min(resource.capacity, resource.capacity - alreadyHarvested)),
+      materialId: resource.materialId,
+      unit: resource.unit,
+      dailyRemaining: resource.dailyQuota === null ? null
+        : prior.dailyRemaining === null ? resource.dailyQuota : Math.min(resource.dailyQuota, prior.dailyRemaining),
+      dailyResetAtElapsedMs: resource.dailyQuota === null ? null : prior.dailyResetAtElapsedMs ?? nextMidnightAfter(elapsed),
+    };
+  });
+  const harvestJobs = (candidate.spatial?.harvestJobs ?? []).map((job: Record<string, any>) => ({
+    ...job,
+    workMsPerUnit: Number.isSafeInteger(job.workMsPerUnit) && job.workMsPerUnit > 0 ? job.workMsPerUnit : LEGACY_WORK_MS_PER_RESOURCE_UNIT,
+  }));
+  const migrated = {
+    ...candidate,
+    schemaVersion: 4,
+    spatial: { ...candidate.spatial, resourceBalances, harvestJobs },
+  };
+  return migrated as GameState;
+}
+
+function migrateV4ToV5(candidate: Record<string, any>): GameState {
+  const inventory = candidate.inventory ?? { containers: [] };
+  const containers = [...(inventory.containers ?? [])];
+  for (const unit of candidate.ownedUnits ?? []) {
+    const id = `${UNIT_INVENTORY_CONTAINER_PREFIX}${unit.id}`;
+    if (containers.some((container: Record<string, any>) => container.id === id)) continue;
+    containers.push({
+      id,
+      kind: 'unit_inventory',
+      capacitySlots: RESOURCE_STORAGE.unitInventorySlots,
+      occupiedSlots: null,
+      location: { kind: 'unit', unitId: unit.id },
+      observed: true,
+      stacks: [],
+    });
+  }
+  return {
+    ...candidate,
+    schemaVersion: GAME_STATE_SCHEMA_VERSION,
+    inventory: { ...inventory, containers },
+  } as GameState;
+}
+
 export function upgradeGameState(value: unknown, world: WorldDefinition = ACTIVE_WORLD_PACKAGE): GameState {
   let candidate = asRecord(value);
   if (candidate.schemaVersion === 1) candidate = migrateV1ToV2(candidate);
   if (candidate.schemaVersion === 2) candidate = migrateV2ToV3(candidate, world);
+  if (candidate.schemaVersion === 3) candidate = migrateV3ToV4(candidate, world);
+  if (candidate.schemaVersion === 4) candidate = migrateV4ToV5(candidate);
   if (candidate.schemaVersion !== GAME_STATE_SCHEMA_VERSION) throw new Error('SAVE_STATE_SCHEMA_UNSUPPORTED');
   return candidate as unknown as GameState;
 }

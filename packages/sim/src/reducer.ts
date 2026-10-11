@@ -318,7 +318,9 @@ export function reduceCommand(
       }
     }
     if (ref.type === 'resource') {
-      const resourceBalances = state.spatial.resourceBalances.map(balance => balance.resourceId === ref.id ? {
+      const resource = world.resources.find(candidate => candidate.id === ref.id);
+      const featureResourceIds = new Set(world.resources.filter(candidate => candidate.featureId === resource?.featureId).map(candidate => candidate.id));
+      const resourceBalances = state.spatial.resourceBalances.map(balance => featureResourceIds.has(balance.resourceId) ? {
         ...balance, amountKnowledge: 'known_exact' as const, lastSettledAtElapsedMs: state.simElapsedMs,
       } : balance);
       return acceptMutation(state, command, requestSha256, {
@@ -392,7 +394,7 @@ export function reduceCommand(
     next.spatial.resourceBalances = next.spatial.resourceBalances.map(balance => balance.resourceId === result.job!.resourceId
       ? { ...balance, reserved: balance.reserved + result.job!.reservedQuantity, lastSettledAtElapsedMs: state.simElapsedMs }
       : balance);
-    next.jobs = [...next.jobs, { id: jobId, kind: 'resource_harvest', status: 'active', actorIds: [...result.job.actorIds], reservedItemIds: [result.job.toolItemId], startedAtElapsedMs: state.simElapsedMs, completedAtElapsedMs: null }];
+    next.jobs = [...next.jobs, { id: jobId, kind: 'resource_harvest', status: 'active', actorIds: [...result.job.actorIds], reservedItemIds: result.job.toolItemId === 'NONE' ? [] : [result.job.toolItemId], startedAtElapsedMs: state.simElapsedMs, completedAtElapsedMs: null }];
     return acceptMutationMany(state, command, requestSha256, next, [{
       type: 'harvest_job_started', occurredAtElapsedMs: state.simElapsedMs,
       payload: { jobId, resourceId: result.job.resourceId, materialId: result.job.materialId, quantity: result.job.requestedQuantity },

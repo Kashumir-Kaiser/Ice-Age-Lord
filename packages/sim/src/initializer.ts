@@ -4,6 +4,7 @@ import { RULESET_VERSION } from '../../content/src/sourceLock.ts';
 import { canonicalStateHash } from './hash.ts';
 import { seedConvenienceBag } from './bag.ts';
 import { seedSpatialKnowledge } from './spatial.ts';
+import { RESOURCE_STORAGE } from '../../content/src/resourceBalance.ts';
 
 export type NewGameOptions = {
   saveId: string;
@@ -138,7 +139,7 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
         {
           id: supplyContainerId,
           kind: 'territory_supply',
-          capacitySlots: 40,
+          capacitySlots: RESOURCE_STORAGE.initialStackSlots,
           occupiedSlots: null,
           location: { kind: 'site', siteId: supplySiteId },
           observed: false,

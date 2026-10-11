@@ -11,11 +11,13 @@ import type {
   LairCohort,
   WorldAnchor,
   WorldDefinition,
+  WorldResourceFeature,
   WorldResource,
   WorldSite,
 } from '../../contracts/src/index.ts';
 import { CONTENT_VERSION, RULESET_VERSION, SOURCE_LOCK, SOURCE_RELEASES } from './sourceLock.ts';
 import { buildNavigationOverlay } from './navigationOverlay.ts';
+import { RESOURCE_ECONOMY_VERSION, RESOURCE_FEATURES, resourceFromFeature, worldFeatureFromSpec } from './resourceBalance.ts';
 
 export type ContentManifest = {
   schemaVersion: 1;
@@ -439,23 +441,40 @@ function parseTypedWorldRows(file03: string, kind: 'Resource' | 'Route' | 'Ecolo
   return file03.slice(start, end).split('\n').filter(line => line.startsWith('|')).map(line => line.slice(1, line.endsWith('|') ? -1 : undefined).split('|').map(cleanCell)).filter(row => row[0] === kind);
 }
 
-function parseResources(file03: string, sites: readonly WorldSite[]): WorldResource[] {
-  const profiles: Readonly<Record<string, Omit<WorldResource, 'id' | 'payload' | 'source'>>> = {
-    'RES-LL01-01': { materialId: 'WOOD', materialName: 'Gỗ trưởng thành', unit: 'unit', capacity: 780, location: sites.find(site => site.id === 'SITE-LL01-040')!.position, siteId: 'SITE-LL01-040', renewal: 'biological_rate_unresolved', dailyQuota: null, access: 'open_surface', requiredToolTemplateId: 'STONE-AXE' },
-    'RES-LL01-02': { materialId: 'STONE', materialName: 'Đá lộ thiên', unit: 'unit', capacity: 1240, location: sites.find(site => site.id === 'SITE-LL01-041')!.position, siteId: 'SITE-LL01-041', renewal: 'none', dailyQuota: null, access: 'open_surface', requiredToolTemplateId: 'STONE-HAMMER' },
-    'RES-LL01-03': { materialId: 'RAW-ICE-WATER', materialName: 'Nước băng nguyên liệu', unit: 'L', capacity: 20000, location: sites.find(site => site.id === 'SITE-LL01-042')!.position, siteId: 'SITE-LL01-042', renewal: 'daily_quota', dailyQuota: 20000, access: 'frozen_water', requiredToolTemplateId: null },
-    'RES-LL01-04': { materialId: 'BROWN-COAL', materialName: 'Than nâu khảo địa chất', unit: 'unit', capacity: 430, location: parseCoordinate2d('(-12,4;-6,8)'), siteId: null, renewal: 'none', dailyQuota: null, access: 'survey_required', requiredToolTemplateId: null },
-    'RES-LL01-05': { materialId: 'RAW-SALT', materialName: 'Muối thô', unit: 'unit', capacity: 14, location: sites.find(site => site.id === 'SITE-LL01-051')!.position, siteId: 'SITE-LL01-051', renewal: 'daily_quota', dailyQuota: 14, access: 'workforce_and_fuel', requiredToolTemplateId: null },
+function parseResources(file03: string, sites: readonly WorldSite[]): { resources: WorldResource[]; features: WorldResourceFeature[] } {
+  const siteByResource: Readonly<Record<string, string>> = {
+    'RES-LL01-01': 'SITE-LL01-040',
+    'RES-LL01-02': 'SITE-LL01-041',
+    'RES-LL01-03': 'SITE-LL01-042',
+    'RES-LL01-05': 'SITE-LL01-051',
   };
-  return parseTypedWorldRows(file03, 'Resource').map(row => {
+  const sourceFeatures = RESOURCE_FEATURES.map(feature => {
+    const siteId = feature.sourceRecord ? siteByResource[feature.sourceRecord] : undefined;
+    const site = sites.find(candidate => candidate.id === siteId);
+    return site ? { ...feature, position: site.position } : feature;
+  });
+  const sourceResources = parseTypedWorldRows(file03, 'Resource').map(row => {
     const id = row[1].match(/RES-LL01-\d{2}/)?.[0];
     if (!id) throw new Error(`WORLD_RESOURCE_ID_INVALID: ${row[1]}`);
-    const profile = profiles[id];
-    if (!profile) throw new Error(`WORLD_RESOURCE_PROFILE_MISSING:${id}`);
+    const feature = sourceFeatures.find(candidate => candidate.sourceRecord === id);
+    const material = feature?.materials.find(candidate => candidate.resourceId === id);
+    if (!feature || !material) throw new Error(`WORLD_RESOURCE_PROFILE_MISSING:${id}`);
     const expectedQuantity = id === 'RES-LL01-01' ? '780' : id === 'RES-LL01-02' ? '1.240' : id === 'RES-LL01-03' ? '20.000' : id === 'RES-LL01-04' ? '430' : '14';
     if (!row[2].includes(expectedQuantity)) throw new Error(`WORLD_RESOURCE_CAPACITY_SOURCE_MISMATCH:${id}`);
-    return { id, payload: row[2], ...profile, source: { path: 'references/canonical/LORD-DND-03.md', heading: '3.K.7 Resources', recordId: id } };
+    return {
+      ...resourceFromFeature(feature, material, row[2]),
+      source: { path: 'references/canonical/LORD-DND-03.md', heading: '3.K.7 Resources', recordId: id },
+    };
   });
+  const sourceIds = new Set(sourceResources.map(resource => resource.id));
+  const designedResources = sourceFeatures.flatMap(feature => feature.materials
+    .filter(material => !sourceIds.has(material.resourceId))
+    .map(material => resourceFromFeature(feature, material)));
+  const resources = [...sourceResources, ...designedResources];
+  const features = sourceFeatures.map(worldFeatureFromSpec);
+  if (new Set(resources.map(resource => resource.id)).size !== resources.length) throw new Error('WORLD_RESOURCE_ID_DUPLICATE');
+  if (resources.some(resource => !features.some(feature => feature.id === resource.featureId))) throw new Error('WORLD_RESOURCE_FEATURE_MISSING');
+  return { resources, features };
 }
 
 function parseEcology(file03: string): EcologyRecord[] {
@@ -577,7 +596,7 @@ export function compileContent(root: string): { manifest: ContentManifest; world
   const fieldChests = parseFieldChests(file03);
   const { lairs, units } = parseLairConservation(file03);
   const fixedActors = parseFixedActors(file04, sites);
-  const resources = parseResources(file03, sites);
+  const { resources, features: resourceFeatures } = parseResources(file03, sites);
   const ecology = parseEcology(file03);
   const routes = parseRoutes(file03);
   const navigationOverlay = buildNavigationOverlay(routes, sites, { xMm: 0, yMm: 0, sourceZMetres: 0 });
@@ -621,6 +640,7 @@ export function compileContent(root: string): { manifest: ContentManifest; world
     lairs,
     lairUnits: units,
     fixedActors,
+    resourceFeatures,
     resources,
     ecology,
     routes,
@@ -639,7 +659,7 @@ export function compileContent(root: string): { manifest: ContentManifest; world
     sourceMainCommit: '66f0c2adaf9e2cc5b4391978a699bda6a24ecdbd',
     activeWorldPackageId: world.id,
     timelineVersion: 'LL01-WEB-EVENT-TIMELINE-RECONCILIATION-0.6-RC1',
-    approvedGameplayModules: ['clean-start-initialization', 'known-entity-inspection', 'player-view-projection', 'navigation-overlay-v1', 'spatial-search-v1', 'resource-logistics-v1'],
+    approvedGameplayModules: ['clean-start-initialization', 'known-entity-inspection', 'player-view-projection', 'navigation-overlay-v1', 'spatial-search-v1', 'resource-logistics-v1', 'terrain-linked-resource-economy-v1'],
     conversionManifest: [
       {
         input: 'data/events/EVENT-TIMELINE-v0.6.json',
@@ -668,8 +688,8 @@ export function compileContent(root: string): { manifest: ContentManifest; world
       },
       {
         input: 'references/canonical/LORD-DND-03.md §3.K.7 resource rows',
-        output: 'WorldDefinition.resources and per-save resource balances',
-        decision: 'Compile source capacities, units, locations and renewal gates; unresolved renewal rates and preparation rules remain blocked.',
+        output: 'WorldDefinition.resourceFeatures, WorldDefinition.resources, and per-save resource balances',
+        decision: `Retain source rows as provenance, while ${RESOURCE_ECONOMY_VERSION} derives effective capacities from terrain footprints, density, and richness; starter/forest features share explicit material channels, biological stock regrows daily, daily quotas reset at midnight, and unimplemented preparation gates stay blocked.`,
       },
     ],
     sources: sourcesInManifest,
@@ -685,5 +705,22 @@ export function assertCompiledWorld(world: WorldDefinition): void {
   if (actual !== contentSha256) throw new Error(`WORLD_PACKAGE_CONTENT_HASH_MISMATCH: expected ${contentSha256}; actual ${actual}`);
   if (world.sites.length !== 38 || world.chestCacheCenters.length !== 41 || world.anchors.length !== 10 || world.fieldChests.length !== 192 || world.lairs.length !== 15 || world.lairUnits.length !== 693 || world.fixedActors.length !== 13) {
     throw new Error('WORLD_PACKAGE_INVARIANT_FAILED: fixed source counts do not match.');
+  }
+  if (world.resourceFeatures.length !== RESOURCE_FEATURES.length
+    || new Set(world.resourceFeatures.map(feature => feature.id)).size !== world.resourceFeatures.length
+    || new Set(world.resources.map(resource => resource.id)).size !== world.resources.length
+    || world.resources.some(resource => !world.resourceFeatures.some(feature => feature.id === resource.featureId))
+    || world.resourceFeatures.some(feature => feature.appearanceChannels.some(channel =>
+      !world.resources.some(resource => resource.id === channel.resourceId && resource.featureId === feature.id)))) {
+    throw new Error('WORLD_RESOURCE_FEATURE_INVARIANT_FAILED');
+  }
+  for (let leftIndex = 0; leftIndex < world.resourceFeatures.length; leftIndex++) {
+    const left = world.resourceFeatures[leftIndex];
+    for (const right of world.resourceFeatures.slice(leftIndex + 1)) {
+      if (left.terrainKind !== right.terrainKind) continue;
+      const overlapsX = Math.abs(left.position.xMm - right.position.xMm) < (left.footprintMm.widthMm + right.footprintMm.widthMm) / 2;
+      const overlapsY = Math.abs(left.position.yMm - right.position.yMm) < (left.footprintMm.depthMm + right.footprintMm.depthMm) / 2;
+      if (overlapsX && overlapsY) throw new Error(`WORLD_RESOURCE_FEATURE_OVERLAP: ${left.id} and ${right.id}`);
+    }
   }
 }

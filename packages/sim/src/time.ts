@@ -1,4 +1,5 @@
-import type { ClockControl, ColdEnvironment, GameState, PlayerUnitState, WorldDefinition } from '../../contracts/src/index.ts';
+import { UNIT_INVENTORY_CONTAINER_PREFIX, type ClockControl, type ColdEnvironment, type GameState, type PlayerUnitState, type WorldDefinition } from '../../contracts/src/index.ts';
+import { RESOURCE_STORAGE } from '../../content/src/resourceBalance.ts';
 import { integrateSpatialTo, nextSpatialBoundary, settleSpatialBoundary } from './spatial.ts';
 
 export const MINUTE_MS = 60_000;
@@ -204,6 +205,21 @@ function completeTombJobs(state: GameState, at: number, events: SettledEvent[]):
   for (const entry of due) {
     const unitId = entry.outputUnitId;
     if (!state.ownedUnits.some(unit => unit.id === unitId)) state.ownedUnits = [...state.ownedUnits, createTombUnit(state, unitId)];
+    const containerId = `${UNIT_INVENTORY_CONTAINER_PREFIX}${unitId}`;
+    if (!state.inventory.containers.some(container => container.id === containerId)) {
+      state.inventory = {
+        ...state.inventory,
+        containers: [...state.inventory.containers, {
+          id: containerId,
+          kind: 'unit_inventory',
+          capacitySlots: RESOURCE_STORAGE.unitInventorySlots,
+          occupiedSlots: null,
+          location: { kind: 'unit', unitId },
+          observed: true,
+          stacks: [],
+        }],
+      };
+    }
     state.territory.tomb.queue = state.territory.tomb.queue.map(item => item.id === entry.id
       ? { ...item, status: 'completed', slotId: null, progressCarryMs: Math.max(0, (item.completesAtElapsedMs ?? at) - (item.startedAtElapsedMs ?? at)) }
       : item);
@@ -264,13 +280,21 @@ function processBoundary(state: GameState, at: number, events: SettledEvent[], w
     state.territory.tomb.deathQi.current = state.territory.tomb.deathQi.capacity;
     boundaries.nextMidnightAtElapsedMs += DAY_MS;
     state.territory.tomb.deathQi.nextRefillAtElapsedMs = boundaries.nextMidnightAtElapsedMs;
+    const regenerated: { resourceId: string; quantity: number }[] = [];
     state.spatial.resourceBalances = state.spatial.resourceBalances.map(balance => {
-      if (balance.dailyRemaining === null) return balance;
-      const quota = world?.resources.find(resource => resource.id === balance.resourceId)?.dailyQuota ?? balance.dailyRemaining;
-      return { ...balance, dailyRemaining: quota, dailyResetAtElapsedMs: boundaries.nextMidnightAtElapsedMs };
+      const resource = world?.resources.find(candidate => candidate.id === balance.resourceId);
+      if (balance.dailyRemaining !== null) {
+        const quota = resource?.dailyQuota ?? balance.dailyRemaining;
+        return { ...balance, dailyRemaining: quota, dailyResetAtElapsedMs: boundaries.nextMidnightAtElapsedMs };
+      }
+      if (resource?.renewal !== 'biological_rate' || resource.regenerationPerDay <= 0) return balance;
+      const grown = Math.min(resource.regenerationPerDay, Math.max(0, resource.capacity - balance.remaining));
+      if (grown > 0) regenerated.push({ resourceId: resource.id, quantity: grown });
+      return { ...balance, remaining: balance.remaining + grown, lastRenewedAtElapsedMs: at };
     });
     emit(events, 'tomb_death_qi_refilled', at, { current: state.territory.tomb.deathQi.current, capacity: state.territory.tomb.deathQi.capacity });
     if (state.spatial.resourceBalances.some(balance => balance.dailyRemaining !== null)) emit(events, 'resource_daily_quotas_reset', at, {});
+    for (const growth of regenerated) emit(events, 'resource_biomass_regenerated', at, growth);
     startWaitingTombJobs(state, at, events);
   }
   if (boundaries.nextHourlySettlementAtElapsedMs === at) {

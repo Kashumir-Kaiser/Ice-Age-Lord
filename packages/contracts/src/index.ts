@@ -1,5 +1,7 @@
 export const CONTRACT_SCHEMA_VERSION = 1 as const;
-export const GAME_STATE_SCHEMA_VERSION = 3 as const;
+export const GAME_STATE_SCHEMA_VERSION = 5 as const;
+export const MAX_HARVEST_COMMAND_UNITS = 100_000 as const;
+export const UNIT_INVENTORY_CONTAINER_PREFIX = 'LL-CNT-UNIT-';
 
 export type Id = string;
 export type EntityRef =
@@ -125,16 +127,32 @@ export type HeroLair = {
 export type WorldResource = {
   id: Id;
   payload: string;
+  featureId: Id;
   materialId: Id;
   materialName: string;
   unit: string;
   capacity: number;
+  capacityBasis: { areaUnit: 'hectare' | 'square_metre'; unitsPerArea: number; densityPermille: number; richnessPermille: number };
   location: CoordinateMm;
   siteId: Id | null;
-  renewal: 'none' | 'biological_rate_unresolved' | 'daily_quota';
+  renewal: 'none' | 'biological_rate' | 'daily_quota';
   dailyQuota: number | null;
+  regenerationPerDay: number;
   access: 'open_surface' | 'frozen_water' | 'survey_required' | 'workforce_and_fuel';
   requiredToolTemplateId: Id | null;
+  source: SourceRef;
+};
+
+export type WorldResourceFeature = {
+  id: Id;
+  name: string;
+  terrainKind: 'salvage' | 'forest' | 'outcrop' | 'frozen_water' | 'coal_seam' | 'salt_spring';
+  position: CoordinateMm;
+  footprintMm: { widthMm: number; depthMm: number };
+  /** Number of cartographic elements at full health (trees, rocks, logs, or water marks). */
+  visualElementCount: number;
+  /** Connects a resource balance to the part of the feature it changes. */
+  appearanceChannels: readonly { resourceId: Id; channel: 'canopy' | 'groundcover' | 'rock_mass' | 'ice' | 'seam' | 'salvage' | 'salt' }[];
   source: SourceRef;
 };
 
@@ -316,6 +334,7 @@ export type HarvestJobState = {
   stage: 'outbound' | 'working' | 'returning' | 'blocked';
   routeProgressMm: number;
   workProgressMs: number;
+  workMsPerUnit: number;
   nextTickAtElapsedMs: number;
   lastSettledAtElapsedMs: number;
   startedAtElapsedMs: number;
@@ -425,6 +444,7 @@ export type WorldDefinition = {
   lairs: readonly HeroLair[];
   lairUnits: readonly FixedWorldUnit[];
   fixedActors: readonly FixedWorldActor[];
+  resourceFeatures: readonly WorldResourceFeature[];
   resources: readonly WorldResource[];
   ecology: readonly EcologyRecord[];
   routes: readonly { id: Id; description: string; source: SourceRef }[];
@@ -450,7 +470,41 @@ export type PlayerEntityView = {
   knowledge: Exclude<KnowledgeStatus, 'unknown'>;
   observedAtElapsedMs: number;
   position?: CoordinateMm;
+  resourceDeposit?: ResourceDepositView;
   actions: readonly ActionAvailability[];
+};
+
+export type ResourceDepositMaterialView = {
+  resourceId: Id;
+  materialId: Id;
+  materialName: string;
+  unit: string;
+  capacity: number;
+  remaining: number | null;
+  reserved: number | null;
+  dailyQuota: number | null;
+  dailyRemaining: number | null;
+  harvestRateUnitsPerHour: number;
+  renewal: WorldResource['renewal'];
+  regenerationPerDay: number;
+  requiredToolTemplateId: Id | null;
+  access: WorldResource['access'];
+  accessReason: string | null;
+  status: 'available' | 'depleted' | 'blocked';
+};
+
+export type ResourceDepositView = {
+  featureId: Id;
+  featureName: string;
+  terrainKind: WorldResourceFeature['terrainKind'];
+  footprintMm: WorldResourceFeature['footprintMm'];
+  heatActive: boolean;
+  heatCovered: boolean;
+  distanceFromHeatMm: number;
+  heatRadiusMm: number;
+  carryCapacityUnits: number;
+  storageStackSlots: number | null;
+  materials: readonly ResourceDepositMaterialView[];
 };
 
 export type VisibleMap = {
@@ -460,6 +514,9 @@ export type VisibleMap = {
   visibleGeometry: readonly { id: Id; kind: 'circle' | 'polygon'; points: readonly CoordinateMm[] }[];
   exploredGeometry: readonly { id: Id; kind: 'circle' | 'polygon'; points: readonly CoordinateMm[]; radiusMm?: number }[];
   terrain: readonly { id: Id; label: string; position: CoordinateMm }[];
+  resourceFeatures: readonly (WorldResourceFeature & {
+    channels: readonly { resourceId: Id; channel: WorldResourceFeature['appearanceChannels'][number]['channel']; remainingRatio: number }[];
+  })[];
   entities: readonly PlayerEntityView[];
   knownRoutes: readonly { id: Id; label: string; path: readonly CoordinateMm[] }[];
   activeOrders: readonly { id: Id; kind: string; status: string; actorIds: readonly Id[]; position: CoordinateMm; path: readonly CoordinateMm[]; totalDistanceMm: number; etaElapsedMs: number; uncertainty: 'known' | 'uncertain' }[];
@@ -521,7 +578,7 @@ export type PlayerView = {
   };
   inventory: {
     inspectableContainers: readonly { containerId: Id; label: string; kind: 'territory_supply' | 'carried_bag' }[];
-    containers: readonly { id: Id; kind: InventoryContainerState['kind']; label: string; slots: number; accessible: boolean; items: readonly { itemId: Id; label: string; quantity: number }[] }[];
+    containers: readonly { id: Id; kind: InventoryContainerState['kind']; ownerId: Id | null; label: string; slots: number; accessible: boolean; items: readonly { itemId: Id; label: string; quantity: number }[] }[];
   };
   units: readonly PlayerUnitState[];
   jobs: readonly (RuntimeJobState & { progressPercent: number | null })[];
@@ -540,6 +597,15 @@ export type PlayerView = {
       reserved: number | null;
       amountKnowledge: ResourceBalanceState['amountKnowledge'];
       status: 'available' | 'depleted' | 'blocked';
+      capacity: number;
+      dailyQuota: number | null;
+      dailyRemaining: number | null;
+      renewal: WorldResource['renewal'];
+      regenerationPerDay: number;
+      requiredToolTemplateId: Id | null;
+      access: WorldResource['access'];
+      accessReason: string | null;
+      harvestRateUnitsPerHour: number;
     }[];
   };
   journal: readonly { sequence: number; category: string; title: string; text: string }[];
@@ -892,7 +958,7 @@ export function validateCommandEnvelope(input: unknown): CommandValidationResult
     || Number(payload.radiusMm) < 1 || Number(payload.radiusMm) > 2_000_000)) {
     return issue('COMMAND_PAYLOAD_INVALID', '$.payload', 'Search center and radius must be valid map coordinates within the supported envelope.');
   }
-  if (input.type === 'harvest' && (!Number.isSafeInteger(payload.quantity) || Number(payload.quantity) < 1 || Number(payload.quantity) > 10_000)) {
+  if (input.type === 'harvest' && (!Number.isSafeInteger(payload.quantity) || Number(payload.quantity) < 1 || Number(payload.quantity) > MAX_HARVEST_COMMAND_UNITS)) {
     return issue('COMMAND_PAYLOAD_INVALID', '$.payload.quantity', 'Expected a positive whole resource quantity within the command limit.');
   }
   if (input.type === 'attack' && (!Array.isArray(payload.actorIds) || payload.actorIds.length === 0 || payload.actorIds.some(id => typeof id !== 'string' || id.length === 0))) {
