@@ -1,0 +1,160 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-6.1-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-6.0-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 61 sequential review of printed Chapters 1022–1031 using Bqquge. Cumulative ledger is EVENT-SOURCE-ITEMS-v6.1.csv. Catalog baseline remains v4.6 with append-only v4.7–v6.1 addenda; fixed schedule unchanged.",
+  "item_ids": [
+    "SX-0892",
+    "SX-0893",
+    "SX-0894"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 1022,
+      "event": "The party corners and severely injures a Church deity. No quantified item loot."
+    },
+    {
+      "chapter": 1023,
+      "event": "Seven sages intervene; the Church's divine realm is damaged."
+    },
+    {
+      "chapter": 1024,
+      "event": "Seven deities emerge; allied forces enter a large-scale confrontation."
+    },
+    {
+      "chapter": 1025,
+      "event": "Cao Xing duels the Flame Sage using a costly combination; no item receipts."
+    },
+    {
+      "chapter": 1026,
+      "event": "The Great Lich enters the conflict; no item receipts."
+    },
+    {
+      "chapter": 1027,
+      "event": "Cao Xing kills mid-god Igenis, becomes the first survivor to kill a deity and receives Divine Stele, random Divine Skill Book, and Divine Power Fragments x1,000."
+    },
+    {
+      "chapter": 1028,
+      "event": "The allies continue attacking multiple deities."
+    },
+    {
+      "chapter": 1029,
+      "event": "The Demon Lord's corruption power is revealed; the Flame Sage's death loot is visually described as a golden godhead and a holy scripture, but no named receipt text is given."
+    },
+    {
+      "chapter": 1030,
+      "event": "The Pope is near death; no item receipt."
+    },
+    {
+      "chapter": 1031,
+      "event": "The Church collapses further and a second deity is lost; no item receipt."
+    }
+  ],
+  "non_receipts": [
+    "The Flame Sage's visible loot in Ch1029 is not recorded as quantified named items because the mirror passage gives descriptions but no item names/receipt lines.",
+    "Existing weapons and gear used in combat are not new acquisitions.",
+    "No battle loot totals or divine corpse materials are inferred."
+  ],
+  "item_receipts": [
+    {
+      "chapter": 923,
+      "ids": [
+        "SX-0668"
+      ],
+      "note": "Sea chart gifted by the Icefield Giant chief."
+    },
+    {
+      "chapter": 925,
+      "ids": [
+        "SX-0671"
+      ],
+      "note": "Storm Destroyer occupation and vessel ownership state."
+    },
+    {
+      "chapter": 926,
+      "ids": [
+        "SX-0669",
+        "SX-0670"
+      ],
+      "note": "One explicitly excavated Silver and one Gold chest."
+    },
+    {
+      "chapter": 929,
+      "ids": [
+        "SX-0672",
+        "SX-0673",
+        "SX-0674",
+        "SX-0675",
+        "SX-0676",
+        "SX-0677",
+        "SX-0678",
+        "SX-0679",
+        "SX-0680",
+        "SX-0681",
+        "SX-0682",
+        "SX-0683",
+        "SX-0684",
+        "SX-0685",
+        "SX-0686",
+        "SX-0687",
+        "SX-0688",
+        "SX-0689",
+        "SX-0690",
+        "SX-0691",
+        "SX-0692",
+        "SX-0693",
+        "SX-0694",
+        "SX-0695",
+        "SX-0696",
+        "SX-0697"
+      ],
+      "note": "Chest count snapshot and explicit loot categories from the 29 Silver/Gold boxes, three Moon boxes, and one Red box. See ledger for all 26 receipt rows."
+    },
+    {
+      "chapter": 930,
+      "ids": [
+        "SX-0698",
+        "SX-0699",
+        "SX-0700"
+      ],
+      "note": "Two individual frozen chest pickups and one broken sailboat."
+    },
+    {
+      "chapter": 931,
+      "ids": [
+        "SX-0701",
+        "SX-0702",
+        "SX-0703"
+      ],
+      "note": "Three Sacrifice Pearls, one each of unknown, orange, and green quality."
+    }
+  ],
+  "quest": "Lucky Goddess/undersea ruins lead-in is active. Chapter 931 has the altar yield three Sacrifice Pearls; the Lucky Wheel challenge is not yet shown as opened or resolved.",
+  "inventory_caveat": "All extracted items remain source research, not LL01 initial inventory, guaranteed new-game drops, or active event contracts.",
+  "next_unprocessed_chapter": 932,
+  "source_urls": [
+    "https://www.bqquge.org/851/227800",
+    "https://www.bqquge.org/851/227801",
+    "https://www.bqquge.org/851/227802",
+    "https://www.bqquge.org/851/227803",
+    "https://www.bqquge.org/851/227804",
+    "https://www.bqquge.org/851/236476",
+    "https://www.bqquge.org/851/236477",
+    "https://www.bqquge.org/851/236478",
+    "https://www.bqquge.org/851/236479",
+    "https://www.bqquge.org/851/236514"
+  ],
+  "mirror_note": "Direct chapter text and continuation pages checked on Bqquge; primary 69shuba sequence remains inaccessible beyond Ch921.",
+  "chapter_source_urls": [
+    "https://www.bqquge.org/851/237520",
+    "https://www.bqquge.org/851/237521",
+    "https://www.bqquge.org/851/237522",
+    "https://www.bqquge.org/851/237523",
+    "https://www.bqquge.org/851/237524",
+    "https://www.bqquge.org/851/278841",
+    "https://www.bqquge.org/851/278842",
+    "https://www.bqquge.org/851/278843",
+    "https://www.bqquge.org/851/340881",
+    "https://www.bqquge.org/851/341824"
+  ]
+}
