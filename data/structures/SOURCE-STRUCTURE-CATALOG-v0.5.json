@@ -3,7 +3,7 @@
   "project": "LORD DND — LÍ LAN / Ice Age Lord",
   "original_novel": "冰封末世：我打造完美领地",
   "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
-  "source_scope": "Cumulative source structure catalog remains through Round 36 (Chapters 772–781); Round 37 (Chapters 782–791) found no additional structure contracts suitable for this catalog.",
+  "source_scope": "Cumulative source structure catalog through Round 38 (Chapters 792–801); this pass found no new source structure meeting the catalog criteria.",
   "structures": [
     {
       "structure_id": "STR-0001",
@@ -529,7 +529,8 @@
     "Round 35 adds the placed Obelisk and second-hand Silver Radiance Fortress report; both remain source-world research, not LL01 T0 structures.",
     "Obelisk dimensions preserve the source's unspecified square unit; the Silver Radiance Fortress is not inspected.",
     "Round 36 adds the observed three-storey Black Market auction venue in the underground city; this remains source-world research, not an LL01 T0 structure.",
-    "Round 37 reviewed Chapters 782–791; no additional source structures or route observations met the catalog threshold. The fixed LL01 schedule and T0 geography remain unchanged."
+    "Round 37 reviewed Chapters 782–791; no additional source structures or route observations met the catalog threshold. The fixed LL01 schedule and T0 geography remain unchanged.",
+    "Round 38 reviewed Chapters 792–801; no new structure or route observation was added. The fixed LL01 map and event schedule remain unchanged."
   ],
   "parent_release_id": "LL01-ICE-AGE-LORD-SOURCE-STRUCTURES-0.4",
   "extraction_passes": [
@@ -538,8 +539,9 @@
     34,
     35,
     36,
-    37
+    37,
+    38
   ],
   "final_challenge_note": "Activating the final challenge drains the Lost King's City inner city and closes it until the next yearly opening. This source-world cycle does not modify the fixed LL01 schedule.",
-  "validation_round": 37
+  "validation_round": 38
 }
