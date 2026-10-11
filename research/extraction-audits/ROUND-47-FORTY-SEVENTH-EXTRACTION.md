@@ -19,7 +19,7 @@ Append-only source review of printed Chapters 882–891. The source confirms out
 
 ## Item additions
 
-Nine source item identities are appended as SX-0591–SX-0599 in the cumulative 69-column CSV:
+Nine new source item identities plus three observed receipts of already-catalogued Dream currency are appended as SX-0591–SX-0602 in the cumulative 69-column CSV:
 
 | ID | Source item | Evidence |
 |---|---|---|
@@ -33,6 +33,16 @@ Nine source item identities are appended as SX-0591–SX-0599 in the cumulative 
 | SX-0598 | 光明圣典（完整版） / Complete Light Codex | Confirmed result of combining the three existing Light Codex volumes after consuming 300 Divine Power Shards. The three inputs are not duplicated. |
 | SX-0599 | 神力碎片 / Divine Power Shards | Fifty awarded with the 90% mission reward. Separately, 300 existing shards are consumed for the codex fusion; that cost is not a new receipt. |
 
+### Additional Chapter 891 receipts
+
+| ID | Source item | Confirmed receipt |
+|---|---|---|
+| SX-0600 | 梦境碎片 / Dream Shards | One squad handover: 105,232. |
+| SX-0601 | 梦境碎片 / Dream Shards | A second squad handover: 82,942. |
+| SX-0602 | 梦境结晶 / Dream Crystals | One squad handover: 247. |
+
+These are three distinct reported handovers of item identities already present in the earlier catalog. They are not the later total inventory balance.
+
 ## Chapter findings and boundaries
 
 - **Ch882:** Uriel’s “Heaven’s Chains” and “Light Spear: Causality Piercer” are used against Cao Xing’s party. Renis’s Time Reversal restores the group to five seconds earlier, including their consumed skills/equipment effects and their End-Time Redemption charge. No new item receipt is shown.
@@ -44,12 +54,12 @@ Nine source item identities are appended as SX-0591–SX-0599 in the cumulative 
 - **Ch888:** The existing Storm Axe has 91% awakening after absorbing the Light Seed’s blood. One already-received Blood of the Light God (SX-0591) is then absorbed, completing its first awakening and activating Thunder Judgment. This is an item use/effect update, not another blood receipt.
 - **Ch889:** Cao Xing gives Berje the chosen Annihilation Blood and an already-held Legendary Heart; Berje becomes a Legendary Dragon-Demon Emperor. Cracatoa’s Crystal Dragon Blood remains held, not newly acquired or used: Berje estimates under 20% success now and identifies High Legendary or Mutated Overlord potential as a safer future prerequisite.
 - **Ch890:** Isabella binds SX-0598. This triggers the “Fortune Goddess’s Favor” S-rank quest; Cao Xing accepts it at 0/3. Its listed altar coordinates, stages, and conditional rewards are offers/objectives, not received loot. A server-first Half-Artifact binding announcement grants the “Golden Child” title and 5,000 Human Fortune; Meng Yi’s announcements grant “Light of Salvation,” 50,000 Human Fortune, and the Half-God transformation announcement, adding another 5,000. The human-empire dream mist has receded.
-- **Ch891:** One month passes; the Dream Layer activity ends at 00:00 on Day 152 and the Dream Shop is scheduled to close at 06:00. These are source chronology observations only and do not alter the fixed LL01 event calendar. Ch891 reports global activity gains but gives no single pooled player receipt to append.
+- **Ch891:** One month passes; the Dream Layer activity ends at 00:00 on Day 152 and the Dream Shop is scheduled to close at 06:00. These are source chronology observations only and do not alter the fixed LL01 event calendar. Ch891 reports the end-of-activity squad handovers: 105,232 Dream Shards, 82,942 Dream Shards, and 247 Dream Crystals (SX-0600–SX-0602). The later aggregate inventory panel shows 7,592,345 Dream Shards and 2,162 Dream Crystals. It says the crystals convert to 2,162,000 shards, after which a 3,000,000-shard purchase prompt for three Legendary Hearts appears; the chapter ends before confirmation, so no purchase or output is recorded. The stated 2,250,000-shard remainder after 5,500,000 in planned purchases does not reconcile with the displayed balances (9,754,345 after conversion would leave 4,254,345); retain this as a source arithmetic conflict. Dream Layer itself closes at 00:00 on Day 152, while the shop remains open until 06:00.
 
 ## Preservation and validation
 
-- The cumulative v4.7 item CSV carries forward all 590 rows and the existing 69-column header, then appends nine rows (599 total).
-- New IDs are SX-0591–SX-0599; item acquisitions, selected output, existing-item consumption and unclaimed quest offers remain distinct.
+- The cumulative v4.7 item CSV carries forward all 590 prior rows and the existing 69-column header, then appends twelve Round 47 receipt rows (602 total; nine new identities and three receipts for existing Dream-currency identities).
+- New IDs are SX-0591–SX-0602; item acquisitions, selected output, existing-item consumption, aggregate balances and unclaimed quest offers remain distinct.
 - No chest probability, general drop rate, unshown quantity, mission completion, item learning, or new calendar event is inferred.
 - Structure identities are unchanged in this batch.
 - Next sequential review boundary: printed Chapter 892.
