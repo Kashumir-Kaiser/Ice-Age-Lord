@@ -1,0 +1,120 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-5.0-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-4.9-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 50 sequential review of printed Chapters 912–921. Cumulative source-item ledger is EVENT-SOURCE-ITEMS-v5.0.csv. Catalog baseline remains v4.6 with append-only v4.7–v5.0 addenda; fixed schedule unchanged.",
+  "item_ids": [
+    "SX-0652",
+    "SX-0653",
+    "SX-0654",
+    "SX-0655",
+    "SX-0656",
+    "SX-0657",
+    "SX-0658",
+    "SX-0659",
+    "SX-0660",
+    "SX-0661",
+    "SX-0662",
+    "SX-0663",
+    "SX-0664",
+    "SX-0665",
+    "SX-0666",
+    "SX-0667"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 912,
+      "event": "The first/northern Frost Oath Great Wall battle begins against three named half-god ice-nest monsters: Bazaar (Ice-Nest Tyrant, level 180), Rift Mountain (Ice-Nest Behemoth, level 175), and Oron (Tzoma's Claw, level 180). No receipt in the reviewed chapter."
+    },
+    {
+      "chapter": 913,
+      "event": "Four of four battlefronts resolved; perfect A-rank task completion at 100%. Base payout: Legendary Cross-Region Teleport Array Blueprint x1, Philosopher's Stone x30, Divinity Crystal x50, Divine Power Fragment x200. Perfect-rating bonus: Giant Warrior title and Jormungand·Ice Abyss Ring (unknown quality)."
+    },
+    {
+      "chapter": 914,
+      "event": "Giant Strong Ale is consumed in dialogue; source panel says restore 30,000 HP over 60 seconds and +1,000 Strength. This is use of an existing consumable, not a newly received item. Chapter discusses a future threat timeline."
+    },
+    {
+      "chapter": 915,
+      "event": "Meng Yi requests an alliance against Tzoma and offers two half-god church captives if Mo Yin can break their mind seals; this is an offer, not a completed transfer."
+    },
+    {
+      "chapter": 916,
+      "event": "Jormungand·Ice Abyss Ring panel states item level >100, armor range as printed (2431–2252), and a 50% chance on hit to grant ancestor blessing (+10% Strength for 10 seconds). It provides a vague direction to the giant ancestor's death location, not discovery of the body."
+    },
+    {
+      "chapter": 917,
+      "event": "Immediate loot transfer lists seven battle materials and elite drops: Ice Dragon Crystal x42, Coldland Rune Stone x38, Dark Energy Orb x3. Narrative separately says expedition-wide Ice Dragon Marks exceed 20 million and Dark Energy Orbs total seven after including prior receipts; those are aggregates, not additional receipts."
+    },
+    {
+      "chapter": 918,
+      "event": "Ancient Icefield Giants accept allegiance after their injuries and corruption are healed; recruited forces are a state change, not item receipts."
+    },
+    {
+      "chapter": 919,
+      "event": "63 giants receive a combined buff sequence within Nesha's Blessing Aura; no item reward is received. A Seven-Colored Crystal is mentioned as a possible future reinforcement input, not consumed."
+    },
+    {
+      "chapter": 920,
+      "event": "Consumes 200 Divine Power Fragments each to purify Echo Godfire and Nightmare Godfire. Then gives Ice Dragon Crystals and Divine Power Fragments to Bron and Malenina for their breakthrough; these are transfers/uses of existing stock, not new receipts."
+    },
+    {
+      "chapter": 921,
+      "event": "69shuba source page failed to render; mirror listings expose inconsistent numbering/title mapping. No item outcome is asserted from this chapter pending direct text access."
+    }
+  ],
+  "non_receipts": [
+    "Chapter 913 reward panel confirms the A-rank task payout; the added title's effects are described in the chapter, but the ledger records it as a title reward, not equipment.",
+    "Chapter 917's expedition aggregates (over 20 million Ice Dragon Marks; seven Dark Energy Orbs) are not added on top of individual immediate receipts.",
+    "Chapter 914's ale is consumed; Chapter 915's captives are conditional offers; neither is a new item transfer.",
+    "Chapter 916's ring clue is only directional and does not confirm recovery of the ancient giant's remains.",
+    "Chapter 919's Seven-Colored Crystal is only proposed for later use.",
+    "Chapter 920's four-hundred-fragment purification cost and crystal/fragment distributions are transformations/transfers of prior inventory.",
+    "Chapter 921 remains source-inaccessible in this review; mirror titles alone are insufficient for item extraction."
+  ],
+  "item_receipts": [
+    {
+      "chapter": 913,
+      "ids": [
+        "SX-0652",
+        "SX-0653",
+        "SX-0654",
+        "SX-0655",
+        "SX-0656",
+        "SX-0657"
+      ],
+      "note": "Four base mission reward items plus title and unknown-grade ring bonus."
+    },
+    {
+      "chapter": 917,
+      "ids": [
+        "SX-0658",
+        "SX-0659",
+        "SX-0660",
+        "SX-0661",
+        "SX-0662",
+        "SX-0663",
+        "SX-0664",
+        "SX-0665",
+        "SX-0666",
+        "SX-0667"
+      ],
+      "note": "Seven itemized battle materials and three elite-drop categories, as shown in immediate transfer notices."
+    }
+  ],
+  "quest": "A-rank Ice and Snow's Choice task is complete at 4/4 and 100% in Ch913; highest task payout and perfect-rating bonus are explicit.",
+  "inventory_caveat": "All entries are source research, not LL01 starting inventory or guaranteed runtime grants. No in-game event/shop contract is activated.",
+  "next_unprocessed_chapter": 922,
+  "source_urls": [
+    "https://www.69shuba.com/txt/58776/40564915",
+    "https://www.69shuba.com/txt/58776/40564916",
+    "https://www.69shuba.com/txt/58776/40564917",
+    "https://www.69shuba.com/txt/58776/40564918",
+    "https://www.69shuba.com/txt/58776/40564919",
+    "https://www.69shuba.com/txt/58776/40564920",
+    "https://www.69shuba.com/txt/58776/40564921",
+    "https://www.69shuba.com/txt/58776/40564922",
+    "https://www.69shuba.com/txt/58776/40564923",
+    "https://www.69shuba.com/txt/58776/40564924"
+  ]
+}
