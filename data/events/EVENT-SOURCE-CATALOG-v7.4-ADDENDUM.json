@@ -1,0 +1,224 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.4-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.3-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 74: printed Chinese Chapters 1152–1161. Bqquge primary text reviewed through visible continuation links. Vietnamese catalog/title comparison uses Cơm Nguội, Hắc Hoàng Đại Đế, and Xa Lộ Sách; numbering is edition-specific and does not align reliably by raw chapter number. Restricted bodies were not accessed.",
+  "data_file": "EVENT-SOURCE-ITEMS-v7.4.csv",
+  "cumulative_rows": 1321,
+  "columns": 69,
+  "total_item_ids": [
+    "SX-1308",
+    "SX-1309",
+    "SX-1310",
+    "SX-1311",
+    "SX-1312",
+    "SX-1313",
+    "SX-1314",
+    "SX-1315",
+    "SX-1316",
+    "SX-1317",
+    "SX-1318",
+    "SX-1319",
+    "SX-1320",
+    "SX-1321"
+  ],
+  "chapter_item_ids": {
+    "1152": [
+      "SX-1308"
+    ],
+    "1153": [
+      "SX-1309"
+    ],
+    "1154": [
+      "SX-1321"
+    ],
+    "1155": [
+      "SX-1310"
+    ],
+    "1156": [
+      "SX-1311"
+    ],
+    "1157": [
+      "SX-1312"
+    ],
+    "1158": [
+      "SX-1313",
+      "SX-1314",
+      "SX-1315",
+      "SX-1316"
+    ],
+    "1159": [
+      "SX-1317"
+    ],
+    "1160": [
+      "SX-1318"
+    ],
+    "1161": [
+      "SX-1319",
+      "SX-1320"
+    ]
+  },
+  "receipt_groups": {
+    "ROUND_74_ARENA_AND_EVENT_RULES": [
+      "SX-1308",
+      "SX-1309",
+      "SX-1311",
+      "SX-1312"
+    ],
+    "ROUND_74_LIFE_TREE": [
+      "SX-1310",
+      "SX-1321"
+    ],
+    "ROUND_74_WIND_DRAGON_HATCH": [
+      "SX-1313",
+      "SX-1314",
+      "SX-1315",
+      "SX-1316"
+    ],
+    "ROUND_74_SAINTESS": [
+      "SX-1317"
+    ],
+    "ROUND_74_CHURCH_PLAN": [
+      "SX-1318"
+    ],
+    "ROUND_74_CONTINENT_TRADE": [
+      "SX-1319",
+      "SX-1320"
+    ]
+  },
+  "next_item_id": "SX-1322",
+  "next_unprocessed_chapter": 1162,
+  "confirmed_outcomes": [
+    {
+      "chapter": 1152,
+      "event": "First solo arena day ends with five Starfire participants at 50 wins each. Cao's own display reports 135 solo points and says Bronze Claw, while the prior chapter's published rank chart requires 500 for Bronze and 100 for Black-Iron; inconsistency retained."
+    },
+    {
+      "chapter": 1153,
+      "event": "Starfire Team completes 50 team-mode wins; the final displayed match grants three Glory points with a 50-win streak, and Best Partner achievement is awarded. No physical item receipt."
+    },
+    {
+      "chapter": 1154,
+      "event": "Life Tree receives a Hundred-Year Treant Heart and activates Life/Nature territory blessings, scaling with growth; tree reaches sapling stage. See SX-1321."
+    },
+    {
+      "chapter": 1155,
+      "event": "Remaining plant-heart stock is used to accelerate the tree to 800 years. Life Protection unlocks at 500 years; at 800 years the displayed binding capacity is 70 and cooldown 200 years. Exact aggregate input counts are not reconstructed."
+    },
+    {
+      "chapter": 1156,
+      "event": "Public Chocobo race has 20 riders; spectators may bet on winner or top five for at least 10 Dragon Coins. Pool grows from 215,263 to 410,000 coins."
+    },
+    {
+      "chapter": 1157,
+      "event": "Race finishes 3,7,12,15,6 in top-five order; No.18 Longtooth is seventh. Pool about 410,000; about 320,000 paid out and Cao Xing's 5% venue share is narrated as over 4,000 coins."
+    },
+    {
+      "chapter": 1158,
+      "event": "Wind Dragon Egg hatches to named pet Qingling. One Jade Elephant Heart and one Hundred-Year Treant Heart are consumed together, accelerating it 300 years to Growth; profile shows level 25 and sealed Commander potential that advances to Overlord at Tier 6."
+    },
+    {
+      "chapter": 1159,
+      "event": "Cao Xing recovers a living, still-frozen Norn woman from a rule-shielding ice mass and transports it to the territory basement; no revival method or item reward yet."
+    },
+    {
+      "chapter": 1160,
+      "event": "Norn guards identify the frozen woman as Saintess Zola. Holy Seat hands 100 Divine Power Fragments to Fire Thief, an antagonist-side transfer. The Saintess remains sealed."
+    },
+    {
+      "chapter": 1161,
+      "event": "South-continent rulers bring a multi-sector trade/technology proposal for Imperial review; it is not signed in this chapter. Original Storm Axe is identified separately from the lower-tier divine replica long used by dwarves; no acquisition or transfer to Cao is shown."
+    }
+  ],
+  "unresolved_conflicts": [
+    "Ch1152 arena narration calls 135 points Bronze Claw despite the Ch1150 reward chart setting Bronze at 500 and Black-Iron at 100. Preserve both source statements; do not infer corrected score or tier.",
+    "Vietnamese edition numbering materially diverges. Cơm Nguội and Hắc Hoàng Đại Đế visible title metadata for their Ch1158 points to the Life Tree resurrection/World Tree mystery story anchor (Chinese printed Ch1155). Xa Lộ Sách catalog Ch1158 is 'Ideological Dispute, Demigod Battle' from a different arc. Do not map by number.",
+    "Vietnamese Cơm Nguội/Hắc Hoàng chapter text displays a login gate for the inspected chapter body. Xa Lộ Sách was used only as visible catalog metadata. No gates were bypassed and none of these sources support item/reward quantities.",
+    "Ch1155 consumes all remaining growth hearts without a complete quantified stock ledger; aggregate amounts remain unspecified.",
+    "Race payouts and organizer share are one observed event result, not a general race payout guarantee; individual bettor profit is not protagonist inventory.",
+    "Qingling's 300-year acceleration uses two named hearts simultaneously; no separate per-item acceleration value is attributed here.",
+    "Ch1161's trade document is a proposal pending review, not an executed transfer. The Storm Axe is identified, but no owner transfer or confirmed repair receipt is documented in inspected text."
+  ],
+  "source_checks": [
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232680",
+      "use": "Printed Ch1152 arena result; rank/point inconsistency."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232684-4",
+      "use": "Ch1153 team 50-win completion, points, achievement and team naming."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232689",
+      "use": "Ch1154 Life Tree growth and blessings."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232693-3",
+      "use": "Ch1155 Life Protection growth-stage ability."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232697-4",
+      "use": "Ch1156 race, betting pool and reported odds."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232702-3",
+      "use": "Ch1157 race placements and No.18 seventh-place result."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232702-4",
+      "use": "Ch1157 410,000 pool, approximate payout and 5% organizer share."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232706-2",
+      "use": "Ch1158 hatching and consumed Jade Elephant / Hundred-Year Treant Hearts."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232706-3",
+      "use": "Qingling accelerated-growth system receipt and pet profile."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232711-4",
+      "use": "Ch1159 frozen living figure transported to territory."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232715-2",
+      "use": "Ch1160 antagonist transfer of 100 Divine Power Fragments."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232719-3",
+      "use": "Ch1161 bilateral trade proposal."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232719-4",
+      "use": "Storm Axe original-versus-replica distinction."
+    },
+    {
+      "site": "Cơm Nguội Novel",
+      "url": "https://comnguoinovel.com/truyen/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong/1158",
+      "use": "Visible Vietnamese Ch1158 heading: Life Tree resurrection ability / World Tree mystery; body is login-gated. Used only as an edition title/story anchor."
+    },
+    {
+      "site": "Hắc Hoàng Đại Đế",
+      "url": "https://hachoangdaide.online/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong-1158",
+      "use": "Visible Vietnamese Ch1158 heading matches Cơm Nguội Life Tree title/story anchor; body access restricted to first 100 chapters/login."
+    },
+    {
+      "site": "Xa Lộ Sách",
+      "url": "https://xalosach.com/bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia-0.html?P=12#danhsachchuong",
+      "use": "Catalog listing: Vietnamese Ch1158 'Lý Niệm Chi Tranh, Bán Thần Chi Chiến (1)', visibly a different arc at the same local number; no text body used."
+    }
+  ]
+}

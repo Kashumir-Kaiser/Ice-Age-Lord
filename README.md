@@ -12,8 +12,8 @@ This is a **new game**: do not import earlier campaign inventories, unit rosters
 
 - `references/canonical/`: original Lord DnD source rulebooks and lineage, retained **as references** (not an already-compiled runtime).
 - `design/`: latest web-game content design, magical buildings and source-grounded construction proposals.
-- `data/events/`: cumulative source-item CSV v7.3 with 1,307 rows through Round 73 (Chapters 1142–1151); Round 73 audit and catalog addendum are in `research/extraction-audits/` and `data/events/`. The cumulative source catalog JSON remains v4.6 (590 items, 239 effects) with v4.7–v7.3 addenda alongside it and the v7.2.1 metadata correction. The fixed 30-event v0.6 timeline is unchanged. Extracted entries are not automatically obtainable in a new game.
-- `research/extraction-audits/`: **all seventy-three extraction rounds**, including the Round 29 continuation addendum (v2.9.1), Round 35, Round 36, Round 38, Round 39, Round 40, Round 41, Round 42, Round 43, and Rounds 44–73 audits, with append-only research and immutable earlier releases.
+- `data/events/`: cumulative source-item CSV v7.4 with 1,321 rows through Round 74 (Chapters 1152–1161); Round 73 audit and catalog addendum are in `research/extraction-audits/` and `data/events/`. The cumulative source catalog JSON remains v4.6 (590 items, 239 effects) with v4.7–v7.4 addenda alongside it and the v7.2.1 metadata correction. The fixed 30-event v0.6 timeline is unchanged. Extracted entries are not automatically obtainable in a new game.
+- `research/extraction-audits/`: **all seventy-four extraction rounds**, including the Round 29 continuation addendum (v2.9.1), Round 35, Round 36, Round 38, Round 39, Round 40, Round 41, Round 42, Round 43, and Rounds 44–74 audits, with append-only research and immutable earlier releases.
 - `research/snapshots/`: chronological catalogs and design versions retained for traceability.
 
 ## Authority / migration rules
@@ -43,8 +43,14 @@ See `docs/FRESH_START.md` and `docs/CONTENT_INDEX.md` for import priorities and 
 The React/Vite visual demo now lives in `frontend/` on `main`. It uses the original layered asset pipeline in `assets/` and `frontend/public/assets/`. Run `cd frontend && npm ci && npm run build` to synchronize registered assets and verify the production bundle. The ink / semi-realistic visual policy is in `assets/README.md`; the SVG Fire stage art is registered in `assets/manifest.json`. This UI still has a demo adapter and does not represent game state from the backend until integrated.
 
 
-- `data/events/EVENT-SOURCE-ITEMS-v7.3.csv`: cumulative source-item ledger through printed Chapter 1151.
+- `data/events/EVENT-SOURCE-ITEMS-v7.4.csv`: cumulative source-item ledger through printed Chapter 1161.
 - `data/events/EVENT-SOURCE-CATALOG-v7.2-ADDENDUM.json`: Round 72 receipts, events, Vietnamese edition alignment checks, and unresolved conflicts.
 - `research/extraction-audits/ROUND-72-SEVENTY-SECOND-EXTRACTION.md`: Round 72 audit for Chapters 1132–1141.
 - `data/events/EVENT-SOURCE-CATALOG-v7.0.1-CORRECTION.json` and `research/extraction-audits/ROUND-70-CORRECTION-v7.0.1.md`: correct the Round 70 Vietnamese chapter title alignment only; no source-item rows changed.
-\n- `data/events/EVENT-SOURCE-CATALOG-v7.2.1-CORRECTION.json` and `research/extraction-audits/ROUND-72-CORRECTION-v7.2.1.md`: correct three Round 72 printed-chapter metadata values; quantities and interpretations are unchanged.\n\n- `data/events/EVENT-SOURCE-CATALOG-v7.3-ADDENDUM.json`: Round 73 offers, receipts, event rules, Vietnamese edition checks, and unresolved conflicts.\n- `research/extraction-audits/ROUND-73-SEVENTY-THIRD-EXTRACTION.md`: Round 73 audit for Chapters 1142–1151.\n
+
+- `data/events/EVENT-SOURCE-CATALOG-v7.2.1-CORRECTION.json` and `research/extraction-audits/ROUND-72-CORRECTION-v7.2.1.md`: correct three Round 72 printed-chapter metadata values; quantities and interpretations are unchanged.
+
+- `data/events/EVENT-SOURCE-CATALOG-v7.3-ADDENDUM.json`: Round 73 offers, receipts, event rules, Vietnamese edition checks, and unresolved conflicts.
+- `research/extraction-audits/ROUND-73-SEVENTY-THIRD-EXTRACTION.md`: Round 73 audit for Chapters 1142–1151.
+- `data/events/EVENT-SOURCE-CATALOG-v7.4-ADDENDUM.json`: Round 74 receipts, the Arena rank conflict, Vietnamese source comparison, and unresolved points.
+- `research/extraction-audits/ROUND-74-SEVENTY-FOURTH-EXTRACTION.md`: Round 74 audit for Chapters 1152–1161.
