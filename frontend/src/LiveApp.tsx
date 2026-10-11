@@ -1005,9 +1005,9 @@ function LiveApp() {
 
         <section className="live-panel">
           <div className="live-panel-heading"><div><span className="live-eyebrow">SOURCE-DEFINED HEAT SERVICE</span><h3>Lò Sưởi Đơn Giản</h3></div><Flame size={20} /></div>
-          {view.territory.buildings.filter(building => building.blueprintId === 'BP-OPEN-HEATER-01' && building.status === 'active').length === 0
+          {view.territory.buildings.filter(building => building.kind === 'heater' && building.status === 'active').length === 0
             ? <p className="live-empty-state">No active heater is built. Its fixed opening recipe is 6 STONE.</p>
-            : view.territory.buildings.filter(building => building.blueprintId === 'BP-OPEN-HEATER-01' && building.status === 'active').map(building => {
+            : view.territory.buildings.filter(building => building.kind === 'heater' && building.status === 'active').map(building => {
               const service = view.construction.operatingServices.find(item => item.buildingId === building.id && item.status === 'active');
               const operationCommand = constructionContainer ? commandFor(view, 'operate_heater', { actorId: view.player.id, buildingId: building.id, containerId: constructionContainer.id }) : null;
               const operationPreviewed = selectedCommandIsPreviewed(operationCommand);
