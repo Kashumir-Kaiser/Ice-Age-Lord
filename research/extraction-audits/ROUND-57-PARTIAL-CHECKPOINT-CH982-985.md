@@ -31,3 +31,15 @@ The Bqquge fetch for the next page (`https://www.bqquge.org/851/236978`) is unav
 ## Resume instruction
 
 Continue at printed Chapter 986. Review through Chapter 991 in order, then create the proper Round 57 addendum, cumulative item ledger, complete ten-chapter audit, validation, and checkpoint commit. Reconcile the partial notes here against the full text and parent v5.6 before assigning any IDs.
+
+## Additional source attempts (2026-10-11)
+
+Further mirror checks confirmed the chapter order but did not provide a verifiable chapter body:
+
+- The Yiyeshu search-index result (`https://www.yiyeshu.cc/go/33472/11807880.html`) returned `DisabledError` on open.
+- Bixiange’s indexed result for Chapter 986 exposed only an excerpt; opening its full chapter URL (`https://www.bixiange.top/khjj/21282/986.html`) also returned `DisabledError`.
+- The CP novel directory confirms titles through the later chapters, but it is a table of contents rather than chapter text.
+- QQ Reading chapter pages for the corresponding later sequence show short opening previews and then a login/subscription gate. They confirm some leads (for example, the blessing ring is handed over in the Chapter 991 preview), but do not expose enough context to establish a complete acquisition/event record. QQ’s display numbering also differs from the printed sequence in the extraction sources, so those snippets are not treated as chapter-level evidence.
+- WTR-LAB marks all chapters unlocked on its novel page, but the chapter-reading route only redirects to a recommended raw source; no body text was available.
+
+**Stop point:** Chapter 986 remains the first unreviewed chapter. The available indexed snippets are insufficient for the requested extraction, so no claims from them have been added to the ledger. Resume only when full source text for Chapters 986–991 is accessible.
