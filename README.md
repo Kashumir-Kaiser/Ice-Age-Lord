@@ -12,8 +12,8 @@ This is a **new game**: do not import earlier campaign inventories, unit rosters
 
 - `references/canonical/`: original Lord DnD source rulebooks and lineage, retained **as references** (not an already-compiled runtime).
 - `design/`: latest web-game content design, magical buildings and source-grounded construction proposals.
-- `data/events/`: cumulative source-item CSV v4.7 with 602 rows through Round 47 (Chapters 882–891); Round 47 audit and event addendum are in `research/extraction-audits/` and `data/events/`. The cumulative source catalog JSON remains v4.6 (590 items, 239 effects) with the v4.7 addendum alongside it. The fixed 30-event v0.6 timeline is unchanged. Extracted entries are not automatically obtainable in a new game.
-- `research/extraction-audits/`: **all forty-seven extraction rounds**, including the Round 29 continuation addendum (v2.9.1), Round 35, Round 36, Round 38, Round 39, Round 40, Round 41, Round 42, Round 43, and Rounds 44–46 audits, with append-only research and immutable earlier releases.
+- `data/events/`: cumulative source-item CSV v4.8 with 615 rows through Round 48 (Chapters 892–901); Round 48 audit and event addendum are in `research/extraction-audits/` and `data/events/`. The cumulative source catalog JSON remains v4.6 (590 items, 239 effects) with v4.7 and v4.8 addenda alongside it. The fixed 30-event v0.6 timeline is unchanged. Extracted entries are not automatically obtainable in a new game.
+- `research/extraction-audits/`: **all forty-eight extraction rounds**, including the Round 29 continuation addendum (v2.9.1), Round 35, Round 36, Round 38, Round 39, Round 40, Round 41, Round 42, Round 43, and Rounds 44–48 audits, with append-only research and immutable earlier releases.
 - `research/snapshots/`: chronological catalogs and design versions retained for traceability.
 
 ## Authority / migration rules
