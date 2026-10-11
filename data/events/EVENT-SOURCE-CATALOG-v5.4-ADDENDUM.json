@@ -1,0 +1,236 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-5.4-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-5.3-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 54 sequential review of printed Chapters 952–961 using Bqquge. Cumulative item ledger is EVENT-SOURCE-ITEMS-v5.4.csv. Catalog baseline remains v4.6 with append-only v4.7–v5.4 addenda; fixed schedule unchanged.",
+  "item_ids": [
+    "SX-0723",
+    "SX-0724",
+    "SX-0725",
+    "SX-0726",
+    "SX-0727",
+    "SX-0728",
+    "SX-0729",
+    "SX-0730",
+    "SX-0731",
+    "SX-0732",
+    "SX-0733",
+    "SX-0734",
+    "SX-0735",
+    "SX-0736",
+    "SX-0737",
+    "SX-0738",
+    "SX-0739",
+    "SX-0740",
+    "SX-0741",
+    "SX-0742",
+    "SX-0743",
+    "SX-0744",
+    "SX-0745",
+    "SX-0746",
+    "SX-0747",
+    "SX-0748",
+    "SX-0749",
+    "SX-0750",
+    "SX-0751",
+    "SX-0752",
+    "SX-0753",
+    "SX-0754",
+    "SX-0755",
+    "SX-0756",
+    "SX-0757",
+    "SX-0758",
+    "SX-0759",
+    "SX-0760",
+    "SX-0761",
+    "SX-0762",
+    "SX-0763",
+    "SX-0764",
+    "SX-0765",
+    "SX-0766",
+    "SX-0767",
+    "SX-0768",
+    "SX-0769",
+    "SX-0770",
+    "SX-0771",
+    "SX-0772",
+    "SX-0773",
+    "SX-0774",
+    "SX-0775",
+    "SX-0776",
+    "SX-0777",
+    "SX-0778",
+    "SX-0779",
+    "SX-0780",
+    "SX-0781",
+    "SX-0782",
+    "SX-0783",
+    "SX-0784",
+    "SX-0785",
+    "SX-0786",
+    "SX-0787",
+    "SX-0788",
+    "SX-0789",
+    "SX-0790",
+    "SX-0791",
+    "SX-0792",
+    "SX-0793",
+    "SX-0794",
+    "SX-0795",
+    "SX-0796",
+    "SX-0797",
+    "SX-0798",
+    "SX-0799"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 952,
+      "event": "Route loot includes one frozen Gold chest, one frozen Silver chest, Orange Deep Sea Pearls x3, a damaged giant ship, and an Orange fish."
+    },
+    {
+      "chapter": 953,
+      "event": "Ritual-site receipts include Divinity Crystals x50, God Heart, Ancient Spirit Remains, Eye of Seven Sins, and Resentment Crystal."
+    },
+    {
+      "chapter": 954,
+      "event": "The crew reaches the Polar Ogre fortress; no receipt list here."
+    },
+    {
+      "chapter": 955,
+      "event": "Battle begins; no quantified loot list."
+    },
+    {
+      "chapter": 956,
+      "event": "Ogre fortress is defeated. Loot is collected, but battle drops remain broadly described. A vault key is mentioned later."
+    },
+    {
+      "chapter": 957,
+      "event": "Ogre vault yields large quantities of metals, hides and gems, relics, 4,716 Divine Power Fragments, and a demigod Frost Cannon blueprint; two legendary armors and a key are retrieved."
+    },
+    {
+      "chapter": 958,
+      "event": "A demigod Blood Whale is decomposed; printed material quantities are recorded in the ledger. The vault's 4,716 shards are the prior chapter's receipt, not a new one."
+    },
+    {
+      "chapter": 959,
+      "event": "The Fortune Dice roll grants Luck +50% and four attributes +20% for 24 hours; Eternal Power makes the state permanent. This is a status reward, not an item."
+    },
+    {
+      "chapter": 960,
+      "event": "Ancient coins are exchanged for 26 Gold, four Moon, and one Redcloud ancient chests. 401 frozen chests are opened; only named, quantified examples are entered. Ancient Gold and Moon chest outputs are also listed."
+    },
+    {
+      "chapter": 961,
+      "event": "The Ancient Redcloud Chest yields Mechanical Heart (semi-artifact), Combat Drones x15, and Magnetic Bombs x8; two armor item panels confirm prior Ch957 finds."
+    }
+  ],
+  "non_receipts": [
+    "The 4,716 fragments appear as a Ch957 vault receipt and are not repeated at Ch958.",
+    "Large generalized loot descriptions without exact named receipts are omitted.",
+    "The two armor entries under Ch961 are item inspection/assignment only; ledger acquisition remains Ch957 and is not duplicated.",
+    "The 401 frozen chest output list is partial/ellipsized; only explicitly named items and quantities are transcribed.",
+    "The blood whale disassembly quantities are source-observed material yields, not guaranteed game-world starting stock."
+  ],
+  "item_receipts": [
+    {
+      "chapter": 923,
+      "ids": [
+        "SX-0668"
+      ],
+      "note": "Sea chart gifted by the Icefield Giant chief."
+    },
+    {
+      "chapter": 925,
+      "ids": [
+        "SX-0671"
+      ],
+      "note": "Storm Destroyer occupation and vessel ownership state."
+    },
+    {
+      "chapter": 926,
+      "ids": [
+        "SX-0669",
+        "SX-0670"
+      ],
+      "note": "One explicitly excavated Silver and one Gold chest."
+    },
+    {
+      "chapter": 929,
+      "ids": [
+        "SX-0672",
+        "SX-0673",
+        "SX-0674",
+        "SX-0675",
+        "SX-0676",
+        "SX-0677",
+        "SX-0678",
+        "SX-0679",
+        "SX-0680",
+        "SX-0681",
+        "SX-0682",
+        "SX-0683",
+        "SX-0684",
+        "SX-0685",
+        "SX-0686",
+        "SX-0687",
+        "SX-0688",
+        "SX-0689",
+        "SX-0690",
+        "SX-0691",
+        "SX-0692",
+        "SX-0693",
+        "SX-0694",
+        "SX-0695",
+        "SX-0696",
+        "SX-0697"
+      ],
+      "note": "Chest count snapshot and explicit loot categories from the 29 Silver/Gold boxes, three Moon boxes, and one Red box. See ledger for all 26 receipt rows."
+    },
+    {
+      "chapter": 930,
+      "ids": [
+        "SX-0698",
+        "SX-0699",
+        "SX-0700"
+      ],
+      "note": "Two individual frozen chest pickups and one broken sailboat."
+    },
+    {
+      "chapter": 931,
+      "ids": [
+        "SX-0701",
+        "SX-0702",
+        "SX-0703"
+      ],
+      "note": "Three Sacrifice Pearls, one each of unknown, orange, and green quality."
+    }
+  ],
+  "quest": "Lucky Goddess/undersea ruins lead-in is active. Chapter 931 has the altar yield three Sacrifice Pearls; the Lucky Wheel challenge is not yet shown as opened or resolved.",
+  "inventory_caveat": "All extracted items remain source research, not LL01 initial inventory, guaranteed new-game drops, or active event contracts.",
+  "next_unprocessed_chapter": 932,
+  "source_urls": [
+    "https://www.bqquge.org/851/227800",
+    "https://www.bqquge.org/851/227801",
+    "https://www.bqquge.org/851/227802",
+    "https://www.bqquge.org/851/227803",
+    "https://www.bqquge.org/851/227804",
+    "https://www.bqquge.org/851/236476",
+    "https://www.bqquge.org/851/236477",
+    "https://www.bqquge.org/851/236478",
+    "https://www.bqquge.org/851/236479",
+    "https://www.bqquge.org/851/236514"
+  ],
+  "mirror_note": "Direct chapter text and continuation pages were checked on Bqquge; primary 69shuba pages remain inaccessible beyond Ch921.",
+  "chapter_source_urls": [
+    "https://www.bqquge.org/851/236704",
+    "https://www.bqquge.org/851/236705",
+    "https://www.bqquge.org/851/236706",
+    "https://www.bqquge.org/851/236751",
+    "https://www.bqquge.org/851/236752",
+    "https://www.bqquge.org/851/236753",
+    "https://www.bqquge.org/851/236754",
+    "https://www.bqquge.org/851/236755",
+    "https://www.bqquge.org/851/236783",
+    "https://www.bqquge.org/851/236784"
+  ]
+}
