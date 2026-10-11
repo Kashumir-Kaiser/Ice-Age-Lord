@@ -60,7 +60,7 @@
     },
     {
       "chapter": 921,
-      "event": "69shuba source page failed to render; mirror listings expose inconsistent numbering/title mapping. No item outcome is asserted from this chapter pending direct text access."
+      "event": "69shuba page could not be read; accessible Bqquge mirror of printed Ch921 confirms Bron's half-god breakthrough fails (level -20, all attributes -30% for seven days, Icefield divinity -50%), while Malenina succeeds and reaches half-god. No item reward or new receipt."
     }
   ],
   "non_receipts": [
@@ -70,7 +70,7 @@
     "Chapter 916's ring clue is only directional and does not confirm recovery of the ancient giant's remains.",
     "Chapter 919's Seven-Colored Crystal is only proposed for later use.",
     "Chapter 920's four-hundred-fragment purification cost and crystal/fragment distributions are transformations/transfers of prior inventory.",
-    "Chapter 921 remains source-inaccessible in this review; mirror titles alone are insufficient for item extraction."
+    "Chapter 921 is accessible via the Bqquge mirror despite the 69shuba read failure; its text confirms progression outcomes but no item receipt."
   ],
   "item_receipts": [
     {
@@ -115,6 +115,8 @@
     "https://www.69shuba.com/txt/58776/40564921",
     "https://www.69shuba.com/txt/58776/40564922",
     "https://www.69shuba.com/txt/58776/40564923",
-    "https://www.69shuba.com/txt/58776/40564924"
-  ]
+    "https://www.69shuba.com/txt/58776/40564924",
+    "https://www.bqquge.org/851/227710"
+  ],
+  "mirror_note": "Chapter 921 direct 69shuba page returned an internal error. The printed chapter was cross-checked on the accessible Bqquge mirror at https://www.bqquge.org/851/227710."
 }
