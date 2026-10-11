@@ -12,7 +12,7 @@ This is a **new game**: do not import earlier campaign inventories, unit rosters
 
 - `references/canonical/`: original Lord DnD source rulebooks and lineage, retained **as references** (not an already-compiled runtime).
 - `design/`: latest web-game content design, magical buildings and source-grounded construction proposals.
-- `data/events/`: cumulative source-item CSV v7.16 with 1,496 rows through Round 87 (Chapters 1282–1291); round audits and catalog addenda are in `research/extraction-audits/` and `data/events/`. The cumulative source catalog JSON remains v4.6 (590 items, 239 effects) with v4.7–v7.17 addenda alongside it and the v7.2.1 metadata correction. The fixed 30-event v0.6 timeline is unchanged. Extracted entries are not automatically obtainable in a new game.
+- `data/events/`: cumulative source-item CSV v7.17 with 1,518 rows through Round 88 (Chapters 1292–1301); round audits and catalog addenda are in `research/extraction-audits/` and `data/events/`. The cumulative source catalog JSON remains v4.6 (590 items, 239 effects) with v4.7–v7.18 addenda alongside it and the v7.2.1 metadata correction. The fixed 30-event v0.6 timeline is unchanged. Extracted entries are not automatically obtainable in a new game.
 - `research/extraction-audits/`: **all eighty-seven extraction rounds**, including the Round 29 continuation addendum (v2.9.1), Round 35, Round 36, Round 38, Round 39, Round 40, Round 41, Round 42, Round 43, and Rounds 44–74 audits, with append-only research and immutable earlier releases.
 - `research/snapshots/`: chronological catalogs and design versions retained for traceability.
 
@@ -91,3 +91,7 @@ The React/Vite visual demo now lives in `frontend/` on `main`. It uses the origi
 - `data/events/EVENT-SOURCE-ITEMS-v7.16.csv`: cumulative source-item ledger through printed Chapter 1291 (1,496 rows), including post-Cleaner inventory reconciliation, six World Protector Marks, opened chest outcomes, pooled Botier battle-loot transfers, and item transformations.
 - `data/events/EVENT-SOURCE-CATALOG-v7.17-ADDENDUM.json`: Round 87 source coverage for Chapters 1282–1291, additional independent title/body-source checks, and resolved Round 86 medal omission with remaining item-quality and quantity gaps preserved.
 - `research/extraction-audits/ROUND-87-EIGHTY-SEVENTH-EXTRACTION.md`: Round 87 audit for Chapters 1282–1291; resumes at Chapter 1292.
+
+- `data/events/EVENT-SOURCE-ITEMS-v7.17.csv`: cumulative source-item ledger through printed Chapter 1301 (1,518 rows), including True-God Ancient Dragon first-kill rewards and drops, Godhead assignments, the Light-Dark Dragon pet, and pooled battle-loot transfers.
+- `data/events/EVENT-SOURCE-CATALOG-v7.18-ADDENDUM.json`: Round 88 source coverage for Chapters 1292–1301, with recipient and progression outcomes confirmed and reward-attribution uncertainties preserved.
+- `research/extraction-audits/ROUND-88-EIGHTY-EIGHTH-EXTRACTION.md`: Round 88 audit for Chapters 1292–1301; resumes at Chapter 1302.
