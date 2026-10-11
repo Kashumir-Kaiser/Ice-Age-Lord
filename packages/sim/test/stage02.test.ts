@@ -8,6 +8,7 @@ import { createNewGame, elapsedMsToWorldClock } from '../src/initializer.ts';
 import { canonicalStateHash, hash64, randomIntFromFields } from '../src/hash.ts';
 import { actionAvailability, reduceCommand } from '../src/reducer.ts';
 import { projectPlayerView } from '../src/view.ts';
+import { STAGE07_OPENING_CORPSE_ID } from '../src/stage07.ts';
 
 const world = ACTIVE_WORLD_PACKAGE;
 const options = {
@@ -110,16 +111,22 @@ test('clean initializer is deterministic and uses one source ledger for starter 
   assert.deepEqual(first.territory.tomb.deathQi, { current: 20, capacity: 20, refillAtWorldTime: '00:00', nextRefillAtElapsedMs: 17 * 60 * 60 * 1000 });
   assert.deepEqual(first.territory.tomb.queue, []);
   assert.equal(first.territory.tomb.output.xpMirrorEligible, false);
-  assert.equal(first.corpses.length, 6);
-  assert.ok(first.corpses.every(corpse => corpse.state === 'unobserved'));
+  assert.equal(first.corpses.length, 7);
+  const openingCorpse = first.corpses.find(corpse => corpse.id === STAGE07_OPENING_CORPSE_ID);
+  const fixedCorpses = first.corpses.filter(corpse => corpse.id !== STAGE07_OPENING_CORPSE_ID);
+  assert.equal(openingCorpse?.state, 'known');
+  assert.equal(fixedCorpses.length, 6);
+  assert.ok(fixedCorpses.every(corpse => corpse.state === 'unobserved'));
   assert.equal(first.fieldChestStates.length, 192);
   assert.ok(first.fieldChestStates.every(chest => chest.state === 'unopened'));
   assert.equal(first.quests.length, 18);
   assert.ok(first.quests.every(quest => quest.state === 'dormant' && quest.rewardReceipt === null));
   assert.equal(first.calendar.length, 30);
   assert.ok(first.calendar.every(event => event.status === 'scheduled' && event.openReceiptSequence === null && event.resolutionReceiptSequence === null));
-  assert.equal(first.corpses.length, 6);
-  assert.ok(first.corpses.every(corpse => corpse.state === 'unobserved' && corpse.createdAtElapsedMs === 0 && corpse.ownershipId === null));
+  assert.equal(first.corpses.length, 7);
+  assert.ok(fixedCorpses.every(corpse => corpse.state === 'unobserved' && corpse.createdAtElapsedMs === 0 && corpse.ownershipId === null));
+  assert.equal(openingCorpse?.createdAtElapsedMs, 0);
+  assert.equal(openingCorpse?.ownershipId, null);
   const supply = first.inventory.containers.find(container => container.kind === 'territory_supply');
   assert.equal(supply?.capacitySlots, 40);
   assert.equal(supply?.occupiedSlots, null);
@@ -139,7 +146,7 @@ test('player projection excludes unobserved world state and sealed career data',
   const serialized = JSON.stringify(view);
   assert.equal(view.schemaVersion, 1);
   assert.equal(view.simElapsedMs, 0);
-  assert.deepEqual(view.visibleMap.entities.map(entity => entity.ref.id), ['SITE-LL01-000']);
+  assert.deepEqual(view.visibleMap.entities.map(entity => entity.ref.id), ['SITE-LL01-000', STAGE07_OPENING_CORPSE_ID]);
   assert.equal(view.visibleMap.heatOverlays[0].radiusMm, 10_000);
   assert.deepEqual(view.inventory.containers, []);
   assert.deepEqual(view.units, []);
