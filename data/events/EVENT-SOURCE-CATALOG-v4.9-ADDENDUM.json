@@ -1,0 +1,199 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-4.9-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-4.8-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 49 sequential review of printed Chapters 902–911. Cumulative source-item ledger is EVENT-SOURCE-ITEMS-v4.9.csv. Catalog baseline remains v4.6 with append-only v4.7–v4.9 addenda; fixed schedule unchanged.",
+  "item_ids": [
+    "SX-0616",
+    "SX-0617",
+    "SX-0618",
+    "SX-0619",
+    "SX-0620",
+    "SX-0621",
+    "SX-0622",
+    "SX-0623",
+    "SX-0624",
+    "SX-0625",
+    "SX-0626",
+    "SX-0627",
+    "SX-0628",
+    "SX-0629",
+    "SX-0630",
+    "SX-0631",
+    "SX-0632",
+    "SX-0633",
+    "SX-0634",
+    "SX-0635",
+    "SX-0636",
+    "SX-0637",
+    "SX-0638",
+    "SX-0639",
+    "SX-0640",
+    "SX-0641",
+    "SX-0642",
+    "SX-0643",
+    "SX-0644",
+    "SX-0645",
+    "SX-0646",
+    "SX-0647",
+    "SX-0648",
+    "SX-0649",
+    "SX-0650",
+    "SX-0651"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 902,
+      "event": "Bojie kills 41,526 Ice Ghouls and receives 282 million XP; party battle loot explicitly lists Tainted Essence x4,728, Evil Essence x326, Large Attribute Books x7,324, Advanced Elemental Crystals x3,852, Expert Elemental Crystals x1,125, Master Elemental Crystals x325. Further outputs are elided."
+    },
+    {
+      "chapter": 903,
+      "event": "Raines detects one Golden Chest deep under ice. Giant companions report other chest classes/treasures but no other box is opened here."
+    },
+    {
+      "chapter": 904,
+      "event": "Mouse King's Diamond Pickaxe opens a path through dragon-infused ice. Across this and the preceding recovery, two frozen Golden Chests and five frozen Silver Chests are recovered and opened. Named contents: Elite Tier-7 Dragonblood Fighter Recruitment Scrolls x2; Tier-7 Merman Caster Scrolls x3; Tier-7 Dragonblood Fighter Scrolls x7; Tier-7 Merman Warrior Scrolls x8; Dragonrock Ore x5; Large Anti-Corrosion Potions x2; Glacier Shards x16; Medium Anti-Corrosion Potions x4. Additional outputs are elided. Other recovered objects: damaged Mermaid Singer Figurehead x1 and unidentified creature bones x1. These are observed results from seven chests, not a guaranteed table."
+    },
+    {
+      "chapter": 905,
+      "event": "An ancient Epic Kaijing Bream weighing 22.4 tonnes is killed and decomposed. Confirmed receipts include Kaijing Bream Meat x10,525 kg and Ice Crystal Fish Oil x560 L; later outputs are elided. The panel's first-consumption buff chance is a stated property, not an item reward."
+    },
+    {
+      "chapter": 906,
+      "event": "Party reaches the first Frost Oath Great Wall battlefront; no item receipt shown."
+    },
+    {
+      "chapter": 907,
+      "event": "Special A-rank Ice and Snow's Choice task appears with two mutually exclusive faction choices. Subsequent actions support the Icefield Giant defense branch, but the source does not preserve a direct selection confirmation in the surfaced text; treat faction choice as inferred. Task is for resolving four battlefront crises; reward not yet claimed."
+    },
+    {
+      "chapter": 908,
+      "event": "First battlefield is cleared: 1/4 battlefronts, perfect assessment, task progress +25%; two Icefield Giants die and 11,652 are wounded. No task completion payout."
+    },
+    {
+      "chapter": 909,
+      "event": "After the first battle, reported receipts include Ice Dragon Marks x4,182,552; Glacier Shards x2,052,516; Unknown Coldland Rune Stones x2; Unknown Death-Energy Orbs x1; Glacier Cores x45,129; Tainted Essence x1,842,562; Evil Essence x217,924; Rotten Essence x16,684; Dragonrock Ore x178,929; Intermediate Attribute Books x1,192,345; Advanced Attribute Books x51,852. More loot is elided; narration says no equipment or ordinary items dropped from these ice-nest creatures. An Asha proposal to restore ancient frozen giant warriors is not approved; the tribal chief must decide later."
+    },
+    {
+      "chapter": 910,
+      "event": "Second battlefield is cleared in 25 minutes; perfect assessment and task progress +25%, total 50%, second of four battlefronts. Five Icefield Giants die and 24,132 are wounded. Loot is gathered, but item receipts are reported in Ch911."
+    },
+    {
+      "chapter": 911,
+      "event": "Following battlefield loot receipt: Ice Dragon Marks x5,141,182; Glacier Shards x2,419,245; Unknown Coldland Rune Stones x4; Unknown Death-Energy Orb x1; Glacier Cores x51,924. Additional materials/books/minerals are described without quantities. Party then continues toward the first, northernmost battlefront; task remains incomplete."
+    }
+  ],
+  "non_receipts": [
+    "One chest's contents are an observed outcome, not a random drop distribution or guarantee for other chests.",
+    "Two Golden plus five Silver chests and eight named categories of contents are documented; other opening outputs are omitted by source ellipses.",
+    "The cracked Mermaid Singer Figurehead and unknown creature bones are recovered objects; no function, crafting result, or sale is confirmed.",
+    "Ancient Red Chest is only reported by the Icefield Giants at a location tens of thousands of meters deep; it is not found or opened.",
+    "Two additional perfect battlefield ratings advance the A-rank task by 25% each; no final reward before 4/4 completion.",
+    "Dragon power items held from prior chapters are not re-counted; no new Frost Oath/mission reward is claimed."
+  ],
+  "item_receipts": [
+    {
+      "chapter": 902,
+      "ids": [
+        "SX-0616",
+        "SX-0621"
+      ],
+      "note": "Six named loot receipts, quantities as detailed in cumulative ledger."
+    },
+    {
+      "chapter": 903,
+      "ids": [
+        "SX-0622",
+        "SX-0625"
+      ],
+      "note": "Two Golden and five Silver chest haul confirmed in Ch904, plus two unidentified recovered artifacts/objects."
+    },
+    {
+      "chapter": 904,
+      "ids": [
+        "SX-0626",
+        "SX-0633"
+      ],
+      "note": "Eight named item categories from the seven opened chests; further outputs omitted."
+    },
+    {
+      "chapter": 905,
+      "ids": [
+        "SX-0634",
+        "SX-0635"
+      ],
+      "note": "Two explicit Kaijing Bream decomposition outputs."
+    },
+    {
+      "chapter": 909,
+      "ids": [
+        "SX-0636",
+        "SX-0646"
+      ],
+      "note": "Eleven named first-front battlefield loot categories."
+    },
+    {
+      "chapter": 911,
+      "ids": [
+        "SX-0647",
+        "SX-0651"
+      ],
+      "note": "Five named subsequent battlefield loot categories."
+    }
+  ],
+  "quest": {
+    "chapter": 907,
+    "name": "Ice and Snow's Choice",
+    "rank": "A",
+    "branches": [
+      "Join ancient dragon and aid destruction of Frost Oath Great Wall; promised dragon favor/gift but reputation cost and hostility to Icefield Giants/Noen.",
+      "Join Icefield Giants and defend Frost Oath Great Wall; promised giant favor and enmity with ancient dragon Tzoma."
+    ],
+    "progress_after_ch911": "2/4 fronts, 50%; unfinished; no final quest payout.",
+    "selection_note": "Subsequent course of action is consistent with defending the Giants, but the surfaced source doesn't show the exact choice click."
+  },
+  "inventory_caveat": "The two battlefield loot records are separate receipts. Ch909 is the first front's settlement; Ch911's opening receipt follows the second-front battle in Ch910. Do not infer cumulative balance or add omitted, unquantified items.",
+  "next_unprocessed_chapter": 912,
+  "source_urls": [
+    {
+      "chapter": 902,
+      "url": "https://www.69shuba.com/txt/58776/40564905"
+    },
+    {
+      "chapter": 903,
+      "url": "https://www.69shuba.com/txt/58776/40564906"
+    },
+    {
+      "chapter": 904,
+      "url": "https://www.69shuba.com/txt/58776/40564907"
+    },
+    {
+      "chapter": 905,
+      "url": "https://www.69shuba.com/txt/58776/40564908"
+    },
+    {
+      "chapter": 906,
+      "url": "https://www.69shuba.com/txt/58776/40564909"
+    },
+    {
+      "chapter": 907,
+      "url": "https://www.69shuba.com/txt/58776/40564910"
+    },
+    {
+      "chapter": 908,
+      "url": "https://www.69shuba.com/txt/58776/40564911"
+    },
+    {
+      "chapter": 909,
+      "url": "https://www.69shuba.com/txt/58776/40564912"
+    },
+    {
+      "chapter": 910,
+      "url": "https://www.69shuba.com/txt/58776/40564913"
+    },
+    {
+      "chapter": 911,
+      "url": "https://www.69shuba.com/txt/58776/40564914"
+    }
+  ]
+}
