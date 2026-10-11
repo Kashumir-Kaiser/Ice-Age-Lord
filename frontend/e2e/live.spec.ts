@@ -180,12 +180,19 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
   expect(previews).toBe(1);
   expect(commands).toBe(0);
   await page.getByRole('button', { name: 'Cancel destination selection' }).click();
+  await page.evaluate(() => {
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    window.scrollTo(0, 0);
+  });
   await mapCampfire.scrollIntoViewIfNeeded();
   const mapAfterScroll = await page.evaluate(() => {
     const marker = document.querySelector('[data-testid="map-campfire-marker"]');
     const rect = marker?.getBoundingClientRect();
     const hit = rect ? document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2) : null;
-    return { scrollY: window.scrollY, visualOffset: window.visualViewport?.offsetTop, marker: rect && { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+    return { scrollY: window.scrollY, innerHeight: window.innerHeight, rootHeight: document.documentElement.clientHeight,
+      visualViewport: window.visualViewport && { offsetTop: window.visualViewport.offsetTop, height: window.visualViewport.height, scale: window.visualViewport.scale },
+      activeElement: document.activeElement && { tag: document.activeElement.tagName, type: (document.activeElement as HTMLInputElement).type, text: (document.activeElement.textContent || '').trim().slice(0, 40) },
+      marker: rect && { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
       hit: hit && { tag: hit.tagName, className: String((hit as HTMLElement).className), text: (hit.textContent || '').trim().slice(0, 80) } };
   });
   console.log('MAP_AFTER_SCROLL', JSON.stringify(mapAfterScroll));

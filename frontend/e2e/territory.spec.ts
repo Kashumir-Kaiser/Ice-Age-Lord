@@ -19,7 +19,7 @@ test('strategic map keeps one camp marker and its inspection action opens the sa
   await page.locator('.map-entity-marker[data-entity-id="SITE-LL01-000"]').click();
   await page.getByRole('button',{name:'Mở lãnh địa'}).click();
   await expect(page.getByRole('heading',{name:'Quản lý lãnh địa'})).toBeVisible();
-  await expect(page.locator('.territory-building[data-building-id^="SITE-LL01-"]')).toHaveCount(4);
+  await expect(page.locator('.territory-building:not(.is-draft)[data-building-id^="SITE-LL01-"]')).toHaveCount(4);
   await expect(page.getByText('Nhiệt thật: 10 m')).toBeVisible();
 });
 
@@ -52,7 +52,7 @@ test('unit filters stay hidden until at least one race has living units',async({
 
 test('placement creates reversible drafts without changing the starting buildings',async({page})=>{
   await goTo(page,/Lãnh địa/);
-  const initial=await page.locator('.territory-building[data-building-id^="SITE-LL01-"]').count();
+  const initial=await page.locator('.territory-building:not(.is-draft)[data-building-id^="SITE-LL01-"]').count();
   await page.getByRole('button',{name:/Thử bố trí Tháp cao/}).click();
   await expect(page.getByText(/Chạm mặt đất để đặt bản nháp/)).toBeVisible();
   const scene=page.locator('svg.territory-scene-svg');
@@ -60,7 +60,7 @@ test('placement creates reversible drafts without changing the starting building
   expect(box).not.toBeNull();
   await scene.click({position:{x:box!.width*.52,y:box!.height*.52}});
   await expect(page.locator('.territory-draft-list')).toContainText('Tháp cao');
-  await expect(page.locator('.territory-building[data-building-id^="SITE-LL01-"]')).toHaveCount(initial);
+  await expect(page.locator('.territory-building:not(.is-draft)[data-building-id^="SITE-LL01-"]')).toHaveCount(initial);
   await page.getByRole('button',{name:/Xoay 90°/}).click();
   await expect(page.locator('.territory-placement-controls')).toContainText('hướng Đông');
   await page.locator('.territory-placement-controls').getByRole('button',{name:'Hủy'}).click();
@@ -107,7 +107,7 @@ test('map help separates body text from its heading',async({page})=>{
 test('planning mode keeps each footprint visible and labels only the focused building',async({page})=>{
   await goTo(page,/Lãnh địa/);
   await page.getByRole('button',{name:'Mặt bằng'}).click();
-  await expect(page.locator('.territory-building[data-building-id^="SITE-LL01-"]')).toHaveCount(4);
+  await expect(page.locator('.territory-building:not(.is-draft)[data-building-id^="SITE-LL01-"]')).toHaveCount(4);
   await expect(page.locator('.territory-plan-mark')).toHaveCount(1);
 });
 
