@@ -57,6 +57,7 @@ test('Stage 07 plays and reloads a timed H0 combat encounter through the browser
   await expect(restoredCombatPanel).toContainText('dead');
   const hareCorpse = page.getByTestId('force-corpse-row').last();
   await hareCorpse.getByRole('button', { name: 'Kiểm tra thi thể' }).click();
+  await expect(hareCorpse).toContainText('Thỏ băng');
   await hareCorpse.getByRole('button', { name: 'Tử Phục', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Thỏ băng' })).toHaveCount(2);
 
