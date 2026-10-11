@@ -12,7 +12,7 @@ This is a **new game**: do not import earlier campaign inventories, unit rosters
 
 - `references/canonical/`: original Lord DnD source rulebooks and lineage, retained **as references** (not an already-compiled runtime).
 - `design/`: latest web-game content design, magical buildings and source-grounded construction proposals.
-- `data/events/`: the 481-entry Round 36 **v3.6** source-research inventory with 180 source effect records through Chapters 772–781; a separate v0.5 structure catalog records eighteen observed or reported source structures, the unchanged 30-event v0.6 timeline and review CSV. Immutable v3.0 and earlier releases remain archived. Extracted entries are not automatically obtainable in a new game.
+- `data/events/`: the 485-entry Round 37 **v3.7** source-research inventory with 184 source effect records through Chapters 782–791; a separate v0.5 structure catalog records eighteen observed or reported source structures, the unchanged 30-event v0.6 timeline and review CSV. Immutable v3.0 and earlier releases remain archived. Extracted entries are not automatically obtainable in a new game.
 - `research/extraction-audits/`: **all thirty-six extraction rounds**, including the Round 29 continuation addendum (v2.9.1), Round 35, and Round 36 audits, with append-only research and immutable earlier releases.
 - `research/snapshots/`: chronological catalogs and design versions retained for traceability.
 
