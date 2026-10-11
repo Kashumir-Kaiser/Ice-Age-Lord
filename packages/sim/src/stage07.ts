@@ -110,8 +110,9 @@ export function directReviveAvailability(state: GameState, world: WorldDefinitio
   if (corpse.location.kind === 'buried') return { state, code: 'CORPSE_NOT_ACCESSIBLE', requirements: ['Excavate the body before attempting direct Tử Phục.'] };
   const siteId = corpse.location.kind === 'site' ? corpse.location.siteId : null;
   const site = siteId ? world.sites.find(item => item.id === siteId) : null;
-  const carriedByPlayer = corpse.location.kind === 'carried' && corpse.location.carrierId === actorId;
-  const carriedByNearbyUnit = corpse.location.kind === 'carried' && state.ownedUnits.some(unit => unit.id === corpse.location.carrierId && unit.ownerId === state.player.id && unit.position && Math.hypot(unit.position.xMm - state.player.position.xMm, unit.position.yMm - state.player.position.yMm) <= world.navigationOverlay.interactionRangeMm);
+  const carrierId = corpse.location.kind === 'carried' ? corpse.location.carrierId : null;
+  const carriedByPlayer = carrierId === actorId;
+  const carriedByNearbyUnit = carrierId !== null && state.ownedUnits.some(unit => unit.id === carrierId && unit.ownerId === state.player.id && unit.position && Math.hypot(unit.position.xMm - state.player.position.xMm, unit.position.yMm - state.player.position.yMm) <= world.navigationOverlay.interactionRangeMm);
   const atReach = carriedByPlayer || carriedByNearbyUnit || Boolean(site && Math.hypot(site.position.xMm - state.player.position.xMm, site.position.yMm - state.player.position.yMm) <= world.navigationOverlay.interactionRangeMm);
   if (!atReach) return { state, code: 'CORPSE_NOT_ACCESSIBLE', requirements: ['Move within reach of the body or carry it to Lí Lan.'] };
   if (corpse.sealTags?.includes('BLOCK_TU_PHUC') || profile.sealTags.includes('BLOCK_TU_PHUC')) return { state, code: 'SEAL_BLOCKS_TU_PHUC', requirements: ['The body carries a seal that blocks direct Tử Phục.'] };
@@ -217,8 +218,9 @@ export function butcherCorpse(state: GameState, world: WorldDefinition, actorId:
   let position = null as { xMm: number; yMm: number } | null;
   if (corpse.location.kind === 'site') position = world.sites.find(site => site.id === corpse.location.siteId)?.position ?? null;
   if (corpse.location.kind === 'carried') {
-    if (corpse.location.carrierId === actorId) position = state.player.position;
-    else position = state.ownedUnits.find(unit => unit.id === corpse.location.carrierId && unit.ownerId === state.player.id)?.position ?? null;
+    const carrierId = corpse.location.carrierId;
+    if (carrierId === actorId) position = state.player.position;
+    else position = state.ownedUnits.find(unit => unit.id === carrierId && unit.ownerId === state.player.id)?.position ?? null;
   }
   if (!position || Math.hypot(position.xMm - state.player.position.xMm, position.yMm - state.player.position.yMm) > world.navigationOverlay.interactionRangeMm) {
     return { state, code: 'CORPSE_NOT_ACCESSIBLE', requirements: ['Move within reach of the body before disposing of it.'] };
