@@ -30,7 +30,7 @@ The founding Lord House is damaged. The frozen battlefield, original starter con
 
 ## Fixed events
 
-Use `data/events/EVENT-TIMELINE-v0.6.json` as the **proposed new-game reconciled schedule**. The current extracted v4.3 content registry (Round 43, Chapters 842–851) is research evidence for possible event products and rewards, **not** an all-items-drop-at-start table. Pending requirements and source conflicts remain documented in `research/extraction-audits/`. Ensure each shop/chest/achievement has explicit availability, currency, acquisition and expiration contracts before making it executable.
+Use `data/events/EVENT-TIMELINE-v0.6.json` as the **proposed new-game reconciled schedule**. The current extracted v4.6 content registry (Round 46, Chapters 872–881) is research evidence for possible event products and rewards, **not** an all-items-drop-at-start table. Pending requirements and source conflicts remain documented in `research/extraction-audits/`. Ensure each shop/chest/achievement has explicit availability, currency, acquisition and expiration contracts before making it executable.
 
 ## Game readiness
 
@@ -45,4 +45,4 @@ New save IDs begin at clean T0. Separate immutable/seeded world definitions from
 
 ## Source extraction boundary
 
-The cumulative v4.5 source catalog through Chapter 871 is research evidence only. Novel loot, powers, kingdom agreements, and future ceremonies do not initialize LL01 or override the fixed 30-event calendar.
+The cumulative v4.6 source catalog through Chapter 881 is research evidence only. Novel loot, powers, kingdom agreements, and future ceremonies do not initialize LL01 or override the fixed 30-event calendar.
