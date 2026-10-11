@@ -1,0 +1,305 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-6.7-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-6.6-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 67: printed Chapters 1082–1091 plus previously previewed Ch1080–1081 shop offers now normalized in the human-review ledger. Primary readable text from Bq8xsw with chapter-directory cross-checks from Bqquge, Qidian, Hongxiu, XS8; Vietnamese edition catalogs recorded with their numbering/render limitations. Fixed event calendar unchanged.",
+  "data_file": "EVENT-SOURCE-ITEMS-v6.7.csv",
+  "total_item_ids": [
+    "SX-0970",
+    "SX-0971",
+    "SX-0972",
+    "SX-0973",
+    "SX-0974",
+    "SX-0975",
+    "SX-0976",
+    "SX-0977",
+    "SX-0978",
+    "SX-0979",
+    "SX-0980",
+    "SX-0981",
+    "SX-0982",
+    "SX-0983",
+    "SX-0984",
+    "SX-0985",
+    "SX-0986",
+    "SX-0987",
+    "SX-0988",
+    "SX-0989",
+    "SX-0990",
+    "SX-0991",
+    "SX-0992",
+    "SX-0993",
+    "SX-0994",
+    "SX-0995",
+    "SX-0996",
+    "SX-0997",
+    "SX-0998",
+    "SX-0999",
+    "SX-1000",
+    "SX-1001",
+    "SX-1002",
+    "SX-1003",
+    "SX-1004",
+    "SX-1005",
+    "SX-1006",
+    "SX-1007",
+    "SX-1008",
+    "SX-1009",
+    "SX-1010",
+    "SX-1011",
+    "SX-1012",
+    "SX-1013",
+    "SX-1014",
+    "SX-1015",
+    "SX-1016",
+    "SX-1017",
+    "SX-1018",
+    "SX-1019",
+    "SX-1020",
+    "SX-1021",
+    "SX-1022",
+    "SX-1023",
+    "SX-1024",
+    "SX-1025",
+    "SX-1026",
+    "SX-1027",
+    "SX-1028",
+    "SX-1029",
+    "SX-1030",
+    "SX-1031",
+    "SX-1032",
+    "SX-1033",
+    "SX-1034",
+    "SX-1035",
+    "SX-1036",
+    "SX-1037",
+    "SX-1038",
+    "SX-1039",
+    "SX-1040",
+    "SX-1041",
+    "SX-1042",
+    "SX-1043",
+    "SX-1044",
+    "SX-1045",
+    "SX-1046",
+    "SX-1047"
+  ],
+  "offer_ids": [
+    "SX-0970",
+    "SX-0971",
+    "SX-0972",
+    "SX-0973",
+    "SX-0974",
+    "SX-0975",
+    "SX-0976",
+    "SX-0977",
+    "SX-0978",
+    "SX-0979",
+    "SX-0980",
+    "SX-0981",
+    "SX-0982",
+    "SX-0983",
+    "SX-0984",
+    "SX-0985",
+    "SX-0986",
+    "SX-0987",
+    "SX-0988",
+    "SX-0989",
+    "SX-0990",
+    "SX-0991",
+    "SX-0992",
+    "SX-0993",
+    "SX-0994",
+    "SX-0995",
+    "SX-0996",
+    "SX-0997",
+    "SX-0998",
+    "SX-0999",
+    "SX-1000",
+    "SX-1001",
+    "SX-1002",
+    "SX-1003",
+    "SX-1004",
+    "SX-1005",
+    "SX-1006",
+    "SX-1007",
+    "SX-1008",
+    "SX-1009",
+    "SX-1010",
+    "SX-1011",
+    "SX-1012",
+    "SX-1013",
+    "SX-1014",
+    "SX-1015",
+    "SX-1016",
+    "SX-1017",
+    "SX-1018",
+    "SX-1019",
+    "SX-1020"
+  ],
+  "confirmed_acquisition_ids": [
+    "SX-1021",
+    "SX-1022",
+    "SX-1023",
+    "SX-1024",
+    "SX-1025",
+    "SX-1026",
+    "SX-1027",
+    "SX-1028",
+    "SX-1029",
+    "SX-1030",
+    "SX-1031",
+    "SX-1032",
+    "SX-1033",
+    "SX-1034",
+    "SX-1035",
+    "SX-1036",
+    "SX-1037",
+    "SX-1038",
+    "SX-1039",
+    "SX-1040",
+    "SX-1041",
+    "SX-1042",
+    "SX-1043",
+    "SX-1044",
+    "SX-1045",
+    "SX-1046",
+    "SX-1047"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 1082,
+      "event": "Survivors are teleported into mirrored territories. No item receipt."
+    },
+    {
+      "chapter": 1083,
+      "event": "Phase 1 battle begins at 06:00; shield boundary and battle rules. Narrative drops only, no quantified receipt."
+    },
+    {
+      "chapter": 1084,
+      "event": "Cao Xing clears a 1,000 km radius; narrative mentions marks/shards but has no quantified receipt."
+    },
+    {
+      "chapter": 1085,
+      "event": "Day 1 concludes; the pooled collection transitions across chapter boundary and system receipts appear at the beginning of Ch1086."
+    },
+    {
+      "chapter": 1086,
+      "event": "Seven readable pooled spoil receipts and a separate market transaction yielding 5,000,000,000 Ice Dragon Marks; one book quantity is omitted."
+    },
+    {
+      "chapter": 1087,
+      "event": "Batch redemption of nine Legendary equipment/weapons and five blueprints; one Pure Divine Fire and one Choice Relic Box redeemed; selected relic output named."
+    },
+    {
+      "chapter": 1088,
+      "event": "Previously acquired items and fragments are consumed/transferred for breakthroughs; no new receipt."
+    },
+    {
+      "chapter": 1089,
+      "event": "Tong Chuchu receives a Legendary Continent-level Communication Base Station Blueprint as an explicit breakthrough reward."
+    },
+    {
+      "chapter": 1090,
+      "event": "Malenina fuses ten Legendary items into the Quasi-artifact set 煌天·余烬创生武装."
+    },
+    {
+      "chapter": 1091,
+      "event": "New form is described; leaderboard settlement is deferred to Ch1092 and is not claimed in this round."
+    }
+  ],
+  "shop_offers": {
+    "chapter_1080": "SX-0970–SX-0988",
+    "chapter_1081": "SX-0989–SX-1020",
+    "status": "Offer records; not ownership or guaranteed stock beyond stated caps."
+  },
+  "receipt_groups": {
+    "chapter_1086": "SX-1021–SX-1028",
+    "chapter_1087": "SX-1029–SX-1045",
+    "chapter_1089": "SX-1046",
+    "chapter_1090": "SX-1047"
+  },
+  "unresolved_conflicts": [
+    "Ch1080 itemized 9 Legendary shop prices total 11.3 yi; Ch1087 batch redemption says 10.3 yi.",
+    "Ch1086 marks balance and Ch1087 described expenditures differ by 0.1 yi.",
+    "Some Ch1080 per-piece versus full-set prices do not reconcile; displayed figures are preserved.",
+    "Round66 Ch1073 Deep Sea Breath Concoction ×251 conflicts with Ch1074 displayed inventory breakdown totaling 162.",
+    "Round66 audit table range for Ch1078 is corrected to SX-0958–SX-0969; the v6.6 ledger rows were already correct."
+  ],
+  "non_receipts": [
+    "Conditional phase victory and rank rewards are future outcomes, not claims in these chapters.",
+    "Ch1084 narrative drop piles are not quantified receipt lines.",
+    "Ch1088 use of Tong's Divine Fire, fragments, Elissa's Legendary Heart, and selected relic is not a second acquisition.",
+    "The quasi-artifact armor set is a transformation output, not an independent shop item."
+  ],
+  "source_checks": [
+    {
+      "site": "Bq8xsw",
+      "url": "https://www.bq8xsw.com/10082436/11075695.html",
+      "use": "Readable primary mirror for Chapter 1080 and shop pages."
+    },
+    {
+      "site": "Bq8xsw",
+      "url": "https://www.bq8xsw.com/10082436/11075697.html",
+      "use": "Readable primary mirror for Chapter 1081 shop pages."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851",
+      "use": "Independent chapter directory and previous-round direct chapter text mirror."
+    },
+    {
+      "site": "Qidian",
+      "url": "https://www.qidian.com/book/1040133596/",
+      "use": "Official title and chapter-order catalog; receipt text not used."
+    },
+    {
+      "site": "Hongxiu",
+      "url": "https://www.hongxiu.com/bookquery/qbqbjdtuosdy",
+      "use": "Independent chapter-title/order check."
+    },
+    {
+      "site": "XS8",
+      "url": "https://www.xs8.cn/bookquery/pegtwzxazfvx",
+      "use": "Independent chapter-title/order check."
+    },
+    {
+      "site": "Cơm Nguội Novel",
+      "url": "https://comnguoinovel.com/truyen/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia",
+      "use": "Vietnamese translation catalog; 1,358 chapter directory reported; chapter body did not render in available browser view."
+    },
+    {
+      "site": "Bách Ngọc Sách",
+      "url": "https://bachngocsach.me/truyen/doc-quyen-dich-bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia",
+      "use": "Vietnamese translation catalog; numbered output consists of split translated segments and is not one-to-one with printed Chinese chapter numbers."
+    },
+    {
+      "site": "Xá Lộ Sách",
+      "url": "https://xalosach.com/bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia-0.html",
+      "use": "Vietnamese mirror ends at printed Ch962; not usable for this range."
+    }
+  ],
+  "printed_chapter_urls": [
+    "https://www.bq8xsw.com/10082436/11075699.html",
+    "https://www.bq8xsw.com/10082436/11075701.html",
+    "https://www.bq8xsw.com/10082436/11075703.html",
+    "https://www.bq8xsw.com/10082436/11075705.html",
+    "https://www.bq8xsw.com/10082436/11075707.html",
+    "https://www.bq8xsw.com/10082436/11075709.html",
+    "https://www.bq8xsw.com/10082436/11075711.html",
+    "https://www.bq8xsw.com/10082436/11075713.html",
+    "https://www.bq8xsw.com/10082436/11075715.html",
+    "https://www.bq8xsw.com/10082436/11075717.html"
+  ],
+  "continuation_urls": [
+    "https://www.bq8xsw.com/10082436/11075699_2.html",
+    "https://www.bq8xsw.com/10082436/11075701_2.html",
+    "https://www.bq8xsw.com/10082436/11075703_2.html",
+    "https://www.bq8xsw.com/10082436/11075705_2.html",
+    "https://www.bq8xsw.com/10082436/11075707_2.html",
+    "https://www.bq8xsw.com/10082436/11075709_2.html",
+    "https://www.bq8xsw.com/10082436/11075711_2.html"
+  ],
+  "next_unprocessed_chapter": 1092,
+  "inventory_caveat": "All source-observed items and shop offers are research candidates only; no items become active in clean T0."
+}
