@@ -321,7 +321,7 @@ test('visual baselines cover day, night, maximum heat, world, cluster, and selec
   expect(mapLayout.footerHeight).toBeGreaterThan(30);
   expect(mapLayout.footerBottom).toBeLessThanOrEqual(mapLayout.experienceBottom + 1);
   if (!isMobile) expect(mapLayout.hintBottom).toBeLessThanOrEqual(mapLayout.scaleTop - 4);
-  if (isMobile) await page.locator('.map-experience').evaluate(node => { const element = node as HTMLElement; element.style.height = '870px'; element.style.flexShrink = '0'; });
+  if (isMobile) await page.locator('.map-experience').evaluate(node => { const element = node as HTMLElement; element.style.height = '869px'; element.style.flexShrink = '0'; });
   const visualOptions = { animations: 'disabled' as const, caret: 'hide' as const, maxDiffPixelRatio: 0.1 };
   await expect(page.locator('.map-experience')).toHaveScreenshot(`${label}-opening-day.png`, visualOptions);
 

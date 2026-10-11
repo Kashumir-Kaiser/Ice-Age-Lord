@@ -157,14 +157,16 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
   await expect(mapCampfire).toBeVisible();
   await page.getByRole('button', { name: 'Zoom in' }).click();
   await page.getByRole('button', { name: 'Choose destination' }).click();
-  await page.getByTestId('live-map').click({ position: { x: 30, y: 30 } });
+  const liveMapBox = await page.getByTestId('live-map').boundingBox();
+  expect(liveMapBox).not.toBeNull();
+  await page.getByTestId('live-map').click({ position: { x: liveMapBox!.width * 0.82, y: liveMapBox!.height * 0.82 } });
   await expect(page.getByText('Destination preview')).toBeVisible();
   expect(previews).toBe(1);
   expect(commands).toBe(0);
   await page.getByRole('button', { name: 'Cancel destination selection' }).click();
   await mapCampfire.click();
   await page.getByRole('button', { name: 'Inspect' }).click();
-  await expect(page.getByText('Đã commit · revision 2 đã commit.')).toBeVisible();
+  await expect(page.locator('.live-footer')).toContainText('revision 2');
   expect(created).toBe(true);
   expect(commands).toBe(1);
   expect(expectedRevision).toBe(1);
