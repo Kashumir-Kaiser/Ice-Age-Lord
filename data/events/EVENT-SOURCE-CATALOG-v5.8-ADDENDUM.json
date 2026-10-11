@@ -1,0 +1,167 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-5.8-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-5.7-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 58 sequential review of printed Chapters 992–1001 using Bqquge. Cumulative ledger is EVENT-SOURCE-ITEMS-v5.8.csv. Catalog baseline remains v4.6 with append-only v4.7–v5.8 addenda; fixed schedule unchanged.",
+  "item_ids": [
+    "SX-0844",
+    "SX-0845",
+    "SX-0846",
+    "SX-0847",
+    "SX-0848",
+    "SX-0849",
+    "SX-0850",
+    "SX-0851",
+    "SX-0852"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 992,
+      "event": "Group blessing uses existing fragments and the Nesha Goddess Blessing Ring; no new item receipt."
+    },
+    {
+      "chapter": 993,
+      "event": "Seafood marketplace trades return Wood x100,000, Stone x50,000, and Iron x25,000.寒地 Rune Stones and Death Energy Orbs are mentioned as pre-existing loot."
+    },
+    {
+      "chapter": 994,
+      "event": "The party revisits the old battlefield, where the two Death Energy Spheres are transferred to the two undead commanders; transfer, not a new pickup."
+    },
+    {
+      "chapter": 995,
+      "event": "Thirteen Death Energy Spheres are used among 31 undead heroes; five succeed and two prior commanders are included in seven legendary undead total. No new item receipt."
+    },
+    {
+      "chapter": 996,
+      "event": "Travel/leveling; no item receipt."
+    },
+    {
+      "chapter": 997,
+      "event": "Training ground and ultimatum; no item receipt."
+    },
+    {
+      "chapter": 998,
+      "event": "Audience with Meng Yi and human emperor legacy discussed; no item receipt."
+    },
+    {
+      "chapter": 999,
+      "event": "SS-rank task first stage completes. Reward: Legendary War Altar. Ice-Magic Insect loot includes Mutant Overlord soul, Legendary Core, Strong Blood x15, and Master Elemental Crystals x3,915."
+    },
+    {
+      "chapter": 1000,
+      "event": "Divine presence and world-rule constraints explained; no item receipt."
+    },
+    {
+      "chapter": 1001,
+      "event": "A deity gifts the Golden Dragon Horn, which can shield one lower god from the world's rule suppression."
+    }
+  ],
+  "non_receipts": [
+    "Necromantic spheres and fragments are transferred/consumed from existing stock in Ch994–995; not new receipts.",
+    "Ch993 lists selected market resource outputs; unquoted seafood trades are not inferred.",
+    "The 14,000-member group-buff event uses prior stock and abilities, not new items.",
+    "The 100,000 Hero Decree requirement is a future quest condition, not fulfilled in this chapter."
+  ],
+  "item_receipts": [
+    {
+      "chapter": 923,
+      "ids": [
+        "SX-0668"
+      ],
+      "note": "Sea chart gifted by the Icefield Giant chief."
+    },
+    {
+      "chapter": 925,
+      "ids": [
+        "SX-0671"
+      ],
+      "note": "Storm Destroyer occupation and vessel ownership state."
+    },
+    {
+      "chapter": 926,
+      "ids": [
+        "SX-0669",
+        "SX-0670"
+      ],
+      "note": "One explicitly excavated Silver and one Gold chest."
+    },
+    {
+      "chapter": 929,
+      "ids": [
+        "SX-0672",
+        "SX-0673",
+        "SX-0674",
+        "SX-0675",
+        "SX-0676",
+        "SX-0677",
+        "SX-0678",
+        "SX-0679",
+        "SX-0680",
+        "SX-0681",
+        "SX-0682",
+        "SX-0683",
+        "SX-0684",
+        "SX-0685",
+        "SX-0686",
+        "SX-0687",
+        "SX-0688",
+        "SX-0689",
+        "SX-0690",
+        "SX-0691",
+        "SX-0692",
+        "SX-0693",
+        "SX-0694",
+        "SX-0695",
+        "SX-0696",
+        "SX-0697"
+      ],
+      "note": "Chest count snapshot and explicit loot categories from the 29 Silver/Gold boxes, three Moon boxes, and one Red box. See ledger for all 26 receipt rows."
+    },
+    {
+      "chapter": 930,
+      "ids": [
+        "SX-0698",
+        "SX-0699",
+        "SX-0700"
+      ],
+      "note": "Two individual frozen chest pickups and one broken sailboat."
+    },
+    {
+      "chapter": 931,
+      "ids": [
+        "SX-0701",
+        "SX-0702",
+        "SX-0703"
+      ],
+      "note": "Three Sacrifice Pearls, one each of unknown, orange, and green quality."
+    }
+  ],
+  "quest": "Lucky Goddess/undersea ruins lead-in is active. Chapter 931 has the altar yield three Sacrifice Pearls; the Lucky Wheel challenge is not yet shown as opened or resolved.",
+  "inventory_caveat": "All extracted items remain source research, not LL01 initial inventory, guaranteed new-game drops, or active event contracts.",
+  "next_unprocessed_chapter": 932,
+  "source_urls": [
+    "https://www.bqquge.org/851/227800",
+    "https://www.bqquge.org/851/227801",
+    "https://www.bqquge.org/851/227802",
+    "https://www.bqquge.org/851/227803",
+    "https://www.bqquge.org/851/227804",
+    "https://www.bqquge.org/851/236476",
+    "https://www.bqquge.org/851/236477",
+    "https://www.bqquge.org/851/236478",
+    "https://www.bqquge.org/851/236479",
+    "https://www.bqquge.org/851/236514"
+  ],
+  "mirror_note": "Direct chapter text and continuation pages checked on Bqquge; primary 69shuba chapter sequence remains inaccessible beyond Ch921.",
+  "chapter_source_urls": [
+    "https://www.bqquge.org/851/237123",
+    "https://www.bqquge.org/851/237124",
+    "https://www.bqquge.org/851/237125",
+    "https://www.bqquge.org/851/237196",
+    "https://www.bqquge.org/851/237197",
+    "https://www.bqquge.org/851/237198",
+    "https://www.bqquge.org/851/237199",
+    "https://www.bqquge.org/851/237200",
+    "https://www.bqquge.org/851/237201",
+    "https://www.bqquge.org/851/237202"
+  ]
+}
