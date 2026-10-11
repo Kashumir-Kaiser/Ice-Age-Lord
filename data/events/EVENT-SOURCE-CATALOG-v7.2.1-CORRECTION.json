@@ -9,23 +9,22 @@
       "id": "SX-1237",
       "incorrect_chapter": 1133,
       "correct_chapter": 1137,
-      "reason": "Source URL https://www.bqquge.org/851/1967563-4 is a Chapter 1137 continuation; the row records an in-world chat report about Golden Wing rewards."
+      "reason": "Bqquge source URL https://www.bqquge.org/851/1967563-4 is a Ch1137 continuation."
     },
     {
       "id": "SX-1238",
       "incorrect_chapter": 1133,
       "correct_chapter": 1137,
-      "reason": "Source URL https://www.bqquge.org/851/1967563-4 is a Chapter 1137 continuation; the row records an in-world chat report about Diamond Heart rewards."
+      "reason": "Bqquge source URL https://www.bqquge.org/851/1967563-4 is a Ch1137 continuation."
     },
     {
       "id": "SX-1239",
       "incorrect_chapter": 1133,
       "correct_chapter": 1141,
-      "reason": "Source URL https://www.bqquge.org/851/2162602-3 is a Chapter 1141 continuation; the row records four Legendary promotions."
+      "reason": "Bqquge source URL https://www.bqquge.org/851/2162602-3 is a Ch1141 continuation."
     }
   ],
   "rows_changed": 3,
   "cumulative_rows": 1239,
-  "columns": 69,
-  "vietnamese_alignment_policy": "Edition numbering differs; source row corrections are based on the printed Chinese chapter identified by the linked primary text."
+  "columns": 69
 }

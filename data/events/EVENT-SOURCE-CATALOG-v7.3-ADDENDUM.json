@@ -1,0 +1,445 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.3-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.2.1-CORRECTION",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 73: printed Chinese Chapters 1142–1151. Bqquge primary text was read through each visible continuation; Bq8xsw independently cross-checks chapter titles/order. Vietnamese Cơm Nguội, Hắc Hoàng Đại Đế, and Xa Lộ Sách chapter/catalog pages were compared by visible titles and story anchors; chapter segmentation/numbering diverges. Gated chapter bodies were not used for reward quantities.",
+  "data_file": "EVENT-SOURCE-ITEMS-v7.3.csv",
+  "cumulative_rows": 1307,
+  "columns": 69,
+  "total_item_ids": [
+    "SX-1240",
+    "SX-1241",
+    "SX-1242",
+    "SX-1243",
+    "SX-1244",
+    "SX-1245",
+    "SX-1246",
+    "SX-1247",
+    "SX-1248",
+    "SX-1249",
+    "SX-1250",
+    "SX-1251",
+    "SX-1252",
+    "SX-1253",
+    "SX-1254",
+    "SX-1255",
+    "SX-1256",
+    "SX-1257",
+    "SX-1258",
+    "SX-1259",
+    "SX-1260",
+    "SX-1261",
+    "SX-1262",
+    "SX-1263",
+    "SX-1264",
+    "SX-1265",
+    "SX-1266",
+    "SX-1267",
+    "SX-1268",
+    "SX-1269",
+    "SX-1270",
+    "SX-1271",
+    "SX-1272",
+    "SX-1273",
+    "SX-1274",
+    "SX-1275",
+    "SX-1276",
+    "SX-1277",
+    "SX-1278",
+    "SX-1279",
+    "SX-1280",
+    "SX-1281",
+    "SX-1282",
+    "SX-1283",
+    "SX-1284",
+    "SX-1285",
+    "SX-1286",
+    "SX-1287",
+    "SX-1288",
+    "SX-1289",
+    "SX-1290",
+    "SX-1291",
+    "SX-1292",
+    "SX-1293",
+    "SX-1294",
+    "SX-1295",
+    "SX-1296",
+    "SX-1297",
+    "SX-1298",
+    "SX-1299",
+    "SX-1300",
+    "SX-1301",
+    "SX-1302",
+    "SX-1303",
+    "SX-1304",
+    "SX-1305",
+    "SX-1306",
+    "SX-1307"
+  ],
+  "chapter_item_ids": {
+    "1142": [
+      "SX-1240",
+      "SX-1241"
+    ],
+    "1143": [
+      "SX-1242",
+      "SX-1243",
+      "SX-1244",
+      "SX-1245",
+      "SX-1246",
+      "SX-1247",
+      "SX-1248",
+      "SX-1249",
+      "SX-1250",
+      "SX-1251",
+      "SX-1252",
+      "SX-1253",
+      "SX-1254"
+    ],
+    "1145": [
+      "SX-1255",
+      "SX-1256",
+      "SX-1257",
+      "SX-1258",
+      "SX-1259",
+      "SX-1260",
+      "SX-1261",
+      "SX-1262",
+      "SX-1263",
+      "SX-1264",
+      "SX-1265"
+    ],
+    "1146": [
+      "SX-1266"
+    ],
+    "1147": [
+      "SX-1267",
+      "SX-1268",
+      "SX-1303",
+      "SX-1304"
+    ],
+    "1148": [
+      "SX-1269"
+    ],
+    "1149": [
+      "SX-1270",
+      "SX-1271",
+      "SX-1272",
+      "SX-1273",
+      "SX-1274",
+      "SX-1275",
+      "SX-1276",
+      "SX-1277",
+      "SX-1278",
+      "SX-1279",
+      "SX-1280",
+      "SX-1281",
+      "SX-1282",
+      "SX-1283",
+      "SX-1284",
+      "SX-1305",
+      "SX-1306",
+      "SX-1307"
+    ],
+    "1150": [
+      "SX-1285",
+      "SX-1286",
+      "SX-1287",
+      "SX-1288",
+      "SX-1289",
+      "SX-1290",
+      "SX-1291",
+      "SX-1292",
+      "SX-1293",
+      "SX-1294",
+      "SX-1295",
+      "SX-1296",
+      "SX-1297",
+      "SX-1298",
+      "SX-1299",
+      "SX-1300"
+    ],
+    "1151": [
+      "SX-1301",
+      "SX-1302"
+    ]
+  },
+  "receipt_groups": {
+    "ROUND_73_DRAGON_DESCENDED_SHOP": [
+      "SX-1243",
+      "SX-1244",
+      "SX-1245",
+      "SX-1246",
+      "SX-1247",
+      "SX-1248",
+      "SX-1249",
+      "SX-1250",
+      "SX-1251"
+    ],
+    "ROUND_73_GUILD_MILESTONE_REWARD": [
+      "SX-1255",
+      "SX-1256",
+      "SX-1264"
+    ],
+    "ROUND_73_EPIC_GUILD_CHESTS": [
+      "SX-1257",
+      "SX-1258",
+      "SX-1259",
+      "SX-1260",
+      "SX-1261"
+    ],
+    "ROUND_73_LEGENDARY_GUILD_CHEST": [
+      "SX-1262",
+      "SX-1263"
+    ],
+    "ROUND_73_CAO_XING_SSS_TEST_REWARDS": [
+      "SX-1270"
+    ],
+    "ROUND_73_CAO_XING_BRIGHT_MOON_CHEST": [
+      "SX-1271",
+      "SX-1272",
+      "SX-1273",
+      "SX-1274",
+      "SX-1275",
+      "SX-1276"
+    ],
+    "ROUND_73_PARTICIPANT_TEST_CHESTS": [
+      "SX-1277",
+      "SX-1278",
+      "SX-1279",
+      "SX-1280",
+      "SX-1281",
+      "SX-1282",
+      "SX-1305",
+      "SX-1306",
+      "SX-1307"
+    ],
+    "ROUND_73_ITEM_ASSIGNMENTS": [
+      "SX-1283"
+    ],
+    "ROUND_73_RED_SKY_CHEST_OPENINGS": [
+      "SX-1284"
+    ],
+    "ROUND_73_CAO_XING_RED_SKY": [
+      "SX-1285",
+      "SX-1286",
+      "SX-1287",
+      "SX-1288"
+    ],
+    "ROUND_73_BAIZHI_BREAKTHROUGH_PREPARATION": [
+      "SX-1289"
+    ],
+    "ROUND_73_TONG_CHUCHU_RED_SKY": [
+      "SX-1290",
+      "SX-1291",
+      "SX-1292",
+      "SX-1293"
+    ],
+    "ROUND_73_DRAGON_ARENA_REWARD_TABLE": [
+      "SX-1295",
+      "SX-1296",
+      "SX-1297",
+      "SX-1298",
+      "SX-1299"
+    ],
+    "ROUND_73_ARENA_MATCH_RESULTS": [
+      "SX-1301"
+    ]
+  },
+  "next_item_id": "SX-1308",
+  "next_unprocessed_chapter": 1152,
+  "confirmed_outcomes": [
+    {
+      "chapter": 1142,
+      "event": "Xia Yanni completes Legendary breakthrough into True Four-Symbol Dragon Lord; four dragon-form skill trees and Divine Power 0/1000 unlock. No new item receipt."
+    },
+    {
+      "chapter": 1143,
+      "event": "Dragon-descended caravan opens a Dragon-Coin-only shop. Listed offers include random rune/coin bags, cosmetic wings/scrolls, mount eggs and one unknown dragon egg for 1,000,000 coins. The egg is listed, not purchased. Chocobo race host sells/rents mounts; top-three race prizes and a 5% prize-pool host share are established in the proposed Starfire venue agreement."
+    },
+    {
+      "chapter": 1144,
+      "event": "Daily Chocobo race promotion is announced. Starfire guild upgrades begin."
+    },
+    {
+      "chapter": 1145,
+      "event": "As first leader to raise a guild through levels 11–20, Cao Xing receives 1.5m prestige, eight random Epic Guild Treasure Chests, one random Legendary Guild Treasure Chest, and one War God Contract Drum (semi-artifact). Eight Epic chests are opened; four names are visible, remainder omitted. Legendary chest produces Saint Crusader Shield Wall. Guild reaches level 20 with 3,100 member capacity and +59% base stats/+59% critical chance."
+    },
+    {
+      "chapter": 1146,
+      "event": "Dragon Combat Power Test: one 60-second attempt per survivor per day, max ten simultaneous contestants; Orange-grade+ skills and equipment abilities prohibited; dummy armor scales to level."
+    },
+    {
+      "chapter": 1147,
+      "event": "Test reward ladder is printed from E to SSS and rewards Dragon Coins/chests; keeping top 100 through event end yields a separate mystery prize. Cao Xing and four allies use bound SSS/SS/S reward chests."
+    },
+    {
+      "chapter": 1148,
+      "event": "Test board: Cao Xing 5,329.42bn SSS; Tong Chuchu 3,141.38bn SSS; Liu Muxue 1,842.47bn SS; Baizhi 342.31bn S; Xia Yanni 315.24bn S."
+    },
+    {
+      "chapter": 1149,
+      "event": "Bound chests are opened. Cao's Bright-Moon outputs include Millennium Treant Heart and named gear/materials; Tong Chuchu's Bright-Moon chest yields War Lord Core Breastplate plus named items, and she binds the breastplate. Two Legendary Earth-form weapons are assigned to Xia Yanni. Two Red Sky chests open in the next chapter."
+    },
+    {
+      "chapter": 1150,
+      "event": "Cao's Red Sky Chest yields Ice Core Divine Fire and three named materials; fire plus 200 Divine Power Fragments transfer to Baizhi. Tong Chuchu's Red Sky Chest gives a demigod missile blueprint and named materials. Arena rules normalize avatars to level 100 and a standard set; solo/team daily caps, Glory scoring, streak bonuses, rank thresholds and rewards are specified."
+    },
+    {
+      "chapter": 1151,
+      "event": "Cao Xing wins his first solo arena match for 1 Glory Point. His Eternal Force talent makes Ice Spirit Possession permanent on the standardized avatar, and Crystal Control/Ice Crystal's Wrath remain active despite the arena's skill restrictions."
+    }
+  ],
+  "unresolved_conflicts": [
+    "Cơm Nguội and Hắc Hoàng Vietnamese Ch1142 both show the heading 'Pháp bào cấp Thần Khí, trời đất biến chuyển dữ dội!', while Chinese printed Ch1142/Bq8xsw title is 'Four-Symbol Dragon Lord, versatile Dragon Soul Envoy'. Xa Lộ Sách's segmented Ch1142 title is 'Legendary weapon enhancement' and is app-gated. Do not map these chapters by number.",
+    "Cơm Nguội and Hắc Hoàng chapter bodies are login-gated; Xa Lộ Sách only shows a short app-gated preview. Vietnamese title data is for edition alignment only.",
+    "Eight Epic guild chest outputs are not fully enumerated in the visible text; only four item names are retained.",
+    "Random treasure chest results in Chapters 1145 and 1149–1150 are observed one-time outcomes. They do not define general chest drop tables.",
+    "Some Bright-Moon chest output items are pooled across participants; only the explicitly attributed Tong Chuchu breastplate and Xia Yanni weapon assignment are treated as named allocations.",
+    "The 5% Chocobo pool share is accepted as a proposed operating contract; downstream bet payout percentages are unspecified.",
+    "Guild upgrade aggregate costs from levels 11 to 20 are not given completely and are not reconstructed."
+  ],
+  "source_checks": [
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232628",
+      "use": "Primary Ch1142 title, breakthrough and four-form skill system."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232632-2",
+      "use": "Dragon-descended shop offer list."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232632-3",
+      "use": "Chocobo race rules and Dragon Coin stake/pool proposal."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232637-4",
+      "use": "Guild upgrade to level 20."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232641-2",
+      "use": "First level 11–20 guild milestone reward receipt."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232641-3",
+      "use": "Epic guild treasure outputs and Legendary guild chest opening."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232645-3",
+      "use": "Power-test format rules."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232648",
+      "use": "Official test reward table."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232657-2",
+      "use": "Cao Xing's personal test chest opening."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232657-3",
+      "use": "Tong Chuchu's chest output and bound breastplate."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232660",
+      "use": "Cao Xing's Red Sky Chest outputs and transfer of fire/fragments."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232660-2",
+      "use": "Tong Chuchu's missile blueprint and Red Sky Chest materials."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232660-3",
+      "use": "Dragon Arena full rank reward table and score rules."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232676-4",
+      "use": "First solo win and Glory Point receipt."
+    },
+    {
+      "site": "Bq8xsw",
+      "url": "https://www.bq8xsw.com/chapterlist/110975.html",
+      "use": "Independent Chinese title/order cross-check; Ch1142 title matches Bqquge."
+    },
+    {
+      "site": "Cơm Nguội Novel (Vietnamese)",
+      "url": "https://comnguoinovel.com/truyen/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong/1142",
+      "use": "Visible Ch1142 title says artifact robe/world changes; body is login-gated, so title alignment only."
+    },
+    {
+      "site": "Hắc Hoàng Đại Đế (Vietnamese)",
+      "url": "https://hachoangdaide.online/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong-1142",
+      "use": "Same Vietnamese Ch1142 title as Cơm Nguội; body is login-gated. Metadata only."
+    },
+    {
+      "site": "Xa Lộ Sách (Vietnamese)",
+      "url": "https://xalosach.com/doc-truyen/bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia-chuong-1142.html",
+      "use": "Visible title says legendary weapon enhancement, with app-only full text; numbering/story segmentation differs."
+    },
+    {
+      "site": "Bách Ngọc Sách (Vietnamese catalog)",
+      "url": "https://bachngocsach.me/truyen/doc-quyen-dich-bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia",
+      "use": "Catalog segmentation/edition cross-check only."
+    }
+  ],
+  "printed_chapter_urls": [
+    "https://www.bqquge.org/851/2232628",
+    "https://www.bqquge.org/851/2232632",
+    "https://www.bqquge.org/851/2232637",
+    "https://www.bqquge.org/851/2232641",
+    "https://www.bqquge.org/851/2232645",
+    "https://www.bqquge.org/851/2232648",
+    "https://www.bqquge.org/851/2232653",
+    "https://www.bqquge.org/851/2232657",
+    "https://www.bqquge.org/851/2232660",
+    "https://www.bqquge.org/851/2232676"
+  ],
+  "continuation_urls": [
+    "https://www.bqquge.org/851/2232628-2",
+    "https://www.bqquge.org/851/2232628-3",
+    "https://www.bqquge.org/851/2232628-4",
+    "https://www.bqquge.org/851/2232632-2",
+    "https://www.bqquge.org/851/2232632-3",
+    "https://www.bqquge.org/851/2232632-4",
+    "https://www.bqquge.org/851/2232637-2",
+    "https://www.bqquge.org/851/2232637-3",
+    "https://www.bqquge.org/851/2232637-4",
+    "https://www.bqquge.org/851/2232641-2",
+    "https://www.bqquge.org/851/2232641-3",
+    "https://www.bqquge.org/851/2232641-4",
+    "https://www.bqquge.org/851/2232645-2",
+    "https://www.bqquge.org/851/2232645-3",
+    "https://www.bqquge.org/851/2232645-4",
+    "https://www.bqquge.org/851/2232648-2",
+    "https://www.bqquge.org/851/2232648-3",
+    "https://www.bqquge.org/851/2232648-4",
+    "https://www.bqquge.org/851/2232653-2",
+    "https://www.bqquge.org/851/2232653-3",
+    "https://www.bqquge.org/851/2232653-4",
+    "https://www.bqquge.org/851/2232657-2",
+    "https://www.bqquge.org/851/2232657-3",
+    "https://www.bqquge.org/851/2232657-4",
+    "https://www.bqquge.org/851/2232660-2",
+    "https://www.bqquge.org/851/2232660-3",
+    "https://www.bqquge.org/851/2232660-4",
+    "https://www.bqquge.org/851/2232676-2",
+    "https://www.bqquge.org/851/2232676-3",
+    "https://www.bqquge.org/851/2232676-4"
+  ],
+  "vietnamese_alignment_policy": "Compare Vietnamese chapter titles and story anchors across editions. Their raw chapter numbers do not align reliably with the Chinese printed sequence; gated bodies are not used for quantities.",
+  "inventory_caveat": "Research only; extracted campaign rewards and arena items do not change LL01 T0 inventory or fixed calendar."
+}
