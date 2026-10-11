@@ -12,8 +12,8 @@ This is a **new game**: do not import earlier campaign inventories, unit rosters
 
 - `references/canonical/`: original Lord DnD source rulebooks and lineage, retained **as references** (not an already-compiled runtime).
 - `design/`: latest web-game content design, magical buildings and source-grounded construction proposals.
-- `data/events/`: cumulative source-item CSV v7.1 with 1,172 rows through Round 71 (Chapters 1122–1131); Round 71 audit and catalog addendum are in `research/extraction-audits/` and `data/events/`. The cumulative source catalog JSON remains v4.6 (590 items, 239 effects) with v4.7–v7.1 addenda alongside it. The fixed 30-event v0.6 timeline is unchanged. Extracted entries are not automatically obtainable in a new game.
-- `research/extraction-audits/`: **all seventy-one extraction rounds**, including the Round 29 continuation addendum (v2.9.1), Round 35, Round 36, Round 38, Round 39, Round 40, Round 41, Round 42, Round 43, and Rounds 44–71 audits, with append-only research and immutable earlier releases.
+- `data/events/`: cumulative source-item CSV v7.2 with 1,239 rows through Round 72 (Chapters 1132–1141); Round 72 audit and catalog addendum are in `research/extraction-audits/` and `data/events/`. The cumulative source catalog JSON remains v4.6 (590 items, 239 effects) with v4.7–v7.2 addenda alongside it. The fixed 30-event v0.6 timeline is unchanged. Extracted entries are not automatically obtainable in a new game.
+- `research/extraction-audits/`: **all seventy-two extraction rounds**, including the Round 29 continuation addendum (v2.9.1), Round 35, Round 36, Round 38, Round 39, Round 40, Round 41, Round 42, Round 43, and Rounds 44–72 audits, with append-only research and immutable earlier releases.
 - `research/snapshots/`: chronological catalogs and design versions retained for traceability.
 
 ## Authority / migration rules
@@ -43,7 +43,7 @@ See `docs/FRESH_START.md` and `docs/CONTENT_INDEX.md` for import priorities and 
 The React/Vite visual demo now lives in `frontend/` on `main`. It uses the original layered asset pipeline in `assets/` and `frontend/public/assets/`. Run `cd frontend && npm ci && npm run build` to synchronize registered assets and verify the production bundle. The ink / semi-realistic visual policy is in `assets/README.md`; the SVG Fire stage art is registered in `assets/manifest.json`. This UI still has a demo adapter and does not represent game state from the backend until integrated.
 
 
-- `data/events/EVENT-SOURCE-ITEMS-v7.1.csv`: cumulative source-item ledger through printed Chapter 1131.
-- `data/events/EVENT-SOURCE-CATALOG-v7.1-ADDENDUM.json`: Round 71 receipts, event rules, Vietnamese source alignment notes, and unresolved conflicts.
-- `research/extraction-audits/ROUND-71-SEVENTY-FIRST-EXTRACTION.md`: Round 71 audit for Chapters 1122–1131.
+- `data/events/EVENT-SOURCE-ITEMS-v7.2.csv`: cumulative source-item ledger through printed Chapter 1141.
+- `data/events/EVENT-SOURCE-CATALOG-v7.2-ADDENDUM.json`: Round 72 receipts, events, Vietnamese edition alignment checks, and unresolved conflicts.
+- `research/extraction-audits/ROUND-72-SEVENTY-SECOND-EXTRACTION.md`: Round 72 audit for Chapters 1132–1141.
 - `data/events/EVENT-SOURCE-CATALOG-v7.0.1-CORRECTION.json` and `research/extraction-audits/ROUND-70-CORRECTION-v7.0.1.md`: correct the Round 70 Vietnamese chapter title alignment only; no source-item rows changed.

@@ -1,0 +1,430 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.2-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.1-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 72: printed Chinese Chapters 1132–1141. Bqquge primary text was followed through visible continuations; Bq8xsw was used to cross-check printed titles/order. Vietnamese Cơm Nguội, Hắc Hoàng Đại Đế, Xa Lộ Sách, and additional Vietnamese catalog/index editions were checked by title/story anchor. Numbering differs and some chapter bodies require login/app access, so Vietnamese evidence is labeled as metadata alignment rather than quantity authority.",
+  "data_file": "EVENT-SOURCE-ITEMS-v7.2.csv",
+  "cumulative_rows": 1239,
+  "columns": 69,
+  "total_item_ids": [
+    "SX-1173",
+    "SX-1174",
+    "SX-1175",
+    "SX-1176",
+    "SX-1177",
+    "SX-1178",
+    "SX-1179",
+    "SX-1180",
+    "SX-1181",
+    "SX-1182",
+    "SX-1183",
+    "SX-1184",
+    "SX-1185",
+    "SX-1186",
+    "SX-1187",
+    "SX-1188",
+    "SX-1189",
+    "SX-1190",
+    "SX-1191",
+    "SX-1192",
+    "SX-1193",
+    "SX-1194",
+    "SX-1195",
+    "SX-1196",
+    "SX-1197",
+    "SX-1198",
+    "SX-1199",
+    "SX-1200",
+    "SX-1201",
+    "SX-1202",
+    "SX-1203",
+    "SX-1204",
+    "SX-1205",
+    "SX-1206",
+    "SX-1207",
+    "SX-1208",
+    "SX-1209",
+    "SX-1210",
+    "SX-1211",
+    "SX-1212",
+    "SX-1213",
+    "SX-1214",
+    "SX-1215",
+    "SX-1216",
+    "SX-1217",
+    "SX-1218",
+    "SX-1219",
+    "SX-1220",
+    "SX-1221",
+    "SX-1222",
+    "SX-1223",
+    "SX-1224",
+    "SX-1225",
+    "SX-1226",
+    "SX-1227",
+    "SX-1228",
+    "SX-1229",
+    "SX-1230",
+    "SX-1231",
+    "SX-1232",
+    "SX-1233",
+    "SX-1234",
+    "SX-1235",
+    "SX-1236",
+    "SX-1237",
+    "SX-1238",
+    "SX-1239"
+  ],
+  "chapter_item_ids": {
+    "1132": [
+      "SX-1173",
+      "SX-1233",
+      "SX-1234"
+    ],
+    "1133": [
+      "SX-1174",
+      "SX-1175",
+      "SX-1176",
+      "SX-1177",
+      "SX-1178",
+      "SX-1179",
+      "SX-1180",
+      "SX-1181",
+      "SX-1182",
+      "SX-1183",
+      "SX-1184",
+      "SX-1185",
+      "SX-1186",
+      "SX-1235",
+      "SX-1236",
+      "SX-1237",
+      "SX-1238"
+    ],
+    "1134": [
+      "SX-1187",
+      "SX-1188",
+      "SX-1189",
+      "SX-1190",
+      "SX-1191"
+    ],
+    "1135": [
+      "SX-1192"
+    ],
+    "1136": [
+      "SX-1193"
+    ],
+    "1137": [
+      "SX-1194",
+      "SX-1195",
+      "SX-1196",
+      "SX-1197",
+      "SX-1198",
+      "SX-1199",
+      "SX-1200",
+      "SX-1201"
+    ],
+    "1138": [
+      "SX-1202",
+      "SX-1203",
+      "SX-1204",
+      "SX-1205",
+      "SX-1206",
+      "SX-1207",
+      "SX-1208",
+      "SX-1209",
+      "SX-1210",
+      "SX-1211",
+      "SX-1212",
+      "SX-1213",
+      "SX-1214",
+      "SX-1215",
+      "SX-1216",
+      "SX-1217",
+      "SX-1218",
+      "SX-1219",
+      "SX-1220",
+      "SX-1221",
+      "SX-1222",
+      "SX-1223"
+    ],
+    "1140": [
+      "SX-1224",
+      "SX-1226",
+      "SX-1227",
+      "SX-1228",
+      "SX-1229",
+      "SX-1230"
+    ],
+    "1141": [
+      "SX-1225",
+      "SX-1231",
+      "SX-1232",
+      "SX-1239"
+    ]
+  },
+  "channel_item_ids": {
+    "CHAPTER_1132_SOURCE_EFFECT": [
+      "SX-1173"
+    ],
+    "CHAPTER_1133_RANK_REWARD_RULE": [
+      "SX-1174",
+      "SX-1175",
+      "SX-1176",
+      "SX-1177",
+      "SX-1235",
+      "SX-1236"
+    ],
+    "CHAPTER_1133_RANK_REWARD": [
+      "SX-1178",
+      "SX-1179",
+      "SX-1180",
+      "SX-1181",
+      "SX-1182",
+      "SX-1183",
+      "SX-1184",
+      "SX-1185",
+      "SX-1186"
+    ],
+    "CHAPTER_1134_CHEST_OPENING": [
+      "SX-1187",
+      "SX-1188",
+      "SX-1189",
+      "SX-1190"
+    ],
+    "CHAPTER_1134_SELECTED_CHEST_OUTPUT": [
+      "SX-1191"
+    ],
+    "CHAPTER_1135_SELECTED_SKILL_CHEST": [
+      "SX-1192"
+    ],
+    "CHAPTER_1136_MEDAL_PROPERTIES": [
+      "SX-1193"
+    ],
+    "CHAPTER_1137_EVENT_RULE": [
+      "SX-1194",
+      "SX-1195",
+      "SX-1196",
+      "SX-1197",
+      "SX-1198",
+      "SX-1199",
+      "SX-1200",
+      "SX-1201"
+    ],
+    "CHAPTER_1138_SHOP_OFFER": [
+      "SX-1202",
+      "SX-1203",
+      "SX-1204",
+      "SX-1205",
+      "SX-1206",
+      "SX-1207",
+      "SX-1208",
+      "SX-1209",
+      "SX-1210",
+      "SX-1211"
+    ],
+    "CHAPTER_1138_SHOP_PURCHASE": [
+      "SX-1212",
+      "SX-1213",
+      "SX-1214",
+      "SX-1215",
+      "SX-1216",
+      "SX-1217",
+      "SX-1218"
+    ],
+    "CHAPTER_1138_RELIC_CHEST_SELECTION": [
+      "SX-1219",
+      "SX-1220",
+      "SX-1221",
+      "SX-1222",
+      "SX-1223"
+    ],
+    "CHAPTER_1140_REWARD_DISTRIBUTION": [
+      "SX-1224",
+      "SX-1226",
+      "SX-1227",
+      "SX-1228",
+      "SX-1229"
+    ],
+    "CHAPTER_1141_REWARD_DISTRIBUTION": [
+      "SX-1225"
+    ],
+    "CHAPTER_1140_REWARD_PLANNING": [
+      "SX-1230"
+    ],
+    "CHAPTER_1141_CLASS_CHANGE": [
+      "SX-1231"
+    ],
+    "CHAPTER_1141_BREAKTHROUGH_SETUP": [
+      "SX-1232"
+    ],
+    "CHAPTER_1132_SOURCE_EVENT": [
+      "SX-1233"
+    ],
+    "CHAPTER_1132_WORLD_MILESTONE": [
+      "SX-1234"
+    ],
+    "CHAPTER_1137_ARENA_CHAT_REPORTED_REWARD": [
+      "SX-1237",
+      "SX-1238"
+    ],
+    "CHAPTER_1141_BREAKTHROUGH_OUTCOME": [
+      "SX-1239"
+    ]
+  },
+  "next_item_id": "SX-1240",
+  "next_unprocessed_chapter": 1142,
+  "confirmed_outcomes": [
+    {
+      "chapter": 1132,
+      "event": "Doomah/Zoma's final Ice Source gift resolves the causal conflict between Cao Xing's Ice and Crystal divinities. Tian Jing accepts the dead Ice Dragon's Death Source and enters sealed dormancy; awakening may take one to ten years. Doomah's death destabilizes the rule-net and foreshadows ancient gods waking."
+    },
+    {
+      "chapter": 1133,
+      "event": "Campaign settlement grants a participant baseline of 100,000 Ice Dragon Marks, one Silver Chest, and one Expert Strength Heart. Rank 1's explicit bundle includes 500 million Marks, Red Sky Chest, a self-select semi-artifact gear chest, Flawless Divine Fire, 500 Divine Power fragments, True Dragon Soul Envoy hidden-class scroll, self-select demigod skill chest, and Dragon Legend Medal. Top-1,000,000 commemorative medals have unspecified bonus; top-100 rank display is visual/status."
+    },
+    {
+      "chapter": 1134,
+      "event": "One opened Red Sky Chest yields one Forbidden Curse Robe (semi-artifact), three Frostland Rune Stones, four Ancient Hard Wood, and 2,125 Expert Elemental Crystals. A separate self-select gear chest is used to choose Ocean Abyss Grip Bracelet. One observed opening only, not a drop table."
+    },
+    {
+      "chapter": 1135,
+      "event": "The self-select demigod skill chest is used to choose Ice Resonance Mirror. The True Dragon Soul Envoy scroll's full use is not yet applied in this chapter."
+    },
+    {
+      "chapter": 1136,
+      "event": "Rank-1 Dragon Legend Medal grants stated stats, dragon damage modifiers, experience/drop bonuses, and Western Continent reputation effects. Zeverin receives Flawless Divine Fire and 40 Ice Dragon Crystals and transforms to demigod."
+    },
+    {
+      "chapter": 1137,
+      "event": "The 180-day Dragon-Subduing Festival opens with festival jars, Dragon Coin caravan exchange, Snow Chocobo racing, a one-minute Ancient Dragon damage test, permanent normalized Dragon Arena tiers/modes, and a 180-day first Dragon Cup season. Two arena reward details appear as in-world chat reports, not an official reproduced tier table."
+    },
+    {
+      "chapter": 1138,
+      "event": "Golden Points shop lists rune stones, Dragon Hearts, legendary runes, relic selection chests, a semi-artifact weapon, and a mid-tier artifact robe. Cao Xing buys listed items; wallet is stated as 67,512, while receipt says spent 67,150. Five opened relic selection chests produce five named relics."
+    },
+    {
+      "chapter": 1139,
+      "event": "The purchased artifact robe remains stored and unbound during the rule-seal period. Weapon spelling varies across offer/receipt/narrative."
+    },
+    {
+      "chapter": 1140,
+      "event": "Four selected relics and Legendary Hearts are distributed to Lana, Halati, Kane, and Baifu. The source of the Legendary Hearts is not established in this range. Five Dragon Hearts were purchased; the described/confirmed distribution leaves a discrepancy around the incubating wind-dragon egg."
+    },
+    {
+      "chapter": 1141,
+      "event": "Aurora Blade is transferred and soul-bound to Liu Muxue. Xia Yanni consumes the True Dragon Soul Envoy scroll. Lana, Halati, Kane, and Baifu reach Legendary; Xia Yanni's breakthrough continues into Ch1142."
+    }
+  ],
+  "unresolved_conflicts": [
+    "Weapon offer uses 极冰之刃, receipt and later passages mostly use 极光之刃, and one passage uses 千冰之刃. These are preserved as naming conflict, not silently normalized as separate acquisitions.",
+    "Shop wallet shows 67,512 Golden Points. The listed offer bundle plus 872 rune stones ×5 totals 67,510, leaving two points, but the system receipt says spent 67,150. Preserve both source statements; no reconciliation is justified.",
+    "Five Dragon Hearts are purchased. Ch1138 discusses five intended destinations including a wind-dragon egg; Ch1140 confirms gifts to Chuchu, Baro, Baizhi, and Xia Yanni, with no egg receipt. Do not imply five confirmed deliveries.",
+    "Legendary Hearts used for character breakthroughs are mentioned without an acquisition receipt in Chapters 1140–1141; their source is unknown.",
+    "Cơm Nguội Vietnamese Ch1133 and Hắc Hoàng Đại Đế Ch1133 display a title about Jormag awakening, unlike Chinese printed Ch1133's ranking settlement title. Editions are segmented/offset; align by title and story anchor, never raw number alone.",
+    "Cơm Nguội and Hắc Hoàng chapter bodies show login gates; Xa Lộ Sách provides an app-gated short preview. Vietnamese sources were not bypassed and are not used for reward quantities.",
+    "Top-10 arena reward statements are survivor chat reports. The source does not reproduce a complete official arena reward table.",
+    "Ch1141 contains the four Legendary promotions; Ch1133 was a metadata typo in the working row and is corrected in this release."
+  ],
+  "source_checks": [
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1714119",
+      "use": "Ch1132 primary text with linked continuations; gift, Death Source choice, and rule-net foreshadowing."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1825915",
+      "use": "Ch1133 ranking settlement and reward pages."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1864369",
+      "use": "Ch1134 observed chest opening and selected gear."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1911601",
+      "use": "Ch1135 skill chest selection and scroll details."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1932475",
+      "use": "Ch1136 medal effects and Zeverin's transformation."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1967563",
+      "use": "Ch1137 festival, arena, Dragon Cup and chat reports."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2011814",
+      "use": "Ch1138 Golden Points shop table, spend receipt, relic selections."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2059189",
+      "use": "Ch1139 robe status and item-name variants."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2125670",
+      "use": "Ch1140 distributions and stated plans."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/2162602",
+      "use": "Ch1141 class scroll use and four confirmed Legendary promotions."
+    },
+    {
+      "site": "Bq8xsw",
+      "url": "https://www.bq8xsw.com/chapterlist/110975.html",
+      "use": "Independent Chinese printed chapter title/order cross-check."
+    },
+    {
+      "site": "Cơm Nguội Novel (Vietnamese)",
+      "url": "https://comnguoinovel.com/truyen/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong/1133",
+      "use": "Visible Ch1133 heading says Jormag awakens; body login-gated. Title/story alignment only."
+    },
+    {
+      "site": "Hắc Hoàng Đại Đế (Vietnamese)",
+      "url": "https://hachoangdaide.online/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong-1133",
+      "use": "Same Jormag-awakening title on Vietnamese chapter 1133; body states only first 100 chapters are available without login. Metadata cross-check only."
+    },
+    {
+      "site": "Xa Lộ Sách (Vietnamese)",
+      "url": "https://xalosach.com/bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia-0.html?P=12#danhsachchuong",
+      "use": "Directory title comparison demonstrates chapter-number divergence; later direct chapter page gives a short app-gated preview."
+    },
+    {
+      "site": "Bách Ngọc Sách (Vietnamese editions)",
+      "url": "https://bachngocsach.me/truyen/doc-quyen-dich-bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia",
+      "use": "Catalog edition segmentation comparison; not used for quantities."
+    },
+    {
+      "site": "NovOne (Vietnamese catalog mirror)",
+      "url": "https://novone.site/works/bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia",
+      "use": "Catalog/source attribution and segmentation comparison; treated as an index mirror, not independent text."
+    }
+  ],
+  "printed_chapter_urls": [
+    "https://www.bqquge.org/851/1714119",
+    "https://www.bqquge.org/851/1825915-4",
+    "https://www.bqquge.org/851/1864369",
+    "https://www.bqquge.org/851/1864369-4",
+    "https://www.bqquge.org/851/1911601-4",
+    "https://www.bqquge.org/851/1932475",
+    "https://www.bqquge.org/851/1967563-3",
+    "https://www.bqquge.org/851/1967563-4",
+    "https://www.bqquge.org/851/2011814-2",
+    "https://www.bqquge.org/851/2011814-3",
+    "https://www.bqquge.org/851/2125670",
+    "https://www.bqquge.org/851/2162602-3",
+    "https://www.bqquge.org/851/2125670-2",
+    "https://www.bqquge.org/851/2125670-4",
+    "https://www.bqquge.org/851/2125670-3",
+    "https://www.bqquge.org/851/2162602-2"
+  ],
+  "vietnamese_alignment_policy": "Use visible translated chapter titles and story anchors to align editions. These sources may split or number chapters differently. Gated bodies were not accessed; no login or app restriction was bypassed.",
+  "inventory_caveat": "All rows are source research only. No extracted story inventory, chest result, reward, or calendar is automatically granted to LL01 T0."
+}
