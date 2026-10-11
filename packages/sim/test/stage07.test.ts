@@ -62,7 +62,7 @@ test('fresh save reveals no body sheet until inspection, then directly revives t
   state.buildings = state.buildings.filter(building => building.kind !== 'tomb');
   const manaBefore = state.player.mana.current;
   const elapsedBefore = state.simElapsedMs;
-  const priorItemIds = state.inventory.containers.flatMap(container => container.stacks.map(stack => stack.itemId));
+  const priorItemIds = state.inventory.containers.flatMap(container => container.stacks.flatMap(stack => Array(stack.quantity).fill(stack.itemId)));
   const reviveCommand = envelope(state, 'revive-rook', 'revive', { actorId: state.player.id, corpseId: STAGE07_OPENING_CORPSE_ID });
   const revived = reduceCommand(state, reviveCommand, world);
   assert.equal(revived.receipt.accepted, true);
