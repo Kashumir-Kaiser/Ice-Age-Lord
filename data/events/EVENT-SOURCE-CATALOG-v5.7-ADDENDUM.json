@@ -1,0 +1,176 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-5.7-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-5.6-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 57 sequential review of printed Chapters 982–991 using Bqquge. Cumulative ledger is EVENT-SOURCE-ITEMS-v5.7.csv. Catalog baseline remains v4.6 with append-only v4.7–v5.7 addenda; fixed schedule unchanged.",
+  "item_ids": [
+    "SX-0828",
+    "SX-0829",
+    "SX-0830",
+    "SX-0831",
+    "SX-0832",
+    "SX-0833",
+    "SX-0834",
+    "SX-0835",
+    "SX-0836",
+    "SX-0837",
+    "SX-0838",
+    "SX-0839",
+    "SX-0840",
+    "SX-0841",
+    "SX-0842",
+    "SX-0843"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 982,
+      "event": "Blood Whale meat market trades include Legendary Spiritwood Board and six Epic building blueprints; broad proposals are not treated as completed trades."
+    },
+    {
+      "chapter": 983,
+      "event": "Several tower/building upgrade plans and four named skill books are inventoried. The four skills are Overload Loading, Final Solution: Air Superiority, Aurora Tune, and Forbidden Spell: Glacier Burial."
+    },
+    {
+      "chapter": 984,
+      "event": "Bai Zhi receives the Ice Thorn relic and Legendary Heart for her legendary breakthrough; Sarah eliminates two Church inquisitors and their loot is collected but not itemized."
+    },
+    {
+      "chapter": 985,
+      "event": "A deity offers an artifact in exchange for allegiance; no accepted item receipt."
+    },
+    {
+      "chapter": 986,
+      "event": "Cao Xing completes a dual-divinity demi-god transformation; progression reward only."
+    },
+    {
+      "chapter": 987,
+      "event": "His new dual-divinity capabilities are detailed; no item receipt."
+    },
+    {
+      "chapter": 988,
+      "event": "Cleansed Naga remains and Blood Whale Heart are discussed as future material for a semi-artifact; crafting has not yet happened."
+    },
+    {
+      "chapter": 989,
+      "event": "Expansion planning; no item receipt."
+    },
+    {
+      "chapter": 990,
+      "event": "Cross-region teleportation array and expedition planning; no item receipt."
+    },
+    {
+      "chapter": 991,
+      "event": "Nesha Goddess Blessing Ring received. Recruitment uses previously acquired scrolls to recruit 10,000 Corrupt Blood Barbarians and 5,000 Curseblood Mages."
+    }
+  ],
+  "non_receipts": [
+    "Ch982's 200,000 portions of whale meat are trade supply, not fresh acquisition; only completed, named exchange receipts are added.",
+    "Other market offers and unspecified trade proceeds are not inferred.",
+    "Ch983's inventory-wide blueprint summary is not treated as a complete enumerated list; only named acquired plans and four named books are entered.",
+    "Ch985 artifact offer was not accepted.",
+    "Ch988 describes future equipment crafting materials, not a completed artifact receipt.",
+    "Ch991 recruitment outcomes consume prior scroll inventory; the units are recorded as an outcome, not as newly acquired scrolls."
+  ],
+  "item_receipts": [
+    {
+      "chapter": 923,
+      "ids": [
+        "SX-0668"
+      ],
+      "note": "Sea chart gifted by the Icefield Giant chief."
+    },
+    {
+      "chapter": 925,
+      "ids": [
+        "SX-0671"
+      ],
+      "note": "Storm Destroyer occupation and vessel ownership state."
+    },
+    {
+      "chapter": 926,
+      "ids": [
+        "SX-0669",
+        "SX-0670"
+      ],
+      "note": "One explicitly excavated Silver and one Gold chest."
+    },
+    {
+      "chapter": 929,
+      "ids": [
+        "SX-0672",
+        "SX-0673",
+        "SX-0674",
+        "SX-0675",
+        "SX-0676",
+        "SX-0677",
+        "SX-0678",
+        "SX-0679",
+        "SX-0680",
+        "SX-0681",
+        "SX-0682",
+        "SX-0683",
+        "SX-0684",
+        "SX-0685",
+        "SX-0686",
+        "SX-0687",
+        "SX-0688",
+        "SX-0689",
+        "SX-0690",
+        "SX-0691",
+        "SX-0692",
+        "SX-0693",
+        "SX-0694",
+        "SX-0695",
+        "SX-0696",
+        "SX-0697"
+      ],
+      "note": "Chest count snapshot and explicit loot categories from the 29 Silver/Gold boxes, three Moon boxes, and one Red box. See ledger for all 26 receipt rows."
+    },
+    {
+      "chapter": 930,
+      "ids": [
+        "SX-0698",
+        "SX-0699",
+        "SX-0700"
+      ],
+      "note": "Two individual frozen chest pickups and one broken sailboat."
+    },
+    {
+      "chapter": 931,
+      "ids": [
+        "SX-0701",
+        "SX-0702",
+        "SX-0703"
+      ],
+      "note": "Three Sacrifice Pearls, one each of unknown, orange, and green quality."
+    }
+  ],
+  "quest": "Lucky Goddess/undersea ruins lead-in is active. Chapter 931 has the altar yield three Sacrifice Pearls; the Lucky Wheel challenge is not yet shown as opened or resolved.",
+  "inventory_caveat": "All extracted items remain source research, not LL01 initial inventory, guaranteed new-game drops, or active event contracts.",
+  "next_unprocessed_chapter": 932,
+  "source_urls": [
+    "https://www.bqquge.org/851/227800",
+    "https://www.bqquge.org/851/227801",
+    "https://www.bqquge.org/851/227802",
+    "https://www.bqquge.org/851/227803",
+    "https://www.bqquge.org/851/227804",
+    "https://www.bqquge.org/851/236476",
+    "https://www.bqquge.org/851/236477",
+    "https://www.bqquge.org/851/236478",
+    "https://www.bqquge.org/851/236479",
+    "https://www.bqquge.org/851/236514"
+  ],
+  "mirror_note": "Direct chapter text and continuation pages read from Bqquge; primary 69shuba sequence remains inaccessible beyond Ch921.",
+  "chapter_source_urls": [
+    "https://www.bqquge.org/851/236974",
+    "https://www.bqquge.org/851/236975",
+    "https://www.bqquge.org/851/236976",
+    "https://www.bqquge.org/851/236977",
+    "https://www.bqquge.org/851/237040",
+    "https://www.bqquge.org/851/237041",
+    "https://www.bqquge.org/851/237042",
+    "https://www.bqquge.org/851/237043",
+    "https://www.bqquge.org/851/237121",
+    "https://www.bqquge.org/851/237122"
+  ]
+}
