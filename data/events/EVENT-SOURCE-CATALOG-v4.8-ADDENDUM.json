@@ -1,0 +1,198 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-4.8-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-4.7-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 48 sequential review of printed Chapters 892–901. Cumulative item CSV v4.8; baseline JSON remains v4.6 plus append-only v4.7 and v4.8 addenda. Fixed schedule unchanged.",
+  "item_ids": [
+    "SX-0603",
+    "SX-0604",
+    "SX-0605",
+    "SX-0606",
+    "SX-0607",
+    "SX-0608",
+    "SX-0609",
+    "SX-0610",
+    "SX-0611",
+    "SX-0612",
+    "SX-0613",
+    "SX-0614",
+    "SX-0615"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 892,
+      "event": "Dream-shop exchanges confirmed: 1,000,000 Dream Shards for Mosin Pillar Legendary blueprint; 1,500,000 for Lord Temple Legendary blueprint; 2,250,000 for Divine Power Shards x45. The two upgrades begin immediately from level-30 buildings, with no materials/workers; durations 728h35m and 965h41m. Dream-library outcomes: Andrew brings back level-150 Epic Nature's Gift necklace (+40% Nature skill damage/effect); Francesca brings back one-third Eldritch Codex with dozens of recipes and two Legendary recipes; Xierda awakens Spider Emperor Web; Binglan learns Dragon God Swordsmanship."
+    },
+    {
+      "chapter": 893,
+      "event": "Xierda uses the already-held Blood Source Godfire and 190 Divine Shards; system states she had naturally restored 117 divine power and consumes 200 points to activate Poison Blood. Breakthrough to Half-God succeeds; no new Blood Godfire or shard receipt."
+    },
+    {
+      "chapter": 894,
+      "event": "Territory report confirms 472 Return Scrolls produced and received; city and farming data are reports, not item receipts."
+    },
+    {
+      "chapter": 894,
+      "event": "One Demi-God Dralamam Light Cannon is completed and reported; source says four units' worth of materials were prepared and three more are ordered within one month. The latter three are plans only."
+    },
+    {
+      "chapter": 897,
+      "event": "Harold completes one Legendary Night-Rhino King Armor from existing Legendary giant-rhino hide and Night Lionheart Gem; it is bound to Sarah. 200+ Gold Scurmice stones and one Rainbow Crystal are assigned to later batch enhancement; quantities consumed are not specified here."
+    },
+    {
+      "chapter": 898,
+      "event": "Roxie joins the territory at level 151; system reports population +10, prosperity +1500, Human Fortune +5000 (reversible if she leaves/dies). Exact gift receipt: Divine Power Shards x439."
+    },
+    {
+      "chapter": 899,
+      "event": "Five existing Legendary equipment pieces are raised to level 150; total 38 Gold Scurmice stones used (4 each for Moon Goddess Staff and Starfall Codex; 10 each for the other three). Staff and Starfall Codex are explicitly named; remaining three include Lich Frost Soul Robe, Lich Ice Bone Leggings, Demon Codex. This is enhancement of existing items, not five new item identities."
+    },
+    {
+      "chapter": 900,
+      "event": "Expedition departs for Eternal Frozen Sea; church sages seek the Golden Dragon Horn and carry a Church Emblem for escape. Horn is not retrieved in this chapter."
+    },
+    {
+      "chapter": 901,
+      "event": "The party discovers Eternal Frozen Sea at -78C; exploration XP +500,000 and reputation +1,000. Chapter establishes Ice Ghouls/Icefield Giant context; no item reward, chest opening, or confirmed loot receipt in the reviewed chapter."
+    }
+  ],
+  "non_receipts": [
+    "Do not count the Chapter 892 aggregate Divine Shard balance (395) as an additional receipt; it is a snapshot.",
+    "Blood Source Godfire is pre-existing and consumed by Xierda; 190 shards are a stated contribution and 200 divine-power points are consumed, not received.",
+    "Dream-library skill/trait/codex outcomes are recorded as source findings, but are not separate physical-item receipts unless a named item is explicitly described.",
+    "Three additional Dralamam Light Cannons are ordered, not completed. The four-unit material preparation is not a receipt.",
+    "Gold Scurmice stones and Rainbow Crystals in Ch897 are pre-existing inventory; the precise number actually consumed during batch enhancement is only provided for the 38 stones in Ch899. Do not infer Rainbow Crystal use or catalog it as a new receipt.",
+    "Ch900 Golden Dragon Horn is a target; not acquired. Church Emblem is already-held/used as an escape option, no new receipt.",
+    "No chest-opening or loot table is documented in Ch892–901. Do not extrapolate rewards from the expedition, fortress reports, or named treasure objective."
+  ],
+  "item_details": [
+    {
+      "id": "SX-0603",
+      "ch": 892,
+      "item": "Mosin Pillar Upgrade Blueprint",
+      "effect": "Legendary blueprint upgrades max level-30 Energy Station to Mosin Pillar Lv1; heat radius +300%, energy cost -50%, buildings gain extreme-cold resistance; divine-energy regeneration +10% per level (cap +100%); shield durability +100% and regeneration +20% (caps +300%/+60%); below -80C, 12h heat barrier keeps territory above -30C, 7d cooldown."
+    },
+    {
+      "id": "SX-0604",
+      "ch": 892,
+      "item": "Lord Temple Blueprint",
+      "effect": "Legendary blueprint upgrades max level-30 Lord Castle to Lord Temple Lv1; population cap +100%, fertility aura +50%, member loyalty +20; Divine Edict doubles building upgrade speed and raises resource output +50% for 24h, cooldown 72h; initial faction favor +30 and trade prices -10%."
+    },
+    {
+      "id": "SX-0605",
+      "ch": 892,
+      "item": "Divine Power Shards x45",
+      "effect": "Receipt by exchange for 2.25M Dream Shards; the Ch892 total stock shown afterward is 395."
+    },
+    {
+      "id": "SX-0606",
+      "ch": 892,
+      "item": "Nature's Gift",
+      "effect": "Level-150 Epic necklace; Nature skill damage and effects +40%; possible Legendary evolution to Nature's Code requires unknown item."
+    },
+    {
+      "id": "SX-0607",
+      "ch": 892,
+      "item": "One-third Eldritch Codex",
+      "effect": "Incomplete book carried back by Francesca; dozens of recipes including two Legendary recipes; no recipes named."
+    },
+    {
+      "id": "SX-0608",
+      "ch": 894,
+      "item": "Return Scroll x472",
+      "effect": "Production receipt for planned expedition; precise destination limitations not stated."
+    },
+    {
+      "id": "SX-0609",
+      "ch": 897,
+      "item": "Night-Rhino King Armor",
+      "effect": "Legendary, Lv100, armor 4489–4812, Agility/Vitality +5000, armor-penetration resistance +30%; nighttime and below -70C all stats +20%, armor +20%; 5km roar lowers lower-level enemy stats 30% and raises allies' attack 15% for 120s (1h CD); hit above 30% max HP is reduced 50%, grants 20%-max-HP shield and +20% base attack."
+    },
+    {
+      "id": "SX-0610",
+      "ch": 898,
+      "item": "Divine Power Shards x439",
+      "effect": "Exact system-reported gift from Roxie after recruitment."
+    },
+    {
+      "id": "SX-0611",
+      "ch": 899,
+      "item": "Moon Goddess Staff enhancement",
+      "effect": "Existing Legendary item; level 150, four stars/four Gold Scurmice stones."
+    },
+    {
+      "id": "SX-0612",
+      "ch": 899,
+      "item": "Starfall Codex enhancement",
+      "effect": "Existing Legendary off-hand; level 150, four stars/four Gold Scurmice stones."
+    },
+    {
+      "id": "SX-0613",
+      "ch": 899,
+      "item": "Lich Frost Soul Robe enhancement",
+      "effect": "Existing Legendary item; level 150, ten Gold Scurmice stones."
+    },
+    {
+      "id": "SX-0614",
+      "ch": 899,
+      "item": "Lich Ice Bone Leggings enhancement",
+      "effect": "Existing Legendary item; level 150, ten Gold Scurmice stones."
+    },
+    {
+      "id": "SX-0615",
+      "ch": 899,
+      "item": "Demon Codex enhancement",
+      "effect": "Existing Legendary item; level 150, ten Gold Scurmice stones."
+    }
+  ],
+  "next_unprocessed_chapter": 902,
+  "source_urls": [
+    {
+      "chapter": 892,
+      "url": "https://www.69shuba.com/txt/58776/40564895"
+    },
+    {
+      "chapter": 893,
+      "url": "https://www.69shuba.com/txt/58776/40564896"
+    },
+    {
+      "chapter": 894,
+      "url": "https://www.69shuba.com/txt/58776/40564897"
+    },
+    {
+      "chapter": 895,
+      "url": "https://www.69shuba.com/txt/58776/40564898"
+    },
+    {
+      "chapter": 896,
+      "url": "https://www.69shuba.com/txt/58776/40564899"
+    },
+    {
+      "chapter": 897,
+      "url": "https://www.69shuba.com/txt/58776/40564900"
+    },
+    {
+      "chapter": 898,
+      "url": "https://www.69shuba.com/txt/58776/40564901"
+    },
+    {
+      "chapter": 899,
+      "url": "https://www.69shuba.com/txt/58776/40564902"
+    },
+    {
+      "chapter": 900,
+      "url": "https://www.69shuba.com/txt/58776/40564903"
+    },
+    {
+      "chapter": 901,
+      "url": "https://www.69shuba.com/txt/58776/40564904"
+    }
+  ],
+  "structure_note": {
+    "chapter": 894,
+    "structure": "Demi-God Dralamam Light Cannon",
+    "quantity_completed": 1,
+    "reported_damage": "over 100 million per second; up to 10 seconds of beam; at least 1 billion if full beam duration lands",
+    "materials_for_future_units": "materials reportedly prepared for 4; only 1 built; 3 ordered"
+  }
+}
