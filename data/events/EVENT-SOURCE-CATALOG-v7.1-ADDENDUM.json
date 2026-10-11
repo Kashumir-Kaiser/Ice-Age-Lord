@@ -1,0 +1,334 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.1-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.0.1-CORRECTION",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 71: printed Chapters 1122–1131. The Bqquge chapter text was read through all linked continuation pages and titles cross-checked against Bq8xsw. Multiple Vietnamese editions/catalogs were checked for title alignment; catalog numbering is demonstrably divergent outside the directly matched Cơm Nguội titles.",
+  "data_file": "EVENT-SOURCE-ITEMS-v7.1.csv",
+  "total_item_ids": [
+    "SX-1141",
+    "SX-1142",
+    "SX-1143",
+    "SX-1144",
+    "SX-1145",
+    "SX-1146",
+    "SX-1147",
+    "SX-1148",
+    "SX-1149",
+    "SX-1150",
+    "SX-1151",
+    "SX-1152",
+    "SX-1153",
+    "SX-1154",
+    "SX-1155",
+    "SX-1156",
+    "SX-1157",
+    "SX-1158",
+    "SX-1159",
+    "SX-1160",
+    "SX-1161",
+    "SX-1162",
+    "SX-1163",
+    "SX-1164",
+    "SX-1165",
+    "SX-1166",
+    "SX-1167",
+    "SX-1168",
+    "SX-1169",
+    "SX-1170",
+    "SX-1171",
+    "SX-1172"
+  ],
+  "confirmed_acquisition_ids": [
+    "SX-1144",
+    "SX-1145",
+    "SX-1146",
+    "SX-1147",
+    "SX-1148",
+    "SX-1149",
+    "SX-1150",
+    "SX-1151",
+    "SX-1152",
+    "SX-1153",
+    "SX-1155",
+    "SX-1156",
+    "SX-1157",
+    "SX-1158",
+    "SX-1159",
+    "SX-1160",
+    "SX-1163",
+    "SX-1164",
+    "SX-1165",
+    "SX-1166",
+    "SX-1167",
+    "SX-1168",
+    "SX-1169",
+    "SX-1170",
+    "SX-1171",
+    "SX-1172"
+  ],
+  "offer_ids": [
+    "SX-1154"
+  ],
+  "receipt_groups": {
+    "chapter_1123_all_lord_rewards": [
+      "SX-1144",
+      "SX-1145",
+      "SX-1146",
+      "SX-1147",
+      "SX-1148",
+      "SX-1149",
+      "SX-1150",
+      "SX-1151"
+    ],
+    "chapter_1123_final_strike_achievement": [
+      "SX-1152",
+      "SX-1153"
+    ],
+    "chapter_1124_market_offer": "SX-1154",
+    "chapter_1124_market_sale_proceeds": "SX-1155",
+    "chapter_1125_asam_battle_spoils": [
+      "SX-1156",
+      "SX-1157",
+      "SX-1158",
+      "SX-1159",
+      "SX-1160"
+    ],
+    "chapter_1126_hidden_shop_purchase_transaction_and_outputs": [
+      "SX-1163",
+      "SX-1164",
+      "SX-1165",
+      "SX-1166",
+      "SX-1167",
+      "SX-1168",
+      "SX-1169",
+      "SX-1170"
+    ],
+    "chapter_1127_chest_opening_outputs": [
+      "SX-1171",
+      "SX-1172"
+    ]
+  },
+  "event_rule_ids": [
+    "SX-1141",
+    "SX-1142",
+    "SX-1143",
+    "SX-1161",
+    "SX-1162"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 1122,
+      "event": "At 15% continental damage the final 'Broken Mirror' phase begins with nine World-Eye projections. Ice Cores from Ice Nest monsters charge them; five charged towers can fire; fewer than five surviving towers means campaign failure. Campaign rank 1 receives final-firing authority."
+    },
+    {
+      "chapter": 1123,
+      "event": "Both campaign victory phases settle: all lords receive 10m and 15m shop redemption allowances plus +10 and +20 Gold Points, and all survivors receive two Frozen Golden Chests, one Frozen Bright-Moon Chest, five Master Strength Hearts, and one Hero Heart. The rank-1 final striker separately receives a World-Eye prototype blueprint and one Red Sky Chest."
+    },
+    {
+      "chapter": 1124,
+      "event": "Cao Xing posts one million portions of demi-god Blood Whale Meat at 70,000 Ice Dragon Marks each, limit two per buyer; all portions sell, producing 70,000,000,000 marks. His current inventory display of 762 yi is cumulative context, not an additional receipt."
+    },
+    {
+      "chapter": 1125,
+      "event": "Asam transfers pooled battle spoils: 462m Ice Dragon Marks, 241m Glacier Shards, 16.25m Dragon Rock Ore, 1,129 Ice Dragon Crystals, and 1,714 Frostland Rune Stones. The source receipt continuation is truncated. Dragon Soul Envoy qualification requires withstanding two of four Dragon-God pressures; qualified applicants pay one million marks for trial entry."
+    },
+    {
+      "chapter": 1126,
+      "event": "Cao Xing buys out the Dragon Soul Envoy hidden shop for 720 yi Ice Dragon Marks and 99 Doomah Frostblood Crystals, receiving seven named output types: ancient inscriptions ×30, Earth Dragon spell scroll ×2, Ancient Red Sky Chest ×1, World Tree branch ×5, legendary ring ×1, semi-artifact bracer ×1, and Angel Wings ×1."
+    },
+    {
+      "chapter": 1127,
+      "event": "One ordinary Red Sky Chest and one Ancient Red Sky Chest are opened. They yield the Heavenly Radiance Knight King Armor and Observer's Eye, both semi-artifacts; Ch1128 identifies each chest-to-item match."
+    },
+    {
+      "chapter": 1128,
+      "event": "Inspects the two semi-artifact chest results; no additional counted item receipt."
+    },
+    {
+      "chapter": 1129,
+      "event": "An elderly witch arrives and sets up a journey to Dragonfall; no item receipt."
+    },
+    {
+      "chapter": 1130,
+      "event": "Doomah is encountered in a liminal post-battle setting; no new quantified item or reward receipt."
+    },
+    {
+      "chapter": 1131,
+      "event": "Gods and dragons converge over the death source; no countable item receipt."
+    }
+  ],
+  "unresolved_conflicts": [
+    "Round 70 v7.0 incorrectly mapped Cơm Nguội Ch1116 to Chinese print Ch1112 and inferred a +4 offset. The translated title actually matches Chinese printed Ch1113. This Round 71 release includes an append-only v7.0.1 correction; direct Cơm Nguội title comparison at Vietnamese Ch1127 and Chinese Ch1124 independently confirms +3 offset in this arc.",
+    "Cơm Nguội chapter bodies for the current arc require login. The Vietnamese title metadata was used for edition alignment only; no reward quantity is sourced from it.",
+    "Xa Lộ Sách's Vietnamese directory page 12 gives Ch1124 as 'Cùng Ma Chủ đàm phán, điều kiện của Tào Tinh', while the Chinese printed Ch1124 is the World-Eye blueprint chapter. Thus its chapter number cannot be mapped by number alone. BNS editions use thousands of split segments, while NovOne catalogs 2,734 Xa Lộ Sách links.",
+    "Chapter 1123 explicitly grants +10 and +20 Gold Points in two victory settlement lines, while Chapter 1124 later describes the settlement as granting 25 Gold Points. Keep the two explicit Chapter 1123 grant rows and preserve this conflicting later summary rather than silently reconciling it.",
+    "Chapter 1125 pooled spoils block ends with an ellipsis; omitted items or amounts are unknown.",
+    "Chapter 1124's 762-yi balance and Chapter 1125's 767.1-yi balance are displayed inventory snapshots; the cumulative totals are not duplicated as receipts."
+  ],
+  "non_receipts": [
+    "Chapter 1122's nine World-Eye projections, Ice-Core charging, and rank-1 firing permission are event rules, not inventory items.",
+    "The 10m and 15m Dragon Shop redemption allowances in Chapter 1123 are shop credit/quotas, not Dragon Marks deposited or purchases made.",
+    "Chapter 1124's personal score, reputation, and material totals are cumulative inventory snapshots; only the exact market sale is recorded as a new proceeds receipt.",
+    "The Dragon Soul Envoy fee in Chapter 1125 is a rule paid by qualifying applicants, not a recorded Cao Xing purchase.",
+    "The Chapter 1126 bundle cost appears once on the transaction row; output item rows reference the transaction without duplicating costs.",
+    "Chapter 1127 chest contents are two observed rolls, not chest drop tables or guaranteed outcomes."
+  ],
+  "source_checks": [
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851",
+      "use": "Printed-title directory and independent full-text source; Chapters 1122–1131 linked through page continuations."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1512462-4",
+      "use": "Chapter 1122 final-strike authority and event phase completion."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1513140",
+      "use": "Chapter 1123 two-stage global victory settlement and shared reward bundle."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1513140-3",
+      "use": "Chapter 1123 rank-1 final-strike achievement blueprint and Red Sky Chest."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1513141-3",
+      "use": "Chapter 1124 market price, stock, and per-buyer limit."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1513141-4",
+      "use": "Chapter 1124 complete market sellout and sale proceeds."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1513856",
+      "use": "Chapter 1125 pooled spoil receipt."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1513856-3",
+      "use": "Dragon Soul Envoy eligibility test."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1513856-4",
+      "use": "Dragon Soul Envoy trial entry fee."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1515093",
+      "use": "Chapter 1126 complete hidden-shop purchase confirmation and exact bundle cost."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1515093-2",
+      "use": "Chapter 1126 named acquired shop items."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1517560-4",
+      "use": "Chapter 1127 two chest openings and semi-artifact results."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1517564-2",
+      "use": "Chapter 1128 identifies the Knight King armor as the ordinary Red Sky Chest result and Observer's Eye as the ancient chest result."
+    },
+    {
+      "site": "Bq8xsw",
+      "url": "https://www.bq8xsw.com/chapterlist/110975.html",
+      "use": "Independent chapter directory cross-checks printed titles/order for 1122–1131."
+    },
+    {
+      "site": "Cơm Nguội Novel (Vietnamese)",
+      "url": "https://comnguoinovel.com/truyen/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong/1127",
+      "use": "The displayed Vietnamese Ch1127 title 'Bản vẽ Sáng Thế Chi Quang, vũ khí sắc bén đối phó Chân Thần!' matches Chinese printed Ch1124; body is login-gated, so title alignment only."
+    },
+    {
+      "site": "Cơm Nguội Novel (Vietnamese)",
+      "url": "https://comnguoinovel.com/truyen/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong/1116",
+      "use": "Vietnamese Ch1116 title 'Thần cấp Băng Sào xuất thế!' matches Chinese printed Ch1113, correcting prior +4 claim to +3."
+    },
+    {
+      "site": "Xa Lộ Sách (Vietnamese)",
+      "url": "https://xalosach.com/bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia-0.html?P=12#danhsachchuong",
+      "use": "Directory page 12 (Ch1101–1130) inspected. Ch1124 title is 'Cùng Ma Chủ đàm phán, điều kiện của Tào Tinh', which does not match the Chinese Ch1124 event; numbering is not mapped directly."
+    },
+    {
+      "site": "Bách Ngọc Sách (Vietnamese)",
+      "url": "https://bachngocsach.me/truyen/doc-quyen-dich-bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia",
+      "use": "Completed Vietnamese edition lists 4,253 split chapters; used for edition segmentation comparison only."
+    },
+    {
+      "site": "Bách Ngọc Sách audio catalog (Vietnamese)",
+      "url": "https://bachngocsach.me/truyen/audio-dich-bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia",
+      "use": "Separate edition lists 2,774 segments, demonstrating variant segmentation/counts."
+    },
+    {
+      "site": "NovOne (Vietnamese catalog mirror)",
+      "url": "https://novone.site/works/bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia",
+      "use": "Catalog identifies Xa Lộ Sách as source and lists 2,734 chapter links; not treated as independent text."
+    },
+    {
+      "site": "Tủ Sách (Vietnamese)",
+      "url": "https://tusach.vn/truyen/bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia",
+      "use": "Separate translated-title catalog checked, not used for chapter-level amounts."
+    },
+    {
+      "site": "iTruyenFull (Vietnamese)",
+      "url": "https://itruyenfull.org/truyen/bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia",
+      "use": "Separate translated-title catalog checked, not used for chapter-level amounts."
+    }
+  ],
+  "printed_chapter_urls": [
+    "https://www.bqquge.org/851/1512462",
+    "https://www.bqquge.org/851/1513140",
+    "https://www.bqquge.org/851/1513141",
+    "https://www.bqquge.org/851/1513856",
+    "https://www.bqquge.org/851/1515093",
+    "https://www.bqquge.org/851/1517560",
+    "https://www.bqquge.org/851/1517564",
+    "https://www.bqquge.org/851/1555800",
+    "https://www.bqquge.org/851/1604400",
+    "https://www.bqquge.org/851/1680159"
+  ],
+  "continuation_urls": [
+    "https://www.bqquge.org/851/1512462-2",
+    "https://www.bqquge.org/851/1512462-3",
+    "https://www.bqquge.org/851/1512462-4",
+    "https://www.bqquge.org/851/1513140-2",
+    "https://www.bqquge.org/851/1513140-3",
+    "https://www.bqquge.org/851/1513140-4",
+    "https://www.bqquge.org/851/1513141-2",
+    "https://www.bqquge.org/851/1513141-3",
+    "https://www.bqquge.org/851/1513141-4",
+    "https://www.bqquge.org/851/1513856-2",
+    "https://www.bqquge.org/851/1513856-3",
+    "https://www.bqquge.org/851/1513856-4",
+    "https://www.bqquge.org/851/1515093-2",
+    "https://www.bqquge.org/851/1515093-3",
+    "https://www.bqquge.org/851/1515093-4",
+    "https://www.bqquge.org/851/1517560-2",
+    "https://www.bqquge.org/851/1517560-3",
+    "https://www.bqquge.org/851/1517560-4",
+    "https://www.bqquge.org/851/1517564-2",
+    "https://www.bqquge.org/851/1517564-3",
+    "https://www.bqquge.org/851/1517564-4",
+    "https://www.bqquge.org/851/1555800-2",
+    "https://www.bqquge.org/851/1555800-3",
+    "https://www.bqquge.org/851/1555800-4",
+    "https://www.bqquge.org/851/1604400-2",
+    "https://www.bqquge.org/851/1604400-3",
+    "https://www.bqquge.org/851/1604400-4",
+    "https://www.bqquge.org/851/1680159-2",
+    "https://www.bqquge.org/851/1680159-3",
+    "https://www.bqquge.org/851/1680159-4"
+  ],
+  "next_unprocessed_chapter": 1132,
+  "inventory_caveat": "Source-only extraction. None of these rewards, currencies, shop credits, chest results, materials, or events are LL01 starting inventory, guaranteed new-game loot, or active fixed-calendar rules."
+}

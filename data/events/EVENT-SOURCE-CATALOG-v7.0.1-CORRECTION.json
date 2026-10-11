@@ -1,0 +1,25 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.0.1-CORRECTION",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.0-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "correction_scope": "Corrects Vietnamese edition chapter-number alignment stated in Round 70 v7.0. The extraction facts and quantities from Chinese printed Chapters 1112–1121 are unchanged.",
+  "corrected_claim": "The Round 70 v7.0 catalog/audit stated Cơm Nguội Vietnamese Ch1116 matched Chinese printed Ch1112 and inferred a +4 offset.",
+  "corrected_alignment": "Cơm Nguội Vietnamese Ch1116 title 'Thần cấp Băng Sào xuất thế! Bão táp tai kiếp bùng nổ!' matches Chinese printed Ch1113 title '神级冰巢现世！灾劫狂潮爆发！'. In this arc Vietnamese numbering is +3, not +4.",
+  "independent_confirmation": "Cơm Nguội Vietnamese Ch1127 title 'Bản vẽ Sáng Thế Chi Quang, vũ khí sắc bén đối phó Chân Thần!' matches Chinese printed Ch1124 '创世之光图纸，对付真神的利器！', confirming +3 at a second chapter anchor.",
+  "source_checks": [
+    {
+      "site": "Cơm Nguội Novel",
+      "url": "https://comnguoinovel.com/truyen/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong/1116",
+      "use": "Displayed Vietnamese title matches Chinese printed Ch1113; chapter text requires login."
+    },
+    {
+      "site": "Cơm Nguội Novel",
+      "url": "https://comnguoinovel.com/truyen/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong/1127",
+      "use": "Displayed Vietnamese title matches Chinese printed Ch1124; chapter text requires login."
+    }
+  ],
+  "data_file_unchanged": "EVENT-SOURCE-ITEMS-v7.0.csv",
+  "data_rows_changed": 0,
+  "title_alignment_only": true,
+  "authority_note": "For this novel arc, use +3 only where the Vietnamese title matches the Chinese printed title. Do not generalize the offset to other editions such as segmented Bách Ngọc Sách or differently numbered Xa Lộ Sách."
+}
