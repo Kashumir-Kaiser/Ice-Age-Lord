@@ -38,7 +38,7 @@ Further mirror checks confirmed the chapter order but did not provide a verifiab
 
 - The Yiyeshu search-index result (`https://www.yiyeshu.cc/go/33472/11807880.html`) returned `DisabledError` on open.
 - Bixiange’s indexed result for Chapter 986 exposed only an excerpt; opening its full chapter URL (`https://www.bixiange.top/khjj/21282/986.html`) also returned `DisabledError`.
-- The CP novel directory confirms titles through the later chapters, but it is a table of contents rather than chapter text.
+- The CP novel directory confirms titles through the later chapters, but it is a table of contents rather than chapter text; its chapter link references could not be resolved by the source tool.
 - QQ Reading chapter pages for the corresponding later sequence show short opening previews and then a login/subscription gate. They confirm some leads (for example, the blessing ring is handed over in the Chapter 991 preview), but do not expose enough context to establish a complete acquisition/event record. QQ’s display numbering also differs from the printed sequence in the extraction sources, so those snippets are not treated as chapter-level evidence.
 - WTR-LAB marks all chapters unlocked on its novel page, but the chapter-reading route only redirects to a recommended raw source; no body text was available.
 
