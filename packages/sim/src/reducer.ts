@@ -38,6 +38,7 @@ const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | '
   open_cache: { code: 'CHEST_LIFECYCLE_STAGE_05', message: 'Field chests cannot be opened until access and reward commitments are implemented.' },
   repair: { code: 'HOUSE_REPAIR_CONTRACT_UNAVAILABLE', message: 'The damaged Lord House repair contract, accessible workers and reserved inputs are required.' },
   build: { code: 'BUILDING_BLUEPRINT_OR_PLACEMENT_INVALID', message: 'A source-defined unlocked blueprint and server-approved footprint are required.' },
+  craft: { code: 'CRAFTING_STAGE_04', message: 'Crafting is unavailable until a source recipe, materials and output contract are registered.' },
   assign_construction_workers: { code: 'CONSTRUCTION_JOB_NOT_ACTIVE', message: 'Choose an active construction job.' },
   cancel_construction_job: { code: 'CONSTRUCTION_JOB_NOT_CANCELLABLE', message: 'Choose an active construction job.' },
   recruit_resident: { code: 'FARMHOUSE_NOT_ACTIVE', message: 'Build the polar farmhouse before recruiting residents.' },
