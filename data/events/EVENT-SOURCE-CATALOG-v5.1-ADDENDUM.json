@@ -1,0 +1,168 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-5.1-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-5.0-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 51 sequential review of printed Chapters 922–931, using the Bqquge chapter mirror because the primary 69shuba pages beyond Ch921 were inaccessible through the web source reader. Cumulative item ledger is EVENT-SOURCE-ITEMS-v5.1.csv. Catalog baseline remains v4.6 with append-only v4.7–v5.1 addenda; fixed schedule unchanged.",
+  "item_ids": [
+    "SX-0668",
+    "SX-0669",
+    "SX-0670",
+    "SX-0671",
+    "SX-0672",
+    "SX-0673",
+    "SX-0674",
+    "SX-0675",
+    "SX-0676",
+    "SX-0677",
+    "SX-0678",
+    "SX-0679",
+    "SX-0680",
+    "SX-0681",
+    "SX-0682",
+    "SX-0683",
+    "SX-0684",
+    "SX-0685",
+    "SX-0686",
+    "SX-0687",
+    "SX-0688",
+    "SX-0689",
+    "SX-0690",
+    "SX-0691",
+    "SX-0692",
+    "SX-0693",
+    "SX-0694",
+    "SX-0695",
+    "SX-0696",
+    "SX-0697",
+    "SX-0698",
+    "SX-0699",
+    "SX-0700",
+    "SX-0701",
+    "SX-0702",
+    "SX-0703"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 922,
+      "event": "Malenina completes a half-god limit transformation after fusing the Ancient Fire Seed, gaining the stated Godfire Sovereignty and Immortal Nirvana traits and a new half-god skill. No item receipt in the reviewed chapter."
+    },
+    {
+      "chapter": 923,
+      "event": "The Icefield Giant sea chart is received. It marks 524 chest locations, 87 shipwreck/special-treasure locations, and 112 rare sea-beast locations. A Moon chest is located about 4,864m below the ice but not yet dug up in this chapter."
+    },
+    {
+      "chapter": 924,
+      "event": "Party finds an ancient frozen shipwreck, Storm Destroyer. It is an observed wreck; no ownership change in this chapter."
+    },
+    {
+      "chapter": 925,
+      "event": "System confirms Storm Destroyer is unowned; Cao Xing selects Occupy, the occupation succeeds, and its vessel panel opens. It has 1,852,325/7,000,000 durability, 50,000 armor, and a lightning core that enables ship abilities when charged to at least 30%."
+    },
+    {
+      "chapter": 926,
+      "event": "Route exploration explicitly excavates one Silver and one Gold chest. The party approaches one of two red-marked chest sites on the giant chart; the chart's second chest is not yet opened here."
+    },
+    {
+      "chapter": 927,
+      "event": "The group investigates the rift and deity threat. No new item receipt is added in this chapter review."
+    },
+    {
+      "chapter": 928,
+      "event": "Chapter explains godhood, divinity, rules, and divine domains. No new item receipt."
+    },
+    {
+      "chapter": 929,
+      "event": "Pre-opening inventory snapshot: one Red Chest, three Moon chests, eight Gold chests, and 21 Silver chests. The 21 Silver and eight Gold boxes are opened as a 29-chest batch; explicit drops include six recruitment-scroll types, two equipment items, Dragonrock Ore x1,524, Glacier Shards x7,824, and Ice Element Crystals x16,624; more outputs are elided. Three Moon chests yield six named categories. The Red Chest yields Legendary Cold Abyss Ice Coffer x1, Legendary Coldland Rune Stones x2, Glacier Cores x3, Ancient Hardwood x2, and Master Elemental Crystals x1,625."
+    },
+    {
+      "chapter": 930,
+      "event": "Following exploration explicitly receives one additional frozen Silver Chest, one frozen Gold Chest, and one broken sailboat. The chapter says 31 chests were found in four hours, but itemized receipt lines are elided and a later snapshot (Moon x2, Gold x7, Silver x23) is not reconciled to prior openings; only individually itemized receipts are entered."
+    },
+    {
+      "chapter": 931,
+      "event": "Undersea altar offers three Sacrifice Pearls. The first Unknown pearl is received after staged Kai Jing Bream meat offerings; the second Orange pearl follows a large but unquantified offering of coins and jewelry. The altar asks for a living female for the third; Cao Xing refuses and prepares to destroy the site, then the Green pearl is granted as the team prepares to attack. Exact fish-meat cost aggregation is ambiguous; staged quantities are preserved in the item ledger note."
+    }
+  ],
+  "non_receipts": [
+    "Chart counts are location reports, not discovered/looted treasure totals.",
+    "The Moon chest located about 4,864m below the ice in Ch923 is a location, not a chest recovery in that chapter.",
+    "Storm Destroyer is discovered in Ch924; ownership is only confirmed by the Ch925 occupation success notice.",
+    "Ch929 chest counts are an inventory snapshot, not incremental pickups; do not add them to earlier chest pickups.",
+    "Ch929 loot lists continue with ellipses; only quantities printed in the notice are transcribed.",
+    "Ch930's 31-chest statement and later inventory snapshot do not reconcile with earlier opened batches; no totals are inferred beyond directly listed pickups.",
+    "Offering costs at the undersea altar are spent inventory. Stated Kai Jing Bream meat counts may be cumulative, so no single total consumption is calculated.",
+    "The third pearl is granted after rejection of the living-female sacrifice request; no such sacrifice occurs."
+  ],
+  "item_receipts": [
+    {
+      "chapter": 923,
+      "ids": [
+        "SX-0668"
+      ],
+      "note": "Sea chart gifted by the Icefield Giant chief."
+    },
+    {
+      "chapter": 925,
+      "ids": [
+        "SX-0671"
+      ],
+      "note": "Storm Destroyer occupation and vessel ownership state."
+    },
+    {
+      "chapter": 926,
+      "ids": [
+        "SX-0669",
+        "SX-0670"
+      ],
+      "note": "One explicitly excavated Silver and one Gold chest."
+    },
+    {
+      "chapter": 929,
+      "ids": [
+        "SX-0672",
+        "SX-0673",
+        "SX-0674",
+        "SX-0675",
+        "SX-0676",
+        "SX-0686",
+        "SX-0687",
+        "SX-0692",
+        "SX-0693",
+        "SX-0697"
+      ],
+      "note": "Chest count snapshot and explicit loot categories from the 29 Silver/Gold boxes, three Moon boxes, and one Red box. See ledger for all 26 receipt rows."
+    },
+    {
+      "chapter": 930,
+      "ids": [
+        "SX-0698",
+        "SX-0700"
+      ],
+      "note": "Two individual frozen chest pickups and one broken sailboat."
+    },
+    {
+      "chapter": 931,
+      "ids": [
+        "SX-0701",
+        "SX-0703"
+      ],
+      "note": "Three Sacrifice Pearls, one each of unknown, orange, and green quality."
+    }
+  ],
+  "quest": "Lucky Goddess/undersea ruins lead-in is active. Chapter 931 has the altar yield three Sacrifice Pearls; the Lucky Wheel challenge is not yet shown as opened or resolved.",
+  "inventory_caveat": "All extracted items remain source research, not LL01 initial inventory, guaranteed new-game drops, or active event contracts.",
+  "next_unprocessed_chapter": 932,
+  "source_urls": [
+    "https://www.bqquge.org/851/227800",
+    "https://www.bqquge.org/851/227801",
+    "https://www.bqquge.org/851/227802",
+    "https://www.bqquge.org/851/227803",
+    "https://www.bqquge.org/851/227804",
+    "https://www.bqquge.org/851/236476",
+    "https://www.bqquge.org/851/236477",
+    "https://www.bqquge.org/851/236478",
+    "https://www.bqquge.org/851/236479",
+    "https://www.bqquge.org/851/236514"
+  ],
+  "mirror_note": "Direct chapter text was read from the accessible Bqquge mirror. Primary 69shuba source URL sequence was inaccessible beyond Ch921 during this round; the alternate mirror preserves printed titles and chapter content."
+}
