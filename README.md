@@ -114,7 +114,7 @@ The React/Vite visual demo now lives in `frontend/` on `main`. It uses the origi
 
 - `data/events/EVENT-SOURCE-ITEMS-v7.22.csv`: cumulative source-item ledger through Round 93 (1,676 rows), covering the invasion counteroffensive, boss drops, Unity rewards, final campaign mechanics, and postwar recovery from LanaGarden Chapters 1342–1351.
 - `data/events/EVENT-SOURCE-CATALOG-v7.23-ADDENDUM.json`: Round 93 chapter index, receipt groups, and campaign outcome notes.
-- `research/extraction-audits/ROUND-93-NINETY-THIRD-EXTRACTION.md`: Round 93 audit; resumes at LanaGarden Chapter 1352 / SX-1677.
+- `research/extraction-audits/ROUND-93-NINETY-THIRD-EXTRACTION.md`: Round 93 audit; completed by the final source review in Round 94.
 
 - `data/events/EVENT-SOURCE-ITEMS-v7.23.csv`: cumulative 1,679-row ledger through Round 94; final source review covers Chapters 1352–1353.
 - `data/events/EVENT-SOURCE-CATALOG-v7.24-ADDENDUM.json`: completed-source chapter index and final outcome notes; no later source chapter is listed.
