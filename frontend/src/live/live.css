@@ -63,6 +63,7 @@
 .live-topbar h1 { margin:7px 0 4px; color:#f0efe9; font:500 25px Georgia,serif; }
 .live-topbar p { margin:0; color:#8ba2ab; font-size:11px; }
 .live-header-actions { display:flex; align-items:center; gap:10px; }
+.live-save-switch { flex:0 0 auto; padding:7px 9px; font-size:10px; white-space:nowrap; }
 .live-notification-wrap { position:relative; }
 .live-notification-wrap>.live-icon-button { position:relative; }
 .live-notification-count { position:absolute; top:-5px; right:-5px; min-width:16px; height:16px; display:grid; place-items:center; padding:0 3px; border:1px solid #102431; border-radius:9px; color:#11242b; background:#e2bf83; font-size:8px; font-weight:800; }
@@ -244,9 +245,10 @@
   .live-nav-item>svg { display:none; }
   .live-nav-item strong { font-size:9px; text-align:center; }
   .live-nav-item small { display:none; }
-  .live-topbar { min-height:83px; padding:13px 16px; }
+  .live-topbar { min-height:83px; flex-direction:column; align-items:stretch; gap:10px; padding:13px 16px; }
   .live-topbar h1 { font-size:20px; }
   .live-topbar p { font-size:9px; }
+  .live-header-actions { justify-content:flex-start; gap:6px; }
   .live-content { padding:16px; }
   .live-hero { min-height:170px; padding:20px; }
   .live-hero h2 { font-size:28px; }
@@ -263,5 +265,5 @@
   .live-inventory-grid { grid-template-columns:1fr; }
   .live-footer { flex-direction:column; gap:6px; padding:12px 16px; }
   .live-stage-strip { grid-template-columns:1fr 1fr; }
-  .live-clock-controls { max-width:300px; }
+  .live-clock-controls { max-width:100%; }
 }

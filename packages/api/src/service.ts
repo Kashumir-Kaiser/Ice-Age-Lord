@@ -61,6 +61,14 @@ function apiProblem(code: ApiErrorCode, status: number, message: string, display
   return new ApiProblem(status, code, message, displayText, currentRevision);
 }
 
+function isRuleNotReadyCommandReceipt(code: string): boolean {
+  return /_STAGE_0[4-8]$/.test(code)
+    || code.includes('NOT_IMPLEMENTED')
+    || code.includes('NOT_COMPILED')
+    // Exact opening fuel is unknown by design until the source record is supplied.
+    || code === 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED';
+}
+
 function nextDailyBoundary(elapsed: number, offset = 0): number {
   return offset + (Math.floor((elapsed - offset) / DAY_MS) + 1) * DAY_MS;
 }
@@ -1310,7 +1318,7 @@ export class GameApplicationService {
   private commandProblem(receipt: CommandReceipt, currentRevision: number): ApiProblem {
     if (receipt.code === 'STALE_REVISION') return apiProblem('STALE_REVISION', 409, receipt.message, 'Dữ liệu đã thay đổi. Hãy tải lại trước khi thử lại.', currentRevision);
     if (receipt.code === 'NOT_ACCESSIBLE' || receipt.code === 'ENTITY_NOT_KNOWN') return apiProblem('NOT_ACCESSIBLE', 404, 'The requested target is unavailable.', 'Không thể truy cập mục tiêu này.', currentRevision);
-    if (receipt.code.endsWith('_STAGE_04') || receipt.code.endsWith('_STAGE_05') || receipt.code.endsWith('_STAGE_06') || receipt.code.endsWith('_STAGE_07') || receipt.code.endsWith('_STAGE_08') || receipt.code.includes('NOT_IMPLEMENTED') || receipt.code.includes('NOT_COMPILED')) {
+    if (isRuleNotReadyCommandReceipt(receipt.code)) {
       return apiProblem('RULE_NOT_READY', 422, receipt.message, 'Quy tắc cho thao tác này chưa sẵn sàng.', currentRevision);
     }
     if (receipt.code === 'CONTENT_MISMATCH') return apiProblem('CONTENT_MISMATCH', 409, receipt.message, 'Phiên bản nội dung không khớp.', currentRevision);

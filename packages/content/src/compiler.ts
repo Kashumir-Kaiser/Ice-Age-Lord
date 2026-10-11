@@ -565,19 +565,24 @@ function verifyEventAndHeroContracts(file01: string, file04: string, file05: str
 function sourceManifest(sources: Readonly<Record<string, string>>) {
   return Object.keys(SOURCE_LOCK).sort().map(path => {
     const isResearch = path.includes('EVENT-SOURCE-CATALOG') || path.includes('EVENT-SOURCE-ITEMS') || path.includes('SOURCE-STRUCTURE-CATALOG');
-    const uses = path.includes('EVENT-TIMELINE')
-      ? { authorityClass: 'campaign_fixed', runtimeUse: 'Explicitly selected as the reconciled 30-row new-game schedule.' }
-      : isResearch
-        ? { authorityClass: 'unresolved_research', runtimeUse: 'Evidence only; not compiled as active items, structures, shops, rewards or inventory.' }
-        : path.includes('LORD-DND-03')
-          ? { authorityClass: 'campaign_fixed', runtimeUse: 'Fixed LL01 world package and pre-seeded world identities.' }
-          : path.includes('LORD-DND-06')
-            ? { authorityClass: 'campaign_fixed', runtimeUse: 'Lí Lan clean T0 state and source-defined carried assets.' }
-            : path.includes('LORD-DND-01') || path.includes('LORD-DND-02') || path.includes('LORD-DND-04') || path.includes('LORD-DND-05')
-              ? { authorityClass: 'immutable_source_fact', runtimeUse: 'Shared rules, clean start, command bounds and fixed actor/quest contracts.' }
-              : path.includes('CONTENT-DESIGN') || path.includes('RELEASE-LINEAGE')
-                ? { authorityClass: 'versioned_game_design', runtimeUse: 'Ruleset/content authority and migration lineage.' }
-                : { authorityClass: 'versioned_game_design', runtimeUse: 'Repository scope and fresh-start constraints.' };
+    let uses: { authorityClass: string; runtimeUse: string };
+    if (path.includes('EVENT-TIMELINE')) {
+      uses = { authorityClass: 'campaign_fixed', runtimeUse: 'Explicitly selected as the reconciled 30-row new-game schedule.' };
+    } else if (isResearch) {
+      uses = { authorityClass: 'unresolved_research', runtimeUse: 'Evidence only; not compiled as active items, structures, shops, rewards or inventory.' };
+    } else if (path.includes('LORD-DND-03')) {
+      uses = { authorityClass: 'campaign_fixed', runtimeUse: 'Fixed LL01 world package and pre-seeded world identities.' };
+    } else if (path.includes('LORD-DND-06')) {
+      uses = { authorityClass: 'campaign_fixed', runtimeUse: 'Lí Lan clean T0 state and source-defined carried assets.' };
+    } else if (path.includes('LORD-DND-01') || path.includes('LORD-DND-02') || path.includes('LORD-DND-04') || path.includes('LORD-DND-05')) {
+      uses = { authorityClass: 'immutable_source_fact', runtimeUse: 'Shared rules, clean start, command bounds and fixed actor/quest contracts.' };
+    } else if (path.includes('CONTENT-DESIGN') || path.includes('RELEASE-LINEAGE')) {
+      uses = { authorityClass: 'versioned_game_design', runtimeUse: 'Ruleset/content authority and migration lineage.' };
+    } else if (path === 'docs/FRESH_START.md') {
+      uses = { authorityClass: 'versioned_game_design', runtimeUse: 'Versioned clean-start constraints and prohibited carryover state.' };
+    } else {
+      uses = { authorityClass: 'versioned_game_design', runtimeUse: 'Repository scope and fresh-start constraints.' };
+    }
     return { path, releaseId: SOURCE_RELEASES[path as keyof typeof SOURCE_LOCK], sha256: sha256(sources[path]), ...uses };
   });
 }

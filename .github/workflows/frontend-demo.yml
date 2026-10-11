@@ -1,19 +1,38 @@
-name: Stage 02–08 regression and browser journey
+name: Stage 02–09 regression and release journeys
 on:
   push:
     branches:
       - main
+      - work
       - 'frontend/**'
-      - 'codex/backend-stage-07'
+      - 'codex/**'
     paths:
       - 'frontend/**'
       - 'packages/**'
-      - 'references/**'
-      - 'docs/implementation/STAGE-03.md'
-      - 'docs/implementation/STAGE-04.md'
-      - 'docs/implementation/STAGE-07.md'
-      - 'docs/implementation/STAGE-08.md'
-      - 'docs/implementation/STAGE-08-CONTENT-COVERAGE.md'
+      - 'references/canonical/**'
+      - 'design/current/**'
+      - 'data/events/EVENT-SOURCE-CATALOG-v4.6.json'
+      - 'data/events/EVENT-SOURCE-ITEMS-v4.6.csv'
+      - 'data/events/EVENT-TIMELINE-v0.6.json'
+      - 'data/structures/SOURCE-STRUCTURE-CATALOG-v1.0.json'
+      - 'docs/FRESH_START.md'
+      - 'docs/implementation/**'
+      - 'assets/**'
+      - 'package.json'
+      - '.github/workflows/frontend-demo.yml'
+  pull_request:
+    paths:
+      - 'frontend/**'
+      - 'packages/**'
+      - 'references/canonical/**'
+      - 'design/current/**'
+      - 'data/events/EVENT-SOURCE-CATALOG-v4.6.json'
+      - 'data/events/EVENT-SOURCE-ITEMS-v4.6.csv'
+      - 'data/events/EVENT-TIMELINE-v0.6.json'
+      - 'data/structures/SOURCE-STRUCTURE-CATALOG-v1.0.json'
+      - 'docs/FRESH_START.md'
+      - 'docs/implementation/**'
+      - 'assets/**'
       - 'package.json'
       - '.github/workflows/frontend-demo.yml'
   workflow_dispatch:
@@ -37,6 +56,7 @@ jobs:
       - run: npm run test:stage06
       - run: npm run test:stage07
       - run: npm run test:stage08
+      - run: npm run test:stage09
   frontend:
     needs: backend
     runs-on: ubuntu-latest

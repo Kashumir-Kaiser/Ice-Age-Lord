@@ -7,7 +7,6 @@ export const READ_ONLY_FRONTEND_REFERENCE = {
 } as const;
 
 export const SOURCE_LOCK = {
-  'README.md': '411b9629c2935752b1a67f70882c137446ceb4eed6317d0f47a64264c5bb973c',
   'docs/FRESH_START.md': '298de25154bb9e6c1d02339a24fc68d87c1d9c8771e11390de63f01f5887a84f',
   'design/current/WEB-GAME-CONTENT-DESIGN-v1.3.md': '073815b15cb86c40a79e9d103da9e4a8349f3832c789d35f17e84f4b9590b643',
   'references/canonical/RELEASE-LINEAGE-LL01-1.3.0.md': 'dffe83c6e5691b9c2fdaf2de7981d93f2283a428a3e34372ee73b3202b59399d',
@@ -25,7 +24,6 @@ export const SOURCE_LOCK = {
 } as const;
 
 export const SOURCE_RELEASES: Readonly<Record<keyof typeof SOURCE_LOCK, string>> = {
-  'README.md': 'repository-readme-at-main-32f34d8',
   'docs/FRESH_START.md': 'fresh-start-contract-at-main-32f34d8',
   'design/current/WEB-GAME-CONTENT-DESIGN-v1.3.md': 'WEB-GAME-CONTENT-DESIGN-v1.3',
   'references/canonical/RELEASE-LINEAGE-LL01-1.3.0.md': 'LL01-RELEASE-LINEAGE-1.3.0',

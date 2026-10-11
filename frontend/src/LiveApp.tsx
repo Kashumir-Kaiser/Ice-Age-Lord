@@ -12,22 +12,25 @@ import type { PlayerEvent, SaveSummary } from '../../packages/contracts/src/api.
 import { findAsset, layerPath, loadAssetManifest } from './assets/assetRegistry';
 import type { AssetManifest } from './assets/assetRegistry';
 import { entityRefKey, GameApiError, HttpGameClient } from './live/HttpGameClient';
+import { SaveResponseScopeGate, type SaveResponseScope } from './live/saveScope';
+import { LIVE_SCREENS, type LiveScreen } from './live/screens';
 
-type Screen = 'overview' | 'territory' | 'map' | 'inventory' | 'forces' | 'buildings' | 'journal';
+type Screen = LiveScreen;
 type Feedback = { kind: 'idle' | 'saving' | 'committed' | 'rejected' | 'disconnected'; text: string };
 const SAVE_KEY = 'ice-age-lord.live.last-save';
 const CREATE_KEY_PREFIX = 'ice-age-lord.live.create-key:';
 const RESOURCE_CARGO_IDS = new Set(['WOOD', 'STONE', 'RAW-ICE-WATER', 'BROWN-COAL', 'RAW-SALT', 'WILD-FOOD']);
 
-const navigation: { id: Screen; name: string; hint: string; icon: typeof Sparkles }[] = [
-  { id: 'overview', name: 'Tổng quan', hint: 'Trạng thái phiên', icon: Sparkles },
-  { id: 'territory', name: 'Lãnh địa', hint: 'Công trình chính', icon: Shield },
-  { id: 'map', name: 'Bản đồ', hint: 'Dữ liệu đã biết', icon: MapIcon },
-  { id: 'inventory', name: 'Kho vật phẩm', hint: 'Đã quan sát', icon: PackageOpen },
-  { id: 'forces', name: 'Quân lực', hint: 'Đơn vị sở hữu', icon: Users },
-  { id: 'buildings', name: 'Công trình', hint: 'Trạng thái API', icon: Hammer },
-  { id: 'journal', name: 'Nhật ký', hint: 'Event ledger', icon: ScrollText },
-];
+const screenIcons: Record<Screen, typeof Sparkles> = {
+  overview: Sparkles,
+  territory: Shield,
+  map: MapIcon,
+  inventory: PackageOpen,
+  forces: Users,
+  buildings: Hammer,
+  journal: ScrollText,
+};
+const navigation = LIVE_SCREENS.map(screen => ({ ...screen, icon: screenIcons[screen.id] }));
 
 function commandFor<T extends CommandType>(
   view: PlayerView,
@@ -181,6 +184,7 @@ function TombQueueList({ view, working, blocked, onCancel }: {
 
 function LiveApp() {
   const [client] = useState(() => new HttpGameClient());
+  const [saveScope] = useState(() => new SaveResponseScopeGate());
   const [apiState, setApiState] = useState<'checking' | 'ready' | 'disconnected'>('checking');
   const [apiMessage, setApiMessage] = useState('');
   const [ownerKey, setOwnerKey] = useState('');
@@ -247,6 +251,8 @@ function LiveApp() {
 
   useEffect(() => {
     if (!authenticated || !view) return;
+    const scope = saveScope.capture(view.saveId);
+    if (!scope) return;
     let active = true;
     let inFlight = false;
     const refreshClock = async () => {
@@ -254,13 +260,14 @@ function LiveApp() {
       inFlight = true;
       try {
         await client.heartbeatClock();
+        if (!active || !saveScope.isCurrent(scope)) return;
         const nextView = await client.getView();
-        if (active) {
+        if (active && saveScope.isCurrent(scope) && nextView.saveId === scope.saveId) {
           setView(nextView);
-          if (nextView.lastEventSequence > eventSequenceRef.current) await refreshEvents(nextView.lastEventSequence);
+          if (nextView.lastEventSequence > eventSequenceRef.current) await refreshEvents(nextView.lastEventSequence, scope);
         }
       } catch (error) {
-        if (active) setFeedback({
+        if (active && saveScope.isCurrent(scope)) setFeedback({
           kind: error instanceof GameApiError && error.code === 'API_DISCONNECTED' ? 'disconnected' : 'rejected',
           text: errorMessage(error),
         });
@@ -271,10 +278,11 @@ function LiveApp() {
     void refreshClock();
     const timer = window.setInterval(() => { void refreshClock(); }, 1000);
     return () => { active = false; window.clearInterval(timer); };
-  }, [authenticated, client, view?.saveId, working]);
+  }, [authenticated, client, saveScope, view?.saveId, working]);
 
   useEffect(() => {
-    if (!view || selectedRef?.type !== 'resource') {
+    const scope = view ? saveScope.capture(view.saveId) : null;
+    if (!view || !scope || selectedRef?.type !== 'resource') {
       setHarvestAvailability({});
       return;
     }
@@ -305,10 +313,10 @@ function LiveApp() {
         return [material.resourceId, { actionId: 'harvest', enabled: false, reasonCode: 'PREVIEW_UNAVAILABLE', requirements: ['The server could not check this harvest right now.'] }] as const;
       }
     })).then(entries => {
-      if (active) setHarvestAvailability(Object.fromEntries(entries));
+      if (active && saveScope.isCurrent(scope)) setHarvestAvailability(Object.fromEntries(entries));
     });
     return () => { active = false; };
-  }, [client, harvestActorId, selectedRef?.id, selectedRef?.type, view?.revision, view?.saveId]);
+  }, [client, harvestActorId, saveScope, selectedRef?.id, selectedRef?.type, view?.revision, view?.saveId]);
 
   async function checkApi() {
     setApiState('checking');
@@ -323,15 +331,27 @@ function LiveApp() {
     }
   }
 
-  async function refreshEvents(latestSequence = view?.lastEventSequence ?? 0) {
-    const page = await client.listEvents(Math.max(0, latestSequence - 200), 200);
+  async function refreshEvents(
+    latestSequence = view?.lastEventSequence ?? 0,
+    scope = saveScope.capture(view?.saveId ?? null),
+  ) {
+    if (!scope || !saveScope.isCurrent(scope)) return;
+    const page = await client.listEvents(Math.max(0, latestSequence - 200), 200, scope.saveId);
+    if (!saveScope.isCurrent(scope)) return;
     setEvents(page.events);
     eventSequenceRef.current = Math.max(page.nextSequence, latestSequence);
   }
 
   async function activateSave(saveId: string) {
+    const scope = saveScope.activate(saveId);
+    setView(null);
+    setEvents([]);
+    eventSequenceRef.current = 0;
+    setSelectedRef(null);
     await client.selectSave(saveId);
+    if (!saveScope.isCurrent(scope)) return;
     const nextView = await client.getView();
+    if (!saveScope.isCurrent(scope) || nextView.saveId !== scope.saveId) return;
     setView(nextView);
     eventSequenceRef.current = 0;
     setEvents([]);
@@ -339,10 +359,54 @@ function LiveApp() {
     localStorage.setItem(SAVE_KEY, saveId);
     setScreen('overview');
     try {
-      await refreshEvents(nextView.lastEventSequence);
+      await refreshEvents(nextView.lastEventSequence, scope);
     } catch (error) {
-      setEvents([]);
-      setFeedback({ kind: 'committed', text: 'Lượt lưu đã mở; nhật ký chưa tải được: ' + errorMessage(error) });
+      if (saveScope.isCurrent(scope)) {
+        setEvents([]);
+        setFeedback({ kind: 'committed', text: 'Lượt lưu đã mở; nhật ký chưa tải được: ' + errorMessage(error) });
+      }
+    }
+  }
+
+  async function returnToSavePicker() {
+    if (working || pendingCommand) return;
+    const generation = saveScope.clear();
+    setView(null);
+    setSelectedRef(null);
+    setEvents([]);
+    eventSequenceRef.current = 0;
+    setDestination(null);
+    setDestinationAvailability(null);
+    setHarvestAvailability({});
+    setCombatActorId('');
+    setSelectedCombatTargetId(null);
+    setChooseDestination(false);
+    setTravelActorId('LI_LAN');
+    setHarvestActorId('LI_LAN');
+    setConstructionContainerId('LL-CNT-CARRIED-FOOD-BAG-01');
+    setFocusedConstructionBuildingId(null);
+    setConstructionBlueprintId('');
+    setConstructionPreview(null);
+    setCustomSelection(false);
+    setNotificationsOpen(false);
+    setScreen('overview');
+    setWorking(true);
+    setFeedback({ kind: 'saving', text: 'Đang tải danh sách lượt lưu…' });
+    try {
+      const latestSaves = await client.listSaves();
+      if (saveScope.isPickerCurrent(generation)) {
+        setSaves(latestSaves);
+        setFeedback({ kind: 'committed', text: 'Đã tải danh sách lượt lưu từ API.' });
+      }
+    } catch (error) {
+      if (saveScope.isPickerCurrent(generation)) {
+        setFeedback({
+          kind: error instanceof GameApiError && error.code === 'API_DISCONNECTED' ? 'disconnected' : 'rejected',
+          text: 'Không thể cập nhật danh sách lượt lưu: ' + errorMessage(error),
+        });
+      }
+    } finally {
+      setWorking(false);
     }
   }
 
@@ -408,8 +472,11 @@ function LiveApp() {
     localStorage.setItem(storageKey, creationKey);
     try {
       const result = await client.createSave({ creationKey, slotName: name });
+      const scope = saveScope.activate(result.save.saveId);
       await client.selectSave(result.save.saveId);
+      if (!saveScope.isCurrent(scope)) return;
       const nextView = await client.getView();
+      if (!saveScope.isCurrent(scope) || nextView.saveId !== scope.saveId) return;
       setView(nextView);
       eventSequenceRef.current = 0;
       setEvents([]);
@@ -417,7 +484,7 @@ function LiveApp() {
       localStorage.setItem(SAVE_KEY, result.save.saveId);
       localStorage.removeItem(storageKey);
       setSaves(current => [result.save, ...current.filter(save => save.saveId !== result.save.saveId)]);
-      await refreshEvents(nextView.lastEventSequence);
+      await refreshEvents(nextView.lastEventSequence, scope);
       setScreen('overview');
       setFeedback({
         kind: 'committed',
@@ -436,14 +503,18 @@ function LiveApp() {
 
   async function loadLatest() {
     if (working || !view) return;
+    const scope = saveScope.capture(view.saveId);
+    if (!scope) return;
     setWorking(true);
     setFeedback({ kind: 'saving', text: 'Đang tải lại snapshot và event ledger…' });
     try {
       const nextView = await client.getView();
+      if (!saveScope.isCurrent(scope) || nextView.saveId !== scope.saveId) return;
       setView(nextView);
-      await refreshEvents(nextView.lastEventSequence);
+      await refreshEvents(nextView.lastEventSequence, scope);
       setFeedback({ kind: 'committed', text: 'Đã tải lại revision ' + nextView.revision + ' từ API.' });
     } catch (error) {
+      if (!saveScope.isCurrent(scope)) return;
       setFeedback({
         kind: error instanceof GameApiError && error.code === 'API_DISCONNECTED' ? 'disconnected' : 'rejected',
         text: errorMessage(error),
@@ -455,11 +526,14 @@ function LiveApp() {
 
   async function sendCommand(command: CommandEnvelope, retry = false) {
     if (working || !view) return;
+    const scope = saveScope.capture(view.saveId);
+    if (!scope || command.saveId !== scope.saveId) return;
     setWorking(true);
     setFeedback({ kind: 'saving', text: retry ? 'Đang gửi lại cùng command ID…' : 'Đang kiểm tra lệnh với API…' });
     try {
       if (!retry) {
         const preview = await client.previewCommand(command);
+        if (!saveScope.isCurrent(scope)) return;
         if (!preview.availability.enabled) {
           setPendingCommand(null);
           setFeedback({ kind: 'rejected', text: availabilityMessage(preview.availability) });
@@ -468,8 +542,9 @@ function LiveApp() {
       }
       setPendingCommand(command);
       const result = await client.submitCommand(command);
+      if (!saveScope.isCurrent(scope) || result.view.saveId !== scope.saveId) return;
       setView(result.view);
-      if (result.view.lastEventSequence > eventSequenceRef.current) await refreshEvents(result.view.lastEventSequence);
+      if (result.view.lastEventSequence > eventSequenceRef.current) await refreshEvents(result.view.lastEventSequence, scope);
       setSelectedRef(current => current || result.view.territory.survivalFire.ref);
       setPendingCommand(null);
       setFeedback({
@@ -477,14 +552,16 @@ function LiveApp() {
         text: result.receipt.message + ' · revision ' + result.revision + ' đã commit.',
       });
       try {
-        await refreshEvents();
+        await refreshEvents(result.view.lastEventSequence, scope);
       } catch (error) {
         setFeedback({ kind: 'committed', text: 'Lệnh đã commit; event ledger chưa tải được: ' + errorMessage(error) });
       }
     } catch (error) {
+      if (!saveScope.isCurrent(scope)) return;
       if (error instanceof GameApiError && error.code === 'STALE_REVISION') {
         try {
-          setView(await client.getView());
+          const currentView = await client.getView();
+          if (saveScope.isCurrent(scope) && currentView.saveId === scope.saveId) setView(currentView);
         } catch {
           // The rejection remains visible; the next explicit reload can recover the latest view.
         }
@@ -508,10 +585,13 @@ function LiveApp() {
 
   async function previewConstructionCommand(command: CommandEnvelope) {
     if (working || !view) return;
+    const scope = saveScope.capture(view.saveId);
+    if (!scope || command.saveId !== scope.saveId) return;
     setWorking(true);
     setFeedback({ kind: 'saving', text: 'Đang kiểm tra chi phí, nhân công và vị trí với API…' });
     try {
       const result = await client.previewCommand(command);
+      if (!saveScope.isCurrent(scope)) return;
       setConstructionPreview({ key: constructionCommandKey(command), availability: result.availability });
       setFeedback({
         kind: result.availability.enabled ? 'committed' : 'rejected',
@@ -520,6 +600,7 @@ function LiveApp() {
           : availabilityMessage(result.availability),
       });
     } catch (error) {
+      if (!saveScope.isCurrent(scope)) return;
       setConstructionPreview(null);
       setFeedback({ kind: error instanceof GameApiError && error.code === 'API_DISCONNECTED' ? 'disconnected' : 'rejected', text: errorMessage(error) });
     } finally {
@@ -559,25 +640,36 @@ function LiveApp() {
 
   function previewCoordinateDestination(position: CoordinateMm) {
     if (!view) return;
+    const scope = saveScope.capture(view.saveId);
+    if (!scope) return;
     setDestination(position);
     setDestinationAvailability(null);
     const command = commandFor(view, 'move', { actorId: travelActorId, destination: position });
-    void client.previewCommand(command).then(result => setDestinationAvailability(result.availability)).catch(error => {
-      setFeedback({ kind: 'rejected', text: errorMessage(error) });
+    void client.previewCommand(command).then(result => {
+      if (saveScope.isCurrent(scope)) setDestinationAvailability(result.availability);
+    }).catch(error => {
+      if (saveScope.isCurrent(scope)) setFeedback({ kind: 'rejected', text: errorMessage(error) });
     });
   }
 
   function moveToEntity(entity: PlayerEntityView) {
     if (!view) return;
+    const scope = saveScope.capture(view.saveId);
+    if (!scope) return;
     const command = commandFor(view, 'move', { actorId: travelActorId, destinationId: entity.ref.id });
     void client.previewCommand(command).then(result => {
+      if (!saveScope.isCurrent(scope)) return;
       if (!result.availability.enabled) setFeedback({ kind: 'rejected', text: availabilityMessage(result.availability) });
       else void sendCommand(command);
-    }).catch(error => setFeedback({ kind: 'rejected', text: errorMessage(error) }));
+    }).catch(error => {
+      if (saveScope.isCurrent(scope)) setFeedback({ kind: 'rejected', text: errorMessage(error) });
+    });
   }
 
   function harvestSelectedResource(entity: PlayerEntityView, resourceId: string, quantity: number) {
     if (!view || entity.ref.type !== 'resource') return;
+    const scope = saveScope.capture(view.saveId);
+    if (!scope) return;
     const workerContainer = view.inventory.containers.find(container => container.ownerId === harvestActorId
       && (container.kind === 'carried_bag' || container.kind === 'unit_inventory'));
     const resource = view.spatial.resources.find(item => item.resourceId === resourceId);
@@ -596,12 +688,15 @@ function LiveApp() {
       toolItemId: tool?.itemId ?? 'NONE',
     });
     void client.previewCommand(command).then(result => {
+      if (!saveScope.isCurrent(scope)) return;
       if (!result.availability.enabled) {
         setFeedback({ kind: 'rejected', text: availabilityMessage(result.availability) });
         return;
       }
       void sendCommand(command);
-    }).catch(error => setFeedback({ kind: 'rejected', text: errorMessage(error) }));
+    }).catch(error => {
+      if (saveScope.isCurrent(scope)) setFeedback({ kind: 'rejected', text: errorMessage(error) });
+    });
   }
 
   const selectedEntity = view && selectedRef
@@ -1458,6 +1553,12 @@ function LiveApp() {
       <header className="live-topbar">
         <div><span className="live-eyebrow">CUỘC HÀNH TRÌNH</span><h1>{navigation.find(item => item.id === screen)?.name}</h1><p>{selectedSave?.slotName || view.player.name} · Ngày {view.worldClock.day} {String(view.worldClock.hour).padStart(2, '0')}:{String(view.worldClock.minute).padStart(2, '0')} · revision {view.revision}</p></div>
         <div className="live-header-actions">
+          <button
+            className="live-button live-button--secondary live-save-switch"
+            title={pendingCommand ? 'Gửi lại cùng mã lệnh trước khi đổi lượt lưu.' : 'Chọn một lượt lưu khác.'}
+            disabled={working || Boolean(pendingCommand)}
+            onClick={() => void returnToSavePicker()}
+          >Đổi lượt lưu</button>
           <span className="live-data-chip">EVENT {view.lastEventSequence}</span>
           <div className="live-clock-controls" aria-label="Điều khiển đồng hồ mô phỏng">
             <select aria-label="Tốc độ mô phỏng" value={customSelection ? 'custom' : view.clockControl.selection} disabled={working || Boolean(pendingCommand) || Boolean(view.eventProgressionBlocker) || view.clockStatus.driver !== 'active'} onChange={event => {

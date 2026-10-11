@@ -126,8 +126,9 @@ export class HttpGameClient {
     return result.view;
   }
 
-  async listEvents(afterSequence = 0, limit = 200): Promise<EventPage> {
-    const saveId = this.requireSelectedSave();
+  async listEvents(afterSequence = 0, limit = 200, responseSaveId?: string): Promise<EventPage> {
+    const selectedSaveId = this.requireSelectedSave();
+    const saveId = responseSaveId ?? selectedSaveId;
     const query = new URLSearchParams({ afterSequence: String(afterSequence), limit: String(limit) });
     return this.request<EventPage>('/saves/' + encodeURIComponent(saveId) + '/events?' + query.toString());
   }

@@ -28,6 +28,11 @@ test('content authority is pinned and the world compiles from the selected sourc
   assert.equal(ACTIVE_CONTENT.manifest.conversionManifest.length, 6);
   assert.ok(ACTIVE_CONTENT.manifest.sources.find(source => source.path.endsWith('EVENT-SOURCE-CATALOG-v4.6.json'))?.runtimeUse.includes('not compiled'));
   assert.ok(ACTIVE_CONTENT.manifest.sources.find(source => source.path.endsWith('SOURCE-STRUCTURE-CATALOG-v1.0.json'))?.runtimeUse.includes('not compiled'));
+  const freshStartContract = ACTIVE_CONTENT.manifest.sources.find(source => source.path === 'docs/FRESH_START.md');
+  assert.equal(freshStartContract?.authorityClass, 'versioned_game_design');
+  assert.match(freshStartContract?.runtimeUse ?? '', /clean-start constraints/);
+  assert.equal(ACTIVE_CONTENT.manifest.sources.some(source => source.path === 'README.md'), false);
+  assert.equal(world.lockedSourceHashes['README.md'], undefined);
   assert.equal(Object.keys(world.lockedSourceHashes).length, Object.keys(SOURCE_LOCK).length);
   assert.ok(Object.isFrozen(world));
   assert.ok(Object.isFrozen(world.sites));
@@ -221,6 +226,6 @@ test('simulation clock starts at day 1 07:00 and is independent of local timezon
 test('source edits fail closed until the content lock is intentionally updated', () => {
   const contents = Object.fromEntries(Object.keys(SOURCE_LOCK).map(path => [path, readFileSync(path, 'utf8')]));
   assert.doesNotThrow(() => assertSourceHashes(contents));
-  contents['README.md'] += '\nlocal mutation\n';
-  assert.throws(() => assertSourceHashes(contents), /CONTENT_SOURCE_HASH_MISMATCH: README\.md/);
+  contents['references/canonical/LORD-DND-06.md'] += '\nlocal mutation\n';
+  assert.throws(() => assertSourceHashes(contents), /CONTENT_SOURCE_HASH_MISMATCH: references\/canonical\/LORD-DND-06\.md/);
 });

@@ -10,6 +10,7 @@
     "content:compile": "node --experimental-strip-types packages/content/tools/compile-content.ts",
     "content:coverage:stage08": "node --experimental-strip-types packages/content/tools/report-event-coverage.ts",
     "test:stage08": "node --experimental-strip-types packages/sim/test/stage08.test.ts",
+    "test:stage09": "node --experimental-strip-types packages/sim/test/stage09.test.ts",
     "test:stage02": "node --experimental-strip-types packages/sim/test/stage02.test.ts",
     "test:stage04": "node --experimental-strip-types packages/sim/test/stage04.test.ts",
     "test:stage05": "node --experimental-strip-types packages/sim/test/stage05.test.ts",
@@ -18,6 +19,7 @@
     "owner:key:create": "node --experimental-strip-types packages/api/tools/create-owner-key.ts",
     "db:migrate": "node --experimental-strip-types packages/storage/tools/migrate.ts",
     "api:start": "node --experimental-strip-types packages/api/tools/server.ts",
+    "local:start": "node --experimental-strip-types tools/start-local.mjs",
     "backup:export": "node --experimental-strip-types packages/api/tools/backup.ts export",
     "backup:import": "node --experimental-strip-types packages/api/tools/backup.ts import",
     "test:stage07": "node --experimental-strip-types --test packages/sim/test/stage07.test.ts"

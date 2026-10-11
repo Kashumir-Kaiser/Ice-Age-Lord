@@ -30,7 +30,7 @@ Source route distances and endpoint identities remain separate from the overlay 
 
 - Chest opening returns `CHEST_LOOT_CANDIDATE_POOL_NOT_COMPILED`; detection and identification do not create or reveal loot.
 - Search eligibility currently excludes source access statements that explicitly identify a seal, deep location, ownership claim, quest lock, or collapse hazard. A compiled access taxonomy is still needed before broader chest interaction.
-- Starting weather remains `OPENING_WEATHER_RECORD_NOT_SEEDED`, and initial fire fuel remains `INITIAL_FUEL_AMOUNT_NOT_SPECIFIED`. Stage 05 does not add cold or fire values.
+- The runtime still carries `OPENING_WEATHER_RECORD_NOT_SEEDED` and `INITIAL_FUEL_AMOUNT_NOT_SPECIFIED`: File 03/06 require campaign-seeded hourly weather and a hidden starter-fuel ledger, but neither seed is materialized in the active world package. Stage 05 does not fabricate or add those values.
 - Visibility uses the versioned circular range model and light-phase penalties. Terrain occlusion and a compiled line-of-sight map are not available in the selected source data.
 - Water, coal, and salt source balances are maintained, but their production actions remain blocked by their source requirements. The listed source quantities are ledger capacities, not fabricated player knowledge.
 

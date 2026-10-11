@@ -35,7 +35,7 @@ Chromium 151.0.7922.173 is present at `/usr/bin/chromium`. A headless launch exi
 - Farmhouse daily upkeep is not simulated: the source confirms a daily need but does not set a universal food amount independent of resident condition/activity.
 - Non-heater production recipes and the D1 charcoal acquisition/recipe are not executable in the adopted opening contracts. They remain absent/disabled; constructing an icon cannot produce coal.
 - First-world uniqueness and recipient skill selection remain pending; no competitive actor/result or skill is fabricated.
-- The source opening fuel amount and opening weather remain unobserved/unresolved. The heater's local-room output does not fill either gap.
+- The runtime has not materialized the hidden T0 fuel balance referenced by File 06's `STATE_UNOBSERVED_SEE_STARTER_LEDGER`, or the hourly weather seed required by File 03 §28.1 and File 06. The source fire rate is 1 WOOD/15 minutes; these are missing runtime seed inputs, not absent source rules. The heater's local-room output does not fill either gap.
 
 ## Visible journey and handoff
 

@@ -1,76 +1,70 @@
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { sameEntityRef } from '../src/game/GameClient.ts';
+import { parseWorkflowTriggers } from '../scripts/workflowTriggers.mjs';
+import { SaveResponseScopeGate } from '../src/live/saveScope.ts';
+import { isLiveScreen, LIVE_SCREENS } from '../src/live/screens.ts';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const read = path => readFileSync(join(root, path), 'utf8');
-const filesUnder = dir => readdirSync(join(root, dir), { withFileTypes: true }).flatMap(entry => {
-  const path = join(dir, entry.name);
-  return entry.isDirectory() ? filesUnder(path) : /\.(ts|tsx)$/.test(entry.name) ? [read(path)] : [];
-});
-const source = filesUnder('src').join('\n');
 
-test('all eight destinations are supplied through the shared player view', () => {
-  const client = read('src/game/GameClient.ts');
-  const screens = read('src/demoData.ts');
-  for (const id of ['overview', 'character', 'territory', 'map', 'inventory', 'forces', 'buildings', 'journal']) {
-    assert.match(screens, new RegExp(`id: '${id}'`));
+test('live navigation exposes exactly seven unique runtime screens', () => {
+  const ids = LIVE_SCREENS.map(screen => screen.id);
+  assert.deepEqual(ids, ['overview', 'territory', 'map', 'inventory', 'forces', 'buildings', 'journal']);
+  assert.equal(new Set(ids).size, ids.length);
+  for (const id of ids) assert.equal(isLiveScreen(id), true);
+  assert.equal(isLiveScreen('demo-gallery'), false);
+});
+
+test('entity references compare by type and stable identity', () => {
+  assert.equal(sameEntityRef({ type: 'site', id: 'SITE-LL01-000' }, { type: 'site', id: 'SITE-LL01-000' }), true);
+  assert.equal(sameEntityRef({ type: 'site', id: 'SITE-LL01-000' }, { type: 'cache', id: 'SITE-LL01-000' }), false);
+  assert.equal(sameEntityRef({ type: 'site', id: 'SITE-LL01-000' }, null), false);
+});
+
+test('a delayed response cannot cross a save change or an A-to-B-to-A selection', () => {
+  const scopes = new SaveResponseScopeGate();
+  const firstA = scopes.activate('save-A');
+  const saveB = scopes.activate('save-B');
+  assert.equal(scopes.isCurrent(firstA), false);
+  assert.equal(scopes.isCurrent(saveB), true);
+  const pickerGeneration = scopes.clear();
+  assert.equal(scopes.isCurrent(saveB), false);
+  assert.equal(scopes.isPickerCurrent(pickerGeneration), true);
+  const secondA = scopes.activate('save-A');
+  assert.equal(scopes.isCurrent(firstA), false);
+  assert.equal(scopes.isCurrent(secondA), true);
+  assert.throws(() => scopes.activate('  '), /SAVE_SCOPE_ID_REQUIRED/);
+});
+
+test('workflow event filters include pushes, pull requests, dispatch, and compiled-content sources', () => {
+  const triggers = parseWorkflowTriggers(read('../.github/workflows/frontend-demo.yml'));
+  assert.ok('workflow_dispatch' in triggers);
+  assert.equal('schedule' in triggers, false);
+  assert.ok(triggers.push);
+  assert.ok(triggers.pull_request);
+  for (const event of [triggers.push, triggers.pull_request]) {
+    assert.ok(event.paths.includes('frontend/**'));
+    assert.ok(event.paths.includes('packages/**'));
+    assert.ok(event.paths.includes('references/canonical/**'));
+    assert.ok(event.paths.includes('design/current/**'));
+    assert.ok(event.paths.includes('data/events/EVENT-TIMELINE-v0.6.json'));
+    assert.ok(event.paths.includes('data/events/EVENT-SOURCE-CATALOG-v4.6.json'));
+    assert.ok(event.paths.includes('data/events/EVENT-SOURCE-ITEMS-v4.6.csv'));
+    assert.ok(event.paths.includes('data/structures/SOURCE-STRUCTURE-CATALOG-v1.0.json'));
+    assert.ok(event.paths.includes('docs/FRESH_START.md'));
   }
-  assert.match(client, /export type PlayerView/);
-  assert.match(client, /screens: readonly/);
-  assert.match(read('src/App.tsx'), /screens=\{playerView\.screens\}/);
+  assert.ok(triggers.push.branches.includes('work'));
+  assert.ok(triggers.push.branches.includes('codex/**'));
 });
 
-test('selection and camera live above screens and the map consumes the shared projection', () => {
-  const app = read('src/App.tsx');
-  const map = read('src/MapScene.tsx');
-  assert.match(app, /useState<EntityRef\s*\|\s*null>/);
-  assert.match(app, /useState<SharedMapCamera>/);
-  assert.match(app, /event\.key!=='Escape'/);
-  assert.match(app, /setSelection\(null\)/);
-  assert.match(app, /sameEntityRef\(selectedEntity\?\.ref,site\.entityRef\)/);
-  assert.match(map, /visibleMap\.entities/);
-  assert.doesNotMatch(map, /from '\.\/canonicalGeography'/);
-  assert.match(map, /onPointerUp=\{finishPointer\}/);
-  assert.match(map, /onPointerCancel=\{cancelPointer\}/);
-  assert.match(map, /onLostPointerCapture=\{lostPointerCapture\}/);
-  assert.match(map, /zoomAtScreenPoint\(/);
-  assert.match(map, /scaleBar\(/);
-});
-
-test('demo-only restrictions apply to the adapter and unsupported commands are denied', () => {
-  const adapter = read('src/game/DemoGameClient.ts');
-  assert.match(adapter, /implements GameClient/);
-  assert.match(adapter, /accepted: false/);
-  assert.match(adapter, /demo-command-unsupported/);
-  assert.doesNotMatch(adapter, /\b(fetch|XMLHttpRequest|localStorage|sessionStorage|indexedDB|WebSocket)\b/);
-  assert.doesNotMatch(source, /Math\.random\s*\(/);
-  assert.match(read('src/game/GameClient.ts'), /export type CommandRequest/);
-  assert.match(read('src/game/GameClient.ts'), /export type CommandReceipt/);
-});
-
-test('presentation preserves the opening state and frozen display clock', () => {
-  const app = read('src/App.tsx');
-  assert.match(app, /useState\(INITIAL_CLOCK_SECONDS\)/);
-  assert.match(app, /useState<ClockSpeed>\('Frozen'\)/);
-  assert.match(app, /0 đơn vị/);
-  assert.match(app, /Vật phẩm Lí Lan đang sở hữu sẽ xuất hiện tại đây khi có dữ liệu/);
-  assert.doesNotMatch(app, />T0(?:\s|<)/);
-});
-
-test('workflow lockfile install and dispatch trigger are explicit', () => {
-  const workflow = read('../.github/workflows/frontend-demo.yml');
-  assert.match(workflow, /workflow_dispatch:/);
-  assert.match(workflow, /npm ci --no-audit --no-fund/);
-  assert.match(workflow, /npm run build/);
-  assert.match(workflow, /npm test/);
-  assert.doesNotMatch(workflow, /\\n/);
-  assert.match(read('package-lock.json'), /"lockfileVersion"/);
-});
-
-test('sidebar navigation remains independently scrollable', () => {
-  assert.match(read('src/styles.css'), /\.sidebar-nav\s*\{[^}]*overflow-y:auto/);
-  assert.match(read('src/styles.css'), /\.sidebar-nav\s*\{[^}]*min-height:0/);
+test('frontend package manifest and lockfile agree on every direct dependency', () => {
+  const manifest = JSON.parse(read('package.json'));
+  const lock = JSON.parse(read('package-lock.json'));
+  assert.equal(lock.lockfileVersion, 3);
+  assert.deepEqual(lock.packages[''].dependencies, manifest.dependencies);
+  assert.deepEqual(lock.packages[''].devDependencies, manifest.devDependencies);
 });

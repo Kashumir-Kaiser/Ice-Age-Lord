@@ -11,7 +11,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "assets:sync": "node scripts/sync-assets.mjs",
     "qa:territory": "npm run build && node scripts/territory-visual-qa.mjs",
-    "test": "node --test tests/*.test.mjs",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {

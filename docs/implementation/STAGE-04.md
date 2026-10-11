@@ -28,8 +28,8 @@ The implementation follows the attached Stage 04 work prompt and these repositor
 ## Opening-state blockers retained
 
 - EV00-SAFE-FIRE starts in the first save transaction at elapsed T0 and expires at T+144h. It protects the fire and settlement but does not neutralize cold, hunger, or darkness.
-- The T0 fire is known active, level 1, and 10 m radius. Its remaining fuel and first consumption timestamp are not present in the opening source state. They stay `null`/unobserved; the engine does not consume invented fuel. Because the initial quantity is unknown, exact refuelling is disabled until that ledger can be known. The starter inventory contains no wood, and the supply chest remains inaccessible under the Stage 03 distance/access conflict.
-- No opening actual-weather record was seeded. ColdLoad keeps a visible unresolved blocker and does not accrue until a source-backed environment is available. The implemented formula and thresholds are source-defined, but no weather value is inferred.
+- The T0 fire is known active, level 1, and 10 m radius; its source-defined profile consumes 1 WOOD every 15 minutes. File 06 labels `fuel_remaining` as `STATE_UNOBSERVED_SEE_STARTER_LEDGER`: the player does not observe the seeded balance, while the simulation must load that balance from its starter ledger. This repository's active world package does not include the referenced numeric ledger entry, and the initializer stores `null` with no first-consumption timestamp. The engine therefore blocks exact refuelling/consumption rather than inventing a balance. The starter inventory contains no wood, and the supply chest remains inaccessible under the Stage 03 distance/access conflict.
+- File 03 §28.1 requires hourly weather values to be `CAMPAIGN_SEEDED`; File 06 says nearby weather is seeded before opening. The active world package/initializer contains no T0 hourly weather row, so ColdLoad remains unresolved. The runtime is missing the required seed materialization; this is not a source rule that weather is absent. The implemented formula and thresholds remain unchanged.
 - The standard Tomb chassis profile includes the source-locked output fields. Equipment slots are marked `source_profile_not_compiled`; no weapon, anatomy detail, or hidden profile is invented. Stage 05 movement, exploration, search, resource extraction, and direct revival remain disabled.
 
 ## Main implementation paths
@@ -62,4 +62,4 @@ Local-only constraints prevented two checks in this workspace:
 
 ## Stage 05 handoff
 
-Before movement or exploration is enabled, seed and source-lock the actual T0 weather record and resolve the starting fire’s fuel ledger. Stage 05 must keep the lease-owned server clock and pure boundary engine, include every new action/completion/depletion in its time-boundary manifest, and preserve stable identities and player-safe event projection.
+Before movement or exploration is enabled, materialize the File 06 referenced starter fuel ledger and the campaign-seeded T0 hourly weather row, then source-lock/version their inputs. Stage 05 must keep the lease-owned server clock and pure boundary engine, include every new action/completion/depletion in its time-boundary manifest, and preserve stable identities and player-safe event projection.
