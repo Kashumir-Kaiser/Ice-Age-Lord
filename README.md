@@ -62,3 +62,7 @@ The React/Vite visual demo now lives in `frontend/` on `main`. It uses the origi
 - `data/events/EVENT-SOURCE-ITEMS-v7.6.csv`: cumulative source-item ledger through printed Chapter 1181.
 - `data/events/EVENT-SOURCE-CATALOG-v7.6-ADDENDUM.json`: Round 76 drops, SS task rewards, event rules, three-site Vietnamese edition checks, and unresolved conflicts.
 - `research/extraction-audits/ROUND-76-SEVENTY-SIXTH-EXTRACTION.md`: Round 76 audit for Chapters 1172–1181.
+
+- `data/events/EVENT-SOURCE-ITEMS-v7.7.csv`: cumulative source-item ledger through printed Chapter 1191.
+- `data/events/EVENT-SOURCE-CATALOG-v7.7-ADDENDUM.json`: Round 77 chest results, relic choices, pet transformations, trial item, ascensions, and unresolved outcomes.
+- `research/extraction-audits/ROUND-77-SEVENTY-SEVENTH-EXTRACTION.md`: Round 77 audit for Chapters 1182–1191.
