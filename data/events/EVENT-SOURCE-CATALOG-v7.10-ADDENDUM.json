@@ -1,0 +1,735 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.10-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.9-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 80: printed Chinese Chapters 1212–1221. QQ Reading titles/previews checked against readable Qidian Bookresource excerpts and alternate catalogs. Preview gates hide some drop details and full item mechanics.",
+  "data_file": "EVENT-SOURCE-ITEMS-v7.10.csv",
+  "cumulative_rows": 1395,
+  "columns": 69,
+  "total_item_ids": [
+    "SX-1332",
+    "SX-1333",
+    "SX-1334",
+    "SX-1335",
+    "SX-1336",
+    "SX-1337",
+    "SX-1338",
+    "SX-1339",
+    "SX-1340",
+    "SX-1341",
+    "SX-1342",
+    "SX-1343",
+    "SX-1344",
+    "SX-1345",
+    "SX-1346",
+    "SX-1347",
+    "SX-1348",
+    "SX-1349",
+    "SX-1350",
+    "SX-1351",
+    "SX-1352",
+    "SX-1353",
+    "SX-1354",
+    "SX-1355",
+    "SX-1356",
+    "SX-1357",
+    "SX-1358",
+    "SX-1359",
+    "SX-1360",
+    "SX-1361",
+    "SX-1362",
+    "SX-1363",
+    "SX-1364",
+    "SX-1365",
+    "SX-1366",
+    "SX-1367",
+    "SX-1368",
+    "SX-1369",
+    "SX-1370",
+    "SX-1371",
+    "SX-1372",
+    "SX-1373",
+    "SX-1374",
+    "SX-1375",
+    "SX-1376",
+    "SX-1377",
+    "SX-1378",
+    "SX-1379",
+    "SX-1380",
+    "SX-1381",
+    "SX-1382",
+    "SX-1383",
+    "SX-1384",
+    "SX-1385",
+    "SX-1386",
+    "SX-1387",
+    "SX-1388",
+    "SX-1389",
+    "SX-1390",
+    "SX-1391",
+    "SX-1392",
+    "SX-1393",
+    "SX-1394",
+    "SX-1395"
+  ],
+  "chapter_item_ids": {
+    "1162": [
+      "SX-1322",
+      "SX-1323"
+    ],
+    "1163": [
+      "SX-1324",
+      "SX-1325",
+      "SX-1326"
+    ],
+    "1164": [
+      "SX-1327",
+      "SX-1328",
+      "SX-1329"
+    ],
+    "1165": [
+      "SX-1330",
+      "SX-1331",
+      "SX-1332"
+    ],
+    "1166": [
+      "SX-1333"
+    ],
+    "1167": [
+      "SX-1334"
+    ],
+    "1169": [
+      "SX-1335",
+      "SX-1336"
+    ],
+    "1170": [
+      "SX-1337"
+    ],
+    "1171": [
+      "SX-1338",
+      "SX-1339"
+    ],
+    "1173": [
+      "SX-1340",
+      "SX-1341"
+    ],
+    "1174": [
+      "SX-1342",
+      "SX-1343",
+      "SX-1344",
+      "SX-1345",
+      "SX-1346"
+    ],
+    "1175": [
+      "SX-1347"
+    ],
+    "1176": [
+      "SX-1348",
+      "SX-1349"
+    ],
+    "1177": [
+      "SX-1350"
+    ],
+    "1178": [
+      "SX-1351"
+    ],
+    "1179": [
+      "SX-1352"
+    ],
+    "1181": [
+      "SX-1353",
+      "SX-1354",
+      "SX-1355",
+      "SX-1356",
+      "SX-1357",
+      "SX-1358",
+      "SX-1359",
+      "SX-1360",
+      "SX-1361",
+      "SX-1362",
+      "SX-1363",
+      "SX-1364",
+      "SX-1365",
+      "SX-1366",
+      "SX-1367",
+      "SX-1368",
+      "SX-1369",
+      "SX-1370",
+      "SX-1371",
+      "SX-1372"
+    ],
+    "1182": [
+      "SX-1373",
+      "SX-1374",
+      "SX-1375"
+    ],
+    "1183": [
+      "SX-1376",
+      "SX-1377",
+      "SX-1378",
+      "SX-1379",
+      "SX-1380"
+    ],
+    "1188": [
+      "SX-1381"
+    ],
+    "1199": [
+      "SX-1382"
+    ],
+    "1200": [
+      "SX-1383",
+      "SX-1384"
+    ],
+    "1201": [
+      "SX-1385"
+    ],
+    "1207": [
+      "SX-1386",
+      "SX-1387"
+    ],
+    "1212": [
+      "SX-1388"
+    ],
+    "1213": [
+      "SX-1389"
+    ],
+    "1215": [
+      "SX-1390"
+    ],
+    "1216": [
+      "SX-1391"
+    ],
+    "1218": [
+      "SX-1392"
+    ],
+    "1221": [
+      "SX-1393",
+      "SX-1394",
+      "SX-1395"
+    ]
+  },
+  "receipt_groups": {
+    "ROUND_75_STORM_AXE": [
+      "SX-1322",
+      "SX-1323"
+    ],
+    "ROUND_75_MASS_PROMOTION": [
+      "SX-1324",
+      "SX-1325",
+      "SX-1326",
+      "SX-1327"
+    ],
+    "ROUND_75_TRIAL_REWARDS": [
+      "SX-1328",
+      "SX-1329"
+    ],
+    "ROUND_75_GENESIS_SHIELD": [
+      "SX-1330",
+      "SX-1331",
+      "SX-1332"
+    ],
+    "ROUND_75_ABYSS_CAMPAIGN": [
+      "SX-1333",
+      "SX-1334",
+      "SX-1335",
+      "SX-1336",
+      "SX-1337",
+      "SX-1338",
+      "SX-1339"
+    ],
+    "ROUND_76_AILIN_GODS_DESCENT": [
+      "SX-1340",
+      "SX-1341",
+      "SX-1342",
+      "SX-1352",
+      "SX-1353"
+    ],
+    "ROUND_76_ALPHONSE_DROPS": [
+      "SX-1343",
+      "SX-1344",
+      "SX-1345",
+      "SX-1346",
+      "SX-1347"
+    ],
+    "ROUND_76_ABYSS_CAMPAIGN": [
+      "SX-1348",
+      "SX-1349",
+      "SX-1350",
+      "SX-1351"
+    ],
+    "ROUND_76_SS_TASK_REWARDS": [
+      "SX-1354",
+      "SX-1355",
+      "SX-1356",
+      "SX-1357",
+      "SX-1358",
+      "SX-1359",
+      "SX-1360",
+      "SX-1361",
+      "SX-1362",
+      "SX-1363",
+      "SX-1364",
+      "SX-1365",
+      "SX-1366",
+      "SX-1367",
+      "SX-1368"
+    ],
+    "ROUND_76_BREAKTHROUGH_AND_PENDING_CHESTS": [
+      "SX-1369",
+      "SX-1370",
+      "SX-1371",
+      "SX-1372"
+    ],
+    "ROUND_77_CHEST_RESULTS": [
+      "SX-1373",
+      "SX-1374",
+      "SX-1375"
+    ],
+    "ROUND_77_CHOICE_RELICS": [
+      "SX-1376",
+      "SX-1377",
+      "SX-1378",
+      "SX-1379",
+      "SX-1380"
+    ],
+    "ROUND_77_TRIAL_ITEM": [
+      "SX-1381"
+    ],
+    "ROUND_78_GODHEAD_BREAKTHROUGH": [
+      "SX-1382"
+    ],
+    "ROUND_78_DIVINE_SKILL_OUTCOMES": [
+      "SX-1383",
+      "SX-1384"
+    ],
+    "ROUND_78_DIVINE_SKILL_CHEST": [
+      "SX-1385"
+    ],
+    "ROUND_79_GODHEAD_INVENTORY": [
+      "SX-1386"
+    ],
+    "ROUND_79_DIVINE_POWER_CONVERSION": [
+      "SX-1387"
+    ],
+    "ROUND_80_THOR_AND_SOUTHERN_CAMPAIGN": [
+      "SX-1388",
+      "SX-1389",
+      "SX-1390",
+      "SX-1391",
+      "SX-1392"
+    ],
+    "ROUND_80_THIRD_STAGE_EXPANSION": [
+      "SX-1393",
+      "SX-1394",
+      "SX-1395"
+    ]
+  },
+  "next_item_id": "SX-1396",
+  "next_unprocessed_chapter": 1222,
+  "confirmed_outcomes": [
+    {
+      "chapter": 1182,
+      "title": "心灵之匕，机械师神技！",
+      "outcomes": [
+        "Three SS chest results: Fire God Greatsword to Nika, Mind Dagger bound to Sarah, X-Starry Firmament book held for Tong Chuchu."
+      ]
+    },
+    {
+      "chapter": 1183,
+      "title": "半神器套装，神之终结者！",
+      "outcomes": [
+        "Five relics: Thunder Claw ×1, Ice Beast Heart ×2, Radiant Feather ×1, Wind Spirit Core ×1. Four relics and four held Legendary Hearts evolve four pets; Wind Spirit Core remains.",
+        "Netherlord · God’s Terminator level-200 six-piece semi-artifact set detailed; only chest armor/set effects are profiled here."
+      ]
+    },
+    {
+      "chapter": 1184,
+      "title": "回归！冲击神灵境界！",
+      "outcomes": [
+        "Isabel, Nika and Allen each receive 600 Ice Dragon Crystals (30,000 Divine Power) and begin trials. Cao spends 60,000 Divine Power from a mixed source; split unknown."
+      ]
+    },
+    {
+      "chapter": 1185,
+      "title": "淬炼神性，登神前的考验！",
+      "outcomes": [
+        "The three candidates reach 100% purity and begin trials; Light, Sacred Flame and Wind Godheads are incorporated/consumed."
+      ]
+    },
+    {
+      "chapter": 1186,
+      "title": "大动乱，神灵混战！",
+      "outcomes": [
+        "Awakened gods contest territory and worshippers; no protagonist-side loot confirmed."
+      ]
+    },
+    {
+      "chapter": 1187,
+      "title": "双极神主，成神试炼！",
+      "outcomes": [
+        "Cao begins special trial; failure penalties and 36,500:1 trial time ratio stated."
+      ]
+    },
+    {
+      "chapter": 1188,
+      "title": "你真的了解寒冰…了解自己吗？",
+      "outcomes": [
+        "Crystal Core quest item awarded; Crystal Element Mastery reaches god tier. Mirrored Ice trial begins."
+      ]
+    },
+    {
+      "chapter": 1189,
+      "title": "生死磨砺，最终阶段试炼开启！",
+      "outcomes": [
+        "Mirror defeated; Ice Element Mastery reaches god tier; final ten-year balance trial begins."
+      ]
+    },
+    {
+      "chapter": 1190,
+      "title": "出关！混乱升级！",
+      "outcomes": [
+        "Seven trial years pass; Cao develops coexistence between crystal/chaotic and ice forces. Divine occupation intensifies; no item receipt confirmed."
+      ]
+    },
+    {
+      "chapter": 1191,
+      "title": "四神耀世！肃清动乱！",
+      "outcomes": [
+        "Cao Xing, Isabel, Nika and Allen ascend to divine status; territorial blessing underway; ten teams tasked to suppress gods. Two hostile lower gods captured, with no death/drop confirmed."
+      ]
+    },
+    {
+      "chapter": 1192,
+      "title": "号令诸神，违逆者杀无赦！",
+      "outcomes": [
+        "Cao Xing’s roster is stated as three upper-god combatants and four more gods at peak midgod combat strength; the visible preview truncates before the full list."
+      ]
+    },
+    {
+      "chapter": 1193,
+      "title": "曹星的实力，碾压神灵！",
+      "outcomes": [
+        "Cao’s cold force freezes the ancient vine god’s branches; no item receipt is visible in the accessible preview."
+      ]
+    },
+    {
+      "chapter": 1194,
+      "title": "肃清开始，神陨如雨！",
+      "outcomes": [
+        "The Flame Queen legion’s survivors witness Angelina being coerced; the visible preview also confirms several territory members were killed by a god’s divine威."
+      ]
+    },
+    {
+      "chapter": 1195,
+      "title": "镇杀！最后的混乱源头！",
+      "outcomes": [
+        "Wind God Allen forms a consuming storm eye over the three-headed giant; no item receipt is visible in the accessible preview."
+      ]
+    },
+    {
+      "chapter": 1196,
+      "title": "曹星VS毁灭之神，双规则现世！",
+      "outcomes": [
+        "Valkyrie is struck away by the Destruction God as the gods react; chapter title confirms the dual-rule confrontation."
+      ]
+    },
+    {
+      "chapter": 1197,
+      "title": "斩杀毁灭之神，单挑无敌！",
+      "outcomes": [
+        "Cao reveals that he can fuse two upper-god divinities; title confirms the Destruction God’s death, but drops are not confirmed in the preview."
+      ]
+    },
+    {
+      "chapter": 1198,
+      "title": "诸神臣服，乱世终结！",
+      "outcomes": [
+        "Destruction God’s death is confirmed by blood-rain and the broken Destruction rule; title confirms the gods submit."
+      ]
+    },
+    {
+      "chapter": 1199,
+      "title": "清点战后收获，三大下位神技。",
+      "outcomes": [
+        "Nika fuses the Holy Flame Godhead and transforms into Holy Flame Goddess; her advancement grants the visible stats/mastery/territory effects recorded under SX-1382. Three lower-god techniques are identified as self-created; their review begins next chapter."
+      ]
+    },
+    {
+      "chapter": 1200,
+      "title": "突破神灵奖励，超凡入圣！",
+      "outcomes": [
+        "Nika’s named single-target divine skill and Isabel’s unnamed immortal-phoenix summon skill are partially described; third skill name/effect and exact coefficients are unavailable in the visible preview."
+      ]
+    },
+    {
+      "chapter": 1201,
+      "title": "组合神技——冰临天下！",
+      "outcomes": [
+        "A self-select divine-technique chest offers 1 of 12 lower-god techniques across six classes. Cao selects Frost Mage, revealing two books; the preview ends before a final book choice."
+      ]
+    },
+    {
+      "chapter": 1202,
+      "title": "五枚神格，审讯古神。",
+      "outcomes": [
+        "The title establishes the five-Godhead haul; the accessible official opening is about arena rankings, not the item receipt. Later Ch1207 body confirms five new Godheads in Cao Xing’s backpack; individual names/ranks remain unknown."
+      ]
+    },
+    {
+      "chapter": 1203,
+      "title": "再收三神，特殊的增益技能。",
+      "outcomes": [
+        "The chapter title confirms three more gods join and a special buff skill; visible text opens on interrogation of the captured Vine Ancient God. Exact names and buff mechanics are not available in the preview."
+      ]
+    },
+    {
+      "chapter": 1204,
+      "title": "解封，诺恩圣女苏醒！",
+      "outcomes": [
+        "Zola/Norn Saint, previously believed dead, is stated to have been frozen in the deep-sea ice abyss and later recovered into Cao Xing’s territory; she is now to awaken."
+      ]
+    },
+    {
+      "chapter": 1205,
+      "title": "收服诺恩圣女，领地第一尊上位神！",
+      "outcomes": [
+        "Zola’s divine body and Godhead are described as severely damaged, with cracks involving rule power; Cao Xing promises repair may be possible. No repair item or completed restoration is visible."
+      ]
+    },
+    {
+      "chapter": 1206,
+      "title": "卓拉真神？重返巅峰的方法！",
+      "outcomes": [
+        "The Pale Sacred Tree’s source-tracing ability is described as available once; the chapter discusses restoring Zola but no specific item receipt is visible in the excerpt."
+      ]
+    },
+    {
+      "chapter": 1207,
+      "title": "第五波全体赐福，数十万自爆大军！",
+      "outcomes": [
+        "Cao Xing has five new Godheads in his backpack; three have suitable candidate fusions. A new god needs at least 30,000 Divine Power. One Ice Dragon Crystal restores 50 Divine Power (= five fragments); the similar effect of Wood Crystal is posed as a hypothesis only."
+      ]
+    },
+    {
+      "chapter": 1208,
+      "title": "偿还恩情，远征南大陆！",
+      "outcomes": [
+        "Cao Xing orders nearly 100,000 troops through the cross-region teleportation array and leads an expedition to the South Continent."
+      ]
+    },
+    {
+      "chapter": 1209,
+      "title": "天降女神，让圣焰净化一切！",
+      "outcomes": [
+        "The force arrives at a vast ominous forest with a strong ancient evil presence; no specific loot is visible."
+      ]
+    },
+    {
+      "chapter": 1210,
+      "title": "雷神祸乱，曹星的猎物！",
+      "outcomes": [
+        "Thunder God’s attack breaks the elves’ barrier, destroys many trees and kills/injures many elves; no reward item is confirmed in the visible excerpt."
+      ]
+    },
+    {
+      "chapter": 1211,
+      "title": "风华绝代，南大陆第一女王。",
+      "outcomes": [
+        "The South Continent storyline continues during the thunder crisis; no protagonist-side item receipt is visible in the accessible opening."
+      ]
+    },
+    {
+      "chapter": 1212,
+      "title": "单杀雷神，神格到手！",
+      "outcomes": [
+        "Cao Xing kills Thor; the chapter title confirms one Thunder Godhead obtained. No other exact drops or rank identified."
+      ]
+    },
+    {
+      "chapter": 1213,
+      "title": "雷神法典，为圣女补魔。",
+      "outcomes": [
+        "Thunder God Codex is named and used to replenish a Saint; item acquisition and replenishment amount not established in visible excerpt."
+      ]
+    },
+    {
+      "chapter": 1214,
+      "title": "铁匠突破，半神级锻造师",
+      "outcomes": [
+        "A blacksmith reaches demigod forging level; no item receipt confirmed."
+      ]
+    },
+    {
+      "chapter": 1215,
+      "title": "集齐法典残卷，两处战场的惊人收益",
+      "outcomes": [
+        "Five Legendary Proficiency Emblems confirmed as loot; can promote Francisca to demigod alchemist."
+      ]
+    },
+    {
+      "chapter": 1216,
+      "title": "百万魔法种子，合成神格的途径",
+      "outcomes": [
+        "1.62 million Random Magic Seed Bags; each yields 1–10 seeds, green through legendary, very small chance of demigod seed."
+      ]
+    },
+    {
+      "chapter": 1217,
+      "title": "神级秘药配方",
+      "outcomes": [
+        "God-level potion formula story; handover to Francisca is described in Ch1218 excerpt."
+      ]
+    },
+    {
+      "chapter": 1218,
+      "title": "深夜拜访，女王的请求",
+      "outcomes": [
+        "Cao Xing transfers an unnamed God-level potion formula to Francisca and promises to gather 100 ingredient shares; ingredients are not yet received."
+      ]
+    },
+    {
+      "chapter": 1219,
+      "title": "伯捷之父，血脉融合",
+      "outcomes": [
+        "Bojie’s four bloodlines combine; no item receipt confirmed."
+      ]
+    },
+    {
+      "chapter": 1220,
+      "title": "混沌之神降临，两个月",
+      "outcomes": [
+        "Chaos gods appear and discuss looming threat; no protagonist-side item receipt confirmed."
+      ]
+    },
+    {
+      "chapter": 1221,
+      "title": "第三阶段扩建完工，兵强马壮",
+      "outcomes": [
+        "Wood Crystal can drop from Legendary Resurrected Army; periodic 25-day harvest is worth 30,000 Divine Power; two-month amount about 80,000, no exact crystal count or per-crystal conversion. 9,000 Divine Power Fragments consumed to ascend Andrew, Francisca and Zevelin; about 10,000 Divine Power remains. Andrew’s named skill 狂野之形·原始解放 is visible, effect truncated."
+      ]
+    }
+  ],
+  "unresolved_conflicts": [
+    "Ch1163 shipment narration uses rounded quantities while altar system display reports exact consumption values; both are retained rather than normalized.",
+    "Ch1163 shows 97,164 new Hero promotions after 120,000 gather and 25,000 are held back; preserve displayed outcome.",
+    "Vietnamese edition chapter numbering diverges materially: Cơm Nguội and Hắc Hoàng Đại Đế Ch1162 title an ice-statue goddess story, while Xa Lộ Sách local Ch1162 is a split chapter on demigod breakthrough/return to territory. These titles do not establish the Chinese printed Ch1162 story contents or item facts.",
+    "No result is shown for the Abyss battle by Ch1171; no victory/loot should be inferred.",
+    "Ch1174 Alphonse death reward line is visibly truncated after explicit Guardian Godhead, shield and mace; additional drops remain unknown.",
+    "Ch1176 post-Nektar pseudogod reward labels are garbled/duplicated; retain uncertain attribution.",
+    "Ch1175 sword evolution requires 100 divine kills; do not equate that counter with SS mission 100/100.",
+    "Ch1181 staged divine-power fragment entries sum to 3,200, but subsequent narrative says 3,400; both are preserved pending source clarification.",
+    "Vietnamese edition-local chapter numbering/title arcs diverge from Bqquge printed Chinese numbering; no remapping inferred.",
+    "Ch1182 uses 心灵之匕 in the item panel and 心灵之刃 once in the binding prompt; treated as one identity with variant retained.",
+    "Ch1183 profiles the set chest armor and set effects, not the other five piece mechanics.",
+    "Ch1184 does not state the Ice Dragon Crystal/fragment split of Cao Xing’s 60,000 Divine Power expenditure.",
+    "Whether trial mastery abilities are separately transferable/permanent is not established; cataloged as outcomes rather than skill-book receipts.",
+    "Ch1191’s blessing effects and later fates/drops of captured lower gods remain unresolved.",
+    "Vietnamese edition mapping for printed Chinese Chapters 1182–1191 is unverified; no one-to-one local numbering inferred.",
+    "Chapter 1192–1201 third-party Cpxs123 mirror pages contain unrelated scraped novel paragraphs after the first opening lines; used only for matching headings/opening prose, never for later events or receipts.",
+    "Bookresource QQ/Qidian text mirror numbers the same post-battle chapters one below the QQ Reading index in this arc (e.g. “清点战后收获” as Ch1198 vs QQ Reading Ch1199). Crosswalk was made by exact title and story text, not by raw local number.",
+    "The QQ Reading text previews require app/login for continuation. The exact names/mechanics of the other self-created lower-god skill, the final chest selection, and any drops from the slain gods remain unverified.",
+    "The five-Godhead chapter title and Ch1207 backpack count establish five unnamed Godheads, but available previews do not identify types, ranks, receipt origin, or which three are candidates; the ledger keeps one aggregate row.",
+    "The Ch1207 text confirms Ice Dragon Crystal→50 Divine Power, but the analogous Wood Crystal effect is framed as a question and remains unconfirmed.",
+    "The specific identities and mechanics of the Ch1203 three recruited gods and buff, the method/items needed to restore Zola, and the exact fifth blessing effects are not visible in the accessible excerpts.",
+    "Ch1208 mentions a huge expedition; Qidian mirror text says nearly 100,000 troops, while the QQ preview truncates the exact headcount context. Retained as an event only, not item receipt.",
+    "Thor’s exact drop panel/rank beyond the title-confirmed Thunder Godhead, Thunder Codex acquisition scene, Wood Crystal count/per-crystal conversion, God-level formula ingredients/effect, and Andrew skill effect remain unavailable in accessible excerpts."
+  ],
+  "source_checks": [
+    {
+      "source": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232843",
+      "checked_chapters": "1182–1191",
+      "use": "Primary Chinese text; all visible continuations inspected. Direct per-chapter URLs are listed in Round 77 audit."
+    },
+    {
+      "source": "Cơm Nguội Novel",
+      "url": "https://comnguoinovel.com/truyen/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong/1182",
+      "checked_chapters": "local catalog/pages attempted around 1182–1191",
+      "use": "Title/index context only; gated body and numbering divergence prevent mechanics alignment."
+    },
+    {
+      "source": "Hắc Hoàng Đại Đế",
+      "url": "https://hachoangdaide.online/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong-1182",
+      "checked_chapters": "local catalog/pages attempted around 1182–1191",
+      "use": "Title/index context only; numbering diverges and body access limited/gated."
+    },
+    {
+      "source": "Xa Lộ Sách",
+      "url": "https://xalosach.com/bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia-0.html?P=12#danhsachchuong",
+      "checked_chapters": "catalog local 1101–1200",
+      "use": "Catalog-only; prior split/numbering divergence retained; no direct mapping asserted for this round."
+    },
+    {
+      "source": "QQ Reading official chapter list and previews",
+      "url": "https://reader.novel.qq.com/chapter/1050133618",
+      "checked_chapters": "1192–1201",
+      "use": "Printed titles and visible opening passages; previews stop at the app/login gate."
+    },
+    {
+      "source": "Qidian/Bookresource chapter text preview",
+      "url": "https://mxianxia.bookresource.qq.com/chapter/1040133596/874564909/",
+      "checked_chapters": "1198–1200 by title (mirror-local chapter labels are one lower)",
+      "use": "Readable text excerpts confirmed Holy Flame fusion/advancement, two skill outcomes, and Frost Mage chest options; numbering aligned by exact titles."
+    },
+    {
+      "source": "Cpxs123 mirror",
+      "url": "https://m.cpxs123.cc/book/187022/list.html",
+      "checked_chapters": "1192–1201 by printed title",
+      "use": "Catalog and first opening lines corroborate several QQ previews. Later paragraphs are polluted with unrelated scraped text and were excluded."
+    },
+    {
+      "source": "Hjwzw catalog",
+      "url": "https://tw.hjwzw.com/Book/Chapter/50356",
+      "checked_chapters": "1192–1201 by title",
+      "use": "Chapter catalog corroboration only; individual body links could not be opened through the available web reader."
+    },
+    {
+      "source": "QQ Reading chapter list and previews",
+      "url": "https://reader.novel.qq.com/chapter/1050133618",
+      "checked_chapters": "1202–1211",
+      "use": "Official chapter titles and visible openings. Previews stop at the app/login wall."
+    },
+    {
+      "source": "Qidian/Bookresource text excerpts",
+      "url": "https://mxianxia.bookresource.qq.com/chapter/1040133596/875336549/",
+      "checked_chapters": "1202–1210 by exact title (mirror chapter numbers one lower)",
+      "use": "Readable excerpts confirm Godhead count, crystal conversion, awakening/recruitment story context, and expedition scale. No unseen identities or receipts inferred."
+    },
+    {
+      "source": "Cpxs123 chapter catalog",
+      "url": "https://m.cpxs123.cc/book/187022/list.html",
+      "checked_chapters": "1202–1211 by printed title",
+      "use": "Catalog-title corroboration only; body contamination prevents extracting later paragraphs."
+    },
+    {
+      "source": "Hjwzw chapter catalog",
+      "url": "https://tw.hjwzw.com/Book/Chapter/50356",
+      "checked_chapters": "1202–1211 by title",
+      "use": "Alternate catalog/title check only; individual pages unavailable through reader."
+    },
+    {
+      "source": "TTKS chapter catalog",
+      "url": "https://ttks.tw/novel/chapters/quanqiujianglindaizhaosaosaomoshizhongtian/index.html",
+      "checked_chapters": "1202–1211 by title",
+      "use": "Additional chapter-title corroboration; body links are not exposed to the web reader."
+    },
+    {
+      "source": "Qidian/Bookresource readable chapter excerpts",
+      "url": "https://mxianxia.bookresource.qq.com/chapter/1040133596/875578801/",
+      "checked_chapters": "1212–1221 by exact chapter title; local labels one lower than QQ Reading",
+      "use": "Body excerpt source for the title-confirmed Thor Godhead, Codex use, five proficiency emblems, 1.62 million seed bags, formula transfer, Wood Crystal mechanic, 9,000 fragment consumption, and Andrew skill name."
+    },
+    {
+      "source": "ReadNovel and alternate catalogs",
+      "url": "https://www.readnovel.com/bookquery/pegtdyiqmirh",
+      "checked_chapters": "1212–1221 by printed chapter title",
+      "use": "Catalog-title cross-check only; label offsets differ from QQ Reading."
+    },
+    {
+      "source": "TTKS catalog",
+      "url": "https://ttks.tw/novel/chapters/quanqiujianglindaizhaosaosaomoshizhongtian/index.html",
+      "checked_chapters": "1212–1221 by printed title",
+      "use": "Alternate catalog/title corroboration only; no item receipt inferred from catalog."
+    }
+  ]
+}
