@@ -1,0 +1,880 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.24-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.23-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 94 reviews LanaGarden displayed Chapters 1352–1353, including the marked series finale and postscript.",
+  "data_file": "data/events/EVENT-SOURCE-ITEMS-v7.23.csv",
+  "cumulative_rows": 1679,
+  "columns": 69,
+  "total_item_ids": 1679,
+  "chapter_item_ids": {
+    "1292": [
+      "SX-1497",
+      "SX-1498",
+      "SX-1499"
+    ],
+    "1293": [],
+    "1294": [],
+    "1295": [
+      "SX-1500",
+      "SX-1501",
+      "SX-1502",
+      "SX-1503",
+      "SX-1504",
+      "SX-1505",
+      "SX-1506",
+      "SX-1507",
+      "SX-1508",
+      "SX-1509",
+      "SX-1510",
+      "SX-1511"
+    ],
+    "1296": [
+      "SX-1518"
+    ],
+    "1297": [],
+    "1298": [
+      "SX-1512"
+    ],
+    "1299": [],
+    "1300": [
+      "SX-1513",
+      "SX-1514",
+      "SX-1515",
+      "SX-1516",
+      "SX-1517"
+    ],
+    "1301": [],
+    "1303": [
+      "SX-1519",
+      "SX-1520",
+      "SX-1521"
+    ],
+    "1304": [
+      "SX-1522"
+    ],
+    "1305": [
+      "SX-1523",
+      "SX-1524"
+    ],
+    "1308": [
+      "SX-1525",
+      "SX-1526",
+      "SX-1527",
+      "SX-1528",
+      "SX-1529",
+      "SX-1530",
+      "SX-1531",
+      "SX-1532",
+      "SX-1533",
+      "SX-1534",
+      "SX-1535"
+    ],
+    "1309": [
+      "SX-1536",
+      "SX-1537",
+      "SX-1538",
+      "SX-1539"
+    ],
+    "1311": [
+      "SX-1540",
+      "SX-1541",
+      "SX-1542",
+      "SX-1543"
+    ],
+    "1312": [
+      "SX-1544",
+      "SX-1545",
+      "SX-1546",
+      "SX-1547",
+      "SX-1548",
+      "SX-1549"
+    ],
+    "1313": [],
+    "1314": [
+      "SX-1550"
+    ],
+    "1315": [
+      "SX-1551",
+      "SX-1552",
+      "SX-1553",
+      "SX-1554",
+      "SX-1555",
+      "SX-1556",
+      "SX-1557",
+      "SX-1558",
+      "SX-1559",
+      "SX-1578",
+      "SX-1579",
+      "SX-1580",
+      "SX-1581"
+    ],
+    "1316": [
+      "SX-1560"
+    ],
+    "1317": [
+      "SX-1561",
+      "SX-1562",
+      "SX-1563",
+      "SX-1564",
+      "SX-1565",
+      "SX-1566"
+    ],
+    "1318": [
+      "SX-1567",
+      "SX-1568",
+      "SX-1569"
+    ],
+    "1319": [
+      "SX-1570"
+    ],
+    "1320": [
+      "SX-1571",
+      "SX-1572",
+      "SX-1573",
+      "SX-1574"
+    ],
+    "1321": [
+      "SX-1575",
+      "SX-1576",
+      "SX-1577"
+    ],
+    "1322": [
+      "SX-1582",
+      "SX-1583"
+    ],
+    "1323": [
+      "SX-1584",
+      "SX-1585"
+    ],
+    "1324": [
+      "SX-1586",
+      "SX-1587",
+      "SX-1595",
+      "SX-1596"
+    ],
+    "1325": [
+      "SX-1588",
+      "SX-1589",
+      "SX-1590",
+      "SX-1591",
+      "SX-1592",
+      "SX-1593",
+      "SX-1594"
+    ],
+    "1326": [],
+    "1327": [],
+    "1328": [],
+    "1329": [],
+    "1330": [],
+    "1331": [
+      "SX-1597",
+      "SX-1598",
+      "SX-1599",
+      "SX-1600",
+      "SX-1601",
+      "SX-1602",
+      "SX-1603",
+      "SX-1604",
+      "SX-1605",
+      "SX-1606",
+      "SX-1607",
+      "SX-1608",
+      "SX-1609",
+      "SX-1610",
+      "SX-1611",
+      "SX-1612",
+      "SX-1613",
+      "SX-1614",
+      "SX-1615"
+    ],
+    "1332": [
+      "SX-1616"
+    ],
+    "1333": [
+      "SX-1617",
+      "SX-1618",
+      "SX-1619",
+      "SX-1620",
+      "SX-1621",
+      "SX-1622",
+      "SX-1623"
+    ],
+    "1334": [],
+    "1335": [],
+    "1336": [],
+    "1337": [],
+    "1338": [
+      "SX-1649",
+      "SX-1650",
+      "SX-1651",
+      "SX-1652",
+      "SX-1653"
+    ],
+    "1339": [
+      "SX-1624",
+      "SX-1625",
+      "SX-1626",
+      "SX-1627",
+      "SX-1628",
+      "SX-1629",
+      "SX-1630",
+      "SX-1631",
+      "SX-1632",
+      "SX-1633",
+      "SX-1634"
+    ],
+    "1340": [
+      "SX-1635",
+      "SX-1636",
+      "SX-1637",
+      "SX-1638",
+      "SX-1639",
+      "SX-1640",
+      "SX-1641",
+      "SX-1642",
+      "SX-1643",
+      "SX-1644",
+      "SX-1645",
+      "SX-1646",
+      "SX-1647",
+      "SX-1654",
+      "SX-1655"
+    ],
+    "1341": [
+      "SX-1648"
+    ],
+    "1342": [
+      "SX-1656",
+      "SX-1657",
+      "SX-1658"
+    ],
+    "1343": [
+      "SX-1659",
+      "SX-1660",
+      "SX-1661",
+      "SX-1662",
+      "SX-1663"
+    ],
+    "1344": [],
+    "1345": [],
+    "1346": [
+      "SX-1664",
+      "SX-1665",
+      "SX-1666",
+      "SX-1667",
+      "SX-1668"
+    ],
+    "1347": [
+      "SX-1669",
+      "SX-1670"
+    ],
+    "1348": [
+      "SX-1671"
+    ],
+    "1349": [
+      "SX-1672",
+      "SX-1673"
+    ],
+    "1350": [
+      "SX-1674"
+    ],
+    "1351": [
+      "SX-1675",
+      "SX-1676"
+    ],
+    "1352": [],
+    "1353": [
+      "SX-1677",
+      "SX-1678",
+      "SX-1679"
+    ]
+  },
+  "receipt_groups": {
+    "ROUND_75_STORM_AXE": [
+      "SX-1322",
+      "SX-1323"
+    ],
+    "ROUND_75_MASS_PROMOTION": [
+      "SX-1324",
+      "SX-1325",
+      "SX-1326",
+      "SX-1327"
+    ],
+    "ROUND_75_TRIAL_REWARDS": [
+      "SX-1328",
+      "SX-1329"
+    ],
+    "ROUND_75_GENESIS_SHIELD": [
+      "SX-1330",
+      "SX-1331",
+      "SX-1332"
+    ],
+    "ROUND_75_ABYSS_CAMPAIGN": [
+      "SX-1333",
+      "SX-1334",
+      "SX-1335",
+      "SX-1336",
+      "SX-1337",
+      "SX-1338",
+      "SX-1339"
+    ],
+    "ROUND_76_AILIN_GODS_DESCENT": [
+      "SX-1340",
+      "SX-1341",
+      "SX-1342",
+      "SX-1352",
+      "SX-1353"
+    ],
+    "ROUND_76_ALPHONSE_DROPS": [
+      "SX-1343",
+      "SX-1344",
+      "SX-1345",
+      "SX-1346",
+      "SX-1347"
+    ],
+    "ROUND_76_ABYSS_CAMPAIGN": [
+      "SX-1348",
+      "SX-1349",
+      "SX-1350",
+      "SX-1351"
+    ],
+    "ROUND_76_SS_TASK_REWARDS": [
+      "SX-1354",
+      "SX-1355",
+      "SX-1356",
+      "SX-1357",
+      "SX-1358",
+      "SX-1359",
+      "SX-1360",
+      "SX-1361",
+      "SX-1362",
+      "SX-1363",
+      "SX-1364",
+      "SX-1365",
+      "SX-1366",
+      "SX-1367",
+      "SX-1368"
+    ],
+    "ROUND_76_BREAKTHROUGH_AND_PENDING_CHESTS": [
+      "SX-1369",
+      "SX-1370",
+      "SX-1371",
+      "SX-1372"
+    ],
+    "ROUND_77_CHEST_RESULTS": [
+      "SX-1373",
+      "SX-1374",
+      "SX-1375"
+    ],
+    "ROUND_77_CHOICE_RELICS": [
+      "SX-1376",
+      "SX-1377",
+      "SX-1378",
+      "SX-1379",
+      "SX-1380"
+    ],
+    "ROUND_77_TRIAL_ITEM": [
+      "SX-1381"
+    ],
+    "ROUND_78_GODHEAD_BREAKTHROUGH": [
+      "SX-1382"
+    ],
+    "ROUND_78_DIVINE_SKILL_OUTCOMES": [
+      "SX-1383",
+      "SX-1384"
+    ],
+    "ROUND_78_DIVINE_SKILL_CHEST": [
+      "SX-1385"
+    ],
+    "ROUND_79_GODHEAD_INVENTORY": [
+      "SX-1386"
+    ],
+    "ROUND_79_DIVINE_POWER_CONVERSION": [
+      "SX-1387"
+    ],
+    "ROUND_80_THOR_AND_SOUTHERN_CAMPAIGN": [
+      "SX-1388",
+      "SX-1389",
+      "SX-1390",
+      "SX-1391",
+      "SX-1392"
+    ],
+    "ROUND_80_THIRD_STAGE_EXPANSION": [
+      "SX-1393",
+      "SX-1394",
+      "SX-1395"
+    ],
+    "ROUND_81_DIVINE_KINGDOM_AND_CHILD": [
+      "SX-1396"
+    ],
+    "ROUND_81_GIFTS_AND_EXCHANGE": [
+      "SX-1397",
+      "SX-1398",
+      "SX-1399"
+    ],
+    "ROUND_82_LAKE_GODDESS_SWORD": [
+      "SX-1401"
+    ],
+    "ROUND_82_CODEX_REPAIR_AND_ROBE_BINDING": [
+      "SX-1402",
+      "SX-1403",
+      "SX-1404"
+    ],
+    "ROUND_82_FIRST_SEASON_COIN_CHEST_RESULTS": [
+      "SX-1405",
+      "SX-1406",
+      "SX-1407",
+      "SX-1408",
+      "SX-1409",
+      "SX-1410",
+      "SX-1411",
+      "SX-1412",
+      "SX-1413",
+      "SX-1414",
+      "SX-1415"
+    ],
+    "ROUND_82_ARENA_SEASON_REWARDS": [
+      "SX-1416",
+      "SX-1417",
+      "SX-1418",
+      "SX-1419",
+      "SX-1420",
+      "SX-1421"
+    ],
+    "ROUND_82_SELECTED_CHEST_OUTCOMES": [
+      "SX-1422",
+      "SX-1423",
+      "SX-1424",
+      "SX-1425",
+      "SX-1426"
+    ],
+    "ROUND_82_GATED_TITLE_MENTIONS": [
+      "SX-1427",
+      "SX-1428",
+      "SX-1429"
+    ],
+    "ROUND_82_CLEANER_GODHEAD_RULES": [
+      "SX-1400"
+    ],
+    "ROUND_84_WAR_BLADE_SYNTHESIS": [
+      "SX-1430",
+      "SX-1431",
+      "SX-1432"
+    ],
+    "ROUND_84_WAR_GOD_TRIAL_REWARDS": [
+      "SX-1433",
+      "SX-1434",
+      "SX-1435"
+    ],
+    "ROUND_84_EDITH_TRIAL_REWARD": [
+      "SX-1436"
+    ],
+    "ROUND_84_KEIRA_INHERITANCE": [
+      "SX-1437",
+      "SX-1438"
+    ],
+    "ROUND_85_FALLEN_ANGEL_DROPS": [
+      "SX-1439",
+      "SX-1440"
+    ],
+    "ROUND_85_BALTHAZAR_FOUR_TREASURES": [
+      "SX-1441",
+      "SX-1442",
+      "SX-1443",
+      "SX-1444",
+      "SX-1445",
+      "SX-1446"
+    ],
+    "ROUND_85_ZOLA_WEAPON_ASSIGNMENT": [
+      "SX-1447"
+    ],
+    "ROUND_86_BLOOD_PLANE_WEAPON_EVOLUTION": [
+      "SX-1448",
+      "SX-1449"
+    ],
+    "ROUND_86_BLOOD_ANCESTOR_DROPS": [
+      "SX-1450",
+      "SX-1451",
+      "SX-1452"
+    ],
+    "ROUND_86_BLOOD_PLANE_CLEANUP": [
+      "SX-1453",
+      "SX-1454",
+      "SX-1455",
+      "SX-1456",
+      "SX-1457",
+      "SX-1458",
+      "SX-1459"
+    ],
+    "ROUND_86_BLOOD_PLANE_HIDDEN_CACHE": [
+      "SX-1460",
+      "SX-1461",
+      "SX-1462",
+      "SX-1463"
+    ],
+    "ROUND_86_SAPPHIRON_FIRST_KILL_REWARDS": [
+      "SX-1464",
+      "SX-1465",
+      "SX-1466",
+      "SX-1467"
+    ],
+    "ROUND_86_SAILER_DEATH_REWARDS": [
+      "SX-1468",
+      "SX-1469",
+      "SX-1470",
+      "SX-1471"
+    ],
+    "ROUND_87_CH1282_CONSOLIDATED_CLEANER_REWARDS": [
+      "SX-1472",
+      "SX-1473",
+      "SX-1474",
+      "SX-1475",
+      "SX-1476"
+    ],
+    "ROUND_87_CH1284_MARKS_AND_CHEST_OPENINGS": [
+      "SX-1477",
+      "SX-1478",
+      "SX-1479",
+      "SX-1480"
+    ],
+    "ROUND_87_CH1285_BOTIER_LOOT_TRANSFER": [
+      "SX-1481",
+      "SX-1482",
+      "SX-1483",
+      "SX-1484",
+      "SX-1485",
+      "SX-1486",
+      "SX-1487",
+      "SX-1488",
+      "SX-1489",
+      "SX-1490",
+      "SX-1491"
+    ],
+    "ROUND_87_CH1288_1291_TRANSFORMATIONS": [
+      "SX-1492",
+      "SX-1493",
+      "SX-1494",
+      "SX-1495",
+      "SX-1496"
+    ],
+    "ROUND_88_CH1292_DRAGON_CUP_REWARDS": [
+      "SX-1497",
+      "SX-1498",
+      "SX-1499"
+    ],
+    "ROUND_88_CH1295_TRUE_GOD_FIRST_KILL": [
+      "SX-1500",
+      "SX-1501",
+      "SX-1502",
+      "SX-1503",
+      "SX-1504",
+      "SX-1505",
+      "SX-1506",
+      "SX-1507",
+      "SX-1508",
+      "SX-1509",
+      "SX-1510",
+      "SX-1511"
+    ],
+    "ROUND_88_CH1298_LIGHT_DARK_DRAGON_PET": [
+      "SX-1512"
+    ],
+    "ROUND_88_CH1300_LIU_MUXUE_BATTLEFIELD_LOOT": [
+      "SX-1513",
+      "SX-1514",
+      "SX-1515",
+      "SX-1516",
+      "SX-1517"
+    ],
+    "ROUND_88_CH1296_COMMAND_SKILL_PROGRESSION": [
+      "SX-1518"
+    ],
+    "ROUND_89_CH1303_FIRST_TRUE_GOD_REWARD": [
+      "SX-1519",
+      "SX-1520",
+      "SX-1521"
+    ],
+    "ROUND_89_CH1304_CROWN_CHEST_OPENING": [
+      "SX-1522"
+    ],
+    "ROUND_89_CH1305_SKILL_ACQUISITIONS": [
+      "SX-1523",
+      "SX-1524"
+    ],
+    "ROUND_89_CH1308_FIRST_MILLION_BATTLE_LOOT": [
+      "SX-1525",
+      "SX-1526",
+      "SX-1527",
+      "SX-1528"
+    ],
+    "ROUND_89_CH1308_WEAPON_FRAGMENT_DISASSEMBLY": [
+      "SX-1529",
+      "SX-1530",
+      "SX-1531",
+      "SX-1532",
+      "SX-1533",
+      "SX-1534",
+      "SX-1535"
+    ],
+    "ROUND_89_CH1309_BATTLEFIELD_LOOT_TRANSFER": [
+      "SX-1536",
+      "SX-1537",
+      "SX-1538",
+      "SX-1539"
+    ],
+    "ROUND_89_CH1311_BATTLEFIELD_LOOT": [
+      "SX-1540",
+      "SX-1541",
+      "SX-1542",
+      "SX-1543"
+    ],
+    "ROUND_90_CH1312_ORIGINAL_INHERITANCE": [
+      "SX-1544",
+      "SX-1545",
+      "SX-1546",
+      "SX-1547",
+      "SX-1548",
+      "SX-1549"
+    ],
+    "ROUND_90_CH1314_CORPSE_CONVERSION": [
+      "SX-1550"
+    ],
+    "ROUND_90_CH1315_WESTERN_INHERITANCES_AND_SOULSTONE_USE": [
+      "SX-1551",
+      "SX-1552",
+      "SX-1553",
+      "SX-1554",
+      "SX-1555",
+      "SX-1556",
+      "SX-1557",
+      "SX-1558",
+      "SX-1559",
+      "SX-1578",
+      "SX-1579",
+      "SX-1580",
+      "SX-1581"
+    ],
+    "ROUND_90_CH1316_SARAH_MARK": [
+      "SX-1560"
+    ],
+    "ROUND_90_CH1317_ASCENSIONS_AND_TOWER": [
+      "SX-1561",
+      "SX-1562",
+      "SX-1563",
+      "SX-1564",
+      "SX-1565",
+      "SX-1566"
+    ],
+    "ROUND_90_CH1318_AGILITY_TOWER": [
+      "SX-1567",
+      "SX-1568",
+      "SX-1569"
+    ],
+    "ROUND_90_CH1319_BODY_TOWER_RULE": [
+      "SX-1570"
+    ],
+    "ROUND_90_CH1320_EASTERN_INHERITANCE": [
+      "SX-1571",
+      "SX-1572",
+      "SX-1573",
+      "SX-1574"
+    ],
+    "ROUND_90_CH1321_BODY_TOWER_FOURTH_FLOOR": [
+      "SX-1575",
+      "SX-1576",
+      "SX-1577"
+    ],
+    "ROUND_91_CH1324_HUANG_TIAN_RESTORATION_AND_CREATION_TRIAL": [
+      "SX-1586",
+      "SX-1587",
+      "SX-1595",
+      "SX-1596"
+    ],
+    "ROUND_91_CH1325_BODY_AND_AGILITY_TOWER_FIFTH_FLOORS": [
+      "SX-1588",
+      "SX-1589",
+      "SX-1590",
+      "SX-1591",
+      "SX-1592",
+      "SX-1593",
+      "SX-1594"
+    ],
+    "ROUND_91_CH1331_FINAL_TOWER_REWARDS": [
+      "SX-1597",
+      "SX-1598",
+      "SX-1599",
+      "SX-1600",
+      "SX-1601",
+      "SX-1602",
+      "SX-1603",
+      "SX-1604",
+      "SX-1605",
+      "SX-1606",
+      "SX-1607",
+      "SX-1608",
+      "SX-1609",
+      "SX-1610",
+      "SX-1611",
+      "SX-1612",
+      "SX-1613",
+      "SX-1614",
+      "SX-1615"
+    ],
+    "ROUND_91_CH1322_WISDOM_TOWER_FIRST_FLOOR": [
+      "SX-1582",
+      "SX-1583"
+    ],
+    "ROUND_91_CH1323_WISDOM_TOWER_FOURTH_FLOOR": [
+      "SX-1584",
+      "SX-1585"
+    ],
+    "ROUND_92_CH1332_FINAL_TOWER_REWARD_RECONCILIATION": [
+      "SX-1616"
+    ],
+    "ROUND_92_CH1333_CENTRAL_BATTLEFIELD_HARVEST": [
+      "SX-1617",
+      "SX-1618",
+      "SX-1619",
+      "SX-1620",
+      "SX-1621",
+      "SX-1622",
+      "SX-1623"
+    ],
+    "ROUND_92_CH1339_LIFE_AND_REINCARNATION_TEMPLE_REWARDS": [
+      "SX-1624",
+      "SX-1625",
+      "SX-1626",
+      "SX-1627",
+      "SX-1628",
+      "SX-1629",
+      "SX-1630",
+      "SX-1631",
+      "SX-1632",
+      "SX-1633",
+      "SX-1634"
+    ],
+    "ROUND_92_CH1340_FINAL_EXPANSION_WAR_SYSTEM": [
+      "SX-1635",
+      "SX-1636",
+      "SX-1637",
+      "SX-1638",
+      "SX-1639",
+      "SX-1640",
+      "SX-1641",
+      "SX-1642",
+      "SX-1643",
+      "SX-1644",
+      "SX-1645",
+      "SX-1646",
+      "SX-1647",
+      "SX-1654",
+      "SX-1655"
+    ],
+    "ROUND_92_TRUE_GOD_BREAKTHROUGHS": [
+      "SX-1649",
+      "SX-1650",
+      "SX-1651",
+      "SX-1652",
+      "SX-1653"
+    ],
+    "ROUND_93_CH1342_CITY_DEFENSE_EFFECTS": [
+      "SX-1656",
+      "SX-1657",
+      "SX-1658"
+    ],
+    "ROUND_93_CH1343_WARLORD_DROP": [
+      "SX-1659",
+      "SX-1660",
+      "SX-1661",
+      "SX-1662",
+      "SX-1663"
+    ],
+    "ROUND_93_CH1346_FIRST_UNITY_REWARDS": [
+      "SX-1664",
+      "SX-1665",
+      "SX-1666",
+      "SX-1667",
+      "SX-1668"
+    ],
+    "ROUND_93_CH1347_BATTLE_REWARDS_AND_ZHALA": [
+      "SX-1669",
+      "SX-1670"
+    ],
+    "ROUND_93_CH1348_REINCARNATION_GATE_USE": [
+      "SX-1671"
+    ],
+    "ROUND_93_CH1349_DIVINE_CONVERGENCE": [
+      "SX-1672",
+      "SX-1673"
+    ],
+    "ROUND_93_CH1350_FINAL_BATTLE_OUTCOME": [
+      "SX-1674"
+    ],
+    "ROUND_93_CH1351_POSTWAR_RECOVERY_AND_SHOP": [
+      "SX-1675",
+      "SX-1676"
+    ]
+  },
+  "next_item_id": "SX-1680",
+  "next_unprocessed_chapter": 1354,
+  "confirmed_outcomes": [
+    "Chapter 1302 — 日月同辉，见证神迹，圣女晋升真神！: Zhala completes the Root Divine Fire trial and becomes the first True God in Cao Xing’s territory. She gains the Ice-Rain War Song title and Ice Spear authority; the system reports +1,500% base stats, +1,000% Divine Power regeneration, and a level cap of 400. No item receipt.",
+    "Chapter 1303 — 首位真神奖励，古代终极兵器！: The first-True-God Lord reward explicitly grants a random Upper God Artifact Chest ×1 and a True God Demon God Warship blueprint ×1. The chest is unopened and ship unbuilt in this chapter. Ch1304 confirms Demon God Cores ×10 in the reward inventory.",
+    "Chapter 1304 — 永冻王冠，终极魔神战舰！: Cao Xing opens the random chest and receives the Everfrost Crown, identified as an Upper God Artifact with Glacier Godhead; he equips and binds it in this chapter. The True God warship blueprint requires Demon God Cores ×5, Star Meteorites ×10,000,000, Hellstar Gold ×10,000,000, Netherworld Black Steel ×10,000,000, and World Tree branches ×10; construction does not begin.",
+    "Chapter 1305 — 自创神技：十二极·寂灭冰莲: A hidden Master-level Artifact Resonance/weapon-control life skill awakens: bound gear Intelligence +50%, equipped base stats +30%, and aura simulation of one or two items can activate set bonuses without changing item identity. Cao Xing creates Upper God skill Twelve Extremes: Annihilation Ice Lotus (35,000 Divine Power per cast). The existing Snow-Burial Star Robe simulates the Great Lich Frost-Soul Robe set aura for 30 days; this is a temporary effect using existing equipment, not a new robe receipt.",
+    "Chapter 1306 — 前往神战之地，恐惧的盗火者！: The expedition departs for the God-Battle Site while a small force remains to defend the southern front. Previously logged Nessa Goddess's Blessing Ring is used as a buff. No new item or chest receipt.",
+    "Chapter 1307 — 六大建筑，终极挑战之地！: The site has six major trial/inheritance structures. First exploration grants 100,000,000 XP and 100,000 reputation. Cao Xing kills 1,214,200 ancient soulless troops for 85,216,000,000 XP; combat participants receive 42,608,000,000 XP. Black energy orbs appear but are not collected. Two corrupted ancient divine corpses emerge; no loot is collected before chapter end.",
+    "Chapter 1308 — 遍地是宝的神战之地。: From the first 1,000,000 ancient soulless troop kills: decayed ancient weapon fragments ×1,440,000; Faith Crystals ×31,525; Ancient Soulstone Fragments ×12,546; Dim Flame Crystals ×47,154 (the narration later rounds the rate to about 47,000 per million). Disassembly of the weapon fragments yields Ancient Mithril ×1,760,000; Ancient Eternal Gold Ingots ×1,320,000; Ancient Meteorite Ingots ×141,500; Void Soulstones ×31,626; Netherworld Black Steel ×24,138; Hellstar Gold ×15,264; Heaven Holy Silver ×65. Faith Crystal disassembly yields 26,754,900 faith points. No crystal synthesis is performed.",
+    "Chapter 1309 — 制造神尸军团，挖穿传承之地！: Dead Nation: Tomb of Gods converts two previously encountered ancient divine corpses into loyal undead generals Candle God (level 265) and Dusk God (level 270). Their cleanup produces weapon fragments ×15,780,000, Faith Crystals ×425,719, Ancient Soulstone Fragments ×141,775, and Dim Flame Crystals ×802,516. The item receipt does not specify the defeated-enemy count. The team finds but does not yet claim the Wind God inheritance.",
+    "Chapter 1310 — 进入风神传承（感谢爱尔岛里的风儿大额打赏！！！）: The party enters the ancient Wind God Silver’s inheritance. It requires affinity with Wind Law and the Wind-God physique; Ellen elects to attempt the three trials (Wind Dance, Storm Heart, Wind-Speaker’s Echo). No inheritance reward has been earned by chapter end. The party also captures and converts a hidden level-255 Mid God Fear Wolf God into the stored undead general Fear Wolf, then reaches the sealed Body Tower.",
+    "Chapter 1311 — 捷报频传，神尸大军飞速扩张！: Another explicit battle-loot receipt: decayed ancient weapon fragments ×14,250,000; Faith Crystals ×404,812; Ancient Soulstone Fragments ×251,648; Dim Flame Crystals ×675,241. Running cumulative stock snapshots include weapon fragments ×57,260,000, Faith Crystals ×2,430,000, soulstone fragments ×1,120,000, and Dim Flame Crystals ×3,480,000; these are not additive receipts. Corpse conversions reach seven on day one, add sixteen on day two, and later approach thirty; only the named corpses are individually identified in this range.",
+    "Chapter 1312's Original inheritance site yields one Upper God Original Godhead, 3,124 Divine Power Fragments, a Natural Rule Half-God Artifact Bracelet, and one Unknown Treasure Map. Sarah also retrieves an old wooden chest, but the narrative does not explicitly link its opening to the listed inventory items. The caretaker separately grants an Original Rule inheritance sphere for Andrew.",
+    "Chapter 1314 converts twelve additional ancient Divine corpses in the western region; the Tomb of Gods count reaches 60. Chapter 1315's three western inheritance sites yield three inheritance spheres, three named Upper Godheads (Light, Sky Hunt, Dark), and 12,416 Divine Power Fragments. Sarah is supplied 1.6 million soul fragments and synthesizes 16 Ancient Soulstones; inventory stock totals are not re-added.",
+    "Bron's Body Tower floor one reward is a Great Essence Potion (+30% permanent Constitution), consumed. Floor two awards the Heavenly Army World Bracer and permanently +20% base armor. Floor three awards a unique +200% future Constitution-per-level rule correction with historical recalculation.",
+    "Sarah's Agility Tower rewards include one Wind Gale Essence at floor one, then a permanent +35% Critical Damage increase and one Half-God Artifact Void Mask at floor two.",
+    "At Chapter 1317, Holly, Sufu and Lẫm Đông each receive a Godhead matching their divine nature, with resulting qualities confirmed by the chapter's ascension notices (Upper God for Holly, Middle God for Sufu and Lẫm Đông); 9,000 Divine Power Fragments are consumed in 3,000 shares. The prior inventory source of those three Godheads is not established in this range.",
+    "Chapter 1320 records the Seven Emotions and Six Desires Upper Godhead, a few thousand Divine Power Fragments (exact count unstated), an unnamed inheritance sphere, and an existing Spirit Energy Godhead assigned to Olive Ás.",
+    "Bron clears Body Tower floor four and receives one growth-type God Artifact embryo and one Upper God Frost Chill Godhead. He fuses both into his existing Beginning Shield, evolving it into an Upper God Artifact whose distinct final name is not stated. The floor-five trial begins but is not completed in this range.",
+    "Chapter 1332 resolves the Round 91 Divine Power Fragment ambiguity: the four individual inventories list 10,000 fragments each (40,000 total), correcting SX-1611's earlier aggregate interpretation.",
+    "Chapter 1333 grants a newly returned bundle of 34,160,000 decayed ancient weapons, 11,460,000 Faith Crystals, 8,517,105 Ancient Soulstone Fragments, 2,149,105 Dim Flame Crystals, 17,291 Divine Power Fragments and five godheads; 214 recovered divine corpses are added to the existing tomb, for 370 total once conversion completes.",
+    "Chapter 1339 confirms the Life and Reincarnation Temple final rewards and grants separate all-plane permanent/time-limited bonuses.",
+    "Chapter 1340 launches the final invasion campaign early with Life Origin Points, kill-based rates, live rank buffs, a dedicated exchange shop, and integrity meters. These source events do not revise the game's fixed event calendar.",
+    "Chapter 1342 activates two citywide defensive effects and reports 2 True God Archers and 56 Divine Treemen killed by the first Starfire counteroffensive.",
+    "Chapter 1343 records the Invasion Archon's dropped Saint-Light and Hundred Fires Godheads, two named artifacts, and 105 attribute-types of recovered Divine Fire.",
+    "Chapter 1346 confirms Elisa's Unity ascension and a special first-Unity Lord reward of a unique Holy Relic, a True God-tier Creation Eye blueprint, one new World Tree bud, and 10 Condensed Chaos Crystals.",
+    "Chapter 1348 consumes six previously cataloged Source Fragments in the Gate of Reincarnation to summon six historic champions; these are not fresh receipts.",
+    "Chapter 1349 defines the 20- and 50-divinity thresholds for God-King convergence. Chapter 1350 resolves the campaign with the Gardener's defeat; Chapter 1351 confirms reconstruction and return of the fallen gods, and acquisition of the Eye of Hell Holy Relic from the Life Origin Point shop.",
+    "Chapters 1352–1353 complete the final source review: Chapter 1352 is explicitly marked [hết trọn bộ]; the reader lists Chapter 1353 as an epilogue, followed by a new-book notice.",
+    "Chapter 1352's protective charm is mentioned as already held; no new receipt is shown. Chapter 1353 reports an enemy-owned high-grade Chaos Holy Relic, the Netherworld Ark, but no capture or transfer, so neither is recorded as an acquisition.",
+    "Chapter 1353 yields three source-only postwar outcome records: expedition activity (source count 11 worlds versus seven assisted plus five near-collapse, preserved unresolved), construction counts, and new gods. The bulk recovered materials are unnamed and unquantified and are not treated as item rows.",
+    "No further LanaGarden source chapter is listed after the epilogue and new-book notice; item extraction through the completed source is closed."
+  ],
+  "unresolved_conflicts": [
+    "LanaGarden displays Chapter 1302 as “Sun and Moon Shine Together, Witness a Miracle, the Saintess Ascends to True God,” while title-matched ReadNovel/Xiaoxiang results list the same heading as Chapter 1301. Similar one-chapter-lower alignment appears for the nearby titles. This audit therefore keeps LanaGarden displayed chapter numbers and flags the alternate numbering convention.",
+    "The wooden chest recovered at the Chapter 1312 inheritance tree is not explicitly opened in the passage; its relationship to nearby system-listed site rewards remains unresolved.",
+    "Three Godheads received from western inheritance sites in Chapter 1315 are distinct from or may overlap the later matching Godheads assigned to Holly, Sufu and Lẫm Đông; the source does not map those individual assignments to those exact receipts.",
+    "The Chapter 1320 emotion-site Divine Power Fragment count is only described as several thousand; no exact quantity is inferred. The inheritance sphere's original deity and contents are also unnamed.",
+    "Chapters 1312–1321 retain LanaGarden's displayed numbering. Nearby catalogs use a one-chapter offset in this arc, but exact title cross-checks were not repeated for every Chapter 90 heading."
+  ],
+  "source_checks": [
+    "Primary evidence: full text in LanaGarden's completed Vietnamese reader, displayed Chapters 1312–1321.",
+    "Round 90 uses LanaGarden displayed chapter numbers in source_chapter and chapter_item_ids; independent one-chapter title alignment from the preceding arc is retained as a caveat.",
+    "Cumulative resource stock panels in Chapters 1312, 1315 and 1320 are snapshots. Only explicit receipts, transfers, synthesis outcomes and transformations are rows.",
+    "Chest receipt is separated from observed contents when opening is not explicit. No new-game starting stock or fixed event schedule changes.",
+    "Round 92 uses LanaGarden's displayed Chapters 1332–1341. Chapters 1332 and 1333 were read in the full-text reader; 1334–1341 reviewed for item, system-reward and event notices.",
+    "Round 91's 10,000-fragment shared total is reconciled with Chapter 1332's four explicit 10,000 receipts, yielding 40,000 aggregate.",
+    "Bulk Chapter 1333 resource counts are treated as new transfer receipts from the returned exploration team; later cumulative resource balances are not double-counted.",
+    "Final-event point conversion, rank buffs, shop categories and prices are recorded as the chapter explicitly states them; survivor chat examples are labeled separately from claimed purchases.",
+    "No LL01 T0 starting inventory, guaranteed new-game loot, or fixed event-calendar entries are altered.",
+    "Round 93 uses LanaGarden displayed Chapters 1342–1351. Each chapter was reviewed in the full-text reader; 1344 and 1345 contain no separate item receipts.",
+    "Battlefield drops and event rewards are recorded as distinct from live event score thresholds and item reuse. The Life Origin Point award of 11,520,000 is an explicit single notice; leaderboard thresholds above 100 million and 200 million are not treated as exact balances.",
+    "Chapter 1348 consumes six previously recorded Source Fragments; no duplicate acquisition rows were created for them.",
+    "Chapter 1351 explicitly confirms the postwar Holy Relic purchase, but does not state its price. Workshop-reported Half-God Artifacts are not listed as acquired because no names or inventory receipts are given.",
+    "Round 94 reviews LanaGarden displayed Chapters 1352–1353. Chapter 1352 explicitly marks the novel complete; Chapter 1353 is the displayed postscript, after which the chapter list advertises a new book.",
+    "The mentioned protective charm in Chapter 1352 is not a new receipt. The Netherworld Ark is identified in Chapter 1353 as an enemy-held high-grade Chaos Holy Relic; acquisition is not shown.",
+    "The epilogue's resource haul lacks item names and quantities. Its expedition reports 11 total worlds, seven aided and five near-collapse; the arithmetic inconsistency is preserved without reconciliation.",
+    "Round 94 adds only source-world outcomes for the expedition, completed infrastructure additions and newly born gods; these do not become LL01 starting assets or inventory.",
+    "No further source chapters are listed after Chapter 1353. Extraction is complete through the novel's marked ending and displayed epilogue."
+  ]
+}
