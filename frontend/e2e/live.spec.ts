@@ -7,17 +7,23 @@ async function tapVisualCenter(page: Page, locator: Locator, mobile: boolean) {
     await locator.click();
     return;
   }
-  await locator.scrollIntoViewIfNeeded();
-  const box = await locator.boundingBox();
-  if (!box) throw new Error('Cannot tap an element without a visible bounding box.');
-  const viewport = await page.evaluate(() => ({
-    offsetTop: window.visualViewport?.offsetTop ?? 0,
-    height: window.visualViewport?.height ?? window.innerHeight,
-  }));
-  const x = box.x + box.width / 2;
-  const y = box.y + box.height / 2 - viewport.offsetTop;
-  if (y < 0 || y > viewport.height) throw new Error('Element is outside the mobile visual viewport.');
-  await page.touchscreen.tap(x, y);
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    await locator.scrollIntoViewIfNeeded();
+    const box = await locator.boundingBox();
+    if (!box) throw new Error('Cannot tap an element without a visible bounding box.');
+    const viewport = await page.evaluate(() => ({
+      offsetTop: window.visualViewport?.offsetTop ?? 0,
+      height: window.visualViewport?.height ?? window.innerHeight,
+    }));
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2 - viewport.offsetTop;
+    if (y >= 0 && y <= viewport.height) {
+      await page.touchscreen.tap(x, y);
+      return;
+    }
+    await page.evaluate(delta => window.scrollBy(0, delta), y - viewport.height / 2);
+  }
+  throw new Error('Unable to bring the element into the mobile visual viewport.');
 }
 
 const fireRef = { type: 'site', id: 'SITE-LL01-000' };
