@@ -32,7 +32,8 @@
 - `research/extraction-audits/ROUND-42-FORTY-SECOND-EXTRACTION.md`: Round 42 audit for Chapters 832–841.
 - `research/extraction-audits/ROUND-43-FORTY-THIRD-EXTRACTION.md`: Round 43 audit for Chapters 842–851.
 - `research/extraction-audits/ROUND-47-FORTY-SEVENTH-EXTRACTION.md`: Round 47 audit for Chapters 882–891.
-- `research/extraction-audits/ROUND-48-FORTY-EIGHTH-EXTRACTION.md`: Round 48 audit for Chapters 892–901.\n- `research/extraction-audits/ROUND-49-FORTY-NINTH-EXTRACTION.md`: current Round 49 audit for Chapters 902–911; resume at Ch912.
+- `research/extraction-audits/ROUND-48-FORTY-EIGHTH-EXTRACTION.md`: Round 48 audit for Chapters 892–901. 
+- `research/extraction-audits/ROUND-49-FORTY-NINTH-EXTRACTION.md`: current Round 49 audit for Chapters 902–911; resume at Ch912.
 - `research/snapshots/events/EVENT-SOURCE-CATALOG-v0.1..v4.6.json`: historical extraction datasets (v3.0 unchanged and archived).
 - `research/snapshots/events/EVENT-SOURCE-ITEMS-v0.1..v4.6.csv`: corresponding historical review datasets (v3.0 unchanged and archived).
 - `research/snapshots/design/`: previous web-game spec versions retained for forensic comparison, **not** alternative active specs.
