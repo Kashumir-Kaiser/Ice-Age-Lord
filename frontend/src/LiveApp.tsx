@@ -159,7 +159,9 @@ function LiveApp() {
   const [customSpeed, setCustomSpeed] = useState('10');
   const [customSelection, setCustomSelection] = useState(false);
   const [chooseDestination, setChooseDestination] = useState(false);
-  const [mapZoom, setMapZoom] = useState(1);
+  // Open on H0's local resource area so its heat radius and starter deposits
+  // have enough screen space to read. The overview control returns to region scale.
+  const [mapZoom, setMapZoom] = useState(200);
   const [destination, setDestination] = useState<CoordinateMm | null>(null);
   const [destinationAvailability, setDestinationAvailability] = useState<ActionAvailability | null>(null);
   const [searchRadiusMetres, setSearchRadiusMetres] = useState(500);
@@ -585,7 +587,7 @@ function LiveApp() {
           <button className={'live-button' + (chooseDestination ? '' : ' live-button--secondary')} disabled={working || Boolean(pendingCommand)} onClick={() => setChooseDestination(value => !value)}>
             {chooseDestination ? 'Cancel destination selection' : 'Choose destination'}
           </button>
-          <div className="live-zoom-controls"><button className="live-button live-button--secondary" aria-label="Zoom out" disabled={mapZoom <= 0.2} onClick={() => setMapZoom(value => Math.max(0.2, Math.round(value / 1.6 * 100) / 100))}>−</button><span>{mapZoom.toFixed(2)}×</span><button className="live-button live-button--secondary" aria-label="Zoom in" disabled={mapZoom >= 500} onClick={() => setMapZoom(value => Math.min(500, Math.round(value * 1.6 * 100) / 100))}>+</button></div>
+          <div className="live-zoom-controls"><button className="live-button live-button--secondary" aria-label="Zoom out" disabled={mapZoom <= 0.2} onClick={() => setMapZoom(value => Math.max(0.2, Math.round(value / 1.6 * 100) / 100))}>−</button><span>{mapZoom.toFixed(2)}×</span><button className="live-button live-button--secondary" aria-label="Zoom in" disabled={mapZoom >= 500} onClick={() => setMapZoom(value => Math.min(500, Math.round(value * 1.6 * 100) / 100))}>+</button><button className="live-button live-button--secondary live-map-overview" aria-label="Show map overview" onClick={() => setMapZoom(1)}>Overview</button></div>
           <label className="live-inline-field">Travel actor <select value={travelActorId} onChange={event => { setTravelActorId(event.target.value); setDestination(null); setDestinationAvailability(null); }}><option value={view.player.id}>{view.player.name}</option>{view.units.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}</select></label>
           <span className="live-data-chip">Center · {center.xMm}, {center.yMm} mm</span>
         </div>
@@ -659,9 +661,12 @@ function LiveApp() {
             const left = Math.max(2, Math.min(98, projected.x));
             const top = Math.max(2, Math.min(98, projected.y));
             const isFire = sameRef(entity.ref, fireRef);
+            const resourceMaterial = entity.resourceDeposit?.materials.some(material => material.materialId === 'WOOD')
+              ? 'wood'
+              : entity.resourceDeposit?.materials.some(material => material.materialId === 'STONE') ? 'stone' : 'other';
             return <button
               key={entityRefKey(entity.ref)}
-              className={'live-map-marker' + (isFire ? ' live-map-marker--fire' : '') + (sameRef(entity.ref, selectedRef) ? ' is-selected' : '')}
+              className={'live-map-marker' + (isFire ? ' live-map-marker--fire' : '') + (entity.ref.type === 'resource' ? ` live-map-marker--resource live-map-marker--resource-${resourceMaterial}` : '') + (sameRef(entity.ref, selectedRef) ? ' is-selected' : '')}
               data-testid={isFire ? 'map-campfire-marker' : undefined}
               data-entity-ref={entityRefKey(entity.ref)}
               style={{ left: left + '%', top: top + '%' }}

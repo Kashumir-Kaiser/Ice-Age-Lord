@@ -88,12 +88,12 @@ const source = (recordId: string) => ({ path: RESOURCE_ECONOMY_VERSION, heading:
  */
 export const RESOURCE_FEATURES: readonly FeatureSpec[] = [
   {
-    id: 'FEATURE-LL01-STARTER-WOOD', name: 'Camp timber salvage', terrainKind: 'salvage', position: point(3, 0),
+    id: 'FEATURE-LL01-STARTER-WOOD', name: 'Camp timber salvage', terrainKind: 'salvage', position: point(8.5, 0),
     widthMetres: 5, depthMetres: 4, visualElementCount: 8,
     materials: [{ resourceId: 'RES-LL01-06', materialId: 'WOOD', materialName: 'Salvaged wood', unit: 'unit', channel: 'salvage', areaUnit: 'square_metre', unitsPerArea: 3.2, densityPermille: 1_000, richnessPermille: 1_000, renewal: 'none', dailyQuota: null, regenerationPerAreaPerDay: 0, access: 'open_surface', requiredToolTemplateId: 'STONE-AXE' }],
   },
   {
-    id: 'FEATURE-LL01-STARTER-STONE', name: 'Camp stone rubble', terrainKind: 'salvage', position: point(-3, 0),
+    id: 'FEATURE-LL01-STARTER-STONE', name: 'Camp stone rubble', terrainKind: 'salvage', position: point(-8.5, 0),
     widthMetres: 5, depthMetres: 4, visualElementCount: 10,
     materials: [{ resourceId: 'RES-LL01-07', materialId: 'STONE', materialName: 'Salvaged stone', unit: 'unit', channel: 'salvage', areaUnit: 'square_metre', unitsPerArea: 1.6, densityPermille: 1_000, richnessPermille: 1_000, renewal: 'none', dailyQuota: null, regenerationPerAreaPerDay: 0, access: 'open_surface', requiredToolTemplateId: 'STONE-HAMMER' }],
   },

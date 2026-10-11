@@ -186,6 +186,10 @@ function migrateV3ToV4(candidate: Record<string, any>, world: WorldDefinition): 
     schemaVersion: 4,
     spatial: { ...candidate.spatial, resourceBalances, harvestJobs },
   };
+  // Terrain deposits did not exist in v3 saves. Re-scan the owner's current
+  // sight after creating their balances so nearby starter features appear on
+  // the map immediately when an old opening save is loaded.
+  seedSpatialKnowledge(migrated as GameState, world);
   return migrated as GameState;
 }
 

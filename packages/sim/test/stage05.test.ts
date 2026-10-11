@@ -65,6 +65,21 @@ test('schema 2 saves migrate into the persistent spatial state without changing 
   assert.deepEqual(upgraded.playerKnowledge.knownRouteIds, ['ROUTE-LL01-01', 'ROUTE-LL01-07', 'ROUTE-LL01-08']);
 });
 
+test('schema 3 saves discover starter deposits on the map during resource migration', () => {
+  const legacy = structuredClone(freshState()) as unknown as Record<string, any>;
+  legacy.schemaVersion = 3;
+  legacy.playerKnowledge.knownResourceIds = [];
+  legacy.spatial.resourceBalances = legacy.spatial.resourceBalances.filter((balance: Record<string, any>) =>
+    ['RES-LL01-01', 'RES-LL01-02', 'RES-LL01-03', 'RES-LL01-04', 'RES-LL01-05'].includes(balance.resourceId));
+
+  const upgraded = upgradeGameState(legacy, world);
+  const view = projectPlayerView(upgraded, world);
+  for (const id of ['RES-LL01-06', 'RES-LL01-07']) {
+    assert.ok(upgraded.playerKnowledge.knownResourceIds.includes(id));
+    assert.ok(view.visibleMap.entities.some(entity => entity.ref.type === 'resource' && entity.ref.id === id));
+  }
+});
+
 test('starter wood and stone remain visible, reachable and sufficient across map seeds', () => {
   const starterWood = world.resources.find(resource => resource.id === 'RES-LL01-06')!;
   const starterStone = world.resources.find(resource => resource.id === 'RES-LL01-07')!;

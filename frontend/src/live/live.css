@@ -160,6 +160,12 @@
 .live-map-marker span { max-width:140px; overflow:hidden; color:#b6c9c7; font-size:9px; text-overflow:ellipsis; white-space:nowrap; }
 .live-map-marker--fire { border-color:rgba(228,177,116,.27); color:#f0d2a0; background:rgba(89,59,35,.6); }
 .live-map-marker--fire span { color:#efd4a7; }
+.live-map-marker--resource { width:28px; height:28px; justify-content:center; padding:2px; border-color:rgba(222,203,152,.5); background:rgba(16,39,43,.92); }
+.live-map-marker--resource>svg { color:#d8d0aa; }
+.live-map-marker--resource-wood>svg { color:#9fd18b; }
+.live-map-marker--resource-stone>svg { color:#d2c9b7; }
+.live-map-marker--resource span { display:none; }
+.live-map-marker--resource:hover span,.live-map-marker--resource.is-selected span { display:block; }
 .live-map-marker.is-selected { outline:2px solid #e4c18b; outline-offset:2px; }
 .live-terrain-label { position:absolute; color:#829f9c; font-size:9px; transform:translate(-50%,-50%); }
 .live-map-empty { position:absolute; inset:45% 0 auto; text-align:center; color:#8198a1; font-size:11px; }
