@@ -1,6 +1,24 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
+
+async function tapVisualCenter(page: Page, locator: Locator, mobile: boolean) {
+  if (!mobile) {
+    await locator.click();
+    return;
+  }
+  await locator.scrollIntoViewIfNeeded();
+  const box = await locator.boundingBox();
+  if (!box) throw new Error('Cannot tap an element without a visible bounding box.');
+  const viewport = await page.evaluate(() => ({
+    offsetTop: window.visualViewport?.offsetTop ?? 0,
+    height: window.visualViewport?.height ?? window.innerHeight,
+  }));
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2 - viewport.offsetTop;
+  if (y < 0 || y > viewport.height) throw new Error('Element is outside the mobile visual viewport.');
+  await page.touchscreen.tap(x, y);
+}
 
 const fireRef = { type: 'site', id: 'SITE-LL01-000' };
 const fireKey = 'site:SITE-LL01-000';
@@ -196,8 +214,8 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
       hit: hit && { tag: hit.tagName, className: String((hit as HTMLElement).className), text: (hit.textContent || '').trim().slice(0, 80) } };
   });
   console.log('MAP_AFTER_SCROLL', JSON.stringify(mapAfterScroll));
-  await mapCampfire.click();
-  await page.getByRole('button', { name: 'Kiểm tra', exact: true }).click();
+  await tapVisualCenter(page, mapCampfire, testInfo.project.name === 'mobile-chromium');
+  await tapVisualCenter(page, page.getByRole('button', { name: 'Kiểm tra', exact: true }), testInfo.project.name === 'mobile-chromium');
   try {
     await expect.poll(() => commands).toBe(1);
   } catch (error) {

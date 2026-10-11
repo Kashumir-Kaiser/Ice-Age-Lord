@@ -1,6 +1,24 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
-test('Stage 07 plays and reloads a timed H0 combat encounter through the browser', async ({ page }) => {
+async function tapVisualCenter(page: Page, locator: Locator, mobile: boolean) {
+  if (!mobile) {
+    await locator.click();
+    return;
+  }
+  await locator.scrollIntoViewIfNeeded();
+  const box = await locator.boundingBox();
+  if (!box) throw new Error('Cannot tap an element without a visible bounding box.');
+  const viewport = await page.evaluate(() => ({
+    offsetTop: window.visualViewport?.offsetTop ?? 0,
+    height: window.visualViewport?.height ?? window.innerHeight,
+  }));
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2 - viewport.offsetTop;
+  if (y < 0 || y > viewport.height) throw new Error('Element is outside the mobile visual viewport.');
+  await page.touchscreen.tap(x, y);
+}
+
+test('Stage 07 plays and reloads a timed H0 combat encounter through the browser', async ({ page }, testInfo) => {
   test.setTimeout(45_000);
   const ownerKey = process.env.ILL_TEST_OWNER_KEY;
   expect(ownerKey, 'CI must provide the ephemeral API owner key').toBeTruthy();
@@ -46,7 +64,7 @@ test('Stage 07 plays and reloads a timed H0 combat encounter through the browser
       hit: hit && { tag: hit.tagName, className: String((hit as HTMLElement).className), text: (hit.textContent || '').trim().slice(0, 80) } };
   });
   console.log('COMBAT_MARKER_AFTER_SCROLL', JSON.stringify(combatMarkerAfterScroll));
-  await target.click();
+  await tapVisualCenter(page, target, testInfo.project.name === 'mobile-chromium');
   await expect(page.getByTestId('combat-target-inspector')).toBeVisible();
 
   await page.getByLabel('Điều kiện tự dừng').selectOption('next_completion');
@@ -69,7 +87,7 @@ test('Stage 07 plays and reloads a timed H0 combat encounter through the browser
       stack: box ? document.elementsFromPoint(box.x + box.width / 2, box.y + box.height / 2).slice(0, 8).map(describe) : [] };
   });
   console.log('ENGAGE_HIT_DIAGNOSTIC', JSON.stringify(engageHitDiagnostic));
-  await engageButton.click();
+  await tapVisualCenter(page, engageButton, testInfo.project.name === 'mobile-chromium');
   await navigation.getByRole('button', { name: /^Quân lực/ }).click();
   const combatPanel = page.getByTestId('stage07-combat-panel');
   await expect(combatPanel).toContainText(/active/);
