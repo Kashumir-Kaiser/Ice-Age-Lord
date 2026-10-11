@@ -12,8 +12,8 @@ This is a **new game**: do not import earlier campaign inventories, unit rosters
 
 - `references/canonical/`: original Lord DnD source rulebooks and lineage, retained **as references** (not an already-compiled runtime).
 - `design/`: latest web-game content design, magical buildings and source-grounded construction proposals.
-- `data/events/`: cumulative source-item CSV v7.14 with 1447 rows through Round 85 (Chapters 1262–1271); round audits and catalog addenda are in `research/extraction-audits/` and `data/events/`. The cumulative source catalog JSON remains v4.6 (590 items, 239 effects) with v4.7–v7.15 addenda alongside it and the v7.2.1 metadata correction. The fixed 30-event v0.6 timeline is unchanged. Extracted entries are not automatically obtainable in a new game.
-- `research/extraction-audits/`: **all eighty-five extraction rounds**, including the Round 29 continuation addendum (v2.9.1), Round 35, Round 36, Round 38, Round 39, Round 40, Round 41, Round 42, Round 43, and Rounds 44–74 audits, with append-only research and immutable earlier releases.
+- `data/events/`: cumulative source-item CSV v7.15 with 1471 rows through Round 86 (Chapters 1272–1281); round audits and catalog addenda are in `research/extraction-audits/` and `data/events/`. The cumulative source catalog JSON remains v4.6 (590 items, 239 effects) with v4.7–v7.16 addenda alongside it and the v7.2.1 metadata correction. The fixed 30-event v0.6 timeline is unchanged. Extracted entries are not automatically obtainable in a new game.
+- `research/extraction-audits/`: **all eighty-six extraction rounds**, including the Round 29 continuation addendum (v2.9.1), Round 35, Round 36, Round 38, Round 39, Round 40, Round 41, Round 42, Round 43, and Rounds 44–74 audits, with append-only research and immutable earlier releases.
 - `research/snapshots/`: chronological catalogs and design versions retained for traceability.
 
 ## Authority / migration rules
@@ -82,3 +82,7 @@ The React/Vite visual demo now lives in `frontend/` on `main`. It uses the origi
 - `data/events/EVENT-SOURCE-ITEMS-v7.14.csv`: cumulative source-item ledger through printed Chapter 1271 (1,447 rows).
 - `data/events/EVENT-SOURCE-CATALOG-v7.15-ADDENDUM.json`: Round 85 source coverage for Chapters 1262–1271, nine appended item/transfer records, and catalog cross-checks.
 - `research/extraction-audits/ROUND-85-EIGHTY-FIFTH-EXTRACTION.md`: Round 85 audit for Chapters 1262–1271; resumes at Chapter 1272.
+
+- `data/events/EVENT-SOURCE-ITEMS-v7.15.csv`: cumulative source-item ledger through printed Chapter 1281 (1,471 rows); corrects unsupported quality labels for two prior material rows while preserving the previous release.
+- `data/events/EVENT-SOURCE-CATALOG-v7.16-ADDENDUM.json`: Round 86 source coverage for Chapters 1272–1281 and 24 appended item/evolution records, including first-/second-kill Cleaner rewards.
+- `research/extraction-audits/ROUND-86-EIGHTY-SIXTH-EXTRACTION.md`: Round 86 audit for Chapters 1272–1281; resumes at Chapter 1282.
