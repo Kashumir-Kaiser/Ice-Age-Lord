@@ -1,0 +1,59 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-4.7-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-4.6-ON-TIMELINE-0.6",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 47 sequential review of printed Chapters 882–891; cumulative item ledger is EVENT-SOURCE-ITEMS-v4.7.csv; fixed schedule unchanged.",
+  "item_ids": [
+    "SX-0591",
+    "SX-0592",
+    "SX-0593",
+    "SX-0594",
+    "SX-0595",
+    "SX-0596",
+    "SX-0597",
+    "SX-0598",
+    "SX-0599"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 884,
+      "event": "Xiao kills Uriel; hidden achievement rewards include Light God's Blood x1, Divine Crystals x10, Light Godfire x1, 100000 reputation; Uproot reaches 100%."
+    },
+    {
+      "chapter": 885,
+      "event": "Saint Eight survives the God-Slaying Arrow and is captured; Saints Twelve and Fourteen escape using one Church Emblem."
+    },
+    {
+      "chapter": 886,
+      "event": "Uproot 90% and 100% rewards delivered: Light Spear skill book, Divine Power Shards x50, Light Godhead x1, selectable Legendary Relic Box x1."
+    },
+    {
+      "chapter": 887,
+      "event": "Three existing Light Codex volumes and 300 Divine Power Shards produce one Complete Light Codex."
+    },
+    {
+      "chapter": 888,
+      "event": "One Light God's Blood is consumed to finish the existing Storm Axe's first awakening; relic box selection results in Annihilation Blood for Berje."
+    },
+    {
+      "chapter": 889,
+      "event": "Berje consumes Annihilation Blood and an existing Legendary Heart, reaching Legendary. Cracatoa's blood fusion is deferred."
+    },
+    {
+      "chapter": 890,
+      "event": "Isabella binds Complete Light Codex; Fortune Goddess's Favor S-rank quest accepted at 0/3; coordinates and staged rewards are objectives/offers, not receipts. Dream mist recedes."
+    },
+    {
+      "chapter": 891,
+      "event": "Dream Layer activity ends at Day 152 00:00; Dream Shop scheduled to close six hours later. No fixed LL01 calendar change."
+    }
+  ],
+  "non_receipts": [
+    "Church offer of 300 Divine Power Shards and one Godfire for Uriel was rejected.",
+    "The 300 shards spent in codex fusion are a cost, not a reward.",
+    "Fortune quest rewards are unclaimed; its third-stage reward is unknown.",
+    "The Light Godhead is not fused; the Light Spear skill is not learned in this batch.",
+    "No dream activity reward total is attributed to an individual."
+  ],
+  "next_unprocessed_chapter": 892
+}
