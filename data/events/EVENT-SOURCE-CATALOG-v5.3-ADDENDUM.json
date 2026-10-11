@@ -1,0 +1,171 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-5.3-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-5.2-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 53 sequential review of printed Chapters 942–951 using Bqquge. Cumulative item ledger is EVENT-SOURCE-ITEMS-v5.3.csv. Catalog baseline remains v4.6 with append-only v4.7–v5.3 addenda; fixed schedule unchanged.",
+  "item_ids": [
+    "SX-0711",
+    "SX-0712",
+    "SX-0713",
+    "SX-0714",
+    "SX-0715",
+    "SX-0716",
+    "SX-0717",
+    "SX-0718",
+    "SX-0719",
+    "SX-0720",
+    "SX-0721",
+    "SX-0722"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 942,
+      "event": "An old witch gifts the Death Poison Core relic for an ally's advancement; the party enters the Fortune Ark."
+    },
+    {
+      "chapter": 943,
+      "event": "The hidden stage of the S-rank task begins: five allied chess pieces race against an opponent across a 49-space board, using the Lucky God's Dice."
+    },
+    {
+      "chapter": 944,
+      "event": "Sarah reaches the level-46 ultimate challenge; its overperformance can award an extra hidden reward."
+    },
+    {
+      "chapter": 945,
+      "event": "Sarah defeats the Windmark Lion King and receives the legendary passive Wind Dance Steps."
+    },
+    {
+      "chapter": 946,
+      "event": "Xiao earns legendary passive Mountain Soul Power after a level-48 overperformance; Renis earns legendary active Chasing Cloud Dragon-Slaying Arrow after killing the Windcloud Dragon."
+    },
+    {
+      "chapter": 947,
+      "event": "Xierda earns legendary active Crimson Spider Nest: Bloodburst after killing the Abyssal Spider Emperor. An opponent's king-piece interference grants five extra rolls and an additional mystery reward."
+    },
+    {
+      "chapter": 948,
+      "event": "Malenina earns legendary passive Seven Absolute Swordsmanship. The S-rank task completes and grants Deep Sea Heart Necklace (semi-artifact), Divine Power Fragments x200, and Frost Codex skill book; the book opens to Ice Throne: Royal Coronation. Control of the Fortune Ark is granted and soul-binding succeeds."
+    },
+    {
+      "chapter": 949,
+      "event": "The Fortune Ark is confirmed as an initial-tier artifact super-vessel; no new item receipt."
+    },
+    {
+      "chapter": 950,
+      "event": "The Deep Sea Heart Necklace is identified as piece 1/3 of the Deep Sea Calamity semi-artifact set. Loot includes two explicitly excavated chests, one Gold and one Moon; not yet incorporated as separate rows."
+    },
+    {
+      "chapter": 951,
+      "event": "Fanaaz completes a demi-god transformation using the earlier Calamity Divine Fire and fragments; this is a transformation, not a new item receipt."
+    }
+  ],
+  "non_receipts": [
+    "Routine chess-square buffs and temporary effects are not added as carried inventory.",
+    "The five-roll compensation is a task entitlement rather than an item; it is documented in the item ledger for traceability.",
+    "The Ch950 necklace inspection repeats the Ch948 reward and is not counted twice.",
+    "The Ch950 two chest excavations are noted as explicit receipts but their opened contents are outside the reviewed chapter scope.",
+    "All narrative rewards remain source research, not active LL01 inventory."
+  ],
+  "item_receipts": [
+    {
+      "chapter": 923,
+      "ids": [
+        "SX-0668"
+      ],
+      "note": "Sea chart gifted by the Icefield Giant chief."
+    },
+    {
+      "chapter": 925,
+      "ids": [
+        "SX-0671"
+      ],
+      "note": "Storm Destroyer occupation and vessel ownership state."
+    },
+    {
+      "chapter": 926,
+      "ids": [
+        "SX-0669",
+        "SX-0670"
+      ],
+      "note": "One explicitly excavated Silver and one Gold chest."
+    },
+    {
+      "chapter": 929,
+      "ids": [
+        "SX-0672",
+        "SX-0673",
+        "SX-0674",
+        "SX-0675",
+        "SX-0676",
+        "SX-0677",
+        "SX-0678",
+        "SX-0679",
+        "SX-0680",
+        "SX-0681",
+        "SX-0682",
+        "SX-0683",
+        "SX-0684",
+        "SX-0685",
+        "SX-0686",
+        "SX-0687",
+        "SX-0688",
+        "SX-0689",
+        "SX-0690",
+        "SX-0691",
+        "SX-0692",
+        "SX-0693",
+        "SX-0694",
+        "SX-0695",
+        "SX-0696",
+        "SX-0697"
+      ],
+      "note": "Chest count snapshot and explicit loot categories from the 29 Silver/Gold boxes, three Moon boxes, and one Red box. See ledger for all 26 receipt rows."
+    },
+    {
+      "chapter": 930,
+      "ids": [
+        "SX-0698",
+        "SX-0699",
+        "SX-0700"
+      ],
+      "note": "Two individual frozen chest pickups and one broken sailboat."
+    },
+    {
+      "chapter": 931,
+      "ids": [
+        "SX-0701",
+        "SX-0702",
+        "SX-0703"
+      ],
+      "note": "Three Sacrifice Pearls, one each of unknown, orange, and green quality."
+    }
+  ],
+  "quest": "Lucky Goddess/undersea ruins lead-in is active. Chapter 931 has the altar yield three Sacrifice Pearls; the Lucky Wheel challenge is not yet shown as opened or resolved.",
+  "inventory_caveat": "All extracted items remain source research, not LL01 initial inventory, guaranteed new-game drops, or active event contracts.",
+  "next_unprocessed_chapter": 932,
+  "source_urls": [
+    "https://www.bqquge.org/851/227800",
+    "https://www.bqquge.org/851/227801",
+    "https://www.bqquge.org/851/227802",
+    "https://www.bqquge.org/851/227803",
+    "https://www.bqquge.org/851/227804",
+    "https://www.bqquge.org/851/236476",
+    "https://www.bqquge.org/851/236477",
+    "https://www.bqquge.org/851/236478",
+    "https://www.bqquge.org/851/236479",
+    "https://www.bqquge.org/851/236514"
+  ],
+  "mirror_note": "Chapter text and continuation pages read from accessible Bqquge mirror; primary 69shuba sequence inaccessible beyond Ch921.",
+  "chapter_source_urls": [
+    "https://www.bqquge.org/851/236591",
+    "https://www.bqquge.org/851/236592",
+    "https://www.bqquge.org/851/236593",
+    "https://www.bqquge.org/851/236594",
+    "https://www.bqquge.org/851/236655",
+    "https://www.bqquge.org/851/236656",
+    "https://www.bqquge.org/851/236657",
+    "https://www.bqquge.org/851/236658",
+    "https://www.bqquge.org/851/236702",
+    "https://www.bqquge.org/851/236703"
+  ]
+}
