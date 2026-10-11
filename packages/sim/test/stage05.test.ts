@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import test from 'node:test';
 import { ACTIVE_WORLD_PACKAGE as world } from '../../content/src/index.ts';
+import { RESOURCE_PURCHASE_TARGETS, RESOURCE_STORAGE, estimateParallelGatheringHours } from '../../content/src/resourceBalance.ts';
 import { RULESET_VERSION } from '../../content/src/sourceLock.ts';
 import { GameApplicationService } from '../../api/src/service.ts';
 import { SqliteRepository } from '../../storage/src/repository.ts';
@@ -11,8 +12,11 @@ import { createNewGame } from '../src/initializer.ts';
 import { reduceCommand } from '../src/reducer.ts';
 import { upgradeGameState } from '../src/upgrade.ts';
 import { advanceTo, HOUR_MS, MINUTE_MS } from '../src/time.ts';
-import { planRoute, previewMovement } from '../src/spatial.ts';
+import { enqueueTombJob } from '../src/time.ts';
+import { carryCapacityForFireLevel, planRoute, previewMovement, seedSpatialKnowledge } from '../src/spatial.ts';
 import { projectPlayerView } from '../src/view.ts';
+import { canonicalStateHash } from '../src/hash.ts';
+import { UNIT_INVENTORY_CONTAINER_PREFIX } from '../../contracts/src/index.ts';
 
 let stateCounter = 0;
 
@@ -52,13 +56,160 @@ test('schema 2 saves migrate into the persistent spatial state without changing 
   delete legacy.playerKnowledge.knownSignalIds;
 
   const upgraded = upgradeGameState(legacy, world);
-  assert.equal(upgraded.schemaVersion, 4);
+  assert.equal(upgraded.schemaVersion, 7);
   assert.deepEqual(upgraded.player.position, world.origin);
   assert.deepEqual(upgraded.territory.position, world.origin);
   assert.deepEqual(upgraded.travel.orders, []);
   assert.deepEqual(upgraded.spatial.searchJobs, []);
   assert.equal(upgraded.fieldChestStates.length, world.fieldChests.length);
   assert.deepEqual(upgraded.playerKnowledge.knownRouteIds, ['ROUTE-LL01-01', 'ROUTE-LL01-07', 'ROUTE-LL01-08']);
+});
+
+test('schema 3 saves discover starter deposits on the map during resource migration', () => {
+  const legacy = structuredClone(freshState()) as unknown as Record<string, any>;
+  legacy.schemaVersion = 3;
+  legacy.playerKnowledge.knownResourceIds = [];
+  legacy.spatial.resourceBalances = legacy.spatial.resourceBalances.filter((balance: Record<string, any>) =>
+    ['RES-LL01-01', 'RES-LL01-02', 'RES-LL01-03', 'RES-LL01-04', 'RES-LL01-05'].includes(balance.resourceId));
+
+  const upgraded = upgradeGameState(legacy, world);
+  const view = projectPlayerView(upgraded, world);
+  for (const id of ['RES-LL01-06', 'RES-LL01-07']) {
+    assert.ok(upgraded.playerKnowledge.knownResourceIds.includes(id));
+    assert.ok(view.visibleMap.entities.some(entity => entity.ref.type === 'resource' && entity.ref.id === id));
+  }
+});
+
+test('starter wood and stone remain visible, reachable and sufficient across map seeds', () => {
+  const starterWood = world.resources.find(resource => resource.id === 'RES-LL01-06')!;
+  const starterStone = world.resources.find(resource => resource.id === 'RES-LL01-07')!;
+  const openingCosts = RESOURCE_PURCHASE_TARGETS.find(target => target.id === 'starter-opening-bundle')!.costs as Readonly<Record<string, number>>;
+  assert.equal(starterWood.capacity, 50);
+  assert.equal(starterStone.capacity, 25);
+  assert.equal(openingCosts.WOOD, starterWood.capacity);
+  assert.equal(openingCosts.STONE, starterStone.capacity);
+  assert.equal(RESOURCE_STORAGE.initialStackSlots, 40);
+
+  for (let seedIndex = 0; seedIndex < 8; seedIndex++) {
+    const state = createNewGame({
+      saveId: `stage05-access-${seedIndex}`,
+      campaignId: `stage05-access-campaign-${seedIndex}`,
+      soulId: 'LI_LAN',
+      worldPackageId: world.id,
+      rulesetVersion: RULESET_VERSION,
+      contentVersion: world.contentVersion,
+      seed: `starter-access-seed-${seedIndex}`,
+    }, world);
+    const view = projectPlayerView(state, world);
+    for (const resource of [starterWood, starterStone]) {
+      const distanceFromFire = Math.hypot(resource.location.xMm - world.origin.xMm, resource.location.yMm - world.origin.yMm);
+      assert.ok(distanceFromFire <= state.territory.survivalFire.heatRadiusMetres * 1_000, `${resource.id} is outside H0 heat for seed ${seedIndex}`);
+      assert.ok(distanceFromFire <= world.navigationOverlay.sightRangeMm * world.navigationOverlay.nightSightPermille / 1_000);
+      assert.ok(state.playerKnowledge.knownResourceIds.includes(resource.id));
+      assert.ok(view.visibleMap.entities.some(entity => entity.ref.type === 'resource' && entity.ref.id === resource.id));
+      assert.ok(view.visibleMap.resourceFeatures.some(feature => feature.id === resource.featureId));
+    }
+    assert.equal(state.inventory.containers.find(container => container.kind === 'territory_supply')?.stacks.find(stack => stack.templateId === 'BREAD')?.quantity, 20);
+    assert.equal(state.inventory.containers.find(container => container.kind === 'territory_supply')?.stacks.filter(stack => stack.templateId === 'STONE-AXE').length, 1);
+    assert.equal(state.inventory.containers.find(container => container.kind === 'territory_supply')?.stacks.filter(stack => stack.templateId === 'STONE-HAMMER').length, 1);
+  }
+});
+
+test('owned harvesters use unit inventory, save their load and gain packs through v4 migration', () => {
+  let state = enqueueTombJob(freshState(), 'worker-production', 'UNIT-WORKER-1').state;
+  state = advanceTo(state, 20 * MINUTE_MS, {}, world).state;
+  const workerId = state.ownedUnits[0].id;
+  const packId = `${UNIT_INVENTORY_CONTAINER_PREFIX}${workerId}`;
+  assert.ok(state.inventory.containers.some(container => container.id === packId && container.kind === 'unit_inventory'));
+  const supplySite = world.sites.find(site => site.id === 'SITE-LL01-002')!;
+  state = apply(state, 'worker-to-supply', 'move', { actorId: workerId, destination: supplySite.position });
+  state = apply(state, 'player-to-supply', 'move', { actorId: state.player.id, destination: supplySite.position });
+  state = advanceTo(state, state.simElapsedMs + MINUTE_MS, {}, world).state;
+
+  state = apply(state, 'observe-worker-tools', 'inspect_starter_container', { containerId: 'LL-CNT-SUPPLY-01' });
+  state = apply(state, 'give-worker-axe', 'transfer_item', {
+    actorId: state.player.id,
+    sourceContainerId: 'LL-CNT-SUPPLY-01',
+    destinationContainerId: packId,
+    itemId: 'ASSET-SUPPLY-STONE-AXE-01',
+    quantity: 1,
+  });
+  const axeId = state.inventory.containers.find(container => container.id === packId)?.stacks.find(stack => stack.templateId === 'STONE-AXE')?.itemId;
+  assert.ok(axeId);
+  const starterWood = world.resources.find(resource => resource.id === 'RES-LL01-06')!;
+  state = apply(state, 'assign-worker-harvest', 'harvest', {
+    actorId: workerId, resourceId: starterWood.id, materialId: starterWood.materialId, quantity: 12, toolItemId: axeId,
+  });
+  state = advanceTo(state, state.simElapsedMs + 2 * HOUR_MS, {}, world).state;
+  const completedJob = state.spatial.harvestJobs.at(-1)!;
+  assert.equal(completedJob.status, 'completed');
+  assert.equal(completedJob.extractedQuantity, 12);
+  assert.equal(state.spatial.resourceBalances.find(balance => balance.resourceId === starterWood.id)?.remaining, 38);
+  assert.equal(state.inventory.containers.find(container => container.id === packId)?.stacks.find(stack => stack.templateId === 'WOOD')?.quantity, 12);
+  assert.equal(projectPlayerView(state, world).inventory.containers.find(container => container.id === packId)?.ownerId, workerId);
+
+  const repository = new SqliteRepository(':memory:');
+  let loaded: ReturnType<typeof freshState> | null = null;
+  try {
+    const created = repository.createSaveIdempotent({
+      ownerId: 'local-owner', creationKey: 'worker-cargo-roundtrip', requestSha256: canonicalStateHash('worker-cargo-state'),
+      slotName: 'Worker cargo', makeState: () => state,
+    });
+    loaded = repository.loadSave('local-owner', created.saveId).state;
+  } finally {
+    repository.close();
+  }
+  assert.ok(loaded);
+  assert.equal(loaded.inventory.containers.find(container => container.id === packId)?.stacks.find(stack => stack.templateId === 'WOOD')?.quantity, 12);
+  assert.equal(loaded.spatial.resourceBalances.find(balance => balance.resourceId === starterWood.id)?.remaining, 38);
+  const workerWood = loaded.inventory.containers.find(container => container.id === packId)?.stacks.find(stack => stack.templateId === 'WOOD')!;
+  loaded = apply(loaded, 'store-worker-cargo', 'transfer_item', {
+    actorId: loaded.player.id, sourceContainerId: packId, destinationContainerId: 'LL-CNT-SUPPLY-01', itemId: workerWood.itemId, quantity: workerWood.quantity,
+  });
+  assert.equal(loaded.inventory.containers.find(container => container.id === 'LL-CNT-SUPPLY-01')?.stacks.find(stack => stack.templateId === 'WOOD')?.quantity, 12);
+
+  const legacy = structuredClone(loaded) as unknown as Record<string, any>;
+  legacy.schemaVersion = 4;
+  legacy.inventory.containers = legacy.inventory.containers.filter((container: Record<string, any>) => container.id !== packId);
+  const migrated = upgradeGameState(legacy, world);
+  assert.equal(migrated.schemaVersion, 7);
+  assert.ok(migrated.inventory.containers.some(container => container.id === packId && container.kind === 'unit_inventory'));
+});
+
+test('resource clusters scale with disjoint terrain footprints and progression rates match economy costs', () => {
+  const byId = (id: string) => world.resources.find(resource => resource.id === id)!;
+  const smallGrove = byId('RES-LL01-08');
+  const largerGrove = byId('RES-LL01-10');
+  const matureForest = byId('RES-LL01-01');
+  const farForest = byId('RES-LL01-14');
+  const smallForage = byId('RES-LL01-09');
+  const matureForage = byId('RES-LL01-13');
+  assert.ok(smallGrove.capacity < largerGrove.capacity);
+  assert.ok(largerGrove.capacity < matureForest.capacity);
+  assert.ok(matureForest.capacity > smallGrove.capacity * 100);
+  assert.ok(farForest.capacity > matureForest.capacity);
+  assert.ok(Math.hypot(farForest.location.xMm, farForest.location.yMm) > Math.hypot(matureForest.location.xMm, matureForest.location.yMm));
+  assert.ok(matureForage.dailyQuota! > smallForage.dailyQuota! * 100);
+  assert.ok(world.resources.every(resource => world.resourceFeatures.some(feature =>
+    feature.id === resource.featureId && feature.position.xMm === resource.location.xMm && feature.position.yMm === resource.location.yMm)));
+
+  const early = RESOURCE_PURCHASE_TARGETS.find(target => target.id === 'starter-opening-bundle')!;
+  const mid = RESOURCE_PURCHASE_TARGETS.find(target => target.id === 'mid-lord-house')!;
+  const late = RESOURCE_PURCHASE_TARGETS.find(target => target.id === 'late-lord-house')!;
+  assert.ok(Math.abs(estimateParallelGatheringHours(early) - 75 / 12) < 1e-9);
+  assert.ok(Math.abs(estimateParallelGatheringHours(mid) - 700 / 120) < 1e-9);
+  assert.ok(Math.abs(estimateParallelGatheringHours(late) - 1_000_000 / 14_400) < 1e-9);
+  assert.equal(carryCapacityForFireLevel(1), 20);
+  assert.equal(carryCapacityForFireLevel(8), 500);
+  assert.equal(carryCapacityForFireLevel(22), 50_000);
+
+  const state = freshState();
+  const knownRoutes = world.navigationOverlay.routeEdges.filter(edge => state.playerKnowledge.knownRouteIds.includes(edge.id));
+  assert.ok(planRoute({ ...world, navigationOverlay: { ...world.navigationOverlay, routeEdges: knownRoutes } }, world.origin, farForest.location));
+  const finiteWood = world.resources.filter(resource => resource.materialId === 'WOOD').reduce((sum, resource) => sum + resource.capacity, 0);
+  const dailyForestRegrowth = world.resources.filter(resource => resource.materialId === 'WOOD').reduce((sum, resource) => sum + resource.regenerationPerDay, 0);
+  assert.ok(finiteWood + dailyForestRegrowth * 12 >= 3_800_000, 'the three late wood components are replenishable within a multi-week window');
+  assert.equal((late.unmodeledCosts as Readonly<Record<string, number>>).REFINED_IRON, 170_000);
 });
 
 test('navigation overlay preserves source route distance and only known routes support long travel', () => {
@@ -209,6 +360,139 @@ test('harvest reserves finite source quantity, returns cargo and conserves inven
   assert.equal(state.spatial.harvestJobs.at(-1)?.status, 'cancelled');
   assert.equal(state.spatial.resourceBalances.find(candidate => candidate.resourceId === wood.id)?.reserved, 0);
   assert.equal(state.spatial.resourceBalances.find(candidate => candidate.resourceId === wood.id)?.remaining, initialQuantity - 2);
+});
+
+test('wood, forage, visible feature channels and exhausted state survive SQLite save and reload', () => {
+  const repository = new SqliteRepository(':memory:');
+  try {
+    let state = freshState();
+    const starterWood = world.resources.find(resource => resource.id === 'RES-LL01-06')!;
+    const carriedId = 'TEST-STARTER-AXE';
+    const bagIndex = state.inventory.containers.findIndex(container => container.kind === 'carried_bag');
+    const bag = state.inventory.containers[bagIndex];
+    state.inventory = { containers: state.inventory.containers.map(container => container.id === bag.id
+      ? { ...container, stacks: [...container.stacks, { itemId: carriedId, templateId: 'STONE-AXE', quantity: 1, equipped: false, provenance: 'versioned_game_design' as const }] }
+      : container) };
+    state = apply(state, 'inspect-starter-wood', 'inspect_entity', { entity: { type: 'resource', id: starterWood.id } });
+
+    state = apply(state, 'starter-wood-first-load', 'harvest', {
+      actorId: state.player.id, resourceId: starterWood.id, materialId: starterWood.materialId, quantity: 20, toolItemId: carriedId,
+    });
+    state = advanceTo(state, HOUR_MS, {}, world).state;
+    assert.equal(state.spatial.harvestJobs[0].status, 'active');
+    assert.equal(state.spatial.harvestJobs[0].extractedQuantity, 9);
+    assert.equal(state.spatial.resourceBalances.find(balance => balance.resourceId === starterWood.id)?.remaining, 41);
+
+    const created = repository.createSaveIdempotent({
+      ownerId: 'local-owner', creationKey: 'starter-resource-roundtrip', requestSha256: canonicalStateHash('resource-state-v1'),
+      slotName: 'Resource state', makeState: () => state,
+    });
+    state = repository.loadSave('local-owner', created.saveId).state;
+    let feature = projectPlayerView(state, world).visibleMap.resourceFeatures.find(item => item.id === starterWood.featureId)!;
+    assert.equal(feature.channels.find(channel => channel.resourceId === starterWood.id)?.remainingRatio, 41 / 50);
+    assert.equal(feature.position.xMm, starterWood.location.xMm);
+    state = advanceTo(state, state.simElapsedMs + HOUR_MS, {}, world).state;
+    assert.equal(state.spatial.harvestJobs[0].status, 'completed');
+    assert.equal(state.spatial.resourceBalances.find(balance => balance.resourceId === starterWood.id)?.remaining, 30);
+
+    const storageSite = world.sites.find(site => site.id === 'SITE-LL01-002')!;
+    state.player.position = storageSite.position;
+    state.player.location = { kind: 'site', siteId: storageSite.id };
+    state = apply(state, 'inspect-resource-stockpile', 'inspect_starter_container', { containerId: 'LL-CNT-SUPPLY-01' });
+    const cargo = state.inventory.containers.find(container => container.kind === 'carried_bag')!.stacks.find(stack => stack.templateId === 'WOOD')!;
+    state = apply(state, 'store-first-wood-load', 'transfer_item', {
+      actorId: state.player.id, sourceContainerId: 'LL-CNT-CARRIED-FOOD-BAG-01', destinationContainerId: 'LL-CNT-SUPPLY-01', itemId: cargo.itemId, quantity: cargo.quantity,
+    });
+    state.player.position = starterWood.location;
+    state.player.location = { kind: 'field', coordinate: starterWood.location };
+    state = apply(state, 'starter-wood-second-load', 'harvest', {
+      actorId: state.player.id, resourceId: starterWood.id, materialId: starterWood.materialId, quantity: 20, toolItemId: carriedId,
+    });
+    state = advanceTo(state, state.simElapsedMs + 2 * HOUR_MS, {}, world).state;
+    assert.equal(state.spatial.harvestJobs.at(-1)?.status, 'completed');
+    assert.equal(state.spatial.resourceBalances.find(balance => balance.resourceId === starterWood.id)?.remaining, 10);
+
+    state.player.position = storageSite.position;
+    state.player.location = { kind: 'site', siteId: storageSite.id };
+    const secondCargo = state.inventory.containers.find(container => container.kind === 'carried_bag')!.stacks.find(stack => stack.templateId === 'WOOD')!;
+    state = apply(state, 'store-second-wood-load', 'transfer_item', {
+      actorId: state.player.id, sourceContainerId: 'LL-CNT-CARRIED-FOOD-BAG-01', destinationContainerId: 'LL-CNT-SUPPLY-01', itemId: secondCargo.itemId, quantity: secondCargo.quantity,
+    });
+    const storedWood = state.inventory.containers.find(container => container.id === 'LL-CNT-SUPPLY-01')!.stacks.filter(stack => stack.templateId === 'WOOD');
+    assert.equal(storedWood.length, 1);
+    assert.equal(storedWood[0].quantity, 40);
+
+    state.player.position = starterWood.location;
+    state.player.location = { kind: 'field', coordinate: starterWood.location };
+    state = apply(state, 'starter-wood-final-load', 'harvest', {
+      actorId: state.player.id, resourceId: starterWood.id, materialId: starterWood.materialId, quantity: 10, toolItemId: carriedId,
+    });
+    state = advanceTo(state, state.simElapsedMs + 90 * MINUTE_MS, {}, world).state;
+    assert.equal(state.spatial.resourceBalances.find(balance => balance.resourceId === starterWood.id)?.remaining, 0);
+    const exhaustedSnapshot = repository.createSaveIdempotent({
+      ownerId: 'local-owner', creationKey: 'exhausted-starter-resource-roundtrip', requestSha256: canonicalStateHash('resource-exhaustion-v1'),
+      slotName: 'Exhausted resource', makeState: () => ({ ...structuredClone(state), saveId: 'stage05-exhausted-resource-save', receipts: [] }),
+    });
+    const loaded = repository.loadSave('local-owner', exhaustedSnapshot.saveId).state;
+    const loadedView = projectPlayerView(loaded, world);
+    const deposit = loadedView.visibleMap.entities.find(entity => entity.resourceDeposit?.featureId === starterWood.featureId)!;
+    const material = deposit.resourceDeposit!.materials.find(item => item.resourceId === starterWood.id)!;
+    feature = loadedView.visibleMap.resourceFeatures.find(item => item.id === starterWood.featureId)!;
+    assert.equal(material.remaining, 0);
+    assert.equal(material.status, 'depleted');
+    assert.equal(feature.channels.find(channel => channel.resourceId === starterWood.id)?.remainingRatio, 0);
+  } finally {
+    repository.close();
+  }
+});
+
+test('forest wood and forage deplete separate channels; only biological stock regrows', () => {
+  let state = freshState();
+  const forestWood = world.resources.find(resource => resource.id === 'RES-LL01-01')!;
+  const forestForage = world.resources.find(resource => resource.id === 'RES-LL01-13')!;
+  state.player.position = forestWood.location;
+  state.player.location = { kind: 'field', coordinate: forestWood.location };
+  seedSpatialKnowledge(state, world);
+  const carriedId = 'TEST-FOREST-AXE';
+  const bag = state.inventory.containers.find(container => container.kind === 'carried_bag')!;
+  state.inventory = { containers: state.inventory.containers.map(container => container.id === bag.id
+    ? { ...container, stacks: [...container.stacks, { itemId: carriedId, templateId: 'STONE-AXE', quantity: 1, equipped: false, provenance: 'versioned_game_design' as const }] }
+    : container) };
+  state.territory.survivalFire.level = 22;
+  state = apply(state, 'inspect-mature-forest', 'inspect_entity', { entity: { type: 'resource', id: forestWood.id } });
+  const initialFeature = projectPlayerView(state, world).visibleMap.resourceFeatures.find(item => item.id === forestWood.featureId)!;
+  const initialCanopy = initialFeature.channels.find(channel => channel.resourceId === forestWood.id)!.remainingRatio;
+  const initialGroundcover = initialFeature.channels.find(channel => channel.resourceId === forestForage.id)!.remainingRatio;
+
+  state = apply(state, 'cut-mature-forest-timber', 'harvest', {
+    actorId: state.player.id, resourceId: forestWood.id, materialId: forestWood.materialId, quantity: 20_000, toolItemId: carriedId,
+  });
+  state = advanceTo(state, state.simElapsedMs + 6 * HOUR_MS, {}, world).state;
+  let feature = projectPlayerView(state, world).visibleMap.resourceFeatures.find(item => item.id === forestWood.featureId)!;
+  const afterTimber = feature.channels.find(channel => channel.resourceId === forestWood.id)!.remainingRatio;
+  assert.ok(afterTimber < initialCanopy);
+  assert.equal(feature.channels.find(channel => channel.resourceId === forestForage.id)!.remainingRatio, initialGroundcover);
+  assert.equal(feature.position.xMm, forestWood.location.xMm);
+  assert.equal(Math.ceil(feature.visualElementCount * afterTimber), Math.ceil(feature.visualElementCount * initialCanopy) - 1);
+
+  state = apply(state, 'gather-mature-forest-forage', 'harvest', {
+    actorId: state.player.id, resourceId: forestForage.id, materialId: forestForage.materialId, quantity: 2_000, toolItemId: 'NONE',
+  });
+  state = advanceTo(state, state.simElapsedMs + HOUR_MS, {}, world).state;
+  feature = projectPlayerView(state, world).visibleMap.resourceFeatures.find(item => item.id === forestWood.featureId)!;
+  assert.equal(feature.channels.find(channel => channel.resourceId === forestWood.id)!.remainingRatio, afterTimber);
+  assert.ok(feature.channels.find(channel => channel.resourceId === forestForage.id)!.remainingRatio < initialGroundcover);
+
+  state = advanceTo(state, 16 * HOUR_MS, {}, world).state;
+  const finiteStarter = state.spatial.resourceBalances.find(balance => balance.resourceId === 'RES-LL01-06')!;
+  state.spatial.resourceBalances = state.spatial.resourceBalances.map(balance => balance.resourceId === finiteStarter.resourceId
+    ? { ...balance, remaining: 0 }
+    : balance.resourceId === forestWood.id ? { ...balance, remaining: forestWood.capacity - 100 }
+      : balance.resourceId === forestForage.id ? { ...balance, dailyRemaining: 0 } : balance);
+  state = advanceTo(state, 17 * HOUR_MS, {}, world).state;
+  assert.equal(state.spatial.resourceBalances.find(balance => balance.resourceId === finiteStarter.resourceId)?.remaining, 0);
+  assert.equal(state.spatial.resourceBalances.find(balance => balance.resourceId === forestWood.id)?.remaining, forestWood.capacity);
+  assert.equal(state.spatial.resourceBalances.find(balance => balance.resourceId === forestForage.id)?.dailyRemaining, forestForage.dailyQuota);
 });
 
 test('API backup import preserves an in-progress authoritative movement position', async () => {

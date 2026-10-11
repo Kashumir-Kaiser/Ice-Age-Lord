@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Nhà Nông Phu Cực Địa · phát triển cấp 16 · body">
-<title>Nhà Nông Phu Cực Địa · phát triển cấp 16 · body</title>
-<g id="painted-sprite" shape-rendering="geometricPrecision">
-<use href="../polar-farmhouse-l01/body.svg#painted-sprite"/>
-<g id="upgrade-6"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M318,187l10,-8 M383,205l9,7 M323,201v34 M383,213v31" fill="none" stroke="#57483e" stroke-width="4"/><path d="M319,190q30,-9 66,8" fill="none" stroke="#e8e6dc" stroke-width="4"/></g></g>
-<g id="upgrade-11"><g stroke="#343b43" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round"><path d="M257,101l39,9 -6,35 -39,-9Z" fill="#43515a"/><path d="M261,105l30,8 -4,26 -30,-8Z" fill="#809395"/><path d="M264,108l24,7 -3,23 -24,-7Z" fill="#d2ae78"/><path d="M261,105l30,8 M262,117l31,7 M271,103l-5,34" fill="none" stroke="#e4e0d4" stroke-width="2.2"/></g></g>
-<g id="upgrade-16"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M317,184l24,-12h44l13,13 M318,187q35,-7 78,1v33l-57,-11Z" fill="#66777a" fill-opacity=".54"/><path d="M326,187v25 M348,179v38 M370,178v42 M320,199l72,13" fill="none" stroke="#d5dfd7" stroke-width="2.3"/><path d="M316,182l25,-14h44" fill="none" stroke="#eee9dd" stroke-width="4"/></g></g>
-</g>
-</svg>

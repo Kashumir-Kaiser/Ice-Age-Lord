@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import {
-  AlertCircle, ArrowRight, CheckCircle2, Eye, Flame, Hammer, Map as MapIcon,
+  AlertCircle, ArrowRight, Bell, CheckCircle2, Eye, Flame, Hammer, Map as MapIcon,
   MapPin, PackageOpen, RefreshCw, ScrollText, Shield, Sparkles, Users,
 } from 'lucide-react';
 import type {
@@ -17,6 +17,7 @@ type Screen = 'overview' | 'territory' | 'map' | 'inventory' | 'forces' | 'build
 type Feedback = { kind: 'idle' | 'saving' | 'committed' | 'rejected' | 'disconnected'; text: string };
 const SAVE_KEY = 'ice-age-lord.live.last-save';
 const CREATE_KEY_PREFIX = 'ice-age-lord.live.create-key:';
+const RESOURCE_CARGO_IDS = new Set(['WOOD', 'STONE', 'RAW-ICE-WATER', 'BROWN-COAL', 'RAW-SALT', 'WILD-FOOD']);
 
 const navigation: { id: Screen; name: string; hint: string; icon: typeof Sparkles }[] = [
   { id: 'overview', name: 'Tổng quan', hint: 'Trạng thái phiên', icon: Sparkles },
@@ -91,6 +92,24 @@ function availabilityMessage(availability: ActionAvailability): string {
   if (reasonCode && messages[reasonCode]) return messages[reasonCode];
   const reason = availability.requirements.join(' ');
   return reason || (reasonCode ? 'Hành động hiện không khả dụng.' : 'Hành động hiện không khả dụng.');
+}
+
+function harvestBlockerMessage(availability: ActionAvailability): string {
+  const messages: Readonly<Record<string, string>> = {
+    ACTOR_ALREADY_TRAVELLING: 'This worker is travelling.',
+    ACTOR_ASSIGNED_TO_SEARCH: 'This worker is assigned to a search.',
+    ACTOR_ASSIGNED_TO_HARVEST: 'This worker is already harvesting.',
+    REQUIRED_TOOL_NOT_CARRIED: 'The selected worker is missing the required tool.',
+    LOAD_CAPACITY_EXCEEDED: 'Unload this worker’s cargo before harvesting.',
+    NO_KNOWN_ROUTE: 'No known route currently reaches this deposit.',
+    NO_SUPPORTED_ROUTE: 'The worker has no supported route to this deposit.',
+    UNDERGROUND_ACCESS_REQUIRED: 'This resource requires underground access.',
+    INSUFFICIENT_RESOURCE: 'The remaining stock or today’s quota is reserved or exhausted.',
+    PROSPECTING_CONTRACT_NOT_COMPILED: 'Surveying is required, but that contract is not available yet.',
+    WATER_PREPARATION_CONTRACT_NOT_COMPILED: 'Water preparation is required, but that contract is not available yet.',
+    WORKFORCE_AND_FUEL_REQUIREMENTS_NOT_MET: 'This workfront needs its worker and fuel requirements first.',
+  };
+  return messages[availability.reasonCode ?? ''] ?? availability.requirements[0] ?? availability.reasonCode?.replaceAll('_', ' ').toLocaleLowerCase() ?? 'Harvesting is currently blocked.';
 }
 
 function fireArtwork(manifest: AssetManifest | null, level: number) {
@@ -170,6 +189,8 @@ function LiveApp() {
   const [slotName, setSlotName] = useState('Lãnh Địa Mới');
   const [view, setView] = useState<PlayerView | null>(null);
   const [events, setEvents] = useState<readonly PlayerEvent[]>([]);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const eventSequenceRef = useRef(0);
   const [screen, setScreen] = useState<Screen>('overview');
   const [selectedRef, setSelectedRef] = useState<EntityRef | null>(null);
   const [combatActorId, setCombatActorId] = useState('');
@@ -182,11 +203,16 @@ function LiveApp() {
   const [customSpeed, setCustomSpeed] = useState('10');
   const [customSelection, setCustomSelection] = useState(false);
   const [chooseDestination, setChooseDestination] = useState(false);
-  const [mapZoom, setMapZoom] = useState(1);
+  // Open on H0's local resource area so its heat radius and starter deposits
+  // have enough screen space to read. The overview control returns to region scale.
+  const [mapZoom, setMapZoom] = useState(200);
   const [destination, setDestination] = useState<CoordinateMm | null>(null);
   const [destinationAvailability, setDestinationAvailability] = useState<ActionAvailability | null>(null);
   const [searchRadiusMetres, setSearchRadiusMetres] = useState(500);
   const [travelActorId, setTravelActorId] = useState('LI_LAN');
+  const [harvestActorId, setHarvestActorId] = useState('LI_LAN');
+  const [harvestQuantity, setHarvestQuantity] = useState(1);
+  const [harvestAvailability, setHarvestAvailability] = useState<Readonly<Record<string, ActionAvailability>>>({});
   const [constructionContainerId, setConstructionContainerId] = useState('LL-CNT-CARRIED-FOOD-BAG-01');
   const [inventoryFilter, setInventoryFilter] = useState('');
   const [focusedConstructionBuildingId, setFocusedConstructionBuildingId] = useState<string | null>(null);
@@ -229,7 +255,10 @@ function LiveApp() {
       try {
         await client.heartbeatClock();
         const nextView = await client.getView();
-        if (active) setView(nextView);
+        if (active) {
+          setView(nextView);
+          if (nextView.lastEventSequence > eventSequenceRef.current) await refreshEvents(nextView.lastEventSequence);
+        }
       } catch (error) {
         if (active) setFeedback({
           kind: error instanceof GameApiError && error.code === 'API_DISCONNECTED' ? 'disconnected' : 'rejected',
@@ -244,6 +273,43 @@ function LiveApp() {
     return () => { active = false; window.clearInterval(timer); };
   }, [authenticated, client, view?.saveId, working]);
 
+  useEffect(() => {
+    if (!view || selectedRef?.type !== 'resource') {
+      setHarvestAvailability({});
+      return;
+    }
+    const entity = view.visibleMap.entities.find(item => item.ref.type === 'resource' && item.ref.id === selectedRef.id);
+    if (!entity?.resourceDeposit) {
+      setHarvestAvailability({});
+      return;
+    }
+    let active = true;
+    setHarvestAvailability({});
+    const workerContainer = view.inventory.containers.find(container => container.ownerId === harvestActorId
+      && (container.kind === 'carried_bag' || container.kind === 'unit_inventory'));
+    void Promise.all(entity.resourceDeposit.materials.map(async material => {
+      const tool = material.requiredToolTemplateId
+        ? workerContainer?.items.find(item => item.label === material.requiredToolTemplateId && item.quantity > 0)
+        : undefined;
+      const command = commandFor(view, 'harvest', {
+        actorId: harvestActorId,
+        resourceId: material.resourceId,
+        materialId: material.materialId,
+        quantity: 1,
+        toolItemId: tool?.itemId ?? (material.requiredToolTemplateId ? '' : 'NONE'),
+      });
+      try {
+        const result = await client.previewCommand(command);
+        return [material.resourceId, result.availability] as const;
+      } catch {
+        return [material.resourceId, { actionId: 'harvest', enabled: false, reasonCode: 'PREVIEW_UNAVAILABLE', requirements: ['The server could not check this harvest right now.'] }] as const;
+      }
+    })).then(entries => {
+      if (active) setHarvestAvailability(Object.fromEntries(entries));
+    });
+    return () => { active = false; };
+  }, [client, harvestActorId, selectedRef?.id, selectedRef?.type, view?.revision, view?.saveId]);
+
   async function checkApi() {
     setApiState('checking');
     setApiMessage('Đang kiểm tra API cục bộ…');
@@ -257,20 +323,23 @@ function LiveApp() {
     }
   }
 
-  async function refreshEvents() {
-    const page = await client.listEvents(0, 200);
+  async function refreshEvents(latestSequence = view?.lastEventSequence ?? 0) {
+    const page = await client.listEvents(Math.max(0, latestSequence - 200), 200);
     setEvents(page.events);
+    eventSequenceRef.current = Math.max(page.nextSequence, latestSequence);
   }
 
   async function activateSave(saveId: string) {
     await client.selectSave(saveId);
     const nextView = await client.getView();
     setView(nextView);
+    eventSequenceRef.current = 0;
+    setEvents([]);
     setSelectedRef(nextView.territory.survivalFire.ref);
     localStorage.setItem(SAVE_KEY, saveId);
     setScreen('overview');
     try {
-      await refreshEvents();
+      await refreshEvents(nextView.lastEventSequence);
     } catch (error) {
       setEvents([]);
       setFeedback({ kind: 'committed', text: 'Lượt lưu đã mở; nhật ký chưa tải được: ' + errorMessage(error) });
@@ -342,11 +411,13 @@ function LiveApp() {
       await client.selectSave(result.save.saveId);
       const nextView = await client.getView();
       setView(nextView);
+      eventSequenceRef.current = 0;
+      setEvents([]);
       setSelectedRef(nextView.territory.survivalFire.ref);
       localStorage.setItem(SAVE_KEY, result.save.saveId);
       localStorage.removeItem(storageKey);
       setSaves(current => [result.save, ...current.filter(save => save.saveId !== result.save.saveId)]);
-      setEvents([]);
+      await refreshEvents(nextView.lastEventSequence);
       setScreen('overview');
       setFeedback({
         kind: 'committed',
@@ -370,7 +441,7 @@ function LiveApp() {
     try {
       const nextView = await client.getView();
       setView(nextView);
-      await refreshEvents();
+      await refreshEvents(nextView.lastEventSequence);
       setFeedback({ kind: 'committed', text: 'Đã tải lại revision ' + nextView.revision + ' từ API.' });
     } catch (error) {
       setFeedback({
@@ -398,6 +469,7 @@ function LiveApp() {
       setPendingCommand(command);
       const result = await client.submitCommand(command);
       setView(result.view);
+      if (result.view.lastEventSequence > eventSequenceRef.current) await refreshEvents(result.view.lastEventSequence);
       setSelectedRef(current => current || result.view.territory.survivalFire.ref);
       setPendingCommand(null);
       setFeedback({
@@ -504,28 +576,32 @@ function LiveApp() {
     }).catch(error => setFeedback({ kind: 'rejected', text: errorMessage(error) }));
   }
 
-  function harvestSelectedResource(entity: PlayerEntityView) {
+  function harvestSelectedResource(entity: PlayerEntityView, resourceId: string, quantity: number) {
     if (!view || entity.ref.type !== 'resource') return;
-    const availability = entity.actions.find(item => item.actionId === 'harvest');
-    if (!availability?.enabled) {
-      setFeedback({ kind: 'rejected', text: availability ? availabilityMessage(availability) : 'Harvest is not available for this source.' });
+    const workerContainer = view.inventory.containers.find(container => container.ownerId === harvestActorId
+      && (container.kind === 'carried_bag' || container.kind === 'unit_inventory'));
+    const resource = view.spatial.resources.find(item => item.resourceId === resourceId);
+    const tool = resource?.requiredToolTemplateId
+      ? workerContainer?.items.find(item => item.label === resource.requiredToolTemplateId && item.quantity > 0)
+      : undefined;
+    if (!resource || !workerContainer || (resource.requiredToolTemplateId && !tool)) {
+      setFeedback({ kind: 'rejected', text: !workerContainer ? 'Inspect the worker’s inventory before assigning this harvest.' : resource?.requiredToolTemplateId ? `Move a ${resource.requiredToolTemplateId} into this worker’s inventory first.` : 'This material is not currently available.' });
       return;
     }
-    const bag = view.inventory.containers.find(container => container.kind === 'carried_bag');
-    const resource = view.spatial.resources.find(item => item.resourceId === entity.ref.id);
-    const requiredTemplate = resource?.materialId === 'WOOD' ? 'STONE-AXE' : resource?.materialId === 'STONE' ? 'STONE-HAMMER' : null;
-    const tool = bag?.items.find(item => item.label === requiredTemplate && item.quantity > 0);
-    if (!resource || !tool) {
-      setFeedback({ kind: 'rejected', text: 'Move the required tool into the carried bag first.' });
-      return;
-    }
-    void sendCommand(commandFor(view, 'harvest', {
-      actorId: view.player.id,
+    const command = commandFor(view, 'harvest', {
+      actorId: harvestActorId,
       resourceId: resource.resourceId,
       materialId: resource.materialId,
-      quantity: 1,
-      toolItemId: tool.itemId,
-    }));
+      quantity,
+      toolItemId: tool?.itemId ?? 'NONE',
+    });
+    void client.previewCommand(command).then(result => {
+      if (!result.availability.enabled) {
+        setFeedback({ kind: 'rejected', text: availabilityMessage(result.availability) });
+        return;
+      }
+      void sendCommand(command);
+    }).catch(error => setFeedback({ kind: 'rejected', text: errorMessage(error) }));
   }
 
   const selectedEntity = view && selectedRef
@@ -572,6 +648,22 @@ function LiveApp() {
     const selectedInspect = selectedEntity?.actions.find(item => item.actionId === 'inspect_entity');
     const selectedOpen = selectedEntity?.actions.find(item => item.actionId === 'open_cache');
     const selectedHarvest = selectedEntity?.actions.find(item => item.actionId === 'harvest');
+    const resourceDeposit = selectedEntity?.resourceDeposit;
+    const harvestWorkerContainer = view.inventory.containers.find(container => container.ownerId === harvestActorId
+      && (container.kind === 'carried_bag' || container.kind === 'unit_inventory'));
+    const workerCargoUnits = harvestWorkerContainer?.items
+      .filter(item => RESOURCE_CARGO_IDS.has(item.label))
+      .reduce((sum, item) => sum + item.quantity, 0) ?? 0;
+    const maxHarvestQuantity = Math.max(0, (resourceDeposit?.carryCapacityUnits ?? 100_000) - workerCargoUnits);
+    const selectedHarvestQuantity = Math.min(harvestQuantity, Math.max(1, maxHarvestQuantity));
+    const harvestActorBusy = view.spatial.movementOrders.some(order => order.status === 'active' && order.actorIds.includes(harvestActorId))
+      || view.spatial.searchJobs.some(job => job.status === 'active' && job.actorIds.includes(harvestActorId))
+      || view.spatial.harvestJobs.some(job => job.status === 'active' && job.actorIds.includes(harvestActorId));
+    const featurePoint = (position: CoordinateMm) => point(position);
+    const featureRandom = (seed: number) => {
+      const value = Math.sin(seed * 127.19 + 81.37) * 43_758.5453;
+      return value - Math.floor(value);
+    };
     const selectedCorpseId = selectedEntity?.ref.type === 'corpse' ? selectedEntity.ref.id : null;
     const selectedCorpse = view.corpses?.find(corpse => corpse.id === selectedCorpseId);
     const selectedCombatTarget = view.combat?.target && view.combat.target.id === selectedCombatTargetId ? view.combat.target : null;
@@ -593,7 +685,7 @@ function LiveApp() {
           }}>
             {chooseDestination ? 'Cancel destination selection' : 'Choose destination'}
           </button>
-          <div className="live-zoom-controls"><button className="live-button live-button--secondary" aria-label="Zoom out" disabled={mapZoom <= 0.2} onClick={() => setMapZoom(value => Math.max(0.2, Math.round(value / 1.6 * 100) / 100))}>−</button><span>{mapZoom.toFixed(2)}×</span><button className="live-button live-button--secondary" aria-label="Zoom in" disabled={mapZoom >= 500} onClick={() => setMapZoom(value => Math.min(500, Math.round(value * 1.6 * 100) / 100))}>+</button></div>
+          <div className="live-zoom-controls"><button className="live-button live-button--secondary" aria-label="Zoom out" disabled={mapZoom <= 0.2} onClick={() => setMapZoom(value => Math.max(0.2, Math.round(value / 1.6 * 100) / 100))}>−</button><span>{mapZoom.toFixed(2)}×</span><button className="live-button live-button--secondary" aria-label="Zoom in" disabled={mapZoom >= 500} onClick={() => setMapZoom(value => Math.min(500, Math.round(value * 1.6 * 100) / 100))}>+</button><button className="live-button live-button--secondary live-map-overview" aria-label="Show map overview" onClick={() => setMapZoom(1)}>Overview</button></div>
           <label className="live-inline-field">Travel actor <select value={travelActorId} onChange={event => { setTravelActorId(event.target.value); setDestination(null); setDestinationAvailability(null); }}><option value={view.player.id}>{view.player.name}</option>{view.units.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}</select></label>
           <span className="live-data-chip">Center · {center.xMm}, {center.yMm} mm</span>
         </div>
@@ -641,6 +733,38 @@ function LiveApp() {
         }}>
           <div className="live-map-crosshair" aria-hidden="true" />
           <svg className="live-map-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            {view.visibleMap.heatOverlays.map((heat, index) => {
+              const centerPoint = point(heat.center);
+              return <ellipse key={`heat-${index}`} className="live-map-heat" cx={centerPoint.x} cy={centerPoint.y}
+                rx={heat.radiusMm / horizontalSpanMm * 100} ry={heat.radiusMm / spanMm * 100} />;
+            })}
+            {view.visibleMap.resourceFeatures.map(feature => {
+              const centerPoint = featurePoint(feature.position);
+              const rx = feature.footprintMm.widthMm / horizontalSpanMm * 50;
+              const ry = feature.footprintMm.depthMm / spanMm * 50;
+              const channelRatio = (channel: string) => feature.channels.find(item => item.channel === channel)?.remainingRatio ?? 1;
+              const canopy = channelRatio('canopy');
+              const groundcover = channelRatio('groundcover');
+              const channel = feature.terrainKind === 'forest' ? 'canopy'
+                : feature.terrainKind === 'outcrop' ? 'rock_mass'
+                  : feature.terrainKind === 'salvage' ? 'salvage'
+                    : feature.terrainKind === 'frozen_water' ? 'ice'
+                      : feature.terrainKind === 'coal_seam' ? 'seam' : 'salt';
+              const countRatio = channelRatio(channel);
+              const visibleCount = Math.ceil(feature.visualElementCount * Math.max(0, countRatio));
+              return <g key={feature.id} className={`live-map-resource-feature live-map-resource-feature--${feature.terrainKind}`}>
+                <ellipse cx={centerPoint.x} cy={centerPoint.y} rx={rx} ry={ry} opacity={.08 + .32 * countRatio} />
+                {feature.terrainKind === 'forest' && <ellipse className="live-map-resource-groundcover" cx={centerPoint.x} cy={centerPoint.y} rx={rx * .82} ry={ry * .82} opacity={.12 + .22 * groundcover} />}
+                {Array.from({ length: visibleCount }, (_, index) => {
+                  const angle = featureRandom(index + feature.id.length * 11) * Math.PI * 2;
+                  const radius = Math.sqrt(.035 + featureRandom(index * 7 + feature.id.length * 31) * .93);
+                  const x = centerPoint.x + Math.cos(angle) * rx * radius;
+                  const y = centerPoint.y + Math.sin(angle) * ry * radius;
+                  const scale = .45 + .55 * countRatio;
+                  return <circle key={index} className="live-map-resource-element" cx={x} cy={y} r={.38 * scale} />;
+                })}
+              </g>;
+            })}
             {view.visibleMap.exploredGeometry.map(area => {
               const centerPoint = area.points[0];
               if (!centerPoint || area.radiusMm === undefined) return null;
@@ -667,15 +791,20 @@ function LiveApp() {
             const left = Math.max(2, Math.min(98, projected.x));
             const top = Math.max(2, Math.min(98, projected.y));
             const isFire = sameRef(entity.ref, fireRef);
+            const resourceMaterial = entity.resourceDeposit?.materials.some(material => material.materialId === 'WOOD')
+              ? 'wood'
+              : entity.resourceDeposit?.materials.some(material => material.materialId === 'STONE') ? 'stone' : 'other';
             return <button
               key={entityRefKey(entity.ref)}
-              className={'live-map-marker' + (isFire ? ' live-map-marker--fire' : '') + (sameRef(entity.ref, selectedRef) ? ' is-selected' : '')}
+              className={'live-map-marker' + (isFire ? ' live-map-marker--fire' : '') + (entity.ref.type === 'resource' ? ` live-map-marker--resource live-map-marker--resource-${resourceMaterial}` : '') + (sameRef(entity.ref, selectedRef) ? ' is-selected' : '')}
               data-testid={isFire ? 'map-campfire-marker' : undefined}
               data-entity-ref={entityRefKey(entity.ref)}
               style={{ left: left + '%', top: top + '%' }}
               onClick={event => { event.stopPropagation(); setSelectedRef(entity.ref); setSelectedCombatTargetId(null); }}
               aria-label={entity.label}
-              title={entity.label}
+              title={entity.resourceDeposit
+                ? `${entity.label} · ${entity.resourceDeposit.materials.map(material => `${material.materialName}: ${material.remaining === null ? 'unknown' : `${material.remaining.toLocaleString()} ${material.unit}`}`).join(' · ')}`
+                : entity.label}
             >
               {isFire && fireIcon ? <img src={fireIcon} alt="" /> : <MapPin size={19} aria-hidden="true" />}
               <span>{entity.label}</span>
@@ -706,6 +835,48 @@ function LiveApp() {
           <div><strong>Travel in progress</strong><span>{(order.totalDistanceMm / 1_000_000).toFixed(2)} km · {Math.floor(view.jobs.find(job => job.id === order.id)?.progressPercent ?? 0)}% · {order.pathSegments.some(segment => segment.uncertainty === 'uncertain') ? 'uncertain route' : 'known route'}</span></div>
           <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'cancel_travel', { orderId: order.id }))}>Cancel travel</button>
         </div>)}
+        {resourceDeposit && <div className="live-resource-deposit" data-feature-id={resourceDeposit.featureId}>
+            <p className="live-resource-terrain">{resourceDeposit.terrainKind} · footprint {((resourceDeposit.footprintMm.widthMm / 1_000).toLocaleString())} × {((resourceDeposit.footprintMm.depthMm / 1_000).toLocaleString())} m</p>
+            <div className="live-resource-heat-status">
+              <Flame size={15} />
+              {!resourceDeposit.heatActive
+                ? 'The survival fire is out; this deposit has no heating coverage.'
+                : resourceDeposit.heatCovered
+                ? `Inside the active ${resourceDeposit.heatRadiusMm / 1_000} m heating zone.`
+                : `${(resourceDeposit.distanceFromHeatMm / 1_000).toFixed(0)} m from the fire; outside its ${resourceDeposit.heatRadiusMm / 1_000} m heating zone. Harvesting is allowed, but the worksite is not heated.`}
+            </div>
+            <p className="live-resource-haul">This worker can carry {resourceDeposit.carryCapacityUnits.toLocaleString()} resource units total ({maxHarvestQuantity.toLocaleString()} free). The H0 store holds {resourceDeposit.storageStackSlots ?? 'unlimited'} material stacks.</p>
+            <label className="live-inline-field">Harvest worker <select value={harvestActorId} onChange={event => { setHarvestActorId(event.target.value); setHarvestQuantity(1); }}>
+              <option value={view.player.id}>{view.player.name}</option>
+              {view.units.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
+            </select></label>
+            {harvestActorBusy && <small className="live-resource-access">This worker is already travelling or assigned to another job.</small>}
+            {!harvestWorkerContainer && <small className="live-resource-access">Inspect this worker’s inventory before assigning a harvest.</small>}
+            <label className="live-inline-field live-resource-quantity">Harvest quantity <input type="number" min={1} max={Math.max(1, maxHarvestQuantity)} value={selectedHarvestQuantity} disabled={maxHarvestQuantity < 1} onChange={event => setHarvestQuantity(Math.min(Math.max(1, maxHarvestQuantity), Math.max(1, Number(event.target.value) || 1)))} /></label>
+            <ul className="live-resource-materials">{resourceDeposit.materials.map(material => {
+              const remaining = material.remaining === null ? 'Unknown' : `${material.remaining.toLocaleString()} ${material.unit}`;
+              const renewal = material.renewal === 'none' ? 'Finite stock; does not regenerate.'
+                : material.renewal === 'biological_rate' ? `Regrows ${material.regenerationPerDay.toLocaleString()} ${material.unit}/day.`
+                  : `Daily supply ${material.dailyQuota?.toLocaleString() ?? '—'} ${material.unit}; resets at midnight.`;
+              const workerHasTool = !material.requiredToolTemplateId || Boolean(harvestWorkerContainer?.items.some(item => item.label === material.requiredToolTemplateId && item.quantity > 0));
+              const localBlock = !harvestWorkerContainer || harvestActorBusy || maxHarvestQuantity < 1 || material.access !== 'open_surface' || material.status === 'depleted' || !workerHasTool;
+              const serverAvailability = harvestAvailability[material.resourceId];
+              const blocked = localBlock || Boolean(serverAvailability && !serverAvailability.enabled);
+              return <li key={material.resourceId}>
+                <div><strong>{material.materialName}</strong><span>{remaining} / {material.capacity.toLocaleString()} {material.dailyQuota === null ? 'capacity' : 'daily quota'}{material.reserved ? ` · ${material.reserved.toLocaleString()} reserved` : ''}</span></div>
+                <small>{material.harvestRateUnitsPerHour.toLocaleString()} {material.unit}/worker-hour{material.dailyQuota !== null ? ` · ${material.dailyRemaining?.toLocaleString() ?? 'Unknown'} / ${material.dailyQuota.toLocaleString()} available today` : ''} · {renewal}</small>
+                {material.access !== 'open_surface' && <small className="live-resource-access">{material.accessReason ?? 'This material has an unresolved access requirement.'}</small>}
+                {material.requiredToolTemplateId && <small className="live-resource-access">{workerHasTool ? `Worker carries ${material.requiredToolTemplateId}.` : `This worker needs a ${material.requiredToolTemplateId}.`}</small>}
+                {material.status === 'depleted' && <small className="live-resource-access">{material.dailyQuota === null ? 'This deposit is exhausted.' : 'No usable stock remains today.'}</small>}
+                {maxHarvestQuantity < 1 && <small className="live-resource-access">Unload this worker’s cargo at the territory store before harvesting again.</small>}
+                {!localBlock && serverAvailability && !serverAvailability.enabled && <small className="live-resource-access">{harvestBlockerMessage(serverAvailability)}</small>}
+                <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || blocked}
+                  onClick={() => harvestSelectedResource(selectedEntity, material.resourceId, selectedHarvestQuantity)}>
+                  Harvest {selectedHarvestQuantity} {material.materialName}
+                </button>
+              </li>;
+            })}</ul>
+        </div>}
       </section>
       <section className="live-panel">
         <div className="live-panel-heading"><div><span className="live-eyebrow">SEARCH · FIXED 15-MINUTE SWEEPS</span><h3>Focused search</h3></div><Eye size={20} /></div>
@@ -770,6 +941,23 @@ function LiveApp() {
           <article className="live-stat"><span>Mana</span><strong>{view.player.mana.current} / {view.player.mana.max}</strong></article>
           <article className="live-stat"><span>Revision</span><strong>{view.revision}</strong></article>
         </div>
+        <section className="live-panel" aria-label="Sự kiện đã biết">
+          <div className="live-panel-heading"><div><span className="live-eyebrow">LỊCH SỰ KIỆN ĐÃ BIẾT</span><h3>Sự kiện thế giới</h3></div><span className="live-data-chip">Theo giờ máy chủ</span></div>
+          {view.eventProgressionBlocker && <div className="live-inline-error" role="alert">
+            <strong>{view.eventProgressionBlocker.displayName}</strong>
+            <p>{view.eventProgressionBlocker.playerMessage} · {elapsedLabel(view.eventProgressionBlocker.blockedAtElapsedMs)}</p>
+          </div>}
+          {view.calendar.length
+            ? <ul className="live-plain-list">{view.calendar.map(event => <li key={event.id}>
+              <strong>{event.displayName} · {event.status === 'active' ? 'Đang mở' : event.status === 'locked' ? 'Đã khóa' : event.status === 'resolved' ? 'Đã kết thúc' : event.status === 'blocked' ? 'Tạm dừng' : event.status}</strong>
+              <span>{event.status === 'active' ? `Khóa lúc ${elapsedLabel(event.locksAtElapsedMs)}`
+                : event.status === 'locked' ? `Quyết toán lúc ${elapsedLabel(event.resolvesAtElapsedMs)}`
+                  : event.status === 'resolved' ? `Đã kết thúc lúc ${elapsedLabel(event.resolvesAtElapsedMs)}`
+                    : event.status === 'blocked' ? `Tạm dừng lúc ${elapsedLabel(view.eventProgressionBlocker?.blockedAtElapsedMs ?? view.simElapsedMs)}`
+                      : `Mở lúc ${elapsedLabel(event.opensAtElapsedMs)}`}</span>
+            </li>)}</ul>
+            : <p className="live-empty-state">Chưa có sự kiện nào được biết.</p>}
+        </section>
         <section className="live-panel">
           <div className="live-panel-heading"><div><span className="live-eyebrow">LEDGER SNAPSHOT</span><h3>Hậu cần và việc đang chạy</h3></div><PackageOpen size={20} /></div>
           <div className="live-stat-grid">
@@ -890,11 +1078,59 @@ function LiveApp() {
                     <span>{item.reservedQuantity} reserved · owner {item.ownerId ?? 'legacy/unspecified'} · {item.unit ?? 'unit unspecified'} · quality {item.quality ?? 'unspecified'}{item.condition !== null && item.condition !== undefined ? ` · độ bền ${Math.round(item.condition * 100)}%` : ''} · {item.provenance} · {item.equipped ? `equipped${item.equippedSlotId ? ` (${item.equippedSlotId})` : ''}` : 'not equipped'}{item.foodUnitsPerItem !== null ? ` · ${item.foodUnitsPerItem} food units/item` : ''}{item.equipmentTags?.length ? ` · loại: ${item.equipmentTags.map(tag => tag === 'WEAPON' || tag === 'WEAPON_1H' ? 'vũ khí' : tag === 'ARMOR' || tag === 'ARMOR_LIGHT' ? 'giáp nhẹ' : tag).join(', ')}` : ''} · {view.inventory.containers.filter(target => target.id !== container.id).map(target => <button key={target.id} className="live-text-button" disabled={working || Boolean(pendingCommand) || !container.accessible || !target.accessible || item.quantity <= item.reservedQuantity} title={!container.accessible || !target.accessible ? 'Move Lí Lan within reach of both containers.' : `Transfer unreserved items to ${target.label}.`} onClick={() => void sendCommand(commandFor(view, 'transfer_item', {
                       actorId: view.player.id, sourceContainerId: container.id, destinationContainerId: target.id, itemId: item.itemId, quantity: item.quantity - item.reservedQuantity,
                     }))}>→ {target.label}</button>)}</span>
+                    {item.label === 'BREAD' && item.foodUnitsPerItem !== null && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !container.accessible || item.quantity <= item.reservedQuantity} title="Consumes one actual bread item using its recorded food value." onClick={() => void sendCommand(commandFor(view, 'consume_item', {
+                      actorId: view.player.id, containerId: container.id, itemId: item.itemId, quantity: 1,
+                    }))}>Consume 1 · {item.foodUnitsPerItem} food unit</button>}
                   </li>)}</ul>
                   : <p>Container đã quan sát, chưa có vật phẩm.</p>}
                 <small className="live-container-access">{container.accessible ? 'Within reach' : 'Out of reach'}</small>
               </article>)}</div>
             : view.inventory.inspectableContainers.length === 0 && <p className="live-empty-state">API chưa cung cấp container đã quan sát hoặc có thể kiểm tra.</p>}
+        </section>
+        <section className="live-panel">
+          <div className="live-panel-heading"><div><span className="live-eyebrow">TIỀN TỆ ĐÃ NHẬN</span><h3>Số dư</h3></div><PackageOpen size={20} /></div>
+          {view.currency.length
+            ? <ul className="live-plain-list">{view.currency.map(balance => <li key={balance.currencyId}><strong>{balance.currencyId}</strong><span>{balance.amount.toLocaleString()}</span></li>)}</ul>
+            : <p className="live-empty-state">Chưa có tiền tệ sự kiện nào được ghi nhận.</p>}
+        </section>
+        <section className="live-panel">
+          <div className="live-panel-heading"><div><span className="live-eyebrow">MARKET · SERVER OWNED</span><h3>Giao dịch tại Krona Gate</h3></div><PackageOpen size={20} /></div>
+          {view.stage08.marketOffers.length > 0
+            ? <div className="live-job-list">{view.stage08.marketOffers.map(offer => {
+              const balance = view.currency.find(item => item.currencyId === offer.currencyId)?.amount ?? 0;
+              const bag = view.inventory.containers.find(container => container.kind === 'carried_bag' && container.accessible);
+              const remainingCap = Math.max(0, offer.lifetimePurchaseLimit - offer.purchasedQuantity);
+              const available = offer.status === 'active' && offer.stockRemaining > 0 && remainingCap > 0 && balance >= offer.unitPrice && Boolean(bag);
+              return <article key={offer.id} className="live-container-row">
+                <div><strong>{offer.itemTemplateId} · {offer.unitPrice} {offer.currencyId} each</strong>
+                  <small>{offer.stockRemaining}/{offer.initialStock} stock · {remainingCap} lifetime purchase(s) left · {offer.expiresAtElapsedMs === null ? 'permanent offer' : `expires ${elapsedLabel(offer.expiresAtElapsedMs)}`} · BREAD follows its recorded Stage 04 food consumption contract</small>
+                  {!bag && <small>Inspect the carried bag first so purchased goods have an observed destination.</small>}
+                  {balance < offer.unitPrice && <small>Need {offer.unitPrice - balance} more {offer.currencyId}.</small>}
+                </div>
+                <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !available}
+                  title={!bag ? 'Inspect the carried bag first.' : !available ? 'Offer, stock, lifetime cap, balance, and destination are rechecked by the server.' : 'The server checks the fixed price and commits currency, stock, and delivery together.'}
+                  onClick={() => bag && void sendCommand(commandFor(view, 'shop_transaction', { offerId: offer.id, destinationContainerId: bag.id, quantity: 1 }))}>
+                  Mua 1 · nhận {offer.quantityPerPurchase} {offer.itemTemplateId}
+                </button>
+              </article>;
+            })}</div>
+            : <p className="live-empty-state">Quầy caravan mở sau khi Torven tới Krona Gate. Hàng trong kho chỉ hiện khi Lí Lan ở gần quầy.</p>}
+          {view.stage08.auctionLots.map(lot => {
+            const balance = view.currency.find(item => item.currencyId === lot.currencyId)?.amount ?? 0;
+            const bidId = view.stage08.auctionBids.find(bid => bid.lotId === lot.id && bid.status === 'open')?.id;
+            return <article key={lot.id} className="live-container-row">
+              <div><strong>{lot.itemTemplateId} lot · {lot.quantity - lot.reservedQuantity}/{lot.quantity} unreserved</strong>
+                <small>Minimum {lot.minimumUnitBid} {lot.currencyId}/unit · closes {elapsedLabel(lot.closesAtElapsedMs)} · a bid reserves currency; no item transfers before seller settlement.</small>
+              </div>
+              {bidId
+                ? <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'cancel_auction_bid', { bidId }))}>Cancel bid · refund escrow</button>
+                : <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || lot.status !== 'open' || lot.quantity <= lot.reservedQuantity || balance < lot.minimumUnitBid}
+                  onClick={() => void sendCommand(commandFor(view, 'place_auction_bid', { lotId: lot.id, quantity: 1, unitBid: lot.minimumUnitBid }))}>Bid 1 {lot.itemTemplateId} · escrow {lot.minimumUnitBid} {lot.currencyId}</button>}
+            </article>;
+          })}
+          {view.stage08.auctionBids.length > 0 && <ul className="live-plain-list">{view.stage08.auctionBids.map(bid => <li key={bid.id}>
+            <strong>{bid.id} · {bid.status}</strong><span>{bid.quantity} unit(s) at {bid.unitBid} {view.stage08.auctionLots.find(lot => lot.id === bid.lotId)?.currencyId ?? ''} · escrow {bid.escrowAmount}</span>
+          </li>)}</ul>}
         </section>
         <section className="live-panel">
           <div className="live-panel-heading"><div><span className="live-eyebrow">FIELD RESOURCE LEDGER</span><h3>Known sources</h3></div><PackageOpen size={20} /></div>
@@ -1110,6 +1346,47 @@ function LiveApp() {
 
     return <section className="live-panel">
       <div className="live-panel-heading"><div><span className="live-eyebrow">PLAYER-SAFE EVENT LEDGER</span><h2>Nhật ký</h2></div><ScrollText size={22} /></div>
+      <div className="live-two-column">
+        <section className="live-panel">
+          <div className="live-panel-heading"><div><span className="live-eyebrow">SỰ KIỆN ĐÃ BIẾT</span><h3>Lịch sử sự kiện</h3></div></div>
+          {view.calendar.length
+            ? <ul className="live-plain-list">{view.calendar.map(event => <li key={event.id}>
+              <strong>{event.displayName} · {event.status === 'active' ? 'Đang mở' : event.status === 'locked' ? 'Đã khóa' : event.status === 'resolved' ? 'Đã kết thúc' : event.status === 'blocked' ? 'Tạm dừng' : event.status}</strong>
+              <span>{event.status === 'active' ? `Khóa lúc ${elapsedLabel(event.locksAtElapsedMs)}`
+                : event.status === 'locked' ? `Quyết toán lúc ${elapsedLabel(event.resolvesAtElapsedMs)}`
+                  : event.status === 'resolved' ? `Kết thúc lúc ${elapsedLabel(event.resolvesAtElapsedMs)}`
+                    : event.status === 'blocked' ? `Tạm dừng lúc ${elapsedLabel(view.eventProgressionBlocker?.blockedAtElapsedMs ?? view.simElapsedMs)}`
+                      : `Mở lúc ${elapsedLabel(event.opensAtElapsedMs)}`}</span>
+            </li>)}</ul>
+            : <p className="live-empty-state">Chưa có sự kiện nào được biết.</p>}
+        </section>
+        <section className="live-panel">
+          <div className="live-panel-heading"><div><span className="live-eyebrow">QUEST ĐÃ BIẾT</span><h3>Nhiệm vụ</h3></div></div>
+          {view.quests.length
+            ? <ul className="live-plain-list">{view.quests.map(quest => <li key={quest.questId}>
+              <strong>{quest.questId} · {quest.state}</strong>
+              <span>{quest.rewardReceipt ? `Biên nhận thưởng ${quest.rewardReceipt}` : quest.completedAt !== null ? `Hoàn tất lúc ${elapsedLabel(quest.completedAt)}` : quest.acceptedAt !== null ? `Nhận lúc ${elapsedLabel(quest.acceptedAt)}` : 'Đang chờ điều kiện đã biết'}</span>
+              {quest.questId === 'QUEST-LL01-08' && quest.state === 'open' && <>
+                <span>Torven’s convoy is distressed at the old trade-road bridge; its response window closes at {elapsedLabel(view.stage08.caravan?.deadlineAtElapsedMs ?? null)}.</span>
+                <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'accept_quest', { questId: quest.questId }))}>Accept caravan request</button>
+              </>}
+              {quest.questId === 'QUEST-LL01-08' && quest.state === 'accepted' && quest.objectiveId === 'Q08-NEGOTIATE-AND-ESCORT' && <>
+                <span>Choose the fixed safe-passage route. It records one grain sack from the actual caravan cargo.</span>
+                <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'negotiate_caravan', { questId: quest.questId, route: 'trade_one_grain_sack' }))}>Negotiate safe passage · 1 grain sack</button>
+              </>}
+              {quest.questId === 'QUEST-LL01-08' && quest.state === 'accepted' && quest.objectiveId === 'Q08-ESCORT-TO-KRONA-GATE' && <>
+                <span>Meet the convoy at the bridge and escort it to Krona Gate before the response window closes.</span>
+                <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'escort_caravan', { questId: quest.questId }))}>Escort caravan</button>
+              </>}
+              {quest.questId === 'QUEST-LL01-08' && quest.state === 'accepted' && quest.objectiveId === 'Q08-ARRIVE-AT-KRONA-GATE' && <span>Caravan is en route; arrival is scheduled for {elapsedLabel(view.stage08.caravan?.arrivalAtElapsedMs ?? null)}.</span>}
+              {quest.questId === 'QUEST-LL01-08' && quest.state === 'completed' && quest.rewardStatus === 'pending' && <>
+                <span>Torven alive · at least three draft animals · intact ledger. Claim at Krona Gate: RW-LL01-08.</span>
+                <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'claim_quest_reward', { questId: quest.questId }))}>Claim 60 Krona · unlock trade route</button>
+              </>}
+            </li>)}</ul>
+            : <p className="live-empty-state">Chưa có nhiệm vụ nào được mở trong lượt lưu này.</p>}
+        </section>
+      </div>
       {events.length
         ? <ol className="live-event-list">{events.map(item => <li key={item.eventId}><span className="live-event-sequence">#{item.sequence} · {item.category}</span><strong>{item.title}</strong><p>{item.text}</p></li>)}</ol>
         : <p className="live-empty-state">API chưa trả event nào cho lượt lưu này.</p>}
@@ -1185,19 +1462,32 @@ function LiveApp() {
         <div className="live-header-actions">
           <span className="live-data-chip">EVENT {view.lastEventSequence}</span>
           <div className="live-clock-controls" aria-label="Điều khiển đồng hồ mô phỏng">
-            <select aria-label="Tốc độ mô phỏng" value={customSelection ? 'custom' : view.clockControl.selection} disabled={working || Boolean(pendingCommand) || view.clockStatus.driver !== 'active'} onChange={event => {
+            <select aria-label="Tốc độ mô phỏng" value={customSelection ? 'custom' : view.clockControl.selection} disabled={working || Boolean(pendingCommand) || Boolean(view.eventProgressionBlocker) || view.clockStatus.driver !== 'active'} onChange={event => {
               const speed = event.target.value as ClockSpeedSelection;
               if (speed === 'custom') setCustomSelection(true);
               else { setCustomSelection(false); changeClockSpeed(speed); }
             }}>
               <option value="paused">Đóng băng</option><option value="1x">1×</option><option value="2x">2×</option><option value="5x">5×</option><option value="custom">Tùy chỉnh</option>
             </select>
-            {(customSelection || view.clockControl.selection === 'custom') && <><input aria-label="Tốc độ tùy chỉnh" type="number" min="0.1" max="3600" step="0.1" value={customSpeed} onChange={event => setCustomSpeed(event.target.value)} disabled={view.clockStatus.driver !== 'active'} /><button className="live-clock-apply" disabled={working || Boolean(pendingCommand) || view.clockStatus.driver !== 'active' || Number(customSpeed) < 0.1 || Number(customSpeed) > 3600} onClick={() => { setCustomSelection(true); changeClockSpeed('custom'); }}>Áp dụng</button></>}
-            <select aria-label="Điều kiện tự dừng" value={view.clockControl.stopCondition} disabled={working || Boolean(pendingCommand) || view.clockStatus.driver !== 'active'} onChange={event => changeStopCondition(event.target.value as 'none' | 'next_completion' | 'danger')}>
+            {(customSelection || view.clockControl.selection === 'custom') && <><input aria-label="Tốc độ tùy chỉnh" type="number" min="0.1" max="3600" step="0.1" value={customSpeed} onChange={event => setCustomSpeed(event.target.value)} disabled={Boolean(view.eventProgressionBlocker) || view.clockStatus.driver !== 'active'} /><button className="live-clock-apply" disabled={working || Boolean(pendingCommand) || Boolean(view.eventProgressionBlocker) || view.clockStatus.driver !== 'active' || Number(customSpeed) < 0.1 || Number(customSpeed) > 3600} onClick={() => { setCustomSelection(true); changeClockSpeed('custom'); }}>Áp dụng</button></>}
+            <select aria-label="Điều kiện tự dừng" value={view.clockControl.stopCondition} disabled={working || Boolean(pendingCommand) || Boolean(view.eventProgressionBlocker) || view.clockStatus.driver !== 'active'} onChange={event => changeStopCondition(event.target.value as 'none' | 'next_completion' | 'danger')}>
               <option value="none">Không tự dừng</option><option value="next_completion">Dừng khi xong</option><option value="danger">Dừng khi nguy hiểm</option>
             </select>
           </div>
           {view.clockStatus.driver === 'observing' && <span className="live-driver-label">Tab khác đang giữ quyền</span>}
+          <div className="live-notification-wrap">
+            <button className="live-icon-button" aria-label="Mở thông báo từ nhật ký máy chủ" aria-expanded={notificationsOpen} onClick={() => setNotificationsOpen(open => !open)}>
+              <Bell size={17} />{events.length > 0 && <span className="live-notification-count">{Math.min(events.length, 99)}</span>}
+            </button>
+            {notificationsOpen && <section className="live-notification-popover" role="status" aria-label="Thông báo máy chủ gần đây">
+              <div className="live-notification-heading"><strong>Thông báo máy chủ</strong><button className="live-text-button" onClick={() => setScreen('journal')}>Mở nhật ký</button></div>
+              {events.length
+                ? <ol className="live-event-list">{events.slice(-5).reverse().map(item => <li key={item.eventId}>
+                  <span className="live-event-sequence">#{item.sequence} · {item.category}</span><strong>{item.title}</strong><p>{item.text}</p>
+                </li>)}</ol>
+                : <p className="live-empty-state">Chưa có thông báo trong nhật ký máy chủ.</p>}
+            </section>}
+          </div>
           <button className="live-icon-button" aria-label="Tải lại từ API" onClick={() => void loadLatest()} disabled={working}><RefreshCw size={17} /></button>
         </div>
       </header>

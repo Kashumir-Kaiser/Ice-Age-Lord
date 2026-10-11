@@ -9,10 +9,10 @@
 | `design/buildings/MAGICAL-BUILDING-CATALOG-v0.3.json` | Machine-readable branch catalog | Proposed, partial executable contracts |
 | `design/buildings/SOURCE-GROUNDED-BUILDING-REDESIGN.md` | Source-first functional building distinctions | Reference and proposal |
 | `data/events/EVENT-TIMELINE-v0.6.json` | Reconciled fixed 30-event calendar | New-game candidate, not retroactive live migration |
-| `data/events/EVENT-SOURCE-CATALOG-v3.6.json` | Round 36: 481 source item records and 180 effect records through Ch772–781; prior releases retained | Research, not guaranteed loot |
-| `data/events/EVENT-SOURCE-ITEMS-v3.6.csv` | Human-review source item catalog (481 entries; prior rows retained) | Review |
+| `data/events/EVENT-SOURCE-CATALOG-v4.6.json` | Round 46: 590 source item records and 239 effect records through Ch872–881; prior releases retained | Research, not guaranteed loot |
+| `data/events/EVENT-SOURCE-ITEMS-v4.6.csv` | Human-review source item catalog (590 entries; prior rows retained) | Review |
 | `data/events/EVENT-TIMELINE-v0.6.csv` | Human-review schedule diff | Review |
-| `data/structures/SOURCE-STRUCTURE-CATALOG-v0.5.json` | Round 36: eighteen source-observed/reported structures and one route report; no LL01 construction contracts | Research only, not T0 world data |
+| `data/structures/SOURCE-STRUCTURE-CATALOG-v1.0.json` | Round 46 review: twenty source-observed/reported structures and one route report; updated city operation evidence, no LL01 construction contracts | Research only, not T0 world data |
 | `references/canonical/LORD-DND-01..07.md` | Underlying mechanics, fixed T0, world/hero/lair/quest data | Historical authoritative rules, require typed migration |
 | `references/canonical/RELEASE-LINEAGE-LL01-1.3.0.md` | Source release ancestry / exact known active versions | Legacy integrity reference |
 | `references/canonical/LANGUAGE-STANDARDS.md` | Vietnamese/Hán-Việt UI/narration conventions | Design guidance |
@@ -21,13 +21,18 @@
 
 ## Research traceability
 
-- `research/extraction-audits/ROUND-01-SHOPS-CHESTS.md` through `ROUND-36-THIRTY-SIXTH-EXTRACTION.md`: all thirty-six main extraction audits; `ROUND-29-CONTINUATION-CH721-724-725-v2.9.1.md` remains a separately archived addendum.
+- `research/extraction-audits/ROUND-01-SHOPS-CHESTS.md` through `ROUND-36-THIRTY-SIXTH-EXTRACTION.md`: all forty-four main extraction audits; `ROUND-29-CONTINUATION-CH721-724-725-v2.9.1.md` remains a separately archived addendum.
 - `research/extraction-audits/EVENT-TIMELINE-RECONCILIATION-v0.6.md`: chronology corrections and uncertain source cases.
 - `research/extraction-audits/ROUND-34-THIRTY-FOURTH-EXTRACTION.md`: Round 34 audit for Chapters 752–761.
 - `research/extraction-audits/ROUND-35-THIRTY-FIFTH-EXTRACTION.md`: Round 35 audit for Chapters 762–771.
-- `research/extraction-audits/ROUND-36-THIRTY-SIXTH-EXTRACTION.md`: current Round 36 audit for Chapters 772–781.
-- `research/snapshots/events/EVENT-SOURCE-CATALOG-v0.1..v3.5.json`: historical extraction datasets (v3.0 unchanged and archived).
-- `research/snapshots/events/EVENT-SOURCE-ITEMS-v0.1..v3.5.csv`: corresponding historical review datasets (v3.0 unchanged and archived).
+- `research/extraction-audits/ROUND-36-THIRTY-SIXTH-EXTRACTION.md`: Round 36 audit for Chapters 772–781.
+- `research/extraction-audits/ROUND-37-THIRTY-SEVENTH-EXTRACTION.md`: Round 37 audit for Chapters 782–791.
+- `research/extraction-audits/ROUND-40-FORTIETH-EXTRACTION.md`: Round 40 audit for Chapters 812–821.
+- `research/extraction-audits/ROUND-41-FORTY-FIRST-EXTRACTION.md`: Round 41 audit for Chapters 822–831.
+- `research/extraction-audits/ROUND-42-FORTY-SECOND-EXTRACTION.md`: Round 42 audit for Chapters 832–841.
+- `research/extraction-audits/ROUND-43-FORTY-THIRD-EXTRACTION.md`: current Round 43 audit for Chapters 842–851.
+- `research/snapshots/events/EVENT-SOURCE-CATALOG-v0.1..v4.6.json`: historical extraction datasets (v3.0 unchanged and archived).
+- `research/snapshots/events/EVENT-SOURCE-ITEMS-v0.1..v4.6.csv`: corresponding historical review datasets (v3.0 unchanged and archived).
 - `research/snapshots/design/`: previous web-game spec versions retained for forensic comparison, **not** alternative active specs.
 
 ## Explicitly excluded

@@ -8,6 +8,8 @@
   },
   "scripts": {
     "content:compile": "node --experimental-strip-types packages/content/tools/compile-content.ts",
+    "content:coverage:stage08": "node --experimental-strip-types packages/content/tools/report-event-coverage.ts",
+    "test:stage08": "node --experimental-strip-types packages/sim/test/stage08.test.ts",
     "test:stage02": "node --experimental-strip-types packages/sim/test/stage02.test.ts",
     "test:stage04": "node --experimental-strip-types packages/sim/test/stage04.test.ts",
     "test:stage05": "node --experimental-strip-types packages/sim/test/stage05.test.ts",

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { ACTIVE_CONTENT, ACTIVE_WORLD_PACKAGE } from '../../content/src/index.ts';
-import { SOURCE_LOCK, RULESET_VERSION } from '../../content/src/sourceLock.ts';
+import { SOURCE_LOCK, SOURCE_MAIN_COMMIT, RULESET_VERSION } from '../../content/src/sourceLock.ts';
 import { assertSourceHashes } from '../../content/src/compiler.ts';
 import { createNewGame, elapsedMsToWorldClock } from '../src/initializer.ts';
 import { canonicalStateHash, hash64, randomIntFromFields } from '../src/hash.ts';
@@ -22,12 +22,12 @@ const options = {
 };
 
 test('content authority is pinned and the world compiles from the selected source releases', () => {
-  assert.equal(ACTIVE_CONTENT.manifest.sourceMainCommit, '66f0c2adaf9e2cc5b4391978a699bda6a24ecdbd');
+  assert.equal(ACTIVE_CONTENT.manifest.sourceMainCommit, SOURCE_MAIN_COMMIT);
   assert.equal(ACTIVE_CONTENT.manifest.activeWorldPackageId, 'WORLD-PACKAGE-LL01-1.0');
   assert.equal(ACTIVE_CONTENT.manifest.timelineVersion, 'LL01-WEB-EVENT-TIMELINE-RECONCILIATION-0.6-RC1');
   assert.equal(ACTIVE_CONTENT.manifest.conversionManifest.length, 6);
-  assert.ok(ACTIVE_CONTENT.manifest.sources.find(source => source.path.endsWith('EVENT-SOURCE-CATALOG-v3.6.json'))?.runtimeUse.includes('not compiled'));
-  assert.ok(ACTIVE_CONTENT.manifest.sources.find(source => source.path.endsWith('SOURCE-STRUCTURE-CATALOG-v0.5.json'))?.runtimeUse.includes('not compiled'));
+  assert.ok(ACTIVE_CONTENT.manifest.sources.find(source => source.path.endsWith('EVENT-SOURCE-CATALOG-v4.6.json'))?.runtimeUse.includes('not compiled'));
+  assert.ok(ACTIVE_CONTENT.manifest.sources.find(source => source.path.endsWith('SOURCE-STRUCTURE-CATALOG-v1.0.json'))?.runtimeUse.includes('not compiled'));
   assert.equal(Object.keys(world.lockedSourceHashes).length, Object.keys(SOURCE_LOCK).length);
   assert.ok(Object.isFrozen(world));
   assert.ok(Object.isFrozen(world.sites));
@@ -146,7 +146,7 @@ test('player projection excludes unobserved world state and sealed career data',
   const serialized = JSON.stringify(view);
   assert.equal(view.schemaVersion, 1);
   assert.equal(view.simElapsedMs, 0);
-  assert.deepEqual(view.visibleMap.entities.map(entity => entity.ref.id), ['SITE-LL01-000', STAGE07_OPENING_CORPSE_ID]);
+  assert.deepEqual(view.visibleMap.entities.map(entity => entity.ref.id), ['SITE-LL01-000', 'RES-LL01-06', 'RES-LL01-07', STAGE07_OPENING_CORPSE_ID]);
   assert.equal(view.visibleMap.heatOverlays[0].radiusMm, 10_000);
   assert.deepEqual(view.inventory.containers, []);
   assert.deepEqual(view.units, []);

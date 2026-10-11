@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Xưởng Mộc Sơ Khai · district base">
-<title>Xưởng Mộc Sơ Khai · district base</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Xưởng Gỗ · Cấp 1 · district footing">
+<title>Xưởng Gỗ · Cấp 1 · district footing</title>
 <defs><clipPath id="layer-clip"><rect x="0" y="320" width="480" height="80"/></clipPath></defs>
 <use href="district.svg#painted-sprite" clip-path="url(#layer-clip)"/>
 </svg>

@@ -1,7 +1,9 @@
-import type { ClockControl, ColdEnvironment, GameState, PlayerUnitState, WorldDefinition } from '../../contracts/src/index.ts';
+import { UNIT_INVENTORY_CONTAINER_PREFIX, type ClockControl, type ColdEnvironment, type GameState, type PlayerUnitState, type WorldDefinition } from '../../contracts/src/index.ts';
+import { RESOURCE_STORAGE } from '../../content/src/resourceBalance.ts';
 import { integrateSpatialTo, nextSpatialBoundary, settleSpatialBoundary } from './spatial.ts';
 import { integrateConstructionWork, nextConstructionCompletionAt, nextHeaterServiceCompletionAt, settleConstructionCompletions, settleHeaterServices } from './construction.ts';
 import { nextCombatBoundaryAt, settleCombatBoundary } from './combat.ts';
+import { nextStage08BoundaryAt, settleOpeningLevelRank, settleStage08Boundary } from './stage08.ts';
 
 export const MINUTE_MS = 60_000;
 export const HOUR_MS = 60 * MINUTE_MS;
@@ -19,7 +21,7 @@ export type AdvanceResult = {
   events: readonly SettledEvent[];
   targetSimElapsedMs: number;
   caughtUp: boolean;
-  stoppedBy: 'next_completion' | 'danger' | null;
+  stoppedBy: 'next_completion' | 'danger' | 'event_content_blocked' | null;
 };
 
 export function selectedSpeed(selection: ClockControl['selection'], customMultiplier?: number): ClockControl {
@@ -208,6 +210,21 @@ function completeTombJobs(state: GameState, at: number, events: SettledEvent[]):
   for (const entry of due) {
     const unitId = entry.outputUnitId;
     if (!state.ownedUnits.some(unit => unit.id === unitId)) state.ownedUnits = [...state.ownedUnits, createTombUnit(state, unitId)];
+    const containerId = `${UNIT_INVENTORY_CONTAINER_PREFIX}${unitId}`;
+    if (!state.inventory.containers.some(container => container.id === containerId)) {
+      state.inventory = {
+        ...state.inventory,
+        containers: [...state.inventory.containers, {
+          id: containerId,
+          kind: 'unit_inventory',
+          capacitySlots: RESOURCE_STORAGE.unitInventorySlots,
+          occupiedSlots: null,
+          location: { kind: 'unit', unitId },
+          observed: true,
+          stacks: [],
+        }],
+      };
+    }
     state.territory.tomb.queue = state.territory.tomb.queue.map(item => item.id === entry.id
       ? { ...item, status: 'completed', slotId: null, progressCarryMs: Math.max(0, (item.completesAtElapsedMs ?? at) - (item.startedAtElapsedMs ?? at)) }
       : item);
@@ -217,11 +234,22 @@ function completeTombJobs(state: GameState, at: number, events: SettledEvent[]):
   return due.length > 0;
 }
 
+function nextCalendarBoundaryAt(state: GameState): number | null {
+  const candidates = state.calendar.flatMap(event => {
+    if (event.status === 'scheduled') return [event.opensAtMs];
+    if (event.status === 'active') return [event.locksAtMs, event.resolvesAtMs];
+    if (event.status === 'locked') return [event.resolvesAtMs];
+    return [];
+  }).filter(value => Number.isSafeInteger(value) && value >= state.simElapsedMs);
+  return candidates.length > 0 ? Math.min(...candidates) : null;
+}
+
 function nextEventTime(state: GameState, target: number, coldRate: number, world?: WorldDefinition): number {
   const combatBoundary = nextCombatBoundaryAt(state);
   const candidates = [
     target,
     ...(combatBoundary === null ? [] : [combatBoundary]),
+    nextStage08BoundaryAt(state) ?? Number.MAX_SAFE_INTEGER,
     state.timeBoundaries.nextHourlySettlementAtElapsedMs,
     state.timeBoundaries.nextMidnightAtElapsedMs,
     state.timeBoundaries.nextDailySettlementAtElapsedMs,
@@ -229,6 +257,7 @@ function nextEventTime(state: GameState, target: number, coldRate: number, world
     state.timeBoundaries.nextTwilightEndAtElapsedMs,
     state.timeBoundaries.nextDawnAtElapsedMs,
     state.timeBoundaries.protectionExpiryAtElapsedMs ?? Number.MAX_SAFE_INTEGER,
+    nextCalendarBoundaryAt(state) ?? Number.MAX_SAFE_INTEGER,
     state.territory.survivalFire.nextFuelConsumptionAtElapsedMs ?? Number.MAX_SAFE_INTEGER,
     ...state.territory.tomb.queue.filter(entry => entry.status === 'active' && entry.completesAtElapsedMs !== null).map(entry => entry.completesAtElapsedMs as number),
   ];
@@ -245,7 +274,74 @@ function nextEventTime(state: GameState, target: number, coldRate: number, world
   return Math.min(...candidates.filter(candidate => candidate >= state.simElapsedMs));
 }
 
-function processBoundary(state: GameState, at: number, events: SettledEvent[], world?: WorldDefinition): { completed: boolean; danger: boolean } {
+function settleCalendarBoundary(
+  state: GameState,
+  at: number,
+  events: SettledEvent[],
+  stopBeforeEvent?: { eventId: string; reasonCode: string; playerMessage: string },
+): string | null {
+  for (const event of state.calendar) {
+    if (event.status === 'scheduled' && event.opensAtMs === at) {
+      if (stopBeforeEvent?.eventId === event.id) {
+        const sequence = state.lastEventSequence + events.length + 1;
+        state.calendar = state.calendar.map(row => row.id === event.id
+          ? { ...row, status: 'blocked', blockedReceiptSequence: sequence }
+          : row);
+        state.eventProgressionBlocker = {
+          eventId: event.id,
+          blockedAtElapsedMs: at,
+          reasonCode: stopBeforeEvent.reasonCode,
+          playerMessage: stopBeforeEvent.playerMessage,
+          receiptSequence: sequence,
+        };
+        emit(events, 'mandatory_event_blocked', at, {
+          eventId: event.id,
+          reasonCode: stopBeforeEvent.reasonCode,
+          displayName: event.displayName,
+        });
+        return event.id;
+      }
+      const sequence = state.lastEventSequence + events.length + 1;
+      state.calendar = state.calendar.map(row => row.id === event.id
+        ? { ...row, status: 'active', openReceiptSequence: sequence }
+        : row);
+      emit(events, 'event_calendar_opened', at, { eventId: event.id, displayName: event.displayName });
+    }
+    const current = state.calendar.find(row => row.id === event.id);
+    if (current?.status === 'active' && current.locksAtMs === at) {
+      const sequence = state.lastEventSequence + events.length + 1;
+      state.calendar = state.calendar.map(row => row.id === event.id
+        ? { ...row, status: 'locked', lockReceiptSequence: sequence }
+        : row);
+      emit(events, 'event_calendar_locked', at, { eventId: event.id, displayName: event.displayName });
+    }
+    const locked = state.calendar.find(row => row.id === event.id);
+    if ((locked?.status === 'active' || locked?.status === 'locked') && locked.resolvesAtMs === at) {
+      const sequence = state.lastEventSequence + events.length + 1;
+      state.calendar = state.calendar.map(row => row.id === event.id
+        ? { ...row, status: 'resolved', resolutionReceiptSequence: sequence }
+        : row);
+      emit(events, 'event_calendar_resolved', at, {
+        eventId: event.id,
+        displayName: event.displayName,
+        playerSettlement: 'no_default_award',
+      });
+      if (event.id === 'EV01-OPENING-LEVEL') {
+        const rankEvent = settleOpeningLevelRank(state, at);
+        if (rankEvent) events.push(rankEvent);
+      }
+    }
+  }
+  return null;
+}
+
+function processBoundary(
+  state: GameState,
+  at: number,
+  events: SettledEvent[],
+  world?: WorldDefinition,
+  stopBeforeEvent?: { eventId: string; reasonCode: string; playerMessage: string },
+): { completed: boolean; danger: boolean; blockedEventId: string | null } {
   let completed = false;
   let combatDanger = false;
   if (world) {
@@ -284,19 +380,30 @@ function processBoundary(state: GameState, at: number, events: SettledEvent[], w
   events.push(...heaterEvents);
   if (heaterEvents.length > 0) completed = true;
 
+  const stage08Events = settleStage08Boundary(state, at);
+  events.push(...stage08Events);
+
   const boundaries = state.timeBoundaries;
   if (boundaries.nextMidnightAtElapsedMs === at) {
     // Existing completions and the slot refill they cause settle before the midnight refill.
     state.territory.tomb.deathQi.current = state.territory.tomb.deathQi.capacity;
     boundaries.nextMidnightAtElapsedMs += DAY_MS;
     state.territory.tomb.deathQi.nextRefillAtElapsedMs = boundaries.nextMidnightAtElapsedMs;
+    const regenerated: { resourceId: string; quantity: number }[] = [];
     state.spatial.resourceBalances = state.spatial.resourceBalances.map(balance => {
-      if (balance.dailyRemaining === null) return balance;
-      const quota = world?.resources.find(resource => resource.id === balance.resourceId)?.dailyQuota ?? balance.dailyRemaining;
-      return { ...balance, dailyRemaining: quota, dailyResetAtElapsedMs: boundaries.nextMidnightAtElapsedMs };
+      const resource = world?.resources.find(candidate => candidate.id === balance.resourceId);
+      if (balance.dailyRemaining !== null) {
+        const quota = resource?.dailyQuota ?? balance.dailyRemaining;
+        return { ...balance, dailyRemaining: quota, dailyResetAtElapsedMs: boundaries.nextMidnightAtElapsedMs };
+      }
+      if (resource?.renewal !== 'biological_rate' || resource.regenerationPerDay <= 0) return balance;
+      const grown = Math.min(resource.regenerationPerDay, Math.max(0, resource.capacity - balance.remaining));
+      if (grown > 0) regenerated.push({ resourceId: resource.id, quantity: grown });
+      return { ...balance, remaining: balance.remaining + grown, lastRenewedAtElapsedMs: at };
     });
     emit(events, 'tomb_death_qi_refilled', at, { current: state.territory.tomb.deathQi.current, capacity: state.territory.tomb.deathQi.capacity });
     if (state.spatial.resourceBalances.some(balance => balance.dailyRemaining !== null)) emit(events, 'resource_daily_quotas_reset', at, {});
+    for (const growth of regenerated) emit(events, 'resource_biomass_regenerated', at, growth);
     startWaitingTombJobs(state, at, events);
   }
   if (boundaries.nextHourlySettlementAtElapsedMs === at) {
@@ -323,26 +430,29 @@ function processBoundary(state: GameState, at: number, events: SettledEvent[], w
     boundaries.protectionExpiryAtElapsedMs = null;
     state.territory.survivalFire.protectionStatus = 'expired';
     emit(events, 'opening_protection_expired', at, { eventId: state.territory.survivalFire.protectionEventId });
-    const resolutionSequence = state.lastEventSequence + events.length;
-    state.calendar = state.calendar.map(event => event.id === state.territory.survivalFire.protectionEventId
-      ? { ...event, status: 'resolved', resolutionReceiptSequence: resolutionSequence }
-      : event);
   }
 
-  const coldLoad = state.survival.coldLoadMicro / 1_000_000;
-  const warningBand = coldLoad >= 900 ? 900 : coldLoad >= 600 ? 600 : coldLoad >= 300 ? 300 : 0;
-  const priorStatus = state.survival.coldStatus;
-  state.survival.coldStatus = coldLoad >= 1200 ? 'danger' : warningBand > 0 ? 'warning' : 'clear';
-  if (state.survival.coldStatus !== priorStatus && state.survival.environment !== null) {
-    emit(events, state.survival.coldStatus === 'danger' ? 'cold_danger_reached' : 'cold_warning_changed', at, { coldLoad, warningBand });
+  if (state.survival.environment !== null) {
+    const coldLoad = state.survival.coldLoadMicro / 1_000_000;
+    const warningBand = coldLoad >= 900 ? 900 : coldLoad >= 600 ? 600 : coldLoad >= 300 ? 300 : 0;
+    const priorStatus = state.survival.coldStatus;
+    state.survival.coldStatus = coldLoad >= 1200 ? 'danger' : warningBand > 0 ? 'warning' : 'clear';
+    if (state.survival.coldStatus !== priorStatus) {
+      emit(events, state.survival.coldStatus === 'danger' ? 'cold_danger_reached' : 'cold_warning_changed', at, { coldLoad, warningBand });
+    }
   }
-  return { completed, danger: state.survival.coldStatus === 'danger' || combatDanger };
+  const blockedEventId = settleCalendarBoundary(state, at, events, stopBeforeEvent);
+  return { completed, danger: state.survival.coldStatus === 'danger' || combatDanger, blockedEventId };
 }
 
 export function advanceTo(
   input: GameState,
   targetSimElapsedMs: number,
-  options: { maxBoundaries?: number; stopCondition?: StopCondition } = {},
+  options: {
+    maxBoundaries?: number;
+    stopCondition?: StopCondition;
+    stopBeforeEvent?: { eventId: string; reasonCode: string; playerMessage: string };
+  } = {},
   world?: WorldDefinition,
 ): AdvanceResult {
   if (!Number.isSafeInteger(targetSimElapsedMs) || targetSimElapsedMs < input.simElapsedMs) throw new Error('SIM_TIME_TARGET_INVALID');
@@ -350,6 +460,9 @@ export function advanceTo(
   if (!Number.isSafeInteger(maxBoundaries) || maxBoundaries < 1 || maxBoundaries > 10_000) throw new Error('SIMULATION_BATCH_LIMIT_INVALID');
   const state = structuredClone(input);
   const events: SettledEvent[] = [];
+  if (state.eventProgressionBlocker) {
+    return { state, events, targetSimElapsedMs, caughtUp: true, stoppedBy: 'event_content_blocked' };
+  }
   const coldRate = state.survival.environment === null ? 0 : coldLoadRateMicroPerMinute(state.survival.environment);
   let processed = 0;
   let sameTimestampEvents = 0;
@@ -367,11 +480,13 @@ export function advanceTo(
       state.timeBoundaries.nextTwilightEndAtElapsedMs,
       state.timeBoundaries.nextDawnAtElapsedMs,
       state.timeBoundaries.protectionExpiryAtElapsedMs,
+      nextCalendarBoundaryAt(state),
       state.territory.survivalFire.nextFuelConsumptionAtElapsedMs,
       ...state.territory.tomb.queue.filter(entry => entry.status === 'active').map(entry => entry.completesAtElapsedMs),
       nextConstructionCompletionAt(state),
       nextHeaterServiceCompletionAt(state),
       nextCombatBoundaryAt(state),
+      nextStage08BoundaryAt(state),
       nextColdThresholdAt(state, coldRate),
       spatialBoundary,
     ].includes(at);
@@ -384,10 +499,11 @@ export function advanceTo(
       if (lastBoundaryAt === at) sameTimestampEvents += 1;
       else { lastBoundaryAt = at; sameTimestampEvents = 1; }
       if (sameTimestampEvents > 1_000) throw new Error('SIMULATION_ZERO_TIME_EVENT_LOOP');
-      const outcome = processBoundary(state, at, events, world);
+      const outcome = processBoundary(state, at, events, world, options.stopBeforeEvent);
       processed += 1;
-      if (options.stopCondition === 'danger' && outcome.danger) stoppedBy = 'danger';
-      if (options.stopCondition === 'next_completion' && outcome.completed) stoppedBy = 'next_completion';
+      if (outcome.blockedEventId) stoppedBy = 'event_content_blocked';
+      else if (options.stopCondition === 'danger' && outcome.danger) stoppedBy = 'danger';
+      else if (options.stopCondition === 'next_completion' && outcome.completed) stoppedBy = 'next_completion';
       if (stoppedBy || processed >= maxBoundaries) break;
       continue;
     }

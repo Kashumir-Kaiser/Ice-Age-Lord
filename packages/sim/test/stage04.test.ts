@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import test from 'node:test';
 import { ACTIVE_WORLD_PACKAGE } from '../../content/src/index.ts';
+import { RESOURCE_STORAGE } from '../../content/src/resourceBalance.ts';
 import { RULESET_VERSION } from '../../content/src/sourceLock.ts';
 import { GameApplicationService } from '../../api/src/service.ts';
 import { SqliteRepository } from '../../storage/src/repository.ts';
@@ -114,6 +115,9 @@ test('long and short deterministic advances produce the same mana, Tomb queue, u
   assert.equal(long.state.territory.tomb.queue.find(entry => entry.id === 'TOMB-3')?.status, 'completed');
   assert.deepEqual(long.state.ownedUnits.map(unit => unit.id), ['UNIT-TOMB-1', 'UNIT-TOMB-2', 'UNIT-TOMB-3']);
   assert.ok(long.state.ownedUnits.every(unit => unit.xpMirrorEligible === false && unit.level === 1 && unit.xp === 0));
+  const unitInventories = long.state.inventory.containers.filter(container => container.kind === 'unit_inventory');
+  assert.deepEqual(unitInventories.map(container => container.id), long.state.ownedUnits.map(unit => `LL-CNT-UNIT-${unit.id}`));
+  assert.ok(unitInventories.every(container => container.observed && container.capacitySlots === RESOURCE_STORAGE.unitInventorySlots && container.stacks.length === 0));
   assert.deepEqual(long.events.filter(event => event.type === 'tomb_unit_completed').map(event => event.payload.unitId), ['UNIT-TOMB-1', 'UNIT-TOMB-2', 'UNIT-TOMB-3']);
   assert.deepEqual(long.events.filter(event => event.type === 'tomb_job_started').map(event => event.payload.slotId), [0]);
 });

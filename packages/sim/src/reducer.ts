@@ -19,6 +19,7 @@ import {
   startSearchJob,
   transferItem,
 } from './spatial.ts';
+import { acceptQ08, cancelAuctionBid, claimQ08Reward, escortQ08, negotiateQ08, placeAuctionBid, purchaseMarketOffer } from './stage08.ts';
 
 const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | 'inspect_starter_container' | 'inspect_career_card'>, { code: string; message: string }>> = {
   activate_career_card: { code: 'CAREER_CARD_FLOW_NOT_IMPLEMENTED', message: 'Career activation is unavailable until its verified flow is implemented.' },
@@ -54,6 +55,12 @@ const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | '
   attack: { code: 'COMBAT_RULES_STAGE_07', message: 'Choose an owned, equipped warrior and the visible H0 target.' },
   retreat: { code: 'COMBAT_ENCOUNTER_NOT_ACTIVE', message: 'There is no active encounter to retreat from.' },
   shop_transaction: { code: 'TRADE_RULES_STAGE_08', message: 'Transactions are unavailable until offer, currency and receipt rules are implemented.' },
+  accept_quest: { code: 'QUEST_NOT_OFFERED', message: 'The selected fixed quest is not available.' },
+  negotiate_caravan: { code: 'CARAVAN_NOT_ACCESSIBLE', message: 'The caravan negotiation is not available at this location.' },
+  escort_caravan: { code: 'CARAVAN_NOT_READY_TO_ESCORT', message: 'The caravan is not ready to travel.' },
+  claim_quest_reward: { code: 'QUEST_REWARD_NOT_CLAIMABLE', message: 'The selected quest has no claimable reward.' },
+  place_auction_bid: { code: 'AUCTION_LOT_NOT_OPEN', message: 'The selected auction lot is not open.' },
+  cancel_auction_bid: { code: 'AUCTION_BID_NOT_OPEN', message: 'The selected bid is not open.' },
 };
 
 function staticAvailability(type: CommandType): ActionAvailability {
@@ -76,6 +83,8 @@ export function actionAvailability(type: CommandType): ActionAvailability {
     return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
   }
   if (type === 'split_stack' || type === 'merge_stacks' || type === 'consume_item' || type === 'activate_career_card' || type === 'revive' || type === 'butcher_corpse' || type === 'equip' || type === 'unequip_item' || type === 'attack' || type === 'retreat') return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
+  if (type === 'shop_transaction' || type === 'accept_quest' || type === 'negotiate_caravan' || type === 'escort_caravan'
+    || type === 'claim_quest_reward' || type === 'place_auction_bid' || type === 'cancel_auction_bid') return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
   return staticAvailability(type);
 }
 
@@ -163,6 +172,11 @@ export function previewCommand(
       ? actionAvailability(command.type)
       : { actionId: command.type, enabled: false, reasonCode: 'NOT_ACCESSIBLE', requirements: ['The opening card is no longer available.'] };
   }
+  if (command.type === 'set_clock_speed' || command.type === 'advance_to_boundary') {
+    return state.eventProgressionBlocker
+      ? { actionId: command.type, enabled: false, reasonCode: 'EVENT_CONTENT_BLOCKED', requirements: [state.eventProgressionBlocker.playerMessage] }
+      : actionAvailability(command.type);
+  }
   if (command.type === 'activate_career_card') {
     if (command.payload.cardId !== state.player.career.sealedPayload.careerId) return unavailable(command.type, 'CAREER_CARD_UNKNOWN', 'Use the career encoded by the sealed opening card.');
     if (!state.playerKnowledge.careerCardObserved) return unavailable(command.type, 'CAREER_CARD_NOT_INSPECTED', 'Inspect the sealed card before activating it.');
@@ -190,7 +204,6 @@ export function previewCommand(
       ? unavailable(command.type, result.code, result.requirements.join(' '))
       : { actionId: command.type, enabled: true, reasonCode: null, requirements: [], preview: { label: 'Direct Tử Phục', value: '0 mana · 0 materials · 0 time' } };
   }
-  if (command.type === 'set_clock_speed' || command.type === 'advance_to_boundary') return actionAvailability(command.type);
   if (command.type === 'enqueue_tomb') {
     if (command.payload.blueprintId !== TOMB_STANDARD_BLUEPRINT_ID) return { actionId: command.type, enabled: false, reasonCode: 'TOMB_BLUEPRINT_UNKNOWN', requirements: ['Only the source-locked T0 standard output is compiled.'] };
     return actionAvailability(command.type);
@@ -284,6 +297,34 @@ export function previewCommand(
     const reason = unequipBlocker(state, world, command.payload.unitId, command.payload.itemId);
     return reason ? unavailable(command.type, reason, 'The equipped item and unit must be accessible.') : actionAvailability(command.type);
   }
+  if (command.type === 'accept_quest') {
+    const result = acceptQ08(state, world);
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
+  }
+  if (command.type === 'negotiate_caravan') {
+    const result = negotiateQ08(state, world, 'PREVIEW');
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
+  }
+  if (command.type === 'escort_caravan') {
+    const result = escortQ08(state, world, 'PREVIEW');
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
+  }
+  if (command.type === 'claim_quest_reward') {
+    const result = claimQ08Reward(state, world, 'PREVIEW');
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
+  }
+  if (command.type === 'shop_transaction') {
+    const result = purchaseMarketOffer(state, world, command.payload.offerId, command.payload.destinationContainerId, command.payload.quantity, 'PREVIEW');
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
+  }
+  if (command.type === 'place_auction_bid') {
+    const result = placeAuctionBid(state, world, command.payload.lotId, command.payload.quantity, command.payload.unitBid, 'PREVIEW');
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
+  }
+  if (command.type === 'cancel_auction_bid') {
+    const result = cancelAuctionBid(state, command.payload.bidId, 'PREVIEW');
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
+  }
   if (command.type === 'open_cache') {
     const chest = world.fieldChests.find(candidate => candidate.id === command.payload.chestId && state.playerKnowledge.knownChestIds.includes(candidate.id));
     const position = actorPosition(state, command.payload.actorId);
@@ -372,6 +413,9 @@ export function reduceCommand(
     && !(options.allowSystemOnlyRevisionAdvance && command.expectedRevision < state.revision)) {
     return reject(state, command.commandId, 'STALE_REVISION', 'The save changed; refresh the player view and retry with the current revision.', requestSha256);
   }
+  if (state.eventProgressionBlocker && (command.type === 'set_clock_speed' || command.type === 'advance_to_boundary')) {
+    return reject(state, command.commandId, 'EVENT_CONTENT_BLOCKED', state.eventProgressionBlocker.playerMessage, requestSha256);
+  }
 
   if (command.type === 'inspect_entity') {
     const ref = command.payload.entity;
@@ -397,7 +441,9 @@ export function reduceCommand(
       }
     }
     if (ref.type === 'resource') {
-      const resourceBalances = state.spatial.resourceBalances.map(balance => balance.resourceId === ref.id ? {
+      const resource = world.resources.find(candidate => candidate.id === ref.id);
+      const featureResourceIds = new Set(world.resources.filter(candidate => candidate.featureId === resource?.featureId).map(candidate => candidate.id));
+      const resourceBalances = state.spatial.resourceBalances.map(balance => featureResourceIds.has(balance.resourceId) ? {
         ...balance, amountKnowledge: 'known_exact' as const, lastSettledAtElapsedMs: state.simElapsedMs,
       } : balance);
       return acceptMutation(state, command, requestSha256, {
@@ -438,6 +484,48 @@ export function reduceCommand(
     const result = orderStage07Retreat(state, command.payload.actorIds, command.payload.encounterId);
     if (result.code || !result.event) return reject(state, command.commandId, result.code ?? 'COMBAT_ENCOUNTER_NOT_ACTIVE', result.requirements.join(' ') || 'The retreat order is unavailable.', requestSha256);
     return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'COMBAT_RETREAT_ORDERED', 'The unit will resolve its retreat on the next combat boundary.');
+  }
+
+  if (command.type === 'accept_quest') {
+    const result = acceptQ08(state, world);
+    if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'QUEST_ACCEPTED', result.message);
+  }
+
+  if (command.type === 'negotiate_caravan') {
+    const result = negotiateQ08(state, world, command.commandId);
+    if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'CARAVAN_NEGOTIATED', result.message);
+  }
+
+  if (command.type === 'escort_caravan') {
+    const result = escortQ08(state, world, command.commandId);
+    if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'CARAVAN_ESCORT_STARTED', result.message);
+  }
+
+  if (command.type === 'claim_quest_reward') {
+    const result = claimQ08Reward(state, world, command.commandId);
+    if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'QUEST_REWARD_CLAIMED', result.message);
+  }
+
+  if (command.type === 'shop_transaction') {
+    const result = purchaseMarketOffer(state, world, command.payload.offerId, command.payload.destinationContainerId, command.payload.quantity, command.commandId);
+    if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'SHOP_PURCHASED', result.message);
+  }
+
+  if (command.type === 'place_auction_bid') {
+    const result = placeAuctionBid(state, world, command.payload.lotId, command.payload.quantity, command.payload.unitBid, command.commandId);
+    if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'AUCTION_BID_OPENED', result.message);
+  }
+
+  if (command.type === 'cancel_auction_bid') {
+    const result = cancelAuctionBid(state, command.payload.bidId, command.commandId);
+    if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'AUCTION_BID_CANCELLED', result.message);
   }
 
   if (command.type === 'activate_career_card') {
@@ -496,7 +584,7 @@ export function reduceCommand(
     next.spatial.resourceBalances = next.spatial.resourceBalances.map(balance => balance.resourceId === result.job!.resourceId
       ? { ...balance, reserved: balance.reserved + result.job!.reservedQuantity, lastSettledAtElapsedMs: state.simElapsedMs }
       : balance);
-    next.jobs = [...next.jobs, { id: jobId, kind: 'resource_harvest', status: 'active', actorIds: [...result.job.actorIds], reservedItemIds: [result.job.toolItemId], startedAtElapsedMs: state.simElapsedMs, completedAtElapsedMs: null }];
+    next.jobs = [...next.jobs, { id: jobId, kind: 'resource_harvest', status: 'active', actorIds: [...result.job.actorIds], reservedItemIds: result.job.toolItemId === 'NONE' ? [] : [result.job.toolItemId], startedAtElapsedMs: state.simElapsedMs, completedAtElapsedMs: null }];
     return acceptMutationMany(state, command, requestSha256, next, [{
       type: 'harvest_job_started', occurredAtElapsedMs: state.simElapsedMs,
       payload: { jobId, resourceId: result.job.resourceId, materialId: result.job.materialId, quantity: result.job.requestedQuantity },

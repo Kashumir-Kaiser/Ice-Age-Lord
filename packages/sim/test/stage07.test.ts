@@ -399,4 +399,3 @@ test('cancelled spatial search does not materialize or debit the opening prey', 
   assert.equal(cancelled.state.combat?.target.status, 'available');
   assert.equal(projectPlayerView(cancelled.state, world).combat?.target?.regionalPopulationRemaining, 38);
 });
-

@@ -77,6 +77,15 @@ export function consumeItem(state: GameState, world: WorldDefinition, input: { a
     ...item,
     stacks: item.stacks.flatMap(source => source.itemId !== stack.itemId ? [source] : source.quantity === input.quantity ? [] : [{ ...source, quantity: source.quantity - input.quantity }]),
   }) };
+  if (stack.provenance === 'versioned_game_design') {
+    const offer = next.stage08.marketOffers.find(item => item.itemTemplateId === stack.templateId && item.handlerVersion === 'LL01-STAGE-08-QUEST-TRADE-1.0');
+    if (offer) {
+      if (offer.purchasedQuantity - offer.consumedQuantity < input.quantity) return { state, event: null, code: 'PURCHASED_ITEM_LEDGER_MISMATCH' };
+      next.stage08.marketOffers = next.stage08.marketOffers.map(item => item.id === offer.id
+        ? { ...item, consumedQuantity: item.consumedQuantity + input.quantity }
+        : item);
+    }
+  }
   return { state: next, event: { sequence: 0, type: 'inventory_food_consumed', occurredAtElapsedMs: state.simElapsedMs, payload: { containerId: container.id, itemId: stack.itemId, templateId: stack.templateId, quantity: input.quantity, foodUnits: consumedUnits } }, code: null };
 }
 

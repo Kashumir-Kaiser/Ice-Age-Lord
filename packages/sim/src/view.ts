@@ -1,11 +1,13 @@
 import type { ActionAvailability, CoordinateMm, EntityRef, GameState, PlayerEntityView, PlayerView, WorldDefinition } from '../../contracts/src/index.ts';
+import { eventRuntimeReadiness } from '../../content/src/eventReadiness.ts';
 import { canAccessStarterContainer } from './access.ts';
-import { currentSight, previewMovement, startHarvestJob } from './spatial.ts';
+import { carryCapacityForFireLevel, currentSight, harvestingRateUnitsPerHour, previewMovement, startHarvestJob } from './spatial.ts';
 import { OPENING_BUILDINGS } from '../../content/src/buildings.ts';
 import { constructionWorkRate, farmhouseCapacity } from './construction.ts';
 import { elapsedMsToWorldClock } from './time.ts';
 import { butcherCorpse, directReviveAvailability } from './stage07.ts';
 import { projectStage07Combat } from './combat.ts';
+import { Q08_ID } from './stage08.ts';
 
 export function entityKey(ref: EntityRef): string {
   return `${ref.type}:${ref.id}`;
@@ -47,27 +49,80 @@ function siteEntities(state: GameState, world: WorldDefinition): PlayerEntityVie
 }
 
 function resourceEntities(state: GameState, world: WorldDefinition): PlayerEntityView[] {
-  return state.playerKnowledge.knownResourceIds.flatMap(resourceId => {
-    const resource = world.resources.find(candidate => candidate.id === resourceId);
-    if (!resource) return [];
-    const balance = state.spatial.resourceBalances.find(candidate => candidate.resourceId === resourceId);
-    const tool = state.inventory.containers.find(container => container.location.kind === 'carried' && container.location.ownerId === state.player.id)
-      ?.stacks.find(stack => stack.templateId === resource.requiredToolTemplateId);
-    const previewJob = startHarvestJob(state, world, 'VIEW-PREVIEW', state.player.id, resource.id, resource.materialId, 1, tool?.itemId ?? '');
-    const harvestReason = previewJob.code
-      ?? (resource.access === 'open_surface' ? null : resource.access === 'survey_required' ? 'PROSPECTING_CONTRACT_NOT_COMPILED' : resource.access === 'frozen_water' ? 'WATER_PREPARATION_CONTRACT_NOT_COMPILED' : 'WORKFORCE_AND_FUEL_REQUIREMENTS_NOT_MET');
-    const observation = state.playerKnowledge.lastSeenByEntity[`resource:${resourceId}`];
+  const carried = state.inventory.containers.find(container => container.location.kind === 'carried' && container.location.ownerId === state.player.id);
+  return world.resourceFeatures.flatMap(feature => {
+    const materials = world.resources.filter(resource => resource.featureId === feature.id);
+    const knownMaterials = materials.filter(resource => state.playerKnowledge.knownResourceIds.includes(resource.id));
+    if (knownMaterials.length === 0) return [];
+    const primary = knownMaterials[0];
+    const observation = state.playerKnowledge.lastSeenByEntity[`resource:${primary.id}`];
+    const projectedMaterials = knownMaterials.map(resource => {
+      const balance = state.spatial.resourceBalances.find(candidate => candidate.resourceId === resource.id);
+      const tool = resource.requiredToolTemplateId
+        ? carried?.stacks.find(stack => stack.templateId === resource.requiredToolTemplateId)
+        : undefined;
+      const preview = startHarvestJob(state, world, 'VIEW-PREVIEW', state.player.id, resource.id, resource.materialId, 1, tool?.itemId ?? (resource.requiredToolTemplateId ? '' : 'NONE'));
+      const accessReason = resource.access === 'survey_required' ? 'Prospecting is not available in this game build.'
+        : resource.access === 'frozen_water' ? 'This source is frozen; water preparation is not available yet.'
+          : resource.access === 'workforce_and_fuel' ? 'Salt extraction requires two workers and cooking fuel; that workfront is not available yet.'
+            : preview.code === 'REQUIRED_TOOL_NOT_CARRIED' ? `Carry a ${resource.requiredToolTemplateId} to harvest this material.`
+              : preview.code === 'INSUFFICIENT_RESOURCE' ? 'The remaining stock or daily quota is reserved or exhausted.'
+                : preview.code ? preview.code.replaceAll('_', ' ').toLocaleLowerCase() : null;
+      const remaining = balance?.amountKnowledge === 'known_exact'
+        ? resource.dailyQuota === null ? balance.remaining : balance.dailyRemaining
+        : null;
+      const dailyRemaining = balance?.amountKnowledge === 'known_exact' ? balance.dailyRemaining : null;
+      const depleted = resource.dailyQuota !== null ? (balance?.dailyRemaining ?? resource.dailyQuota) <= 0 : (balance?.remaining ?? resource.capacity) <= 0;
+      return {
+        resourceId: resource.id,
+        materialId: resource.materialId,
+        materialName: resource.materialName,
+        unit: resource.unit,
+        capacity: resource.capacity,
+        remaining,
+        reserved: balance && balance.reserved > 0 ? balance.reserved : null,
+        dailyQuota: resource.dailyQuota,
+        dailyRemaining,
+        harvestRateUnitsPerHour: harvestingRateUnitsPerHour(state.territory.survivalFire.level),
+        renewal: resource.renewal,
+        regenerationPerDay: resource.regenerationPerDay,
+        requiredToolTemplateId: resource.requiredToolTemplateId,
+        access: resource.access,
+        accessReason,
+        status: resource.access !== 'open_surface' ? 'blocked' as const : depleted ? 'depleted' as const : 'available' as const,
+        harvestable: preview.job !== null,
+        reasonCode: preview.code,
+      };
+    });
+    const position = feature.position;
+    const distanceFromHeatMm = Math.hypot(position.xMm - state.territory.position.xMm, position.yMm - state.territory.position.yMm);
+    const heatRadiusMm = state.territory.survivalFire.active ? state.territory.survivalFire.heatRadiusMetres * 1_000 : 0;
+    const harvestable = projectedMaterials.some(material => material.harvestable);
+    const blocker = projectedMaterials.find(material => !material.harvestable)?.reasonCode ?? 'RESOURCE_UNAVAILABLE';
     return [{
-      ref: { type: 'resource', id: resource.id },
-      label: resource.materialName,
-      category: `resource · ${resource.unit}`,
+      ref: { type: 'resource', id: primary.id },
+      label: feature.name,
+      category: `resource deposit · ${feature.terrainKind}`,
       knowledge: observation?.knowledge === 'last_known' ? 'last_known' : 'current',
       observedAtElapsedMs: observation?.observedAtElapsedMs ?? state.simElapsedMs,
-      position: resource.location,
+      position,
+      resourceDeposit: {
+        featureId: feature.id,
+        featureName: feature.name,
+        terrainKind: feature.terrainKind,
+        footprintMm: feature.footprintMm,
+        heatActive: state.territory.survivalFire.active,
+        heatCovered: distanceFromHeatMm <= heatRadiusMm,
+        distanceFromHeatMm,
+        heatRadiusMm,
+        carryCapacityUnits: carryCapacityForFireLevel(state.territory.survivalFire.level),
+        storageStackSlots: state.inventory.containers.find(container => container.kind === 'territory_supply')?.capacitySlots ?? null,
+        materials: projectedMaterials.map(({ harvestable: _harvestable, reasonCode: _reasonCode, ...material }) => material),
+      },
       actions: [
         action('inspect_entity', true),
-        moveAction(state, world, resource.id, resource.location),
-        action('harvest', harvestReason === null, harvestReason, harvestReason ? ['The source access, worker, resource, and carried tool requirements are unresolved.'] : []),
+        moveAction(state, world, primary.id, position),
+        action('harvest', harvestable, harvestable ? null : blocker, harvestable ? [] : ['The deposit is visible, but every material has an unresolved access, tool, or stock requirement.']),
       ],
     }];
   });
@@ -147,6 +202,12 @@ function progressFor(state: GameState, jobId: string): number | null {
   return null;
 }
 
+function playerAtSiteForView(state: GameState, world: WorldDefinition, siteId: string): boolean {
+  const site = world.sites.find(candidate => candidate.id === siteId);
+  return Boolean(site && Math.hypot(site.position.xMm - state.player.position.xMm, site.position.yMm - state.player.position.yMm)
+    <= world.navigationOverlay.interactionRangeMm);
+}
+
 export function projectPlayerView(state: GameState, world: WorldDefinition): PlayerView {
   if (state.worldPackageId !== world.id) throw new Error('PLAYER_VIEW_WORLD_PACKAGE_MISMATCH');
   const knownCorpseIds = new Set(state.playerKnowledge.knownCorpseIds ?? []);
@@ -176,7 +237,12 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
   const knownContainers = state.inventory.containers.filter(container => container.observed).map(container => ({
     id: container.id,
     kind: container.kind,
-    label: container.kind === 'territory_supply' ? 'Territory supply chest' : container.kind === 'carried_bag' ? 'Carried food bag' : container.kind,
+    ownerId: container.location.kind === 'carried' ? container.location.ownerId : container.location.kind === 'unit' ? container.location.unitId : null,
+    label: container.kind === 'territory_supply' ? 'Territory supply chest'
+      : container.kind === 'carried_bag' ? 'Carried food bag'
+        : container.kind === 'unit_inventory'
+          ? `${state.ownedUnits.find(unit => container.location.kind === 'unit' && unit.id === container.location.unitId)?.name ?? 'Unit'} pack`
+          : container.kind,
     slots: container.capacitySlots ?? 0,
     occupiedSlots: container.stacks.length,
     capacitySlots: container.capacitySlots,
@@ -190,6 +256,19 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
     && sights.some(sight => Math.hypot(combat.target!.position.xMm - sight.center.xMm, combat.target!.position.yMm - sight.center.yMm) <= sight.radiusMm)
     ? [{ targetId: combat.target.id, label: combat.target.label, position: combat.target.position, status: combat.target.state as 'available' | 'reacting' }]
     : [];
+  const caravan = state.stage08.enabled ? state.stage08.caravan : null;
+  const caravanPosition = caravan ? world.sites.find(site => site.id === caravan.locationSiteId)?.position : null;
+  const caravanVisible = Boolean(caravanPosition && ['distressed', 'negotiated', 'escorting', 'arrived'].includes(caravan!.status)
+    && sights.some(sight => Math.hypot(caravanPosition!.xMm - sight.center.xMm, caravanPosition!.yMm - sight.center.yMm) <= sight.radiusMm));
+  const atKronaGate = playerAtSiteForView(state, world, 'SITE-LL01-046');
+  const projectedQuests = state.quests.filter(quest => quest.state !== 'dormant');
+  const q08 = state.quests.find(quest => quest.questId === Q08_ID);
+  if (caravanVisible && caravan?.status === 'distressed' && q08?.state === 'dormant') {
+    projectedQuests.push({
+      questId: Q08_ID, state: 'open', acceptedAt: null, completedAt: null, rewardReceipt: null,
+      objectiveId: 'Q08-NEGOTIATE-AND-ESCORT', rewardStatus: 'unavailable', failureReason: null,
+    });
+  }
 
   return {
     schemaVersion: 1,
@@ -199,6 +278,43 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
     simElapsedMs: state.simElapsedMs,
     clockControl: state.clockControl,
     clockStatus: { driver: 'unclaimed', catchingUp: false, targetSimElapsedMs: state.simElapsedMs, leaseRemainingMs: 0 },
+    calendar: state.calendar.flatMap(event => {
+      if (event.status === 'scheduled' && event.id !== 'EV00-SAFE-FIRE') return [];
+      const source = world.eventSchedule.find(row => row.id === event.id);
+      if (!source) return [];
+      return [{
+        id: event.id,
+        displayName: source.displayName,
+        status: event.status,
+        readiness: eventRuntimeReadiness(event.id),
+        opensAtElapsedMs: event.opensAtMs,
+        locksAtElapsedMs: event.locksAtMs,
+        resolvesAtElapsedMs: event.resolvesAtMs,
+        openReceiptSequence: event.openReceiptSequence,
+        lockReceiptSequence: event.lockReceiptSequence,
+        resolutionReceiptSequence: event.resolutionReceiptSequence,
+      }];
+    }),
+    eventProgressionBlocker: state.eventProgressionBlocker ? {
+      eventId: state.eventProgressionBlocker.eventId,
+      displayName: world.eventSchedule.find(row => row.id === state.eventProgressionBlocker!.eventId)?.displayName ?? 'Sự kiện thế giới',
+      blockedAtElapsedMs: state.eventProgressionBlocker.blockedAtElapsedMs,
+      playerMessage: state.eventProgressionBlocker.playerMessage,
+    } : null,
+    quests: projectedQuests,
+    currency: state.currency.filter(balance => balance.amount > 0),
+    stage08: {
+      caravan: caravanVisible && caravan && caravanPosition ? {
+        id: caravan.id,
+        status: caravan.status,
+        locationSiteId: caravan.locationSiteId,
+        deadlineAtElapsedMs: caravan.deadlineAtElapsedMs,
+        arrivalAtElapsedMs: caravan.arrivalAtElapsedMs,
+      } : null,
+      marketOffers: atKronaGate ? state.stage08.marketOffers : [],
+      auctionLots: atKronaGate ? state.stage08.auctionLots.filter(lot => lot.status !== 'closed') : [],
+      auctionBids: atKronaGate ? state.stage08.auctionBids.filter(bid => bid.bidderId === state.player.id) : [],
+    },
     worldClock: elapsedMsToWorldClock(state.simElapsedMs),
     survival: {
       coldLoad: state.survival.coldStatus === 'weather_unresolved' ? null : state.survival.coldLoadMicro / 1_000_000,
@@ -310,6 +426,20 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
       visibleGeometry: sights.map((sight, index) => ({ id: `SIGHT-${index + 1}`, kind: 'circle' as const, points: [sight.center] })),
       exploredGeometry: state.exploration.exploredGeometry,
       terrain: [],
+      resourceFeatures: world.resourceFeatures.flatMap(feature => {
+        if (!world.resources.some(resource => resource.featureId === feature.id && state.playerKnowledge.knownResourceIds.includes(resource.id))) return [];
+        return [{
+          ...feature,
+          channels: feature.appearanceChannels.map(channel => {
+            const resource = world.resources.find(candidate => candidate.id === channel.resourceId);
+            const balance = state.spatial.resourceBalances.find(candidate => candidate.resourceId === channel.resourceId);
+            if (!resource || !balance) return { ...channel, remainingRatio: 0 };
+            const amount = balance.dailyRemaining ?? balance.remaining;
+            const denominator = resource.dailyQuota ?? resource.capacity;
+            return { ...channel, remainingRatio: denominator > 0 ? Math.max(0, Math.min(1, amount / denominator)) : 0 };
+          }),
+        }];
+      }),
       entities,
       knownRoutes: state.playerKnowledge.knownRouteIds.flatMap(id => {
         const route = world.navigationOverlay.routeEdges.find(candidate => candidate.id === id);
@@ -327,15 +457,31 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
       resources: state.spatial.resourceBalances.flatMap(balance => {
         const resource = world.resources.find(candidate => candidate.id === balance.resourceId);
         if (!resource || !state.playerKnowledge.knownResourceIds.includes(resource.id)) return [];
+        const rate = harvestingRateUnitsPerHour(state.territory.survivalFire.level);
+        const available = balance.dailyRemaining ?? balance.remaining;
+        const accessReason = resource.access === 'survey_required' ? 'Prospecting is not available in this game build.'
+          : resource.access === 'frozen_water' ? 'This source is frozen; water preparation is not available yet.'
+            : resource.access === 'workforce_and_fuel' ? 'Salt extraction requires two workers and cooking fuel; that workfront is not available yet.' : null;
         return [{
           resourceId: resource.id,
           materialId: resource.materialId,
           materialName: resource.materialName,
           unit: resource.unit,
-          remaining: balance.amountKnowledge === 'known_exact' ? balance.remaining : null,
+          remaining: balance.amountKnowledge === 'known_exact'
+            ? resource.dailyQuota === null ? balance.remaining : balance.dailyRemaining
+            : null,
           reserved: balance.reserved > 0 ? balance.reserved : null,
           amountKnowledge: balance.amountKnowledge,
-          status: resource.access !== 'open_surface' ? 'blocked' as const : balance.remaining <= 0 ? 'depleted' as const : 'available' as const,
+          status: resource.access !== 'open_surface' ? 'blocked' as const : available <= 0 ? 'depleted' as const : 'available' as const,
+          capacity: resource.capacity,
+          dailyQuota: resource.dailyQuota,
+          dailyRemaining: balance.amountKnowledge === 'known_exact' ? balance.dailyRemaining : null,
+          renewal: resource.renewal,
+          regenerationPerDay: resource.regenerationPerDay,
+          requiredToolTemplateId: resource.requiredToolTemplateId,
+          access: resource.access,
+          accessReason,
+          harvestRateUnitsPerHour: rate,
         }];
       }),
     },

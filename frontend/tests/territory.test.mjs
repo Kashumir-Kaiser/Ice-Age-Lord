@@ -146,43 +146,78 @@ test('ink architecture exports are registered and distinct from T0 ownership', (
   assert.match(registry,/if \(visualState !== 'repaired'\) return sourceAssetId;/);
 });
 
-test('early building artwork has compact, complete milestone progressions without changing footprints', () => {
+test('early building artwork follows each canonical cap, level profile and visible stage', () => {
   const repo=resolve(root,'..');
   const manifest=JSON.parse(readFileSync(resolve(repo,'assets/manifest.json'),'utf8'));
-  const expected=['lord-house','tomb-entry','polar-farmhouse','opening-palisade-wall','opening-timber-gate','opening-simple-heater','opening-simple-kitchen','opening-woodshop','opening-tailor','opening-oreworks','opening-forge','opening-medical-station','opening-small-shelter'];
-  assert.equal(manifest.buildingProgressions.length,expected.length);
+  const caps={
+    'Nhà Lãnh Chúa':30,'Ngôi Mộ':10,'Nhà Nông Phu Cực Địa':10,
+    'Lò Sưởi Đơn Giản':3,'Bếp Nấu Đơn Giản':3,'Nơi Trú Nhỏ':3,'Tường Rào':3,'Cổng':3,
+    'Xưởng Gỗ':5,'Tiệm May':5,'Xưởng Quặng':5,'Lò Rèn':5,'Phòng Y Tế':5,
+  };
+  assert.equal(manifest.buildingProgressions.length,Object.keys(caps).length);
   assert.deepEqual(JSON.parse(readFileSync(resolve(repo,'frontend/public/assets/manifest.json'),'utf8')),manifest);
-  const milestones=[1,6,11,16,21,26], maxima=[5,10,15,20,25,30];
-  for(const [index,row] of manifest.buildingProgressions.entries()){
-    assert.ok(row.baseAssetIds.some(id=>id.startsWith(expected[index])),expected[index]);
-    assert.deepEqual(row.stages.map(stage=>stage.minLevel),milestones,expected[index]+': starts');
-    assert.deepEqual(row.stages.map(stage=>stage.maxLevel),maxima,expected[index]+': ends');
-    let previousScale=0;
+  for(const row of manifest.buildingProgressions){
+    assert.equal(row.maxLevel,caps[row.trackName],row.trackName+': canonical cap');
+    assert.equal(row.stageIdsUseExactLevels,true);
+    assert.ok(row.canonicalSource && row.canonicalSection && row.canonicalRegistry);
+    assert.ok(existsSync(resolve(repo,row.canonicalSource)),row.canonicalSource+': source file');
+    assert.deepEqual(row.stages.map(stage=>stage.level),Array.from({length:row.maxLevel},(_,i)=>i+1),row.trackName+': exact levels');
+    const stageOne=manifest.assets.find(candidate=>candidate.assetId===row.stages[0].assetId);
+    assert.ok(stageOne,row.trackName+': level-one asset');
     for(const stage of row.stages){
       const asset=manifest.assets.find(candidate=>candidate.assetId===stage.assetId);
       assert.ok(asset,stage.assetId+': registered stage');
       assert.equal(asset.status,'draft');
-      assert.ok(asset.presentationScale>previousScale,stage.assetId+': scale increases by stage');
-      previousScale=asset.presentationScale;
       assert.deepEqual(asset.logicalCanvas,{width:480,height:400});
-      const stageOne=manifest.assets.find(candidate=>candidate.assetId===row.stages[0].assetId);
+      assert.equal(asset.presentationScale,stageOne.presentationScale,stage.assetId+': registered sprite scale stays bounded');
       assert.deepEqual(asset.artFootprint,stageOne.artFootprint);
       assert.deepEqual(asset.compatiblePhysicalFootprint,stageOne.compatiblePhysicalFootprint);
-      if(stage.minLevel===1) continue;
+      assert.ok(Object.keys(stage.canonicalProfile).length>=4,stage.assetId+': source row attached');
+      assert.ok(Object.keys(stage.visibleProfile).length>=3,stage.assetId+': functional profile attached');
+      if(stage.level===1) continue;
       assert.ok(asset.source.endsWith('/'+stage.assetId+'.svg'));
       const source=readFileSync(resolve(repo,asset.source),'utf8');
-      assert.ok(!source.includes('<image'),stage.assetId+': no embedded image');
-      for(const layer of ['body','base','upper','shadow','uiIcon']){
-        const markup=readFileSync(resolve(repo,'frontend/public'+asset.layers[layer]),'utf8');
-        assert.ok(markup.length<15000,stage.assetId+':'+layer+' stays compact');
-        assert.ok(!markup.includes('<image'),stage.assetId+':'+layer+' has no embedded raster');
-        if(layer==='body') assert.ok(markup.includes('<use href="../'),stage.assetId+': linked vector base');
+      const body=readFileSync(resolve(repo,'frontend/public'+asset.layers.body),'utf8');
+      for(const [label,markup] of [['source',source],['body',body]]){
+        assert.match(markup,/<svg[^>]*viewBox="0 0 480 400"/,stage.assetId+':'+label+' canvas');
+        assert.ok(Buffer.byteLength(markup)<1_048_576,stage.assetId+':'+label+' SVG size stays below 1 MiB');
+        assert.ok(!/<image\b/.test(markup),stage.assetId+':'+label+' has no raster payload');
+        assert.match(markup,/<path\b/,stage.assetId+':'+label+' has rendered vector paths');
+        assert.ok(!/<use\b/.test(markup),stage.assetId+':'+label+' artwork is complete and standalone');
       }
+      assert.match(body,/<g id="painted-sprite"/,stage.assetId+':self-contained sprite');
+      assert.ok((body.match(/<path\b/g)||[]).length>=80,stage.assetId+': substantial painted stage detail');
+      const actualSuffix=row.unit==='Bậc' ? '-b'+String(stage.level).padStart(2,'0') : '-l'+String(stage.level).padStart(2,'0');
+      assert.ok(stage.assetId.endsWith(actualSuffix),stage.assetId+': uses its exact rank id');
+    }
+    const baseId=row.baseAssetIds.find(id=>id===row.stages[0].assetId)??row.stages[0].assetId;
+    for(let level=1;level<=row.maxLevel+5;level++){
+      const expected=row.stages[Math.min(level,row.maxLevel)-1].assetId;
+      assert.equal(assetRegistry.resolveSettlementAssetId(manifest,baseId,1,false,undefined,level),expected,row.trackName+': resolver level '+level);
     }
   }
-  assert.equal(assetRegistry.resolveSettlementAssetId(manifest,'polar-farmhouse-l01',1,false,undefined,16),'polar-farmhouse-l16');
-  assert.equal(assetRegistry.resolveSettlementAssetId(manifest,'polar-farmhouse-l01',1,false,undefined,30),'polar-farmhouse-l26');
   assert.equal(assetRegistry.resolveSettlementAssetId(manifest,'lord-house-damaged',1,false,'damaged',21),'lord-house-damaged');
   assert.equal(assetRegistry.resolveSettlementAssetId(manifest,'lord-house-damaged',1,false,'repaired',21),'lord-house-l21');
+  const farmhouse=manifest.buildingProgressions.find(row=>row.trackName==='Nhà Nông Phu Cực Địa');
+  assert.match(farmhouse.stages[0].canonicalProfile['Hình thái/diện tích'],/lều cực địa 12 m²/i);
+  assert.equal(farmhouse.stages[0].visibleProfile.residentCapacity,4);
+  assert.equal(farmhouse.stages[5].visibleProfile.residentCapacity,32);
+  assert.equal(farmhouse.stages[9].visibleProfile.residentCapacity,120);
+  assert.equal(farmhouse.stages[9].visibleProfile.staminaRecoveryPercent,90);
+  const tomb=manifest.buildingProgressions.find(row=>row.trackName==='Ngôi Mộ');
+  assert.equal(tomb.stages[4].visibleProfile.zombieTier,4);
+  assert.equal(tomb.stages[5].visibleProfile.zombieTier,4);
+  assert.equal(tomb.stages[5].visibleProfile.quality,'Cựu binh');
+  assert.equal(tomb.stages[9].visibleProfile.quality,'Lãnh chúa');
+  assert.equal(tomb.stages[9].visibleProfile.dqCapacity,10240);
+  const heater=manifest.buildingProgressions.find(row=>row.trackName==='Lò Sưởi Đơn Giản');
+  assert.deepEqual(heater.stages.map(stage=>stage.visibleProfile.heatRetentionAfterShutdownMinutes),[0,0,10]);
+  const kitchen=manifest.buildingProgressions.find(row=>row.trackName==='Bếp Nấu Đơn Giản');
+  assert.deepEqual(kitchen.stages.map(stage=>stage.visibleProfile.portionCount),[4,8,16]);
+  const shelter=manifest.buildingProgressions.find(row=>row.trackName==='Nơi Trú Nhỏ');
+  assert.deepEqual(shelter.stages.map(stage=>stage.visibleProfile.bedCount),[2,3,4]);
+  const woodshop=manifest.buildingProgressions.find(row=>row.trackName==='Xưởng Gỗ');
+  assert.deepEqual(woodshop.stages.map(stage=>stage.visibleProfile.stationCount),[1,2,4,6,10]);
+  assert.equal(woodshop.stages[4].visibleProfile.wasteReductionPercent,15);
   assert.equal(assetRegistry.resolveSettlementAssetId(manifest,'campfire-start',16,true),'survival-fire-l16');
 });

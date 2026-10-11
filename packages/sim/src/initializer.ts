@@ -5,8 +5,10 @@ import { OPENING_BUILDINGS_RULE_VERSION, PLACEMENT_OVERLAY_VERSION, LABOR_OVERLA
 import { canonicalStateHash } from './hash.ts';
 import { seedConvenienceBag } from './bag.ts';
 import { seedSpatialKnowledge } from './spatial.ts';
+import { RESOURCE_STORAGE } from '../../content/src/resourceBalance.ts';
 import { stage07OpeningCorpse, STAGE07_OPENING_CORPSE_ID } from './stage07.ts';
 import { createStage07CombatState } from './combat.ts';
+import { initialStage08State } from './stage08.ts';
 
 export type NewGameOptions = {
   saveId: string;
@@ -141,7 +143,7 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
         {
           id: supplyContainerId,
           kind: 'territory_supply',
-          capacitySlots: 40,
+          capacitySlots: RESOURCE_STORAGE.initialStackSlots,
           occupiedSlots: null,
           location: { kind: 'site', siteId: supplySiteId },
           observed: false,
@@ -258,9 +260,13 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
       ...event,
       status: 'scheduled' as const,
       openReceiptSequence: null,
+      lockReceiptSequence: null,
+      blockedReceiptSequence: null,
       resolutionReceiptSequence: null,
     })),
+    eventProgressionBlocker: null,
     offers: empty,
+    stage08: initialStage08State(),
     currency: empty,
     receipts: empty,
     rngStreams: { convenienceBag: { algorithm: 'HASH-PRIMITIVE-1.0', counter: bag.totalHashDraws } },
@@ -287,7 +293,10 @@ export function assertCleanStart(state: GameState, world: WorldDefinition): void
   if (state.playerKnowledge.knownChestIds.length !== 0 || state.playerKnowledge.knownLairIds.length !== 0) contamination.push('prior exploration');
   if (state.fieldChestStates.some(chest => chest.state !== 'unopened')) contamination.push('opened field chest');
   if (state.quests.some(quest => quest.state !== 'dormant' || quest.rewardReceipt !== null)) contamination.push('quest progress');
-  if (state.calendar.length !== 30 || state.calendar.some(event => event.status !== 'scheduled' || event.openReceiptSequence !== null || event.resolutionReceiptSequence !== null)) contamination.push('calendar state');
+  if (state.calendar.length !== 30 || state.calendar.some(event => event.status !== 'scheduled'
+    || event.openReceiptSequence !== null || event.lockReceiptSequence !== null
+    || event.blockedReceiptSequence !== null || event.resolutionReceiptSequence !== null)
+    || state.eventProgressionBlocker !== null) contamination.push('calendar state');
   const stage07Corpses = state.corpses.filter(corpse => corpse.id === STAGE07_OPENING_CORPSE_ID);
   const expectedStage07Corpse = stage07OpeningCorpse();
   const fixedCorpseContamination = state.corpses.some(corpse => corpse.id !== STAGE07_OPENING_CORPSE_ID
