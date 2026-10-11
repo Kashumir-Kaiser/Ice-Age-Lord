@@ -124,10 +124,26 @@
         "SX-0674",
         "SX-0675",
         "SX-0676",
+        "SX-0677",
+        "SX-0678",
+        "SX-0679",
+        "SX-0680",
+        "SX-0681",
+        "SX-0682",
+        "SX-0683",
+        "SX-0684",
+        "SX-0685",
         "SX-0686",
         "SX-0687",
+        "SX-0688",
+        "SX-0689",
+        "SX-0690",
+        "SX-0691",
         "SX-0692",
         "SX-0693",
+        "SX-0694",
+        "SX-0695",
+        "SX-0696",
         "SX-0697"
       ],
       "note": "Chest count snapshot and explicit loot categories from the 29 Silver/Gold boxes, three Moon boxes, and one Red box. See ledger for all 26 receipt rows."
@@ -136,6 +152,7 @@
       "chapter": 930,
       "ids": [
         "SX-0698",
+        "SX-0699",
         "SX-0700"
       ],
       "note": "Two individual frozen chest pickups and one broken sailboat."
@@ -144,6 +161,7 @@
       "chapter": 931,
       "ids": [
         "SX-0701",
+        "SX-0702",
         "SX-0703"
       ],
       "note": "Three Sacrifice Pearls, one each of unknown, orange, and green quality."
