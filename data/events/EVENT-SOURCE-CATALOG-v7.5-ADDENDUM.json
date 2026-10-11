@@ -1,0 +1,176 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.5-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.4-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 75: printed Chinese Chapters 1162–1171; Bqquge primary text reviewed through visible continuations. Vietnamese title/index comparison checked on Cơm Nguội, Hắc Hoàng Đại Đế, and Xa Lộ Sách; local numbering diverges and some chapters are split. Vietnamese pages were used only for title alignment; gated bodies did not supply mechanics.",
+  "data_file": "EVENT-SOURCE-ITEMS-v7.5.csv",
+  "cumulative_rows": 1339,
+  "columns": 69,
+  "total_item_ids": [
+    "SX-1322",
+    "SX-1323",
+    "SX-1324",
+    "SX-1325",
+    "SX-1326",
+    "SX-1327",
+    "SX-1328",
+    "SX-1329",
+    "SX-1330",
+    "SX-1331",
+    "SX-1332",
+    "SX-1333",
+    "SX-1334",
+    "SX-1335",
+    "SX-1336",
+    "SX-1337",
+    "SX-1338",
+    "SX-1339"
+  ],
+  "chapter_item_ids": {
+    "1162": [
+      "SX-1322",
+      "SX-1323"
+    ],
+    "1163": [
+      "SX-1324",
+      "SX-1325",
+      "SX-1326"
+    ],
+    "1164": [
+      "SX-1327",
+      "SX-1328",
+      "SX-1329"
+    ],
+    "1165": [
+      "SX-1330",
+      "SX-1331",
+      "SX-1332"
+    ],
+    "1166": [
+      "SX-1333"
+    ],
+    "1167": [
+      "SX-1334"
+    ],
+    "1169": [
+      "SX-1335",
+      "SX-1336"
+    ],
+    "1170": [
+      "SX-1337"
+    ],
+    "1171": [
+      "SX-1338",
+      "SX-1339"
+    ]
+  },
+  "receipt_groups": {
+    "ROUND_75_STORM_AXE": [
+      "SX-1322",
+      "SX-1323"
+    ],
+    "ROUND_75_MASS_PROMOTION": [
+      "SX-1324",
+      "SX-1325",
+      "SX-1326",
+      "SX-1327"
+    ],
+    "ROUND_75_TRIAL_REWARDS": [
+      "SX-1328",
+      "SX-1329"
+    ],
+    "ROUND_75_GENESIS_SHIELD": [
+      "SX-1330",
+      "SX-1331",
+      "SX-1332"
+    ],
+    "ROUND_75_ABYSS_CAMPAIGN": [
+      "SX-1333",
+      "SX-1334",
+      "SX-1335",
+      "SX-1336",
+      "SX-1337",
+      "SX-1338",
+      "SX-1339"
+    ]
+  },
+  "next_item_id": "SX-1340",
+  "next_unprocessed_chapter": 1172,
+  "confirmed_outcomes": [
+    {
+      "chapter": 1162,
+      "event": "Cao Xing receives the repaired original Storm Axe as a Quasi-artifact; it lacks a core godhead and requires level 190."
+    },
+    {
+      "chapter": 1163,
+      "event": "Imperial resources are delivered for mass Hero promotion; rounded shipment narration differs slightly from exact altar-consumption values. 97,164 promotions are displayed."
+    },
+    {
+      "chapter": 1164,
+      "event": "Mass promotion completes; second War God trial ring awards Heart of Genesis and one War Plane Teleport Stone."
+    },
+    {
+      "chapter": 1165,
+      "event": "Heart of Genesis is fused with Bloom's Genesis Shield to create semi-artifact Genesis Shield–Anodite; its defense, linking, healing and revival field are recorded."
+    },
+    {
+      "chapter": 1166,
+      "event": "Abyss invasion is staged; Death Bag + Necromantic Flute are the planned means to carry Oliviaus past the rule seal."
+    },
+    {
+      "chapter": 1167,
+      "event": "Oliviaus is successfully carried out of the Church divine realm; 30 km Heavenly Fortune Ark stays outside the Abyss with one Destiny Judgment launcher use."
+    },
+    {
+      "chapter": 1168,
+      "event": "Church leadership has secretly agreed to ally against Cao; team reaches the Abyss portal. No battle loot is obtained."
+    },
+    {
+      "chapter": 1169,
+      "event": "Abyss entry awards 50,000,000 Exploration XP and 100,000 Prestige; Church Holy Spirit Absolute Seal trap disables spatial transport and debuffs the team."
+    },
+    {
+      "chapter": 1170,
+      "event": "Starfire reinforcements arrive; battle with Church begins, with no reward closure."
+    },
+    {
+      "chapter": 1171,
+      "event": "Abyss confrontation continues unresolved. Shield absorption, damage outputs and combat debuffs are recorded as battle observations, not loot."
+    }
+  ],
+  "unresolved_conflicts": [
+    "Ch1163 shipment narration uses rounded quantities while altar system display reports exact consumption values; both are retained rather than normalized.",
+    "Ch1163 shows 97,164 new Hero promotions after 120,000 gather and 25,000 are held back; preserve displayed outcome.",
+    "Vietnamese edition chapter numbering diverges materially: Cơm Nguội and Hắc Hoàng Đại Đế Ch1162 title an ice-statue goddess story, while Xa Lộ Sách local Ch1162 is a split chapter on demigod breakthrough/return to territory. These titles do not establish the Chinese printed Ch1162 story contents or item facts.",
+    "No result is shown for the Abyss battle by Ch1171; no victory/loot should be inferred."
+  ],
+  "source_checks": [
+    {
+      "source": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232722",
+      "checked_chapters": "1162–1171",
+      "use": "Primary Chinese text; visible continuations inspected."
+    },
+    {
+      "source": "Cơm Nguội Novel",
+      "url": "https://comnguoinovel.com/truyen/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong/1162",
+      "checked_chapters": "local 1162",
+      "title": "Nữ thần trong tượng băng, thân phận kinh người!",
+      "use": "Visible chapter title only; body requests login."
+    },
+    {
+      "source": "Hắc Hoàng Đại Đế",
+      "url": "https://hachoangdaide.online/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong-1162",
+      "checked_chapters": "local 1162",
+      "title": "Nữ Thần Trong Tượng Băng, Thân Phận Kinh Người",
+      "use": "Visible title only; site says only first 100 chapters are readable without login."
+    },
+    {
+      "source": "Xa Lộ Sách",
+      "url": "https://xalosach.com/bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia-0.html?P=12#danhsachchuong",
+      "checked_chapters": "catalog local 1101–1200",
+      "title": "Ch1162 Điều kiện đột phá Bán Thần, trở về lãnh địa (1); Ch1163 marked (2)",
+      "use": "Visible catalog; split and numbering divergence recorded."
+    }
+  ]
+}
