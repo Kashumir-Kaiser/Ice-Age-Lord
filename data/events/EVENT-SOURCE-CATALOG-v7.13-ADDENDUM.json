@@ -1,0 +1,2521 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.13-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.12-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 83 reviewed official QQ Reading printed Chapters 1242–1251. The official reader directory verifies the chapter-title sequence. A TTKS full-text mirror yielded usable excerpts for printed Ch1242 and Ch1244, but subsequent chapter pages returned a DMCA removal notice; direct QQ reader excerpts and other catalogs were used only where visible. No new source-item rows were added because this batch did not expose verifiable item receipts, rewards, chest outcomes, or named harvest outputs.",
+  "data_file": "data/events/EVENT-SOURCE-ITEMS-v7.12.csv",
+  "cumulative_rows": 1429,
+  "columns": 69,
+  "total_item_ids": [
+    "SX-0001",
+    "SX-0002",
+    "SX-0003",
+    "SX-0004",
+    "SX-0005",
+    "SX-0006",
+    "SX-0007",
+    "SX-0008",
+    "SX-0009",
+    "SX-0010",
+    "SX-0011",
+    "SX-0012",
+    "SX-0013",
+    "SX-0014",
+    "SX-0015",
+    "SX-0016",
+    "SX-0017",
+    "SX-0018",
+    "SX-0019",
+    "SX-0020",
+    "SX-0021",
+    "SX-0022",
+    "SX-0023",
+    "SX-0024",
+    "SX-0025",
+    "SX-0026",
+    "SX-0027",
+    "SX-0028",
+    "SX-0029",
+    "SX-0030",
+    "SX-0031",
+    "SX-0032",
+    "SX-0033",
+    "SX-0034",
+    "SX-0035",
+    "SX-0036",
+    "SX-0037",
+    "SX-0038",
+    "SX-0039",
+    "SX-0040",
+    "SX-0041",
+    "SX-0042",
+    "SX-0043",
+    "SX-0044",
+    "SX-0045",
+    "SX-0046",
+    "SX-0047",
+    "SX-0048",
+    "SX-0049",
+    "SX-0050",
+    "SX-0051",
+    "SX-0052",
+    "SX-0053",
+    "SX-0054",
+    "SX-0055",
+    "SX-0056",
+    "SX-0057",
+    "SX-0058",
+    "SX-0059",
+    "SX-0060",
+    "SX-0061",
+    "SX-0062",
+    "SX-0063",
+    "SX-0064",
+    "SX-0065",
+    "SX-0066",
+    "SX-0067",
+    "SX-0068",
+    "SX-0069",
+    "SX-0070",
+    "SX-0071",
+    "SX-0072",
+    "SX-0073",
+    "SX-0074",
+    "SX-0075",
+    "SX-0076",
+    "SX-0077",
+    "SX-0078",
+    "SX-0079",
+    "SX-0080",
+    "SX-0081",
+    "SX-0082",
+    "SX-0083",
+    "SX-0084",
+    "SX-0085",
+    "SX-0086",
+    "SX-0087",
+    "SX-0088",
+    "SX-0089",
+    "SX-0090",
+    "SX-0091",
+    "SX-0092",
+    "SX-0093",
+    "SX-0094",
+    "SX-0095",
+    "SX-0096",
+    "SX-0097",
+    "SX-0098",
+    "SX-0099",
+    "SX-0100",
+    "SX-0101",
+    "SX-0102",
+    "SX-0103",
+    "SX-0104",
+    "SX-0105",
+    "SX-0106",
+    "SX-0107",
+    "SX-0108",
+    "SX-0109",
+    "SX-0110",
+    "SX-0111",
+    "SX-0112",
+    "SX-0113",
+    "SX-0114",
+    "SX-0115",
+    "SX-0116",
+    "SX-0117",
+    "SX-0118",
+    "SX-0119",
+    "SX-0120",
+    "SX-0121",
+    "SX-0122",
+    "SX-0123",
+    "SX-0124",
+    "SX-0125",
+    "SX-0126",
+    "SX-0127",
+    "SX-0128",
+    "SX-0129",
+    "SX-0130",
+    "SX-0131",
+    "SX-0132",
+    "SX-0133",
+    "SX-0134",
+    "SX-0135",
+    "SX-0136",
+    "SX-0137",
+    "SX-0138",
+    "SX-0139",
+    "SX-0140",
+    "SX-0141",
+    "SX-0142",
+    "SX-0143",
+    "SX-0144",
+    "SX-0145",
+    "SX-0146",
+    "SX-0147",
+    "SX-0148",
+    "SX-0149",
+    "SX-0150",
+    "SX-0151",
+    "SX-0152",
+    "SX-0153",
+    "SX-0154",
+    "SX-0155",
+    "SX-0156",
+    "SX-0157",
+    "SX-0158",
+    "SX-0159",
+    "SX-0160",
+    "SX-0161",
+    "SX-0162",
+    "SX-0163",
+    "SX-0164",
+    "SX-0165",
+    "SX-0166",
+    "SX-0167",
+    "SX-0168",
+    "SX-0169",
+    "SX-0170",
+    "SX-0171",
+    "SX-0172",
+    "SX-0173",
+    "SX-0174",
+    "SX-0175",
+    "SX-0176",
+    "SX-0177",
+    "SX-0178",
+    "SX-0179",
+    "SX-0180",
+    "SX-0181",
+    "SX-0182",
+    "SX-0183",
+    "SX-0184",
+    "SX-0185",
+    "SX-0186",
+    "SX-0187",
+    "SX-0188",
+    "SX-0189",
+    "SX-0190",
+    "SX-0191",
+    "SX-0192",
+    "SX-0193",
+    "SX-0194",
+    "SX-0195",
+    "SX-0196",
+    "SX-0197",
+    "SX-0198",
+    "SX-0199",
+    "SX-0200",
+    "SX-0201",
+    "SX-0202",
+    "SX-0203",
+    "SX-0204",
+    "SX-0205",
+    "SX-0206",
+    "SX-0207",
+    "SX-0208",
+    "SX-0209",
+    "SX-0210",
+    "SX-0211",
+    "SX-0212",
+    "SX-0213",
+    "SX-0214",
+    "SX-0215",
+    "SX-0216",
+    "SX-0217",
+    "SX-0218",
+    "SX-0219",
+    "SX-0220",
+    "SX-0221",
+    "SX-0222",
+    "SX-0223",
+    "SX-0224",
+    "SX-0225",
+    "SX-0226",
+    "SX-0227",
+    "SX-0228",
+    "SX-0229",
+    "SX-0230",
+    "SX-0231",
+    "SX-0232",
+    "SX-0233",
+    "SX-0234",
+    "SX-0235",
+    "SX-0236",
+    "SX-0237",
+    "SX-0238",
+    "SX-0239",
+    "SX-0240",
+    "SX-0241",
+    "SX-0242",
+    "SX-0243",
+    "SX-0244",
+    "SX-0245",
+    "SX-0246",
+    "SX-0247",
+    "SX-0248",
+    "SX-0249",
+    "SX-0250",
+    "SX-0251",
+    "SX-0252",
+    "SX-0253",
+    "SX-0254",
+    "SX-0255",
+    "SX-0256",
+    "SX-0257",
+    "SX-0258",
+    "SX-0259",
+    "SX-0260",
+    "SX-0261",
+    "SX-0262",
+    "SX-0263",
+    "SX-0264",
+    "SX-0265",
+    "SX-0266",
+    "SX-0267",
+    "SX-0268",
+    "SX-0269",
+    "SX-0270",
+    "SX-0271",
+    "SX-0272",
+    "SX-0273",
+    "SX-0274",
+    "SX-0275",
+    "SX-0276",
+    "SX-0277",
+    "SX-0278",
+    "SX-0279",
+    "SX-0280",
+    "SX-0281",
+    "SX-0282",
+    "SX-0283",
+    "SX-0284",
+    "SX-0285",
+    "SX-0286",
+    "SX-0287",
+    "SX-0288",
+    "SX-0289",
+    "SX-0290",
+    "SX-0291",
+    "SX-0292",
+    "SX-0293",
+    "SX-0294",
+    "SX-0295",
+    "SX-0296",
+    "SX-0297",
+    "SX-0298",
+    "SX-0299",
+    "SX-0300",
+    "SX-0301",
+    "SX-0302",
+    "SX-0303",
+    "SX-0304",
+    "SX-0305",
+    "SX-0306",
+    "SX-0307",
+    "SX-0308",
+    "SX-0309",
+    "SX-0310",
+    "SX-0311",
+    "SX-0312",
+    "SX-0313",
+    "SX-0314",
+    "SX-0315",
+    "SX-0316",
+    "SX-0317",
+    "SX-0318",
+    "SX-0319",
+    "SX-0320",
+    "SX-0321",
+    "SX-0322",
+    "SX-0323",
+    "SX-0324",
+    "SX-0325",
+    "SX-0326",
+    "SX-0327",
+    "SX-0328",
+    "SX-0329",
+    "SX-0330",
+    "SX-0331",
+    "SX-0332",
+    "SX-0333",
+    "SX-0334",
+    "SX-0335",
+    "SX-0336",
+    "SX-0337",
+    "SX-0338",
+    "SX-0339",
+    "SX-0340",
+    "SX-0341",
+    "SX-0342",
+    "SX-0343",
+    "SX-0344",
+    "SX-0345",
+    "SX-0346",
+    "SX-0347",
+    "SX-0348",
+    "SX-0349",
+    "SX-0350",
+    "SX-0351",
+    "SX-0352",
+    "SX-0353",
+    "SX-0354",
+    "SX-0355",
+    "SX-0356",
+    "SX-0357",
+    "SX-0358",
+    "SX-0359",
+    "SX-0360",
+    "SX-0361",
+    "SX-0362",
+    "SX-0363",
+    "SX-0364",
+    "SX-0365",
+    "SX-0366",
+    "SX-0367",
+    "SX-0368",
+    "SX-0369",
+    "SX-0370",
+    "SX-0371",
+    "SX-0372",
+    "SX-0373",
+    "SX-0374",
+    "SX-0375",
+    "SX-0376",
+    "SX-0377",
+    "SX-0378",
+    "SX-0379",
+    "SX-0380",
+    "SX-0381",
+    "SX-0382",
+    "SX-0383",
+    "SX-0384",
+    "SX-0385",
+    "SX-0386",
+    "SX-0387",
+    "SX-0388",
+    "SX-0389",
+    "SX-0390",
+    "SX-0391",
+    "SX-0392",
+    "SX-0393",
+    "SX-0394",
+    "SX-0395",
+    "SX-0396",
+    "SX-0397",
+    "SX-0398",
+    "SX-0399",
+    "SX-0400",
+    "SX-0401",
+    "SX-0402",
+    "SX-0403",
+    "SX-0404",
+    "SX-0405",
+    "SX-0406",
+    "SX-0407",
+    "SX-0408",
+    "SX-0409",
+    "SX-0410",
+    "SX-0411",
+    "SX-0412",
+    "SX-0413",
+    "SX-0414",
+    "SX-0415",
+    "SX-0416",
+    "SX-0417",
+    "SX-0418",
+    "SX-0419",
+    "SX-0420",
+    "SX-0421",
+    "SX-0422",
+    "SX-0423",
+    "SX-0424",
+    "SX-0425",
+    "SX-0426",
+    "SX-0427",
+    "SX-0428",
+    "SX-0429",
+    "SX-0430",
+    "SX-0431",
+    "SX-0432",
+    "SX-0433",
+    "SX-0434",
+    "SX-0435",
+    "SX-0436",
+    "SX-0437",
+    "SX-0438",
+    "SX-0439",
+    "SX-0440",
+    "SX-0441",
+    "SX-0442",
+    "SX-0443",
+    "SX-0444",
+    "SX-0445",
+    "SX-0446",
+    "SX-0447",
+    "SX-0448",
+    "SX-0449",
+    "SX-0450",
+    "SX-0451",
+    "SX-0452",
+    "SX-0453",
+    "SX-0454",
+    "SX-0455",
+    "SX-0456",
+    "SX-0457",
+    "SX-0458",
+    "SX-0459",
+    "SX-0460",
+    "SX-0461",
+    "SX-0462",
+    "SX-0463",
+    "SX-0464",
+    "SX-0465",
+    "SX-0466",
+    "SX-0467",
+    "SX-0468",
+    "SX-0469",
+    "SX-0470",
+    "SX-0471",
+    "SX-0472",
+    "SX-0473",
+    "SX-0474",
+    "SX-0475",
+    "SX-0476",
+    "SX-0477",
+    "SX-0478",
+    "SX-0479",
+    "SX-0480",
+    "SX-0481",
+    "SX-0482",
+    "SX-0483",
+    "SX-0484",
+    "SX-0485",
+    "SX-0486",
+    "SX-0487",
+    "SX-0488",
+    "SX-0489",
+    "SX-0490",
+    "SX-0491",
+    "SX-0492",
+    "SX-0493",
+    "SX-0494",
+    "SX-0495",
+    "SX-0496",
+    "SX-0497",
+    "SX-0498",
+    "SX-0499",
+    "SX-0500",
+    "SX-0501",
+    "SX-0502",
+    "SX-0503",
+    "SX-0504",
+    "SX-0505",
+    "SX-0506",
+    "SX-0507",
+    "SX-0508",
+    "SX-0509",
+    "SX-0510",
+    "SX-0511",
+    "SX-0512",
+    "SX-0513",
+    "SX-0514",
+    "SX-0515",
+    "SX-0516",
+    "SX-0517",
+    "SX-0518",
+    "SX-0519",
+    "SX-0520",
+    "SX-0521",
+    "SX-0522",
+    "SX-0523",
+    "SX-0524",
+    "SX-0525",
+    "SX-0526",
+    "SX-0527",
+    "SX-0528",
+    "SX-0529",
+    "SX-0530",
+    "SX-0531",
+    "SX-0532",
+    "SX-0533",
+    "SX-0534",
+    "SX-0535",
+    "SX-0536",
+    "SX-0537",
+    "SX-0538",
+    "SX-0539",
+    "SX-0540",
+    "SX-0541",
+    "SX-0542",
+    "SX-0543",
+    "SX-0544",
+    "SX-0545",
+    "SX-0546",
+    "SX-0547",
+    "SX-0548",
+    "SX-0549",
+    "SX-0550",
+    "SX-0551",
+    "SX-0552",
+    "SX-0553",
+    "SX-0554",
+    "SX-0555",
+    "SX-0556",
+    "SX-0557",
+    "SX-0558",
+    "SX-0559",
+    "SX-0560",
+    "SX-0561",
+    "SX-0562",
+    "SX-0563",
+    "SX-0564",
+    "SX-0565",
+    "SX-0566",
+    "SX-0567",
+    "SX-0568",
+    "SX-0569",
+    "SX-0570",
+    "SX-0571",
+    "SX-0572",
+    "SX-0573",
+    "SX-0574",
+    "SX-0575",
+    "SX-0576",
+    "SX-0577",
+    "SX-0578",
+    "SX-0579",
+    "SX-0580",
+    "SX-0581",
+    "SX-0582",
+    "SX-0583",
+    "SX-0584",
+    "SX-0585",
+    "SX-0586",
+    "SX-0587",
+    "SX-0588",
+    "SX-0589",
+    "SX-0590",
+    "SX-0591",
+    "SX-0592",
+    "SX-0593",
+    "SX-0594",
+    "SX-0595",
+    "SX-0596",
+    "SX-0597",
+    "SX-0598",
+    "SX-0599",
+    "SX-0600",
+    "SX-0601",
+    "SX-0602",
+    "SX-0603",
+    "SX-0604",
+    "SX-0605",
+    "SX-0606",
+    "SX-0607",
+    "SX-0608",
+    "SX-0609",
+    "SX-0610",
+    "SX-0611",
+    "SX-0612",
+    "SX-0613",
+    "SX-0614",
+    "SX-0615",
+    "SX-0616",
+    "SX-0617",
+    "SX-0618",
+    "SX-0619",
+    "SX-0620",
+    "SX-0621",
+    "SX-0622",
+    "SX-0623",
+    "SX-0624",
+    "SX-0625",
+    "SX-0626",
+    "SX-0627",
+    "SX-0628",
+    "SX-0629",
+    "SX-0630",
+    "SX-0631",
+    "SX-0632",
+    "SX-0633",
+    "SX-0634",
+    "SX-0635",
+    "SX-0636",
+    "SX-0637",
+    "SX-0638",
+    "SX-0639",
+    "SX-0640",
+    "SX-0641",
+    "SX-0642",
+    "SX-0643",
+    "SX-0644",
+    "SX-0645",
+    "SX-0646",
+    "SX-0647",
+    "SX-0648",
+    "SX-0649",
+    "SX-0650",
+    "SX-0651",
+    "SX-0652",
+    "SX-0653",
+    "SX-0654",
+    "SX-0655",
+    "SX-0656",
+    "SX-0657",
+    "SX-0658",
+    "SX-0659",
+    "SX-0660",
+    "SX-0661",
+    "SX-0662",
+    "SX-0663",
+    "SX-0664",
+    "SX-0665",
+    "SX-0666",
+    "SX-0667",
+    "SX-0668",
+    "SX-0669",
+    "SX-0670",
+    "SX-0671",
+    "SX-0672",
+    "SX-0673",
+    "SX-0674",
+    "SX-0675",
+    "SX-0676",
+    "SX-0677",
+    "SX-0678",
+    "SX-0679",
+    "SX-0680",
+    "SX-0681",
+    "SX-0682",
+    "SX-0683",
+    "SX-0684",
+    "SX-0685",
+    "SX-0686",
+    "SX-0687",
+    "SX-0688",
+    "SX-0689",
+    "SX-0690",
+    "SX-0691",
+    "SX-0692",
+    "SX-0693",
+    "SX-0694",
+    "SX-0695",
+    "SX-0696",
+    "SX-0697",
+    "SX-0698",
+    "SX-0699",
+    "SX-0700",
+    "SX-0701",
+    "SX-0702",
+    "SX-0703",
+    "SX-0704",
+    "SX-0705",
+    "SX-0706",
+    "SX-0707",
+    "SX-0708",
+    "SX-0709",
+    "SX-0710",
+    "SX-0711",
+    "SX-0712",
+    "SX-0713",
+    "SX-0714",
+    "SX-0715",
+    "SX-0716",
+    "SX-0717",
+    "SX-0718",
+    "SX-0719",
+    "SX-0720",
+    "SX-0721",
+    "SX-0722",
+    "SX-0723",
+    "SX-0724",
+    "SX-0725",
+    "SX-0726",
+    "SX-0727",
+    "SX-0728",
+    "SX-0729",
+    "SX-0730",
+    "SX-0731",
+    "SX-0732",
+    "SX-0733",
+    "SX-0734",
+    "SX-0735",
+    "SX-0736",
+    "SX-0737",
+    "SX-0738",
+    "SX-0739",
+    "SX-0740",
+    "SX-0741",
+    "SX-0742",
+    "SX-0743",
+    "SX-0744",
+    "SX-0745",
+    "SX-0746",
+    "SX-0747",
+    "SX-0748",
+    "SX-0749",
+    "SX-0750",
+    "SX-0751",
+    "SX-0752",
+    "SX-0753",
+    "SX-0754",
+    "SX-0755",
+    "SX-0756",
+    "SX-0757",
+    "SX-0758",
+    "SX-0759",
+    "SX-0760",
+    "SX-0761",
+    "SX-0762",
+    "SX-0763",
+    "SX-0764",
+    "SX-0765",
+    "SX-0766",
+    "SX-0767",
+    "SX-0768",
+    "SX-0769",
+    "SX-0770",
+    "SX-0771",
+    "SX-0772",
+    "SX-0773",
+    "SX-0774",
+    "SX-0775",
+    "SX-0776",
+    "SX-0777",
+    "SX-0778",
+    "SX-0779",
+    "SX-0780",
+    "SX-0781",
+    "SX-0782",
+    "SX-0783",
+    "SX-0784",
+    "SX-0785",
+    "SX-0786",
+    "SX-0787",
+    "SX-0788",
+    "SX-0789",
+    "SX-0790",
+    "SX-0791",
+    "SX-0792",
+    "SX-0793",
+    "SX-0794",
+    "SX-0795",
+    "SX-0796",
+    "SX-0797",
+    "SX-0798",
+    "SX-0799",
+    "SX-0800",
+    "SX-0801",
+    "SX-0802",
+    "SX-0803",
+    "SX-0804",
+    "SX-0805",
+    "SX-0806",
+    "SX-0807",
+    "SX-0808",
+    "SX-0809",
+    "SX-0810",
+    "SX-0811",
+    "SX-0812",
+    "SX-0813",
+    "SX-0814",
+    "SX-0815",
+    "SX-0816",
+    "SX-0817",
+    "SX-0818",
+    "SX-0819",
+    "SX-0820",
+    "SX-0821",
+    "SX-0822",
+    "SX-0823",
+    "SX-0824",
+    "SX-0825",
+    "SX-0826",
+    "SX-0827",
+    "SX-0828",
+    "SX-0829",
+    "SX-0830",
+    "SX-0831",
+    "SX-0832",
+    "SX-0833",
+    "SX-0834",
+    "SX-0835",
+    "SX-0836",
+    "SX-0837",
+    "SX-0838",
+    "SX-0839",
+    "SX-0840",
+    "SX-0841",
+    "SX-0842",
+    "SX-0843",
+    "SX-0844",
+    "SX-0845",
+    "SX-0846",
+    "SX-0847",
+    "SX-0848",
+    "SX-0849",
+    "SX-0850",
+    "SX-0851",
+    "SX-0852",
+    "SX-0853",
+    "SX-0854",
+    "SX-0855",
+    "SX-0856",
+    "SX-0857",
+    "SX-0858",
+    "SX-0859",
+    "SX-0860",
+    "SX-0861",
+    "SX-0862",
+    "SX-0863",
+    "SX-0864",
+    "SX-0865",
+    "SX-0866",
+    "SX-0867",
+    "SX-0868",
+    "SX-0869",
+    "SX-0870",
+    "SX-0871",
+    "SX-0872",
+    "SX-0873",
+    "SX-0874",
+    "SX-0875",
+    "SX-0876",
+    "SX-0877",
+    "SX-0878",
+    "SX-0879",
+    "SX-0880",
+    "SX-0881",
+    "SX-0882",
+    "SX-0883",
+    "SX-0884",
+    "SX-0885",
+    "SX-0886",
+    "SX-0887",
+    "SX-0888",
+    "SX-0889",
+    "SX-0890",
+    "SX-0891",
+    "SX-0892",
+    "SX-0893",
+    "SX-0894",
+    "SX-0895",
+    "SX-0896",
+    "SX-0897",
+    "SX-0898",
+    "SX-0899",
+    "SX-0900",
+    "SX-0901",
+    "SX-0902",
+    "SX-0903",
+    "SX-0904",
+    "SX-0905",
+    "SX-0906",
+    "SX-0907",
+    "SX-0908",
+    "SX-0909",
+    "SX-0910",
+    "SX-0911",
+    "SX-0912",
+    "SX-0913",
+    "SX-0914",
+    "SX-0915",
+    "SX-0916",
+    "SX-0917",
+    "SX-0918",
+    "SX-0919",
+    "SX-0920",
+    "SX-0921",
+    "SX-0922",
+    "SX-0923",
+    "SX-0924",
+    "SX-0925",
+    "SX-0926",
+    "SX-0927",
+    "SX-0928",
+    "SX-0929",
+    "SX-0930",
+    "SX-0931",
+    "SX-0932",
+    "SX-0933",
+    "SX-0934",
+    "SX-0935",
+    "SX-0936",
+    "SX-0937",
+    "SX-0938",
+    "SX-0939",
+    "SX-0940",
+    "SX-0941",
+    "SX-0942",
+    "SX-0943",
+    "SX-0944",
+    "SX-0945",
+    "SX-0946",
+    "SX-0947",
+    "SX-0948",
+    "SX-0949",
+    "SX-0950",
+    "SX-0951",
+    "SX-0952",
+    "SX-0953",
+    "SX-0954",
+    "SX-0955",
+    "SX-0956",
+    "SX-0957",
+    "SX-0958",
+    "SX-0959",
+    "SX-0960",
+    "SX-0961",
+    "SX-0962",
+    "SX-0963",
+    "SX-0964",
+    "SX-0965",
+    "SX-0966",
+    "SX-0967",
+    "SX-0968",
+    "SX-0969",
+    "SX-0970",
+    "SX-0971",
+    "SX-0972",
+    "SX-0973",
+    "SX-0974",
+    "SX-0975",
+    "SX-0976",
+    "SX-0977",
+    "SX-0978",
+    "SX-0979",
+    "SX-0980",
+    "SX-0981",
+    "SX-0982",
+    "SX-0983",
+    "SX-0984",
+    "SX-0985",
+    "SX-0986",
+    "SX-0987",
+    "SX-0988",
+    "SX-0989",
+    "SX-0990",
+    "SX-0991",
+    "SX-0992",
+    "SX-0993",
+    "SX-0994",
+    "SX-0995",
+    "SX-0996",
+    "SX-0997",
+    "SX-0998",
+    "SX-0999",
+    "SX-1000",
+    "SX-1001",
+    "SX-1002",
+    "SX-1003",
+    "SX-1004",
+    "SX-1005",
+    "SX-1006",
+    "SX-1007",
+    "SX-1008",
+    "SX-1009",
+    "SX-1010",
+    "SX-1011",
+    "SX-1012",
+    "SX-1013",
+    "SX-1014",
+    "SX-1015",
+    "SX-1016",
+    "SX-1017",
+    "SX-1018",
+    "SX-1019",
+    "SX-1020",
+    "SX-1021",
+    "SX-1022",
+    "SX-1023",
+    "SX-1024",
+    "SX-1025",
+    "SX-1026",
+    "SX-1027",
+    "SX-1028",
+    "SX-1029",
+    "SX-1030",
+    "SX-1031",
+    "SX-1032",
+    "SX-1033",
+    "SX-1034",
+    "SX-1035",
+    "SX-1036",
+    "SX-1037",
+    "SX-1038",
+    "SX-1039",
+    "SX-1040",
+    "SX-1041",
+    "SX-1042",
+    "SX-1043",
+    "SX-1044",
+    "SX-1045",
+    "SX-1046",
+    "SX-1047",
+    "SX-1048",
+    "SX-1049",
+    "SX-1050",
+    "SX-1051",
+    "SX-1052",
+    "SX-1053",
+    "SX-1054",
+    "SX-1055",
+    "SX-1056",
+    "SX-1057",
+    "SX-1058",
+    "SX-1059",
+    "SX-1060",
+    "SX-1061",
+    "SX-1062",
+    "SX-1063",
+    "SX-1064",
+    "SX-1065",
+    "SX-1066",
+    "SX-1067",
+    "SX-1068",
+    "SX-1069",
+    "SX-1070",
+    "SX-1071",
+    "SX-1072",
+    "SX-1073",
+    "SX-1074",
+    "SX-1075",
+    "SX-1076",
+    "SX-1077",
+    "SX-1078",
+    "SX-1079",
+    "SX-1080",
+    "SX-1081",
+    "SX-1082",
+    "SX-1083",
+    "SX-1084",
+    "SX-1085",
+    "SX-1086",
+    "SX-1087",
+    "SX-1088",
+    "SX-1089",
+    "SX-1090",
+    "SX-1091",
+    "SX-1092",
+    "SX-1093",
+    "SX-1094",
+    "SX-1095",
+    "SX-1096",
+    "SX-1097",
+    "SX-1098",
+    "SX-1099",
+    "SX-1100",
+    "SX-1101",
+    "SX-1102",
+    "SX-1103",
+    "SX-1104",
+    "SX-1105",
+    "SX-1106",
+    "SX-1107",
+    "SX-1108",
+    "SX-1109",
+    "SX-1110",
+    "SX-1111",
+    "SX-1112",
+    "SX-1113",
+    "SX-1114",
+    "SX-1115",
+    "SX-1116",
+    "SX-1117",
+    "SX-1118",
+    "SX-1119",
+    "SX-1120",
+    "SX-1121",
+    "SX-1122",
+    "SX-1123",
+    "SX-1124",
+    "SX-1125",
+    "SX-1126",
+    "SX-1127",
+    "SX-1128",
+    "SX-1129",
+    "SX-1130",
+    "SX-1131",
+    "SX-1132",
+    "SX-1133",
+    "SX-1134",
+    "SX-1135",
+    "SX-1136",
+    "SX-1137",
+    "SX-1138",
+    "SX-1139",
+    "SX-1140",
+    "SX-1141",
+    "SX-1142",
+    "SX-1143",
+    "SX-1144",
+    "SX-1145",
+    "SX-1146",
+    "SX-1147",
+    "SX-1148",
+    "SX-1149",
+    "SX-1150",
+    "SX-1151",
+    "SX-1152",
+    "SX-1153",
+    "SX-1154",
+    "SX-1155",
+    "SX-1156",
+    "SX-1157",
+    "SX-1158",
+    "SX-1159",
+    "SX-1160",
+    "SX-1161",
+    "SX-1162",
+    "SX-1163",
+    "SX-1164",
+    "SX-1165",
+    "SX-1166",
+    "SX-1167",
+    "SX-1168",
+    "SX-1169",
+    "SX-1170",
+    "SX-1171",
+    "SX-1172",
+    "SX-1173",
+    "SX-1174",
+    "SX-1175",
+    "SX-1176",
+    "SX-1177",
+    "SX-1178",
+    "SX-1179",
+    "SX-1180",
+    "SX-1181",
+    "SX-1182",
+    "SX-1183",
+    "SX-1184",
+    "SX-1185",
+    "SX-1186",
+    "SX-1187",
+    "SX-1188",
+    "SX-1189",
+    "SX-1190",
+    "SX-1191",
+    "SX-1192",
+    "SX-1193",
+    "SX-1194",
+    "SX-1195",
+    "SX-1196",
+    "SX-1197",
+    "SX-1198",
+    "SX-1199",
+    "SX-1200",
+    "SX-1201",
+    "SX-1202",
+    "SX-1203",
+    "SX-1204",
+    "SX-1205",
+    "SX-1206",
+    "SX-1207",
+    "SX-1208",
+    "SX-1209",
+    "SX-1210",
+    "SX-1211",
+    "SX-1212",
+    "SX-1213",
+    "SX-1214",
+    "SX-1215",
+    "SX-1216",
+    "SX-1217",
+    "SX-1218",
+    "SX-1219",
+    "SX-1220",
+    "SX-1221",
+    "SX-1222",
+    "SX-1223",
+    "SX-1224",
+    "SX-1225",
+    "SX-1226",
+    "SX-1227",
+    "SX-1228",
+    "SX-1229",
+    "SX-1230",
+    "SX-1231",
+    "SX-1232",
+    "SX-1233",
+    "SX-1234",
+    "SX-1235",
+    "SX-1236",
+    "SX-1237",
+    "SX-1238",
+    "SX-1239",
+    "SX-1240",
+    "SX-1241",
+    "SX-1242",
+    "SX-1243",
+    "SX-1244",
+    "SX-1245",
+    "SX-1246",
+    "SX-1247",
+    "SX-1248",
+    "SX-1249",
+    "SX-1250",
+    "SX-1251",
+    "SX-1252",
+    "SX-1253",
+    "SX-1254",
+    "SX-1255",
+    "SX-1256",
+    "SX-1257",
+    "SX-1258",
+    "SX-1259",
+    "SX-1260",
+    "SX-1261",
+    "SX-1262",
+    "SX-1263",
+    "SX-1264",
+    "SX-1265",
+    "SX-1266",
+    "SX-1267",
+    "SX-1268",
+    "SX-1269",
+    "SX-1270",
+    "SX-1271",
+    "SX-1272",
+    "SX-1273",
+    "SX-1274",
+    "SX-1275",
+    "SX-1276",
+    "SX-1277",
+    "SX-1278",
+    "SX-1279",
+    "SX-1280",
+    "SX-1281",
+    "SX-1282",
+    "SX-1283",
+    "SX-1284",
+    "SX-1285",
+    "SX-1286",
+    "SX-1287",
+    "SX-1288",
+    "SX-1289",
+    "SX-1290",
+    "SX-1291",
+    "SX-1292",
+    "SX-1293",
+    "SX-1294",
+    "SX-1295",
+    "SX-1296",
+    "SX-1297",
+    "SX-1298",
+    "SX-1299",
+    "SX-1300",
+    "SX-1301",
+    "SX-1302",
+    "SX-1303",
+    "SX-1304",
+    "SX-1305",
+    "SX-1306",
+    "SX-1307",
+    "SX-1308",
+    "SX-1309",
+    "SX-1310",
+    "SX-1311",
+    "SX-1312",
+    "SX-1313",
+    "SX-1314",
+    "SX-1315",
+    "SX-1316",
+    "SX-1317",
+    "SX-1318",
+    "SX-1319",
+    "SX-1320",
+    "SX-1321",
+    "SX-1322",
+    "SX-1323",
+    "SX-1324",
+    "SX-1325",
+    "SX-1326",
+    "SX-1327",
+    "SX-1328",
+    "SX-1329",
+    "SX-1330",
+    "SX-1331",
+    "SX-1332",
+    "SX-1333",
+    "SX-1334",
+    "SX-1335",
+    "SX-1336",
+    "SX-1337",
+    "SX-1338",
+    "SX-1339",
+    "SX-1340",
+    "SX-1341",
+    "SX-1342",
+    "SX-1343",
+    "SX-1344",
+    "SX-1345",
+    "SX-1346",
+    "SX-1347",
+    "SX-1348",
+    "SX-1349",
+    "SX-1350",
+    "SX-1351",
+    "SX-1352",
+    "SX-1353",
+    "SX-1354",
+    "SX-1355",
+    "SX-1356",
+    "SX-1357",
+    "SX-1358",
+    "SX-1359",
+    "SX-1360",
+    "SX-1361",
+    "SX-1362",
+    "SX-1363",
+    "SX-1364",
+    "SX-1365",
+    "SX-1366",
+    "SX-1367",
+    "SX-1368",
+    "SX-1369",
+    "SX-1370",
+    "SX-1371",
+    "SX-1372",
+    "SX-1373",
+    "SX-1374",
+    "SX-1375",
+    "SX-1376",
+    "SX-1377",
+    "SX-1378",
+    "SX-1379",
+    "SX-1380",
+    "SX-1381",
+    "SX-1382",
+    "SX-1383",
+    "SX-1384",
+    "SX-1385",
+    "SX-1386",
+    "SX-1387",
+    "SX-1388",
+    "SX-1389",
+    "SX-1390",
+    "SX-1391",
+    "SX-1392",
+    "SX-1393",
+    "SX-1394",
+    "SX-1395",
+    "SX-1396",
+    "SX-1397",
+    "SX-1398",
+    "SX-1399",
+    "SX-1400",
+    "SX-1401",
+    "SX-1402",
+    "SX-1403",
+    "SX-1404",
+    "SX-1405",
+    "SX-1406",
+    "SX-1407",
+    "SX-1408",
+    "SX-1409",
+    "SX-1410",
+    "SX-1411",
+    "SX-1412",
+    "SX-1413",
+    "SX-1414",
+    "SX-1415",
+    "SX-1416",
+    "SX-1417",
+    "SX-1418",
+    "SX-1419",
+    "SX-1420",
+    "SX-1421",
+    "SX-1422",
+    "SX-1423",
+    "SX-1424",
+    "SX-1425",
+    "SX-1426",
+    "SX-1427",
+    "SX-1428",
+    "SX-1429"
+  ],
+  "chapter_item_ids": {
+    "1162": [
+      "SX-1322",
+      "SX-1323"
+    ],
+    "1163": [
+      "SX-1324",
+      "SX-1325",
+      "SX-1326"
+    ],
+    "1164": [
+      "SX-1327",
+      "SX-1328",
+      "SX-1329"
+    ],
+    "1165": [
+      "SX-1330",
+      "SX-1331",
+      "SX-1332"
+    ],
+    "1166": [
+      "SX-1333"
+    ],
+    "1167": [
+      "SX-1334"
+    ],
+    "1169": [
+      "SX-1335",
+      "SX-1336"
+    ],
+    "1170": [
+      "SX-1337"
+    ],
+    "1171": [
+      "SX-1338",
+      "SX-1339"
+    ],
+    "1173": [
+      "SX-1340",
+      "SX-1341"
+    ],
+    "1174": [
+      "SX-1342",
+      "SX-1343",
+      "SX-1344",
+      "SX-1345",
+      "SX-1346"
+    ],
+    "1175": [
+      "SX-1347"
+    ],
+    "1176": [
+      "SX-1348",
+      "SX-1349"
+    ],
+    "1177": [
+      "SX-1350"
+    ],
+    "1178": [
+      "SX-1351"
+    ],
+    "1179": [
+      "SX-1352"
+    ],
+    "1181": [
+      "SX-1353",
+      "SX-1354",
+      "SX-1355",
+      "SX-1356",
+      "SX-1357",
+      "SX-1358",
+      "SX-1359",
+      "SX-1360",
+      "SX-1361",
+      "SX-1362",
+      "SX-1363",
+      "SX-1364",
+      "SX-1365",
+      "SX-1366",
+      "SX-1367",
+      "SX-1368",
+      "SX-1369",
+      "SX-1370",
+      "SX-1371",
+      "SX-1372"
+    ],
+    "1182": [
+      "SX-1373",
+      "SX-1374",
+      "SX-1375"
+    ],
+    "1183": [
+      "SX-1376",
+      "SX-1377",
+      "SX-1378",
+      "SX-1379",
+      "SX-1380"
+    ],
+    "1188": [
+      "SX-1381"
+    ],
+    "1199": [
+      "SX-1382"
+    ],
+    "1200": [
+      "SX-1383",
+      "SX-1384"
+    ],
+    "1201": [
+      "SX-1385"
+    ],
+    "1207": [
+      "SX-1386",
+      "SX-1387"
+    ],
+    "1212": [
+      "SX-1388"
+    ],
+    "1213": [
+      "SX-1389"
+    ],
+    "1215": [
+      "SX-1390"
+    ],
+    "1216": [
+      "SX-1391"
+    ],
+    "1218": [
+      "SX-1392"
+    ],
+    "1221": [
+      "SX-1393",
+      "SX-1394",
+      "SX-1395"
+    ],
+    "1225": [
+      "SX-1396"
+    ],
+    "1226": [
+      "SX-1397"
+    ],
+    "1228": [
+      "SX-1398"
+    ],
+    "1229": [
+      "SX-1399"
+    ],
+    "1232": [
+      "SX-1400"
+    ],
+    "1233": [
+      "SX-1401"
+    ],
+    "1234": [
+      "SX-1402"
+    ],
+    "1235": [
+      "SX-1403",
+      "SX-1404"
+    ],
+    "1236": [
+      "SX-1405",
+      "SX-1406",
+      "SX-1407",
+      "SX-1408",
+      "SX-1409",
+      "SX-1410",
+      "SX-1411",
+      "SX-1412",
+      "SX-1413",
+      "SX-1414",
+      "SX-1415"
+    ],
+    "1237": [
+      "SX-1416",
+      "SX-1417",
+      "SX-1418",
+      "SX-1419",
+      "SX-1420",
+      "SX-1421"
+    ],
+    "1238": [
+      "SX-1422",
+      "SX-1423",
+      "SX-1424",
+      "SX-1425",
+      "SX-1426"
+    ],
+    "1239": [
+      "SX-1427"
+    ],
+    "1240": [
+      "SX-1428"
+    ],
+    "1241": [
+      "SX-1429"
+    ]
+  },
+  "receipt_groups": {
+    "ROUND_75_STORM_AXE": [
+      "SX-1322",
+      "SX-1323"
+    ],
+    "ROUND_75_MASS_PROMOTION": [
+      "SX-1324",
+      "SX-1325",
+      "SX-1326",
+      "SX-1327"
+    ],
+    "ROUND_75_TRIAL_REWARDS": [
+      "SX-1328",
+      "SX-1329"
+    ],
+    "ROUND_75_GENESIS_SHIELD": [
+      "SX-1330",
+      "SX-1331",
+      "SX-1332"
+    ],
+    "ROUND_75_ABYSS_CAMPAIGN": [
+      "SX-1333",
+      "SX-1334",
+      "SX-1335",
+      "SX-1336",
+      "SX-1337",
+      "SX-1338",
+      "SX-1339"
+    ],
+    "ROUND_76_AILIN_GODS_DESCENT": [
+      "SX-1340",
+      "SX-1341",
+      "SX-1342",
+      "SX-1352",
+      "SX-1353"
+    ],
+    "ROUND_76_ALPHONSE_DROPS": [
+      "SX-1343",
+      "SX-1344",
+      "SX-1345",
+      "SX-1346",
+      "SX-1347"
+    ],
+    "ROUND_76_ABYSS_CAMPAIGN": [
+      "SX-1348",
+      "SX-1349",
+      "SX-1350",
+      "SX-1351"
+    ],
+    "ROUND_76_SS_TASK_REWARDS": [
+      "SX-1354",
+      "SX-1355",
+      "SX-1356",
+      "SX-1357",
+      "SX-1358",
+      "SX-1359",
+      "SX-1360",
+      "SX-1361",
+      "SX-1362",
+      "SX-1363",
+      "SX-1364",
+      "SX-1365",
+      "SX-1366",
+      "SX-1367",
+      "SX-1368"
+    ],
+    "ROUND_76_BREAKTHROUGH_AND_PENDING_CHESTS": [
+      "SX-1369",
+      "SX-1370",
+      "SX-1371",
+      "SX-1372"
+    ],
+    "ROUND_77_CHEST_RESULTS": [
+      "SX-1373",
+      "SX-1374",
+      "SX-1375"
+    ],
+    "ROUND_77_CHOICE_RELICS": [
+      "SX-1376",
+      "SX-1377",
+      "SX-1378",
+      "SX-1379",
+      "SX-1380"
+    ],
+    "ROUND_77_TRIAL_ITEM": [
+      "SX-1381"
+    ],
+    "ROUND_78_GODHEAD_BREAKTHROUGH": [
+      "SX-1382"
+    ],
+    "ROUND_78_DIVINE_SKILL_OUTCOMES": [
+      "SX-1383",
+      "SX-1384"
+    ],
+    "ROUND_78_DIVINE_SKILL_CHEST": [
+      "SX-1385"
+    ],
+    "ROUND_79_GODHEAD_INVENTORY": [
+      "SX-1386"
+    ],
+    "ROUND_79_DIVINE_POWER_CONVERSION": [
+      "SX-1387"
+    ],
+    "ROUND_80_THOR_AND_SOUTHERN_CAMPAIGN": [
+      "SX-1388",
+      "SX-1389",
+      "SX-1390",
+      "SX-1391",
+      "SX-1392"
+    ],
+    "ROUND_80_THIRD_STAGE_EXPANSION": [
+      "SX-1393",
+      "SX-1394",
+      "SX-1395"
+    ],
+    "ROUND_81_DIVINE_KINGDOM_AND_CHILD": [
+      "SX-1396"
+    ],
+    "ROUND_81_GIFTS_AND_EXCHANGE": [
+      "SX-1397",
+      "SX-1398",
+      "SX-1399"
+    ],
+    "ROUND_82_LAKE_GODDESS_SWORD": [
+      "SX-1401"
+    ],
+    "ROUND_82_CODEX_REPAIR_AND_ROBE_BINDING": [
+      "SX-1402",
+      "SX-1403",
+      "SX-1404"
+    ],
+    "ROUND_82_FIRST_SEASON_COIN_CHEST_RESULTS": [
+      "SX-1405",
+      "SX-1406",
+      "SX-1407",
+      "SX-1408",
+      "SX-1409",
+      "SX-1410",
+      "SX-1411",
+      "SX-1412",
+      "SX-1413",
+      "SX-1414",
+      "SX-1415"
+    ],
+    "ROUND_82_ARENA_SEASON_REWARDS": [
+      "SX-1416",
+      "SX-1417",
+      "SX-1418",
+      "SX-1419",
+      "SX-1420",
+      "SX-1421"
+    ],
+    "ROUND_82_SELECTED_CHEST_OUTCOMES": [
+      "SX-1422",
+      "SX-1423",
+      "SX-1424",
+      "SX-1425",
+      "SX-1426"
+    ],
+    "ROUND_82_GATED_TITLE_MENTIONS": [
+      "SX-1427",
+      "SX-1428",
+      "SX-1429"
+    ],
+    "ROUND_82_CLEANER_GODHEAD_RULES": [
+      "SX-1400"
+    ]
+  },
+  "next_item_id": "SX-1430",
+  "next_unprocessed_chapter": 1252,
+  "confirmed_outcomes": [
+    {
+      "chapter": 1182,
+      "title": "心灵之匕，机械师神技！",
+      "outcomes": [
+        "Three SS chest results: Fire God Greatsword to Nika, Mind Dagger bound to Sarah, X-Starry Firmament book held for Tong Chuchu."
+      ]
+    },
+    {
+      "chapter": 1183,
+      "title": "半神器套装，神之终结者！",
+      "outcomes": [
+        "Five relics: Thunder Claw ×1, Ice Beast Heart ×2, Radiant Feather ×1, Wind Spirit Core ×1. Four relics and four held Legendary Hearts evolve four pets; Wind Spirit Core remains.",
+        "Netherlord · God’s Terminator level-200 six-piece semi-artifact set detailed; only chest armor/set effects are profiled here."
+      ]
+    },
+    {
+      "chapter": 1184,
+      "title": "回归！冲击神灵境界！",
+      "outcomes": [
+        "Isabel, Nika and Allen each receive 600 Ice Dragon Crystals (30,000 Divine Power) and begin trials. Cao spends 60,000 Divine Power from a mixed source; split unknown."
+      ]
+    },
+    {
+      "chapter": 1185,
+      "title": "淬炼神性，登神前的考验！",
+      "outcomes": [
+        "The three candidates reach 100% purity and begin trials; Light, Sacred Flame and Wind Godheads are incorporated/consumed."
+      ]
+    },
+    {
+      "chapter": 1186,
+      "title": "大动乱，神灵混战！",
+      "outcomes": [
+        "Awakened gods contest territory and worshippers; no protagonist-side loot confirmed."
+      ]
+    },
+    {
+      "chapter": 1187,
+      "title": "双极神主，成神试炼！",
+      "outcomes": [
+        "Cao begins special trial; failure penalties and 36,500:1 trial time ratio stated."
+      ]
+    },
+    {
+      "chapter": 1188,
+      "title": "你真的了解寒冰…了解自己吗？",
+      "outcomes": [
+        "Crystal Core quest item awarded; Crystal Element Mastery reaches god tier. Mirrored Ice trial begins."
+      ]
+    },
+    {
+      "chapter": 1189,
+      "title": "生死磨砺，最终阶段试炼开启！",
+      "outcomes": [
+        "Mirror defeated; Ice Element Mastery reaches god tier; final ten-year balance trial begins."
+      ]
+    },
+    {
+      "chapter": 1190,
+      "title": "出关！混乱升级！",
+      "outcomes": [
+        "Seven trial years pass; Cao develops coexistence between crystal/chaotic and ice forces. Divine occupation intensifies; no item receipt confirmed."
+      ]
+    },
+    {
+      "chapter": 1191,
+      "title": "四神耀世！肃清动乱！",
+      "outcomes": [
+        "Cao Xing, Isabel, Nika and Allen ascend to divine status; territorial blessing underway; ten teams tasked to suppress gods. Two hostile lower gods captured, with no death/drop confirmed."
+      ]
+    },
+    {
+      "chapter": 1192,
+      "title": "号令诸神，违逆者杀无赦！",
+      "outcomes": [
+        "Cao Xing’s roster is stated as three upper-god combatants and four more gods at peak midgod combat strength; the visible preview truncates before the full list."
+      ]
+    },
+    {
+      "chapter": 1193,
+      "title": "曹星的实力，碾压神灵！",
+      "outcomes": [
+        "Cao’s cold force freezes the ancient vine god’s branches; no item receipt is visible in the accessible preview."
+      ]
+    },
+    {
+      "chapter": 1194,
+      "title": "肃清开始，神陨如雨！",
+      "outcomes": [
+        "The Flame Queen legion’s survivors witness Angelina being coerced; the visible preview also confirms several territory members were killed by a god’s divine威."
+      ]
+    },
+    {
+      "chapter": 1195,
+      "title": "镇杀！最后的混乱源头！",
+      "outcomes": [
+        "Wind God Allen forms a consuming storm eye over the three-headed giant; no item receipt is visible in the accessible preview."
+      ]
+    },
+    {
+      "chapter": 1196,
+      "title": "曹星VS毁灭之神，双规则现世！",
+      "outcomes": [
+        "Valkyrie is struck away by the Destruction God as the gods react; chapter title confirms the dual-rule confrontation."
+      ]
+    },
+    {
+      "chapter": 1197,
+      "title": "斩杀毁灭之神，单挑无敌！",
+      "outcomes": [
+        "Cao reveals that he can fuse two upper-god divinities; title confirms the Destruction God’s death, but drops are not confirmed in the preview."
+      ]
+    },
+    {
+      "chapter": 1198,
+      "title": "诸神臣服，乱世终结！",
+      "outcomes": [
+        "Destruction God’s death is confirmed by blood-rain and the broken Destruction rule; title confirms the gods submit."
+      ]
+    },
+    {
+      "chapter": 1199,
+      "title": "清点战后收获，三大下位神技。",
+      "outcomes": [
+        "Nika fuses the Holy Flame Godhead and transforms into Holy Flame Goddess; her advancement grants the visible stats/mastery/territory effects recorded under SX-1382. Three lower-god techniques are identified as self-created; their review begins next chapter."
+      ]
+    },
+    {
+      "chapter": 1200,
+      "title": "突破神灵奖励，超凡入圣！",
+      "outcomes": [
+        "Nika’s named single-target divine skill and Isabel’s unnamed immortal-phoenix summon skill are partially described; third skill name/effect and exact coefficients are unavailable in the visible preview."
+      ]
+    },
+    {
+      "chapter": 1201,
+      "title": "组合神技——冰临天下！",
+      "outcomes": [
+        "A self-select divine-technique chest offers 1 of 12 lower-god techniques across six classes. Cao selects Frost Mage, revealing two books; the preview ends before a final book choice."
+      ]
+    },
+    {
+      "chapter": 1202,
+      "title": "五枚神格，审讯古神。",
+      "outcomes": [
+        "The title establishes the five-Godhead haul; the accessible official opening is about arena rankings, not the item receipt. Later Ch1207 body confirms five new Godheads in Cao Xing’s backpack; individual names/ranks remain unknown."
+      ]
+    },
+    {
+      "chapter": 1203,
+      "title": "再收三神，特殊的增益技能。",
+      "outcomes": [
+        "The chapter title confirms three more gods join and a special buff skill; visible text opens on interrogation of the captured Vine Ancient God. Exact names and buff mechanics are not available in the preview."
+      ]
+    },
+    {
+      "chapter": 1204,
+      "title": "解封，诺恩圣女苏醒！",
+      "outcomes": [
+        "Zola/Norn Saint, previously believed dead, is stated to have been frozen in the deep-sea ice abyss and later recovered into Cao Xing’s territory; she is now to awaken."
+      ]
+    },
+    {
+      "chapter": 1205,
+      "title": "收服诺恩圣女，领地第一尊上位神！",
+      "outcomes": [
+        "Zola’s divine body and Godhead are described as severely damaged, with cracks involving rule power; Cao Xing promises repair may be possible. No repair item or completed restoration is visible."
+      ]
+    },
+    {
+      "chapter": 1206,
+      "title": "卓拉真神？重返巅峰的方法！",
+      "outcomes": [
+        "The Pale Sacred Tree’s source-tracing ability is described as available once; the chapter discusses restoring Zola but no specific item receipt is visible in the excerpt."
+      ]
+    },
+    {
+      "chapter": 1207,
+      "title": "第五波全体赐福，数十万自爆大军！",
+      "outcomes": [
+        "Cao Xing has five new Godheads in his backpack; three have suitable candidate fusions. A new god needs at least 30,000 Divine Power. One Ice Dragon Crystal restores 50 Divine Power (= five fragments); the similar effect of Wood Crystal is posed as a hypothesis only."
+      ]
+    },
+    {
+      "chapter": 1208,
+      "title": "偿还恩情，远征南大陆！",
+      "outcomes": [
+        "Cao Xing orders nearly 100,000 troops through the cross-region teleportation array and leads an expedition to the South Continent."
+      ]
+    },
+    {
+      "chapter": 1209,
+      "title": "天降女神，让圣焰净化一切！",
+      "outcomes": [
+        "The force arrives at a vast ominous forest with a strong ancient evil presence; no specific loot is visible."
+      ]
+    },
+    {
+      "chapter": 1210,
+      "title": "雷神祸乱，曹星的猎物！",
+      "outcomes": [
+        "Thunder God’s attack breaks the elves’ barrier, destroys many trees and kills/injures many elves; no reward item is confirmed in the visible excerpt."
+      ]
+    },
+    {
+      "chapter": 1211,
+      "title": "风华绝代，南大陆第一女王。",
+      "outcomes": [
+        "The South Continent storyline continues during the thunder crisis; no protagonist-side item receipt is visible in the accessible opening."
+      ]
+    },
+    {
+      "chapter": 1212,
+      "title": "单杀雷神，神格到手！",
+      "outcomes": [
+        "Cao Xing kills Thor; the chapter title confirms one Thunder Godhead obtained. No other exact drops or rank identified."
+      ]
+    },
+    {
+      "chapter": 1213,
+      "title": "雷神法典，为圣女补魔。",
+      "outcomes": [
+        "Thunder God Codex is named and used to replenish a Saint; item acquisition and replenishment amount not established in visible excerpt."
+      ]
+    },
+    {
+      "chapter": 1214,
+      "title": "铁匠突破，半神级锻造师",
+      "outcomes": [
+        "A blacksmith reaches demigod forging level; no item receipt confirmed."
+      ]
+    },
+    {
+      "chapter": 1215,
+      "title": "集齐法典残卷，两处战场的惊人收益",
+      "outcomes": [
+        "Five Legendary Proficiency Emblems confirmed as loot; can promote Francisca to demigod alchemist."
+      ]
+    },
+    {
+      "chapter": 1216,
+      "title": "百万魔法种子，合成神格的途径",
+      "outcomes": [
+        "1.62 million Random Magic Seed Bags; each yields 1–10 seeds, green through legendary, very small chance of demigod seed."
+      ]
+    },
+    {
+      "chapter": 1217,
+      "title": "神级秘药配方",
+      "outcomes": [
+        "God-level potion formula story; handover to Francisca is described in Ch1218 excerpt."
+      ]
+    },
+    {
+      "chapter": 1218,
+      "title": "深夜拜访，女王的请求",
+      "outcomes": [
+        "Cao Xing transfers an unnamed God-level potion formula to Francisca and promises to gather 100 ingredient shares; ingredients are not yet received."
+      ]
+    },
+    {
+      "chapter": 1219,
+      "title": "伯捷之父，血脉融合",
+      "outcomes": [
+        "Bojie’s four bloodlines combine; no item receipt confirmed."
+      ]
+    },
+    {
+      "chapter": 1220,
+      "title": "混沌之神降临，两个月",
+      "outcomes": [
+        "Chaos gods appear and discuss looming threat; no protagonist-side item receipt confirmed."
+      ]
+    },
+    {
+      "chapter": 1221,
+      "title": "第三阶段扩建完工，兵强马壮",
+      "outcomes": [
+        "Wood Crystal can drop from Legendary Resurrected Army; periodic 25-day harvest is worth 30,000 Divine Power; two-month amount about 80,000, no exact crystal count or per-crystal conversion. 9,000 Divine Power Fragments consumed to ascend Andrew, Francisca and Zevelin; about 10,000 Divine Power remains. Andrew’s named skill 狂野之形·原始解放 is visible, effect truncated."
+      ]
+    },
+    {
+      "chapter": 1222,
+      "title": "星火城新政策，激动的平民们！",
+      "outcomes": [
+        "Starfire City housing/work policy presented as major welfare; no item reward in visible preview."
+      ]
+    },
+    {
+      "chapter": 1223,
+      "title": "构建神国，荆棘圣女的体质。",
+      "outcomes": [
+        "Divine kingdom construction begins; Revelation Sacred Stele suppresses space over 1,000 km radius, but Cao Xing can still break the space."
+      ]
+    },
+    {
+      "chapter": 1224,
+      "title": "神国初成，蜕变！",
+      "outcomes": [
+        "Thorn Saint’s constitution can reduce divine-kingdom construction time to one seventh/about one month; construction risks serious injury or death."
+      ]
+    },
+    {
+      "chapter": 1225,
+      "title": "第一个子嗣诞生，天地宠儿。",
+      "outcomes": [
+        "First child born; realm-area-scaled bonuses described, up to 200% attributes and 100% divine damage."
+      ]
+    },
+    {
+      "chapter": 1226,
+      "title": "精灵女王与幽兰女王的礼物。",
+      "outcomes": [
+        "Elf Queen’s Life’s Tears gift is accepted for Xuewei; lower-level use yields better effect, exact function/grade hidden."
+      ]
+    },
+    {
+      "chapter": 1227,
+      "title": "三个女王一台戏",
+      "outcomes": [
+        "Banquet/relationship scene; no item receipt visible."
+      ]
+    },
+    {
+      "chapter": 1228,
+      "title": "兑换巨龙卵，满月庆典开始。",
+      "outcomes": [
+        "Dragon-egg exchange named in title; visible preview does not show quantity, type, price, or completed receipt."
+      ]
+    },
+    {
+      "chapter": 1229,
+      "title": "故人，湖中女神的礼物。",
+      "outcomes": [
+        "Lake Goddess gift event named; object and handover are not visible in opening preview."
+      ]
+    },
+    {
+      "chapter": 1230,
+      "title": "不速之客，盗火者的闯入。",
+      "outcomes": [
+        "Fire Thief arrives at the celebration; no item receipt visible in preview."
+      ]
+    },
+    {
+      "chapter": 1231,
+      "title": "清洗者的‘大礼’，终末之息。",
+      "outcomes": [
+        "Cao Xing probes Fire Thief about the Cleaners; no item handover visible in preview."
+      ]
+    },
+    {
+      "chapter": 1233,
+      "title": "新·湖女之剑与神国扩张",
+      "outcomes": [
+        "The Lake Goddess provides a new sword for Assam; the text states at least +20% battle strength."
+      ]
+    },
+    {
+      "chapter": 1234,
+      "title": "完整的冰雪法典，绑定神器法袍",
+      "outcomes": [
+        "Previously held Ice and Snow Codex completes repair into a complete mid-tier artifact; no new acquisition is claimed."
+      ]
+    },
+    {
+      "chapter": 1235,
+      "title": "神器的隐藏效果，冰龙王族战躯！",
+      "outcomes": [
+        "Snow Burial Star Robe binding adds +400 luck and unlocks large-scale shield state; the shield copies 100% wearer HP/armor/damage reduction and drops below 30% HP."
+      ]
+    },
+    {
+      "chapter": 1236,
+      "title": "第一赛季结束，清点奖励。",
+      "outcomes": [
+        "14,600 Random Ancient Coin Bags opened; coin outputs and mixed chest results recorded with uncertain chest-tier attribution."
+      ]
+    },
+    {
+      "chapter": 1237,
+      "title": "赛事主办权，神级斗兽场。",
+      "outcomes": [
+        "First-season prizes include arena model, 70,000 Dragon Coins and three self-select chests plus Divine Fire and Ancient Redcloud Chest; hosting rights awarded."
+      ]
+    },
+    {
+      "chapter": 1238,
+      "title": "幽影套装集齐，霜之哀伤",
+      "outcomes": [
+        "Three self-select chests yield Shadow Wings, Water Essence and Frostmourne; 70,000 Dragon Coins exchanged into 7,000 bags; repeat War Saint’s Broken Blade receipt for Talia."
+      ]
+    },
+    {
+      "chapter": 1239,
+      "title": "自选半神技，泰坦能源之心。",
+      "outcomes": [
+        "Titan Energy Heart named in chapter title; the next chapter’s preview sees a metallic energy sphere and Tong Chuchu’s interest; no transfer asserted."
+      ]
+    },
+    {
+      "chapter": 1240,
+      "title": "对抗清理者的配方，黄金瞳！",
+      "outcomes": [
+        "Golden Eye and anti-Cleaner formula appear in the chapter title; accessible preview does not expose recipe details."
+      ]
+    },
+    {
+      "chapter": 1241,
+      "title": "兽神之心，冰冰进化",
+      "outcomes": [
+        "Opening identifies Beast God Heart as a bloodline treasure that can unlock ultimate evolution; full mechanics/acquisition not visible."
+      ]
+    },
+    {
+      "chapter": 1232,
+      "title": "必杀目标，融入规则。",
+      "outcomes": [
+        "Accessible opening discusses Cleaner targeting and Godhead/rule integration; no new item reward confirmed."
+      ]
+    },
+    {
+      "chapter": 1232,
+      "title": "必杀目标，融入规则。",
+      "outcomes": [
+        "Accessible opening discusses the Cleaner kill target and remaining Godhead-rule integration; no item receipt confirmed."
+      ]
+    },
+    {
+      "chapter": 1242,
+      "title": "纪元之敌，降临倒计时。",
+      "outcomes": [
+        "TTKS excerpt matched by title shows four named fighters reaching Legendary rank and four prior Legendary members reaching Demigod rank, each gaining abilities/skills. These are progression outcomes, not item receipts.",
+        "Excerpt says Cao Xing still has remaining rewards to process and is collecting materials for an anti-End-Breath potion; no names, quantities, or completed recipe are visible in the captured portion."
+      ]
+    },
+    {
+      "chapter": 1243,
+      "title": "生命古树上的可采集资源。",
+      "outcomes": [
+        "Official QQ preview identifies the Life Ancient Tree as a harvestable-resource site and describes its growth; named outputs and quantities are not visible."
+      ]
+    },
+    {
+      "chapter": 1244,
+      "title": "震撼的上古巨龙，寂灭魔龙血脉！",
+      "outcomes": [
+        "TTKS excerpt matched by title records Ancient Beast Arena rules: standardized level-100 Hero template, limited equipment effects, no consumables, pre-match environment preview, single-elimination to 1024 then best-of-three to 128 and challenge finals, five-player teams with up to two substitutes, two ability/effect bans per side, 10-minute solo/20-minute team limits with timeout scoring, and one gatekeeper revival attempt requiring three minutes survived.",
+        "The same excerpt depicts Bingbing’s destructive transformation eclipsing the sun and ancient dragons discussing the awakened Annihilation Primordial Dragon bloodline. No loot drop is established."
+      ]
+    },
+    {
+      "chapter": 1245,
+      "title": "太古寂灭魔龙，强大的冰冰！",
+      "outcomes": [
+        "Official title confirms Bingbing’s Annihilation Primordial Dragon transformation; detailed stats and any item receipt are not visible."
+      ]
+    },
+    {
+      "chapter": 1246,
+      "title": "一体两面，光暗女神的突破方法。",
+      "outcomes": [
+        "Official title identifies a breakthrough method for the Goddess of Light and Darkness; its materials, costs, and outcome remain unverified."
+      ]
+    },
+    {
+      "chapter": 1247,
+      "title": "哭泣的黑暗魔女。",
+      "outcomes": [
+        "Official title identifies the Dark Witch; no item or reward outcome is established."
+      ]
+    },
+    {
+      "chapter": 1248,
+      "title": "审判之神，战争位面——出发！",
+      "outcomes": [
+        "Official title marks departure for the War Plane and Judgment God. An official preview describes Frostmark Paladin’s advancement to Judgment God; no item acquisition is asserted."
+      ]
+    },
+    {
+      "chapter": 1249,
+      "title": "杀戮乐园，疯狂的战争信徒。",
+      "outcomes": [
+        "Official title identifies the Killing Paradise and war believers. The available opening concerns War Plane entry; it does not show a new teleport-stone acquisition."
+      ]
+    },
+    {
+      "chapter": 1250,
+      "title": "进入旭日王庭的条件。",
+      "outcomes": [
+        "Official title identifies entry conditions for the Sun Court; conditions and any required items are not visible."
+      ]
+    },
+    {
+      "chapter": 1251,
+      "title": "沉眠之渊的隐藏生物！",
+      "outcomes": [
+        "Official title identifies a hidden creature in the Sleeping Abyss; identity, drops, and rewards remain unverified."
+      ]
+    }
+  ],
+  "unresolved_conflicts": [
+    "Ch1163 shipment narration uses rounded quantities while altar system display reports exact consumption values; both are retained rather than normalized.",
+    "Ch1163 shows 97,164 new Hero promotions after 120,000 gather and 25,000 are held back; preserve displayed outcome.",
+    "Vietnamese edition chapter numbering diverges materially: Cơm Nguội and Hắc Hoàng Đại Đế Ch1162 title an ice-statue goddess story, while Xa Lộ Sách local Ch1162 is a split chapter on demigod breakthrough/return to territory. These titles do not establish the Chinese printed Ch1162 story contents or item facts.",
+    "No result is shown for the Abyss battle by Ch1171; no victory/loot should be inferred.",
+    "Ch1174 Alphonse death reward line is visibly truncated after explicit Guardian Godhead, shield and mace; additional drops remain unknown.",
+    "Ch1176 post-Nektar pseudogod reward labels are garbled/duplicated; retain uncertain attribution.",
+    "Ch1175 sword evolution requires 100 divine kills; do not equate that counter with SS mission 100/100.",
+    "Ch1181 staged divine-power fragment entries sum to 3,200, but subsequent narrative says 3,400; both are preserved pending source clarification.",
+    "Vietnamese edition-local chapter numbering/title arcs diverge from Bqquge printed Chinese numbering; no remapping inferred.",
+    "Ch1182 uses 心灵之匕 in the item panel and 心灵之刃 once in the binding prompt; treated as one identity with variant retained.",
+    "Ch1183 profiles the set chest armor and set effects, not the other five piece mechanics.",
+    "Ch1184 does not state the Ice Dragon Crystal/fragment split of Cao Xing’s 60,000 Divine Power expenditure.",
+    "Whether trial mastery abilities are separately transferable/permanent is not established; cataloged as outcomes rather than skill-book receipts.",
+    "Ch1191’s blessing effects and later fates/drops of captured lower gods remain unresolved.",
+    "Vietnamese edition mapping for printed Chinese Chapters 1182–1191 is unverified; no one-to-one local numbering inferred.",
+    "Chapter 1192–1201 third-party Cpxs123 mirror pages contain unrelated scraped novel paragraphs after the first opening lines; used only for matching headings/opening prose, never for later events or receipts.",
+    "Bookresource QQ/Qidian text mirror numbers the same post-battle chapters one below the QQ Reading index in this arc (e.g. “清点战后收获” as Ch1198 vs QQ Reading Ch1199). Crosswalk was made by exact title and story text, not by raw local number.",
+    "The QQ Reading text previews require app/login for continuation. The exact names/mechanics of the other self-created lower-god skill, the final chest selection, and any drops from the slain gods remain unverified.",
+    "The five-Godhead chapter title and Ch1207 backpack count establish five unnamed Godheads, but available previews do not identify types, ranks, receipt origin, or which three are candidates; the ledger keeps one aggregate row.",
+    "The Ch1207 text confirms Ice Dragon Crystal→50 Divine Power, but the analogous Wood Crystal effect is framed as a question and remains unconfirmed.",
+    "The specific identities and mechanics of the Ch1203 three recruited gods and buff, the method/items needed to restore Zola, and the exact fifth blessing effects are not visible in the accessible excerpts.",
+    "Ch1208 mentions a huge expedition; Qidian mirror text says nearly 100,000 troops, while the QQ preview truncates the exact headcount context. Retained as an event only, not item receipt.",
+    "Thor’s exact drop panel/rank beyond the title-confirmed Thunder Godhead, Thunder Codex acquisition scene, Wood Crystal count/per-crystal conversion, God-level formula ingredients/effect, and Andrew skill effect remain unavailable in accessible excerpts.",
+    "Round 81: exact Life’s Tears grade/effect, dragon-egg exchange result/cost/count, Lake Goddess gift contents, divine-kingdom construction inputs, and Cleaners’ 'End Breath' mechanics remain gated. Alternate catalogs diverge in chapter numbering; official QQ Reading governs this round.",
+    "Some mirrors offset chapter labels relative to the official QQ chapter directory. Round 82 uses the printed titles in the QQ Reading/QQ book catalog (turn409view0 lines 72–81); alternative text pages are matched by exact title rather than mirror-local number.",
+    "Round 83 full-text access is incomplete. TTKS pages matched by exact title exposed captured text for Ch1242 and Ch1244; subsequent direct opens returned the mirror’s DMCA removal notice. Other catalogs verify titles but not chapter contents.",
+    "Ch1243 harvestable Life Ancient Tree outputs, Ch1246 breakthrough method, Ch1250 entry conditions, and Ch1251 hidden-creature identity/drop are not visible in accessible excerpts; do not infer item names, quantities, costs, or rewards."
+  ],
+  "source_checks": [
+    {
+      "source": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232843",
+      "checked_chapters": "1182–1191",
+      "use": "Primary Chinese text; all visible continuations inspected. Direct per-chapter URLs are listed in Round 77 audit."
+    },
+    {
+      "source": "Cơm Nguội Novel",
+      "url": "https://comnguoinovel.com/truyen/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong/1182",
+      "checked_chapters": "local catalog/pages attempted around 1182–1191",
+      "use": "Title/index context only; gated body and numbering divergence prevent mechanics alignment."
+    },
+    {
+      "source": "Hắc Hoàng Đại Đế",
+      "url": "https://hachoangdaide.online/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong-1182",
+      "checked_chapters": "local catalog/pages attempted around 1182–1191",
+      "use": "Title/index context only; numbering diverges and body access limited/gated."
+    },
+    {
+      "source": "Xa Lộ Sách",
+      "url": "https://xalosach.com/bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia-0.html?P=12#danhsachchuong",
+      "checked_chapters": "catalog local 1101–1200",
+      "use": "Catalog-only; prior split/numbering divergence retained; no direct mapping asserted for this round."
+    },
+    {
+      "source": "QQ Reading official chapter list and previews",
+      "url": "https://reader.novel.qq.com/chapter/1050133618",
+      "checked_chapters": "1192–1201",
+      "use": "Printed titles and visible opening passages; previews stop at the app/login gate."
+    },
+    {
+      "source": "Qidian/Bookresource chapter text preview",
+      "url": "https://mxianxia.bookresource.qq.com/chapter/1040133596/874564909/",
+      "checked_chapters": "1198–1200 by title (mirror-local chapter labels are one lower)",
+      "use": "Readable text excerpts confirmed Holy Flame fusion/advancement, two skill outcomes, and Frost Mage chest options; numbering aligned by exact titles."
+    },
+    {
+      "source": "Cpxs123 mirror",
+      "url": "https://m.cpxs123.cc/book/187022/list.html",
+      "checked_chapters": "1192–1201 by printed title",
+      "use": "Catalog and first opening lines corroborate several QQ previews. Later paragraphs are polluted with unrelated scraped text and were excluded."
+    },
+    {
+      "source": "Hjwzw catalog",
+      "url": "https://tw.hjwzw.com/Book/Chapter/50356",
+      "checked_chapters": "1192–1201 by title",
+      "use": "Chapter catalog corroboration only; individual body links could not be opened through the available web reader."
+    },
+    {
+      "source": "QQ Reading chapter list and previews",
+      "url": "https://reader.novel.qq.com/chapter/1050133618",
+      "checked_chapters": "1202–1211",
+      "use": "Official chapter titles and visible openings. Previews stop at the app/login wall."
+    },
+    {
+      "source": "Qidian/Bookresource text excerpts",
+      "url": "https://mxianxia.bookresource.qq.com/chapter/1040133596/875336549/",
+      "checked_chapters": "1202–1210 by exact title (mirror chapter numbers one lower)",
+      "use": "Readable excerpts confirm Godhead count, crystal conversion, awakening/recruitment story context, and expedition scale. No unseen identities or receipts inferred."
+    },
+    {
+      "source": "Cpxs123 chapter catalog",
+      "url": "https://m.cpxs123.cc/book/187022/list.html",
+      "checked_chapters": "1202–1211 by printed title",
+      "use": "Catalog-title corroboration only; body contamination prevents extracting later paragraphs."
+    },
+    {
+      "source": "Hjwzw chapter catalog",
+      "url": "https://tw.hjwzw.com/Book/Chapter/50356",
+      "checked_chapters": "1202–1211 by title",
+      "use": "Alternate catalog/title check only; individual pages unavailable through reader."
+    },
+    {
+      "source": "TTKS chapter catalog",
+      "url": "https://ttks.tw/novel/chapters/quanqiujianglindaizhaosaosaomoshizhongtian/index.html",
+      "checked_chapters": "1202–1211 by title",
+      "use": "Additional chapter-title corroboration; body links are not exposed to the web reader."
+    },
+    {
+      "source": "Qidian/Bookresource readable chapter excerpts",
+      "url": "https://mxianxia.bookresource.qq.com/chapter/1040133596/875578801/",
+      "checked_chapters": "1212–1221 by exact chapter title; local labels one lower than QQ Reading",
+      "use": "Body excerpt source for the title-confirmed Thor Godhead, Codex use, five proficiency emblems, 1.62 million seed bags, formula transfer, Wood Crystal mechanic, 9,000 fragment consumption, and Andrew skill name."
+    },
+    {
+      "source": "ReadNovel and alternate catalogs",
+      "url": "https://www.readnovel.com/bookquery/pegtdyiqmirh",
+      "checked_chapters": "1212–1221 by printed chapter title",
+      "use": "Catalog-title cross-check only; label offsets differ from QQ Reading."
+    },
+    {
+      "source": "TTKS catalog",
+      "url": "https://ttks.tw/novel/chapters/quanqiujianglindaizhaosaosaomoshizhongtian/index.html",
+      "checked_chapters": "1212–1221 by printed title",
+      "use": "Alternate catalog/title corroboration only; no item receipt inferred from catalog."
+    },
+    {
+      "source": "Official QQ Reading chapter catalog/openings",
+      "url": "https://reader.novel.qq.com/chapter/1050133618",
+      "checked_chapters": "1222–1231",
+      "use": "Authoritative printed chapter titles and visible opening passages; previews are app/login gated."
+    },
+    {
+      "source": "ReadNovel catalog",
+      "url": "https://m.readnovel.com/bqx/qbqbenpexa/p83",
+      "checked_chapters": "around 1222–1231 by title; numbering offset varies",
+      "use": "Alternate catalog/title cross-check only; no body claims used."
+    },
+    {
+      "source": "TTKS chapter catalog",
+      "url": "https://ttks.tw/novel/chapters/quanqiujianglindaizhaosaosaomoshizhongtian/index.html",
+      "checked_chapters": "around 1222–1231 by title",
+      "use": "Alternate catalog-title cross-check only; its numbering differs from official QQ in this arc."
+    },
+    {
+      "source": "Qidian/Bookresource chapter text preview",
+      "url": "https://mxianxia.bookresource.qq.com/chapter/1040133596/876448963/",
+      "checked_chapters": "preceding range through local Ch1220; attempted next pages unavailable to web reader",
+      "use": "Prior readable text source could not be extended this round; only official QQ openings and alternate catalog titles were available."
+    },
+    {
+      "source": "Official QQ Reading/QQ chapter directory",
+      "url": "https://xiaoshuo.book.qq.com/bqq/qbxaxaclkg/p83",
+      "checked_chapters": "1232–1241",
+      "use": "Printed titles checked against the chapter directory; alternate mirror numbering offsets reconciled by exact title."
+    },
+    {
+      "source": "SuduGu full-text alternate",
+      "url": "https://www.suduguu.com/1757/3006664.html",
+      "checked_chapters": "Printed Ch1233–1236 by exact title",
+      "use": "Accessible full text supports the Lake Goddess sword, Codex repair, robe binding/shield mechanics and season coin-bag/chest results."
+    },
+    {
+      "source": "TTKS alternate full text (indexed text retained; direct page now removed)",
+      "url": "https://ttks.tw/novel/chapters/quanqiujianglindaizhaosaosaomoshizhongtian/index.html",
+      "checked_chapters": "Ch1236–1237 by exact titles; mirror-local chapter suffix differs from QQ printed number",
+      "use": "Indexed full-text result confirms arena season reward bundle and three selected chest outcomes; direct page subsequently displays DMCA removal."
+    },
+    {
+      "source": "Official QQ Reading reader headings and previews",
+      "url": "https://reader.novel.qq.com/chapter/1050133618",
+      "checked_chapters": "Printed Chapters 1232–1241",
+      "use": "Direct reader headings and opening lines establish titles, Cleaners/Godhead scene, Titan Energy Heart context, and Beast God Heart function; content beyond preview is app-gated."
+    },
+    {
+      "source": "Official QQ Reading reader chapter directory",
+      "url": "https://reader.novel.qq.com/chapter/1050133618",
+      "checked_chapters": "Printed Chapters 1242–1251",
+      "use": "Verifies official printed titles and ordering. Chapter entries follow direct reader heading numbering; some mirror catalogs have offsets."
+    },
+    {
+      "source": "TTKS alternate full-text mirror, captured excerpt",
+      "url": "https://ttks.tw/novel/chapters/quanqiujianglindaizhaosaosaomoshizhongtian/1245.html",
+      "checked_chapters": "Printed Ch1242 (mirror path suffix 1245)",
+      "use": "Captured excerpt contains character breakthrough outcomes and incomplete remaining-reward/potion-material context; no chest/item receipt established."
+    },
+    {
+      "source": "TTKS alternate full-text mirror, captured excerpt",
+      "url": "https://ttks.tw/novel/chapters/quanqiujianglindaizhaosaosaomoshizhongtian/1247.html",
+      "checked_chapters": "Printed Ch1244 (mirror path suffix 1247)",
+      "use": "Captured excerpt contains Ancient Beast Arena rules, Bingbing’s transformation, and ancient-dragon reactions; no loot receipt."
+    },
+    {
+      "source": "Official QQ Reading preview",
+      "url": "https://reader.novel.qq.com/read/1050133618/1246",
+      "checked_chapters": "Printed Ch1243",
+      "use": "Preview supports Life Ancient Tree growth/harvest context; named outputs are beyond the visible excerpt."
+    },
+    {
+      "source": "Official QQ Reading preview",
+      "url": "https://reader.novel.qq.com/read/1050133618/1251",
+      "checked_chapters": "Printed Ch1248",
+      "use": "Preview supports Frostmark Paladin’s Judgment God advancement; no item acquisition claimed."
+    },
+    {
+      "source": "ReadNovel and Bqquge chapter catalogs",
+      "url": "https://www.bqquge.org/851",
+      "checked_chapters": "Printed Chapters 1242–1251",
+      "use": "Cross-checks title sequence only; catalog text is not treated as evidence of chapter events or receipts."
+    }
+  ]
+}

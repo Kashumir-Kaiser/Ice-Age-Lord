@@ -72,3 +72,6 @@ The React/Vite visual demo now lives in `frontend/` on `main`. It uses the origi
 - `data/events/EVENT-SOURCE-ITEMS-v7.11.csv`: cumulative source-item ledger through printed Chapter 1231.
 
 - `data/events/EVENT-SOURCE-ITEMS-v7.12.csv`: cumulative source-item ledger through printed Chapter 1241.
+
+- `data/events/EVENT-SOURCE-CATALOG-v7.13-ADDENDUM.json`: Round 83 source coverage for Chapters 1242–1251, event-rule observations, and access limitations; no new item rows.
+- `research/extraction-audits/ROUND-83-EIGHTY-THIRD-EXTRACTION.md`: Round 83 audit for Chapters 1242–1251. The cumulative item CSV remains v7.12 because this batch produced no verified receipt rows.
