@@ -72,7 +72,7 @@ test('race filter tabs appear only for races with living units', () => {
 test('registered original SVG layers exist and match each manifest canvas', () => {
   const repo=resolve(root,'..');
   const manifest=JSON.parse(readFileSync(resolve(repo,'assets/manifest.json'),'utf8'));
-  assert.equal(manifest.assets.filter(asset=>asset.status==='placeholder').length,3);
+  assert.deepEqual(manifest.assets.filter(asset=>asset.status==='placeholder').map(asset=>asset.assetId).sort(),['fixture-fire-max','fixture-tall-tower']);
   assert.equal(manifest.assets.filter(asset=>asset.status==='draft'&&asset.assetId.startsWith('survival-fire-l')).length,6);
   assert.deepEqual(manifest.fireProgression.map(stage=>stage.minLevel),[1,6,11,16,21,26]);
   assert.deepEqual(manifest.fireProgression.map(stage=>stage.maxLevel),[5,10,15,20,25,30]);
@@ -143,7 +143,7 @@ test('ink architecture exports are registered and distinct from T0 ownership', (
   assert.ok(clientSource.includes("status:'fixture-only'"));
   assert.ok(clientSource.includes("assetId:'opening-timber-gate'"));
   const registry=readFileSync(resolve(root,'src/assets/assetRegistry.ts'),'utf8');
-  assert.ok(registry.includes("visualState === 'repaired'"));
+  assert.match(registry,/if \(visualState !== 'repaired'\) return sourceAssetId;/);
 });
 
 test('early building artwork has compact, complete milestone progressions without changing footprints', () => {

@@ -55,6 +55,7 @@ export default function BuildingSprite({ id, name, asset, assetId, point, footpr
   const angle = orientation === 'east' ? 90 : orientation === 'south' ? 180 : orientation === 'west' ? 270 : 0;
   const imageTransform = `rotate(${angle} ${ground.x} ${ground.y})`;
   const upperOpacity = mode === 'planning' ? 0 : mode === 'focus' && faded ? .24 : 1;
+  const base = layerPath(asset, 'base', camera.zoom < .35 ? 'district' : 'close');
   const body = layerPath(asset, 'body', camera.zoom < .35 ? 'district' : 'close');
   const vfx = layerPath(asset, 'vfx', camera.zoom < .35 ? 'district' : 'close');
   const bodyOpacity = draft ? .55 : mode === 'focus' && faded ? .24 : mode === 'planning' ? .9 : 1;
@@ -63,6 +64,7 @@ export default function BuildingSprite({ id, name, asset, assetId, point, footpr
   return <g className={`territory-building${selected?' is-selected':''}${draft?' is-draft':''}${blocked?' is-blocked':''}`} data-building-id={id}
     role={onSelect?'button':undefined} tabIndex={onSelect?0:undefined} aria-label={onSelect?`Chọn ${name}`:undefined}
     onKeyDown={onSelect?event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();onSelect();}}:undefined}>
+    {mode === 'planning' && !missing && asset && base && <image href={base} x={x} y={y} width={spriteWidth} height={spriteHeight} transform={imageTransform} opacity={bodyOpacity} pointerEvents="none" onError={onError}/>}
     {!missing && body && <image href={body} x={x} y={y} width={spriteWidth} height={spriteHeight} transform={imageTransform} opacity={bodyOpacity} pointerEvents="none" onError={onError}/>}
     {mode !== 'planning' && !missing && activeEffect && vfx && <image href={vfx} x={x} y={y} width={spriteWidth} height={spriteHeight} transform={imageTransform} opacity={draft ? .48 : faded && mode === 'focus' ? .24 : 1} pointerEvents="none" onError={onError}/>}
     {(missing || !asset || !body) && <g transform={`translate(${ground.x} ${ground.y}) rotate(${angle})`} pointerEvents="none">{fallbackShape(assetId)}</g>}
