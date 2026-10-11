@@ -1,0 +1,169 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-5.6-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-5.5-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 56 sequential review of printed Chapters 972–981 using Bqquge. Cumulative ledger is EVENT-SOURCE-ITEMS-v5.6.csv. Catalog baseline remains v4.6 with append-only v4.7–v5.6 addenda; fixed schedule unchanged.",
+  "item_ids": [
+    "SX-0818",
+    "SX-0819",
+    "SX-0820",
+    "SX-0821",
+    "SX-0822",
+    "SX-0823",
+    "SX-0824",
+    "SX-0825",
+    "SX-0826",
+    "SX-0827"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 972,
+      "event": "Return to Spark City; carried-out expedition assets are summarized but not new receipts."
+    },
+    {
+      "chapter": 973,
+      "event": "City logistics and expedition assets are reviewed; no new item receipt."
+    },
+    {
+      "chapter": 974,
+      "event": "Sarah defeats challenger Nomura Kaoru; no item receipt in the reviewed text."
+    },
+    {
+      "chapter": 975,
+      "event": "A trade proposal involving divine creature scales is discussed; no transfer completed in reviewed chapter."
+    },
+    {
+      "chapter": 976,
+      "event": "Bai Zhi's legendary transformation unlocks Ice Queen's Authority and Ice Soul: Zero-Degree Assault."
+    },
+    {
+      "chapter": 977,
+      "event": "Legion management; no explicit item receipt."
+    },
+    {
+      "chapter": 978,
+      "event": "Mogsa advances; the artifact Gu Poison Secret Casket is referenced as prior loot, not received again."
+    },
+    {
+      "chapter": 979,
+      "event": "Four new potions are received: Soul Essence Celestia, Flowing Wind Phantom Feather, Dark Kiss, and Thorn Praise."
+    },
+    {
+      "chapter": 980,
+      "event": "Saint's Blood Potion is identified as a possible recipe using Blood Whale materials; it is not crafted. Recipe materials are named for future sourcing."
+    },
+    {
+      "chapter": 981,
+      "event": "Cao Xing lists 500,000 portions/50,000kg of demigod Blood Whale meat for exchange. Explicit trades receive Golden Apples x10, Dark Dandelions x120, and Geode Crystal Roots x6."
+    }
+  ],
+  "non_receipts": [
+    "The Saint's Blood Potion is described as a possible formula but is not crafted or received.",
+    "The 500,000-portion Blood Whale listing is market stock, not a new inventory acquisition.",
+    "The Ch975 divine scale trade is only proposed; no completed exchange is recorded.",
+    "The market trade line examples are recorded as item receipts; no further unquantified transactions are inferred.",
+    "Chapter 978 mentions the Gu Poison Secret Casket as prior inventory; it is not counted again."
+  ],
+  "item_receipts": [
+    {
+      "chapter": 923,
+      "ids": [
+        "SX-0668"
+      ],
+      "note": "Sea chart gifted by the Icefield Giant chief."
+    },
+    {
+      "chapter": 925,
+      "ids": [
+        "SX-0671"
+      ],
+      "note": "Storm Destroyer occupation and vessel ownership state."
+    },
+    {
+      "chapter": 926,
+      "ids": [
+        "SX-0669",
+        "SX-0670"
+      ],
+      "note": "One explicitly excavated Silver and one Gold chest."
+    },
+    {
+      "chapter": 929,
+      "ids": [
+        "SX-0672",
+        "SX-0673",
+        "SX-0674",
+        "SX-0675",
+        "SX-0676",
+        "SX-0677",
+        "SX-0678",
+        "SX-0679",
+        "SX-0680",
+        "SX-0681",
+        "SX-0682",
+        "SX-0683",
+        "SX-0684",
+        "SX-0685",
+        "SX-0686",
+        "SX-0687",
+        "SX-0688",
+        "SX-0689",
+        "SX-0690",
+        "SX-0691",
+        "SX-0692",
+        "SX-0693",
+        "SX-0694",
+        "SX-0695",
+        "SX-0696",
+        "SX-0697"
+      ],
+      "note": "Chest count snapshot and explicit loot categories from the 29 Silver/Gold boxes, three Moon boxes, and one Red box. See ledger for all 26 receipt rows."
+    },
+    {
+      "chapter": 930,
+      "ids": [
+        "SX-0698",
+        "SX-0699",
+        "SX-0700"
+      ],
+      "note": "Two individual frozen chest pickups and one broken sailboat."
+    },
+    {
+      "chapter": 931,
+      "ids": [
+        "SX-0701",
+        "SX-0702",
+        "SX-0703"
+      ],
+      "note": "Three Sacrifice Pearls, one each of unknown, orange, and green quality."
+    }
+  ],
+  "quest": "Lucky Goddess/undersea ruins lead-in is active. Chapter 931 has the altar yield three Sacrifice Pearls; the Lucky Wheel challenge is not yet shown as opened or resolved.",
+  "inventory_caveat": "All extracted items remain source research, not LL01 initial inventory, guaranteed new-game drops, or active event contracts.",
+  "next_unprocessed_chapter": 932,
+  "source_urls": [
+    "https://www.bqquge.org/851/227800",
+    "https://www.bqquge.org/851/227801",
+    "https://www.bqquge.org/851/227802",
+    "https://www.bqquge.org/851/227803",
+    "https://www.bqquge.org/851/227804",
+    "https://www.bqquge.org/851/236476",
+    "https://www.bqquge.org/851/236477",
+    "https://www.bqquge.org/851/236478",
+    "https://www.bqquge.org/851/236479",
+    "https://www.bqquge.org/851/236514"
+  ],
+  "mirror_note": "Direct chapter text and continuation pages were checked on Bqquge; primary 69shuba chapter sequence remains inaccessible beyond Ch921.",
+  "chapter_source_urls": [
+    "https://www.bqquge.org/851/236888",
+    "https://www.bqquge.org/851/236889",
+    "https://www.bqquge.org/851/236890",
+    "https://www.bqquge.org/851/236891",
+    "https://www.bqquge.org/851/236934",
+    "https://www.bqquge.org/851/236935",
+    "https://www.bqquge.org/851/236936",
+    "https://www.bqquge.org/851/236937",
+    "https://www.bqquge.org/851/236938",
+    "https://www.bqquge.org/851/236973"
+  ]
+}
