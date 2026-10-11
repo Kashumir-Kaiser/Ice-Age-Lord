@@ -12,8 +12,8 @@ This is a **new game**: do not import earlier campaign inventories, unit rosters
 
 - `references/canonical/`: original Lord DnD source rulebooks and lineage, retained **as references** (not an already-compiled runtime).
 - `design/`: latest web-game content design, magical buildings and source-grounded construction proposals.
-- `data/events/`: cumulative source-item CSV v7.17 with 1,518 rows through Round 88 (Chapters 1292–1301); round audits and catalog addenda are in `research/extraction-audits/` and `data/events/`. The cumulative source catalog JSON remains v4.6 (590 items, 239 effects) with v4.7–v7.18 addenda alongside it and the v7.2.1 metadata correction. The fixed 30-event v0.6 timeline is unchanged. Extracted entries are not automatically obtainable in a new game.
-- `research/extraction-audits/`: **all eighty-seven extraction rounds**, including the Round 29 continuation addendum (v2.9.1), Round 35, Round 36, Round 38, Round 39, Round 40, Round 41, Round 42, Round 43, and Rounds 44–74 audits, with append-only research and immutable earlier releases.
+- `data/events/`: cumulative source-item CSV v7.18 with 1,543 rows through Round 89 (LanaGarden displayed Chapters 1302–1311); round audits and catalog addenda are in `research/extraction-audits/` and `data/events/`. The cumulative source catalog JSON remains v4.6 (590 items, 239 effects) with v4.7–v7.19 addenda alongside it and the v7.2.1 metadata correction. Chapter catalogs differ by one number in this arc; align exact titles and see the Round 89 audit. The fixed 30-event v0.6 timeline is unchanged. Extracted entries are not automatically obtainable in a new game.
+- `research/extraction-audits/`: **all eighty-nine extraction rounds**, including the Round 29 continuation addendum (v2.9.1), Round 35, Round 36, Round 38, Round 39, Round 40, Round 41, Round 42, Round 43, and Rounds 44–74 audits, with append-only research and immutable earlier releases.
 - `research/snapshots/`: chronological catalogs and design versions retained for traceability.
 
 ## Authority / migration rules
@@ -95,3 +95,7 @@ The React/Vite visual demo now lives in `frontend/` on `main`. It uses the origi
 - `data/events/EVENT-SOURCE-ITEMS-v7.17.csv`: cumulative source-item ledger through printed Chapter 1301 (1,518 rows), including True-God Ancient Dragon first-kill rewards and drops, Godhead assignments, the Light-Dark Dragon pet, and pooled battle-loot transfers.
 - `data/events/EVENT-SOURCE-CATALOG-v7.18-ADDENDUM.json`: Round 88 source coverage for Chapters 1292–1301, with recipient and progression outcomes confirmed and reward-attribution uncertainties preserved.
 - `research/extraction-audits/ROUND-88-EIGHTY-EIGHTH-EXTRACTION.md`: Round 88 audit for Chapters 1292–1301; resumes at Chapter 1302.
+
+- `data/events/EVENT-SOURCE-ITEMS-v7.18.csv`: cumulative source-item ledger through Round 89 (1,543 rows); adds True God breakthrough rewards, the opened Upper God Artifact chest, Ancient War Site resource batches, and corpse-to-undead transformations.
+- `data/events/EVENT-SOURCE-CATALOG-v7.19-ADDENDUM.json`: Round 89 outcomes for LanaGarden Chapters 1302–1311, including the exact-title crosswalk for the one-chapter catalog numbering difference.
+- `research/extraction-audits/ROUND-89-EIGHTY-NINTH-EXTRACTION.md`: Round 89 audit; resumes at LanaGarden Chapter 1312 / SX-1544.
