@@ -32,7 +32,7 @@ export function stage07OpeningCorpse(): CorpseState {
     talents: [],
     equipmentInstanceIds: [STAGE07_OPENING_SPEAR_ID, STAGE07_OPENING_CLOAK_ID],
     heldEquipment: [
-      { itemId: STAGE07_OPENING_SPEAR_ID, templateId: 'STAGE07-ASH-WOOD-SPEAR', tags: ['WEAPON', 'WEAPON_1H'], quality: 1, condition: 0.78, unit: 'item', combatEffects: { weaponBase: 3 } },
+      { itemId: STAGE07_OPENING_SPEAR_ID, templateId: 'STAGE07-ASH-WOOD-SPEAR', tags: ['WEAPON', 'WEAPON_1H'], quality: 1, condition: 0.78, unit: 'item', combatEffects: { weaponBase: 3, rangeMm: 2_200 } },
       { itemId: STAGE07_OPENING_CLOAK_ID, templateId: 'STAGE07-FELT-CLOAK', tags: ['ARMOR', 'ARMOR_LIGHT'], quality: 1, condition: 0.64, unit: 'item', combatEffects: { armor: 1 } },
     ],
     growthLedger: {},
@@ -152,7 +152,7 @@ export function reviveDirect(state: GameState, world: WorldDefinition, actorId: 
   const slots = body.equipmentSlots.map(slot => ({ ...slot, occupiedItemId: null }));
   const unit: PlayerUnitState = {
     id: unitId, templateId: body.sourceProfileId ?? body.anatomyTemplateId ?? 'STAGE07-DIRECT-REVIVED-UNIT',
-    name: 'Rook', creationRoute: 'DIRECT_TU_PHUC', level: body.level!, xp: body.xp!,
+    name: body.name ?? 'Đơn vị Tử Phục', creationRoute: 'DIRECT_TU_PHUC', level: body.level!, xp: body.xp!,
     ownerId: state.player.id, position: state.player.position,
     location: structuredClone(state.player.location),
     equipmentIds: [], sourceStats: {
@@ -164,7 +164,7 @@ export function reviveDirect(state: GameState, world: WorldDefinition, actorId: 
     equipmentSlots: slots, skills: body.skills.map(skill => ({ ...skill })),
     health: { current: startingHealth, max: body.health?.max ?? startingHealth },
     directReviveProvenance: provenance, growthLedger: body.growthLedger ?? {},
-    xpMirrorEligible: true, baseLaborRateWuPerHour: 1,
+    xpMirrorEligible: true, baseLaborRateWuPerHour: body.speciesId === 'SPECIES-STAGE07-ICE-HARE' ? 0 : 1,
     laborRuleVersion: 'STAGE07-DIRECT-REVIVED-LABOR-1.0',
   };
   const items = (body.heldEquipment ?? []).map(item => ({
@@ -335,43 +335,49 @@ export function playerLevelThreshold(level: number): number {
   return Math.floor((100 * Math.pow(level, 1.65) * tier * complexity + 5) / 10) * 10;
 }
 
-export function settleOrdinaryLaborXp(state: GameState, unitId: string, workUnits: number, sourceTransactionId: string, occurredAtElapsedMs: number, contributionShare = 1) {
+function settleOrdinaryUnitXp(
+  state: GameState,
+  unitId: string,
+  grossXp: number,
+  sourceTransactionId: string,
+  occurredAtElapsedMs: number,
+  contributionShare: number,
+  sourceCategory: 'combat' | 'labor',
+  ruleVersion: string,
+) {
   const unit = state.ownedUnits.find(item => item.id === unitId);
-  if (!unit || workUnits <= 0 || contributionShare <= 0) return { state, transactions: [] as NonNullable<GameState['progression']>['transactions'][number][] };
-  const grossXp = workUnits * 10 * contributionShare;
+  if (!unit || grossXp <= 0 || contributionShare <= 0) return { state, transactions: [] as NonNullable<GameState['progression']>['transactions'][number][] };
   const netXp = Math.floor(grossXp);
   if (netXp <= 0) return { state, transactions: [] as NonNullable<GameState['progression']>['transactions'][number][] };
   const transactions: NonNullable<GameState['progression']>['transactions'][number][] = [];
   const progression = state.progression ?? { transactions: [], mirrorReceiptKeys: [] };
-  const normalId = sourceTransactionId;
-  if (progression.transactions.some(item => item.id === normalId)) return { state, transactions: [] };
+  if (progression.transactions.some(item => item.id === sourceTransactionId)) return { state, transactions: [] };
   const levelBefore = unit.level;
   const xpBefore = unit.xp;
   let levelAfter = levelBefore;
-  let xpAfter = xpBefore + netXp;
-  let remainder = xpAfter;
+  let remainder = xpBefore + netXp;
   const thresholdsCrossed: number[] = [];
-  while (levelAfter < (unit.sourceStats.formTier * 10) && remainder >= playerLevelThreshold(levelAfter)) {
+  while (levelAfter < unit.sourceStats.formTier * 10 && remainder >= playerLevelThreshold(levelAfter)) {
     remainder -= playerLevelThreshold(levelAfter);
     levelAfter++;
     thresholdsCrossed.push(levelAfter);
   }
-  xpAfter = remainder;
+  const xpAfter = remainder;
   const normal = {
-    id: normalId, transactionKind: 'NORMAL_AWARD' as const, sourceEventId: sourceTransactionId,
-    sourceTransactionId: null, sourceRecipientId: null, recipientId: unit.id, sourceCategory: 'labor' as const,
-    templateId: STAGE07_LABOR_XP_RULE, grossXp, netXp, contributionShare,
+    id: sourceTransactionId, transactionKind: 'NORMAL_AWARD' as const, sourceEventId: sourceTransactionId,
+    sourceTransactionId: null, sourceRecipientId: null, recipientId: unit.id, sourceCategory,
+    templateId: ruleVersion, grossXp, netXp, contributionShare,
     modifiers: { gap: 1, novelty: 1, risk: 1, antiFarm: 1 }, occurredAtElapsedMs,
-    ruleVersion: STAGE07_LABOR_XP_RULE, levelBefore, xpBefore, thresholdsCrossed, levelAfter, xpAfter,
+    ruleVersion, levelBefore, xpBefore, thresholdsCrossed, levelAfter, xpAfter,
     growthDelta: {},
   };
   let owner = state.player;
   let mirror: NonNullable<GameState['progression']>['transactions'][number] | null = null;
-  let keys = [...progression.mirrorReceiptKeys];
+  const keys = [...progression.mirrorReceiptKeys];
   const link = unit.directReviveProvenance;
   if (link && link.creationRoute === 'DIRECT_TU_PHUC' && unit.creationRoute === 'DIRECT_TU_PHUC' && unit.xpMirrorEligible
     && !link.secondDeathLocked && occurredAtElapsedMs >= link.mirrorStartAtElapsedMs && link.rootOwnerId === state.player.id) {
-    const key = `${normalId}|LI_LAN|${DIRECT_REVIVE_MIRROR_RULE}`;
+    const key = sourceTransactionId + '|LI_LAN|' + DIRECT_REVIVE_MIRROR_RULE;
     if (!keys.includes(key)) {
       keys.push(key);
       const before = owner.xp;
@@ -401,9 +407,9 @@ export function settleOrdinaryLaborXp(state: GameState, unitId: string, workUnit
         },
       };
       mirror = {
-        id: `${normalId}:MIRROR`, transactionKind: 'OWNER_XP_MIRROR', sourceEventId: sourceTransactionId,
-        sourceTransactionId: normalId, sourceRecipientId: unit.id, recipientId: state.player.id,
-        sourceCategory: 'labor', templateId: DIRECT_REVIVE_MIRROR_RULE, grossXp: netXp, netXp,
+        id: sourceTransactionId + ':MIRROR', transactionKind: 'OWNER_XP_MIRROR', sourceEventId: sourceTransactionId,
+        sourceTransactionId, sourceRecipientId: unit.id, recipientId: state.player.id,
+        sourceCategory, templateId: DIRECT_REVIVE_MIRROR_RULE, grossXp: netXp, netXp,
         contributionShare: 1, modifiers: { gap: 1, novelty: 1, risk: 1, antiFarm: 1 },
         occurredAtElapsedMs, ruleVersion: DIRECT_REVIVE_MIRROR_RULE,
         levelBefore: state.player.level, xpBefore: before, thresholdsCrossed: ownerThresholds,
@@ -423,4 +429,18 @@ export function settleOrdinaryLaborXp(state: GameState, unitId: string, workUnit
     },
   };
   return { state: nextState, transactions: [normal, ...(mirror ? [mirror] : [])] };
+}
+
+export function settleOrdinaryLaborXp(state: GameState, unitId: string, workUnits: number, sourceTransactionId: string, occurredAtElapsedMs: number, contributionShare = 1) {
+  return settleOrdinaryUnitXp(
+    state, unitId, workUnits * 10 * contributionShare, sourceTransactionId, occurredAtElapsedMs,
+    contributionShare, 'labor', STAGE07_LABOR_XP_RULE,
+  );
+}
+
+export function settleOrdinaryCombatXp(state: GameState, unitId: string, baseXp: number, sourceTransactionId: string, occurredAtElapsedMs: number, contributionShare = 1) {
+  return settleOrdinaryUnitXp(
+    state, unitId, baseXp * contributionShare, sourceTransactionId, occurredAtElapsedMs,
+    contributionShare, 'combat', 'STAGE07-OPENING-HUNT-XP-1.0',
+  );
 }

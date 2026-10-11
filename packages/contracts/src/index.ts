@@ -575,6 +575,16 @@ export type VisibleMap = {
   knownRoutes: readonly { id: Id; label: string; path: readonly CoordinateMm[] }[];
   activeOrders: readonly { id: Id; kind: string; status: string; actorIds: readonly Id[]; position: CoordinateMm; path: readonly CoordinateMm[]; totalDistanceMm: number; etaElapsedMs: number; uncertainty: 'known' | 'uncertain' }[];
   heatOverlays: readonly { center: CoordinateMm; radiusMm: number; minCelsius: number; maxCelsius: number }[];
+  combatTargets?: readonly { targetId: Id; label: string; position: CoordinateMm; status: 'available' | 'reacting' }[];
+};
+
+export type Stage07CombatView = {
+  target: { id: Id; label: string; state: 'available' | 'reacting' | 'retreated' | 'dead'; regionId: Id; regionalPopulationRemaining: number; position: CoordinateMm; attack: ActionAvailability } | null;
+  encounter: null | {
+    id: Id; status: 'active' | 'victory' | 'defeat' | 'retreated'; actorIds: readonly Id[]; round: number;
+    nextTurnAtElapsedMs: number | null; targetHealth: { current: number; max: number };
+    log: readonly CombatLogEntry[];
+  };
 };
 
 export type PlayerView = {
@@ -601,6 +611,7 @@ export type PlayerView = {
     pendingGrowth?: number;
     position: CoordinateMm;
   };
+  combat?: Stage07CombatView;
   careerCard: {
     observed: boolean;
     active: boolean;
@@ -675,6 +686,52 @@ export type PlayerView = {
     }[];
   };
   journal: readonly { sequence: number; category: string; title: string; text: string }[];
+};
+
+export type CombatLogEntry = {
+  atElapsedMs: number;
+  actorId: Id;
+  targetActorId: Id;
+  outcome: 'hit' | 'miss' | 'retreat' | 'defeat' | 'victory';
+  damage: number;
+  damageTaken: number;
+  actorHealth: number;
+  targetHealth: number;
+};
+
+export type Stage07PreyState = {
+  actorId: Id;
+  speciesId: Id;
+  name: string;
+  sourceEcologyId: Id;
+  populationKey: string;
+  sourcePopulationAtStart: number;
+  siteId: Id;
+  position: CoordinateMm;
+  status: 'available' | 'reacting' | 'retreated' | 'dead';
+  bodyRecord: CorpseBodyRecord;
+  combatProfile: { weaponDamage: number; weaponRangeMm: number; armor: number; concealment: number; terrainId: Id };
+};
+
+export type CombatEncounterState = {
+  id: Id;
+  sequence: number;
+  targetActorId: Id;
+  actorIds: readonly Id[];
+  status: 'active' | 'victory' | 'defeat' | 'retreated';
+  startedAtElapsedMs: number;
+  completedAtElapsedMs: number | null;
+  nextTurnAtElapsedMs: number | null;
+  pendingIntent: 'attack' | 'retreat';
+  round: number;
+  targetHealth: { current: number; max: number };
+  log: readonly CombatLogEntry[];
+};
+
+export type Stage07CombatState = {
+  nextEncounterSequence: number;
+  target: Stage07PreyState;
+  encounters: readonly CombatEncounterState[];
 };
 
 export type GameState = {
@@ -779,6 +836,7 @@ export type GameState = {
   };
   fieldChestStates: readonly FieldChestRuntimeState[];
   corpses: readonly CorpseState[];
+  combat?: Stage07CombatState;
   progression?: { transactions: readonly XpTransactionState[]; mirrorReceiptKeys: readonly string[] };
   quests: readonly QuestProgressState[];
   calendar: readonly ScheduledEventState[];
@@ -823,6 +881,7 @@ export type CommandType =
   | 'butcher_corpse'
   | 'equip'
   | 'attack'
+  | 'retreat'
   | 'shop_transaction'
   | 'assign_construction_workers'
   | 'cancel_construction_job'
@@ -868,6 +927,7 @@ export type CommandPayloadByType = {
   butcher_corpse: { actorId: Id; corpseId: Id };
   equip: { unitId: Id; itemId: Id; slotId: Id };
   attack: { actorIds: readonly Id[]; targetId: Id };
+  retreat: { actorIds: readonly Id[]; encounterId: Id };
   shop_transaction: { offerId: Id; quantity: number };
 };
 
@@ -925,7 +985,7 @@ export interface GameClient {
 const commandTypes = new Set<CommandType>([
   'inspect_entity', 'inspect_starter_container', 'inspect_career_card', 'activate_career_card', 'set_clock_speed',
   'advance_to_boundary', 'enqueue_tomb', 'cancel_tomb', 'refuel_fire', 'extinguish_fire', 'light_fire', 'move', 'cancel_travel', 'survey', 'search', 'harvest', 'cancel_spatial_job', 'transfer_item',
-  'open_cache', 'repair', 'build', 'craft', 'revive', 'butcher_corpse', 'equip', 'attack', 'shop_transaction', 'assign_construction_workers', 'cancel_construction_job', 'recruit_resident', 'operate_heater', 'split_stack', 'merge_stacks', 'consume_item', 'unequip_item',
+  'open_cache', 'repair', 'build', 'craft', 'revive', 'butcher_corpse', 'equip', 'attack', 'retreat', 'shop_transaction', 'assign_construction_workers', 'cancel_construction_job', 'recruit_resident', 'operate_heater', 'split_stack', 'merge_stacks', 'consume_item', 'unequip_item',
 ]);
 
 const payloadFields: Readonly<Record<CommandType, readonly string[]>> = {
@@ -955,6 +1015,7 @@ const payloadFields: Readonly<Record<CommandType, readonly string[]>> = {
   butcher_corpse: ['actorId', 'corpseId'],
   equip: ['unitId', 'itemId', 'slotId'],
   attack: ['actorIds', 'targetId'],
+  retreat: ['actorIds', 'encounterId'],
   shop_transaction: ['offerId', 'quantity'],
   assign_construction_workers: ['jobId', 'workerIds'],
   cancel_construction_job: ['jobId'],
@@ -1070,7 +1131,7 @@ export function validateCommandEnvelope(input: unknown): CommandValidationResult
   if (input.type === 'harvest' && (!Number.isSafeInteger(payload.quantity) || Number(payload.quantity) < 1 || Number(payload.quantity) > 10_000)) {
     return issue('COMMAND_PAYLOAD_INVALID', '$.payload.quantity', 'Expected a positive whole resource quantity within the command limit.');
   }
-  if (input.type === 'attack' && (!Array.isArray(payload.actorIds) || payload.actorIds.length === 0 || payload.actorIds.some(id => typeof id !== 'string' || id.length === 0))) {
+  if ((input.type === 'attack' || input.type === 'retreat') && (!Array.isArray(payload.actorIds) || payload.actorIds.length === 0 || payload.actorIds.some(id => typeof id !== 'string' || id.length === 0) || new Set(payload.actorIds).size !== payload.actorIds.length)) {
     return issue('COMMAND_PAYLOAD_INVALID', '$.payload.actorIds', 'Expected one or more actor IDs.');
   }
   if (['shop_transaction', 'refuel_fire', 'transfer_item', 'recruit_resident', 'split_stack', 'consume_item'].includes(String(input.type)) && (!Number.isSafeInteger(payload.quantity) || Number(payload.quantity) < 1)) {

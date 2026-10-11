@@ -1,6 +1,7 @@
 import type { ClockControl, ColdEnvironment, GameState, PlayerUnitState, WorldDefinition } from '../../contracts/src/index.ts';
 import { integrateSpatialTo, nextSpatialBoundary, settleSpatialBoundary } from './spatial.ts';
 import { integrateConstructionWork, nextConstructionCompletionAt, nextHeaterServiceCompletionAt, settleConstructionCompletions, settleHeaterServices } from './construction.ts';
+import { nextCombatBoundaryAt, settleCombatBoundary } from './combat.ts';
 
 export const MINUTE_MS = 60_000;
 export const HOUR_MS = 60 * MINUTE_MS;
@@ -217,8 +218,10 @@ function completeTombJobs(state: GameState, at: number, events: SettledEvent[]):
 }
 
 function nextEventTime(state: GameState, target: number, coldRate: number, world?: WorldDefinition): number {
+  const combatBoundary = nextCombatBoundaryAt(state);
   const candidates = [
     target,
+    ...(combatBoundary === null ? [] : [combatBoundary]),
     state.timeBoundaries.nextHourlySettlementAtElapsedMs,
     state.timeBoundaries.nextMidnightAtElapsedMs,
     state.timeBoundaries.nextDailySettlementAtElapsedMs,
@@ -244,11 +247,20 @@ function nextEventTime(state: GameState, target: number, coldRate: number, world
 
 function processBoundary(state: GameState, at: number, events: SettledEvent[], world?: WorldDefinition): { completed: boolean; danger: boolean } {
   let completed = false;
+  let combatDanger = false;
   if (world) {
     const spatialEvents = settleSpatialBoundary(state, world, at);
     events.push(...spatialEvents);
     if (spatialEvents.some(event => event.type === 'movement_order_completed' || event.type === 'spatial_search_completed' || event.type === 'harvest_cargo_returned')) completed = true;
   }
+  const combatOutcome = settleCombatBoundary(state, at);
+  if (combatOutcome.events.length > 0) {
+    Object.assign(state, combatOutcome.state);
+    events.push(...combatOutcome.events);
+    completed = combatOutcome.completed || completed;
+    combatDanger = combatOutcome.danger;
+  }
+
   const fire = state.territory.survivalFire;
   if (fire.active && fire.fuelRemaining !== null && fire.nextFuelConsumptionAtElapsedMs === at) {
     fire.fuelRemaining = Math.max(0, fire.fuelRemaining - 1);
@@ -324,7 +336,7 @@ function processBoundary(state: GameState, at: number, events: SettledEvent[], w
   if (state.survival.coldStatus !== priorStatus && state.survival.environment !== null) {
     emit(events, state.survival.coldStatus === 'danger' ? 'cold_danger_reached' : 'cold_warning_changed', at, { coldLoad, warningBand });
   }
-  return { completed, danger: state.survival.coldStatus === 'danger' };
+  return { completed, danger: state.survival.coldStatus === 'danger' || combatDanger };
 }
 
 export function advanceTo(
@@ -359,6 +371,7 @@ export function advanceTo(
       ...state.territory.tomb.queue.filter(entry => entry.status === 'active').map(entry => entry.completesAtElapsedMs),
       nextConstructionCompletionAt(state),
       nextHeaterServiceCompletionAt(state),
+      nextCombatBoundaryAt(state),
       nextColdThresholdAt(state, coldRate),
       spatialBoundary,
     ].includes(at);

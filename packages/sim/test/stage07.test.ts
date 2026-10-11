@@ -5,6 +5,10 @@ import { RULESET_VERSION } from '../../content/src/sourceLock.ts';
 import { createNewGame } from '../src/initializer.ts';
 import { previewCommand, reduceCommand } from '../src/reducer.ts';
 import { projectPlayerView } from '../src/view.ts';
+import { advanceTo } from '../src/time.ts';
+import { constructionWorkRate } from '../src/construction.ts';
+import { canonicalStateHash } from '../src/hash.ts';
+import { STAGE07_HARE_TARGET_ID } from '../src/combat.ts';
 import {
   DIRECT_REVIVE_MIRROR_RULE, STAGE07_OPENING_CLOAK_ID, STAGE07_OPENING_CORPSE_ID,
   STAGE07_OPENING_SPEAR_ID, activateOpeningCareer, directReviveAvailability,
@@ -280,3 +284,119 @@ test('career growth applies eight held points on activation, with the source SPI
   assert.equal(delta.PRE, 4);
   assert.ok(Math.abs(Object.values(delta).reduce((sum, value) => sum + value, 0) - 16) < 0.000001);
 });
+
+function reviveAndEquipOpeningRook() {
+  let state = freshState();
+  state = inspectOpeningBody(state).state;
+  state = reviveOpeningBody(state).state;
+  const unitId = state.ownedUnits.find(unit => unit.creationRoute === 'DIRECT_TU_PHUC')!.id;
+  const weapon = submit(state, 'equip-combat-spear', 'equip', { unitId, itemId: STAGE07_OPENING_SPEAR_ID, slotId: 'MAIN_HAND' });
+  assert.equal(weapon.receipt.accepted, true, weapon.receipt.code);
+  state = weapon.state;
+  const armor = submit(state, 'equip-combat-cloak', 'equip', { unitId, itemId: STAGE07_OPENING_CLOAK_ID, slotId: 'BODY' });
+  assert.equal(armor.receipt.accepted, true, armor.receipt.code);
+  return armor.state;
+}
+
+function stage07BuildJob(workerIds: readonly string[]) {
+  return {
+    id: 'STAGE07-COMBAT-BUILD-CHECK', kind: 'repair' as const, status: 'active' as const,
+    buildingId: 'LL-BLD-HOUSE-01', blueprintId: null, siteId: 'SITE-LL01-000',
+    position: { xMm: 0, yMm: 0, sourceZMetres: 0 }, workUnitsRequired: 10,
+    progressTicks: 0, progressRemainder: 0, workerIds, costReservations: [], toolReservations: [],
+    cancellationPolicy: 'test', blocker: null, startedAtElapsedMs: 0, completedAtElapsedMs: null,
+  };
+}
+
+test('same-seed H0 combat survives a mid-round checkpoint, creates one real corpse, mirrors combat XP once, and completes the browser journey', () => {
+  let state = reviveAndEquipOpeningRook();
+  const unit = state.ownedUnits.find(candidate => candidate.creationRoute === 'DIRECT_TU_PHUC')!;
+  const initialView = projectPlayerView(state, world);
+  assert.equal(initialView.combat?.target?.regionalPopulationRemaining, 38);
+  assert.equal(initialView.visibleMap.combatTargets?.length, 1);
+  assert.equal(constructionWorkRate(state, stage07BuildJob([unit.id])), 1);
+
+  const started = submit(state, 'start-opening-hare-fight', 'attack', { actorIds: [unit.id], targetId: STAGE07_HARE_TARGET_ID });
+  assert.equal(started.receipt.accepted, true, started.receipt.code);
+  state = started.state;
+  assert.equal(state.combat?.target.status, 'reacting');
+  assert.equal(state.combat?.encounters.length, 1);
+  assert.equal(constructionWorkRate(state, stage07BuildJob([unit.id])), 0);
+  const repeatedStart = submit(state, 'try-to-farm-same-hare', 'attack', { actorIds: [unit.id], targetId: STAGE07_HARE_TARGET_ID });
+  assert.equal(repeatedStart.receipt.accepted, false);
+  assert.equal(repeatedStart.receipt.code, 'COMBAT_TARGET_UNAVAILABLE');
+  assert.equal(repeatedStart.state.combat?.encounters.length, 1);
+
+  const firstRound = advanceTo(state, state.simElapsedMs + 4_000, {}, world);
+  assert.equal(firstRound.state.combat?.encounters[0].round, 1);
+  assert.ok(firstRound.events.some(event => event.type === 'combat_turn_settled'));
+  const checkpoint = structuredClone(firstRound.state);
+  const targetTime = checkpoint.simElapsedMs + 60_000;
+  const uninterrupted = advanceTo(firstRound.state, targetTime, {}, world);
+  const reloaded = advanceTo(checkpoint, targetTime, {}, world);
+  assert.equal(canonicalStateHash(uninterrupted.state), canonicalStateHash(reloaded.state));
+  assert.deepEqual(uninterrupted.events, reloaded.events);
+
+  state = uninterrupted.state;
+  const encounter = state.combat!.encounters[0];
+  assert.equal(encounter.status, 'victory');
+  assert.equal(state.combat!.target.status, 'dead');
+  assert.equal(state.corpses.filter(corpse => corpse.actorId === state.combat!.target.actorId).length, 1);
+  const hareCorpse = state.corpses.find(corpse => corpse.actorId === state.combat!.target.actorId)!;
+  assert.equal(hareCorpse.state, 'known');
+  assert.equal(hareCorpse.bodyRecord?.sourceProfileState, 'complete');
+  assert.equal(hareCorpse.bodyRecord?.health?.current, 0);
+  assert.equal(state.combat!.target.bodyRecord.health?.current, 0);
+  assert.equal(projectPlayerView(state, world).combat?.target?.regionalPopulationRemaining, 37);
+  assert.equal(state.ownedUnits.find(candidate => candidate.id === unit.id)?.xp, 36);
+  assert.equal(state.player.xp, 12);
+  assert.equal(state.progression?.transactions.filter(transaction => transaction.sourceCategory === 'combat').length, 2);
+  assert.deepEqual(state.progression?.mirrorReceiptKeys, ['XP-COMBAT-ENCOUNTER-STAGE07-0001-' + unit.id + '|LI_LAN|' + DIRECT_REVIVE_MIRROR_RULE]);
+
+  const afterVictory = advanceTo(state, state.simElapsedMs + 60_000, {}, world);
+  assert.equal(afterVictory.state.player.xp, 12);
+  assert.equal(afterVictory.state.progression?.transactions.length, state.progression?.transactions.length);
+  const inspect = submit(state, 'inspect-hare-corpse', 'inspect_entity', { entity: { type: 'corpse', id: hareCorpse.id } });
+  assert.equal(inspect.receipt.accepted, true);
+  const revive = submit(inspect.state, 'revive-hare-corpse', 'revive', { actorId: state.player.id, corpseId: hareCorpse.id });
+  assert.equal(revive.receipt.accepted, true, revive.receipt.code);
+  const hareUnit = revive.state.ownedUnits.find(candidate => candidate.id !== unit.id)!;
+  assert.equal(hareUnit.name, 'Thỏ băng');
+  assert.equal(hareUnit.anatomyTemplateId, 'ANATOMY-QUADRUPED-ICE-HARE-1.0');
+  assert.equal(hareUnit.baseLaborRateWuPerHour, 0);
+  assert.equal(revive.state.inventory.containers.flatMap(container => container.stacks).filter(stack => stack.itemId === STAGE07_OPENING_SPEAR_ID).length, 1);
+});
+
+test('retreat is an owned-unit intent settled on simulation time and cannot respawn the R0 individual', () => {
+  let state = reviveAndEquipOpeningRook();
+  const unitId = state.ownedUnits.find(unit => unit.creationRoute === 'DIRECT_TU_PHUC')!.id;
+  const started = submit(state, 'start-retreat-encounter', 'attack', { actorIds: [unitId], targetId: STAGE07_HARE_TARGET_ID });
+  assert.equal(started.receipt.accepted, true);
+  state = started.state;
+  const encounter = state.combat!.encounters[0];
+  const retreat = submit(state, 'order-opening-retreat', 'retreat', { actorIds: [unitId], encounterId: encounter.id });
+  assert.equal(retreat.receipt.accepted, true);
+  assert.equal(retreat.state.combat?.encounters[0].pendingIntent, 'retreat');
+  const result = advanceTo(retreat.state, retreat.state.simElapsedMs + 4_000, {}, world);
+  assert.equal(result.state.combat?.encounters[0].status, 'retreated');
+  assert.equal(result.state.combat?.target.status, 'retreated');
+  assert.equal(result.state.combat?.target.sourcePopulationAtStart, 38);
+  assert.equal(result.state.corpses.some(corpse => corpse.actorId === result.state.combat?.target.actorId), false);
+  assert.equal(result.state.progression?.transactions.length, 0);
+  const retry = submit(result.state, 'attack-after-retreat', 'attack', { actorIds: [unitId], targetId: STAGE07_HARE_TARGET_ID });
+  assert.equal(retry.receipt.accepted, false);
+  assert.equal(retry.state.combat?.encounters.length, 1);
+});
+
+test('cancelled spatial search does not materialize or debit the opening prey', () => {
+  let state = freshState();
+  const search = submit(state, 'cancelled-hare-search', 'search', { actorId: state.player.id, center: state.player.position, radiusMm: 500_000 });
+  assert.equal(search.receipt.accepted, true, search.receipt.code);
+  state = search.state;
+  const searchJobId = state.spatial.searchJobs.at(-1)!.id;
+  const cancelled = submit(state, 'cancel-hare-search', 'cancel_spatial_job', { jobId: searchJobId });
+  assert.equal(cancelled.receipt.accepted, true);
+  assert.equal(cancelled.state.combat?.target.status, 'available');
+  assert.equal(projectPlayerView(cancelled.state, world).combat?.target?.regionalPopulationRemaining, 38);
+});
+

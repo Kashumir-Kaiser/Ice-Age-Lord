@@ -5,6 +5,7 @@ import { OPENING_BUILDINGS } from '../../content/src/buildings.ts';
 import { constructionWorkRate, farmhouseCapacity } from './construction.ts';
 import { elapsedMsToWorldClock } from './time.ts';
 import { butcherCorpse, directReviveAvailability } from './stage07.ts';
+import { projectStage07Combat } from './combat.ts';
 
 export function entityKey(ref: EntityRef): string {
   return `${ref.type}:${ref.id}`;
@@ -184,6 +185,11 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
     items: container.stacks.map(stack => ({ itemId: stack.itemId, label: stack.templateId, quantity: stack.quantity, reservedQuantity: stack.reservedQuantity ?? 0, unit: stack.unit ?? null, quality: stack.quality ?? null, condition: stack.condition ?? null, ownerId: stack.ownerId ?? null, equipped: stack.equipped, equippedSlotId: stack.equippedSlotId ?? null, foodUnitsPerItem: stack.foodUnitsPerItem ?? null, equipmentTags: stack.equipmentTags ?? [], combatEffects: stack.combatEffects ?? {}, provenance: stack.provenance })),
   }));
   const sights = currentSight(state, world);
+  const combat = projectStage07Combat(state, world);
+  const combatTargets = combat.target && (combat.target.state === 'available' || combat.target.state === 'reacting')
+    && sights.some(sight => Math.hypot(combat.target!.position.xMm - sight.center.xMm, combat.target!.position.yMm - sight.center.yMm) <= sight.radiusMm)
+    ? [{ targetId: combat.target.id, label: combat.target.label, position: combat.target.position, status: combat.target.state as 'available' | 'reacting' }]
+    : [];
 
   return {
     schemaVersion: 1,
@@ -258,6 +264,7 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
       farmerHouseCapacity: farmhouseCapacity(state),
       occupiedHousing: state.construction.residents.length,
     },
+    combat,
     careerCard: {
       observed: state.playerKnowledge.careerCardObserved,
       active: state.player.career.state === 'active',
@@ -310,6 +317,7 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
       }),
       activeOrders: activeMapOrders(state),
       heatOverlays: state.territory.survivalFire.active ? [{ center: state.territory.position, radiusMm: state.territory.survivalFire.heatRadiusMetres * 1_000, minCelsius: state.territory.survivalFire.heatDeltaCelsius.min, maxCelsius: state.territory.survivalFire.heatDeltaCelsius.max }] : [],
+      combatTargets,
     },
     spatial: {
       navigationRuleVersion: world.navigationOverlay.id,

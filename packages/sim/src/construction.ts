@@ -8,6 +8,7 @@ import {
 } from '../../content/src/buildings.ts';
 import { canAccessStarterContainer } from './access.ts';
 import { settleOrdinaryLaborXp } from './stage07.ts';
+import { isActorInActiveCombat } from './combat.ts';
 
 const HOUR_MS = 3_600_000;
 const WORK_TICKS_PER_WU = 300;
@@ -35,6 +36,7 @@ function actorPosition(state: GameState, actorId: string) {
 }
 
 function actorBaseRate(state: GameState, actorId: string): number {
+  if (isActorInActiveCombat(state, actorId)) return 0;
   if (actorId === state.player.id) return CONSTRUCTION_LABOR_OVERLAY.defaultPlayerWuPerHour;
   return state.ownedUnits.find(unit => unit.id === actorId)?.baseLaborRateWuPerHour ?? 0;
 }
@@ -51,6 +53,7 @@ function validConditionFactors(factors: ReturnType<typeof actorConditionFactors>
 }
 
 function isActorBusy(state: GameState, actorId: string, exceptJobId?: string): boolean {
+  if (isActorInActiveCombat(state, actorId)) return true;
   if (state.travel.orders.some(order => order.status === 'active' && order.actorIds.includes(actorId))) return true;
   if (state.spatial.searchJobs.some(job => job.status === 'active' && job.actorIds.includes(actorId))) return true;
   if (state.spatial.harvestJobs.some(job => job.status === 'active' && job.actorIds.includes(actorId))) return true;

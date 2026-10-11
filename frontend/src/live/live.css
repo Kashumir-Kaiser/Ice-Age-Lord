@@ -143,6 +143,9 @@
 .live-map-marker span { max-width:140px; overflow:hidden; color:#b6c9c7; font-size:9px; text-overflow:ellipsis; white-space:nowrap; }
 .live-map-marker--fire { border-color:rgba(228,177,116,.27); color:#f0d2a0; background:rgba(89,59,35,.6); }
 .live-map-marker--fire span { color:#efd4a7; }
+.live-map-marker--combat { border-color:rgba(179,214,193,.38); background:rgba(15,53,54,.82); }
+.live-map-marker--combat>svg { color:#c3edce; }
+.live-map-marker--combat span { color:#d0ead6; }
 .live-map-marker.is-selected { outline:2px solid #e4c18b; outline-offset:2px; }
 .live-terrain-label { position:absolute; color:#829f9c; font-size:9px; transform:translate(-50%,-50%); }
 .live-map-empty { position:absolute; inset:45% 0 auto; text-align:center; color:#8198a1; font-size:11px; }

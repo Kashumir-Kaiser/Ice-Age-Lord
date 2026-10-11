@@ -12,6 +12,7 @@ import type {
   WorldDefinition,
   WorldResource,
 } from '../../contracts/src/index.ts';
+import { isActorInActiveCombat } from './combat.ts';
 import { canonicalStateHash } from './hash.ts';
 
 export const SPATIAL_TICK_MS = 15 * 60_000;
@@ -305,6 +306,7 @@ function actorFor(state: GameState, actorId: string): Actor | null {
 }
 
 export function actorAvailability(state: GameState, actorId: string): string | null {
+  if (isActorInActiveCombat(state, actorId)) return 'ACTOR_IN_COMBAT';
   const actor = actorFor(state, actorId);
   if (!actor) return 'ACTOR_NOT_OWNED_OR_UNAVAILABLE';
   if (state.travel.orders.some(order => order.actorIds.includes(actorId) && order.status === 'active')) return 'ACTOR_ALREADY_TRAVELLING';

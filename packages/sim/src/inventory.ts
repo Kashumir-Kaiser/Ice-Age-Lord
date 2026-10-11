@@ -1,6 +1,7 @@
 import type { CommandEvent, GameState, WorldDefinition } from '../../contracts/src/index.ts';
 import { canAccessStarterContainer } from './access.ts';
 import { actorAvailability } from './spatial.ts';
+import { isActorInActiveCombat } from './combat.ts';
 
 function canReachContainer(state: GameState, world: WorldDefinition, actorId: string, containerId: string): boolean {
   if (actorId !== state.player.id || actorAvailability(state, actorId)) return false;
@@ -80,6 +81,7 @@ export function consumeItem(state: GameState, world: WorldDefinition, input: { a
 }
 
 export function equipmentBlocker(state: GameState, world: WorldDefinition, unitId: string, itemId: string, slotId: string): string | null {
+  if (isActorInActiveCombat(state, unitId)) return 'UNIT_IN_COMBAT';
   const unit = state.ownedUnits.find(candidate => candidate.id === unitId && candidate.ownerId === state.player.id);
   if (!unit) return 'UNIT_NOT_OWNED';
   if (unit.equipmentRequirements.status !== 'compiled' || !unit.equipmentSlots) return 'EQUIPMENT_PROFILE_NOT_COMPILED';
@@ -98,6 +100,7 @@ export function equipmentBlocker(state: GameState, world: WorldDefinition, unitI
 }
 
 export function unequipBlocker(state: GameState, world: WorldDefinition, unitId: string, itemId: string): string | null {
+  if (isActorInActiveCombat(state, unitId)) return 'UNIT_IN_COMBAT';
   const unit = state.ownedUnits.find(candidate => candidate.id === unitId && candidate.ownerId === state.player.id);
   if (!unit) return 'UNIT_NOT_OWNED';
   if (unit.equipmentRequirements.status !== 'compiled' || !unit.equipmentSlots) return 'EQUIPMENT_PROFILE_NOT_COMPILED';

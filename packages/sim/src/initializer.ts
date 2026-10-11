@@ -6,6 +6,7 @@ import { canonicalStateHash } from './hash.ts';
 import { seedConvenienceBag } from './bag.ts';
 import { seedSpatialKnowledge } from './spatial.ts';
 import { stage07OpeningCorpse, STAGE07_OPENING_CORPSE_ID } from './stage07.ts';
+import { createStage07CombatState } from './combat.ts';
 
 export type NewGameOptions = {
   saveId: string;
@@ -251,6 +252,7 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
       stage07OpeningCorpse(),
     ],
     progression: { transactions: [], mirrorReceiptKeys: [] },
+    combat: createStage07CombatState(world),
     quests: world.dormantQuestIds.map(questId => ({ questId, state: 'dormant' as const, acceptedAt: null, completedAt: null, rewardReceipt: null })),
     calendar: world.eventSchedule.map(({ statusAtT0: _sourceStatus, ...event }) => ({
       ...event,

@@ -208,6 +208,7 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
     || !isRecord(value.playerKnowledge) || !Array.isArray(value.playerKnowledge.lastInspectedEntityIds)
     || !value.playerKnowledge.lastInspectedEntityIds.every(id => isNonEmptyString(id))
     || !isRecord(value.inventory) || !Array.isArray(value.inventory.containers)
+    || !Array.isArray(value.ownedUnits) || !Array.isArray(value.corpses) || !isRecord(value.rngStreams)
     || !isRecord(value.bagSeed)) {
     throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup save state is malformed.', 'Bản sao lưu không hợp lệ.');
   }
@@ -232,6 +233,7 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
       || (Array.isArray(candidate.playerKnowledge.knownChestIds) && candidate.playerKnowledge.knownChestIds.includes(id));
     if (type === 'route') return Array.isArray(candidate.playerKnowledge.knownRouteIds) && candidate.playerKnowledge.knownRouteIds.includes(id);
     if (type === 'unit') return Array.isArray(candidate.ownedUnits) && candidate.ownedUnits.some(unit => unit.id === id);
+    if (type === 'corpse') return (candidate.playerKnowledge.knownCorpseIds ?? []).includes(id);
     if (type === 'item') return candidate.inventory.containers.some(container => isRecord(container) && container.observed === true
       && Array.isArray(container.stacks) && container.stacks.some(stack => isRecord(stack) && stack.itemId === id));
     return false;
@@ -249,6 +251,72 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
     contentVersion: candidate.contentVersion,
     seed: candidate.seed,
   }, world);
+  const rawCombat: unknown = (value as Record<string, unknown>).combat;
+  if (rawCombat !== undefined) {
+    const badCombat = (): never => { throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup contains invalid encounter state.', 'Bản sao lưu có trạng thái giao chiến không hợp lệ.'); };
+    if (!isRecord(rawCombat) || !isSafeInt(rawCombat.nextEncounterSequence) || !isRecord(rawCombat.target) || !Array.isArray(rawCombat.encounters)) badCombat();
+    const rawTarget = rawCombat.target;
+    const baseTarget = baseline.combat!.target;
+    const targetStatus = rawTarget.status;
+    const targetHealth = isRecord(rawTarget.bodyRecord) && isRecord(rawTarget.bodyRecord.health) ? rawTarget.bodyRecord.health : null;
+    if (rawTarget.actorId !== baseTarget.actorId || rawTarget.sourceEcologyId !== baseTarget.sourceEcologyId
+      || rawTarget.populationKey !== baseTarget.populationKey || rawTarget.sourcePopulationAtStart !== baseTarget.sourcePopulationAtStart
+      || rawTarget.siteId !== baseTarget.siteId || !['available', 'reacting', 'retreated', 'dead'].includes(String(targetStatus))
+      || !isRecord(rawTarget.position) || !targetHealth || !isSafeInt(targetHealth.current) || !isSafeInt(targetHealth.max)
+      || targetHealth.max !== baseTarget.bodyRecord.health?.max || targetHealth.current > targetHealth.max
+      || canonicalStateHash(rawTarget.combatProfile) !== canonicalStateHash(baseTarget.combatProfile)
+      || canonicalStateHash((rawTarget.bodyRecord as Record<string, unknown>).rawAttributes) !== canonicalStateHash(baseTarget.bodyRecord.rawAttributes)
+      || canonicalStateHash((rawTarget.bodyRecord as Record<string, unknown>).equipmentInstanceIds) !== canonicalStateHash([])
+      || (targetStatus === 'dead' && targetHealth.current !== 0)
+      || (targetStatus !== 'dead' && targetHealth.current <= 0)) badCombat();
+    const basePosition = baseTarget.position;
+    const movedMm = Math.hypot(Number(rawTarget.position.xMm) - basePosition.xMm, Number(rawTarget.position.yMm) - basePosition.yMm);
+    if (!Number.isSafeInteger(rawTarget.position.xMm) || !Number.isSafeInteger(rawTarget.position.yMm)
+      || (targetStatus === 'retreated' ? movedMm > 5_100 || movedMm < 4_900 : movedMm !== 0)) badCombat();
+    const encounterIds = new Set<string>();
+    const encounterSequences = new Set<number>();
+    let activeCount = 0;
+    let maxSequence = 0;
+    for (const candidateEncounter of rawCombat.encounters) {
+      if (!isRecord(candidateEncounter) || !isNonEmptyString(candidateEncounter.id) || !isSafeInt(candidateEncounter.sequence)
+        || !['active', 'victory', 'defeat', 'retreated'].includes(String(candidateEncounter.status))
+        || candidateEncounter.targetActorId !== baseTarget.actorId || !Array.isArray(candidateEncounter.actorIds)
+        || candidateEncounter.actorIds.length !== 1 || typeof candidateEncounter.actorIds[0] !== 'string'
+        || !Array.isArray(candidateEncounter.log) || candidateEncounter.log.length > 100
+        || !isSafeInt(candidateEncounter.startedAtElapsedMs) || candidateEncounter.startedAtElapsedMs > candidate.simElapsedMs
+        || !isSafeInt(candidateEncounter.round) || !isRecord(candidateEncounter.targetHealth)
+        || !isSafeInt(candidateEncounter.targetHealth.current) || !isSafeInt(candidateEncounter.targetHealth.max)
+        || candidateEncounter.targetHealth.max !== targetHealth.max || candidateEncounter.targetHealth.current > targetHealth.max
+        || !['attack', 'retreat'].includes(String(candidateEncounter.pendingIntent))
+        || !(candidateEncounter.completedAtElapsedMs === null || (isSafeInt(candidateEncounter.completedAtElapsedMs) && candidateEncounter.completedAtElapsedMs <= candidate.simElapsedMs))
+        || !(candidateEncounter.nextTurnAtElapsedMs === null || isSafeInt(candidateEncounter.nextTurnAtElapsedMs))) badCombat();
+      const encounterId = candidateEncounter.id as string;
+      const sequence = candidateEncounter.sequence as number;
+      if (encounterIds.has(encounterId) || encounterSequences.has(sequence)) badCombat();
+      encounterIds.add(encounterId);
+      encounterSequences.add(sequence);
+      maxSequence = Math.max(maxSequence, sequence);
+      const actorId = candidateEncounter.actorIds[0] as string;
+      if (!candidate.ownedUnits.some(unit => unit.id === actorId && unit.ownerId === candidate.player.id)) badCombat();
+      if (candidateEncounter.status === 'active') {
+        activeCount += 1;
+        if (!isSafeInt(candidateEncounter.nextTurnAtElapsedMs) || candidateEncounter.nextTurnAtElapsedMs <= candidate.simElapsedMs
+          || candidateEncounter.completedAtElapsedMs !== null) badCombat();
+      } else if (candidateEncounter.nextTurnAtElapsedMs !== null || candidateEncounter.completedAtElapsedMs === null) badCombat();
+      const streamId = 'stage07-combat:' + encounterId;
+      const stream = candidate.rngStreams?.[streamId];
+      if (!stream || stream.algorithm !== 'HASH-PRIMITIVE-1.0' || !isSafeInt(stream.counter)) badCombat();
+      if (!candidateEncounter.log.every(entry => isRecord(entry) && isSafeInt(entry.atElapsedMs) && entry.atElapsedMs <= candidate.simElapsedMs
+        && isNonEmptyString(entry.actorId) && entry.targetActorId === baseTarget.actorId
+        && ['hit', 'miss', 'retreat', 'defeat', 'victory'].includes(String(entry.outcome))
+        && isSafeInt(entry.damage) && isSafeInt(entry.damageTaken) && isSafeInt(entry.actorHealth) && isSafeInt(entry.targetHealth))) badCombat();
+    }
+    if (!isSafeInt(rawCombat.nextEncounterSequence) || (rawCombat.nextEncounterSequence as number) <= maxSequence
+      || activeCount > 1 || (activeCount === 1) !== (targetStatus === 'reacting')
+      || (targetStatus === 'available' && rawCombat.encounters.length > 0)
+      || (targetStatus === 'dead' && !candidate.corpses.some(corpse => corpse.id === 'CORPSE-' + baseTarget.actorId && corpse.actorId === baseTarget.actorId))
+      || (targetStatus === 'retreated' && rawCombat.encounters.length === 0)) badCombat();
+  }
   if (!isRecord(candidate.clockControl) || !isRecord(candidate.timeBoundaries) || !isRecord(candidate.survival)
     || !isRecord(candidate.territory) || !isRecord(candidate.territory.survivalFire) || !isRecord(candidate.territory.tomb)
     || !isRecord(candidate.player.mana) || !Array.isArray(candidate.ownedUnits) || !Array.isArray(candidate.jobs)
@@ -307,6 +375,8 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
     })),
   };
   normalized.bagSeed = { ...baseline.bagSeed, inspected: bagObserved };
+  // Encounter state is mutable campaign state and was validated above; exclude it from the opening-state identity comparison.
+  normalized.combat = baseline.combat;
   if (canonicalStateHash(baseline) !== canonicalStateHash(normalized)) {
     throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup changes immutable opening state.', 'Bản sao lưu đã thay đổi trạng thái mở đầu bất biến.');
   }
@@ -433,6 +503,8 @@ function validateBackupEvent(value: unknown, index: number, saveId: string, rece
     'harvest_job_blocked', 'harvest_cargo_returned', 'harvest_job_cancelled', 'inventory_item_transferred',
     'resource_daily_quotas_reset', 'career_activated', 'corpse_revived', 'corpse_butchered',
     'unit_equipment_changed', 'unit_equipment_removed', 'xp_awarded',
+    'combat_encounter_started', 'combat_retreat_ordered', 'combat_turn_settled', 'combat_encounter_won',
+    'combat_encounter_retreated', 'combat_unit_defeated',
   ]);
   if (value.eventType === 'career_card_inspected') return Object.keys(value.payload).length === 0;
   if (value.eventType === 'starter_container_inspected') return (value.payload.containerId === 'LL-CNT-CARRIED-FOOD-BAG-01' && value.payload.containerKind === 'carried_bag')
@@ -1094,6 +1166,12 @@ export class GameApplicationService {
       lord_house_repaired: { category: 'construction', title: 'Lord House repaired', text: 'The house is active and exactly eleven built-in Level 1 building options are unlocked.' },
       construction_building_completed: { category: 'construction', title: 'Building completed', text: `${String(event.payload.blueprintId)} finished; reserved costs were consumed once and the building instance is active.` },
       career_activated: { category: 'character', title: 'Nghề đã kích hoạt', text: 'Tử Khí Châm đã được học một lần; Mana không đổi.' },
+      combat_encounter_started: { category: 'combat', title: 'Bắt đầu giao chiến', text: String(event.payload.actorName) + ' tiếp cận một thỏ băng thuộc quần thể R0; lượt đầu sẽ phân giải theo giờ mô phỏng.' },
+      combat_retreat_ordered: { category: 'combat', title: 'Đã ra lệnh rút lui', text: 'Chiến binh sẽ rút ở mốc giao chiến kế tiếp sau phản ứng của mục tiêu.' },
+      combat_turn_settled: { category: 'combat', title: 'Lượt giao chiến đã phân giải', text: 'Kết quả: ' + String(event.payload.outcome) + '; sát thương gây ra ' + String(event.payload.damage) + ', nhận vào ' + String(event.payload.damageTaken) + '.' },
+      combat_encounter_won: { category: 'combat', title: 'Giao chiến kết thúc · nhặt được thi thể thật', text: String(event.payload.xpAwarded) + ' XP hợp lệ cho ' + String(event.payload.actorName) + '; Lí Lan nhận phản chiếu ' + String(event.payload.mirroredXp) + ' XP đúng một lần.' },
+      combat_encounter_retreated: { category: 'combat', title: 'Rút khỏi giao chiến', text: 'Mục tiêu sống sót và rời khỏi tầm giao chiến; cá thể vẫn được giữ nguyên trong ecology.' },
+      combat_unit_defeated: { category: 'combat', title: 'Chiến binh bị hạ gục', text: 'Liên kết Tử Phục của đơn vị đã đóng vĩnh viễn; thi thể thứ hai mang khóa không thể tái chế.' },
       corpse_revived: { category: 'forces', title: 'Tử Phục thành công', text: 'Đơn vị được thêm vào quân lực với hồ sơ, cấp độ, kinh nghiệm và các vật phẩm đã ghi nhận.' },
       corpse_butchered: { category: 'forces', title: 'Thi thể đã được phân giải', text: 'Thi thể đã được tiêu dùng một lần; trang bị còn ghi nhận được thu hồi.' },
       unit_equipment_changed: { category: 'inventory', title: 'Trang bị đã cập nhật', text: String(event.payload.templateId) + ' được gắn vào ' + String(event.payload.unitId) + '.' },

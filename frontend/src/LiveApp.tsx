@@ -75,6 +75,17 @@ function availabilityMessage(availability: ActionAvailability): string {
     EQUIPMENT_TAG_MISMATCH: 'Vật phẩm không vừa với ô trang bị này.',
     EQUIPMENT_SLOT_OCCUPIED: 'Ô trang bị này đã có vật phẩm.',
     ITEM_ALREADY_EQUIPPED: 'Vật phẩm đã được trang bị.',
+    COMBAT_ACTOR_REQUIRED: 'Hãy Tử Phục một đơn vị có thể chiến đấu trước.',
+    COMBAT_ACTOR_NOT_OWNED: 'Chỉ đơn vị thuộc quyền Lí Lan mới có thể nhận lệnh.',
+    COMBAT_ACTOR_BUSY: 'Đơn vị đang bận với một công việc khác.',
+    UNIT_IN_COMBAT: 'Không thể thay trang bị khi đơn vị đang giao chiến.',
+    ACTOR_IN_COMBAT: 'Đơn vị phải rút khỏi giao chiến trước khi di chuyển.',
+    TARGET_OUT_OF_RANGE: 'Đơn vị chưa vào tầm vũ khí của mục tiêu.',
+    TARGET_NOT_PERCEIVED: 'Đơn vị chưa nhận ra mục tiêu giữa tuyết.',
+    COMBAT_TARGET_UNAVAILABLE: 'Cá thể này đã rời khỏi encounter.',
+    COMBAT_TARGET_DEAD: 'Cá thể này đã chết; hãy kiểm tra thi thể thật trên bản đồ.',
+    COMBAT_ENCOUNTER_NOT_ACTIVE: 'Không có encounter đang diễn ra để rút lui.',
+    COMBAT_WEAPON_REQUIRED: 'Trang bị vũ khí tương thích vào ô tay chính trước khi giao chiến.',
   };
   const reasonCode = availability.reasonCode;
   if (reasonCode && messages[reasonCode]) return messages[reasonCode];
@@ -161,6 +172,8 @@ function LiveApp() {
   const [events, setEvents] = useState<readonly PlayerEvent[]>([]);
   const [screen, setScreen] = useState<Screen>('overview');
   const [selectedRef, setSelectedRef] = useState<EntityRef | null>(null);
+  const [combatActorId, setCombatActorId] = useState('');
+  const [selectedCombatTargetId, setSelectedCombatTargetId] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
   const [pendingCommand, setPendingCommand] = useState<CommandEnvelope | null>(null);
   const [feedback, setFeedback] = useState<Feedback>({ kind: 'idle', text: '' });
@@ -561,6 +574,8 @@ function LiveApp() {
     const selectedHarvest = selectedEntity?.actions.find(item => item.actionId === 'harvest');
     const selectedCorpseId = selectedEntity?.ref.type === 'corpse' ? selectedEntity.ref.id : null;
     const selectedCorpse = view.corpses?.find(corpse => corpse.id === selectedCorpseId);
+    const selectedCombatTarget = view.combat?.target && view.combat.target.id === selectedCombatTargetId ? view.combat.target : null;
+    const selectedCombatActorId = combatActorId || view.units.find(unit => unit.health && unit.health.current > 0)?.id || '';
     return <div className="live-section-stack">
       <section className="live-panel">
         <div className="live-panel-heading">
@@ -628,6 +643,15 @@ function LiveApp() {
               <span>{entity.label}</span>
             </button>;
           })}
+          {(view.visibleMap.combatTargets ?? []).map(target => {
+            const projected = point(target.position);
+            const left = Math.max(2, Math.min(98, projected.x));
+            const top = Math.max(2, Math.min(98, projected.y));
+            return <button key={target.targetId} className={'live-map-marker live-map-marker--combat' + (selectedCombatTargetId === target.targetId ? ' is-selected' : '')}
+              data-testid="map-combat-target" style={{ left: left + '%', top: top + '%' }}
+              onClick={event => { event.stopPropagation(); setSelectedCombatTargetId(target.targetId); }}
+              aria-label={target.label} title={target.label}><MapPin size={19} aria-hidden="true" /><span>{target.label}</span></button>;
+          })}
           {view.units.filter(unit => unit.position).map(unit => {
             const projected = point(unit.position!);
             return <span key={unit.id} className="live-map-unit" style={{ left: `${Math.max(2, Math.min(98, projected.x))}%`, top: `${Math.max(2, Math.min(98, projected.y))}%` }} title={unit.name}>{unit.name}</span>;
@@ -662,6 +686,18 @@ function LiveApp() {
             {selectedInspect && !selectedInspect.enabled && <small>{availabilityMessage(selectedInspect)}</small>}
             {selectedMove && !selectedMove.enabled && <small>{availabilityMessage(selectedMove)}</small>}
             {selectedHarvest && !selectedHarvest.enabled && <small>{availabilityMessage(selectedHarvest)}</small>}
+          </div>
+        </div>}
+        {selectedCombatTarget && <div className="live-inspector" data-testid="combat-target-inspector">
+          <div><span className="live-eyebrow">ENCOUNTER TARGET · H0</span><h3>{selectedCombatTarget.label}</h3>
+            <p>{selectedCombatTarget.state === 'available' ? 'A known snow hare track is within sight.' : 'The hare has reacted to the encounter.'} · R0 population {selectedCombatTarget.regionalPopulationRemaining}</p></div>
+          <div className="live-action-stack">
+            <label className="live-inline-field">Fighter <select value={selectedCombatActorId} onChange={event => setCombatActorId(event.target.value)}>
+              <option value="">Choose a living owned unit</option>{view.units.filter(unit => unit.health && unit.health.current > 0).map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
+            </select></label>
+            <button className="live-button" disabled={working || Boolean(pendingCommand) || selectedCombatTarget.state !== 'available' || !selectedCombatActorId}
+              onClick={() => void sendCommand(commandFor(view, 'attack', { actorIds: [selectedCombatActorId], targetId: selectedCombatTarget.id }))}>Engage target</button>
+            {!selectedCombatTarget.attack.enabled && <small>{availabilityMessage(selectedCombatTarget.attack)}</small>}
           </div>
         </div>}
       </section>
@@ -870,13 +906,44 @@ function LiveApp() {
     if (screen === 'forces') {
       return <section className="live-panel">
         <div className="live-panel-heading"><div><span className="live-eyebrow">OWNED UNITS</span><h2>Quân lực</h2></div><Users size={22} /></div>
+        {view.combat?.target && <article className="live-container-card" data-testid="stage07-combat-panel">
+          <div className="live-panel-heading"><div><span className="live-eyebrow">H0 · OPENING ENCOUNTER</span><h3>{view.combat.target.label}</h3></div>
+            <span className="live-data-chip">{view.combat.target.state}</span></div>
+          <p>Thỏ băng thuộc quần thể có sẵn ECO-LL01-R0. Còn {view.combat.target.regionalPopulationRemaining} trong tổng số ban đầu; cá thể này không được tạo lại khi rút lui hay tải save.</p>
+          {view.combat.target.state === 'available' && <div className="live-button-row">
+            <label className="live-inline-field">Chiến binh<select aria-label="Chiến binh giao chiến" value={combatActorId || view.units.find(unit => unit.health && unit.health.current > 0)?.id || ''}
+              onChange={event => setCombatActorId(event.target.value)}>
+              <option value="">Chọn đơn vị sống thuộc quyền Lí Lan</option>
+              {view.units.filter(unit => unit.health && unit.health.current > 0).map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
+            </select></label>
+            <button className="live-button" disabled={working || Boolean(pendingCommand) || !(combatActorId || view.units.some(unit => unit.health && unit.health.current > 0))}
+              onClick={() => {
+                const actorId = combatActorId || view.units.find(unit => unit.health && unit.health.current > 0)?.id || '';
+                if (actorId) void sendCommand(commandFor(view, 'attack', { actorIds: [actorId], targetId: view.combat!.target!.id }));
+              }}>Tấn công theo thời gian mô phỏng</button>
+          </div>}
+          {view.combat.encounter && <div>
+            <p>Encounter {view.combat.encounter.id} · {view.combat.encounter.status} · vòng {view.combat.encounter.round} · {view.combat.encounter.nextTurnAtElapsedMs === null ? 'đã kết thúc' : 'lượt kế tiếp lúc T+' + elapsedLabel(view.combat.encounter.nextTurnAtElapsedMs)}</p>
+            {view.combat.encounter.status === 'active' && <><p>Thỏ băng {view.combat.encounter.targetHealth.current}/{view.combat.encounter.targetHealth.max} HP · clock {view.clockControl.status === 'running' ? 'đang chạy' : 'đang dừng'}.</p>
+              <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'retreat', { actorIds: view.combat!.encounter!.actorIds, encounterId: view.combat!.encounter!.id }))}>Ra lệnh rút lui</button>
+            </>}
+            {view.combat.encounter.log.length > 0 && <ul className="live-plain-list">{view.combat.encounter.log.map((entry, index) => <li key={entry.atElapsedMs + ':' + index}>
+              <strong>Vòng {index + 1} · {entry.actorId === view.combat!.target!.id ? 'Thỏ băng' : view.units.find(unit => unit.id === entry.actorId)?.name ?? 'Chiến binh'} · {entry.outcome}</strong>
+              <span>Gây {entry.damage} · nhận {entry.damageTaken} · sức khỏe chiến binh {entry.actorHealth} · mục tiêu {entry.targetHealth}/{view.combat!.encounter!.targetHealth.max}</span>
+            </li>)}</ul>}
+          </div>}
+          {view.combat.target.state === 'dead' && <p>Thi thể thật đã được đánh dấu trên bản đồ. Hãy chọn thi thể để kiểm tra hồ sơ trước khi Tử Phục.</p>}
+          {view.combat.target.state === 'retreated' && <p>Cá thể này đã sống sót và rời khỏi encounter. Không có thi thể hoặc phần thưởng XP.</p>}
+        </article>}
         {view.units.length
           ? <div className="live-section-stack">{view.units.map(unit => {
             const routeLabel = unit.creationRoute === 'DIRECT_TU_PHUC' ? 'Được Lí Lan Tử Phục' : unit.creationRoute === 'TOMB_QUEUE' ? 'Được tạo từ Mộ' : 'Đơn vị thuộc quyền Lí Lan';
+            const inCombat = view.combat?.encounter?.status === 'active' && view.combat.encounter.actorIds.includes(unit.id);
             const accessibleItems = view.inventory.containers.filter(container => container.accessible).flatMap(container => container.items);
             return <article key={unit.id} className="live-container-card">
               <div className="live-panel-heading"><h3>{unit.name}</h3><span className="live-data-chip">{routeLabel}</span></div>
               <p>Bậc {unit.sourceStats.formTier} · Cấp {unit.level} · Phẩm {unit.sourceStats.grade} · XP {unit.xp}</p>
+              <p>Phe {unit.sourceStats.faction} · hoạt động {inCombat ? 'đang giao chiến' : unit.health?.current === 0 ? 'đã gục' : 'sẵn sàng'}.</p>
               {unit.health && <p>Sức khỏe {unit.health.current}/{unit.health.max} · độ nguyên vẹn {unit.integrity ?? '—'}%</p>}
               <p>{unit.xpMirrorEligible ? 'Lí Lan nhận bản sao XP hợp lệ của đơn vị này.' : 'XP của đơn vị này không được chuyển cho Lí Lan.'} · công việc {unit.baseLaborRateWuPerHour} WU/h</p>
               {unit.attributes && <p>Thuộc tính: {Object.entries(unit.attributes).map(([stat, value]) => `${stat} ${value}`).join(' · ')}</p>}
@@ -896,7 +963,7 @@ function LiveApp() {
             </article>;
           })}</div>
           : <p className="live-empty-state">Chưa có đơn vị thuộc quyền người chơi.</p>}
-        {view.corpses && view.corpses.length > 0 && <><h3>Thi thể đã biết</h3><ul className="live-plain-list">{view.corpses.map(corpse => <li key={corpse.id}>
+        {view.corpses && view.corpses.length > 0 && <><h3>Thi thể đã biết</h3><ul className="live-plain-list">{view.corpses.map(corpse => <li key={corpse.id} data-testid="force-corpse-row">
           <strong>{corpse.label}</strong><span>{corpse.inspected ? `Bậc ${corpse.tier ?? '—'} · Cấp ${corpse.level ?? '—'} · Phẩm ${corpse.grade ?? '—'} · nguyên vẹn ${corpse.integrity ?? '—'}%` : 'Chưa kiểm tra.'}</span>
           {!corpse.inspected && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'inspect_entity', { entity: { type: 'corpse', id: corpse.id } }))}>Kiểm tra thi thể</button>}
           {corpse.inspected && <button className="live-button" disabled={working || Boolean(pendingCommand) || !corpse.revive.enabled} onClick={() => void sendCommand(commandFor(view, 'revive', { actorId: view.player.id, corpseId: corpse.id }))}>Tử Phục</button>}

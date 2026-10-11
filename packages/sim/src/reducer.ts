@@ -7,6 +7,7 @@ import { cancelTombJob, enqueueTombJob, selectedSpeed, TOMB_STANDARD_BLUEPRINT_I
 import { assignConstructionWorkers, cancelConstructionJob, previewBuild, previewHeaterService, previewRepair, recruitResidents, startConstructionJob, startHeaterService } from './construction.ts';
 import { consumeItem, equipItem, equipmentBlocker, mergeStacks, splitStack, unequipBlocker, unequipItem } from './inventory.ts';
 import { activateOpeningCareer, butcherCorpse, directReviveAvailability, reviveDirect } from './stage07.ts';
+import { attackAvailability, orderStage07Retreat, retreatAvailability, startStage07Encounter } from './combat.ts';
 import {
   actorAvailability,
   cancelSpatialJob,
@@ -50,7 +51,8 @@ const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | '
   revive: { code: 'REVIVAL_RULES_STAGE_07', message: 'Revival is unavailable until corpse identity and eligibility rules are implemented.' },
   butcher_corpse: { code: 'CORPSE_DISPOSITION_STAGE_07', message: 'Corpse disposal is unavailable until exclusive lifecycle rules are implemented.' },
   equip: { code: 'EQUIPMENT_RULES_STAGE_07', message: 'Equipment changes are unavailable until the item and unit ledgers are implemented.' },
-  attack: { code: 'COMBAT_RULES_STAGE_07', message: 'Combat is unavailable until encounters and deterministic resolution are implemented.' },
+  attack: { code: 'COMBAT_RULES_STAGE_07', message: 'Choose an owned, equipped warrior and the visible H0 target.' },
+  retreat: { code: 'COMBAT_ENCOUNTER_NOT_ACTIVE', message: 'There is no active encounter to retreat from.' },
   shop_transaction: { code: 'TRADE_RULES_STAGE_08', message: 'Transactions are unavailable until offer, currency and receipt rules are implemented.' },
 };
 
@@ -73,7 +75,7 @@ export function actionAvailability(type: CommandType): ActionAvailability {
   if (type === 'move' || type === 'search' || type === 'harvest' || type === 'cancel_travel' || type === 'cancel_spatial_job' || type === 'transfer_item' || type === 'open_cache') {
     return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
   }
-  if (type === 'split_stack' || type === 'merge_stacks' || type === 'consume_item' || type === 'activate_career_card' || type === 'revive' || type === 'butcher_corpse' || type === 'equip' || type === 'unequip_item') return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
+  if (type === 'split_stack' || type === 'merge_stacks' || type === 'consume_item' || type === 'activate_career_card' || type === 'revive' || type === 'butcher_corpse' || type === 'equip' || type === 'unequip_item' || type === 'attack' || type === 'retreat') return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
   return staticAvailability(type);
 }
 
@@ -167,6 +169,14 @@ export function previewCommand(
     return state.player.career.state === 'active'
       ? actionAvailability(command.type)
       : actionAvailability(command.type);
+  }
+  if (command.type === 'attack') {
+    const result = attackAvailability(state, world, command.payload.actorIds, command.payload.targetId);
+    return result.code ? unavailable(command.type, result.code, result.requirements.join(' ')) : actionAvailability(command.type);
+  }
+  if (command.type === 'retreat') {
+    const result = retreatAvailability(state, command.payload.actorIds, command.payload.encounterId);
+    return result.code ? unavailable(command.type, result.code, result.requirements.join(' ')) : actionAvailability(command.type);
   }
   if (command.type === 'butcher_corpse') {
     const result = butcherCorpse(state, world, command.payload.actorId, command.payload.corpseId);
@@ -416,6 +426,18 @@ export function reduceCommand(
     return acceptMutation(state, command, requestSha256, {
       playerKnowledge: { ...state.playerKnowledge, careerCardObserved: true },
     }, 'career_card_inspected', {}, 'CAREER_CARD_INSPECTED', 'The sealed career card was inspected; the career remains inactive.');
+  }
+
+  if (command.type === 'attack') {
+    const result = startStage07Encounter(state, world, command.payload.actorIds, command.payload.targetId);
+    if (result.code || !result.encounter || !result.event) return reject(state, command.commandId, result.code ?? 'COMBAT_UNAVAILABLE', result.requirements.join(' ') || 'The encounter cannot start.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'COMBAT_STARTED', 'The selected unit began a timed encounter with the known H0 prey.');
+  }
+
+  if (command.type === 'retreat') {
+    const result = orderStage07Retreat(state, command.payload.actorIds, command.payload.encounterId);
+    if (result.code || !result.event) return reject(state, command.commandId, result.code ?? 'COMBAT_ENCOUNTER_NOT_ACTIVE', result.requirements.join(' ') || 'The retreat order is unavailable.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'COMBAT_RETREAT_ORDERED', 'The unit will resolve its retreat on the next combat boundary.');
   }
 
   if (command.type === 'activate_career_card') {
