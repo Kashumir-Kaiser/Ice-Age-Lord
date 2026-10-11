@@ -63,7 +63,7 @@ test('placement creates reversible drafts without changing the starting building
   await expect(page.locator('.territory-building[data-building-id^="SITE-LL01-"]')).toHaveCount(initial);
   await page.getByRole('button',{name:/Xoay 90°/}).click();
   await expect(page.locator('.territory-placement-controls')).toContainText('hướng Đông');
-  await page.getByRole('button',{name:'Hủy'}).click();
+  await page.locator('.territory-placement-controls').getByRole('button',{name:'Hủy'}).click();
   await expect(page.locator('.territory-draft-list')).toContainText('Tháp cao');
   await page.getByRole('button',{name:'Xóa tất cả'}).click();
   await expect(page.locator('.territory-draft-list')).toHaveCount(0);

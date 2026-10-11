@@ -584,7 +584,13 @@ function LiveApp() {
         </div>
         <p className="live-muted">Camera movement only changes the view. Travel, sight, and searching change saved knowledge after the server settles them.</p>
         <div className="live-map-tools">
-          <button className={'live-button' + (chooseDestination ? '' : ' live-button--secondary')} disabled={working || Boolean(pendingCommand)} onClick={() => setChooseDestination(value => !value)}>
+          <button className={'live-button' + (chooseDestination ? '' : ' live-button--secondary')} disabled={working || Boolean(pendingCommand)} onClick={() => {
+            if (chooseDestination) {
+              setChooseDestination(false);
+              setDestination(null);
+              setDestinationAvailability(null);
+            } else setChooseDestination(true);
+          }}>
             {chooseDestination ? 'Cancel destination selection' : 'Choose destination'}
           </button>
           <div className="live-zoom-controls"><button className="live-button live-button--secondary" aria-label="Zoom out" disabled={mapZoom <= 0.2} onClick={() => setMapZoom(value => Math.max(0.2, Math.round(value / 1.6 * 100) / 100))}>−</button><span>{mapZoom.toFixed(2)}×</span><button className="live-button live-button--secondary" aria-label="Zoom in" disabled={mapZoom >= 500} onClick={() => setMapZoom(value => Math.min(500, Math.round(value * 1.6 * 100) / 100))}>+</button></div>
@@ -593,6 +599,39 @@ function LiveApp() {
         </div>
         {chooseDestination && <p className="live-map-hint">Click an empty map coordinate to preview an order. Confirming travel is a separate action.</p>}
         {fireRef && !fireEntity && <div className="live-inline-error" role="alert">Không tìm thấy Lửa Sinh Tồn trên bản đồ hiện tại.</div>}
+        {selectedEntity && !selectedCombatTarget && <div className="live-inspector">
+          <div><span className="live-eyebrow">SELECTED · {selectedEntity.category}</span><h3>{entityLabel(selectedEntity)}</h3><p>{selectedEntity.knowledge} · observed at {elapsedLabel(selectedEntity.observedAtElapsedMs)}</p></div>
+          <div className="live-action-stack">
+            {selectedInspect && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !selectedInspect.enabled} onClick={() => void runInspection(selectedEntity)}><Eye size={16} /> Kiểm tra</button>}
+            {selectedCorpse?.inspected && <div><p>Thi thể: Bậc {selectedCorpse.tier ?? '—'} · Cấp {selectedCorpse.level ?? '—'} · Phẩm {selectedCorpse.grade ?? '—'} · nguyên vẹn {selectedCorpse.integrity ?? '—'}%</p>
+              <button className="live-button" disabled={working || Boolean(pendingCommand) || !selectedCorpse.revive.enabled} onClick={() => void sendCommand(commandFor(view, 'revive', { actorId: view.player.id, corpseId: selectedCorpse.id }))}>Tử Phục · không tốn Mana, vật liệu hay thời gian</button>
+              {!selectedCorpse.revive.enabled && <small>{availabilityMessage(selectedCorpse.revive)}</small>}
+              <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !selectedCorpse.butcher.enabled} onClick={() => void sendCommand(commandFor(view, 'butcher_corpse', { actorId: view.player.id, corpseId: selectedCorpse.id }))}>Phân giải vĩnh viễn · thu hồi trang bị đã ghi nhận</button>
+              {!selectedCorpse.butcher.enabled && <small>{availabilityMessage(selectedCorpse.butcher)}</small>}
+            </div>}
+            {selectedMove && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || (travelActorId === view.player.id && !selectedMove.enabled)} onClick={() => moveToEntity(selectedEntity)}><ArrowRight size={16} /> Move here {travelActorId === view.player.id && selectedMove.preview?.value ? `· ${selectedMove.preview.value}` : ''}</button>}
+            {selectedBuilding && <button className="live-button live-button--secondary" onClick={() => { setFocusedConstructionBuildingId(selectedBuilding.id); setScreen('buildings'); }}><Hammer size={16} /> Open {selectedBuilding.name} inspector</button>}
+            {selectedEntity.ref.type === 'site' && selectedEntity.ref.id === 'SITE-LL01-000' && <button className="live-button live-button--secondary" onClick={() => { setFocusedConstructionBuildingId(null); setScreen('buildings'); }}><Hammer size={16} /> Open H0 construction inspector</button>}
+            {selectedHarvest && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !selectedHarvest.enabled} onClick={() => harvestSelectedResource(selectedEntity)}>Harvest one unit</button>}
+            {selectedOpen && <small>{availabilityMessage(selectedOpen)}</small>}
+            {selectedInspect && !selectedInspect.enabled && <small>{availabilityMessage(selectedInspect)}</small>}
+            {selectedMove && !selectedMove.enabled && <small>{availabilityMessage(selectedMove)}</small>}
+            {selectedHarvest && !selectedHarvest.enabled && <small>{availabilityMessage(selectedHarvest)}</small>}
+          </div>
+        </div>}
+        {selectedCombatTarget && <div className="live-inspector" data-testid="combat-target-inspector">
+          <div><span className="live-eyebrow">ENCOUNTER TARGET · H0</span><h3>{selectedCombatTarget.label}</h3>
+            <p>{selectedCombatTarget.state === 'available' ? 'A known snow hare track is within sight.' : 'The hare has reacted to the encounter.'} · R0 population {selectedCombatTarget.regionalPopulationRemaining}</p></div>
+          <div className="live-action-stack">
+            <label className="live-inline-field">Fighter <select value={selectedCombatActorId} onChange={event => setCombatActorId(event.target.value)}>
+              <option value="">Choose a living owned unit</option>{view.units.filter(unit => unit.health && unit.health.current > 0).map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
+            </select></label>
+            <button className="live-button" disabled={working || Boolean(pendingCommand) || selectedCombatTarget.state !== 'available' || !selectedCombatActorId}
+              onClick={() => void sendCommand(commandFor(view, 'attack', { actorIds: [selectedCombatActorId], targetId: selectedCombatTarget.id }))}>Engage target</button>
+            {!selectedCombatTarget.attack.enabled && <small>{availabilityMessage(selectedCombatTarget.attack)}</small>}
+          </div>
+        </div>}
+
         <div className="live-map-canvas" data-testid="live-map" onClick={event => {
           if (!chooseDestination) return;
           const rect = event.currentTarget.getBoundingClientRect();
@@ -667,38 +706,6 @@ function LiveApp() {
           <div><strong>Travel in progress</strong><span>{(order.totalDistanceMm / 1_000_000).toFixed(2)} km · {Math.floor(view.jobs.find(job => job.id === order.id)?.progressPercent ?? 0)}% · {order.pathSegments.some(segment => segment.uncertainty === 'uncertain') ? 'uncertain route' : 'known route'}</span></div>
           <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'cancel_travel', { orderId: order.id }))}>Cancel travel</button>
         </div>)}
-        {selectedEntity && <div className="live-inspector">
-          <div><span className="live-eyebrow">SELECTED · {selectedEntity.category}</span><h3>{entityLabel(selectedEntity)}</h3><p>{selectedEntity.knowledge} · observed at {elapsedLabel(selectedEntity.observedAtElapsedMs)}</p></div>
-          <div className="live-action-stack">
-            {selectedInspect && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !selectedInspect.enabled} onClick={() => void runInspection(selectedEntity)}><Eye size={16} /> Kiểm tra</button>}
-            {selectedCorpse?.inspected && <div><p>Thi thể: Bậc {selectedCorpse.tier ?? '—'} · Cấp {selectedCorpse.level ?? '—'} · Phẩm {selectedCorpse.grade ?? '—'} · nguyên vẹn {selectedCorpse.integrity ?? '—'}%</p>
-              <button className="live-button" disabled={working || Boolean(pendingCommand) || !selectedCorpse.revive.enabled} onClick={() => void sendCommand(commandFor(view, 'revive', { actorId: view.player.id, corpseId: selectedCorpse.id }))}>Tử Phục · không tốn Mana, vật liệu hay thời gian</button>
-              {!selectedCorpse.revive.enabled && <small>{availabilityMessage(selectedCorpse.revive)}</small>}
-              <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !selectedCorpse.butcher.enabled} onClick={() => void sendCommand(commandFor(view, 'butcher_corpse', { actorId: view.player.id, corpseId: selectedCorpse.id }))}>Phân giải vĩnh viễn · thu hồi trang bị đã ghi nhận</button>
-              {!selectedCorpse.butcher.enabled && <small>{availabilityMessage(selectedCorpse.butcher)}</small>}
-            </div>}
-            {selectedMove && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || (travelActorId === view.player.id && !selectedMove.enabled)} onClick={() => moveToEntity(selectedEntity)}><ArrowRight size={16} /> Move here {travelActorId === view.player.id && selectedMove.preview?.value ? `· ${selectedMove.preview.value}` : ''}</button>}
-            {selectedBuilding && <button className="live-button live-button--secondary" onClick={() => { setFocusedConstructionBuildingId(selectedBuilding.id); setScreen('buildings'); }}><Hammer size={16} /> Open {selectedBuilding.name} inspector</button>}
-            {selectedEntity.ref.type === 'site' && selectedEntity.ref.id === 'SITE-LL01-000' && <button className="live-button live-button--secondary" onClick={() => { setFocusedConstructionBuildingId(null); setScreen('buildings'); }}><Hammer size={16} /> Open H0 construction inspector</button>}
-            {selectedHarvest && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !selectedHarvest.enabled} onClick={() => harvestSelectedResource(selectedEntity)}>Harvest one unit</button>}
-            {selectedOpen && <small>{availabilityMessage(selectedOpen)}</small>}
-            {selectedInspect && !selectedInspect.enabled && <small>{availabilityMessage(selectedInspect)}</small>}
-            {selectedMove && !selectedMove.enabled && <small>{availabilityMessage(selectedMove)}</small>}
-            {selectedHarvest && !selectedHarvest.enabled && <small>{availabilityMessage(selectedHarvest)}</small>}
-          </div>
-        </div>}
-        {selectedCombatTarget && <div className="live-inspector" data-testid="combat-target-inspector">
-          <div><span className="live-eyebrow">ENCOUNTER TARGET · H0</span><h3>{selectedCombatTarget.label}</h3>
-            <p>{selectedCombatTarget.state === 'available' ? 'A known snow hare track is within sight.' : 'The hare has reacted to the encounter.'} · R0 population {selectedCombatTarget.regionalPopulationRemaining}</p></div>
-          <div className="live-action-stack">
-            <label className="live-inline-field">Fighter <select value={selectedCombatActorId} onChange={event => setCombatActorId(event.target.value)}>
-              <option value="">Choose a living owned unit</option>{view.units.filter(unit => unit.health && unit.health.current > 0).map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
-            </select></label>
-            <button className="live-button" disabled={working || Boolean(pendingCommand) || selectedCombatTarget.state !== 'available' || !selectedCombatActorId}
-              onClick={() => void sendCommand(commandFor(view, 'attack', { actorIds: [selectedCombatActorId], targetId: selectedCombatTarget.id }))}>Engage target</button>
-            {!selectedCombatTarget.attack.enabled && <small>{availabilityMessage(selectedCombatTarget.attack)}</small>}
-          </div>
-        </div>}
       </section>
       <section className="live-panel">
         <div className="live-panel-heading"><div><span className="live-eyebrow">SEARCH · FIXED 15-MINUTE SWEEPS</span><h3>Focused search</h3></div><Eye size={20} /></div>

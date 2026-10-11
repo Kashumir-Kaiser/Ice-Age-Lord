@@ -166,6 +166,8 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
   await page.getByRole('button', { name: 'Cancel destination selection' }).click();
   await mapCampfire.click();
   await page.getByRole('button', { name: 'Inspect' }).click();
+  await expect.poll(() => commands).toBe(1);
+  await expect(page.getByRole('status')).toContainText('revision 2');
   await expect(page.locator('.live-footer')).toContainText('revision 2');
   expect(created).toBe(true);
   expect(commands).toBe(1);
