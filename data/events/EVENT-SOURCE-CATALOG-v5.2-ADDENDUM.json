@@ -1,0 +1,165 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-5.2-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-5.1-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 52 sequential review of printed Chapters 932–941, using the Bqquge chapter mirror. Cumulative item ledger is EVENT-SOURCE-ITEMS-v5.2.csv. Catalog baseline remains v4.6 with append-only v4.7–v5.2 addenda; fixed schedule unchanged.",
+  "item_ids": [
+    "SX-0704",
+    "SX-0705",
+    "SX-0706",
+    "SX-0707",
+    "SX-0708",
+    "SX-0709",
+    "SX-0710"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 932,
+      "event": "Lucky Wheel is activated; Sarah is the selected challenger. Rules allow up to two re-spins after a successful challenge."
+    },
+    {
+      "chapter": 933,
+      "event": "Sarah clears the initial wheel challenges and accepts the highest-difficulty area against a half-god Merman."
+    },
+    {
+      "chapter": 934,
+      "event": "Sarah defeats the half-god opponent. She selects the legendary Sea Abyss Scale Armor; the system completes S-rank task 'Lucky God's Favor' stage one and grants the Lucky Altar Construction Blueprint."
+    },
+    {
+      "chapter": 935,
+      "event": "The party begins travel toward the second task coordinates; no explicit item receipt recorded."
+    },
+    {
+      "chapter": 936,
+      "event": "Sea Abyss Scale Armor is assigned to Malenina and restores 10% divine awakening to her set; no additional item receipt."
+    },
+    {
+      "chapter": 937,
+      "event": "No quantified item receipts transcribed from reviewed pages."
+    },
+    {
+      "chapter": 938,
+      "event": "The second task targets Calamity Beast Modis; only a critical last hit will unlock its hidden stage."
+    },
+    {
+      "chapter": 939,
+      "event": "Calamity Beast loot lists Corrupt Eye Staff, Contaminated Sheep Talisman Stone, and Calamity Divine Fire. Task stage two grants Lucky God's Dice and 100 Divine Power Fragments; the next task is a gambling trial."
+    },
+    {
+      "chapter": 940,
+      "event": "Lucky God's Dice effects are described. A Ch940 sea-loot inventory snapshot lists Moon chests x3, Gold chests x28, Silver chests x75; treat as a snapshot."
+    },
+    {
+      "chapter": 941,
+      "event": "Northern forces confront imperial troops; no new named item receipt recorded."
+    }
+  ],
+  "non_receipts": [
+    "Lucky Wheel challenge encounters are not item receipts; only named, explicitly granted rewards are ledgered.",
+    "The Ch940 chest counts are an inventory snapshot, not incremental finds.",
+    "Potentially visible but unnamed or ellipsized drops are not inferred.",
+    "The item ledger records narrative receipts as source research only, not active LL01 inventory or guaranteed new-game loot."
+  ],
+  "item_receipts": [
+    {
+      "chapter": 923,
+      "ids": [
+        "SX-0668"
+      ],
+      "note": "Sea chart gifted by the Icefield Giant chief."
+    },
+    {
+      "chapter": 925,
+      "ids": [
+        "SX-0671"
+      ],
+      "note": "Storm Destroyer occupation and vessel ownership state."
+    },
+    {
+      "chapter": 926,
+      "ids": [
+        "SX-0669",
+        "SX-0670"
+      ],
+      "note": "One explicitly excavated Silver and one Gold chest."
+    },
+    {
+      "chapter": 929,
+      "ids": [
+        "SX-0672",
+        "SX-0673",
+        "SX-0674",
+        "SX-0675",
+        "SX-0676",
+        "SX-0677",
+        "SX-0678",
+        "SX-0679",
+        "SX-0680",
+        "SX-0681",
+        "SX-0682",
+        "SX-0683",
+        "SX-0684",
+        "SX-0685",
+        "SX-0686",
+        "SX-0687",
+        "SX-0688",
+        "SX-0689",
+        "SX-0690",
+        "SX-0691",
+        "SX-0692",
+        "SX-0693",
+        "SX-0694",
+        "SX-0695",
+        "SX-0696",
+        "SX-0697"
+      ],
+      "note": "Chest count snapshot and explicit loot categories from the 29 Silver/Gold boxes, three Moon boxes, and one Red box. See ledger for all 26 receipt rows."
+    },
+    {
+      "chapter": 930,
+      "ids": [
+        "SX-0698",
+        "SX-0699",
+        "SX-0700"
+      ],
+      "note": "Two individual frozen chest pickups and one broken sailboat."
+    },
+    {
+      "chapter": 931,
+      "ids": [
+        "SX-0701",
+        "SX-0702",
+        "SX-0703"
+      ],
+      "note": "Three Sacrifice Pearls, one each of unknown, orange, and green quality."
+    }
+  ],
+  "quest": "Lucky Goddess/undersea ruins lead-in is active. Chapter 931 has the altar yield three Sacrifice Pearls; the Lucky Wheel challenge is not yet shown as opened or resolved.",
+  "inventory_caveat": "All extracted items remain source research, not LL01 initial inventory, guaranteed new-game drops, or active event contracts.",
+  "next_unprocessed_chapter": 932,
+  "source_urls": [
+    "https://www.bqquge.org/851/227800",
+    "https://www.bqquge.org/851/227801",
+    "https://www.bqquge.org/851/227802",
+    "https://www.bqquge.org/851/227803",
+    "https://www.bqquge.org/851/227804",
+    "https://www.bqquge.org/851/236476",
+    "https://www.bqquge.org/851/236477",
+    "https://www.bqquge.org/851/236478",
+    "https://www.bqquge.org/851/236479",
+    "https://www.bqquge.org/851/236514"
+  ],
+  "mirror_note": "Direct chapter text read from the accessible Bqquge mirror. The primary 69shuba sequence was inaccessible beyond Ch921. Printed titles and item receipts were checked against continuation pages.",
+  "chapter_source_urls": [
+    "https://www.bqquge.org/851/236515",
+    "https://www.bqquge.org/851/236516",
+    "https://www.bqquge.org/851/236547",
+    "https://www.bqquge.org/851/236548",
+    "https://www.bqquge.org/851/236549",
+    "https://www.bqquge.org/851/236550",
+    "https://www.bqquge.org/851/236552",
+    "https://www.bqquge.org/851/236553",
+    "https://www.bqquge.org/851/236589",
+    "https://www.bqquge.org/851/236590"
+  ]
+}
