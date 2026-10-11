@@ -1,0 +1,244 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.0-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-6.9.1-CORRECTION",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 70: printed Chapters 1112–1121. Two independently read Chinese full-text mirrors, Bq8xsw and Bqquge, agree on chapter title sequence; multiple Vietnamese editions/catalogs checked for translated title and numbering alignment.",
+  "data_file": "EVENT-SOURCE-ITEMS-v7.0.csv",
+  "total_item_ids": [
+    "SX-1122",
+    "SX-1123",
+    "SX-1124",
+    "SX-1125",
+    "SX-1126",
+    "SX-1127",
+    "SX-1128",
+    "SX-1129",
+    "SX-1130",
+    "SX-1131",
+    "SX-1132",
+    "SX-1133",
+    "SX-1134",
+    "SX-1135",
+    "SX-1136",
+    "SX-1137",
+    "SX-1138",
+    "SX-1139",
+    "SX-1140"
+  ],
+  "offer_ids": [],
+  "confirmed_acquisition_ids": [
+    "SX-1122",
+    "SX-1123",
+    "SX-1124",
+    "SX-1125",
+    "SX-1126",
+    "SX-1127",
+    "SX-1128",
+    "SX-1129",
+    "SX-1130",
+    "SX-1131",
+    "SX-1132",
+    "SX-1133",
+    "SX-1134",
+    "SX-1135",
+    "SX-1138",
+    "SX-1139",
+    "SX-1140"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 1112,
+      "event": "Phase II opens; Sarah Blade Dance destroys one Eternal Disaster Nest and receives 1,000,000 battle score, 1,000,000 Ice Dragon Marks, 1 Gold Point, and 100 reputation. A second nearby nest destruction has truncated reward text and is not separately quantified."
+    },
+    {
+      "chapter": 1113,
+      "event": "By 06:21, Xinghuo City reports 115 cumulative nest clears, 115,000,000 points, 115,000,000 marks, 115 Gold Points, and 11,500 reputation; 114 incremental clears/reward units recorded here after deduplicating the Chapter 1112 clear."
+    },
+    {
+      "chapter": 1114,
+      "event": "Divine-level Ice Nest monsters enter combat; no quantified item receipt."
+    },
+    {
+      "chapter": 1115,
+      "event": "Five divine-level Ice Nest kills reported; five Doomah Frostblood Crystals and per-kill score/Gold Point quantities recorded."
+    },
+    {
+      "chapter": 1116,
+      "event": "Three further divine kills reported; outputs derived from Chapter 1111 per-kill rule. A later named kill may overlap this group and is not added separately."
+    },
+    {
+      "chapter": 1117,
+      "event": "Dragon and truth-god combat; no counted receipt."
+    },
+    {
+      "chapter": 1118,
+      "event": "Deweina's Life Blessing and Abedon's Earth Blessing apply to survivors for 72 hours; Lí Lan's Eternal Force talent makes her instances permanent."
+    },
+    {
+      "chapter": 1119,
+      "event": "After six battle days, cumulative divine Ice Nest kills reach 495. 487 additional kills and corresponding rule-based reward quantities recorded after subtracting the 5 + 3 already logged."
+    },
+    {
+      "chapter": 1120,
+      "event": "The Phase II timer reaches zero but the event continues with the ancient dragon's compulsion domain; one revival is used in narrative, but it is not a new grant."
+    },
+    {
+      "chapter": 1121,
+      "event": "Truth gods attack the ice dragon; chapter ends without campaign settlement or item receipt."
+    }
+  ],
+  "receipt_groups": {
+    "chapter_1112": [
+      "SX-1122",
+      "SX-1123",
+      "SX-1124",
+      "SX-1125"
+    ],
+    "chapter_1113_incremental": [
+      "SX-1126",
+      "SX-1127",
+      "SX-1128",
+      "SX-1129"
+    ],
+    "chapter_1115": [
+      "SX-1130",
+      "SX-1131",
+      "SX-1132"
+    ],
+    "chapter_1116_derived": [
+      "SX-1133",
+      "SX-1134",
+      "SX-1135"
+    ],
+    "chapter_1118_effects": [
+      "SX-1136",
+      "SX-1137"
+    ],
+    "chapter_1119_incremental": [
+      "SX-1138",
+      "SX-1139",
+      "SX-1140"
+    ]
+  },
+  "unresolved_conflicts": [
+    "Vietnamese chapter numbering differs by edition and segmentation: Cơm Nguội's page labeled Ch.1116 corresponds by translated title to Chinese printed Ch.1112 (+4 offset); Bách Ngọc Sách and TruyệnYY expose split-segment counts; Xa Lộ Sách/Xalosach displays a 2,734 chapter catalog, and NovOne mirrors those 2,734 chapter links. Do not map Vietnamese chapter number to Chinese print number without matching title.",
+    "Cơm Nguội's current Vietnamese chapter body prompts for login; no login was attempted. The live title association and catalog metadata were used only for edition alignment, not reward quantities.",
+    "Chapter 1113 nest-clear totals are cumulative. Chapter 1112 explicitly records one prior clear, so Round 70 records 114 net clear rewards for Ch1113 to avoid double counting.",
+    "Chapter 1119's 495 kills are cumulative. Previously recorded explicit groups are 5 (Ch1115) and 3 (Ch1116); the 487 remainder is derived and valued using the Ch1111 per-kill rule."
+  ],
+  "non_receipts": [
+    "Ch1112 second nest destruction reward panel is truncated; it is not separately quantified.",
+    "Ch1114 combat descriptions do not identify a countable receipt.",
+    "Ch1116's three extra divine kills are counted by explicit narrative count; the rewards are mechanically derived from the Ch1111 rule and should be distinguished from directly enumerated loot.",
+    "Ch1118 blessings are event status effects, not consumable inventory.",
+    "Ch1120 revival is a previously granted one-time event ability being used, not a new item or new grant.",
+    "Ch1121 has no campaign settlement; later settlement chapter is outside this round."
+  ],
+  "source_checks": [
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851",
+      "use": "Chapter directory; printed-title mapping for Chapters 1112–1121, with per-chapter links and full text."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1510294-4",
+      "use": "Ch1112 first nest destruction and explicit reward receipt."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1510295-4",
+      "use": "Ch1113 cumulative nest clear totals."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1510692-4",
+      "use": "Ch1115 five divine kills, rewards, and Frostblood Crystal count."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1510693-4",
+      "use": "Ch1116 further kill-count narrative."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1511065-4",
+      "use": "Ch1118 two timed blessings and Eternal Force interaction."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1511248-4",
+      "use": "Ch1119 cumulative 495 divine Ice Nest kills after six days."
+    },
+    {
+      "site": "Bq8xsw",
+      "url": "https://www.bq8xsw.com/chapterlist/110975.html",
+      "use": "Independent full chapter directory; printed Chinese title sequence for Chapters 1112–1121 cross-checked against Bqquge."
+    },
+    {
+      "site": "Bq8xsw",
+      "url": "https://www.bq8xsw.com/10082436/11075759.html",
+      "use": "Ch1111 directly read to verify Phase II spawn, scoring, and per-kill reward rules carried into calculations."
+    },
+    {
+      "site": "Cơm Nguội Novel (Vietnamese)",
+      "url": "https://comnguoinovel.com/truyen/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong/1116",
+      "use": "Vietnamese Chapter 1116 title matches the Chinese printed Ch1112 translated title (+4 chapter-number offset); body is login-gated and no quantities were taken."
+    },
+    {
+      "site": "Bách Ngọc Sách (Vietnamese)",
+      "url": "https://bachngocsach.me/truyen/doc-quyen-dich-bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia",
+      "use": "Vietnamese translation catalog and split-section numbering checked; title edition present, but segment count cannot be mapped directly."
+    },
+    {
+      "site": "TruyệnYY (Vietnamese)",
+      "url": "https://truyenyy.vip",
+      "use": "Separate Vietnamese translated catalog lists this work as 4,253 split parts; catalog only, not text evidence for current chapter facts."
+    },
+    {
+      "site": "Xa Lộ Sách (Vietnamese)",
+      "url": "https://xalosach.com/bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia-0.html",
+      "use": "Vietnamese translation catalog; 2,734 chapter links and current title record."
+    },
+    {
+      "site": "NovOne (Vietnamese catalog)",
+      "url": "https://novone.site/works/bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia",
+      "use": "Catalog mirror identifies Xa Lộ Sách as source and lists 2,734 links; not an independent chapter text."
+    },
+    {
+      "site": "Truyện Trung (Vietnamese)",
+      "url": "https://truyentrung.net",
+      "use": "Alternative Vietnamese auto-translation listing located; retained as a catalog discovery, not used for item facts."
+    },
+    {
+      "site": "Tủ Sách (Vietnamese)",
+      "url": "https://tusach.vn/truyen/bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia",
+      "use": "Separate Vietnamese catalog for the translated work; used for catalog comparison only."
+    },
+    {
+      "site": "iTruyenFull (Vietnamese)",
+      "url": "https://itruyenfull.org/truyen/bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia",
+      "use": "Additional Vietnamese translated-edition catalog; no chapter facts or reward quantities taken."
+    }
+  ],
+  "printed_chapter_urls": [
+    "https://www.bqquge.org/851/1510294",
+    "https://www.bqquge.org/851/1510295",
+    "https://www.bqquge.org/851/1510524",
+    "https://www.bqquge.org/851/1510692",
+    "https://www.bqquge.org/851/1510693",
+    "https://www.bqquge.org/851/1510858",
+    "https://www.bqquge.org/851/1511065",
+    "https://www.bqquge.org/851/1511248",
+    "https://www.bqquge.org/851/1511442",
+    "https://www.bqquge.org/851/1512461"
+  ],
+  "continuation_urls": [
+    "https://www.bqquge.org/851/1510294-2",
+    "https://www.bqquge.org/851/1510294-3",
+    "https://www.bqquge.org/851/1510294-4",
+    "https://www.bqquge.org/851/1511248-4"
+  ],
+  "next_unprocessed_chapter": 1122,
+  "inventory_caveat": "Source-only extraction. None of the rewards, event effects, currency, items, or repeatable event outcomes in this dataset are LL01 starting inventory, guaranteed new-game loot, or active fixed-calendar rules."
+}
