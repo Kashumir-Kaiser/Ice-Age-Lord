@@ -43,9 +43,9 @@ test('all seven live screens remain on one server-owned save projection at relea
 
   await page.setViewportSize(viewports[0]);
   await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Bản đồ/ }).click();
-  const revisionBeforeCameraInput = await page.locator('.live-footer').innerText();
+  const revisionBeforeCameraInput = await page.locator('.live-footer span').nth(1).innerText();
   await page.getByRole('button', { name: 'Show map overview' }).click();
-  await expect(page.locator('.live-footer')).toHaveText(revisionBeforeCameraInput);
+  await expect(page.locator('.live-footer span').nth(1)).toHaveText(revisionBeforeCameraInput);
 });
 
 test('switching saves clears selection and ignores a delayed response from the prior save', async ({ page }) => {
@@ -53,7 +53,7 @@ test('switching saves clears selection and ignores a delayed response from the p
   const saveBName = 'Stage 09 B ' + crypto.randomUUID();
   await connectAndCreate(page, saveAName);
   await page.getByRole('button', { name: 'Kiểm tra thẻ nghề nghiệp' }).click();
-  await expect(page.getByText('Đã quan sát', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Đã quan sát' })).toBeVisible();
   const navigation = page.getByRole('navigation', { name: 'Màn hình game' });
   await navigation.getByRole('button', { name: /^Bản đồ/ }).click();
   const woodMarker = page.locator('[data-entity-ref="resource:RES-LL01-06"]');
@@ -78,7 +78,7 @@ test('switching saves clears selection and ignores a delayed response from the p
   await page.getByRole('button', { name: 'Đổi lượt lưu' }).click();
   await page.getByRole('button', { name: new RegExp(saveAName) }).click();
   await expect(page.locator('.live-footer')).toContainText(`Save ${saveAId}`);
-  await expect(page.getByText('Đã quan sát', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Đã quan sát' })).toBeVisible();
   await navigation.getByRole('button', { name: /^Bản đồ/ }).click();
   await expect(page.getByTestId('map-campfire-marker')).toHaveClass(/is-selected/);
   await woodMarker.click();

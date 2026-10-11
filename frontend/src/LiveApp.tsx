@@ -209,7 +209,7 @@ function LiveApp() {
   const [chooseDestination, setChooseDestination] = useState(false);
   // Open on H0's local resource area so its heat radius and starter deposits
   // have enough screen space to read. The overview control returns to region scale.
-  const [mapZoom, setMapZoom] = useState(200);
+  const [mapZoom, setMapZoom] = useState(500);
   const [destination, setDestination] = useState<CoordinateMm | null>(null);
   const [destinationAvailability, setDestinationAvailability] = useState<ActionAvailability | null>(null);
   const [searchRadiusMetres, setSearchRadiusMetres] = useState(500);
