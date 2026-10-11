@@ -12,7 +12,7 @@ This is a **new game**: do not import earlier campaign inventories, unit rosters
 
 - `references/canonical/`: original Lord DnD source rulebooks and lineage, retained **as references** (not an already-compiled runtime).
 - `design/`: latest web-game content design, magical buildings and source-grounded construction proposals.
-- `data/events/`: cumulative source-item CSV v7.23 with 1,679 rows through Round 94 (LanaGarden displayed Chapters 1352–1353; source extraction complete); round audits and catalog addenda are in `research/extraction-audits/` and `data/events/`. The cumulative source catalog JSON remains v4.6 (590 items, 239 effects) with v4.7–v7.24 addenda and the v7.2.1 metadata correction. Catalog numbering varies by one in this arc; align exact titles and see the Round 89–94 audits. The fixed 30-event v0.6 timeline is unchanged. Extracted entries are not automatically obtainable in a new game.
+- `data/events/`: cumulative source-item CSV v7.24 with 1,682 rows through Round 95; LanaGarden Chapter 1352 is confirmed as the true ending. The cumulative source catalog JSON remains v4.6 (590 items, 239 effects) with v4.7–v7.25 addenda and the v7.2.1 metadata correction. Use LanaGarden's displayed chapter numbers and exact titles in the round audits. The fixed 30-event v0.6 timeline is unchanged. Extracted entries are not automatically obtainable in a new game.
 - `research/extraction-audits/`: **all ninety-four extraction rounds**, including the Round 29 continuation addendum (v2.9.1), Round 35, Round 36, Round 38, Round 39, Round 40, Round 41, Round 42, Round 43, and Rounds 44–74 audits, with append-only research and immutable earlier releases.
 - `research/snapshots/`: chronological catalogs and design versions retained for traceability.
 
@@ -116,6 +116,8 @@ The React/Vite visual demo now lives in `frontend/` on `main`. It uses the origi
 - `data/events/EVENT-SOURCE-CATALOG-v7.23-ADDENDUM.json`: Round 93 chapter index, receipt groups, and campaign outcome notes.
 - `research/extraction-audits/ROUND-93-NINETY-THIRD-EXTRACTION.md`: Round 93 audit; completed by the final source review in Round 94.
 
-- `data/events/EVENT-SOURCE-ITEMS-v7.23.csv`: cumulative 1,679-row ledger through Round 94; final source review covers Chapters 1352–1353.
-- `data/events/EVENT-SOURCE-CATALOG-v7.24-ADDENDUM.json`: completed-source chapter index and final outcome notes; no later source chapter is listed.
-- `research/extraction-audits/ROUND-94-NINETY-FOURTH-EXTRACTION.md`: final audit; extraction is complete through the novel's marked ending and displayed epilogue.
+- `data/events/EVENT-SOURCE-ITEMS-v7.23.csv`: immutable Round 94 historical ledger, retained for traceability.
+- `data/events/EVENT-SOURCE-CATALOG-v7.24-ADDENDUM.json` and `research/extraction-audits/ROUND-94-NINETY-FOURTH-EXTRACTION.md`: historical Round 94 checkpoint, superseded by the final-chapter correction.
+- `data/events/EVENT-SOURCE-ITEMS-v7.24.csv`: corrected cumulative 1,682-row ledger through true final Chapter 1352.
+- `data/events/EVENT-SOURCE-CATALOG-v7.25-ADDENDUM.json`: final chapter index, Airam transfers and Round 94 retractions.
+- `research/extraction-audits/ROUND-95-FINAL-CHAPTER-CORRECTION.md`: final source review; Chapter 1352 is the true ending and no later chapter is processed.
