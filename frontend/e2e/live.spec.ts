@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
+import type { PlayerView } from '../../packages/contracts/src/index.ts';
 
 async function tapVisualCenter(page: Page, locator: Locator, mobile: boolean) {
   if (!mobile) {
@@ -51,7 +52,7 @@ async function tapVisualCenter(page: Page, locator: Locator, mobile: boolean) {
 const fireRef = { type: 'site', id: 'SITE-LL01-000' };
 const fireKey = 'site:SITE-LL01-000';
 
-function playerView(revision = 1) {
+function playerView(revision = 1): PlayerView {
   return {
     schemaVersion: 1,
     saveId: 'save-live-01',
@@ -60,6 +61,11 @@ function playerView(revision = 1) {
     simElapsedMs: 0,
     clockControl: { status: 'paused', selection: 'paused', speedPermille: 0, stopCondition: 'none' },
     clockStatus: { driver: 'active', catchingUp: false, targetSimElapsedMs: 0, leaseRemainingMs: 5000 },
+    calendar: [],
+    eventProgressionBlocker: null,
+    quests: [],
+    currency: [],
+    stage08: { caravan: null, marketOffers: [], auctionLots: [], auctionBids: [] },
     worldClock: { day: 1, hour: 7, minute: 0, lightPhase: 'daylight' },
     survival: { coldLoad: null, coldStatus: 'weather_unresolved', blocker: 'OPENING_WEATHER_RECORD_NOT_SEEDED', hungerState: 'FED' },
     player: {
