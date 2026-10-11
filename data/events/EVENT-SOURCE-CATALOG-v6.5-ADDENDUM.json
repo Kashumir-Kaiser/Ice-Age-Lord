@@ -1,0 +1,112 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-6.5-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-6.4-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 65 sequential review of printed Chapters 1062–1071 using Bqquge. Cumulative ledger is EVENT-SOURCE-ITEMS-v6.5.csv. Catalog baseline remains v4.6 with append-only v4.7–v6.5 addenda; fixed schedule unchanged.",
+  "item_ids": [
+    "SX-0944",
+    "SX-0945",
+    "SX-0946",
+    "SX-0947"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 1062,
+      "event": "First successful deity recruitment; full-server-first achievement grants Lord of the Gods title and divine-grade Ancient Ultimate Weapon: Underworld blueprint."
+    },
+    {
+      "chapter": 1063,
+      "event": "Holy Light's Wisdom submits; no explicit item receipt."
+    },
+    {
+      "chapter": 1064,
+      "event": "Inferno Scripture is assigned to the Heretic Arbiter; previously recorded in Ch1033, no duplicate."
+    },
+    {
+      "chapter": 1065,
+      "event": "Lord of the Gods title effect explained; title already recorded as Ch1062 reward."
+    },
+    {
+      "chapter": 1066,
+      "event": "Elf Queen's gift includes a crystal bottle of Moonlight Holy Spring (over 1,000 L), for the Life Ancient Tree seed."
+    },
+    {
+      "chapter": 1067,
+      "event": "Life Ancient Tree seed and Moonlight Holy Spring are given to tree-spirit sisters; seed was recorded earlier, no duplicate."
+    },
+    {
+      "chapter": 1068,
+      "event": "Expansion preview; no item receipt."
+    },
+    {
+      "chapter": 1069,
+      "event": "Half-god Thunder Dragon Barosamont arrives with Vymne and Zevelin; no item receipt."
+    },
+    {
+      "chapter": 1070,
+      "event": "True Eye ability discussion; no item receipt."
+    },
+    {
+      "chapter": 1071,
+      "event": "Thunder Dragon pet contract succeeds; explicit system receipt grants Storm Axe Handle (unknown grade)."
+    }
+  ],
+  "non_receipts": [
+    "Inferno Scripture and Lord of the Gods title in later chapters are previously logged items, not repeat acquisitions.",
+    "Life Ancient Tree seed is reused from its earlier acquisition; only the Moonlight Holy Spring is new in Ch1066.",
+    "Pet Contract Scroll is consumed/used for the contract, not stated as newly acquired.",
+    "Thunder Dragon contract is an outcome, not an inventory item."
+  ],
+  "item_receipts": [
+    {
+      "chapter": 1062,
+      "ids": [
+        "SX-0944",
+        "SX-0945"
+      ],
+      "note": "Achievement rewards: title and divine-grade Underworld blueprint."
+    },
+    {
+      "chapter": 1066,
+      "ids": [
+        "SX-0946"
+      ],
+      "note": "Elf Queen's gift of Moonlight Holy Spring in crystal bottle; over 1,000 L."
+    },
+    {
+      "chapter": 1071,
+      "ids": [
+        "SX-0947"
+      ],
+      "note": "Explicit system acquisition receipt for Storm Axe Handle."
+    }
+  ],
+  "quest": "Thunder Dragon joins as a pet via contract in Ch1071. Storm Axe Handle is obtained; the broken divine weapon's restoration remains unresolved.",
+  "inventory_caveat": "All extracted items remain source research, not LL01 initial inventory, guaranteed new-game drops, or active event contracts.",
+  "next_unprocessed_chapter": 1072,
+  "source_urls": [
+    "https://www.bqquge.org/851/227800",
+    "https://www.bqquge.org/851/227801",
+    "https://www.bqquge.org/851/227802",
+    "https://www.bqquge.org/851/227803",
+    "https://www.bqquge.org/851/227804",
+    "https://www.bqquge.org/851/236476",
+    "https://www.bqquge.org/851/236477",
+    "https://www.bqquge.org/851/236478",
+    "https://www.bqquge.org/851/236479",
+    "https://www.bqquge.org/851/236514"
+  ],
+  "mirror_note": "Direct chapter text and continuations checked on Bqquge; primary 69shuba chapter sequence remains inaccessible beyond Ch921.",
+  "chapter_source_urls": [
+    "https://www.bqquge.org/851/760797",
+    "https://www.bqquge.org/851/771994",
+    "https://www.bqquge.org/851/781408",
+    "https://www.bqquge.org/851/789421",
+    "https://www.bqquge.org/851/797252",
+    "https://www.bqquge.org/851/798370",
+    "https://www.bqquge.org/851/839549",
+    "https://www.bqquge.org/851/855151",
+    "https://www.bqquge.org/851/877685",
+    "https://www.bqquge.org/851/917411"
+  ]
+}
