@@ -1,0 +1,251 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-6.8-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-6.7-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 68: printed Chapters 1092–1101. Readable chapter text checked across Bq8xsw and Bqquge, the Day 5 receipt snippet additionally matched on SDG; Vietnamese edition catalogs were searched and recorded with their chapter-number/render limitations. Fixed event calendar unchanged.",
+  "data_file": "EVENT-SOURCE-ITEMS-v6.8.csv",
+  "total_item_ids": [
+    "SX-1048",
+    "SX-1049",
+    "SX-1050",
+    "SX-1051",
+    "SX-1052",
+    "SX-1053",
+    "SX-1054",
+    "SX-1055",
+    "SX-1056",
+    "SX-1057",
+    "SX-1058",
+    "SX-1059",
+    "SX-1060",
+    "SX-1061",
+    "SX-1062",
+    "SX-1063",
+    "SX-1064",
+    "SX-1065",
+    "SX-1066",
+    "SX-1067",
+    "SX-1068",
+    "SX-1069",
+    "SX-1070",
+    "SX-1071",
+    "SX-1072",
+    "SX-1073",
+    "SX-1074",
+    "SX-1075",
+    "SX-1076",
+    "SX-1077",
+    "SX-1078",
+    "SX-1079",
+    "SX-1080"
+  ],
+  "offer_ids": [],
+  "confirmed_acquisition_ids": [
+    "SX-1067",
+    "SX-1068",
+    "SX-1069",
+    "SX-1070",
+    "SX-1071",
+    "SX-1072",
+    "SX-1073",
+    "SX-1074"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 1092,
+      "event": "Lists nineteen conditional global rank-reward bundles. No final settlement or receipt yet; tower upgrade blueprint specifications are described but no new blueprint purchase occurs."
+    },
+    {
+      "chapter": 1093,
+      "event": "Publishes the Day 1 global score ranking and comments on future rewards; no actual reward delivery."
+    },
+    {
+      "chapter": 1094,
+      "event": "Day 2 starts. Narrative battle spoils are mentioned without an itemized or quantified receipt."
+    },
+    {
+      "chapter": 1095,
+      "event": "Day 5 pooled battle spoils explicitly received from Asam: 31,270,000 marks; 14,160,000 glacier fragments; 62 dragon crystals; 31 unknown frostland rune stones. The source's following receipt text is truncated."
+    },
+    {
+      "chapter": 1096,
+      "event": "Church attack and character events; no qualifying item receipt."
+    },
+    {
+      "chapter": 1097,
+      "event": "After seven days at 1% continental damage, the system gives three protective support effects for the coming threat; these are event rules, not inventory items."
+    },
+    {
+      "chapter": 1098,
+      "event": "Plans for the demi-god hunt. Explicitly says demi-god kills do not drop Divine Fire; no counted loot receipt."
+    },
+    {
+      "chapter": 1099,
+      "event": "Crisis and reinforcements; no itemized party receipt."
+    },
+    {
+      "chapter": 1100,
+      "event": "Repeatable contribution rules: demi-god kill gives 10,000,000 points and 10,000 reputation; Legendary kill gives 1,000 reputation. Loot drops are not individually enumerated."
+    },
+    {
+      "chapter": 1101,
+      "event": "Eight-day milestone gives each territory that held the line a free Dragon Shop redemption quota worth 2,000,000 marks (not marks directly credited). Separate pooled Day 8 receipt: 25,610,000 marks; 13,420,000 glacier fragments; 276 dragon crystals; 191 unknown frostland rune stones; following line truncated."
+    }
+  ],
+  "rank_reward_rule_ids": [
+    "SX-1048",
+    "SX-1049",
+    "SX-1050",
+    "SX-1051",
+    "SX-1052",
+    "SX-1053",
+    "SX-1054",
+    "SX-1055",
+    "SX-1056",
+    "SX-1057",
+    "SX-1058",
+    "SX-1059",
+    "SX-1060",
+    "SX-1061",
+    "SX-1062",
+    "SX-1063",
+    "SX-1064",
+    "SX-1065",
+    "SX-1066"
+  ],
+  "event_rule_ids": [
+    "SX-1076",
+    "SX-1077",
+    "SX-1078",
+    "SX-1079",
+    "SX-1080",
+    "SX-1075"
+  ],
+  "rank_reward_rules": {
+    "rows": [
+      "SX-1048",
+      "SX-1049",
+      "SX-1050",
+      "SX-1051",
+      "SX-1052",
+      "SX-1053",
+      "SX-1054",
+      "SX-1055",
+      "SX-1056",
+      "SX-1057",
+      "SX-1058",
+      "SX-1059",
+      "SX-1060",
+      "SX-1061",
+      "SX-1062",
+      "SX-1063",
+      "SX-1064",
+      "SX-1065",
+      "SX-1066"
+    ],
+    "count": 19,
+    "note": "Each row is one complete conditional rank package; items do not stack across brackets. Rewards are shown as eligibility rules and are not claimed or added to inventory."
+  },
+  "receipt_groups": {
+    "chapter_1095": [
+      "SX-1067",
+      "SX-1068",
+      "SX-1069",
+      "SX-1070"
+    ],
+    "chapter_1101": [
+      "SX-1071",
+      "SX-1072",
+      "SX-1073",
+      "SX-1074"
+    ]
+  },
+  "event_support": {
+    "chapter_1097": [
+      "SX-1076",
+      "SX-1077",
+      "SX-1078"
+    ],
+    "chapter_1100": [
+      "SX-1079",
+      "SX-1080"
+    ],
+    "chapter_1101_quota": "SX-1075"
+  },
+  "unresolved_conflicts": [
+    "The chapter variants across source sites have numbering disagreements: XS8/search listings are shifted by one at this arc, while Bq8xsw and Bqquge agree on printed Chapter 1092–1101 titles.",
+    "Bq8xsw receipt blocks for Chapters 1095 and 1101 show an ellipsis after the named lines; additional items may exist but are not transcribed as quantities.",
+    "Vietnamese Cơm Nguội and Bách Ngọc Sách title/catalog results do not expose an aligned readable translation for this current 1092–1101 arc; BNS uses split-segment numbering that cannot be mapped safely from its chapter count alone."
+  ],
+  "non_receipts": [
+    "Ch1092 leaderboard brackets are rank eligibility rules, not rewards already delivered; no bracket is selected as the protagonist's final reward.",
+    "Ch1092 tower blueprint properties and upgrade costs are descriptions/plans, not new purchases or consumed upgrade materials.",
+    "Ch1094 narrative battle piles are not a quantified receipt.",
+    "Ch1097 map marker, defense buff, and emergency shield are event support effects, not inventory objects.",
+    "Ch1098's planned demi-god hunts are not receipts; the text says demi-god kills do not drop Divine Fire.",
+    "Ch1100 kill score and reputation are repeatable contribution rewards, not loot items.",
+    "Ch1101's 2,000,000-mark free redemption allowance is quota value, not a currency deposit or chosen shop item."
+  ],
+  "source_checks": [
+    {
+      "site": "Bq8xsw",
+      "url": "https://www.bq8xsw.com/chapterlist/110975.html",
+      "use": "Chapter directory used to map printed Ch1092–1101 titles to non-consecutive text IDs; direct chapter pages read."
+    },
+    {
+      "site": "Bq8xsw",
+      "url": "https://www.bq8xsw.com/10082436/11075719.html",
+      "use": "Ch1092 tower specifications and reward sequence; page links followed rather than assuming consecutive IDs."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1482539-4",
+      "use": "Independent Ch1092 continuation containing the full tiered reward table."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851",
+      "use": "Independent directory and printed chapter title order through at least Ch1101."
+    },
+    {
+      "site": "SDG / Webovo",
+      "url": "https://sdg.webovo.de5.net/1757/1905221.html",
+      "use": "Independent search-indexed Ch1095 text confirms the Day 5 receipt includes 31,270,000 Ice Dragon Marks."
+    },
+    {
+      "site": "Cơm Nguội Novel (Vietnamese)",
+      "url": "https://comnguoinovel.com/truyen/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia",
+      "use": "Vietnamese-title catalog located by search; browser page exposed only shell/footer, so no chapter fact was taken from it."
+    },
+    {
+      "site": "Bách Ngọc Sách (Vietnamese)",
+      "url": "https://bachngocsach.me/truyen/doc-quyen-dich-bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia",
+      "use": "Vietnamese translation catalog located; split-slice chapter numbering does not map directly to printed novel chapters, so not used for current reward quantities."
+    },
+    {
+      "site": "XS8 / 言情小說吧",
+      "url": "https://www.xs8.cn/kolquery/forhpewz",
+      "use": "Independent title-index cross-check; this listing is offset by one around this arc, so only title sequence checked."
+    }
+  ],
+  "printed_chapter_urls": [
+    "https://www.bq8xsw.com/10082436/11075719.html",
+    "https://www.bq8xsw.com/10082436/11075721.html",
+    "https://www.bq8xsw.com/10082436/11075723.html",
+    "https://www.bq8xsw.com/10082436/11075726.html",
+    "https://www.bq8xsw.com/10082436/11075728.html",
+    "https://www.bq8xsw.com/10082436/11075730.html",
+    "https://www.bq8xsw.com/10082436/11075732.html",
+    "https://www.bq8xsw.com/10082436/11075734.html",
+    "https://www.bq8xsw.com/10082436/11075736.html",
+    "https://www.bq8xsw.com/10082436/11075738.html"
+  ],
+  "continuation_urls": [
+    "https://www.bqquge.org/851/1482539-2",
+    "https://www.bqquge.org/851/1482539-3",
+    "https://www.bqquge.org/851/1482539-4",
+    "https://www.bq8xsw.com/10082436/11075738_2.html"
+  ],
+  "next_unprocessed_chapter": 1102,
+  "inventory_caveat": "Source-only extraction. None of these rewards, item drops, event effects, shop quotas, score values, or reputation values are LL01 starting inventory, guaranteed new-game loot, or active fixed-calendar rules."
+}
