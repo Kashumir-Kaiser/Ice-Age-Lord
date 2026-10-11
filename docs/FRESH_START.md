@@ -45,4 +45,4 @@ New save IDs begin at clean T0. Separate immutable/seeded world definitions from
 
 ## Source extraction boundary
 
-The cumulative v4.4 source catalog through Chapter 861 is research evidence only. Novel loot, powers, kingdom agreements, and future ceremonies do not initialize LL01 or override the fixed 30-event calendar.
+The cumulative v4.5 source catalog through Chapter 871 is research evidence only. Novel loot, powers, kingdom agreements, and future ceremonies do not initialize LL01 or override the fixed 30-event calendar.
