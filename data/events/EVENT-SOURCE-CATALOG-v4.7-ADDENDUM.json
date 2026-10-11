@@ -12,7 +12,10 @@
     "SX-0596",
     "SX-0597",
     "SX-0598",
-    "SX-0599"
+    "SX-0599",
+    "SX-0600",
+    "SX-0601",
+    "SX-0602"
   ],
   "confirmed_outcomes": [
     {
@@ -45,7 +48,7 @@
     },
     {
       "chapter": 891,
-      "event": "Dream Layer activity ends at Day 152 00:00; Dream Shop scheduled to close six hours later. No fixed LL01 calendar change."
+      "event": "Dream Layer activity ends at Day 152 00:00; squad handovers to Cao Xing report Dream Shards x105232, Dream Shards x82942, and Dream Crystals x247. His aggregate inventory panel then shows 7,592,345 Dream Shards and 2,162 Dream Crystals. The crystals convert to 2,162,000 Dream Shards; no shop purchase is confirmed before chapter end."
     }
   ],
   "non_receipts": [
@@ -53,7 +56,40 @@
     "The 300 shards spent in codex fusion are a cost, not a reward.",
     "Fortune quest rewards are unclaimed; its third-stage reward is unknown.",
     "The Light Godhead is not fused; the Light Spear skill is not learned in this batch.",
-    "No dream activity reward total is attributed to an individual."
+    "No dream activity reward total is attributed to an individual.",
+    "The final 3,000,000 Dream Shard prompt for three Legendary Hearts is not confirmed as accepted; do not record the items as purchased."
   ],
-  "next_unprocessed_chapter": 892
+  "next_unprocessed_chapter": 892,
+  "inventory_snapshot": {
+    "source_chapter": 891,
+    "dream_shards": 7592345,
+    "dream_crystals": 2162,
+    "dream_crystals_conversion_output": 2162000,
+    "team_handover_receipts": [
+      {
+        "item": "梦境碎片",
+        "quantity": 105232,
+        "id": "SX-0600"
+      },
+      {
+        "item": "梦境碎片",
+        "quantity": 82942,
+        "id": "SX-0601"
+      },
+      {
+        "item": "梦境结晶",
+        "quantity": 247,
+        "id": "SX-0602"
+      }
+    ],
+    "source_note": "Aggregate balances include prior holdings and current activity receipts; they are not additional acquisitions."
+  },
+  "exchange_status": {
+    "dream_shop_close": "Day 153 06:00 (six hours after activity portal closes)",
+    "shown_prompt": "Spend 3,000,000 Dream Shards for three Legendary Hearts",
+    "status": "UNCONFIRMED_AT_CHAPTER_END",
+    "planned_shop_cost_total": 5500000,
+    "stated_remaining_dream_shards": 2250000,
+    "arithmetic_conflict": "The displayed balances plus crystal conversion equal 9,754,345 Dream Shards; subtracting the stated 5,500,000 planned total leaves 4,254,345, not the stated 2,250,000. Preserve both source statements without correcting either."
+  }
 }
