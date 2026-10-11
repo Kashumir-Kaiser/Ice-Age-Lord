@@ -9,8 +9,8 @@
 | `design/buildings/MAGICAL-BUILDING-CATALOG-v0.3.json` | Machine-readable branch catalog | Proposed, partial executable contracts |
 | `design/buildings/SOURCE-GROUNDED-BUILDING-REDESIGN.md` | Source-first functional building distinctions | Reference and proposal |
 | `data/events/EVENT-TIMELINE-v0.6.json` | Reconciled fixed 30-event calendar | New-game candidate, not retroactive live migration |
-| `data/events/EVENT-SOURCE-CATALOG-v4.6.json` | Round 46: 590 source item records and 239 effect records through Ch872–881; prior releases retained | Research, not guaranteed loot |
-| `data/events/EVENT-SOURCE-ITEMS-v4.6.csv` | Human-review source item catalog (590 entries; prior rows retained) | Review |
+| `data/events/EVENT-SOURCE-CATALOG-v4.6.json` + `data/events/EVENT-SOURCE-CATALOG-v4.7-ADDENDUM.json` | Catalog baseline (590 items, 239 effects) plus Round 47 event/reward addendum for Ch882–891 | Research, not guaranteed loot |
+| `data/events/EVENT-SOURCE-ITEMS-v4.7.csv` | Cumulative human-review item catalog (599 entries; nine Round 47 additions) | Review |
 | `data/events/EVENT-TIMELINE-v0.6.csv` | Human-review schedule diff | Review |
 | `data/structures/SOURCE-STRUCTURE-CATALOG-v1.0.json` | Round 46 review: twenty source-observed/reported structures and one route report; updated city operation evidence, no LL01 construction contracts | Research only, not T0 world data |
 | `references/canonical/LORD-DND-01..07.md` | Underlying mechanics, fixed T0, world/hero/lair/quest data | Historical authoritative rules, require typed migration |
@@ -30,7 +30,8 @@
 - `research/extraction-audits/ROUND-40-FORTIETH-EXTRACTION.md`: Round 40 audit for Chapters 812–821.
 - `research/extraction-audits/ROUND-41-FORTY-FIRST-EXTRACTION.md`: Round 41 audit for Chapters 822–831.
 - `research/extraction-audits/ROUND-42-FORTY-SECOND-EXTRACTION.md`: Round 42 audit for Chapters 832–841.
-- `research/extraction-audits/ROUND-43-FORTY-THIRD-EXTRACTION.md`: current Round 43 audit for Chapters 842–851.
+- `research/extraction-audits/ROUND-43-FORTY-THIRD-EXTRACTION.md`: Round 43 audit for Chapters 842–851.
+- `research/extraction-audits/ROUND-47-FORTY-SEVENTH-EXTRACTION.md`: current Round 47 audit for Chapters 882–891; resume at Ch892.
 - `research/snapshots/events/EVENT-SOURCE-CATALOG-v0.1..v4.6.json`: historical extraction datasets (v3.0 unchanged and archived).
 - `research/snapshots/events/EVENT-SOURCE-ITEMS-v0.1..v4.6.csv`: corresponding historical review datasets (v3.0 unchanged and archived).
 - `research/snapshots/design/`: previous web-game spec versions retained for forensic comparison, **not** alternative active specs.
