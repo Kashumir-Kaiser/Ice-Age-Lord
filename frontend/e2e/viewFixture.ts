@@ -62,7 +62,7 @@ export function playerView(revision = 1): PlayerView {
     visibleMap: {
       coordinateSystem: 'LL01-LOCAL-KM',
       coordinateEncoding: 'integer millimetres from H0; source z retained in metres',
-      currentSight: [], visibleGeometry: [], exploredGeometry: [], terrain: [],
+      currentSight: [], visibleGeometry: [], exploredGeometry: [], terrain: [], resourceFeatures: [],
       entities: [{
         ref: fireRef, label: 'Lửa Trại Cấp 1', category: 'site', knowledge: 'current',
         observedAtElapsedMs: 0, position: { xMm: 0, yMm: 0 },
