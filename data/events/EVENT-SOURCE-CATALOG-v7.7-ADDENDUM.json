@@ -1,0 +1,369 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.7-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.6-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 77: printed Chinese Chapters 1182–1191; Bqquge text reviewed through visible continuations. Vietnamese title/catalog checks retained with numbering and body-access limitations.",
+  "data_file": "EVENT-SOURCE-ITEMS-v7.7.csv",
+  "cumulative_rows": 1381,
+  "columns": 69,
+  "total_item_ids": [
+    "SX-1332",
+    "SX-1333",
+    "SX-1334",
+    "SX-1335",
+    "SX-1336",
+    "SX-1337",
+    "SX-1338",
+    "SX-1339",
+    "SX-1340",
+    "SX-1341",
+    "SX-1342",
+    "SX-1343",
+    "SX-1344",
+    "SX-1345",
+    "SX-1346",
+    "SX-1347",
+    "SX-1348",
+    "SX-1349",
+    "SX-1350",
+    "SX-1351",
+    "SX-1352",
+    "SX-1353",
+    "SX-1354",
+    "SX-1355",
+    "SX-1356",
+    "SX-1357",
+    "SX-1358",
+    "SX-1359",
+    "SX-1360",
+    "SX-1361",
+    "SX-1362",
+    "SX-1363",
+    "SX-1364",
+    "SX-1365",
+    "SX-1366",
+    "SX-1367",
+    "SX-1368",
+    "SX-1369",
+    "SX-1370",
+    "SX-1371",
+    "SX-1372",
+    "SX-1373",
+    "SX-1374",
+    "SX-1375",
+    "SX-1376",
+    "SX-1377",
+    "SX-1378",
+    "SX-1379",
+    "SX-1380",
+    "SX-1381"
+  ],
+  "chapter_item_ids": {
+    "1162": [
+      "SX-1322",
+      "SX-1323"
+    ],
+    "1163": [
+      "SX-1324",
+      "SX-1325",
+      "SX-1326"
+    ],
+    "1164": [
+      "SX-1327",
+      "SX-1328",
+      "SX-1329"
+    ],
+    "1165": [
+      "SX-1330",
+      "SX-1331",
+      "SX-1332"
+    ],
+    "1166": [
+      "SX-1333"
+    ],
+    "1167": [
+      "SX-1334"
+    ],
+    "1169": [
+      "SX-1335",
+      "SX-1336"
+    ],
+    "1170": [
+      "SX-1337"
+    ],
+    "1171": [
+      "SX-1338",
+      "SX-1339"
+    ],
+    "1173": [
+      "SX-1340",
+      "SX-1341"
+    ],
+    "1174": [
+      "SX-1342",
+      "SX-1343",
+      "SX-1344",
+      "SX-1345",
+      "SX-1346"
+    ],
+    "1175": [
+      "SX-1347"
+    ],
+    "1176": [
+      "SX-1348",
+      "SX-1349"
+    ],
+    "1177": [
+      "SX-1350"
+    ],
+    "1178": [
+      "SX-1351"
+    ],
+    "1179": [
+      "SX-1352"
+    ],
+    "1181": [
+      "SX-1353",
+      "SX-1354",
+      "SX-1355",
+      "SX-1356",
+      "SX-1357",
+      "SX-1358",
+      "SX-1359",
+      "SX-1360",
+      "SX-1361",
+      "SX-1362",
+      "SX-1363",
+      "SX-1364",
+      "SX-1365",
+      "SX-1366",
+      "SX-1367",
+      "SX-1368",
+      "SX-1369",
+      "SX-1370",
+      "SX-1371",
+      "SX-1372"
+    ],
+    "1182": [
+      "SX-1373",
+      "SX-1374",
+      "SX-1375"
+    ],
+    "1183": [
+      "SX-1376",
+      "SX-1377",
+      "SX-1378",
+      "SX-1379",
+      "SX-1380"
+    ],
+    "1188": [
+      "SX-1381"
+    ]
+  },
+  "receipt_groups": {
+    "ROUND_75_STORM_AXE": [
+      "SX-1322",
+      "SX-1323"
+    ],
+    "ROUND_75_MASS_PROMOTION": [
+      "SX-1324",
+      "SX-1325",
+      "SX-1326",
+      "SX-1327"
+    ],
+    "ROUND_75_TRIAL_REWARDS": [
+      "SX-1328",
+      "SX-1329"
+    ],
+    "ROUND_75_GENESIS_SHIELD": [
+      "SX-1330",
+      "SX-1331",
+      "SX-1332"
+    ],
+    "ROUND_75_ABYSS_CAMPAIGN": [
+      "SX-1333",
+      "SX-1334",
+      "SX-1335",
+      "SX-1336",
+      "SX-1337",
+      "SX-1338",
+      "SX-1339"
+    ],
+    "ROUND_76_AILIN_GODS_DESCENT": [
+      "SX-1340",
+      "SX-1341",
+      "SX-1342",
+      "SX-1352",
+      "SX-1353"
+    ],
+    "ROUND_76_ALPHONSE_DROPS": [
+      "SX-1343",
+      "SX-1344",
+      "SX-1345",
+      "SX-1346",
+      "SX-1347"
+    ],
+    "ROUND_76_ABYSS_CAMPAIGN": [
+      "SX-1348",
+      "SX-1349",
+      "SX-1350",
+      "SX-1351"
+    ],
+    "ROUND_76_SS_TASK_REWARDS": [
+      "SX-1354",
+      "SX-1355",
+      "SX-1356",
+      "SX-1357",
+      "SX-1358",
+      "SX-1359",
+      "SX-1360",
+      "SX-1361",
+      "SX-1362",
+      "SX-1363",
+      "SX-1364",
+      "SX-1365",
+      "SX-1366",
+      "SX-1367",
+      "SX-1368"
+    ],
+    "ROUND_76_BREAKTHROUGH_AND_PENDING_CHESTS": [
+      "SX-1369",
+      "SX-1370",
+      "SX-1371",
+      "SX-1372"
+    ],
+    "ROUND_77_CHEST_RESULTS": [
+      "SX-1373",
+      "SX-1374",
+      "SX-1375"
+    ],
+    "ROUND_77_CHOICE_RELICS": [
+      "SX-1376",
+      "SX-1377",
+      "SX-1378",
+      "SX-1379",
+      "SX-1380"
+    ],
+    "ROUND_77_TRIAL_ITEM": [
+      "SX-1381"
+    ]
+  },
+  "next_item_id": "SX-1382",
+  "next_unprocessed_chapter": 1192,
+  "confirmed_outcomes": [
+    {
+      "chapter": 1182,
+      "title": "心灵之匕，机械师神技！",
+      "outcomes": [
+        "Three SS chest results: Fire God Greatsword to Nika, Mind Dagger bound to Sarah, X-Starry Firmament book held for Tong Chuchu."
+      ]
+    },
+    {
+      "chapter": 1183,
+      "title": "半神器套装，神之终结者！",
+      "outcomes": [
+        "Five relics: Thunder Claw ×1, Ice Beast Heart ×2, Radiant Feather ×1, Wind Spirit Core ×1. Four relics and four held Legendary Hearts evolve four pets; Wind Spirit Core remains.",
+        "Netherlord · God’s Terminator level-200 six-piece semi-artifact set detailed; only chest armor/set effects are profiled here."
+      ]
+    },
+    {
+      "chapter": 1184,
+      "title": "回归！冲击神灵境界！",
+      "outcomes": [
+        "Isabel, Nika and Allen each receive 600 Ice Dragon Crystals (30,000 Divine Power) and begin trials. Cao spends 60,000 Divine Power from a mixed source; split unknown."
+      ]
+    },
+    {
+      "chapter": 1185,
+      "title": "淬炼神性，登神前的考验！",
+      "outcomes": [
+        "The three candidates reach 100% purity and begin trials; Light, Sacred Flame and Wind Godheads are incorporated/consumed."
+      ]
+    },
+    {
+      "chapter": 1186,
+      "title": "大动乱，神灵混战！",
+      "outcomes": [
+        "Awakened gods contest territory and worshippers; no protagonist-side loot confirmed."
+      ]
+    },
+    {
+      "chapter": 1187,
+      "title": "双极神主，成神试炼！",
+      "outcomes": [
+        "Cao begins special trial; failure penalties and 36,500:1 trial time ratio stated."
+      ]
+    },
+    {
+      "chapter": 1188,
+      "title": "你真的了解寒冰…了解自己吗？",
+      "outcomes": [
+        "Crystal Core quest item awarded; Crystal Element Mastery reaches god tier. Mirrored Ice trial begins."
+      ]
+    },
+    {
+      "chapter": 1189,
+      "title": "生死磨砺，最终阶段试炼开启！",
+      "outcomes": [
+        "Mirror defeated; Ice Element Mastery reaches god tier; final ten-year balance trial begins."
+      ]
+    },
+    {
+      "chapter": 1190,
+      "title": "出关！混乱升级！",
+      "outcomes": [
+        "Seven trial years pass; Cao develops coexistence between crystal/chaotic and ice forces. Divine occupation intensifies; no item receipt confirmed."
+      ]
+    },
+    {
+      "chapter": 1191,
+      "title": "四神耀世！肃清动乱！",
+      "outcomes": [
+        "Cao Xing, Isabel, Nika and Allen ascend to divine status; territorial blessing underway; ten teams tasked to suppress gods. Two hostile lower gods captured, with no death/drop confirmed."
+      ]
+    }
+  ],
+  "unresolved_conflicts": [
+    "Ch1163 shipment narration uses rounded quantities while altar system display reports exact consumption values; both are retained rather than normalized.",
+    "Ch1163 shows 97,164 new Hero promotions after 120,000 gather and 25,000 are held back; preserve displayed outcome.",
+    "Vietnamese edition chapter numbering diverges materially: Cơm Nguội and Hắc Hoàng Đại Đế Ch1162 title an ice-statue goddess story, while Xa Lộ Sách local Ch1162 is a split chapter on demigod breakthrough/return to territory. These titles do not establish the Chinese printed Ch1162 story contents or item facts.",
+    "No result is shown for the Abyss battle by Ch1171; no victory/loot should be inferred.",
+    "Ch1174 Alphonse death reward line is visibly truncated after explicit Guardian Godhead, shield and mace; additional drops remain unknown.",
+    "Ch1176 post-Nektar pseudogod reward labels are garbled/duplicated; retain uncertain attribution.",
+    "Ch1175 sword evolution requires 100 divine kills; do not equate that counter with SS mission 100/100.",
+    "Ch1181 staged divine-power fragment entries sum to 3,200, but subsequent narrative says 3,400; both are preserved pending source clarification.",
+    "Vietnamese edition-local chapter numbering/title arcs diverge from Bqquge printed Chinese numbering; no remapping inferred.",
+    "Ch1182 uses 心灵之匕 in the item panel and 心灵之刃 once in the binding prompt; treated as one identity with variant retained.",
+    "Ch1183 profiles the set chest armor and set effects, not the other five piece mechanics.",
+    "Ch1184 does not state the Ice Dragon Crystal/fragment split of Cao Xing’s 60,000 Divine Power expenditure.",
+    "Whether trial mastery abilities are separately transferable/permanent is not established; cataloged as outcomes rather than skill-book receipts.",
+    "Ch1191’s blessing effects and later fates/drops of captured lower gods remain unresolved.",
+    "Vietnamese edition mapping for printed Chinese Chapters 1182–1191 is unverified; no one-to-one local numbering inferred."
+  ],
+  "source_checks": [
+    {
+      "source": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232843",
+      "checked_chapters": "1182–1191",
+      "use": "Primary Chinese text; all visible continuations inspected. Direct per-chapter URLs are listed in Round 77 audit."
+    },
+    {
+      "source": "Cơm Nguội Novel",
+      "url": "https://comnguoinovel.com/truyen/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong/1182",
+      "checked_chapters": "local catalog/pages attempted around 1182–1191",
+      "use": "Title/index context only; gated body and numbering divergence prevent mechanics alignment."
+    },
+    {
+      "source": "Hắc Hoàng Đại Đế",
+      "url": "https://hachoangdaide.online/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong-1182",
+      "checked_chapters": "local catalog/pages attempted around 1182–1191",
+      "use": "Title/index context only; numbering diverges and body access limited/gated."
+    },
+    {
+      "source": "Xa Lộ Sách",
+      "url": "https://xalosach.com/bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia-0.html?P=12#danhsachchuong",
+      "checked_chapters": "catalog local 1101–1200",
+      "use": "Catalog-only; prior split/numbering divergence retained; no direct mapping asserted for this round."
+    }
+  ]
+}
