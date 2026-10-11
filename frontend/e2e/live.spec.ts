@@ -7,23 +7,45 @@ async function tapVisualCenter(page: Page, locator: Locator, mobile: boolean) {
     await locator.click();
     return;
   }
-  for (let attempt = 0; attempt < 4; attempt += 1) {
-    await locator.scrollIntoViewIfNeeded();
-    const box = await locator.boundingBox();
-    if (!box) throw new Error('Cannot tap an element without a visible bounding box.');
-    const viewport = await page.evaluate(() => ({
-      offsetTop: window.visualViewport?.offsetTop ?? 0,
-      height: window.visualViewport?.height ?? window.innerHeight,
-    }));
-    const x = box.x + box.width / 2;
-    const y = box.y + box.height / 2 - viewport.offsetTop;
-    if (y >= 0 && y <= viewport.height) {
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const geometry = await locator.evaluate(element => {
+      const rect = element.getBoundingClientRect();
+      const viewport = window.visualViewport;
+      return {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+        offsetLeft: viewport?.offsetLeft ?? 0,
+        offsetTop: viewport?.offsetTop ?? 0,
+        width: viewport?.width ?? window.innerWidth,
+        height: viewport?.height ?? window.innerHeight,
+      };
+    });
+    const x = geometry.x - geometry.offsetLeft;
+    const y = geometry.y - geometry.offsetTop;
+    if (x >= 0 && x <= geometry.width && y >= 0 && y <= geometry.height) {
       await page.touchscreen.tap(x, y);
       return;
     }
-    await page.evaluate(delta => window.scrollBy(0, delta), y - viewport.height / 2);
+    await page.evaluate(({ deltaX, deltaY }) => window.scrollBy(deltaX, deltaY), {
+      deltaX: x - geometry.width / 2,
+      deltaY: y - geometry.height / 2,
+    });
   }
-  throw new Error('Unable to bring the element into the mobile visual viewport.');
+  const lastPosition = await locator.evaluate(element => {
+    const rect = element.getBoundingClientRect();
+    const viewport = window.visualViewport;
+    return {
+      rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+      scrollY: window.scrollY,
+      visualViewport: viewport && {
+        offsetTop: viewport.offsetTop,
+        offsetLeft: viewport.offsetLeft,
+        width: viewport.width,
+        height: viewport.height,
+      },
+    };
+  });
+  throw new Error(`Unable to bring the element into the mobile visual viewport: ${JSON.stringify(lastPosition)}`);
 }
 
 const fireRef = { type: 'site', id: 'SITE-LL01-000' };
