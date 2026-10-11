@@ -9,7 +9,7 @@
 | `design/buildings/MAGICAL-BUILDING-CATALOG-v0.3.json` | Machine-readable branch catalog | Proposed, partial executable contracts |
 | `design/buildings/SOURCE-GROUNDED-BUILDING-REDESIGN.md` | Source-first functional building distinctions | Reference and proposal |
 | `data/events/EVENT-TIMELINE-v0.6.json` | Reconciled fixed 30-event calendar | New-game candidate, not retroactive live migration |
-| `data/events/EVENT-SOURCE-CATALOG-v4.6.json` + v4.7–v6.9 addenda | Catalog baseline (590 items, 239 effects) plus append-only Rounds 47–69 event/reward addenda | Research, not guaranteed loot |
+| `data/events/EVENT-SOURCE-CATALOG-v4.6.json` + v4.7–v6.9.1 addenda | Catalog baseline (590 items, 239 effects) plus append-only Rounds 47–69 event/reward addenda | Research, not guaranteed loot |
 | `data/events/EVENT-SOURCE-ITEMS-v6.9.csv` | Cumulative human-review item catalog (1,121 entries through Round 69, Chapters 1102–1111) | Review |
 | `data/events/EVENT-TIMELINE-v0.6.csv` | Human-review schedule diff | Review |
 | `data/structures/SOURCE-STRUCTURE-CATALOG-v1.0.json` | Round 46 review: twenty source-observed/reported structures and one route report; updated city operation evidence, no LL01 construction contracts | Research only, not T0 world data |
@@ -63,3 +63,6 @@ A standard gameplay engine still requires typed registries, deterministic simula
 - `research/extraction-audits/ROUND-68-SIXTY-EIGHTH-EXTRACTION.md`: Round 68 audit for Chapters 1092–1101; includes conditional ranking reward packages, battle receipts, and event rules.
 
 - `research/extraction-audits/ROUND-69-SIXTY-NINTH-EXTRACTION.md`: Round 69 audit for Chapters 1102–1111; includes pooled war spoils, Dragon Shop purchases, hidden-shop offers, and Phase II repeatable reward rules.
+
+- `data/events/EVENT-SOURCE-ITEMS-v6.9.1.csv`: corrected cumulative Round 69 file; 13 market/hidden-shop offer rows fixed while retaining the archived v6.9 release.
+- `research/extraction-audits/ROUND-69-CORRECTION-v6.9.1.md`: details the Round 69 offer-field repair.
