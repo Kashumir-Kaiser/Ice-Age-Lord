@@ -2,12 +2,13 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { ACTIVE_CONTENT, ACTIVE_WORLD_PACKAGE } from '../../content/src/index.ts';
-import { SOURCE_LOCK, RULESET_VERSION } from '../../content/src/sourceLock.ts';
+import { SOURCE_LOCK, SOURCE_MAIN_COMMIT, RULESET_VERSION } from '../../content/src/sourceLock.ts';
 import { assertSourceHashes } from '../../content/src/compiler.ts';
 import { createNewGame, elapsedMsToWorldClock } from '../src/initializer.ts';
 import { canonicalStateHash, hash64, randomIntFromFields } from '../src/hash.ts';
 import { actionAvailability, reduceCommand } from '../src/reducer.ts';
 import { projectPlayerView } from '../src/view.ts';
+import { STAGE07_OPENING_CORPSE_ID } from '../src/stage07.ts';
 
 const world = ACTIVE_WORLD_PACKAGE;
 const options = {
@@ -21,12 +22,12 @@ const options = {
 };
 
 test('content authority is pinned and the world compiles from the selected source releases', () => {
-  assert.equal(ACTIVE_CONTENT.manifest.sourceMainCommit, '66f0c2adaf9e2cc5b4391978a699bda6a24ecdbd');
+  assert.equal(ACTIVE_CONTENT.manifest.sourceMainCommit, SOURCE_MAIN_COMMIT);
   assert.equal(ACTIVE_CONTENT.manifest.activeWorldPackageId, 'WORLD-PACKAGE-LL01-1.0');
   assert.equal(ACTIVE_CONTENT.manifest.timelineVersion, 'LL01-WEB-EVENT-TIMELINE-RECONCILIATION-0.6-RC1');
   assert.equal(ACTIVE_CONTENT.manifest.conversionManifest.length, 6);
-  assert.ok(ACTIVE_CONTENT.manifest.sources.find(source => source.path.endsWith('EVENT-SOURCE-CATALOG-v3.6.json'))?.runtimeUse.includes('not compiled'));
-  assert.ok(ACTIVE_CONTENT.manifest.sources.find(source => source.path.endsWith('SOURCE-STRUCTURE-CATALOG-v0.5.json'))?.runtimeUse.includes('not compiled'));
+  assert.ok(ACTIVE_CONTENT.manifest.sources.find(source => source.path.endsWith('EVENT-SOURCE-CATALOG-v4.6.json'))?.runtimeUse.includes('not compiled'));
+  assert.ok(ACTIVE_CONTENT.manifest.sources.find(source => source.path.endsWith('SOURCE-STRUCTURE-CATALOG-v1.0.json'))?.runtimeUse.includes('not compiled'));
   assert.equal(Object.keys(world.lockedSourceHashes).length, Object.keys(SOURCE_LOCK).length);
   assert.ok(Object.isFrozen(world));
   assert.ok(Object.isFrozen(world.sites));
@@ -110,16 +111,22 @@ test('clean initializer is deterministic and uses one source ledger for starter 
   assert.deepEqual(first.territory.tomb.deathQi, { current: 20, capacity: 20, refillAtWorldTime: '00:00', nextRefillAtElapsedMs: 17 * 60 * 60 * 1000 });
   assert.deepEqual(first.territory.tomb.queue, []);
   assert.equal(first.territory.tomb.output.xpMirrorEligible, false);
-  assert.equal(first.corpses.length, 6);
-  assert.ok(first.corpses.every(corpse => corpse.state === 'unobserved'));
+  assert.equal(first.corpses.length, 7);
+  const openingCorpse = first.corpses.find(corpse => corpse.id === STAGE07_OPENING_CORPSE_ID);
+  const fixedCorpses = first.corpses.filter(corpse => corpse.id !== STAGE07_OPENING_CORPSE_ID);
+  assert.equal(openingCorpse?.state, 'known');
+  assert.equal(fixedCorpses.length, 6);
+  assert.ok(fixedCorpses.every(corpse => corpse.state === 'unobserved'));
   assert.equal(first.fieldChestStates.length, 192);
   assert.ok(first.fieldChestStates.every(chest => chest.state === 'unopened'));
   assert.equal(first.quests.length, 18);
   assert.ok(first.quests.every(quest => quest.state === 'dormant' && quest.rewardReceipt === null));
   assert.equal(first.calendar.length, 30);
   assert.ok(first.calendar.every(event => event.status === 'scheduled' && event.openReceiptSequence === null && event.resolutionReceiptSequence === null));
-  assert.equal(first.corpses.length, 6);
-  assert.ok(first.corpses.every(corpse => corpse.state === 'unobserved' && corpse.createdAtElapsedMs === 0 && corpse.ownershipId === null));
+  assert.equal(first.corpses.length, 7);
+  assert.ok(fixedCorpses.every(corpse => corpse.state === 'unobserved' && corpse.createdAtElapsedMs === 0 && corpse.ownershipId === null));
+  assert.equal(openingCorpse?.createdAtElapsedMs, 0);
+  assert.equal(openingCorpse?.ownershipId, null);
   const supply = first.inventory.containers.find(container => container.kind === 'territory_supply');
   assert.equal(supply?.capacitySlots, 40);
   assert.equal(supply?.occupiedSlots, null);
@@ -139,7 +146,7 @@ test('player projection excludes unobserved world state and sealed career data',
   const serialized = JSON.stringify(view);
   assert.equal(view.schemaVersion, 1);
   assert.equal(view.simElapsedMs, 0);
-  assert.deepEqual(view.visibleMap.entities.map(entity => entity.ref.id), ['SITE-LL01-000', 'RES-LL01-06', 'RES-LL01-07']);
+  assert.deepEqual(view.visibleMap.entities.map(entity => entity.ref.id), ['SITE-LL01-000', 'RES-LL01-06', 'RES-LL01-07', STAGE07_OPENING_CORPSE_ID]);
   assert.equal(view.visibleMap.heatOverlays[0].radiusMm, 10_000);
   assert.deepEqual(view.inventory.containers, []);
   assert.deepEqual(view.units, []);

@@ -5,11 +5,13 @@ import { parseCreateSaveRequest } from '../../contracts/src/api.ts';
 import type { CommandEnvelope, CommandEvent, CommandReceipt, GameState, PlayerView, WorldDefinition } from '../../contracts/src/index.ts';
 import { GAME_STATE_SCHEMA_VERSION, validateCommandEnvelope } from '../../contracts/src/index.ts';
 import { ACTIVE_WORLD_PACKAGE } from '../../content/src/index.ts';
+import { eventRuntimeReadiness, mandatoryEventBlocker } from '../../content/src/eventReadiness.ts';
 import { CONTENT_VERSION, RULESET_VERSION } from '../../content/src/sourceLock.ts';
 import { canonicalStateHash } from '../../sim/src/hash.ts';
 import { createNewGame } from '../../sim/src/initializer.ts';
 import { previewCommand, reduceCommand } from '../../sim/src/reducer.ts';
 import { projectPlayerView } from '../../sim/src/view.ts';
+import { verifyStage08State } from '../../sim/src/stage08.ts';
 import { advanceTo, DAY_MS, HOUR_MS, MINUTE_MS, nextMidnightAfter, TOMB_STANDARD_BLUEPRINT_ID, TOMB_STANDARD_DURATION_MS, TOMB_STANDARD_RECIPE_ID, type StopCondition } from '../../sim/src/time.ts';
 import { RepositoryError, SqliteRepository } from '../../storage/src/repository.ts';
 import { ApiProblem, fromRepositoryError } from './errors.ts';
@@ -195,8 +197,15 @@ function validateStage05State(candidate: GameState, world: WorldDefinition, base
   }
   const extractedByMaterial = new Map<string, number>();
   for (const job of candidate.spatial.harvestJobs) extractedByMaterial.set(job.materialId, (extractedByMaterial.get(job.materialId) ?? 0) + job.extractedQuantity);
+  const marketPurchased = new Map<string, number>();
+  const marketConsumed = new Map<string, number>();
+  for (const offer of candidate.stage08.marketOffers) {
+    marketPurchased.set(offer.itemTemplateId, (marketPurchased.get(offer.itemTemplateId) ?? 0) + offer.purchasedQuantity * offer.quantityPerPurchase);
+    marketConsumed.set(offer.itemTemplateId, (marketConsumed.get(offer.itemTemplateId) ?? 0) + offer.consumedQuantity);
+  }
   for (const template of allowedTemplates) {
-    const expected = (initialTotals.get(template) ?? 0) + (extractedByMaterial.get(template) ?? 0);
+    const expected = (initialTotals.get(template) ?? 0) + (extractedByMaterial.get(template) ?? 0)
+      + (marketPurchased.get(template) ?? 0) - (marketConsumed.get(template) ?? 0);
     if ((templateTotals.get(template) ?? 0) !== expected) invalid('Inventory totals do not conserve starter and harvested materials.');
   }
 }
@@ -208,6 +217,7 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
     || !isRecord(value.playerKnowledge) || !Array.isArray(value.playerKnowledge.lastInspectedEntityIds)
     || !value.playerKnowledge.lastInspectedEntityIds.every(id => isNonEmptyString(id))
     || !isRecord(value.inventory) || !Array.isArray(value.inventory.containers)
+    || !Array.isArray(value.ownedUnits) || !Array.isArray(value.corpses) || !isRecord(value.rngStreams)
     || !isRecord(value.bagSeed)) {
     throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup save state is malformed.', 'Bản sao lưu không hợp lệ.');
   }
@@ -232,6 +242,7 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
       || (Array.isArray(candidate.playerKnowledge.knownChestIds) && candidate.playerKnowledge.knownChestIds.includes(id));
     if (type === 'route') return Array.isArray(candidate.playerKnowledge.knownRouteIds) && candidate.playerKnowledge.knownRouteIds.includes(id);
     if (type === 'unit') return Array.isArray(candidate.ownedUnits) && candidate.ownedUnits.some(unit => unit.id === id);
+    if (type === 'corpse') return (candidate.playerKnowledge.knownCorpseIds ?? []).includes(id);
     if (type === 'item') return candidate.inventory.containers.some(container => isRecord(container) && container.observed === true
       && Array.isArray(container.stacks) && container.stacks.some(stack => isRecord(stack) && stack.itemId === id));
     return false;
@@ -249,11 +260,78 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
     contentVersion: candidate.contentVersion,
     seed: candidate.seed,
   }, world);
+  const rawCombat: unknown = (value as Record<string, unknown>).combat;
+  if (rawCombat !== undefined) {
+    const badCombat = (): never => { throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup contains invalid encounter state.', 'Bản sao lưu có trạng thái giao chiến không hợp lệ.'); };
+    if (!isRecord(rawCombat) || !isSafeInt(rawCombat.nextEncounterSequence) || !isRecord(rawCombat.target) || !Array.isArray(rawCombat.encounters)) badCombat();
+    const rawTarget = rawCombat.target;
+    const baseTarget = baseline.combat!.target;
+    const targetStatus = rawTarget.status;
+    const targetHealth = isRecord(rawTarget.bodyRecord) && isRecord(rawTarget.bodyRecord.health) ? rawTarget.bodyRecord.health : null;
+    if (rawTarget.actorId !== baseTarget.actorId || rawTarget.sourceEcologyId !== baseTarget.sourceEcologyId
+      || rawTarget.populationKey !== baseTarget.populationKey || rawTarget.sourcePopulationAtStart !== baseTarget.sourcePopulationAtStart
+      || rawTarget.siteId !== baseTarget.siteId || !['available', 'reacting', 'retreated', 'dead'].includes(String(targetStatus))
+      || !isRecord(rawTarget.position) || !targetHealth || !isSafeInt(targetHealth.current) || !isSafeInt(targetHealth.max)
+      || targetHealth.max !== baseTarget.bodyRecord.health?.max || targetHealth.current > targetHealth.max
+      || canonicalStateHash(rawTarget.combatProfile) !== canonicalStateHash(baseTarget.combatProfile)
+      || canonicalStateHash((rawTarget.bodyRecord as Record<string, unknown>).rawAttributes) !== canonicalStateHash(baseTarget.bodyRecord.rawAttributes)
+      || canonicalStateHash((rawTarget.bodyRecord as Record<string, unknown>).equipmentInstanceIds) !== canonicalStateHash([])
+      || (targetStatus === 'dead' && targetHealth.current !== 0)
+      || (targetStatus !== 'dead' && targetHealth.current <= 0)) badCombat();
+    const basePosition = baseTarget.position;
+    const movedMm = Math.hypot(Number(rawTarget.position.xMm) - basePosition.xMm, Number(rawTarget.position.yMm) - basePosition.yMm);
+    if (!Number.isSafeInteger(rawTarget.position.xMm) || !Number.isSafeInteger(rawTarget.position.yMm)
+      || (targetStatus === 'retreated' ? movedMm > 5_100 || movedMm < 4_900 : movedMm !== 0)) badCombat();
+    const encounterIds = new Set<string>();
+    const encounterSequences = new Set<number>();
+    let activeCount = 0;
+    let maxSequence = 0;
+    for (const candidateEncounter of rawCombat.encounters) {
+      if (!isRecord(candidateEncounter) || !isNonEmptyString(candidateEncounter.id) || !isSafeInt(candidateEncounter.sequence)
+        || !['active', 'victory', 'defeat', 'retreated'].includes(String(candidateEncounter.status))
+        || candidateEncounter.targetActorId !== baseTarget.actorId || !Array.isArray(candidateEncounter.actorIds)
+        || candidateEncounter.actorIds.length !== 1 || typeof candidateEncounter.actorIds[0] !== 'string'
+        || !Array.isArray(candidateEncounter.log) || candidateEncounter.log.length > 100
+        || !isSafeInt(candidateEncounter.startedAtElapsedMs) || candidateEncounter.startedAtElapsedMs > candidate.simElapsedMs
+        || !isSafeInt(candidateEncounter.round) || !isRecord(candidateEncounter.targetHealth)
+        || !isSafeInt(candidateEncounter.targetHealth.current) || !isSafeInt(candidateEncounter.targetHealth.max)
+        || candidateEncounter.targetHealth.max !== targetHealth.max || candidateEncounter.targetHealth.current > targetHealth.max
+        || !['attack', 'retreat'].includes(String(candidateEncounter.pendingIntent))
+        || !(candidateEncounter.completedAtElapsedMs === null || (isSafeInt(candidateEncounter.completedAtElapsedMs) && candidateEncounter.completedAtElapsedMs <= candidate.simElapsedMs))
+        || !(candidateEncounter.nextTurnAtElapsedMs === null || isSafeInt(candidateEncounter.nextTurnAtElapsedMs))) badCombat();
+      const encounterId = candidateEncounter.id as string;
+      const sequence = candidateEncounter.sequence as number;
+      if (encounterIds.has(encounterId) || encounterSequences.has(sequence)) badCombat();
+      encounterIds.add(encounterId);
+      encounterSequences.add(sequence);
+      maxSequence = Math.max(maxSequence, sequence);
+      const actorId = candidateEncounter.actorIds[0] as string;
+      if (!candidate.ownedUnits.some(unit => unit.id === actorId && unit.ownerId === candidate.player.id)) badCombat();
+      if (candidateEncounter.status === 'active') {
+        activeCount += 1;
+        if (!isSafeInt(candidateEncounter.nextTurnAtElapsedMs) || candidateEncounter.nextTurnAtElapsedMs <= candidate.simElapsedMs
+          || candidateEncounter.completedAtElapsedMs !== null) badCombat();
+      } else if (candidateEncounter.nextTurnAtElapsedMs !== null || candidateEncounter.completedAtElapsedMs === null) badCombat();
+      const streamId = 'stage07-combat:' + encounterId;
+      const stream = candidate.rngStreams?.[streamId];
+      if (!stream || stream.algorithm !== 'HASH-PRIMITIVE-1.0' || !isSafeInt(stream.counter)) badCombat();
+      if (!candidateEncounter.log.every(entry => isRecord(entry) && isSafeInt(entry.atElapsedMs) && entry.atElapsedMs <= candidate.simElapsedMs
+        && isNonEmptyString(entry.actorId) && entry.targetActorId === baseTarget.actorId
+        && ['hit', 'miss', 'retreat', 'defeat', 'victory'].includes(String(entry.outcome))
+        && isSafeInt(entry.damage) && isSafeInt(entry.damageTaken) && isSafeInt(entry.actorHealth) && isSafeInt(entry.targetHealth))) badCombat();
+    }
+    if (!isSafeInt(rawCombat.nextEncounterSequence) || (rawCombat.nextEncounterSequence as number) <= maxSequence
+      || activeCount > 1 || (activeCount === 1) !== (targetStatus === 'reacting')
+      || (targetStatus === 'available' && rawCombat.encounters.length > 0)
+      || (targetStatus === 'dead' && !candidate.corpses.some(corpse => corpse.id === 'CORPSE-' + baseTarget.actorId && corpse.actorId === baseTarget.actorId))
+      || (targetStatus === 'retreated' && rawCombat.encounters.length === 0)) badCombat();
+  }
   if (!isRecord(candidate.clockControl) || !isRecord(candidate.timeBoundaries) || !isRecord(candidate.survival)
     || !isRecord(candidate.territory) || !isRecord(candidate.territory.survivalFire) || !isRecord(candidate.territory.tomb)
     || !isRecord(candidate.player.mana) || !Array.isArray(candidate.ownedUnits) || !Array.isArray(candidate.jobs)
     || !Array.isArray(candidate.calendar) || !isRecord(candidate.travel) || !isRecord(candidate.exploration)
-    || !isRecord(candidate.spatial) || !Array.isArray(candidate.fieldChestStates)
+    || !isRecord(candidate.spatial) || !Array.isArray(candidate.fieldChestStates) || !isRecord(candidate.stage08)
+    || !Array.isArray(candidate.stage08.marketOffers)
     || !Array.isArray(candidate.playerKnowledge.knownSiteIds) || !Array.isArray(candidate.playerKnowledge.knownChestIds)
     || !Array.isArray(candidate.playerKnowledge.knownResourceIds) || !Array.isArray(candidate.playerKnowledge.knownRouteIds)
     || !Array.isArray(candidate.playerKnowledge.knownSignalIds)) {
@@ -271,7 +349,8 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
     || typeof candidate.playerKnowledge.careerCardObserved !== 'boolean') {
     throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup contains an invalid inspection state.', 'Bản sao lưu không hợp lệ.');
   }
-  baseline.playerKnowledge.careerCardObserved = candidate.playerKnowledge.careerCardObserved;
+  // Exploration, inspections and opening knowledge are save state, not immutable seed data.
+  baseline.playerKnowledge = structuredClone(candidate.playerKnowledge);
   baseline.bagSeed = { ...baseline.bagSeed, inspected: bagObserved };
 
   const normalized = structuredClone(candidate) as GameState;
@@ -289,11 +368,15 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
   normalized.ownedUnits = baseline.ownedUnits;
   normalized.jobs = baseline.jobs;
   normalized.calendar = baseline.calendar;
+  normalized.eventProgressionBlocker = baseline.eventProgressionBlocker;
   normalized.travel = baseline.travel;
   normalized.exploration = baseline.exploration;
   normalized.spatial = baseline.spatial;
   normalized.fieldChestStates = baseline.fieldChestStates;
-  normalized.playerKnowledge = baseline.playerKnowledge;
+  normalized.playerKnowledge = structuredClone(candidate.playerKnowledge);
+  normalized.stage08 = baseline.stage08;
+  normalized.quests = baseline.quests;
+  normalized.currency = baseline.currency;
   baseline.inventory = {
     containers: baseline.inventory.containers.map(container => ({
       ...container,
@@ -307,6 +390,8 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
     })),
   };
   normalized.bagSeed = { ...baseline.bagSeed, inspected: bagObserved };
+  // Encounter state is mutable campaign state and was validated above; exclude it from the opening-state identity comparison.
+  normalized.combat = baseline.combat;
   if (canonicalStateHash(baseline) !== canonicalStateHash(normalized)) {
     throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup changes immutable opening state.', 'Bản sao lưu đã thay đổi trạng thái mở đầu bất biến.');
   }
@@ -379,11 +464,62 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
   }
 
   const ev00 = candidate.calendar.find(event => event.id === 'EV00-SAFE-FIRE');
-  if (!ev00 || ev00.status !== expectedProtection || ev00.openReceiptSequence !== 1
-    || (expectedProtection === 'expired' && !isSafeInt(ev00.resolutionReceiptSequence, 1))) {
+  const expectedEv00CalendarStatus = expectedProtection === 'expired' ? 'resolved' : 'active';
+  if (!ev00 || ev00.status !== expectedEv00CalendarStatus || ev00.openReceiptSequence !== 1
+    || (expectedProtection === 'expired' && (!isSafeInt(ev00.resolutionReceiptSequence, 1)
+      || (ev00.lockReceiptSequence !== null && !isSafeInt(ev00.lockReceiptSequence, 1))))) {
     throw new ApiProblem(400, 'BACKUP_INVALID', 'The opening protection calendar row is inconsistent.', 'Sự kiện bảo hộ mở đầu trong lịch không nhất quán.');
   }
+  const validSequence = (sequence: unknown): boolean => sequence === null
+    || (isSafeInt(sequence, 1) && sequence <= candidate.lastEventSequence);
+  const validCalendar = candidate.calendar.length === world.eventSchedule.length && candidate.calendar.every((event, index) => {
+    const source = world.eventSchedule[index];
+    if (!isRecord(event) || !source || event.id !== source.id || event.opensAtMs !== source.opensAtMs
+      || event.locksAtMs !== source.locksAtMs || event.resolvesAtMs !== source.resolvesAtMs
+      || event.displayName !== source.displayName || !validSequence(event.openReceiptSequence)
+      || !validSequence(event.lockReceiptSequence) || !validSequence(event.blockedReceiptSequence)
+      || !validSequence(event.resolutionReceiptSequence)) return false;
+    if (event.status === 'scheduled') return event.opensAtMs > elapsed && event.openReceiptSequence === null && event.lockReceiptSequence === null
+      && event.blockedReceiptSequence === null && event.resolutionReceiptSequence === null;
+    if (event.status === 'active') return isSafeInt(event.openReceiptSequence, 1) && event.opensAtMs <= elapsed && elapsed < event.locksAtMs
+      && event.lockReceiptSequence === null && event.blockedReceiptSequence === null && event.resolutionReceiptSequence === null;
+    if (event.status === 'locked') return isSafeInt(event.openReceiptSequence, 1) && isSafeInt(event.lockReceiptSequence, 1)
+      && event.openReceiptSequence < event.lockReceiptSequence && event.locksAtMs <= elapsed && elapsed < event.resolvesAtMs
+      && event.blockedReceiptSequence === null && event.resolutionReceiptSequence === null;
+    if (event.status === 'resolved') return isSafeInt(event.openReceiptSequence, 1)
+      && (isSafeInt(event.lockReceiptSequence, 1) || (event.id === 'EV00-SAFE-FIRE' && event.lockReceiptSequence === null))
+      && isSafeInt(event.resolutionReceiptSequence, 1) && event.blockedReceiptSequence === null && event.resolvesAtMs <= elapsed
+      && event.openReceiptSequence < (event.lockReceiptSequence ?? event.resolutionReceiptSequence)
+      && (event.lockReceiptSequence === null || event.lockReceiptSequence < event.resolutionReceiptSequence);
+    if (event.status === 'blocked') return event.openReceiptSequence === null && event.lockReceiptSequence === null
+      && event.opensAtMs <= elapsed && event.resolutionReceiptSequence === null;
+    return event.status === 'cancelled' && event.openReceiptSequence === null && event.lockReceiptSequence === null
+      && event.blockedReceiptSequence === null && event.resolutionReceiptSequence === null;
+  });
+  const blockedRows = candidate.calendar.filter(event => event.status === 'blocked');
+  const progressionBlocker = candidate.eventProgressionBlocker;
+  const validProgressionBlocker = progressionBlocker === null
+    ? blockedRows.length === 0
+    : isRecord(progressionBlocker) && blockedRows.length === 1
+      && blockedRows[0].id === progressionBlocker.eventId
+      && isSafeInt(progressionBlocker.blockedAtElapsedMs)
+      && progressionBlocker.blockedAtElapsedMs === candidate.simElapsedMs
+      && isNonEmptyString(progressionBlocker.reasonCode, 100)
+      && isNonEmptyString(progressionBlocker.playerMessage, 500)
+      && validSequence(progressionBlocker.receiptSequence)
+      && progressionBlocker.receiptSequence === blockedRows[0].blockedReceiptSequence
+      && candidate.clockControl.status === 'paused';
+  const lifecycleReceipts = candidate.calendar.flatMap(event => [event.openReceiptSequence, event.lockReceiptSequence,
+    event.blockedReceiptSequence, event.resolutionReceiptSequence].filter((sequence): sequence is number => sequence !== null));
+  if (!validCalendar || !validProgressionBlocker || new Set(lifecycleReceipts).size !== lifecycleReceipts.length) {
+    throw new ApiProblem(400, 'BACKUP_INVALID', 'The event calendar receipts or progression blocker are inconsistent.', 'Lịch sự kiện trong bản sao lưu không nhất quán.');
+  }
   validateStage05State(candidate, world, baseline);
+  try {
+    verifyStage08State(candidate);
+  } catch {
+    throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup contains invalid Stage 08 quest, shop, currency or escrow state.', 'Bản sao lưu Stage 08 không hợp lệ.');
+  }
   return candidate;
 }
 
@@ -424,6 +560,11 @@ function validateBackupEvent(value: unknown, index: number, saveId: string, rece
     'clock_paused_after_lease_expired', 'clock_paused_on_shutdown', 'clock_paused_on_stop_condition',
     'simulation_time_advanced', 'simulation_hour_settled', 'world_day_started', 'world_sunset',
     'world_night_started', 'world_dawn', 'opening_protection_started', 'opening_protection_expired',
+    'event_calendar_opened', 'event_calendar_locked', 'event_calendar_resolved', 'mandatory_event_blocked',
+    'event_rank_settlement_blocked', 'caravan_departed', 'caravan_distress_opened', 'caravan_arrived', 'quest_completed',
+    'market_opened', 'caravan_window_closed', 'auction_bid_expired', 'shop_offer_expired',
+    'quest_accepted', 'caravan_safe_passage_negotiated', 'caravan_escort_started', 'quest_reward_claimed',
+    'shop_purchase_committed', 'auction_bid_placed', 'auction_bid_cancelled',
     'cold_warning_changed', 'cold_danger_reached', 'fire_fuel_consumed', 'survival_fire_extinguished',
     'fire_refuelled', 'survival_fire_lit', 'tomb_job_queued', 'tomb_job_started', 'tomb_job_blocked',
     'tomb_job_cancelled', 'tomb_unit_completed', 'tomb_death_qi_refilled',
@@ -431,7 +572,11 @@ function validateBackupEvent(value: unknown, index: number, saveId: string, rece
     'spatial_search_tick_settled', 'spatial_search_completed', 'spatial_search_cancelled', 'chest_signal_detected',
     'harvest_job_started', 'harvest_arrived_at_workfront', 'resource_extracted', 'harvest_work_completed',
     'harvest_job_blocked', 'harvest_cargo_returned', 'harvest_job_cancelled', 'inventory_item_transferred',
-    'resource_daily_quotas_reset',
+    'inventory_stack_split', 'inventory_stacks_merged', 'inventory_food_consumed',
+    'resource_daily_quotas_reset', 'career_activated', 'corpse_revived', 'corpse_butchered',
+    'unit_equipment_changed', 'unit_equipment_removed', 'xp_awarded',
+    'combat_encounter_started', 'combat_retreat_ordered', 'combat_turn_settled', 'combat_encounter_won',
+    'combat_encounter_retreated', 'combat_unit_defeated',
   ]);
   if (value.eventType === 'career_card_inspected') return Object.keys(value.payload).length === 0;
   if (value.eventType === 'starter_container_inspected') return (value.payload.containerId === 'LL-CNT-CARRIED-FOOD-BAG-01' && value.payload.containerKind === 'carried_bag')
@@ -444,6 +589,7 @@ function validateBackupEvent(value: unknown, index: number, saveId: string, rece
     if (entity.type === 'cache') return state.playerKnowledge.knownSignalIds.includes(entity.id) || state.playerKnowledge.knownChestIds.includes(entity.id);
     if (entity.type === 'route') return state.playerKnowledge.knownRouteIds.includes(entity.id);
     if (entity.type === 'unit') return state.ownedUnits.some(unit => unit.id === entity.id);
+    if (entity.type === 'corpse') return (state.playerKnowledge.knownCorpseIds ?? []).includes(entity.id);
     if (entity.type === 'item') return state.inventory.containers.some(container => container.observed && container.stacks.some(stack => stack.itemId === entity.id));
     return false;
   }
@@ -483,6 +629,22 @@ function validateBackup(value: unknown, world: WorldDefinition): BackupEnvelope 
   }
   if (value.events.length !== state.lastEventSequence || value.events.some((event, index) => !validateBackupEvent(event, index, state.saveId, receiptMap, state))) {
     throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup event ledger is malformed.', 'Bản sao lưu không hợp lệ.');
+  }
+  const ledgerEvents = value.events as Array<Record<string, any>>;
+  const lifecycleReceiptMatches = state.calendar.every(event => {
+    const matches = (sequence: number | null, eventType: string): boolean => sequence === null
+      || (ledgerEvents[sequence - 1]?.eventType === eventType
+        && ledgerEvents[sequence - 1]?.payload?.eventId === event.id);
+    const openedBy = event.id === 'EV00-SAFE-FIRE' ? 'opening_protection_started' : 'event_calendar_opened';
+    const resolvedBy = event.id === 'EV00-SAFE-FIRE' && event.lockReceiptSequence === null
+      ? 'opening_protection_expired' : 'event_calendar_resolved';
+    return matches(event.openReceiptSequence, openedBy)
+      && matches(event.lockReceiptSequence, 'event_calendar_locked')
+      && matches(event.blockedReceiptSequence, 'mandatory_event_blocked')
+      && matches(event.resolutionReceiptSequence, resolvedBy);
+  });
+  if (!lifecycleReceiptMatches) {
+    throw new ApiProblem(400, 'BACKUP_INVALID', 'An event calendar receipt does not identify its lifecycle event.', 'Biên nhận lịch sự kiện không khớp với nhật ký.');
   }
   for (const receipt of receiptMap.values()) {
     const relatedEvents = value.events.filter(event => isRecord(event) && event.causalCommandId === receipt.commandId);
@@ -621,8 +783,19 @@ export class GameApplicationService {
     }
     let caughtUp = true;
     const result = this.persistSystemEvents(saveId, state => {
-      const advanced = advanceTo(state, Math.max(state.simElapsedMs, driver.targetSimElapsedMs), {
+      const targetSimElapsedMs = Math.max(state.simElapsedMs, driver.targetSimElapsedMs);
+      const blockerEvent = state.calendar
+        .filter(event => event.status === 'scheduled' && event.opensAtMs <= targetSimElapsedMs
+          && eventRuntimeReadiness(event.id) === 'mandatory_content_blocked')
+        .sort((left, right) => left.opensAtMs - right.opensAtMs || state.calendar.indexOf(left) - state.calendar.indexOf(right))[0];
+      const blockerPolicy = blockerEvent ? mandatoryEventBlocker(blockerEvent.id) : null;
+      const advanced = advanceTo(state, targetSimElapsedMs, {
         stopCondition: state.clockControl.stopCondition as StopCondition,
+        stopBeforeEvent: blockerEvent && blockerPolicy ? {
+          eventId: blockerEvent.id,
+          reasonCode: blockerPolicy.reasonCode,
+          playerMessage: blockerPolicy.playerMessage,
+        } : undefined,
       }, this.world);
       const events: Omit<CommandEvent, 'sequence'>[] = [...advanced.events];
       if (advanced.stoppedBy) {
@@ -999,6 +1172,7 @@ export class GameApplicationService {
         || payloadRef.type === 'cache' && (state.playerKnowledge.knownSignalIds.includes(payloadRef.id) || state.playerKnowledge.knownChestIds.includes(payloadRef.id))
         || payloadRef.type === 'route' && state.playerKnowledge.knownRouteIds.includes(payloadRef.id)
         || payloadRef.type === 'unit' && state.ownedUnits.some(unit => unit.id === payloadRef.id)
+        || payloadRef.type === 'corpse' && (state.playerKnowledge.knownCorpseIds ?? []).includes(payloadRef.id)
         || payloadRef.type === 'item' && state.inventory.containers.some(container => container.observed && container.stacks.some(stack => stack.itemId === payloadRef.id))
       );
       if (!known) {
@@ -1044,7 +1218,14 @@ export class GameApplicationService {
       clock_paused_after_restart: { category: 'time', title: 'Đồng hồ đã dừng sau khi khởi động lại', text: 'Chính sách phiên bản đầu tiên dừng thời gian khi máy chủ khởi động lại.' },
       clock_paused_after_lease_expired: { category: 'time', title: 'Đồng hồ đã dừng', text: 'Nhịp giữ quyền điều khiển đã hết hạn; thời gian được tạm dừng.' },
       clock_paused_on_shutdown: { category: 'time', title: 'Đồng hồ đã dừng khi máy chủ đóng', text: 'Thời gian được tạm dừng trước khi máy chủ đóng.' },
-      clock_paused_on_stop_condition: { category: 'time', title: 'Đồng hồ đã dừng theo điều kiện', text: `Đã đạt điều kiện ${String(event.payload.stopCondition)}.` },
+      clock_paused_on_stop_condition: { category: 'time', title: 'Đồng hồ đã dừng theo điều kiện', text: event.payload.stopCondition === 'event_content_blocked'
+        ? 'Tiến trình đã dừng tại mốc sự kiện cần luật chưa được triển khai.'
+        : `Đã đạt điều kiện ${String(event.payload.stopCondition)}.` },
+      event_calendar_opened: { category: 'event', title: 'Một sự kiện đã mở', text: String(event.payload.displayName ?? 'Sự kiện đã mở theo lịch thế giới.') },
+      event_calendar_locked: { category: 'event', title: 'Sự kiện đã khóa ghi nhận', text: `${String(event.payload.displayName ?? 'Sự kiện')} đã đến hạn khóa.` },
+      event_calendar_resolved: { category: 'event', title: 'Mốc sự kiện đã quyết toán', text: `${String(event.payload.displayName ?? 'Sự kiện')} đã kết thúc. Không tự cấp phần thưởng khi thiếu kết quả hợp lệ.` },
+      event_rank_settlement_blocked: { category: 'event', title: 'Opening rank settlement held', text: 'The fixed contender roster is not compiled, so no rank or reward was assigned.' },
+      mandatory_event_blocked: { category: 'event', title: 'Tiến trình sự kiện đang tạm dừng', text: 'Luật cho sự kiện kế tiếp chưa được triển khai. Tiến trình đã dừng an toàn và lưu game được giữ nguyên.' },
       simulation_time_advanced: { category: 'time', title: 'Thời gian mô phỏng đã tiến', text: `T+${String(event.payload.toElapsedMs ?? event.occurredAtElapsedMs)} ms.` },
       simulation_hour_settled: { category: 'time', title: 'Đã quyết toán một giờ mô phỏng', text: 'Các mốc giờ được quyết toán theo thứ tự máy chủ.' },
       world_day_started: { category: 'time', title: 'Bắt đầu ngày mới', text: `Ngày ${String(event.payload.day)} theo giờ thế giới.` },
@@ -1081,7 +1262,47 @@ export class GameApplicationService {
       harvest_cargo_returned: { category: 'logistics', title: 'Cargo returned', text: `${String(event.payload.quantity)} resource unit(s) returned to the carried bag.` },
       harvest_job_cancelled: { category: 'logistics', title: 'Harvest trip cancelled', text: `${String(event.payload.extractedQuantity)} gathered unit(s) remain in the carried bag.` },
       inventory_item_transferred: { category: 'logistics', title: 'Inventory transferred', text: `${String(event.payload.quantity)} item unit(s) transferred between accessible containers.` },
+      inventory_stack_split: { category: 'inventory', title: 'Stack split', text: `${String(event.payload.quantity)} ${String(event.payload.templateId)} units moved into a separate stack; total quantity is unchanged.` },
+      inventory_stacks_merged: { category: 'inventory', title: 'Stacks merged', text: `${String(event.payload.quantity)} compatible units now share one stack.` },
+      inventory_food_consumed: { category: 'inventory', title: 'Food consumed', text: `${String(event.payload.quantity)} ${String(event.payload.templateId)} consumed (${String(event.payload.foodUnits)} food units).` },
+      lord_house_repair_started: { category: 'construction', title: 'Lord House repair started', text: '20 WOOD and 10 STONE are reserved; the required stone hammer is reserved for the assigned worker.' },
+      construction_job_started: { category: 'construction', title: 'Construction started', text: `${String(event.payload.workUnitsRequired)} WU are assigned to ${String(event.payload.blueprintId)}; listed materials are reserved.` },
+      construction_workers_reassigned: { category: 'construction', title: 'Construction workforce updated', text: `${Array.isArray(event.payload.workerIds) ? event.payload.workerIds.length : 0} worker(s) assigned; required tool reservations were updated with the assignment.` },
+      construction_job_cancelled: { category: 'construction', title: 'Construction cancelled', text: 'Unconsumed material and tool reservations were released; completed work was not refunded.' },
+      lord_house_repaired: { category: 'construction', title: 'Lord House repaired', text: 'The house is active and exactly eleven built-in Level 1 building options are unlocked.' },
+      construction_building_completed: { category: 'construction', title: 'Building completed', text: `${String(event.payload.blueprintId)} finished; reserved costs were consumed once and the building instance is active.` },
+      career_activated: { category: 'character', title: 'Nghề đã kích hoạt', text: 'Tử Khí Châm đã được học một lần; Mana không đổi.' },
+      combat_encounter_started: { category: 'combat', title: 'Bắt đầu giao chiến', text: String(event.payload.actorName) + ' tiếp cận một thỏ băng thuộc quần thể R0; lượt đầu sẽ phân giải theo giờ mô phỏng.' },
+      combat_retreat_ordered: { category: 'combat', title: 'Đã ra lệnh rút lui', text: 'Chiến binh sẽ rút ở mốc giao chiến kế tiếp sau phản ứng của mục tiêu.' },
+      combat_turn_settled: { category: 'combat', title: 'Lượt giao chiến đã phân giải', text: 'Kết quả: ' + String(event.payload.outcome) + '; sát thương gây ra ' + String(event.payload.damage) + ', nhận vào ' + String(event.payload.damageTaken) + '.' },
+      combat_encounter_won: { category: 'combat', title: 'Giao chiến kết thúc · nhặt được thi thể thật', text: String(event.payload.xpAwarded) + ' XP hợp lệ cho ' + String(event.payload.actorName) + '; Lí Lan nhận phản chiếu ' + String(event.payload.mirroredXp) + ' XP đúng một lần.' },
+      combat_encounter_retreated: { category: 'combat', title: 'Rút khỏi giao chiến', text: 'Mục tiêu sống sót và rời khỏi tầm giao chiến; cá thể vẫn được giữ nguyên trong ecology.' },
+      combat_unit_defeated: { category: 'combat', title: 'Chiến binh bị hạ gục', text: 'Liên kết Tử Phục của đơn vị đã đóng vĩnh viễn; thi thể thứ hai mang khóa không thể tái chế.' },
+      corpse_revived: { category: 'forces', title: 'Tử Phục thành công', text: 'Đơn vị được thêm vào quân lực với hồ sơ, cấp độ, kinh nghiệm và các vật phẩm đã ghi nhận.' },
+      corpse_butchered: { category: 'forces', title: 'Thi thể đã được phân giải', text: 'Thi thể đã được tiêu dùng một lần; trang bị còn ghi nhận được thu hồi.' },
+      unit_equipment_changed: { category: 'inventory', title: 'Trang bị đã cập nhật', text: String(event.payload.templateId) + ' được gắn vào ' + String(event.payload.unitId) + '.' },
+      unit_equipment_removed: { category: 'inventory', title: 'Đã tháo trang bị', text: 'Vật phẩm trở lại túi hành trang của Lí Lan.' },
+      xp_awarded: { category: 'progression', title: 'Kinh nghiệm đã quyết toán', text: String(event.payload.netXp) + ' XP lao động đã được ghi nhận; Lí Lan nhận phản chiếu ' + String(event.payload.mirroredNetXp) + ' XP.' },
+      construction_reward_entitlement_pending: { category: 'achievement', title: 'First-build reward pending', text: `${String(event.payload.achievementId)} is recorded as pending; no reward item was created until its eligibility contract resolves.` },
+      farmhouse_residents_recruited: { category: 'population', title: 'Farmhouse residents recruited', text: `${String(event.payload.quantity)} resident(s) joined after paying ${String(event.payload.foodUnitsSpent)} FOOD units.` },
+      heater_service_started: { category: 'production', title: 'Heater fuel cycle started', text: 'One WOOD is reserved for 20 minutes of heat service (+15–20°C in a room up to 30 m²). The territory-wide cold model is unchanged.' },
+      heater_service_completed: { category: 'production', title: 'Heater fuel cycle completed', text: 'The reserved WOOD was consumed once and the local 20-minute heat service ended.' },
       resource_daily_quotas_reset: { category: 'logistics', title: 'Daily resource quotas reset', text: 'Daily source quotas reset at the world midnight boundary.' },
+      caravan_departed: { category: 'quest', title: 'Torven’s caravan departed', text: 'The source scheduled convoy left the checkpoint for the old trade-road bridge.' },
+      caravan_distress_opened: { category: 'quest', title: 'Caravan distress reported', text: 'Torven’s caravan is waiting at the bridge. Its fixed response window is now open.' },
+      quest_accepted: { category: 'quest', title: 'Caravan request accepted', text: 'Torven’s fixed rescue and escort request is now active.' },
+      caravan_safe_passage_negotiated: { category: 'quest', title: 'Safe passage negotiated', text: 'One recorded grain sack secured the bridge crossing; the raiders withdrew.' },
+      caravan_escort_started: { category: 'quest', title: 'Caravan escort started', text: 'The convoy is traveling to Krona Gate at the authored route pace.' },
+      caravan_arrived: { category: 'quest', title: 'Caravan reached Krona Gate', text: 'Torven, the surviving draft animals, and the cargo ledger reached the town checkpoint.' },
+      quest_completed: { category: 'quest', title: 'Caravan quest completed', text: 'The fixed route conditions were met. The source reward is ready to claim at Krona Gate.' },
+      market_opened: { category: 'trade', title: 'Caravan market opened', text: 'The local bread offer and six-unit salt lot are available at Krona Gate.' },
+      quest_reward_claimed: { category: 'quest', title: 'Caravan reward claimed', text: `The fixed reward contract granted ${String(event.payload.amount)} ${String(event.payload.currencyId)} and unlocked Torven’s recorded route and contract offers.` },
+      caravan_window_closed: { category: 'quest', title: 'Caravan response window closed', text: 'The convoy returned to its checkpoint; no quest reward was issued.' },
+      shop_purchase_committed: { category: 'trade', title: 'Market purchase completed', text: `${String(event.payload.quantity)} ${String(event.payload.itemTemplateId)} delivered for ${String(event.payload.totalPrice)} ${String(event.payload.currencyId)}.` },
+      shop_offer_expired: { category: 'trade', title: 'Market offer expired', text: 'The offer was closed at its recorded expiry boundary.' },
+      auction_bid_placed: { category: 'trade', title: 'Auction bid placed', text: `${String(event.payload.quantity)} lot unit(s) reserved; ${String(event.payload.escrowAmount)} ${String(event.payload.currencyId)} is held until cancellation or lot close.` },
+      auction_bid_cancelled: { category: 'trade', title: 'Auction bid cancelled', text: `${String(event.payload.returnedEscrow)} ${String(event.payload.currencyId)} returned to the available balance; no goods transferred.` },
+      auction_bid_expired: { category: 'trade', title: 'Auction bid expired', text: `${String(event.payload.returnedEscrow)} ${String(event.payload.currencyId)} returned at lot close; no goods transferred.` },
     };
     return events[event.type] ?? null;
   }

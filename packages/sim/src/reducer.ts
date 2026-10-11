@@ -4,6 +4,10 @@ import { canonicalStateHash } from './hash.ts';
 import { canAccessStarterContainer } from './access.ts';
 import { entityKey } from './view.ts';
 import { cancelTombJob, enqueueTombJob, selectedSpeed, TOMB_STANDARD_BLUEPRINT_ID } from './time.ts';
+import { assignConstructionWorkers, cancelConstructionJob, previewBuild, previewHeaterService, previewRepair, recruitResidents, startConstructionJob, startHeaterService } from './construction.ts';
+import { consumeItem, equipItem, equipmentBlocker, mergeStacks, splitStack, unequipBlocker, unequipItem } from './inventory.ts';
+import { activateOpeningCareer, butcherCorpse, directReviveAvailability, reviveDirect } from './stage07.ts';
+import { attackAvailability, orderStage07Retreat, retreatAvailability, startStage07Encounter } from './combat.ts';
 import {
   actorAvailability,
   cancelSpatialJob,
@@ -15,6 +19,7 @@ import {
   startSearchJob,
   transferItem,
 } from './spatial.ts';
+import { acceptQ08, cancelAuctionBid, claimQ08Reward, escortQ08, negotiateQ08, placeAuctionBid, purchaseMarketOffer } from './stage08.ts';
 
 const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | 'inspect_starter_container' | 'inspect_career_card'>, { code: string; message: string }>> = {
   activate_career_card: { code: 'CAREER_CARD_FLOW_NOT_IMPLEMENTED', message: 'Career activation is unavailable until its verified flow is implemented.' },
@@ -33,13 +38,29 @@ const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | '
   cancel_spatial_job: { code: 'SPATIAL_JOB_NOT_ACTIVE', message: 'The selected spatial job is no longer active.' },
   transfer_item: { code: 'CONTAINER_NOT_ACCESSIBLE', message: 'Both containers must be accessible to the player.' },
   open_cache: { code: 'CHEST_LIFECYCLE_STAGE_05', message: 'Field chests cannot be opened until access and reward commitments are implemented.' },
-  repair: { code: 'CONSTRUCTION_ECONOMY_STAGE_06', message: 'Repair is unavailable until reservations and work settlement are implemented.' },
-  build: { code: 'CONSTRUCTION_ECONOMY_STAGE_06', message: 'Construction is unavailable until blueprint, site and worker contracts are implemented.' },
-  craft: { code: 'CONSTRUCTION_ECONOMY_STAGE_06', message: 'Crafting is unavailable until recipe and reservation contracts are implemented.' },
+  repair: { code: 'HOUSE_REPAIR_CONTRACT_UNAVAILABLE', message: 'The damaged Lord House repair contract, accessible workers and reserved inputs are required.' },
+  build: { code: 'BUILDING_BLUEPRINT_OR_PLACEMENT_INVALID', message: 'A source-defined unlocked blueprint and server-approved footprint are required.' },
+  craft: { code: 'CRAFTING_STAGE_04', message: 'Crafting is unavailable until a source recipe, materials and output contract are registered.' },
+  assign_construction_workers: { code: 'CONSTRUCTION_JOB_NOT_ACTIVE', message: 'Choose an active construction job.' },
+  cancel_construction_job: { code: 'CONSTRUCTION_JOB_NOT_CANCELLABLE', message: 'Choose an active construction job.' },
+  recruit_resident: { code: 'FARMHOUSE_NOT_ACTIVE', message: 'Build the polar farmhouse before recruiting residents.' },
+  operate_heater: { code: 'HEATER_NOT_ACTIVE', message: 'Construct the Level 1 heater before operating it.' },
+  split_stack: { code: 'ITEM_CANNOT_BE_SPLIT', message: 'The accessible stack must have unreserved items and free container capacity.' },
+  merge_stacks: { code: 'STACKS_NOT_COMPATIBLE', message: 'Only compatible unreserved stacks can be merged.' },
+  consume_item: { code: 'ITEM_CONSUMPTION_CONTRACT_NOT_COMPILED', message: 'Only food with a compiled consumption contract can be consumed.' },
+  unequip_item: { code: 'EQUIPMENT_PROFILE_NOT_COMPILED', message: 'The unit equipment slot profile is not compiled.' },
   revive: { code: 'REVIVAL_RULES_STAGE_07', message: 'Revival is unavailable until corpse identity and eligibility rules are implemented.' },
+  butcher_corpse: { code: 'CORPSE_DISPOSITION_STAGE_07', message: 'Corpse disposal is unavailable until exclusive lifecycle rules are implemented.' },
   equip: { code: 'EQUIPMENT_RULES_STAGE_07', message: 'Equipment changes are unavailable until the item and unit ledgers are implemented.' },
-  attack: { code: 'COMBAT_RULES_STAGE_07', message: 'Combat is unavailable until encounters and deterministic resolution are implemented.' },
+  attack: { code: 'COMBAT_RULES_STAGE_07', message: 'Choose an owned, equipped warrior and the visible H0 target.' },
+  retreat: { code: 'COMBAT_ENCOUNTER_NOT_ACTIVE', message: 'There is no active encounter to retreat from.' },
   shop_transaction: { code: 'TRADE_RULES_STAGE_08', message: 'Transactions are unavailable until offer, currency and receipt rules are implemented.' },
+  accept_quest: { code: 'QUEST_NOT_OFFERED', message: 'The selected fixed quest is not available.' },
+  negotiate_caravan: { code: 'CARAVAN_NOT_ACCESSIBLE', message: 'The caravan negotiation is not available at this location.' },
+  escort_caravan: { code: 'CARAVAN_NOT_READY_TO_ESCORT', message: 'The caravan is not ready to travel.' },
+  claim_quest_reward: { code: 'QUEST_REWARD_NOT_CLAIMABLE', message: 'The selected quest has no claimable reward.' },
+  place_auction_bid: { code: 'AUCTION_LOT_NOT_OPEN', message: 'The selected auction lot is not open.' },
+  cancel_auction_bid: { code: 'AUCTION_BID_NOT_OPEN', message: 'The selected bid is not open.' },
 };
 
 function staticAvailability(type: CommandType): ActionAvailability {
@@ -61,6 +82,9 @@ export function actionAvailability(type: CommandType): ActionAvailability {
   if (type === 'move' || type === 'search' || type === 'harvest' || type === 'cancel_travel' || type === 'cancel_spatial_job' || type === 'transfer_item' || type === 'open_cache') {
     return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
   }
+  if (type === 'split_stack' || type === 'merge_stacks' || type === 'consume_item' || type === 'activate_career_card' || type === 'revive' || type === 'butcher_corpse' || type === 'equip' || type === 'unequip_item' || type === 'attack' || type === 'retreat') return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
+  if (type === 'shop_transaction' || type === 'accept_quest' || type === 'negotiate_caravan' || type === 'escort_caravan'
+    || type === 'claim_quest_reward' || type === 'place_auction_bid' || type === 'cancel_auction_bid') return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
   return staticAvailability(type);
 }
 
@@ -78,7 +102,7 @@ function isKnownEntity(ref: EntityRef, state: GameState): boolean {
         : building.kind === 'lord_house' ? siteId === 'SITE-LL01-001'
           : siteId === 'SITE-LL01-003';
     }));
-    case 'corpse': return false;
+    case 'corpse': return (state.playerKnowledge.knownCorpseIds ?? []).includes(ref.id);
   }
 }
 
@@ -148,7 +172,38 @@ export function previewCommand(
       ? actionAvailability(command.type)
       : { actionId: command.type, enabled: false, reasonCode: 'NOT_ACCESSIBLE', requirements: ['The opening card is no longer available.'] };
   }
-  if (command.type === 'set_clock_speed' || command.type === 'advance_to_boundary') return actionAvailability(command.type);
+  if (command.type === 'set_clock_speed' || command.type === 'advance_to_boundary') {
+    return state.eventProgressionBlocker
+      ? { actionId: command.type, enabled: false, reasonCode: 'EVENT_CONTENT_BLOCKED', requirements: [state.eventProgressionBlocker.playerMessage] }
+      : actionAvailability(command.type);
+  }
+  if (command.type === 'activate_career_card') {
+    if (command.payload.cardId !== state.player.career.sealedPayload.careerId) return unavailable(command.type, 'CAREER_CARD_UNKNOWN', 'Use the career encoded by the sealed opening card.');
+    if (!state.playerKnowledge.careerCardObserved) return unavailable(command.type, 'CAREER_CARD_NOT_INSPECTED', 'Inspect the sealed card before activating it.');
+    return state.player.career.state === 'active'
+      ? actionAvailability(command.type)
+      : actionAvailability(command.type);
+  }
+  if (command.type === 'attack') {
+    const result = attackAvailability(state, world, command.payload.actorIds, command.payload.targetId);
+    return result.code ? unavailable(command.type, result.code, result.requirements.join(' ')) : actionAvailability(command.type);
+  }
+  if (command.type === 'retreat') {
+    const result = retreatAvailability(state, command.payload.actorIds, command.payload.encounterId);
+    return result.code ? unavailable(command.type, result.code, result.requirements.join(' ')) : actionAvailability(command.type);
+  }
+  if (command.type === 'butcher_corpse') {
+    const result = butcherCorpse(state, world, command.payload.actorId, command.payload.corpseId);
+    return result.code
+      ? unavailable(command.type, result.code, result.requirements.join(' '))
+      : actionAvailability(command.type);
+  }
+  if (command.type === 'revive') {
+    const result = directReviveAvailability(state, world, command.payload.actorId, command.payload.corpseId);
+    return result.code
+      ? unavailable(command.type, result.code, result.requirements.join(' '))
+      : { actionId: command.type, enabled: true, reasonCode: null, requirements: [], preview: { label: 'Direct Tử Phục', value: '0 mana · 0 materials · 0 time' } };
+  }
   if (command.type === 'enqueue_tomb') {
     if (command.payload.blueprintId !== TOMB_STANDARD_BLUEPRINT_ID) return { actionId: command.type, enabled: false, reasonCode: 'TOMB_BLUEPRINT_UNKNOWN', requirements: ['Only the source-locked T0 standard output is compiled.'] };
     return actionAvailability(command.type);
@@ -204,6 +259,71 @@ export function previewCommand(
   if (command.type === 'transfer_item') {
     const result = transferItem(state, world, command.payload.actorId, command.payload.sourceContainerId, command.payload.destinationContainerId, command.payload.itemId, command.payload.quantity);
     return result.code ? unavailable(command.type, result.code, 'Check the item quantity, container access, and available storage slots.') : actionAvailability(command.type);
+  }
+  if (command.type === 'repair') return previewRepair(state, world, command.payload);
+  if (command.type === 'build') return previewBuild(state, world, command.payload);
+  if (command.type === 'assign_construction_workers') {
+    const result = assignConstructionWorkers(state, world, command.payload.jobId, command.payload.workerIds);
+    return result.code ? unavailable(command.type, result.code, 'Workers must be owned, unassigned, within 5 m, and within the blueprint maximum.') : actionAvailability(command.type);
+  }
+  if (command.type === 'cancel_construction_job') {
+    const result = cancelConstructionJob(state, command.payload.jobId);
+    return result.code ? unavailable(command.type, result.code, 'Only an active, paused, or blocked construction job can be cancelled.') : actionAvailability(command.type);
+  }
+  if (command.type === 'recruit_resident') {
+    const result = recruitResidents(state, world, { ...command.payload, commandId: 'PREVIEW' });
+    return result.code ? unavailable(command.type, result.code, 'An active farmhouse, available housing, and exactly five accessible FOOD units per resident are required.') : actionAvailability(command.type);
+  }
+  if (command.type === 'operate_heater') {
+    return previewHeaterService(state, world, command.payload);
+  }
+  if (command.type === 'split_stack') {
+    const result = splitStack(state, world, { ...command.payload, newItemId: 'PREVIEW-SPLIT-ITEM' });
+    return result.code ? unavailable(command.type, result.code, 'The observed stack must have enough unreserved quantity and the container must have a free slot.') : actionAvailability(command.type);
+  }
+  if (command.type === 'merge_stacks') {
+    const result = mergeStacks(state, world, command.payload);
+    return result.code ? unavailable(command.type, result.code, 'Both stacks must be compatible, accessible, unequipped, and unreserved.') : actionAvailability(command.type);
+  }
+  if (command.type === 'consume_item') {
+    const result = consumeItem(state, world, command.payload);
+    return result.code ? unavailable(command.type, result.code, 'The food item must be observed, accessible, unreserved, and have a consumption contract.') : actionAvailability(command.type);
+  }
+  if (command.type === 'equip') {
+    const reason = equipmentBlocker(state, world, command.payload.unitId, command.payload.itemId, command.payload.slotId);
+    return reason ? unavailable(command.type, reason, 'The unit must be nearby; the slot and item anatomy tags must match.') : actionAvailability(command.type);
+  }
+  if (command.type === 'unequip_item') {
+    const reason = unequipBlocker(state, world, command.payload.unitId, command.payload.itemId);
+    return reason ? unavailable(command.type, reason, 'The equipped item and unit must be accessible.') : actionAvailability(command.type);
+  }
+  if (command.type === 'accept_quest') {
+    const result = acceptQ08(state, world);
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
+  }
+  if (command.type === 'negotiate_caravan') {
+    const result = negotiateQ08(state, world, 'PREVIEW');
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
+  }
+  if (command.type === 'escort_caravan') {
+    const result = escortQ08(state, world, 'PREVIEW');
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
+  }
+  if (command.type === 'claim_quest_reward') {
+    const result = claimQ08Reward(state, world, 'PREVIEW');
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
+  }
+  if (command.type === 'shop_transaction') {
+    const result = purchaseMarketOffer(state, world, command.payload.offerId, command.payload.destinationContainerId, command.payload.quantity, 'PREVIEW');
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
+  }
+  if (command.type === 'place_auction_bid') {
+    const result = placeAuctionBid(state, world, command.payload.lotId, command.payload.quantity, command.payload.unitBid, 'PREVIEW');
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
+  }
+  if (command.type === 'cancel_auction_bid') {
+    const result = cancelAuctionBid(state, command.payload.bidId, 'PREVIEW');
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
   }
   if (command.type === 'open_cache') {
     const chest = world.fieldChests.find(candidate => candidate.id === command.payload.chestId && state.playerKnowledge.knownChestIds.includes(candidate.id));
@@ -293,6 +413,9 @@ export function reduceCommand(
     && !(options.allowSystemOnlyRevisionAdvance && command.expectedRevision < state.revision)) {
     return reject(state, command.commandId, 'STALE_REVISION', 'The save changed; refresh the player view and retry with the current revision.', requestSha256);
   }
+  if (state.eventProgressionBlocker && (command.type === 'set_clock_speed' || command.type === 'advance_to_boundary')) {
+    return reject(state, command.commandId, 'EVENT_CONTENT_BLOCKED', state.eventProgressionBlocker.playerMessage, requestSha256);
+  }
 
   if (command.type === 'inspect_entity') {
     const ref = command.payload.entity;
@@ -349,6 +472,73 @@ export function reduceCommand(
     return acceptMutation(state, command, requestSha256, {
       playerKnowledge: { ...state.playerKnowledge, careerCardObserved: true },
     }, 'career_card_inspected', {}, 'CAREER_CARD_INSPECTED', 'The sealed career card was inspected; the career remains inactive.');
+  }
+
+  if (command.type === 'attack') {
+    const result = startStage07Encounter(state, world, command.payload.actorIds, command.payload.targetId);
+    if (result.code || !result.encounter || !result.event) return reject(state, command.commandId, result.code ?? 'COMBAT_UNAVAILABLE', result.requirements.join(' ') || 'The encounter cannot start.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'COMBAT_STARTED', 'The selected unit began a timed encounter with the known H0 prey.');
+  }
+
+  if (command.type === 'retreat') {
+    const result = orderStage07Retreat(state, command.payload.actorIds, command.payload.encounterId);
+    if (result.code || !result.event) return reject(state, command.commandId, result.code ?? 'COMBAT_ENCOUNTER_NOT_ACTIVE', result.requirements.join(' ') || 'The retreat order is unavailable.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'COMBAT_RETREAT_ORDERED', 'The unit will resolve its retreat on the next combat boundary.');
+  }
+
+  if (command.type === 'accept_quest') {
+    const result = acceptQ08(state, world);
+    if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'QUEST_ACCEPTED', result.message);
+  }
+
+  if (command.type === 'negotiate_caravan') {
+    const result = negotiateQ08(state, world, command.commandId);
+    if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'CARAVAN_NEGOTIATED', result.message);
+  }
+
+  if (command.type === 'escort_caravan') {
+    const result = escortQ08(state, world, command.commandId);
+    if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'CARAVAN_ESCORT_STARTED', result.message);
+  }
+
+  if (command.type === 'claim_quest_reward') {
+    const result = claimQ08Reward(state, world, command.commandId);
+    if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'QUEST_REWARD_CLAIMED', result.message);
+  }
+
+  if (command.type === 'shop_transaction') {
+    const result = purchaseMarketOffer(state, world, command.payload.offerId, command.payload.destinationContainerId, command.payload.quantity, command.commandId);
+    if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'SHOP_PURCHASED', result.message);
+  }
+
+  if (command.type === 'place_auction_bid') {
+    const result = placeAuctionBid(state, world, command.payload.lotId, command.payload.quantity, command.payload.unitBid, command.commandId);
+    if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'AUCTION_BID_OPENED', result.message);
+  }
+
+  if (command.type === 'cancel_auction_bid') {
+    const result = cancelAuctionBid(state, command.payload.bidId, command.commandId);
+    if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'AUCTION_BID_CANCELLED', result.message);
+  }
+
+  if (command.type === 'activate_career_card') {
+    if (command.payload.cardId !== state.player.career.sealedPayload.careerId) return reject(state, command.commandId, 'CAREER_CARD_UNKNOWN', 'That career is not on Lí Lan’s sealed opening card.', requestSha256);
+    if (!state.playerKnowledge.careerCardObserved) return reject(state, command.commandId, 'CAREER_CARD_NOT_INSPECTED', 'Inspect the sealed card before activating it.', requestSha256);
+    if (state.player.career.state === 'active') return acceptWithoutMutation(state, command, requestSha256, 'ALREADY_ACTIVE', 'The sealed career and its single opening skill are already active.');
+    const activated = activateOpeningCareer(state);
+    return acceptMutation(state, command, requestSha256, { player: activated.player }, 'career_activated', {
+      careerId: state.player.career.sealedPayload.careerId,
+      skillId: state.player.career.sealedPayload.openingSkillId,
+      skillCount: 1,
+      manaAfter: state.player.mana.current,
+    }, 'CAREER_ACTIVATED', 'Tử Linh Triệu Hoán Sư is active; Tử Khí Châm was learned once and Mana was unchanged.');
   }
 
   if (command.type === 'move') {
@@ -416,6 +606,98 @@ export function reduceCommand(
     }, 'ITEM_TRANSFERRED', 'The item was transferred.');
   }
 
+  if (command.type === 'repair') {
+    const idHash = canonicalStateHash({ saveId: state.saveId, commandId: command.commandId }).slice(0, 20).toUpperCase();
+    const result = startConstructionJob(state, world, { id: `CONSTRUCTION-${idHash}`, kind: 'repair', ...command.payload });
+    if (result.code) return reject(state, command.commandId, result.code, 'House repair requirements changed; refresh the preview.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'HOUSE_REPAIR_STARTED', 'The damaged Lord House repair job was started with reserved materials.');
+  }
+
+  if (command.type === 'build') {
+    const idHash = canonicalStateHash({ saveId: state.saveId, commandId: command.commandId }).slice(0, 20).toUpperCase();
+    const result = startConstructionJob(state, world, { id: `CONSTRUCTION-${idHash}`, kind: 'build', ...command.payload });
+    if (result.code) return reject(state, command.commandId, result.code, 'Construction requirements changed; refresh the server placement and cost preview.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'CONSTRUCTION_STARTED', 'The construction job was started with reserved materials.');
+  }
+
+  if (command.type === 'assign_construction_workers') {
+    const result = assignConstructionWorkers(state, world, command.payload.jobId, command.payload.workerIds);
+    if (result.code) return reject(state, command.commandId, result.code, 'Workers could not be assigned to this construction job.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'CONSTRUCTION_WORKERS_ASSIGNED', 'The construction workforce assignment was updated.');
+  }
+
+  if (command.type === 'cancel_construction_job') {
+    const result = cancelConstructionJob(state, command.payload.jobId);
+    if (result.code) return reject(state, command.commandId, result.code, 'The construction job is no longer cancellable.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'CONSTRUCTION_CANCELLED', 'Work progress was lost and all unconsumed reservations were released.');
+  }
+
+  if (command.type === 'recruit_resident') {
+    const result = recruitResidents(state, world, { ...command.payload, commandId: command.commandId });
+    if (result.code) return reject(state, command.commandId, result.code, 'Recruitment did not consume food or change the roster.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'RESIDENTS_RECRUITED', 'The farmhouse recruited residents using its source-defined food cost.');
+  }
+
+  if (command.type === 'operate_heater') {
+    const idHash = canonicalStateHash({ saveId: state.saveId, commandId: command.commandId }).slice(0, 20).toUpperCase();
+    const result = startHeaterService(state, world, { id: `HEATER-SERVICE-${idHash}`, ...command.payload });
+    if (result.code) return reject(state, command.commandId, result.code, 'The heater requires an active building, reachable worker, accessible WOOD, and no active fuel cycle.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'HEATER_SERVICE_STARTED', 'One WOOD was reserved for the source-defined twenty-minute heating service.');
+  }
+
+  if (command.type === 'split_stack') {
+    const newItemId = `ITEM-SPLIT-${canonicalStateHash({ saveId: state.saveId, commandId: command.commandId }).slice(0, 20).toUpperCase()}`;
+    const result = splitStack(state, world, { ...command.payload, newItemId });
+    if (result.code || !result.event) return reject(state, command.commandId, result.code ?? 'ITEM_CANNOT_BE_SPLIT', 'The item stack could not be split.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'STACK_SPLIT', 'The stack was split without changing its total quantity.');
+  }
+
+  if (command.type === 'merge_stacks') {
+    const result = mergeStacks(state, world, command.payload);
+    if (result.code || !result.event) return reject(state, command.commandId, result.code ?? 'STACKS_NOT_COMPATIBLE', 'The item stacks could not be merged.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'STACKS_MERGED', 'The compatible stacks were merged.');
+  }
+
+  if (command.type === 'consume_item') {
+    const result = consumeItem(state, world, command.payload);
+    if (result.code || !result.event) return reject(state, command.commandId, result.code ?? 'ITEM_CONSUMPTION_CONTRACT_NOT_COMPILED', 'The item could not be consumed.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'ITEM_CONSUMED', 'The food item was consumed and removed from inventory.');
+  }
+
+  if (command.type === 'butcher_corpse') {
+    const corpse = state.corpses.find(item => item.id === command.payload.corpseId);
+    const result = butcherCorpse(state, world, command.payload.actorId, command.payload.corpseId);
+    if (result.code) return reject(state, command.commandId, result.code, result.requirements.join(' '), requestSha256);
+    const event = { type: 'corpse_butchered', occurredAtElapsedMs: state.simElapsedMs, payload: {
+      corpseId: command.payload.corpseId, recoveredItemIds: corpse?.bodyRecord?.equipmentInstanceIds ?? [], elapsedMs: 0,
+    } };
+    return acceptMutationMany(state, command, requestSha256, result.state, [event], 'CORPSE_BUTCHERED', 'The body was disposed of and its recorded gear recovered once.');
+  }
+
+  if (command.type === 'revive') {
+    const unitId = `TU-PHUC-${canonicalStateHash({ saveId: state.saveId, corpseId: command.payload.corpseId }).slice(0, 20).toUpperCase()}`;
+    const result = reviveDirect(state, world, command.payload.actorId, command.payload.corpseId, unitId);
+    if (result.code) return reject(state, command.commandId, result.code, result.requirements.join(' '), requestSha256);
+    const revived = result.state.ownedUnits.find(unit => unit.id === unitId)!;
+    const event = { type: 'corpse_revived', occurredAtElapsedMs: state.simElapsedMs, payload: {
+      corpseId: command.payload.corpseId, actorId: revived.id, creationRoute: revived.creationRoute,
+      sourceTier: revived.sourceStats.formTier, sourceLevel: revived.level, manaSpent: 0, materialsSpent: [], elapsedMs: 0,
+    } };
+    return acceptMutationMany(state, command, requestSha256, result.state, [event], 'CORPSE_REVIVED', 'Tử Phục completed immediately at no Mana or material cost.');
+  }
+
+  if (command.type === 'equip') {
+    const result = equipItem(state, world, command.payload.unitId, command.payload.itemId, command.payload.slotId);
+    if (result.code || !result.event) return reject(state, command.commandId, result.code ?? 'EQUIPMENT_SLOT_RULE_NOT_COMPILED', 'Equipment could not be attached to that unit.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'UNIT_EQUIPPED', 'The item was assigned to a compatible open slot.');
+  }
+
+  if (command.type === 'unequip_item') {
+    const result = unequipItem(state, world, command.payload.unitId, command.payload.itemId);
+    if (result.code || !result.event) return reject(state, command.commandId, result.code ?? 'ITEM_NOT_EQUIPPED', 'The item could not be removed from that unit.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'UNIT_UNEQUIPPED', 'The item was removed and returned to Lí Lan’s carried gear.');
+  }
+
   if (command.type === 'open_cache') {
     const chest = world.fieldChests.find(candidate => candidate.id === command.payload.chestId && state.playerKnowledge.knownChestIds.includes(candidate.id));
     const position = actorPosition(state, command.payload.actorId);
@@ -471,10 +753,10 @@ export function reduceCommand(
       return reject(state, command.commandId, 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED', 'The opening fire fuel amount is unknown, so an exact remaining-fuel total cannot be calculated.', requestSha256);
     }
     if (!container || !stack || !accessible || !container.observed) return reject(state, command.commandId, 'FUEL_NOT_ACCESSIBLE', 'Accessible, observed WOOD is required.', requestSha256);
-    if (stack.quantity < command.payload.quantity) return reject(state, command.commandId, 'INSUFFICIENT_WOOD', 'The container does not hold enough WOOD.', requestSha256);
+    if (stack.quantity - (stack.reservedQuantity ?? 0) < command.payload.quantity) return reject(state, command.commandId, 'INSUFFICIENT_WOOD', 'The container does not hold enough unreserved WOOD.', requestSha256);
     const containers = state.inventory.containers.map(item => item.id === container.id ? {
       ...item,
-      stacks: item.stacks.map(stackItem => stackItem.itemId === stack.itemId ? { ...stackItem, quantity: stackItem.quantity - command.payload.quantity } : stackItem),
+      stacks: item.stacks.flatMap(stackItem => stackItem.itemId !== stack.itemId ? [stackItem] : stackItem.quantity === command.payload.quantity ? [] : [{ ...stackItem, quantity: stackItem.quantity - command.payload.quantity }]),
     } : item);
     const fire = state.territory.survivalFire;
     const knownFuel = fire.fuelRemaining + command.payload.quantity;

@@ -1,5 +1,5 @@
 export const CONTRACT_SCHEMA_VERSION = 1 as const;
-export const GAME_STATE_SCHEMA_VERSION = 5 as const;
+export const GAME_STATE_SCHEMA_VERSION = 7 as const;
 export const MAX_HARVEST_COMMAND_UNITS = 100_000 as const;
 export const UNIT_INVENTORY_CONTAINER_PREFIX = 'LL-CNT-UNIT-';
 
@@ -189,6 +189,7 @@ export type EcologyRecord = {
 
 export type FixedEventScheduleRow = {
   id: Id;
+  displayName: string;
   opensAtMs: number;
   locksAtMs: number;
   resolvesAtMs: number;
@@ -200,9 +201,66 @@ export type FixedEventScheduleRow = {
 };
 
 export type ScheduledEventState = Omit<FixedEventScheduleRow, 'statusAtT0'> & {
-  status: 'scheduled' | 'active' | 'locked' | 'resolved' | 'cancelled';
+  status: 'scheduled' | 'active' | 'locked' | 'resolved' | 'blocked' | 'cancelled';
   openReceiptSequence: number | null;
+  lockReceiptSequence: number | null;
+  blockedReceiptSequence: number | null;
   resolutionReceiptSequence: number | null;
+};
+
+export type EventProgressionBlocker = {
+  eventId: Id;
+  blockedAtElapsedMs: number;
+  reasonCode: string;
+  playerMessage: string;
+  receiptSequence: number | null;
+};
+
+export type PlayerCalendarEvent = {
+  id: Id;
+  displayName: string;
+  status: ScheduledEventState['status'];
+  readiness: 'executable_lifecycle' | 'calendar_only' | 'mandatory_content_blocked';
+  opensAtElapsedMs: number;
+  locksAtElapsedMs: number;
+  resolvesAtElapsedMs: number;
+  openReceiptSequence: number | null;
+  lockReceiptSequence: number | null;
+  resolutionReceiptSequence: number | null;
+};
+
+export type SkillInstanceState = { id: Id; templateId: Id; mastery: number; active: boolean; sourceRuleVersion: string };
+export type EquipmentSlotState = { slotId: Id; allowedTags: readonly string[]; occupiedItemId: Id | null };
+export type DirectReviveProvenance = {
+  creationRoute: 'DIRECT_TU_PHUC'; reviverCharacterId: Id; talentInstanceId: Id; rootOwnerId: Id;
+  mirrorStartAtElapsedMs: number; originatingCorpseId: Id; originatingActorId: Id; secondDeathLocked: boolean;
+};
+export type CorpseBodyRecord = {
+  sourceProfileState: 'complete' | 'incomplete'; sourceProfileBlockers: readonly string[];
+  authoring: 'canonical_source' | 'user_authorized_stage07_overlay';
+  name?: string;
+  speciesId: Id | null; anatomyTemplateId: Id | null; formTier: number | null; level: number | null; xp: number | null;
+  grade: string | null; faction: string | null; hero: boolean | null; rawAttributes: Readonly<Record<string, number>> | null;
+  health: { current: number; max: number } | null; integrity: number | null;
+  skills: readonly SkillInstanceState[]; talents: readonly Id[]; equipmentInstanceIds: readonly Id[];
+  heldEquipment?: readonly { itemId: Id; templateId: Id; tags: readonly string[]; quality: number; condition: number; unit: string; combatEffects?: Readonly<Record<string, number>> }[];
+  growthLedger: Readonly<Record<string, number>> | null; primaryFaction: string | null;
+  holyState: 'holy' | 'non_holy' | 'unknown'; sealTags: readonly string[];
+  directHolyLock: boolean; holyFieldExcess: boolean; memoryFragments: readonly Id[];
+  sourceRef: SourceRef | null; sourceProfileId: Id | null;
+  deathHistory: readonly { eventId: Id; atElapsedMs: number; cause: string }[];
+  equipmentSlots: readonly EquipmentSlotState[];
+};
+
+export type XpTransactionState = {
+  id: Id; transactionKind: 'NORMAL_AWARD' | 'OWNER_XP_MIRROR'; sourceEventId: Id;
+  sourceTransactionId: Id | null; sourceRecipientId: Id | null; recipientId: Id;
+  sourceCategory: 'combat' | 'labor' | 'quest' | 'other'; templateId: Id;
+  grossXp: number; netXp: number; contributionShare: number;
+  modifiers: { gap: number; novelty: number; risk: number; antiFarm: number };
+  occurredAtElapsedMs: number; ruleVersion: string; levelBefore: number; xpBefore: number;
+  thresholdsCrossed: readonly number[]; levelAfter: number; xpAfter: number;
+  growthDelta: Readonly<Record<string, number>>;
 };
 
 export type InventoryContainerState = {
@@ -212,7 +270,7 @@ export type InventoryContainerState = {
   occupiedSlots: number | null;
   location: { kind: 'site'; siteId: Id } | { kind: 'carried'; ownerId: Id } | { kind: 'building'; buildingId: Id } | { kind: 'unit'; unitId: Id };
   observed: boolean;
-  stacks: readonly { itemId: Id; templateId: Id; quantity: number; equipped: boolean; provenance: ProvenanceClass }[];
+  stacks: readonly { itemId: Id; templateId: Id; quantity: number; reservedQuantity?: number; unit?: string; ownerId?: Id; equipped: boolean; equippedSlotId?: Id | null; quality?: number | null; condition?: number; foodUnitsPerItem?: number; equipmentTags?: readonly string[]; combatEffects?: Readonly<Record<string, number>>; provenance: ProvenanceClass }[];
 };
 
 export type PlayerUnitState = {
@@ -227,11 +285,21 @@ export type PlayerUnitState = {
   location: { kind: 'site'; siteId: Id } | { kind: 'travel'; orderId: Id } | { kind: 'field'; coordinate: CoordinateMm } | { kind: 'building'; buildingId: Id };
   equipmentIds: readonly Id[];
   sourceStats: { formTier: number; grade: string; level: number; xp: number; faction: string; hero: boolean; loyalty: string };
+  attributes?: Readonly<Record<string, number>>;
+  talents?: readonly Id[];
+  memoryFragments?: readonly Id[];
+  integrity?: number;
   anatomyTemplateId: Id;
-  equipmentRequirements: { status: 'source_profile_not_compiled'; requiredSlotIds: readonly Id[] };
+  equipmentRequirements: { status: 'source_profile_not_compiled' | 'compiled'; requiredSlotIds: readonly Id[] };
+  equipmentSlots?: readonly EquipmentSlotState[];
+  skills?: readonly SkillInstanceState[];
+  health?: { current: number; max: number };
+  directReviveProvenance?: DirectReviveProvenance;
+  growthLedger?: Readonly<Record<string, number>>;
   xpMirrorEligible: boolean;
   baseLaborRateWuPerHour: number;
   laborRuleVersion: 'TOMB-ZOMBIE-LABOR-1.0' | string;
+  constructionModifiers?: { health?: number; stamina?: number; skill?: number; tool?: number; weather?: number; shelter?: number; command?: number };
 };
 
 export type RuntimeJobState = {
@@ -251,6 +319,63 @@ export type BuildingState = {
   level: number;
   status: 'damaged' | 'active' | 'under_construction' | 'disabled' | 'destroyed';
   repairRequirements: readonly { itemId: Id; quantity: number }[];
+  siteId?: Id;
+  position?: CoordinateMm;
+  blueprintId?: Id;
+  footprintAreaM2?: number | null;
+  constructionRuleVersion?: string;
+};
+
+export type ConstructionJobState = {
+  id: Id;
+  kind: 'repair' | 'build';
+  status: 'active' | 'paused' | 'blocked' | 'completed' | 'cancelled';
+  buildingId: Id;
+  blueprintId: Id | null;
+  siteId: Id;
+  position: CoordinateMm;
+  workUnitsRequired: number;
+  progressTicks: number;
+  progressRemainder: number;
+  workerIds: readonly Id[];
+  costReservations: readonly { containerId: Id; itemId: Id; templateId: Id; quantity: number }[];
+  toolReservations: readonly { workerId: Id; containerId: Id; itemId: Id; templateId: Id; quantity: number }[];
+  cancellationPolicy: string;
+  blocker: string | null;
+  startedAtElapsedMs: number;
+  completedAtElapsedMs: number | null;
+};
+export type ConstructionResidentState = { id: Id; name: string; buildingId: Id; createdAtElapsedMs: number; foodUnitsPaid: number; upkeepStatus: 'not_compiled'; provenance: 'campaign_fixed' };
+export type ConstructionRewardEntitlement = { id: Id; achievementId: Id; status: 'pending' | 'blocked' | 'claimed'; reward: readonly { templateId: Id; quantity: number }[]; rewardContract?: string; blocker: string | null; createdAtElapsedMs: number; receiptId: Id | null };
+export type OperatingServiceState = { id: Id; kind: 'heater'; buildingId: Id; status: 'active' | 'completed'; startedAtElapsedMs: number; completesAtElapsedMs: number; fuelReservations: readonly { containerId: Id; itemId: Id; templateId: Id; quantity: number }[]; heatDeltaCelsius: { min: number; max: number }; roomAreaCapM2: number };
+export type ConstructionBlueprintView = {
+  id: Id;
+  name: string;
+  family: string;
+  level: 1;
+  provenance: ProvenanceClass;
+  sourceRegistry: string;
+  footprint: { areaM2: number | null; lengthM: number | null; geometryPolicy: string };
+  buildCost: readonly { materialId: string; quantity: number; unit: 'item' | 'segment' }[];
+  workUnits: number;
+  maxWorkers: number;
+  tools: { status: 'not_specified_by_source'; requiredTemplateIds: readonly string[] };
+  outputs: readonly string[];
+  operatingNeeds: readonly string[];
+  prerequisite: string;
+  upgrade: null | { toLevel: 2; cost: readonly { materialId: string; quantity: number; unit: 'item' | 'segment' }[]; workUnits: number; maxWorkers: number; prerequisite: string | null };
+  buildableFromThisEvidence: true;
+};
+export type ConstructionState = {
+  registryVersion: string;
+  placementOverlayVersion: string;
+  laborOverlayVersion: string;
+  unlockedBlueprintIds: readonly Id[];
+  jobs: readonly ConstructionJobState[];
+  residents: readonly ConstructionResidentState[];
+  firstBuildReceiptIds: readonly Id[];
+  rewardEntitlements: readonly ConstructionRewardEntitlement[];
+  operatingServices?: readonly OperatingServiceState[];
 };
 
 export type FieldChestLifecycleState = { chestId: Id; state: 'unopened' | 'opened' | 'destroyed'; openedAtElapsedMs: number | null };
@@ -377,10 +502,20 @@ export type CorpseState = {
   id: Id;
   actorId: Id;
   location: { kind: 'site'; siteId: Id } | { kind: 'carried'; carrierId: Id } | { kind: 'buried'; siteId: Id };
-  state: 'unobserved' | 'known' | 'preserved' | 'damaged' | 'revived' | 'buried' | 'destroyed';
+  state: 'unobserved' | 'known' | 'preserved' | 'damaged' | 'revived' | 'buried' | 'destroyed' | 'butchered' | 'second_death_locked';
   sourceStatus: string;
   createdAtElapsedMs: number;
   ownershipId: Id | null;
+  disposition?: 'unclaimed' | 'carried' | 'butchered' | 'destroyed' | 'revived' | 'second_death_locked';
+  accessState?: 'unobserved' | 'inaccessible' | 'accessible' | 'carried';
+  integrity?: number | null;
+  deathAtElapsedMs?: number | null;
+  deathHistory?: readonly { eventId: Id; actorId: Id; atElapsedMs: number; cause: string }[];
+  sealTags?: readonly string[];
+  directHolyLock?: boolean;
+  holyFieldExcess?: boolean;
+  secondDeathLock?: boolean;
+  bodyRecord?: CorpseBodyRecord | null;
 };
 
 export type QuestProgressState = {
@@ -389,10 +524,104 @@ export type QuestProgressState = {
   acceptedAt: number | null;
   completedAt: number | null;
   rewardReceipt: Id | null;
+  objectiveId?: Id | null;
+  rewardStatus?: 'unavailable' | 'pending' | 'claimed' | 'forfeited';
+  failureReason?: string | null;
 };
 
 export type ShopOfferState = { id: Id; status: 'scheduled' | 'active' | 'expired' | 'closed'; availableAtElapsedMs: number; expiresAtElapsedMs: number | null };
 export type CurrencyBalance = { currencyId: Id; amount: number };
+export type CaravanState = {
+  id: Id;
+  status: 'at_checkpoint' | 'departed' | 'distressed' | 'negotiated' | 'escorting' | 'arrived' | 'withdrawn';
+  locationSiteId: Id;
+  departsAtElapsedMs: number;
+  distressAtElapsedMs: number;
+  deadlineAtElapsedMs: number;
+  arrivalAtElapsedMs: number | null;
+  torvenAlive: boolean;
+  survivingDraftAnimals: number;
+  grainSacks: number;
+  saltUnits: number;
+  waterLitres: number;
+  ledgerIntact: boolean;
+  negotiationReceiptId: Id | null;
+  escortReceiptId: Id | null;
+  tradeRouteUnlocked: boolean;
+  torvenContractOfferAvailable: boolean;
+};
+export type Stage08MarketOfferState = {
+  id: Id;
+  status: 'active' | 'closed' | 'expired';
+  sellerId: Id;
+  sourceEntryId: Id | null;
+  handlerVersion: Id;
+  locationSiteId: Id;
+  itemTemplateId: Id;
+  itemUnit: string;
+  quantityPerPurchase: number;
+  currencyId: Id;
+  unitPrice: number;
+  stockRemaining: number;
+  initialStock: number;
+  lifetimePurchaseLimit: number;
+  purchasedQuantity: number;
+  consumedQuantity: number;
+  availableAtElapsedMs: number;
+  expiresAtElapsedMs: number | null;
+  exclusiveEventId: Id | null;
+  effectContract: Id;
+};
+export type Stage08AuctionLotState = {
+  id: Id;
+  sellerId: Id;
+  locationSiteId: Id;
+  sourceCargoId: Id;
+  itemTemplateId: Id;
+  itemUnit: string;
+  quantity: number;
+  reservedQuantity: number;
+  minimumUnitBid: number;
+  currencyId: Id;
+  opensAtElapsedMs: number;
+  closesAtElapsedMs: number;
+  status: 'scheduled' | 'open' | 'closed';
+};
+export type Stage08AuctionBidState = {
+  id: Id;
+  lotId: Id;
+  bidderId: Id;
+  quantity: number;
+  unitBid: number;
+  escrowAmount: number;
+  createdAtElapsedMs: number;
+  status: 'open' | 'cancelled' | 'expired';
+  receiptId: Id | null;
+};
+export type Stage08RankSnapshot = {
+  boardId: Id;
+  status: 'blocked' | 'settled';
+  settledAtElapsedMs: number;
+  sourceContract: Id;
+  reasonCode: Id | null;
+  rows: readonly { playerId: Id; rank: number; completionAtElapsedMs: number }[];
+  snapshotSha256: string;
+};
+export type Stage08RuntimeState = {
+  enabled: boolean;
+  caravan: CaravanState;
+  marketOffers: readonly Stage08MarketOfferState[];
+  auctionLots: readonly Stage08AuctionLotState[];
+  auctionBids: readonly Stage08AuctionBidState[];
+  rewardClaimReceipts: readonly Id[];
+  rankSnapshots: readonly Stage08RankSnapshot[];
+};
+export type Stage08PlayerView = {
+  caravan: Pick<CaravanState, 'id' | 'status' | 'locationSiteId' | 'deadlineAtElapsedMs' | 'arrivalAtElapsedMs'> | null;
+  marketOffers: readonly Stage08MarketOfferState[];
+  auctionLots: readonly Stage08AuctionLotState[];
+  auctionBids: readonly Stage08AuctionBidState[];
+};
 export type TombQueueEntry = {
   id: Id;
   recipeId: Id;
@@ -521,6 +750,16 @@ export type VisibleMap = {
   knownRoutes: readonly { id: Id; label: string; path: readonly CoordinateMm[] }[];
   activeOrders: readonly { id: Id; kind: string; status: string; actorIds: readonly Id[]; position: CoordinateMm; path: readonly CoordinateMm[]; totalDistanceMm: number; etaElapsedMs: number; uncertainty: 'known' | 'uncertain' }[];
   heatOverlays: readonly { center: CoordinateMm; radiusMm: number; minCelsius: number; maxCelsius: number }[];
+  combatTargets?: readonly { targetId: Id; label: string; position: CoordinateMm; status: 'available' | 'reacting' }[];
+};
+
+export type Stage07CombatView = {
+  target: { id: Id; label: string; state: 'available' | 'reacting' | 'retreated' | 'dead'; regionId: Id; regionalPopulationRemaining: number; position: CoordinateMm; attack: ActionAvailability } | null;
+  encounter: null | {
+    id: Id; status: 'active' | 'victory' | 'defeat' | 'retreated'; actorIds: readonly Id[]; round: number;
+    nextTurnAtElapsedMs: number | null; targetHealth: { current: number; max: number };
+    log: readonly CombatLogEntry[];
+  };
 };
 
 export type PlayerView = {
@@ -531,6 +770,11 @@ export type PlayerView = {
   simElapsedMs: number;
   clockControl: ClockControl;
   clockStatus: { driver: 'active' | 'observing' | 'unclaimed'; catchingUp: boolean; targetSimElapsedMs: number; leaseRemainingMs: number };
+  calendar: readonly PlayerCalendarEvent[];
+  eventProgressionBlocker: { eventId: Id; displayName: string; blockedAtElapsedMs: number; playerMessage: string } | null;
+  quests: readonly QuestProgressState[];
+  currency: readonly CurrencyBalance[];
+  stage08: Stage08PlayerView;
   worldClock: { day: number; hour: number; minute: number; lightPhase: 'daylight' | 'twilight' | 'night' };
   survival: { coldLoad: number | null; coldStatus: ColdStatus; blocker: string | null; hungerState: 'FED' | 'unknown' };
   player: {
@@ -543,10 +787,15 @@ export type PlayerView = {
     attributes: Readonly<Record<string, number>>;
     mana: { current: number; max: number };
     careerState: 'unemployed' | 'active';
+    skills?: readonly SkillInstanceState[];
+    pendingGrowth?: number;
     position: CoordinateMm;
   };
+  combat?: Stage07CombatView;
   careerCard: {
     observed: boolean;
+    active: boolean;
+    openingSkillLearned: boolean;
     career: null | { id: Id; name: string; openingSkillId: Id; growthAllocation: 'SPI/PRE' };
   };
   territory: {
@@ -574,13 +823,30 @@ export type PlayerView = {
       queue: readonly TombQueueEntry[];
       output: GameState['territory']['tomb']['output'];
     };
-    buildings: readonly { id: Id; name: string; status: string }[];
+    buildings: readonly { id: Id; name: string; status: string; kind: string; level: number; siteId?: Id; position?: CoordinateMm; footprintAreaM2?: number | null }[];
+  };
+  construction: {
+    unlockedBlueprintIds: readonly Id[];
+    blueprints: readonly ConstructionBlueprintView[];
+    jobs: readonly (ConstructionJobState & { workUnitsPerHour: number; estimatedCompletionAtElapsedMs: number | null })[];
+    residents: readonly ConstructionResidentState[];
+    rewardEntitlements: readonly ConstructionRewardEntitlement[];
+    operatingServices: readonly (OperatingServiceState & { remainingMs: number })[];
+    farmerHouseCapacity: number;
+    occupiedHousing: number;
   };
   inventory: {
     inspectableContainers: readonly { containerId: Id; label: string; kind: 'territory_supply' | 'carried_bag' }[];
-    containers: readonly { id: Id; kind: InventoryContainerState['kind']; ownerId: Id | null; label: string; slots: number; accessible: boolean; items: readonly { itemId: Id; label: string; quantity: number }[] }[];
+    containers: readonly { id: Id; kind: InventoryContainerState['kind']; ownerId: Id | null; label: string; slots: number; occupiedSlots: number; capacitySlots: number | null; accessible: boolean; location: InventoryContainerState['location']; items: readonly { itemId: Id; label: string; quantity: number; reservedQuantity: number; unit: string | null; quality: number | null; ownerId: Id | null; equipped: boolean; equippedSlotId: Id | null; foodUnitsPerItem: number | null; equipmentTags?: readonly string[]; combatEffects?: Readonly<Record<string, number>>; condition?: number | null; provenance: ProvenanceClass }[] }[];
   };
   units: readonly PlayerUnitState[];
+  corpses?: readonly {
+    id: Id; actorId: Id; label: string; position: CoordinateMm | null;
+    state: CorpseState['state']; integrity: number | null; tier: number | null; level: number | null;
+    grade: string | null; hero: boolean | null; accessible: boolean; inspected: boolean;
+    revive: ActionAvailability;
+    butcher: ActionAvailability;
+  }[];
   jobs: readonly (RuntimeJobState & { progressPercent: number | null })[];
   visibleMap: VisibleMap;
   spatial: {
@@ -609,6 +875,52 @@ export type PlayerView = {
     }[];
   };
   journal: readonly { sequence: number; category: string; title: string; text: string }[];
+};
+
+export type CombatLogEntry = {
+  atElapsedMs: number;
+  actorId: Id;
+  targetActorId: Id;
+  outcome: 'hit' | 'miss' | 'retreat' | 'defeat' | 'victory';
+  damage: number;
+  damageTaken: number;
+  actorHealth: number;
+  targetHealth: number;
+};
+
+export type Stage07PreyState = {
+  actorId: Id;
+  speciesId: Id;
+  name: string;
+  sourceEcologyId: Id;
+  populationKey: string;
+  sourcePopulationAtStart: number;
+  siteId: Id;
+  position: CoordinateMm;
+  status: 'available' | 'reacting' | 'retreated' | 'dead';
+  bodyRecord: CorpseBodyRecord;
+  combatProfile: { weaponDamage: number; weaponRangeMm: number; armor: number; concealment: number; terrainId: Id };
+};
+
+export type CombatEncounterState = {
+  id: Id;
+  sequence: number;
+  targetActorId: Id;
+  actorIds: readonly Id[];
+  status: 'active' | 'victory' | 'defeat' | 'retreated';
+  startedAtElapsedMs: number;
+  completedAtElapsedMs: number | null;
+  nextTurnAtElapsedMs: number | null;
+  pendingIntent: 'attack' | 'retreat';
+  round: number;
+  targetHealth: { current: number; max: number };
+  log: readonly CombatLogEntry[];
+};
+
+export type Stage07CombatState = {
+  nextEncounterSequence: number;
+  target: Stage07PreyState;
+  encounters: readonly CombatEncounterState[];
 };
 
 export type GameState = {
@@ -648,9 +960,13 @@ export type GameState = {
     career: {
       state: 'unemployed_card_sealed' | 'active';
       sealedPayload: { careerId: 'JOB-SUM-NECRO-01'; openingSkillId: 'SK-OPEN-NECRO-01'; growthAllocation: 'SPI/PRE' };
+      skills?: readonly SkillInstanceState[];
+      pendingGrowth?: number;
+      allocatedGrowth?: Readonly<Record<string, number>>;
     };
     position: CoordinateMm;
     location: { kind: 'site'; siteId: Id } | { kind: 'travel'; orderId: Id } | { kind: 'field'; coordinate: CoordinateMm };
+    constructionModifiers?: { health?: number; stamina?: number; skill?: number; tool?: number; weather?: number; shelter?: number; command?: number };
     relationships: readonly { id: Id; actorId: Id; kind: string; status: string }[];
   };
   territory: {
@@ -683,6 +999,7 @@ export type GameState = {
   inventory: { containers: readonly InventoryContainerState[] };
   ownedUnits: readonly PlayerUnitState[];
   buildings: readonly BuildingState[];
+  construction: ConstructionState;
   jobs: readonly RuntimeJobState[];
   travel: { activeOrderId: Id | null; routeId: Id | null; orders: readonly MovementOrderState[] };
   exploration: { exploredGeometry: readonly { id: Id; kind: 'circle' | 'polygon'; points: readonly CoordinateMm[]; radiusMm?: number }[]; searchHistory: readonly { searchId: Id; startedAtElapsedMs: number; status: string }[] };
@@ -701,15 +1018,20 @@ export type GameState = {
     knownResourceIds: readonly Id[];
     knownRouteIds: readonly Id[];
     knownSignalIds: readonly Id[];
+    knownCorpseIds?: readonly Id[];
     careerCardObserved: boolean;
     lastSeenByEntity: Readonly<Record<string, { observedAtElapsedMs: number; knowledge: KnowledgeStatus }>>;
     lastInspectedEntityIds: readonly Id[];
   };
   fieldChestStates: readonly FieldChestRuntimeState[];
   corpses: readonly CorpseState[];
+  combat?: Stage07CombatState;
+  progression?: { transactions: readonly XpTransactionState[]; mirrorReceiptKeys: readonly string[] };
   quests: readonly QuestProgressState[];
   calendar: readonly ScheduledEventState[];
+  eventProgressionBlocker: EventProgressionBlocker | null;
   offers: readonly ShopOfferState[];
+  stage08: Stage08RuntimeState;
   currency: readonly CurrencyBalance[];
   receipts: readonly StoredCommandReceipt[];
   rngStreams: Readonly<Record<string, { algorithm: 'HASH-PRIMITIVE-1.0'; counter: number }>>;
@@ -747,9 +1069,25 @@ export type CommandType =
   | 'build'
   | 'craft'
   | 'revive'
+  | 'butcher_corpse'
   | 'equip'
   | 'attack'
-  | 'shop_transaction';
+  | 'retreat'
+  | 'shop_transaction'
+  | 'accept_quest'
+  | 'negotiate_caravan'
+  | 'escort_caravan'
+  | 'claim_quest_reward'
+  | 'place_auction_bid'
+  | 'cancel_auction_bid'
+  | 'assign_construction_workers'
+  | 'cancel_construction_job'
+  | 'recruit_resident'
+  | 'operate_heater'
+  | 'split_stack'
+  | 'merge_stacks'
+  | 'consume_item'
+  | 'unequip_item';
 
 export type CommandPayloadByType = {
   inspect_entity: { entity: EntityRef };
@@ -771,13 +1109,29 @@ export type CommandPayloadByType = {
   cancel_spatial_job: { jobId: Id };
   transfer_item: { actorId: Id; sourceContainerId: Id; destinationContainerId: Id; itemId: Id; quantity: number };
   open_cache: { actorId: Id; chestId: Id };
-  repair: { actorId: Id; buildingId: Id };
-  build: { actorId: Id; blueprintId: Id; siteId: Id };
+  repair: { actorId: Id; buildingId: Id; containerId: Id };
+  build: { actorId: Id; blueprintId: Id; siteId: Id; containerId: Id; position: CoordinateMm };
+  assign_construction_workers: { jobId: Id; workerIds: readonly Id[] };
+  cancel_construction_job: { jobId: Id };
+  recruit_resident: { buildingId: Id; containerId: Id; quantity: number };
+  operate_heater: { actorId: Id; buildingId: Id; containerId: Id };
+  split_stack: { actorId: Id; containerId: Id; itemId: Id; quantity: number };
+  merge_stacks: { actorId: Id; containerId: Id; sourceItemId: Id; targetItemId: Id };
+  consume_item: { actorId: Id; containerId: Id; itemId: Id; quantity: number };
+  unequip_item: { unitId: Id; itemId: Id };
   craft: { actorId: Id; recipeId: Id };
   revive: { actorId: Id; corpseId: Id };
+  butcher_corpse: { actorId: Id; corpseId: Id };
   equip: { unitId: Id; itemId: Id; slotId: Id };
   attack: { actorIds: readonly Id[]; targetId: Id };
-  shop_transaction: { offerId: Id; quantity: number };
+  retreat: { actorIds: readonly Id[]; encounterId: Id };
+  shop_transaction: { offerId: Id; destinationContainerId: Id; quantity: number };
+  accept_quest: { questId: Id };
+  negotiate_caravan: { questId: Id; route: 'trade_one_grain_sack' };
+  escort_caravan: { questId: Id };
+  claim_quest_reward: { questId: Id };
+  place_auction_bid: { lotId: Id; quantity: number; unitBid: number };
+  cancel_auction_bid: { bidId: Id };
 };
 
 export type CommandEnvelopeFor<T extends CommandType> = {
@@ -834,7 +1188,7 @@ export interface GameClient {
 const commandTypes = new Set<CommandType>([
   'inspect_entity', 'inspect_starter_container', 'inspect_career_card', 'activate_career_card', 'set_clock_speed',
   'advance_to_boundary', 'enqueue_tomb', 'cancel_tomb', 'refuel_fire', 'extinguish_fire', 'light_fire', 'move', 'cancel_travel', 'survey', 'search', 'harvest', 'cancel_spatial_job', 'transfer_item',
-  'open_cache', 'repair', 'build', 'craft', 'revive', 'equip', 'attack', 'shop_transaction',
+  'open_cache', 'repair', 'build', 'craft', 'revive', 'butcher_corpse', 'equip', 'attack', 'retreat', 'shop_transaction', 'accept_quest', 'negotiate_caravan', 'escort_caravan', 'claim_quest_reward', 'place_auction_bid', 'cancel_auction_bid', 'assign_construction_workers', 'cancel_construction_job', 'recruit_resident', 'operate_heater', 'split_stack', 'merge_stacks', 'consume_item', 'unequip_item',
 ]);
 
 const payloadFields: Readonly<Record<CommandType, readonly string[]>> = {
@@ -857,13 +1211,29 @@ const payloadFields: Readonly<Record<CommandType, readonly string[]>> = {
   cancel_spatial_job: ['jobId'],
   transfer_item: ['actorId', 'sourceContainerId', 'destinationContainerId', 'itemId', 'quantity'],
   open_cache: ['actorId', 'chestId'],
-  repair: ['actorId', 'buildingId'],
-  build: ['actorId', 'blueprintId', 'siteId'],
+  repair: ['actorId', 'buildingId', 'containerId'],
+  build: ['actorId', 'blueprintId', 'siteId', 'containerId', 'position'],
   craft: ['actorId', 'recipeId'],
   revive: ['actorId', 'corpseId'],
+  butcher_corpse: ['actorId', 'corpseId'],
   equip: ['unitId', 'itemId', 'slotId'],
   attack: ['actorIds', 'targetId'],
-  shop_transaction: ['offerId', 'quantity'],
+  retreat: ['actorIds', 'encounterId'],
+  shop_transaction: ['offerId', 'destinationContainerId', 'quantity'],
+  accept_quest: ['questId'],
+  negotiate_caravan: ['questId', 'route'],
+  escort_caravan: ['questId'],
+  claim_quest_reward: ['questId'],
+  place_auction_bid: ['lotId', 'quantity', 'unitBid'],
+  cancel_auction_bid: ['bidId'],
+  assign_construction_workers: ['jobId', 'workerIds'],
+  cancel_construction_job: ['jobId'],
+  recruit_resident: ['buildingId', 'containerId', 'quantity'],
+  operate_heater: ['actorId', 'buildingId', 'containerId'],
+  split_stack: ['actorId', 'containerId', 'itemId', 'quantity'],
+  merge_stacks: ['actorId', 'containerId', 'sourceItemId', 'targetItemId'],
+  consume_item: ['actorId', 'containerId', 'itemId', 'quantity'],
+  unequip_item: ['unitId', 'itemId'],
 };
 
 const forbiddenClientFields = new Set([
@@ -948,6 +1318,15 @@ export function validateCommandEnvelope(input: unknown): CommandValidationResult
   if (input.type === 'advance_to_boundary' && !['next_completion', 'danger'].includes(String(payload.boundaryId))) {
     return issue('COMMAND_PAYLOAD_INVALID', '$.payload.boundaryId', 'Expected next_completion or danger.');
   }
+  if (input.type === 'build' && !validCoordinate(payload.position)) {
+    return issue('COMMAND_PAYLOAD_INVALID', '$.payload.position', 'A server-previewed construction position is required.');
+  }
+  if (input.type === 'assign_construction_workers' && (!Array.isArray(payload.workerIds) || payload.workerIds.some(id => typeof id !== 'string' || id.trim() === '') || new Set(payload.workerIds).size !== payload.workerIds.length)) {
+    return issue('COMMAND_PAYLOAD_INVALID', '$.payload.workerIds', 'Worker IDs must be a unique string list; an empty list pauses the job.');
+  }
+  if (input.type === 'recruit_resident' && (!Number.isSafeInteger(payload.quantity) || Number(payload.quantity) < 1 || Number(payload.quantity) > 4)) {
+    return issue('COMMAND_PAYLOAD_INVALID', '$.payload.quantity', 'Recruitment quantity must be a whole number from 1 to 4.');
+  }
   if (input.type === 'move') {
     const hasId = typeof payload.destinationId === 'string' && payload.destinationId.trim() !== '';
     const hasCoordinate = validCoordinate(payload.destination);
@@ -961,17 +1340,24 @@ export function validateCommandEnvelope(input: unknown): CommandValidationResult
   if (input.type === 'harvest' && (!Number.isSafeInteger(payload.quantity) || Number(payload.quantity) < 1 || Number(payload.quantity) > MAX_HARVEST_COMMAND_UNITS)) {
     return issue('COMMAND_PAYLOAD_INVALID', '$.payload.quantity', 'Expected a positive whole resource quantity within the command limit.');
   }
-  if (input.type === 'attack' && (!Array.isArray(payload.actorIds) || payload.actorIds.length === 0 || payload.actorIds.some(id => typeof id !== 'string' || id.length === 0))) {
+  if ((input.type === 'attack' || input.type === 'retreat') && (!Array.isArray(payload.actorIds) || payload.actorIds.length === 0 || payload.actorIds.some(id => typeof id !== 'string' || id.length === 0) || new Set(payload.actorIds).size !== payload.actorIds.length)) {
     return issue('COMMAND_PAYLOAD_INVALID', '$.payload.actorIds', 'Expected one or more actor IDs.');
   }
-  if (['shop_transaction', 'refuel_fire', 'transfer_item'].includes(String(input.type)) && (!Number.isSafeInteger(payload.quantity) || Number(payload.quantity) < 1)) {
+  if (['shop_transaction', 'refuel_fire', 'transfer_item', 'recruit_resident', 'split_stack', 'consume_item', 'place_auction_bid'].includes(String(input.type)) && (!Number.isSafeInteger(payload.quantity) || Number(payload.quantity) < 1)) {
     return issue('COMMAND_PAYLOAD_INVALID', '$.payload.quantity', 'Expected a positive integer quantity.');
   }
-  for (const key of required.filter(field => !['entity', 'actorIds', 'quantity', 'center', 'radiusMm'].includes(field))) {
+  if (input.type === 'place_auction_bid' && (!Number.isSafeInteger(payload.unitBid) || Number(payload.unitBid) < 1)) {
+    return issue('COMMAND_PAYLOAD_INVALID', '$.payload.unitBid', 'Auction bids must be a positive whole currency amount per item.');
+  }
+  if (input.type === 'negotiate_caravan' && payload.route !== 'trade_one_grain_sack') {
+    return issue('COMMAND_PAYLOAD_INVALID', '$.payload.route', 'Choose a registered caravan negotiation route.');
+  }
+  for (const key of required.filter(field => !['entity', 'actorIds', 'workerIds', 'quantity', 'unitBid', 'center', 'radiusMm', 'position'].includes(field))) {
     if (typeof payload[key] !== 'string' || String(payload[key]).trim() === '') {
       return issue('COMMAND_PAYLOAD_INVALID', `$.payload.${key}`, 'Expected a non-empty string.');
     }
   }
+  if (input.type === 'build' && !validCoordinate(payload.position)) return issue('COMMAND_PAYLOAD_INVALID', '$.payload.position', 'Expected an integer map coordinate.');
   for (const [key, value] of Object.entries(payload)) {
     if (typeof value === 'number' && !Number.isFinite(value)) return issue('COMMAND_PAYLOAD_INVALID', `$.payload.${key}`, 'Numbers must be finite.');
   }

@@ -1,8 +1,12 @@
 import { GAME_STATE_SCHEMA_VERSION, UNIT_INVENTORY_CONTAINER_PREFIX, type GameState, type WorldDefinition } from '../../contracts/src/index.ts';
 import { ACTIVE_WORLD_PACKAGE } from '../../content/src/index.ts';
+import { OPENING_BUILDINGS, OPENING_BUILDINGS_RULE_VERSION, PLACEMENT_OVERLAY_VERSION, LABOR_OVERLAY_VERSION } from '../../content/src/buildings.ts';
 import { DAY_MS, HOUR_MS, nextMidnightAfter } from './time.ts';
 import { LEGACY_WORK_MS_PER_RESOURCE_UNIT, seedSpatialKnowledge } from './spatial.ts';
 import { RESOURCE_STORAGE } from '../../content/src/resourceBalance.ts';
+import { stage07OpeningCorpse } from './stage07.ts';
+import { createStage07CombatState } from './combat.ts';
+import { initialStage08State, verifyStage08State } from './stage08.ts';
 
 function nextDailyBoundary(elapsed: number, offset: number): number {
   return offset + (Math.floor((elapsed - offset) / DAY_MS) + 1) * DAY_MS;
@@ -193,7 +197,7 @@ function migrateV3ToV4(candidate: Record<string, any>, world: WorldDefinition): 
   return migrated as GameState;
 }
 
-function migrateV4ToV5(candidate: Record<string, any>): GameState {
+function migrateV4ToV5(candidate: Record<string, any>, world: WorldDefinition): GameState {
   const inventory = candidate.inventory ?? { containers: [] };
   const containers = [...(inventory.containers ?? [])];
   for (const unit of candidate.ownedUnits ?? []) {
@@ -209,11 +213,134 @@ function migrateV4ToV5(candidate: Record<string, any>): GameState {
       stacks: [],
     });
   }
+  const byKind: Record<string, string> = { lord_house: 'SITE-LL01-001', survival_fire: 'SITE-LL01-000', tomb: 'SITE-LL01-003' };
+  const buildings = (candidate.buildings ?? []).map((building: Record<string, any>) => {
+    const siteId = building.siteId ?? byKind[building.kind];
+    const position = building.position ?? world.sites.find(site => site.id === siteId)?.position
+      ?? (building.kind === 'survival_fire' ? candidate.territory.position : undefined);
+    return { ...building, ...(siteId ? { siteId } : {}), ...(position ? { position } : {}) };
+  });
+  const unlockedBlueprintIds = candidate.territory?.repaired
+    ? ['BP-OPEN-HEATER-01', 'BP-OPEN-KITCHEN-01', 'BP-OPEN-WOODWORKS-01', 'BP-OPEN-TAILOR-01', 'BP-OPEN-OREWORKS-01', 'BP-OPEN-FORGE-01', 'BP-OPEN-FARMHOUSE-01', 'BP-OPEN-INFIRMARY-01', 'BP-OPEN-SHELTER-01', 'BP-OPEN-WALL-01', 'BP-OPEN-GATE-01']
+    : [];
+  const elapsed = Number.isSafeInteger(candidate.simElapsedMs) && candidate.simElapsedMs >= 0 ? candidate.simElapsedMs : 0;
+  const stage07Combat = candidate.combat ?? createStage07CombatState(world);
+  const combat = elapsed === 0 ? stage07Combat : {
+    ...stage07Combat,
+    target: { ...stage07Combat.target, status: stage07Combat.target.status === 'available' ? 'retreated' : stage07Combat.target.status },
+  };
+  const corpses = candidate.corpses ?? (elapsed === 0 ? [stage07OpeningCorpse()] : []);
   return {
     ...candidate,
-    schemaVersion: GAME_STATE_SCHEMA_VERSION,
+    schemaVersion: 5,
     inventory: { ...inventory, containers },
+    buildings,
+    construction: candidate.construction ?? {
+      registryVersion: OPENING_BUILDINGS_RULE_VERSION,
+      placementOverlayVersion: PLACEMENT_OVERLAY_VERSION,
+      laborOverlayVersion: LABOR_OVERLAY_VERSION,
+      unlockedBlueprintIds,
+      jobs: [], residents: [], firstBuildReceiptIds: [], rewardEntitlements: [], operatingServices: [],
+    },
+    corpses,
+    combat,
+    progression: candidate.progression ?? { transactions: [], mirrorReceiptKeys: [] },
+    offers: candidate.offers ?? [],
+    currency: candidate.currency ?? [],
   } as GameState;
+}
+
+function migrateV5ToV6(candidate: Record<string, any>, world: WorldDefinition): GameState {
+  if (!Array.isArray(candidate.calendar) || candidate.calendar.length !== world.eventSchedule.length
+    || !Number.isSafeInteger(candidate.simElapsedMs) || candidate.simElapsedMs < 0) {
+    throw new Error('SAVE_STATE_SCHEMA_MIGRATION_INVALID:_STAGE08_EVENT_CALENDAR');
+  }
+  const elapsed = candidate.simElapsedMs as number;
+  let calendar = world.eventSchedule.map((source, index) => {
+    const event = candidate.calendar[index] as Record<string, any>;
+    if (event.id !== source.id || event.opensAtMs !== source.opensAtMs || event.locksAtMs !== source.locksAtMs
+      || event.resolvesAtMs !== source.resolvesAtMs
+      || (event.displayName !== undefined && event.displayName !== source.displayName)
+      || !['scheduled', 'active', 'locked', 'resolved', 'cancelled'].includes(event.status)) {
+      throw new Error('SAVE_STATE_SCHEMA_MIGRATION_INVALID:_STAGE08_EVENT_CALENDAR');
+    }
+    // Stage 4 wrote one resolution receipt for EV00 but had no distinct lock
+    // transition. Preserve that legacy fact instead of reusing its sequence.
+    const legacyEv00Resolution = event.id === 'EV00-SAFE-FIRE' && event.status === 'resolved';
+    const lockReceiptSequence = Number.isSafeInteger(event.lockReceiptSequence) ? event.lockReceiptSequence : null;
+    if (event.status === 'resolved' && lockReceiptSequence === null && !legacyEv00Resolution) {
+      throw new Error('SAVE_STATE_SCHEMA_MIGRATION_INVALID:_STAGE08_EVENT_RECEIPTS');
+    }
+    return {
+      ...event,
+      displayName: source.displayName,
+      lockReceiptSequence,
+      blockedReceiptSequence: Number.isSafeInteger(event.blockedReceiptSequence) ? event.blockedReceiptSequence : null,
+    };
+  });
+  const overdue = world.eventSchedule.find(source => source.id !== 'EV00-SAFE-FIRE'
+    && source.opensAtMs <= elapsed
+    && calendar.some(event => event.id === source.id && event.status === 'scheduled'));
+  let eventProgressionBlocker = null;
+  let clockControl = candidate.clockControl;
+  if (overdue) {
+    calendar = calendar.map(event => event.id === overdue.id
+      ? { ...event, status: 'blocked', blockedReceiptSequence: null }
+      : event);
+    eventProgressionBlocker = {
+      eventId: overdue.id,
+      blockedAtElapsedMs: elapsed,
+      reasonCode: 'EVENT_BOUNDARIES_UNSETTLED_DURING_MIGRATION',
+      playerMessage: 'Tiến trình thế giới đã tạm dừng để rà soát một mốc sự kiện từ phiên bản lưu cũ.',
+      receiptSequence: null,
+    };
+    clockControl = { status: 'paused', selection: 'paused', speedPermille: 0, stopCondition: 'none' };
+  }
+  const stage07Combat = candidate.combat ?? createStage07CombatState(world);
+  const combat = elapsed === 0 ? stage07Combat : {
+    ...stage07Combat,
+    target: { ...stage07Combat.target, status: stage07Combat.target.status === 'available' ? 'retreated' : stage07Combat.target.status },
+  };
+  return {
+    ...candidate,
+    schemaVersion: 6,
+    calendar,
+    eventProgressionBlocker,
+    clockControl,
+    construction: candidate.construction ?? {
+      registryVersion: OPENING_BUILDINGS_RULE_VERSION,
+      placementOverlayVersion: PLACEMENT_OVERLAY_VERSION,
+      laborOverlayVersion: LABOR_OVERLAY_VERSION,
+      unlockedBlueprintIds: candidate.territory?.repaired
+        ? OPENING_BUILDINGS.map(blueprint => blueprint.id)
+        : [],
+      jobs: [], residents: [], firstBuildReceiptIds: [], rewardEntitlements: [], operatingServices: [],
+    },
+    corpses: candidate.corpses ?? (elapsed === 0 ? [stage07OpeningCorpse()] : []),
+    combat,
+    progression: candidate.progression ?? { transactions: [], mirrorReceiptKeys: [] },
+    offers: candidate.offers ?? [],
+    currency: candidate.currency ?? [],
+  } as GameState;
+}
+
+function migrateV6ToV7(candidate: Record<string, any>, world: WorldDefinition): GameState {
+  if (candidate.worldPackageId !== world.id || !Array.isArray(candidate.quests)
+    || !Number.isSafeInteger(candidate.simElapsedMs) || candidate.simElapsedMs < 0) {
+    throw new Error('SAVE_STATE_SCHEMA_MIGRATION_INVALID:_STAGE08_TRADE');
+  }
+  // A legacy save never gets a newly materialized caravan or reward retroactively.
+  // Keep the fixed IDs dormant and leave the pre-Stage-08 campaign timeline intact.
+  const stage08 = initialStage08State();
+  stage08.enabled = false;
+  stage08.caravan.status = 'withdrawn';
+  const quests = candidate.quests.map((quest: Record<string, any>) => ({
+    ...quest,
+    objectiveId: quest.objectiveId ?? null,
+    rewardStatus: quest.rewardStatus ?? 'unavailable',
+    failureReason: quest.failureReason ?? null,
+  }));
+  return { ...candidate, schemaVersion: 7, stage08, quests } as GameState;
 }
 
 export function upgradeGameState(value: unknown, world: WorldDefinition = ACTIVE_WORLD_PACKAGE): GameState {
@@ -221,7 +348,11 @@ export function upgradeGameState(value: unknown, world: WorldDefinition = ACTIVE
   if (candidate.schemaVersion === 1) candidate = migrateV1ToV2(candidate);
   if (candidate.schemaVersion === 2) candidate = migrateV2ToV3(candidate, world);
   if (candidate.schemaVersion === 3) candidate = migrateV3ToV4(candidate, world);
-  if (candidate.schemaVersion === 4) candidate = migrateV4ToV5(candidate);
+  if (candidate.schemaVersion === 4) candidate = migrateV4ToV5(candidate, world);
+  if (candidate.schemaVersion === 5) candidate = migrateV5ToV6(candidate, world);
+  if (candidate.schemaVersion === 6) candidate = migrateV6ToV7(candidate, world);
   if (candidate.schemaVersion !== GAME_STATE_SCHEMA_VERSION) throw new Error('SAVE_STATE_SCHEMA_UNSUPPORTED');
+  if (candidate.construction && !Array.isArray(candidate.construction.operatingServices)) candidate.construction.operatingServices = [];
+  verifyStage08State(candidate as unknown as GameState);
   return candidate as unknown as GameState;
 }

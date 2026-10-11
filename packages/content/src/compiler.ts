@@ -15,7 +15,7 @@ import type {
   WorldResource,
   WorldSite,
 } from '../../contracts/src/index.ts';
-import { CONTENT_VERSION, RULESET_VERSION, SOURCE_LOCK, SOURCE_RELEASES } from './sourceLock.ts';
+import { CONTENT_VERSION, RULESET_VERSION, SOURCE_LOCK, SOURCE_RELEASES, SOURCE_MAIN_COMMIT } from './sourceLock.ts';
 import { buildNavigationOverlay } from './navigationOverlay.ts';
 import { RESOURCE_ECONOMY_VERSION, RESOURCE_FEATURES, resourceFromFeature, worldFeatureFromSpec } from './resourceBalance.ts';
 
@@ -523,11 +523,13 @@ function parseEventSchedule(timelineText: string): FixedEventScheduleRow[] {
   }
   if (!Array.isArray(timeline.event_schedule)) throw new Error('EVENT_TIMELINE_SCHEDULE_MISSING');
   return timeline.event_schedule.map(row => {
-    if (typeof row.event_id !== 'string' || typeof row.opens_at !== 'string' || typeof row.locks_at !== 'string' || typeof row.resolves_at !== 'string') {
+    if (typeof row.event_id !== 'string' || typeof row.event_title_legacy !== 'string'
+      || typeof row.opens_at !== 'string' || typeof row.locks_at !== 'string' || typeof row.resolves_at !== 'string') {
       throw new Error(`EVENT_TIMELINE_ROW_INVALID: ${JSON.stringify(row)}`);
     }
     return {
       id: row.event_id,
+      displayName: row.event_title_legacy.replace(/\s*;\s*ch\.?[^;]*$/iu, '').trim(),
       opensAtMs: parseHoursFromT0(row.opens_at),
       locksAtMs: parseHoursFromT0(row.locks_at),
       resolvesAtMs: parseHoursFromT0(row.resolves_at),
@@ -562,7 +564,7 @@ function verifyEventAndHeroContracts(file01: string, file04: string, file05: str
 
 function sourceManifest(sources: Readonly<Record<string, string>>) {
   return Object.keys(SOURCE_LOCK).sort().map(path => {
-    const isResearch = path.includes('EVENT-SOURCE-CATALOG') || path.includes('SOURCE-STRUCTURE-CATALOG');
+    const isResearch = path.includes('EVENT-SOURCE-CATALOG') || path.includes('EVENT-SOURCE-ITEMS') || path.includes('SOURCE-STRUCTURE-CATALOG');
     const uses = path.includes('EVENT-TIMELINE')
       ? { authorityClass: 'campaign_fixed', runtimeUse: 'Explicitly selected as the reconciled 30-row new-game schedule.' }
       : isResearch
@@ -656,10 +658,10 @@ export function compileContent(root: string): { manifest: ContentManifest; world
     schemaVersion: 1 as const,
     contentVersion: CONTENT_VERSION,
     rulesetVersion: RULESET_VERSION,
-    sourceMainCommit: '66f0c2adaf9e2cc5b4391978a699bda6a24ecdbd',
+    sourceMainCommit: SOURCE_MAIN_COMMIT,
     activeWorldPackageId: world.id,
     timelineVersion: 'LL01-WEB-EVENT-TIMELINE-RECONCILIATION-0.6-RC1',
-    approvedGameplayModules: ['clean-start-initialization', 'known-entity-inspection', 'player-view-projection', 'navigation-overlay-v1', 'spatial-search-v1', 'resource-logistics-v1', 'terrain-linked-resource-economy-v1'],
+    approvedGameplayModules: ['clean-start-initialization', 'known-entity-inspection', 'player-view-projection', 'navigation-overlay-v1', 'spatial-search-v1', 'resource-logistics-v1', 'terrain-linked-resource-economy-v1', 'stage06-construction-inventory-v1', 'stage07-revival-combat-xp-v1', 'stage08-fixed-calendar-q08-market-and-escrow-v1'],
     conversionManifest: [
       {
         input: 'data/events/EVENT-TIMELINE-v0.6.json',
@@ -667,12 +669,12 @@ export function compileContent(root: string): { manifest: ContentManifest; world
         decision: 'Use its 30 rows as the new-game fixed schedule; initialize every row SCHEDULED. Stage 04 alone settles the zero-time EV00 opening transition.',
       },
       {
-        input: 'data/events/EVENT-SOURCE-CATALOG-v3.6.json',
-        output: 'research-only',
-        decision: 'Do not compile research entries, candidate drops, shop offers or rewards as active gameplay content.',
+        input: 'data/events/EVENT-SOURCE-CATALOG-v4.6.json and data/events/EVENT-SOURCE-ITEMS-v4.6.csv',
+        output: 'source-locked-event-evidence and explicit Stage 08 promotions only',
+        decision: 'Retain all source adoption states. Runtime promotions are additive, linked to exact source IDs and validated handlers; unresolved offers, rewards, and effects stay pending.',
       },
       {
-        input: 'data/structures/SOURCE-STRUCTURE-CATALOG-v0.5.json',
+        input: 'data/structures/SOURCE-STRUCTURE-CATALOG-v1.0.json',
         output: 'research-only',
         decision: 'Do not compile proposed/observed structures as buildable or owned; opening buildings come from locked File 06/File 04 contracts.',
       },

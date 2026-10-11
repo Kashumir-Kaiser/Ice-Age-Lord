@@ -1,10 +1,14 @@
 import { GAME_STATE_SCHEMA_VERSION, type GameState, type WorldDefinition } from '../../contracts/src/index.ts';
 import { assertCompiledWorld } from '../../content/src/compiler.ts';
 import { RULESET_VERSION } from '../../content/src/sourceLock.ts';
+import { OPENING_BUILDINGS_RULE_VERSION, PLACEMENT_OVERLAY_VERSION, LABOR_OVERLAY_VERSION } from '../../content/src/buildings.ts';
 import { canonicalStateHash } from './hash.ts';
 import { seedConvenienceBag } from './bag.ts';
 import { seedSpatialKnowledge } from './spatial.ts';
 import { RESOURCE_STORAGE } from '../../content/src/resourceBalance.ts';
+import { stage07OpeningCorpse, STAGE07_OPENING_CORPSE_ID } from './stage07.ts';
+import { createStage07CombatState } from './combat.ts';
+import { initialStage08State } from './stage08.ts';
 
 export type NewGameOptions = {
   saveId: string;
@@ -147,7 +151,13 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
             itemId,
             templateId,
             quantity,
+            reservedQuantity: 0,
+            unit: 'item',
+            ownerId: 'H0',
             equipped: false as const,
+            equippedSlotId: null,
+            quality: null,
+            ...(templateId === 'BREAD' ? { foodUnitsPerItem: 1 } : {}),
             provenance: 'immutable_source_fact' as const,
           })),
         },
@@ -162,6 +172,12 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
             itemId: item.itemId,
             templateId: item.templateId,
             quantity: item.quantity,
+            reservedQuantity: 0,
+            unit: 'item',
+            ownerId: 'LI_LAN',
+            equippedSlotId: null,
+            quality: null,
+            foodUnitsPerItem: item.units,
             equipped: false as const,
             provenance: 'campaign_fixed' as const,
           })),
@@ -170,10 +186,16 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
     },
     ownedUnits: empty,
     buildings: [
-      { id: 'LL-BLD-HOUSE-01', kind: 'lord_house', name: 'Nhà Lãnh Chúa Hư Hại', level: 1, status: 'damaged', repairRequirements: [{ itemId: 'STONE', quantity: 10 }, { itemId: 'WOOD', quantity: 20 }] },
-      { id: 'LL-BLD-FIRE-01', kind: 'survival_fire', name: 'Lửa Trại', level: 1, status: 'active', repairRequirements: empty },
-      { id: 'LL-BLD-TOMB-01', kind: 'tomb', name: 'Ngôi Mộ', level: 1, status: 'active', repairRequirements: empty },
+      { id: 'LL-BLD-HOUSE-01', kind: 'lord_house', name: 'Nhà Lãnh Chúa Hư Hại', level: 1, status: 'damaged', repairRequirements: [{ itemId: 'STONE', quantity: 10 }, { itemId: 'WOOD', quantity: 20 }], siteId: 'SITE-LL01-001', position: world.sites.find(site => site.id === 'SITE-LL01-001')?.position ?? world.origin, footprintAreaM2: 30 },
+      { id: 'LL-BLD-FIRE-01', kind: 'survival_fire', name: 'Lửa Trại', level: 1, status: 'active', repairRequirements: empty, siteId: 'SITE-LL01-000', position: world.origin, footprintAreaM2: null },
+      { id: 'LL-BLD-TOMB-01', kind: 'tomb', name: 'Ngôi Mộ', level: 1, status: 'active', repairRequirements: empty, siteId: 'SITE-LL01-003', position: world.sites.find(site => site.id === 'SITE-LL01-003')?.position, footprintAreaM2: null },
     ],
+    construction: {
+      registryVersion: OPENING_BUILDINGS_RULE_VERSION,
+      placementOverlayVersion: PLACEMENT_OVERLAY_VERSION,
+      laborOverlayVersion: LABOR_OVERLAY_VERSION,
+      unlockedBlueprintIds: empty, jobs: empty, residents: empty, firstBuildReceiptIds: empty, rewardEntitlements: empty, operatingServices: empty,
+    },
     jobs: empty,
     travel: { activeOrderId: null, routeId: null, orders: empty },
     exploration: { exploredGeometry: empty, searchHistory: empty },
@@ -203,6 +225,7 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
       knownResourceIds: empty,
       knownRouteIds: empty,
       knownSignalIds: empty,
+      knownCorpseIds: [STAGE07_OPENING_CORPSE_ID],
       careerCardObserved: false,
       lastSeenByEntity: { 'site:SITE-LL01-000': { observedAtElapsedMs: 0, knowledge: 'current' } },
       lastInspectedEntityIds: empty,
@@ -218,23 +241,32 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
       claimedById: null,
       carrierId: null,
     })),
-    corpses: world.fixedActors.filter(actor => actor.lifeStateAtT0 === 'corpse').map(actor => ({
-      id: `CORPSE-${actor.id}`,
-      actorId: actor.id,
-      location: { kind: 'site' as const, siteId: actor.fixedSiteId },
-      state: 'unobserved' as const,
-      sourceStatus: actor.fixedStatus,
-      createdAtElapsedMs: 0,
-      ownershipId: null,
-    })),
+    corpses: [
+      ...world.fixedActors.filter(actor => actor.lifeStateAtT0 === 'corpse').map(actor => ({
+        id: `CORPSE-${actor.id}`,
+        actorId: actor.id,
+        location: { kind: 'site' as const, siteId: actor.fixedSiteId },
+        state: 'unobserved' as const,
+        sourceStatus: actor.fixedStatus,
+        createdAtElapsedMs: 0,
+        ownershipId: null,
+      })),
+      stage07OpeningCorpse(),
+    ],
+    progression: { transactions: [], mirrorReceiptKeys: [] },
+    combat: createStage07CombatState(world),
     quests: world.dormantQuestIds.map(questId => ({ questId, state: 'dormant' as const, acceptedAt: null, completedAt: null, rewardReceipt: null })),
     calendar: world.eventSchedule.map(({ statusAtT0: _sourceStatus, ...event }) => ({
       ...event,
       status: 'scheduled' as const,
       openReceiptSequence: null,
+      lockReceiptSequence: null,
+      blockedReceiptSequence: null,
       resolutionReceiptSequence: null,
     })),
+    eventProgressionBlocker: null,
     offers: empty,
+    stage08: initialStage08State(),
     currency: empty,
     receipts: empty,
     rngStreams: { convenienceBag: { algorithm: 'HASH-PRIMITIVE-1.0', counter: bag.totalHashDraws } },
@@ -261,8 +293,17 @@ export function assertCleanStart(state: GameState, world: WorldDefinition): void
   if (state.playerKnowledge.knownChestIds.length !== 0 || state.playerKnowledge.knownLairIds.length !== 0) contamination.push('prior exploration');
   if (state.fieldChestStates.some(chest => chest.state !== 'unopened')) contamination.push('opened field chest');
   if (state.quests.some(quest => quest.state !== 'dormant' || quest.rewardReceipt !== null)) contamination.push('quest progress');
-  if (state.calendar.length !== 30 || state.calendar.some(event => event.status !== 'scheduled' || event.openReceiptSequence !== null || event.resolutionReceiptSequence !== null)) contamination.push('calendar state');
-  if (state.corpses.some(corpse => corpse.createdAtElapsedMs !== 0 || corpse.ownershipId !== null || corpse.state !== 'unobserved')) contamination.push('corpse lifecycle');
+  if (state.calendar.length !== 30 || state.calendar.some(event => event.status !== 'scheduled'
+    || event.openReceiptSequence !== null || event.lockReceiptSequence !== null
+    || event.blockedReceiptSequence !== null || event.resolutionReceiptSequence !== null)
+    || state.eventProgressionBlocker !== null) contamination.push('calendar state');
+  const stage07Corpses = state.corpses.filter(corpse => corpse.id === STAGE07_OPENING_CORPSE_ID);
+  const expectedStage07Corpse = stage07OpeningCorpse();
+  const fixedCorpseContamination = state.corpses.some(corpse => corpse.id !== STAGE07_OPENING_CORPSE_ID
+    && (corpse.createdAtElapsedMs !== 0 || corpse.ownershipId !== null || corpse.state !== 'unobserved'));
+  if (stage07Corpses.length !== 1 || canonicalStateHash(stage07Corpses[0]) !== canonicalStateHash(expectedStage07Corpse)
+    || fixedCorpseContamination) contamination.push('corpse lifecycle');
+  if (canonicalStateHash(state.combat) !== canonicalStateHash(createStage07CombatState(world))) contamination.push('combat lifecycle');
   if (state.buildings.find(building => building.kind === 'lord_house')?.status !== 'damaged') contamination.push('lord house state');
   if (state.player.career.state !== 'unemployed_card_sealed') contamination.push('career card state');
   if (state.inventory.containers.length !== 2 || state.inventory.containers.some(container => container.stacks.some(item => item.equipped))) contamination.push('starter asset ownership/equipment');

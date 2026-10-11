@@ -80,7 +80,7 @@ test('world framing contains the 96 km radius in portrait and remains an explici
   const box = await viewBox(page);
   expect(box[2]).toBeGreaterThanOrEqual(192000);
   expect(box[3]).toBeGreaterThanOrEqual(192000);
-  await expect(page.getByText('Bản đồ thế giới · LL01')).toBeVisible();
+  await expect(page.locator('.map-corner-title strong')).toHaveText('Bản đồ thế giới');
   await page.getByRole('button', { name: 'Chuyển sang bản đồ địa phương' }).click();
   await expect(page.getByText('Đồng bằng Cổ Chiến Trường')).toBeVisible();
 });
@@ -210,8 +210,8 @@ test('night and source-atlas previews keep hidden entities out of player selecti
   await page.getByLabel('Lửa đang bật').uncheck();
   await expect(page.locator('.map-entity-marker[data-entity-id="MODELED-STONE-01"]')).toHaveAttribute('aria-label', /Vị trí đã biết lần cuối: Đá nhô khỏi băng/);
   const ordinaryIds = await page.locator('.map-accessible-entities').innerText();
-  await page.getByLabel('Bật atlas debug').check();
-  await expect(page.getByText('Atlas debug không phải khám phá')).toBeVisible();
+  await page.getByLabel('Hiện lớp dữ liệu tham khảo').check();
+  await expect(page.locator('.map-developer-tools')).toContainText('không khám phá hay lưu tiến trình');
   expect(await page.locator('.map-accessible-entities').innerText()).toBe(ordinaryIds);
   await expect(page.getByRole('button', { name: /Kiểm tra Hào Nông Sora/ })).toHaveCount(0);
   await expect(page.locator('.entity-inspector:visible[data-entity-id="MODELED-STONE-01"]')).toHaveCount(0);
@@ -321,6 +321,7 @@ test('visual baselines cover day, night, maximum heat, world, cluster, and selec
   expect(mapLayout.footerHeight).toBeGreaterThan(30);
   expect(mapLayout.footerBottom).toBeLessThanOrEqual(mapLayout.experienceBottom + 1);
   if (!isMobile) expect(mapLayout.hintBottom).toBeLessThanOrEqual(mapLayout.scaleTop - 4);
+  if (isMobile) await page.locator('.map-experience').evaluate(node => { const element = node as HTMLElement; element.style.height = '869px'; element.style.flexShrink = '0'; });
   const visualOptions = { animations: 'disabled' as const, caret: 'hide' as const, maxDiffPixelRatio: 0.1 };
   await expect(page.locator('.map-experience')).toHaveScreenshot(`${label}-opening-day.png`, visualOptions);
 

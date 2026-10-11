@@ -1,15 +1,19 @@
-name: Stage 04 authoritative clock and Chromium checks
+name: Stage 02–08 regression and browser journey
 on:
   push:
     branches:
       - main
       - 'frontend/**'
+      - 'codex/backend-stage-07'
     paths:
       - 'frontend/**'
       - 'packages/**'
       - 'references/**'
       - 'docs/implementation/STAGE-03.md'
       - 'docs/implementation/STAGE-04.md'
+      - 'docs/implementation/STAGE-07.md'
+      - 'docs/implementation/STAGE-08.md'
+      - 'docs/implementation/STAGE-08-CONTENT-COVERAGE.md'
       - 'package.json'
       - '.github/workflows/frontend-demo.yml'
   workflow_dispatch:
@@ -24,9 +28,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - run: npm run content:compile
+      - run: npm run content:coverage:stage08
       - run: npm run test:stage02
       - run: npm run test:stage03
       - run: npm run test:stage04
+      - run: npm run test:stage05
+      - run: npm run test:stage06
+      - run: npm run test:stage07
+      - run: npm run test:stage08
   frontend:
     needs: backend
     runs-on: ubuntu-latest
@@ -45,7 +55,7 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm run build
       - run: npm test
-      - name: Prepare Stage 04 local API
+      - name: Prepare test local API
         run: |
           cd ..
           npm run owner:key:create
@@ -53,7 +63,7 @@ jobs:
           ILL_TEST_OWNER_KEY="$(cat .local/owner-key)"
           echo "::add-mask::$ILL_TEST_OWNER_KEY"
           echo "ILL_TEST_OWNER_KEY=$ILL_TEST_OWNER_KEY" >> "$GITHUB_ENV"
-      - name: Start Stage 04 local API
+      - name: Start test local API
         run: |
           cd ..
           nohup env ILL_ALLOWED_ORIGIN=http://localhost:5173 npm run api:start > /tmp/ill-api.log 2>&1 < /dev/null &

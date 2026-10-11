@@ -1,7 +1,13 @@
 import type { ActionAvailability, CoordinateMm, EntityRef, GameState, PlayerEntityView, PlayerView, WorldDefinition } from '../../contracts/src/index.ts';
+import { eventRuntimeReadiness } from '../../content/src/eventReadiness.ts';
 import { canAccessStarterContainer } from './access.ts';
 import { carryCapacityForFireLevel, currentSight, harvestingRateUnitsPerHour, previewMovement, startHarvestJob } from './spatial.ts';
+import { OPENING_BUILDINGS } from '../../content/src/buildings.ts';
+import { constructionWorkRate, farmhouseCapacity } from './construction.ts';
 import { elapsedMsToWorldClock } from './time.ts';
+import { butcherCorpse, directReviveAvailability } from './stage07.ts';
+import { projectStage07Combat } from './combat.ts';
+import { Q08_ID } from './stage08.ts';
 
 export function entityKey(ref: EntityRef): string {
   return `${ref.type}:${ref.id}`;
@@ -189,18 +195,43 @@ function progressFor(state: GameState, jobId: string): number | null {
     const distance = harvest.stage === 'outbound' ? harvest.routeOutDistanceMm : harvest.routeReturnDistanceMm;
     return distance === 0 ? 100 : Math.max(0, Math.min(100, harvest.routeProgressMm / distance * 100));
   }
+  const construction = state.construction.jobs.find(job => job.id === jobId);
+  if (construction) return construction.workUnitsRequired === 0 ? 100 : Math.max(0, Math.min(100, construction.progressTicks / (construction.workUnitsRequired * 300) * 100));
+  const service = (state.construction.operatingServices ?? []).find(job => job.id === jobId);
+  if (service) return Math.max(0, Math.min(100, (state.simElapsedMs - service.startedAtElapsedMs) / (service.completesAtElapsedMs - service.startedAtElapsedMs) * 100));
   return null;
+}
+
+function playerAtSiteForView(state: GameState, world: WorldDefinition, siteId: string): boolean {
+  const site = world.sites.find(candidate => candidate.id === siteId);
+  return Boolean(site && Math.hypot(site.position.xMm - state.player.position.xMm, site.position.yMm - state.player.position.yMm)
+    <= world.navigationOverlay.interactionRangeMm);
 }
 
 export function projectPlayerView(state: GameState, world: WorldDefinition): PlayerView {
   if (state.worldPackageId !== world.id) throw new Error('PLAYER_VIEW_WORLD_PACKAGE_MISMATCH');
-  const entities = [...siteEntities(state, world), ...resourceEntities(state, world), ...cacheEntities(state, world)];
-  const knownBuildings = state.buildings.filter(building => state.playerKnowledge.knownSiteIds.some(siteId => {
-    if (building.kind === 'lord_house') return siteId === 'SITE-LL01-001';
-    if (building.kind === 'survival_fire') return siteId === 'SITE-LL01-000';
-    if (building.kind === 'tomb') return siteId === 'SITE-LL01-003';
-    return false;
-  })).map(building => ({ id: building.id, name: building.name, status: building.status }));
+  const knownCorpseIds = new Set(state.playerKnowledge.knownCorpseIds ?? []);
+  const corpseEntities: PlayerEntityView[] = state.corpses.filter(corpse => knownCorpseIds.has(corpse.id) && corpse.state !== 'destroyed' && corpse.state !== 'butchered' && corpse.state !== 'revived').flatMap(corpse => {
+    const position = corpse.location.kind === 'site' || corpse.location.kind === 'buried'
+      ? world.sites.find(site => site.id === corpse.location.siteId)?.position
+      : corpse.location.carrierId === state.player.id ? state.player.position : state.ownedUnits.find(unit => unit.id === corpse.location.carrierId)?.position ?? undefined;
+    if (!position) return [];
+    return [{
+      ref: { type: 'corpse' as const, id: corpse.id },
+      label: corpse.bodyRecord?.name && state.playerKnowledge.lastInspectedEntityIds.includes(entityKey({ type: 'corpse', id: corpse.id })) ? corpse.bodyRecord.name : 'Unidentified corpse',
+      category: 'corpse',
+      knowledge: 'current' as const,
+      observedAtElapsedMs: corpse.createdAtElapsedMs,
+      position,
+      actions: [action('inspect_entity', true)],
+    }];
+  });
+  const entities = [...siteEntities(state, world), ...resourceEntities(state, world), ...cacheEntities(state, world), ...corpseEntities];
+  const knownBuildings = state.buildings.map(building => ({
+    id: building.id, name: building.name, status: building.status, kind: building.kind, level: building.level,
+    ...(building.siteId ? { siteId: building.siteId } : {}), ...(building.position ? { position: building.position } : {}),
+    ...(building.footprintAreaM2 !== undefined ? { footprintAreaM2: building.footprintAreaM2 } : {}),
+  }));
   const fireEntity = entities.find(entity => entity.ref.type === 'site' && entity.position?.xMm === state.territory.position.xMm && entity.position?.yMm === state.territory.position.yMm);
   if (!fireEntity) throw new Error('PLAYER_VIEW_SURVIVAL_FIRE_REFERENCE_MISSING');
   const knownContainers = state.inventory.containers.filter(container => container.observed).map(container => ({
@@ -213,10 +244,31 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
           ? `${state.ownedUnits.find(unit => container.location.kind === 'unit' && unit.id === container.location.unitId)?.name ?? 'Unit'} pack`
           : container.kind,
     slots: container.capacitySlots ?? 0,
-    accessible: canAccessStarterContainer(container.id, state, world),
-    items: container.stacks.map(stack => ({ itemId: stack.itemId, label: stack.templateId, quantity: stack.quantity })),
+    occupiedSlots: container.stacks.length,
+    capacitySlots: container.capacitySlots,
+    accessible: canAccessStarterContainer(container.id, state, world) || (container.location.kind === 'carried' && container.location.ownerId === state.player.id),
+    location: container.location,
+    items: container.stacks.map(stack => ({ itemId: stack.itemId, label: stack.templateId, quantity: stack.quantity, reservedQuantity: stack.reservedQuantity ?? 0, unit: stack.unit ?? null, quality: stack.quality ?? null, condition: stack.condition ?? null, ownerId: stack.ownerId ?? null, equipped: stack.equipped, equippedSlotId: stack.equippedSlotId ?? null, foodUnitsPerItem: stack.foodUnitsPerItem ?? null, equipmentTags: stack.equipmentTags ?? [], combatEffects: stack.combatEffects ?? {}, provenance: stack.provenance })),
   }));
   const sights = currentSight(state, world);
+  const combat = projectStage07Combat(state, world);
+  const combatTargets = combat.target && (combat.target.state === 'available' || combat.target.state === 'reacting')
+    && sights.some(sight => Math.hypot(combat.target!.position.xMm - sight.center.xMm, combat.target!.position.yMm - sight.center.yMm) <= sight.radiusMm)
+    ? [{ targetId: combat.target.id, label: combat.target.label, position: combat.target.position, status: combat.target.state as 'available' | 'reacting' }]
+    : [];
+  const caravan = state.stage08.enabled ? state.stage08.caravan : null;
+  const caravanPosition = caravan ? world.sites.find(site => site.id === caravan.locationSiteId)?.position : null;
+  const caravanVisible = Boolean(caravanPosition && ['distressed', 'negotiated', 'escorting', 'arrived'].includes(caravan!.status)
+    && sights.some(sight => Math.hypot(caravanPosition!.xMm - sight.center.xMm, caravanPosition!.yMm - sight.center.yMm) <= sight.radiusMm));
+  const atKronaGate = playerAtSiteForView(state, world, 'SITE-LL01-046');
+  const projectedQuests = state.quests.filter(quest => quest.state !== 'dormant');
+  const q08 = state.quests.find(quest => quest.questId === Q08_ID);
+  if (caravanVisible && caravan?.status === 'distressed' && q08?.state === 'dormant') {
+    projectedQuests.push({
+      questId: Q08_ID, state: 'open', acceptedAt: null, completedAt: null, rewardReceipt: null,
+      objectiveId: 'Q08-NEGOTIATE-AND-ESCORT', rewardStatus: 'unavailable', failureReason: null,
+    });
+  }
 
   return {
     schemaVersion: 1,
@@ -226,6 +278,43 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
     simElapsedMs: state.simElapsedMs,
     clockControl: state.clockControl,
     clockStatus: { driver: 'unclaimed', catchingUp: false, targetSimElapsedMs: state.simElapsedMs, leaseRemainingMs: 0 },
+    calendar: state.calendar.flatMap(event => {
+      if (event.status === 'scheduled' && event.id !== 'EV00-SAFE-FIRE') return [];
+      const source = world.eventSchedule.find(row => row.id === event.id);
+      if (!source) return [];
+      return [{
+        id: event.id,
+        displayName: source.displayName,
+        status: event.status,
+        readiness: eventRuntimeReadiness(event.id),
+        opensAtElapsedMs: event.opensAtMs,
+        locksAtElapsedMs: event.locksAtMs,
+        resolvesAtElapsedMs: event.resolvesAtMs,
+        openReceiptSequence: event.openReceiptSequence,
+        lockReceiptSequence: event.lockReceiptSequence,
+        resolutionReceiptSequence: event.resolutionReceiptSequence,
+      }];
+    }),
+    eventProgressionBlocker: state.eventProgressionBlocker ? {
+      eventId: state.eventProgressionBlocker.eventId,
+      displayName: world.eventSchedule.find(row => row.id === state.eventProgressionBlocker!.eventId)?.displayName ?? 'Sự kiện thế giới',
+      blockedAtElapsedMs: state.eventProgressionBlocker.blockedAtElapsedMs,
+      playerMessage: state.eventProgressionBlocker.playerMessage,
+    } : null,
+    quests: projectedQuests,
+    currency: state.currency.filter(balance => balance.amount > 0),
+    stage08: {
+      caravan: caravanVisible && caravan && caravanPosition ? {
+        id: caravan.id,
+        status: caravan.status,
+        locationSiteId: caravan.locationSiteId,
+        deadlineAtElapsedMs: caravan.deadlineAtElapsedMs,
+        arrivalAtElapsedMs: caravan.arrivalAtElapsedMs,
+      } : null,
+      marketOffers: atKronaGate ? state.stage08.marketOffers : [],
+      auctionLots: atKronaGate ? state.stage08.auctionLots.filter(lot => lot.status !== 'closed') : [],
+      auctionBids: atKronaGate ? state.stage08.auctionBids.filter(bid => bid.bidderId === state.player.id) : [],
+    },
     worldClock: elapsedMsToWorldClock(state.simElapsedMs),
     survival: {
       coldLoad: state.survival.coldStatus === 'weather_unresolved' ? null : state.survival.coldLoadMicro / 1_000_000,
@@ -243,6 +332,8 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
       attributes: state.player.attributes,
       mana: { current: state.player.mana.current, max: state.player.mana.max },
       careerState: state.player.career.state === 'active' ? 'active' : 'unemployed',
+      skills: state.player.career.skills ?? [],
+      pendingGrowth: state.player.career.pendingGrowth ?? 0,
       position: state.player.position,
     },
     territory: {
@@ -272,8 +363,28 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
       },
       buildings: knownBuildings,
     },
+    construction: {
+      unlockedBlueprintIds: state.construction.unlockedBlueprintIds,
+      blueprints: OPENING_BUILDINGS,
+      jobs: state.construction.jobs.map(job => {
+        const workUnitsPerHour = constructionWorkRate(state, job);
+        const remaining = Math.max(0, job.workUnitsRequired - job.progressTicks / 300);
+        const estimatedCompletionAtElapsedMs = workUnitsPerHour > 0
+          ? state.simElapsedMs + Math.ceil(remaining * 3_600_000 / workUnitsPerHour)
+          : null;
+        return { ...job, workUnitsPerHour, estimatedCompletionAtElapsedMs };
+      }),
+      residents: state.construction.residents,
+      rewardEntitlements: state.construction.rewardEntitlements,
+      operatingServices: (state.construction.operatingServices ?? []).map(service => ({ ...service, remainingMs: Math.max(0, service.completesAtElapsedMs - state.simElapsedMs) })),
+      farmerHouseCapacity: farmhouseCapacity(state),
+      occupiedHousing: state.construction.residents.length,
+    },
+    combat,
     careerCard: {
       observed: state.playerKnowledge.careerCardObserved,
+      active: state.player.career.state === 'active',
+      openingSkillLearned: (state.player.career.skills ?? []).some(skill => skill.templateId === state.player.career.sealedPayload.openingSkillId),
       career: state.playerKnowledge.careerCardObserved ? { id: state.player.career.sealedPayload.careerId, name: 'Tử Linh Triệu Hoán Sư', openingSkillId: state.player.career.sealedPayload.openingSkillId, growthAllocation: state.player.career.sealedPayload.growthAllocation } : null,
     },
     inventory: {
@@ -287,6 +398,26 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
       containers: knownContainers,
     },
     units: state.ownedUnits,
+    corpses: state.corpses.filter(corpse => knownCorpseIds.has(corpse.id)).map(corpse => {
+      const inspected = state.playerKnowledge.lastInspectedEntityIds.includes(entityKey({ type: 'corpse', id: corpse.id }));
+      const atReach = corpse.location.kind === 'site' || corpse.location.kind === 'buried'
+        ? (() => { const position = world.sites.find(site => site.id === corpse.location.siteId)?.position; return Boolean(position && Math.hypot(position.xMm - state.player.position.xMm, position.yMm - state.player.position.yMm) <= world.navigationOverlay.interactionRangeMm); })()
+        : corpse.location.kind === 'carried' && (corpse.location.carrierId === state.player.id || state.ownedUnits.some(unit => unit.id === corpse.location.carrierId && unit.position && Math.hypot(unit.position.xMm - state.player.position.xMm, unit.position.yMm - state.player.position.yMm) <= world.navigationOverlay.interactionRangeMm));
+      const revive = directReviveAvailability(state, world, state.player.id, corpse.id);
+      const butcher = butcherCorpse(state, world, state.player.id, corpse.id);
+      return {
+        id: corpse.id, actorId: corpse.actorId,
+        label: inspected ? corpse.bodyRecord?.name ?? 'Unknown person' : 'Unidentified corpse',
+        position: corpse.location.kind === 'site' || corpse.location.kind === 'buried' ? world.sites.find(site => site.id === corpse.location.siteId)?.position ?? null : null,
+        state: corpse.state, integrity: inspected ? corpse.integrity ?? null : null,
+        tier: inspected ? corpse.bodyRecord?.formTier ?? null : null,
+        level: inspected ? corpse.bodyRecord?.level ?? null : null,
+        grade: inspected ? corpse.bodyRecord?.grade ?? null : null,
+        hero: inspected ? corpse.bodyRecord?.hero ?? null : null,
+        accessible: atReach, inspected, revive: { actionId: 'revive', enabled: !revive.code, reasonCode: revive.code, requirements: revive.requirements, ...(!revive.code ? { preview: { label: 'Direct Tử Phục', value: '0 mana · 0 materials · 0 time' } } : {}) },
+        butcher: { actionId: 'butcher_corpse', enabled: !butcher.code, reasonCode: butcher.code, requirements: butcher.requirements, ...(!butcher.code ? { preview: { label: 'Dispose body', value: '0 materials · 0 time; recorded gear recovered once' } } : {}) },
+      };
+    }),
     jobs: state.jobs.map(job => ({ ...job, progressPercent: progressFor(state, job.id) })),
     visibleMap: {
       coordinateSystem: world.coordinateSystem,
@@ -316,6 +447,7 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
       }),
       activeOrders: activeMapOrders(state),
       heatOverlays: state.territory.survivalFire.active ? [{ center: state.territory.position, radiusMm: state.territory.survivalFire.heatRadiusMetres * 1_000, minCelsius: state.territory.survivalFire.heatDeltaCelsius.min, maxCelsius: state.territory.survivalFire.heatDeltaCelsius.max }] : [],
+      combatTargets,
     },
     spatial: {
       navigationRuleVersion: world.navigationOverlay.id,

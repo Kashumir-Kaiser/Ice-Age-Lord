@@ -12,6 +12,7 @@ import type {
   WorldDefinition,
   WorldResource,
 } from '../../contracts/src/index.ts';
+import { isActorInActiveCombat } from './combat.ts';
 import { canonicalStateHash } from './hash.ts';
 import { harvestProgressionForFireLevel } from '../../content/src/resourceBalance.ts';
 
@@ -314,11 +315,13 @@ function actorFor(state: GameState, actorId: string): Actor | null {
 }
 
 export function actorAvailability(state: GameState, actorId: string): string | null {
+  if (isActorInActiveCombat(state, actorId)) return 'ACTOR_IN_COMBAT';
   const actor = actorFor(state, actorId);
   if (!actor) return 'ACTOR_NOT_OWNED_OR_UNAVAILABLE';
   if (state.travel.orders.some(order => order.actorIds.includes(actorId) && order.status === 'active')) return 'ACTOR_ALREADY_TRAVELLING';
   if (state.spatial.searchJobs.some(job => job.actorIds.includes(actorId) && job.status === 'active')) return 'ACTOR_ASSIGNED_TO_SEARCH';
   if (state.spatial.harvestJobs.some(job => job.actorIds.includes(actorId) && job.status === 'active')) return 'ACTOR_ASSIGNED_TO_HARVEST';
+  if (state.construction.jobs.some(job => job.workerIds.includes(actorId) && (job.status === 'active' || job.status === 'blocked'))) return 'ACTOR_ASSIGNED_TO_CONSTRUCTION';
   return null;
 }
 
@@ -538,7 +541,7 @@ function updateKnowledgeAt(state: GameState, world: WorldDefinition, at: number)
       }
     }
     knownRouteIds.push(...worldRouteIdsNear(world, observer.position, world.navigationOverlay.signalRangeMm));
-    const geometryId = `OBS-${observer.id}-${at}`;
+    const geometryId = `OBS-${observer.id}-${observer.position.xMm}-${observer.position.yMm}-${observer.position.sourceZMetres ?? 0}-${sightRangeMm}`;
     if (!state.exploration.exploredGeometry.some(area => area.id === geometryId)) {
       state.exploration = {
         ...state.exploration,
@@ -614,12 +617,13 @@ function addCargo(state: GameState, actorId: string, materialId: string, quantit
   const currentUnits = carriedResourceUnits(state, actorId);
   if (currentUnits + quantity > capacity) return false;
   const cargoItemId = `HARVEST-CARGO-${actorId}-${materialId}`;
+  const unit = state.spatial.resourceBalances.find(balance => balance.materialId === materialId)?.unit ?? 'item';
   state.inventory = {
     containers: state.inventory.containers.map(candidate => candidate.id === container.id ? {
       ...candidate,
       stacks: candidate.stacks.some(stack => stack.itemId === cargoItemId)
         ? candidate.stacks.map(stack => stack.itemId === cargoItemId ? { ...stack, quantity: stack.quantity + quantity } : stack)
-        : [...candidate.stacks, { itemId: cargoItemId, templateId: materialId, quantity, equipped: false, provenance: 'versioned_game_design' as const }],
+        : [...candidate.stacks, { itemId: cargoItemId, templateId: materialId, quantity, reservedQuantity: 0, unit, ownerId: actorId, equipped: false, equippedSlotId: null, quality: null, provenance: 'versioned_game_design' as const }],
     } : candidate),
   };
   return true;
@@ -790,7 +794,7 @@ export function transferItem(state: GameState, world: WorldDefinition, actorId: 
   };
   if (!isContainerReachable(sourceContainerId) || !isContainerReachable(destinationContainerId)) return { state, code: 'CONTAINER_NOT_ACCESSIBLE' };
   const stack = source.stacks.find(candidate => candidate.itemId === itemId);
-  if (!stack || !Number.isSafeInteger(quantity) || quantity < 1 || stack.quantity < quantity) return { state, code: 'ITEM_QUANTITY_UNAVAILABLE' };
+  if (!stack || !Number.isSafeInteger(quantity) || quantity < 1 || stack.quantity - (stack.reservedQuantity ?? 0) < quantity) return { state, code: 'ITEM_QUANTITY_UNAVAILABLE' };
   if (sourceContainerId === destinationContainerId) return { state, code: 'CONTAINER_TRANSFER_SAME_SOURCE' };
   const mergeTarget = RESOURCE_CARGO_TEMPLATES.has(stack.templateId)
     ? destination.stacks.find(candidate => candidate.templateId === stack.templateId)
@@ -811,7 +815,16 @@ export function transferItem(state: GameState, world: WorldDefinition, actorId: 
         observed: true,
         stacks: mergeTarget
           ? container.stacks.map(candidate => candidate.itemId === mergeTarget.itemId ? { ...candidate, quantity: candidate.quantity + quantity } : candidate)
-          : [...container.stacks, { ...stack, itemId: movedItemId, quantity, equipped: false }],
+          : [...container.stacks, {
+            ...stack,
+            itemId: movedItemId,
+            quantity,
+            reservedQuantity: 0,
+            ownerId: destination.location.kind === 'carried' ? destination.location.ownerId
+              : destination.location.kind === 'unit' ? destination.location.unitId : 'H0',
+            equipped: false,
+            equippedSlotId: null,
+          }],
       };
       return container;
     }),

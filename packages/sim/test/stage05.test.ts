@@ -56,7 +56,7 @@ test('schema 2 saves migrate into the persistent spatial state without changing 
   delete legacy.playerKnowledge.knownSignalIds;
 
   const upgraded = upgradeGameState(legacy, world);
-  assert.equal(upgraded.schemaVersion, 5);
+  assert.equal(upgraded.schemaVersion, 7);
   assert.deepEqual(upgraded.player.position, world.origin);
   assert.deepEqual(upgraded.territory.position, world.origin);
   assert.deepEqual(upgraded.travel.orders, []);
@@ -172,7 +172,7 @@ test('owned harvesters use unit inventory, save their load and gain packs throug
   legacy.schemaVersion = 4;
   legacy.inventory.containers = legacy.inventory.containers.filter((container: Record<string, any>) => container.id !== packId);
   const migrated = upgradeGameState(legacy, world);
-  assert.equal(migrated.schemaVersion, 5);
+  assert.equal(migrated.schemaVersion, 7);
   assert.ok(migrated.inventory.containers.some(container => container.id === packId && container.kind === 'unit_inventory'));
 });
 
