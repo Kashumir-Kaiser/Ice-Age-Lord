@@ -25,7 +25,24 @@ export type AssetManifestEntry = {
   lodVariants: { close: AssetLayerPaths; district: AssetLayerPaths; regional: AssetLayerPaths };
 };
 export type FireArtStage = { minLevel: number; maxLevel: number; assetId: string };
-export type BuildingArtProgression = { baseAssetIds: readonly string[]; stages: readonly FireArtStage[] };
+export type BuildingArtProgressionStage = {
+  level: number;
+  assetId: string;
+  canonicalProfile: Readonly<Record<string, string>>;
+  visibleProfile: Readonly<Record<string, unknown>>;
+};
+export type BuildingArtProgression = {
+  /** Asset identities that can use this visual-only progression. */
+  baseAssetIds: readonly string[];
+  trackName: string;
+  unit: string;
+  maxLevel: number;
+  canonicalRegistry: string;
+  canonicalSource: string;
+  canonicalSection: string;
+  stageIdsUseExactLevels: true;
+  stages: readonly BuildingArtProgressionStage[];
+};
 export type StandaloneArtEntry = {
   assetId: string;
   name: string;
@@ -83,17 +100,26 @@ function validateManifest(value: unknown): AssetManifest {
         || progression.baseAssetIds.some(assetId => !ids.has(assetId) || progressedAssetIds.has(assetId))) {
         throw new Error('Building artwork progression has missing or duplicate base assets.');
       }
+      if (!progression.trackName || !progression.unit || !progression.canonicalRegistry
+        || !progression.canonicalSource || !progression.canonicalSection
+        || progression.stageIdsUseExactLevels !== true
+        || !Number.isInteger(progression.maxLevel) || progression.maxLevel < 1) {
+        throw new Error('Building artwork progression is missing its canonical track or level cap.');
+      }
       progression.baseAssetIds.forEach(assetId => progressedAssetIds.add(assetId));
       let nextLevel = 1;
       for (const stage of progression.stages) {
-        if (!Number.isInteger(stage.minLevel) || !Number.isInteger(stage.maxLevel)
-          || stage.minLevel !== nextLevel || stage.maxLevel < stage.minLevel
-          || !ids.has(stage.assetId)) {
-          throw new Error('Building artwork progression has a gap or missing asset.');
+        if (!Number.isInteger(stage.level) || stage.level !== nextLevel
+          || !ids.has(stage.assetId)
+          || !stage.canonicalProfile || typeof stage.canonicalProfile !== 'object'
+          || !stage.visibleProfile || typeof stage.visibleProfile !== 'object') {
+          throw new Error('Building artwork progression has a level gap or missing canonical profile.');
         }
-        nextLevel = stage.maxLevel + 1;
+        nextLevel = stage.level + 1;
       }
-      if (nextLevel !== 31) throw new Error('Building artwork progression must cover all levels 1–30.');
+      if (nextLevel !== progression.maxLevel + 1 || progression.stages.length !== progression.maxLevel) {
+        throw new Error('Building artwork progression must cover exact levels 1 through ' + progression.maxLevel + '.');
+      }
     }
   }
   return manifest;
@@ -135,5 +161,7 @@ export function resolveSettlementAssetId(
   }
   if (typeof buildingLevel !== 'number' || !Number.isInteger(buildingLevel)) return resolvedAssetId;
   const progression = manifest?.buildingProgressions?.find(row => row.baseAssetIds.includes(resolvedAssetId));
-  return progression?.stages.find(stage => buildingLevel >= stage.minLevel && buildingLevel <= stage.maxLevel)?.assetId ?? resolvedAssetId;
+  if (!progression || buildingLevel < 1) return resolvedAssetId;
+  const exactLevel = Math.min(buildingLevel, progression.maxLevel);
+  return progression.stages.find(stage => stage.level === exactLevel)?.assetId ?? resolvedAssetId;
 }

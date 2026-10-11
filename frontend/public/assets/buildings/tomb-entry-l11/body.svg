@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Cửa Mộ · phát triển cấp 11 · body">
-<title>Cửa Mộ · phát triển cấp 11 · body</title>
-<g id="painted-sprite" shape-rendering="geometricPrecision">
-<use href="../tomb-entry/body.svg#painted-sprite"/>
-<g id="upgrade-6"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M226,150l14,-8 14,8 M231,149l9,-5 9,5 M240,146v7m-4,-3h8" fill="none" stroke="#b99368" stroke-width="2.3"/></g></g>
-<g id="upgrade-11"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M164.75,234.0V215.25" fill="none" stroke="#4c4642" stroke-width="3"/><path d="M159.5,215.25h10.5l-1.5,18.75h-7.5Z" fill="#414c53" stroke="#343b43" stroke-width="2"/><path d="M161.75,217.5h6.0l-0.75,13.5h-4.5Z" fill="#edb76a" stroke="#57473d" stroke-width="1.5"/><path d="M158,213.75h13.5" fill="none" stroke="#e8e6dc" stroke-width="3"/></g><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M309.75,234.0V215.25" fill="none" stroke="#4c4642" stroke-width="3"/><path d="M304.5,215.25h10.5l-1.5,18.75h-7.5Z" fill="#414c53" stroke="#343b43" stroke-width="2"/><path d="M306.75,217.5h6.0l-0.75,13.5h-4.5Z" fill="#edb76a" stroke="#57473d" stroke-width="1.5"/><path d="M303,213.75h13.5" fill="none" stroke="#e8e6dc" stroke-width="3"/></g></g>
-</g>
-</svg>

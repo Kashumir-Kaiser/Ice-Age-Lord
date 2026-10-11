@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Lò Rèn · phát triển cấp 6 · body">
-<title>Lò Rèn · phát triển cấp 6 · body</title>
-<g id="painted-sprite" shape-rendering="geometricPrecision">
-<use href="../opening-forge/body.svg#painted-sprite"/>
-<g id="upgrade-6"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M295,53h37 M294,62h39 M293,71h41 M292,80h43" fill="none" stroke="#9ea9a8" stroke-width="2.2"/><path d="M292,56h43" stroke="#424f57" stroke-width="2"/></g></g>
-</g>
-</svg>

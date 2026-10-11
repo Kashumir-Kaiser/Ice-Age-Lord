@@ -1,250 +1,490 @@
-Warning: truncated output (original token count: 6763)
-Total output lines: 291
+"""Build exact early-building stages from the canonical records and art atlases.
 
-"""Generate compact, editable SVG upgrade milestones for early settlement buildings.
-
-Stages are presentation art only: each keeps the source building's canvas, anchor,
-footprint and hit geometry. Runtime bodies link to the registered level-one SVG,
-then add cumulative, hand-authored winter-ink details inside the same canvas.
+The canonical markdown tables are the source of progression caps and profiles.
+Every stage uses its own isolated painted concept, palette-traced to a complete
+path-only SVG while retaining the existing 480x400 registered canvas.
 """
 from __future__ import annotations
 
 import copy
+import html
+import importlib.util
 import json
-from html import escape
+import math
+import re
+import shutil
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-SOURCE = ROOT / "assets" / "source" / "buildings"
-PUBLIC = ROOT / "frontend" / "public" / "assets" / "buildings"
-LEVELS = (6, 11, 16, 21, 26)
-# At most 20% larger than the level-one art; the 480x400 SVG canvas and world
-# footprint remain unchanged, so the game can scale the sprite without clipping.
-SCALE_FACTORS = (1.04, 1.08, 1.12, 1.16, 1.20)
-INK = "#343b43"
-SNOW = "#e8e6dc"
-WOOD = "#745d4c"
-WOOD_LIGHT = "#9b8067"
-STONE = "#68767d"
-STONE_LIGHT = "#a6b1b3"
-AMBER = "#edb76a"
-GREEN = "#879876"
+import numpy as np
+from PIL import Image
+from scipy import ndimage
 
-FAMILIES = [
-    {"base":"lord-house-repaired","prefix":"lord-house","name":"Nhà Lãnh Chúa","kind":"lord","aliases":["lord-house-damaged","lord-house-repaired"]},
-    {"base":"tomb-entry","prefix":"tomb-entry","name":"Cửa Mộ","kind":"tomb","aliases":["tomb-entry"]},
-    {"base":"polar-farmhouse-l01","prefix":"polar-farmhouse","name":"Nhà Nông Phu Cực Địa","kind":"farm","aliases":["polar-farmhouse-l01"]},
-    {"base":"opening-palisade-wall","prefix":"opening-palisade-wall","name":"Tường Rào","kind":"wall","aliases":["opening-palisade-wall"]},
-    {"base":"opening-timber-gate","prefix":"opening-timber-gate","name":"Cổng Gỗ","kind":"gate","aliases":["opening-timber-gate"]},
-    {"base":"opening-simple-heater","prefix":"opening-simple-heater","name":"Lò Sưởi Đơn Giản","kind":"heater","aliases":["opening-simple-heater"]},
-    {"base":"opening-simple-kitchen","prefix":"opening-simple-kitchen","name":"Bếp Nấu Đơn Giản","kind":"kitchen","aliases":["opening-simple-kitchen"]},
-    {"base":"opening-woodshop","prefix":"opening-woodshop","name":"Xưởng Gỗ","kind":"woodshop","aliases":["opening-woodshop"]},
-    {"base":"opening-tailor","prefix":"opening-tailor","name":"Tiệm May","kind":"tailor","aliases":["opening-tailor"]},
-    {"base":"opening-oreworks","prefix":"opening-oreworks","name":"Xưởng Quặng","kind":"oreworks","aliases":["opening-oreworks"]},
-    {"base":"opening-forge","prefix":"opening-forge","name":"Lò Rèn","kind":"forge","aliases":["opening-forge"]},
-    {"base":"opening-medical-station","prefix":"opening-medical-station","name":"Trạm Y Tế","kind":"medical","aliases":["opening-medical-station"]},
-    {"base":"opening-small-shelter","prefix":"opening-small-shelter","name":"Lều Trú Ẩn","kind":"shelter","aliases":["opening-small-shelter"]},
+ROOT = Path(__file__).resolve().parents[2]
+CANON = ROOT / "references" / "canonical"
+SOURCE_DIR = ROOT / "assets" / "source" / "buildings"
+CONCEPT_DIR = ROOT / "assets" / "source" / "concepts"
+PUBLIC_DIR = ROOT / "frontend" / "public" / "assets" / "buildings"
+MANIFEST = ROOT / "assets" / "manifest.json"
+PUBLIC_MANIFEST = ROOT / "frontend" / "public" / "assets" / "manifest.json"
+CANVAS = (480, 400)
+BODY_COLORS = 88
+DISTRICT_COLORS = 24
+ART_PROVENANCE = "Original project concept art generated for Ice Age Lord on 2026-10-10 and palette-traced into path-only SVG."
+
+TRACKS = [
+    {"prefix":"lord-house","artBase":"lord-house-repaired","baseIds":["lord-house-damaged","lord-house-repaired"],"name":"Nhà Lãnh Chúa","unit":"Cấp","file":"LORD-DND-01.md","heading":"Phụ lục 1.J","display":"LORD-HOUSE-UPGRADE-PATH-2.0","kind":"lord"},
+    {"prefix":"tomb-entry","artBase":"tomb-entry","baseIds":["tomb-entry"],"name":"Ngôi Mộ","unit":"Bậc","file":"LORD-DND-06.md","heading":"21. Tiến trình Ngôi Mộ bậc 1–10","display":"TOMB-RANK-PROGRESSION-1–10","kind":"tomb"},
+    {"prefix":"polar-farmhouse","artBase":"polar-farmhouse-l01","baseIds":["polar-farmhouse-l01"],"name":"Nhà Nông Phu Cực Địa","unit":"Cấp","file":"LORD-DND-01.md","heading":"Phụ lục 1.K","display":"POLAR-FARMHOUSE-PROGRESSION-2.0","kind":"farm"},
+    {"prefix":"opening-simple-heater","artBase":"opening-simple-heater","baseIds":["opening-simple-heater"],"name":"Lò Sưởi Đơn Giản","unit":"Cấp","file":"LORD-DND-04.md","heading":"4.M.1.","display":"OPENING-FIXED-BUILDINGS-2.0 §4.M.1","kind":"heater"},
+    {"prefix":"opening-simple-kitchen","artBase":"opening-simple-kitchen","baseIds":["opening-simple-kitchen"],"name":"Bếp Nấu Đơn Giản","unit":"Cấp","file":"LORD-DND-04.md","heading":"4.M.1.","display":"OPENING-FIXED-BUILDINGS-2.0 §4.M.1","kind":"kitchen"},
+    {"prefix":"opening-small-shelter","artBase":"opening-small-shelter","baseIds":["opening-small-shelter"],"name":"Nơi Trú Nhỏ","unit":"Cấp","file":"LORD-DND-04.md","heading":"4.M.1.","display":"OPENING-FIXED-BUILDINGS-2.0 §4.M.1","kind":"shelter"},
+    {"prefix":"opening-palisade-wall","artBase":"opening-palisade-wall","baseIds":["opening-palisade-wall"],"name":"Tường Rào","unit":"Cấp","file":"LORD-DND-04.md","heading":"4.M.1.","display":"OPENING-FIXED-BUILDINGS-2.0 §4.M.1","kind":"fence"},
+    {"prefix":"opening-timber-gate","artBase":"opening-timber-gate","baseIds":["opening-timber-gate"],"name":"Cổng","unit":"Cấp","file":"LORD-DND-04.md","heading":"4.M.1.","display":"OPENING-FIXED-BUILDINGS-2.0 §4.M.1","kind":"gate"},
+    {"prefix":"opening-woodshop","artBase":"opening-woodshop","baseIds":["opening-woodshop"],"name":"Xưởng Gỗ","unit":"Cấp","file":"LORD-DND-04.md","heading":"4.M.2.","display":"OPENING-FIXED-BUILDINGS-2.0 §4.M.2","kind":"woodshop"},
+    {"prefix":"opening-tailor","artBase":"opening-tailor","baseIds":["opening-tailor"],"name":"Tiệm May","unit":"Cấp","file":"LORD-DND-04.md","heading":"4.M.2.","display":"OPENING-FIXED-BUILDINGS-2.0 §4.M.2","kind":"tailor"},
+    {"prefix":"opening-oreworks","artBase":"opening-oreworks","baseIds":["opening-oreworks"],"name":"Xưởng Quặng","unit":"Cấp","file":"LORD-DND-04.md","heading":"4.M.2.","display":"OPENING-FIXED-BUILDINGS-2.0 §4.M.2","kind":"oreworks"},
+    {"prefix":"opening-forge","artBase":"opening-forge","baseIds":["opening-forge"],"name":"Lò Rèn","unit":"Cấp","file":"LORD-DND-04.md","heading":"4.M.2.","display":"OPENING-FIXED-BUILDINGS-2.0 §4.M.2","kind":"forge"},
+    {"prefix":"opening-medical-station","artBase":"opening-medical-station","baseIds":["opening-medical-station"],"name":"Phòng Y Tế","unit":"Cấp","file":"LORD-DND-04.md","heading":"4.M.2.","display":"OPENING-FIXED-BUILDINGS-2.0 §4.M.2","kind":"medical"},
 ]
 
+SHEETS = {
+    "lord-01-10": ("lord-house-levels-01-10.png", 5, 2),
+    "lord-11-20": ("lord-house-levels-11-20.png", 5, 2),
+    "lord-21-30": ("lord-house-levels-21-30.png", 5, 2),
+    "farm": ("polar-farmhouse-levels-01-10.png", 5, 2),
+    "tomb": ("tomb-ranks-01-10.png", 5, 2),
+    "fixed": ("fixed-buildings-levels-01-03.png", 3, 5),
+    "workshops": ("workshops-levels-01-05.png", 5, 5),
+}
+FIXED_ROWS = {"heater":0, "kitchen":1, "shelter":2, "fence":3, "gate":4}
+WORKSHOP_ROWS = {"woodshop":0, "tailor":1, "oreworks":2, "forge":3, "medical":4}
 
-def group(contents: str, *, width: float = 3.0) -> str:
-    return f'<g stroke="{INK}" stroke-width="{width}" stroke-linejoin="round" stroke-linecap="round">{contents}</g>'
-
-
-def dormer(x: int, y: int, w: int = 54) -> str:
-    """A small timber dormer seated on the roof plane, with snow and a warm window."""
-    m = x + w // 2
-    return group(
-        f'<path d="M{x+6},{y+35}V{y+19}L{m},{y+2}L{x+w-6},{y+19}V{y+35}Z" fill="{WOOD}"/>'
-        f'<path d="M{x},{y+20}L{m},{y-1}L{x+w},{y+20}L{x+w-5},{y+26}L{m},{y+7}L{x+5},{y+26}Z" fill="#53616a"/>'
-        f'<path d="M{x-1},{y+19}Q{m-10},{y-3} {m},{y-2}Q{m+10},{y-3} {x+w+1},{y+19}" fill="none" stroke="{SNOW}" stroke-width="5"/>'
-        f'<rect x="{m-8}" y="{y+23}" width="16" height="12" rx="1" fill="{AMBER}" stroke="#55463d" stroke-width="2"/>'
-        f'<path d="M{m},{y+23}v12 M{m-8},{y+29}h16" fill="none" stroke="#55463d" stroke-width="1.5"/>', width=2.5)
-
-
-def window(x: int, y: int, w: int = 18, h: int = 23, color: str = AMBER) -> str:
-    return group(
-        f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="2" fill="#302e2d" stroke="{SNOW}" stroke-width="2.5"/>'
-        f'<rect x="{x+3}" y="{y+3}" width="{w-6}" height="{h-6}" fill="{color}" stroke="#594d43" stroke-width="1.5"/>'
-        f'<path d="M{x+w/2},{y+3}v{h-6} M{x+3},{y+h/2}h{w-6}" fill="none" stroke="#594d43" stroke-width="1.5"/>', width=2)
+_tracer_spec = importlib.util.spec_from_file_location("concept_tracer", ROOT / "assets" / "tools" / "trace-concept-sheets.py")
+if _tracer_spec is None or _tracer_spec.loader is None:
+    raise RuntimeError("Could not load the shared SVG palette tracer")
+_tracer = importlib.util.module_from_spec(_tracer_spec)
+_tracer_spec.loader.exec_module(_tracer)
 
 
-def pennant(x: int, y: int, color: str = "#925c50", direction: int = 1) -> str:
-    return group(
-        f'<path d="M{x},{y+63}V{y}m0,5 {29*direction},4 {-24*direction},14 {24*direction},5 {-29*direction},16" fill="none" stroke="#463f3b" stroke-width="3"/>'
-        f'<path d="M{x+2},{y+5}l{24*direction},4 {-19*direction},12Z" fill="{color}" stroke="{INK}" stroke-width="1.5"/>'
-        f'<path d="M{x+4},{y+8}l{15*direction},3 {-11*direction},7Z" fill="#c58c70" opacity=".86"/>', width=2)
+def table_for(document: str, marker: str) -> tuple[list[str], list[dict[str, str]]]:
+    lines = document.splitlines()
+    start = next((i for i, line in enumerate(lines) if line.lstrip().startswith("#") and marker in line), None)
+    if start is None:
+        raise ValueError(f"Canonical section not found: {marker}")
+    table: list[str] = []
+    for line in lines[start + 1:]:
+        if line.lstrip().startswith("|"):
+            table.append(line)
+        elif table:
+            break
+    if len(table) < 3:
+        raise ValueError(f"Canonical table missing after: {marker}")
+    cells = lambda line: [cell.strip() for cell in line.strip().strip("|").split("|")]
+    headers = [re.sub(r"[*`]", "", h).strip() for h in cells(table[0])]
+    rows = []
+    for line in table[2:]:
+        values = cells(line)
+        if len(values) == len(headers):
+            rows.append(dict(zip(headers, values)))
+    return headers, rows
 
 
-def chimney(x: int, y: int, w: int = 32, h: int = 62, stone: bool = True) -> str:
-    fill = STONE if stone else WOOD
-    return group(
-        f'<path d="M{x+5},{y+h}V{y+10}h{w-10}v{h-10}Z" fill="{fill}"/>'
-        f'<path d="M{x},{y+11}h{w}v9H{x}Z" fill="#4b5760"/>'
-        f'<path d="M{x-2},{y+9}h{w+4}" fill="none" stroke="{SNOW}" stroke-width="5"/>'
-        f'<path d="M{x+9},{y+29}h{w-18} M{x+9},{y+43}h{w-18}" fill="none" stroke="{STONE_LIGHT}" stroke-width="1.8" opacity=".75"/>', width=2.5)
+def parse_number(value: str) -> float:
+    value = value.strip().replace(" ", "")
+    if "," in value:
+        whole, fraction = value.rsplit(",", 1)
+        return float(whole.replace(".", "") + "." + fraction)
+    chunks = value.split(".")
+    if len(chunks) > 1 and all(len(chunk) == 3 for chunk in chunks[1:]):
+        return float("".join(chunks))
+    return float(value)
 
 
-def lamp(x: int, y: int, scale: float = 1) -> str:
-    w, h = 18*scale, 25*scale
-    return group(
-        f'<path d="M{x+9*scale},{y+40*scale}V{y+15*scale}" fill="none" stroke="#4c4642" stroke-width="3"/>'
-        f'<path d="M{x+2*scale},{y+15*scale}h{14*scale}l{-2*scale},{h}h{-10*scale}Z" fill="#414c53" stroke="{INK}" stroke-width="2"/>'
-        f'<path d="M{x+5*scale},{y+18*scale}h{8*scale}l{-1*scale},{h-7*scale}h{-6*scale}Z" fill="{AMBER}" stroke="#57473d" stroke-width="1.5"/>'
-        f'<path d="M{x},{y+13*scale}h{w}" fill="none" stroke="{SNOW}" stroke-width="3"/>', width=2)
+def first_number(pattern: str, text: str) -> float | None:
+    match = re.search(pattern, text, re.IGNORECASE)
+    return parse_number(match.group(1)) if match else None
 
 
-def roof_window(x: int, y: int, w: int = 38, h: int = 27) -> str:
-    """A glazed opening fitted flush to an existing sloped roof plane."""
-    return group(
-        f'<path d="M{x},{y}l{w},9 -6,{h+9} -{w},-9Z" fill="#43515a"/>'
-        f'<path d="M{x+4},{y+4}l{w-9},8 -4,{h} -{w-9},-8Z" fill="#809395"/>'
-        f'<path d="M{x+7},{y+7}l{w-15},7 -3,{h-3} -{w-15},-7Z" fill="#d2ae78"/>'
-        f'<path d="M{x+4},{y+4}l{w-9},8 M{x+5},{y+16}l{w-8},7 M{x+14},{y+2}l-5,{h+8}" fill="none" stroke="#e4e0d4" stroke-width="2.2"/>',
-        width=2.3,
-    )
+def integer(pattern: str, text: str, fallback: int = 0) -> int:
+    value = first_number(pattern, text)
+    return int(value) if value is not None else fallback
 
 
-def stage_art(kind: str, tier: int) -> str:
-    """Cumulative improvements stay attached to each base silhouette."""
-    drawings: dict[str, list[str]] = {
-        "farm": [
-            group('<path d="M318,187l10,-8 M383,205l9,7 M323,201v34 M383,213v31" fill="none" stroke="#57483e" stroke-width="4"/><path d="M319,190q30,-9 66,8" fill="none" stroke="#e8e6dc" stroke-width="4"/>', width=2),
-            roof_window(257, 101, 39, 26),
-            group('<path d="M317,184l24,-12h44l13,13 M318,187q35,-7 78,1v33l-57,-11Z" fill="#66777a" fill-opacity=".54"/><path d="M326,187v25 M348,179v38 M370,178v42 M320,199l72,13" fill="none" stroke="#d5dfd7" stroke-width="2.3"/><path d="M316,182l25,-14h44" fill="none" stroke="#eee9dd" stroke-width="4"/>', width=2),
-            group('<path d="M128,63h37 M128,75h37 M128,87h37 M128,99h37" fill="none" stroke="#b1b9b5" stroke-width="2"/><path d="M128,68h37" fill="none" stroke="#514b47" stroke-width="2"/>', width=2),
-            group('<path d="M363,238v20m18,-17v19 M358,256q13,-7 29,0v12q-14,6-29,0Z" fill="none" stroke="#594a3d" stroke-width="3"/><path d="M360,258q12,-5 25,0" fill="none" stroke="#d1c8b8" stroke-width="2"/>', width=2),
-        ],
-        "lord": [
-            group('<path d="M119,151l13,-13m-5,21 15,-14 M322,137l12,7m-2,-16 13,7" fill="none" stroke="#665346" stroke-width="3.5"/><path d="M120,148l12,-12m204,-8 11,6" fill="none" stroke="#d9d6cc" stroke-width="2"/>', width=2),
-            pennant(141, 48, "#875449", -1),
-            group('<path d="M229,35l10,-12 11,12 -3,8h-15Z" fill="#7c8584"/><path d="M228,35l11,-16 12,16" fill="none" stroke="#eee8db" stroke-width="4"/><path d="M239,25v13m-5,-6h10" fill="none" stroke="#c6965f" stroke-width="2.5"/>', width=2),
-            group('<path d="M222,157l17,-8 17,8 -3,11h-28Z" fill="#5b6870"/><path d="M226,158l13,-6 13,6 M239,154v12m-6,-6h12" fill="none" stroke="#d8b17a" stroke-width="2.2"/>', width=2),
-            pennant(343, 75, "#506e74"),
-        ],
-        "tomb": [
-            group('<path d="M226,150l14,-8 14,8 M231,149l9,-5 9,5 M240,146v7m-4,-3h8" fill="none" stroke="#b99368" stroke-width="2.3"/>', width=2),
-            lamp(158, 204, .75) + lamp(303, 204, .75),
-            group('<path d="M218,222v-30a22,22 0 0 1 44,0v30 M226,219v-26a14,14 0 0 1 28,0v26" fill="none" stroke="#424b50" stroke-width="3"/><path d="M228,189v31 M239,183v39 M250,189v31" fill="none" stroke="#aab1af" stroke-width="2"/>', width=2),
-            group('<path d="M186,199a54,54 0 0 1 108,0 M190,200a50,50 0 0 1 100,0" fill="none" stroke="#b3b8b2" stroke-width="2.5"/><path d="M191,183l7,4m85,-4 -7,4 M201,164l6,4m66,-4 -6,4" fill="none" stroke="#4d565a" stroke-width="2"/>', width=2),
-            group('<path d="M238,209l7,6 -7,8 -7,-8Z" fill="#af7950"/><path d="M238,212l3,3 -3,4 -3,-4Z" fill="#edb76a"/><path d="M220,228h36" stroke="#797e78" stroke-width="2"/>', width=2),
-        ],
-        "wall": [
-            group('<path d="M78,151L361,271 M77,171L362,291" fill="none" stroke="#664d3c" stroke-width="10"/><path d="M78,147L361,267" fill="none" stroke="#ddd9cc" stroke-width="3.5"/>', width=2),
-            group('<path d="M111,158l-2,17m55,5 -2,17m55,4 -2,17m55,4 -2,17m55,4 -2,17" stroke="#48413d" stroke-width="5"/><path d="M110,159l5,2m49,21 6,2m49,21 6,2m48,21 6,2m48,21 6,2" stroke="#c19a6e" stroke-width="2"/>', width=2),
-            group('<path d="M128,174l-9,20m64,-2 -9,20m64,-2 -9,20m64,-2 -9,20" fill="none" stroke="#745a43" stroke-width="5"/><path d="M120,193l9,-5m45,25 9,-5m45,25 9,-5m45,25 9,-5" fill="none" stroke="#c6ad8b" stroke-width="2.2"/>', width=2),
-            group('<path d="M75,145L358,264" fill="none" stroke="#46525a" stro…1763 tokens truncated…ath d="M324,220h42v33h-42Z M320,217h50v7h-50Z" fill="#6c553f"/><path d="M330,228h30m-30,10h30m-30,10h30" stroke="#b59672" stroke-width="2"/>', width=2),
-        ],
-        "forge": [
-            group('<path d="M295,53h37 M294,62h39 M293,71h41 M292,80h43" fill="none" stroke="#9ea9a8" stroke-width="2.2"/><path d="M292,56h43" stroke="#424f57" stroke-width="2"/>', width=2),
-            group('<path d="M119,234h46 M124,244h41 M129,254h36 M128,228v34m29,-34v34" fill="none" stroke="#56473d" stroke-width="3"/><path d="M133,231l12,9 11,-9m-23,21h20" fill="none" stroke="#a9b0ad" stroke-width="2"/>', width=2),
-            group('<path d="M211,163q10,-16 20,0 10,-16 20,0 10,-16 20,0" fill="none" stroke="#eea75b" stroke-width="3"/><path d="M221,153l-4,-9m24,8 2,-11m17,15 7,-8" stroke="#e8c187" stroke-width="2"/>', width=2),
-            group('<path d="M210,156v63 M270,156v63 M210,156h60 M210,219h60" fill="none" stroke="#5c5149" stroke-width="3.5"/><path d="M215,161h50 M215,214h50" stroke="#a9b2b0" stroke-width="2"/>', width=2),
-            group('<path d="M195,274l30,8m-19,-18 18,5m48,5 31,-8m-35,18 30,-8" fill="none" stroke="#59666d" stroke-width="3"/><path d="M199,271l24,6m50,2 23,-6" stroke="#e8e6dc" stroke-width="2"/>', width=2),
-        ],
-        "medical": [
-            group('<path d="M163,204q14,-20 29,0t29,0t29,0t29,0" fill="none" stroke="#51473d" stroke-width="2.5"/><path d="M174,206v22m27,-22v20m29,-20v20m28,-20v21" stroke="#7f8f6d" stroke-width="3"/><path d="M173,218q-8,-5 -7,-11m35,17q9,-9 12,-15m16,14q-7,-9 -4,-17m28,16q8,-8 12,-14" fill="none" stroke="#8ba078" stroke-width="2"/>', width=2),
-            group('<path d="M127,222l18,-18h32 M127,224h51 M132,224v31 M174,224v31" fill="#607178" fill-opacity=".46"/><path d="M125,221l20,-21h32" fill="none" stroke="#e8e6dc" stroke-width="4"/>', width=2),
-            group('<path d="M281,139h24v28h-24Z" fill="#e5d8bf" stroke="#594a40" stroke-width="2"/><path d="M293,145v16m-8,-8h16" stroke="#9a5b4e" stroke-width="4"/>', width=2),
-            group('<path d="M322,257h58 M327,253v19 M340,251v20 M353,251v20 M366,252v20" fill="none" stroke="#68533f" stroke-width="3"/><path d="M323,250q27,-7 56,0v8q-29,8-57,0Z" fill="#74866a"/><path d="M330,253v-15m12,15v-19m13,19v-16m12,16v-20" stroke="#93a87f" stroke-width="3"/>', width=2),
-            group('<path d="M305,183l17,-7v43h-8v-31l-9,4Z" fill="#5d6e72" fill-opacity=".6"/><path d="M307,180l16,-7" stroke="#e8e6dc" stroke-width="4"/><path d="M313,185v27m6,-30v31" stroke="#c3d0c2" stroke-width="2"/>', width=2),
-        ],
-        "shelter": [
-            group('<path d="M124,184l114,-99 115,99 M133,190l105,-92 107,92" fill="none" stroke="#66503e" stroke-width="2.5"/><path d="M130,185l108,-94 109,94" fill="none" stroke="#e8e6dc" stroke-width="3"/>', width=2),
-            group('<path d="M126,194l66,-36 14,8 -68,41Z" fill="#6e5742"/><path d="M128,191l64,-36" stroke="#e8e6dc" stroke-width="4"/><path d="M138,205v37m49,-64v59" stroke="#58483b" stroke-width="3"/>', width=2),
-            lamp(201, 195, .55),
-            group('<path d="M285,185l45,35 -11,9 -44,-34Z" fill="#6b5946" fill-opacity=".8"/><path d="M282,183l46,35" stroke="#e8e6dc" stroke-width="3.5"/><path d="M324,218v35m-39,-50v51" stroke="#614d3d" stroke-width="3"/>', width=2),
-            group('<path d="M184,254q51,-12 111,0v11q-58,13-111,0Z" fill="#7b624b"/><path d="M188,253q47,-10 102,0" fill="none" stroke="#e8e6dc" stroke-width="3"/><path d="M194,260h28m16,0h30" stroke="#be9a73" stroke-width="2.5"/>', width=2),
-        ],
+def area_from(text: str) -> float | None:
+    return first_number(r"([\d.,]+)\s*m²", text)
+
+
+def ratio(value: str) -> tuple[int, int]:
+    match = re.search(r"([\d.,]+)\s*/\s*([\d.,]+)", value)
+    return (int(parse_number(match.group(1))), int(parse_number(match.group(2)))) if match else (0, 0)
+
+
+def visible_profile(row: dict[str, str], kind: str) -> dict[str, object]:
+    blob = " ".join(row.values())
+    profile: dict[str, object] = {}
+    form_column = "Hình thái đích; diện tích/tầng" if kind == "lord" else "Hình thái/diện tích" if kind == "farm" else "Hình thể và công năng đích"
+    form = row.get(form_column, "")
+    area = area_from(form)
+    if area is not None:
+        profile["areaSqM"] = area
+    if kind == "lord":
+        profile["durability"], profile["armor"] = ratio(row.get("D/A", ""))
+        pop = first_number(r"([\d.,]+)", row.get("Pop", ""))
+        profile["populationCap"] = int(pop or 0)
+        profile["stories"] = 3 if "ba tầng" in blob else 2 if "hai tầng" in blob else 1
+        height = first_number(r"cao\s*([\d.,]+)\s*m", blob)
+        if height is not None:
+            profile["heightM"] = height
+        elif "trên 30 m" in blob:
+            profile["heightM"] = ">30"
+        profile["form"] = form
+    elif kind == "farm":
+        profile["durability"], profile["armor"] = ratio(row.get("D/A", ""))
+        profile["residentCapacity"] = integer(r"([\d.,]+)", row.get("Chỗ; phí gọi 1 người", ""))
+        profile["staminaRecoveryPercent"] = integer(r"\+(\d+)%", row.get("Hiệu quả cư trú", ""))
+        profile["form"] = form
+    elif kind == "tomb":
+        capacity = first_number(r"([\d.,]+)", row.get("Hồ Tử Khí", ""))
+        profile["dqCapacity"] = int(capacity or 0)
+        profile["rankName"] = row.get("Tên chức năng", "")
+        profile["zombieTier"] = integer(r"T(\d+)", row.get("Zombie đầu ra", ""))
+        profile["quality"] = row.get("Phẩm đầu ra", "")
+        profile["focus"] = row.get("Trọng tâm nâng cấp", "")
+        profile["growthCoefficient"] = first_number(r"([\d.,]+)", row.get("G_Q/level", "")) or 0
+        profile["form"] = row.get("Tên chức năng", "")
+    else:
+        profile["form"] = form
+        profile["durability"], profile["armor"] = ratio(row.get("D/A", ""))
+        profile["stationCount"] = integer(r"(\d+)\s+trạm", form, 1)
+        beds = integer(r"(\d+)\s+giường", form)
+        profile["bedCount"] = beds
+        profile["isolationBedCount"] = integer(r"(\d+)\s+giường cách ly", form)
+        profile["sleepingCapacity"] = integer(r"(\d+)\s+chỗ(?: ngủ)?", form)
+        if profile["sleepingCapacity"]:
+            profile["bedCount"] = profile["sleepingCapacity"]
+        profile["portionCount"] = integer(r"(\d+)\s+phần", form)
+        profile["treatmentBays"] = integer(r"(\d+)\s+ca", form)
+        profile["processingLines"] = integer(r"(\d+)\s+dây chuyền", form, 1)
+        profile["recoveryPercent"] = integer(r"\+(\d+)%", form)
+        profile["fuelInput"] = row.get("Nhiên liệu/đầu vào", "")
+        if kind == "heater":
+            profile["coverageSqM"] = integer(r"(?:phòng tối đa|phòng)\s*([\d.,]+)\s*m²", form)
+            temps = re.search(r"\+(\d+)\s*[–-]\s*(\d+)°C", form)
+            if temps:
+                profile["temperatureRangeC"] = [int(temps.group(1)), int(temps.group(2))]
+            profile["heatRetentionAfterShutdownMinutes"] = integer(r"giữ nhiệt\s*(\d+)\s*phút", form)
+        elif kind == "fence":
+            profile["lengthM"] = integer(r"đoạn\s*([\d.,]+)\s*m", form)
+            profile["heightM"] = first_number(r"cao\s*([\d.,]+)\s*m", form) or 0
+            profile["ironBracing"] = "giằng sắt" in form.lower()
+            profile["reinforcedFooting"] = "chân gia cố" in form.lower()
+        elif kind == "gate":
+            profile["widthM"] = first_number(r"rộng\s*([\d.,]+)\s*m", form) or 0
+            profile["heightM"] = first_number(r"cao\s*([\d.,]+)\s*m", form) or 0
+            profile["doubleLeaves"] = "hai cánh" in form.lower()
+            profile["ironFrame"] = "khung sắt" in form.lower()
+        elif kind == "woodshop":
+            profile["woodPerHour"] = integer(r"([\d.,]+)\s+Gỗ/giờ", form)
+            profile["wasteReductionPercent"] = integer(r"hao hụt\s*[−-](\d+)%", form)
+        elif kind == "tailor":
+            profile["garmentsPerEightHours"] = integer(r"([\d.,]+)\s+món/8 giờ", form)
+            profile["softArmorPerEightHours"] = integer(r"([\d.,]+)\s+giáp mềm/8 giờ", form)
+            profile["productionTimeReductionPercent"] = integer(r"thời gian\s*[−-](\d+)%", form)
+        elif kind == "oreworks":
+            profile["orePerHour"] = integer(r"([\d.,]+)\s+quặng/giờ", form)
+            profile["materialUnlock"] = (re.search(r"mở\s+([^;]+)", form, re.IGNORECASE) or [None, ""])[1]
+        elif kind == "forge":
+            lots = re.search(r"([\d.,]+)\s*/\s*([\d.,]+)\s+lô", form)
+            if lots:
+                profile["toolLotsPerEightHours"] = int(parse_number(lots.group(1)))
+                profile["weaponLotsPerEightHours"] = int(parse_number(lots.group(2)))
+            profile["materialUnlock"] = (re.search(r"mở\s+([^;]+)", form, re.IGNORECASE) or [None, ""])[1]
+            profile["productionTimeReductionPercent"] = integer(r"thời gian\s*[−-](\d+)%", form)
+        elif kind == "medical":
+            profile["treatmentEffectPercent"] = integer(r"\+(\d+)%", form)
+            profile["bedCount"] = beds
+    profile["canonicalLabel"] = row.get("Nhãn", "")
+    profile["upgradeRecipe"] = row.get("Recipe + điều kiện lên Cấp kế", row.get("Recipe lên Cấp kế", "Cấp trần theo registry nguồn"))
+    profile["workUnits"] = row.get("WU/max", "")
+    return profile
+
+
+def stage_level(row: dict[str, str], kind: str) -> int:
+    key = "Cấp" if kind in ("lord", "farm") else "Bậc Ngôi Mộ" if kind == "tomb" else "Tuyến/Cấp"
+    match = re.search(r"\d+", row.get(key, ""))
+    if not match:
+        raise ValueError(f"No level/rank in canonical row {row}")
+    return int(match.group())
+
+
+def read_tracks() -> list[dict[str, object]]:
+    result = []
+    aliases = {"heater":"Lò Sưởi", "kitchen":"Bếp", "shelter":"Nơi Trú Nhỏ", "fence":"Tường Rào", "gate":"Cổng", "woodshop":"Xưởng Gỗ", "tailor":"Tiệm May", "oreworks":"Xưởng Quặng", "forge":"Lò Rèn", "medical":"Phòng Y Tế"}
+    for config in TRACKS:
+        document = (CANON / config["file"]).read_text(encoding="utf-8")
+        headers, rows = table_for(document, config["heading"])
+        kind = str(config["kind"])
+        parsed = {}
+        for row in rows:
+            if kind in aliases and not row.get("Tuyến/Cấp", "").startswith(aliases[kind]):
+                continue
+            parsed[stage_level(row, kind)] = row
+        levels = sorted(parsed)
+        if not levels or levels != list(range(1, len(levels) + 1)):
+            raise ValueError(f"Canonical progression must start at 1 and have no gaps: {config['display']} {levels}")
+        track = dict(config)
+        track.update(maxLevel=len(levels), canonicalRows=parsed, canonicalHeaders=headers,
+                     canonicalSection=config["heading"], canonicalPath="references/canonical/" + config["file"])
+        result.append(track)
+    return result
+
+
+def cell_for(track: dict[str, object], level: int) -> tuple[str, int, int]:
+    kind = str(track["kind"])
+    if kind == "lord":
+        sheet_index = (level - 1) // 10
+        key = ("lord-01-10", "lord-11-20", "lord-21-30")[sheet_index]
+        local = (level - 1) % 10
+        return key, local % 5, local // 5
+    if kind == "farm":
+        return "farm", (level - 1) % 5, (level - 1) // 5
+    if kind == "tomb":
+        return "tomb", (level - 1) % 5, (level - 1) // 5
+    if kind in FIXED_ROWS:
+        return "fixed", level - 1, FIXED_ROWS[kind]
+    return "workshops", level - 1, WORKSHOP_ROWS[kind]
+
+
+_sheet_cache: dict[str, tuple[Image.Image, np.ndarray, int, np.ndarray]] = {}
+_sheet_assignments: dict[tuple[str, int], tuple[int, int]] = {}
+
+
+def selected_sprite(sheet_key: str, col: int, row: int) -> Image.Image:
+    if sheet_key not in _sheet_cache:
+        filename, columns, rows = SHEETS[sheet_key]
+        path = CONCEPT_DIR / filename
+        if not path.exists():
+            raise FileNotFoundError(path)
+        image = Image.open(path).convert("RGBA")
+        alpha = np.asarray(image)[:, :, 3]
+        labels, count = ndimage.label(alpha > 32, structure=np.ones((3, 3), dtype=np.uint8))
+        sizes = np.bincount(labels.ravel())
+        _sheet_cache[sheet_key] = (image, labels, count, sizes)
+    image, labels, count, sizes = _sheet_cache[sheet_key]
+    columns, rows = SHEETS[sheet_key][1:]
+    center_x, center_y = (col + 0.5) * image.width / columns, (row + 0.5) * image.height / rows
+    candidates = []
+    for label_id in range(1, count + 1):
+        if sizes[label_id] < 500:
+            continue
+        ys, xs = np.where(labels == label_id)
+        cx, cy = float(xs.mean()), float(ys.mean())
+        distance = ((cx - center_x) / (image.width / columns)) ** 2 + ((cy - center_y) / (image.height / rows)) ** 2
+        candidates.append((distance, -int(sizes[label_id]), label_id, xs, ys))
+    if not candidates:
+        raise RuntimeError(f"No sprite found in {sheet_key} cell {col},{row}")
+    distance, _, label_id, xs, ys = min(candidates, key=lambda item: (item[0], item[1]))
+    if distance > 0.54:
+        raise RuntimeError(f"Sprite center is outside expected atlas cell: {sheet_key} {col},{row} distance={distance:.3f}")
+    prior_cell = _sheet_assignments.get((sheet_key, label_id))
+    if prior_cell is not None and prior_cell != (col, row):
+        raise RuntimeError(f"Two progression cells selected the same sprite: {sheet_key} {prior_cell} and {(col, row)}")
+    _sheet_assignments[(sheet_key, label_id)] = (col, row)
+    x0, y0, x1, y1 = int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1
+    pad = max(6, round(max(x1 - x0, y1 - y0) * 0.035))
+    x0, y0 = max(0, x0 - pad), max(0, y0 - pad)
+    x1, y1 = min(image.width, x1 + pad), min(image.height, y1 + pad)
+    rgba = np.asarray(image).copy()[y0:y1, x0:x1]
+    local_labels = labels[y0:y1, x0:x1]
+    rgba[:, :, 3] = np.where(local_labels == label_id, rgba[:, :, 3], 0)
+    return Image.fromarray(rgba, "RGBA")
+
+
+def path_content(svg: str) -> str:
+    marker = '<g shape-rendering="crispEdges">'
+    start = svg.index(marker) + len(marker)
+    end = svg.index("</g>", start)
+    return svg[start:end].strip()
+
+
+def svg_document(title: str, contents: str, desc: str = "") -> str:
+    description = f"<desc>{html.escape(desc, quote=True)}</desc>\n" if desc else ""
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {CANVAS[0]} {CANVAS[1]}" role="img" aria-label="{html.escape(title, quote=True)}">\n'
+            f'<title>{html.escape(title)}</title>\n{description}<g id="painted-sprite" shape-rendering="crispEdges">\n{contents}\n</g>\n</svg>\n')
+
+
+def layer_document(title: str, target: str, clip: tuple[int, int] | None = None) -> str:
+    clip_defs = ""
+    attributes = ""
+    if clip:
+        y, height = clip
+        clip_defs = f'<defs><clipPath id="layer-clip"><rect x="0" y="{y}" width="480" height="{height}"/></clipPath></defs>\n'
+        attributes = ' clip-path="url(#layer-clip)"'
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="{html.escape(title, quote=True)}">\n'
+            f'<title>{html.escape(title)}</title>\n{clip_defs}<use href="{target}#painted-sprite"{attributes}/>\n</svg>\n')
+
+
+def shadow_document(title: str) -> str:
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Contact shadow · {html.escape(title, quote=True)}">'
+            '<defs><radialGradient id="ground-shadow"><stop stop-color="#101820" stop-opacity=".42"/><stop offset=".68" stop-color="#101820" stop-opacity=".24"/><stop offset="1" stop-color="#101820" stop-opacity="0"/></radialGradient></defs>'
+            '<ellipse cx="240" cy="350" rx="188" ry="34" fill="url(#ground-shadow)"/></svg>\n')
+
+
+def make_art(crop: Image.Image, title: str, colors: int) -> str:
+    return path_content(_tracer.color_path_svg(crop, title, *CANVAS, colors))
+
+
+def render_asset(asset_id: str, title: str, crop: Image.Image, profile_desc: str, *, primary: bool) -> None:
+    source = SOURCE_DIR / f"{asset_id}.svg"
+    folder = PUBLIC_DIR / asset_id
+    folder.mkdir(parents=True, exist_ok=True)
+    body = make_art(crop, title, BODY_COLORS)
+    body_document = svg_document(f"{title} · body", body, profile_desc)
+    source.write_text(body_document, encoding="utf-8")
+    (folder / "body.svg").write_text(body_document, encoding="utf-8")
+    (folder / "upper.svg").write_text(layer_document(f"{title} · upper", "body.svg", (0, 320)), encoding="utf-8")
+    (folder / "base.svg").write_text(layer_document(f"{title} · footing", "body.svg", (320, 80)), encoding="utf-8")
+    optional = ["icon.svg", "district.svg", "district-base.svg", "shadow.svg"]
+    if primary:
+        district = make_art(crop, title, DISTRICT_COLORS)
+        (folder / "district.svg").write_text(svg_document(f"{title} · district LOD", district), encoding="utf-8")
+        (folder / "icon.svg").write_text(layer_document(f"{title} · icon", "body.svg"), encoding="utf-8")
+        (folder / "district-base.svg").write_text(layer_document(f"{title} · district footing", "district.svg", (320, 80)), encoding="utf-8")
+        (folder / "shadow.svg").write_text(shadow_document(title), encoding="utf-8")
+    else:
+        for filename in optional:
+            (folder / filename).unlink(missing_ok=True)
+
+
+def asset_paths(asset_id: str, primary_asset_id: str) -> tuple[dict[str, object], dict[str, object]]:
+    root = f"/assets/buildings/{asset_id}/"
+    body = root + "body.svg"
+    base = root + "base.svg"
+    shadow = f"/assets/buildings/{primary_asset_id}/shadow.svg"
+    layers = {"uiIcon": body, "body": body, "base": base, "upper": root + "upper.svg", "shadow": shadow, "vfx": None}
+    lods = {
+        "close": {"body": body, "base": base, "upper": root + "upper.svg", "shadow": shadow},
+        "district": {"body": body, "base": base, "shadow": shadow, "icon": body},
+        "regional": {"body": body, "base": base, "shadow": shadow, "icon": body},
     }
-    return drawings[kind][tier]
-
-def render_svg(title: str, runtime_base_href: str, kind: str, through: int) -> str:
-    label = escape(title, quote=True)
-    additions = "\n".join(f'<g id="upgrade-{LEVELS[index]}">{stage_art(kind, index)}</g>' for index in range(through))
-    return (
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" '
-        f'aria-label="{label}">\n<title>{label}</title>\n'
-        '<g id="painted-sprite" shape-rendering="geometricPrecision">\n'
-        f'<use href="{runtime_base_href}#painted-sprite"/>\n'
-        f'{additions}\n</g>\n</svg>\n'
-    )
+    return layers, lods
 
 
-def write_runtime_exports(folder: Path, title: str, kind: str, base: str, through: int) -> dict:
-    body = folder / "body.svg"
-    body.write_text(render_svg(f"{title} · body", f"../{base}/body.svg", kind, through), encoding="utf-8")
-    (folder / "base.svg").write_text(
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="{escape(title, quote=True)} · footing"><title>{escape(title)} · footing</title><defs><clipPath id="ground-cut"><rect x="0" y="320" width="480" height="80"/></clipPath></defs><use href="body.svg#painted-sprite" clip-path="url(#ground-cut)"/></svg>\n', encoding="utf-8")
-    (folder / "upper.svg").write_text(
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="{escape(title, quote=True)} · upper"><title>{escape(title)} · upper</title><defs><clipPath id="upper-cut"><rect x="0" y="0" width="480" height="320"/></clipPath></defs><use href="body.svg#painted-sprite" clip-path="url(#upper-cut)"/></svg>\n', encoding="utf-8")
-    (folder / "icon.svg").write_text(
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="{escape(title, quote=True)} · icon"><title>{escape(title)} · icon</title><use href="body.svg#painted-sprite"/></svg>\n', encoding="utf-8")
-    (folder / "shadow.svg").write_text(
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Bóng tiếp xúc · {escape(title, quote=True)}"><title>Bóng tiếp xúc · {escape(title)}</title><defs><radialGradient id="ground-shadow"><stop stop-color="#101820" stop-opacity=".42"/><stop offset=".68" stop-color="#101820" stop-opacity=".24"/><stop offset="1" stop-color="#101820" stop-opacity="0"/></radialGradient></defs><ellipse cx="240" cy="342" rx="190" ry="36" fill="url(#ground-shadow)"/></svg>\n', encoding="utf-8")
-    runtime = f"/assets/buildings/{folder.name}"
-    return {
-        "uiIcon": f"{runtime}/icon.svg", "body": f"{runtime}/body.svg", "base": f"{runtime}/base.svg",
-        "upper": f"{runtime}/upper.svg", "shadow": f"{runtime}/shadow.svg", "vfx": None,
+def build_manifest(tracks: list[dict[str, object]]) -> dict[str, object]:
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    track_prefixes = {str(track["prefix"]) for track in tracks}
+    base_ids = {str(asset_id) for track in tracks for asset_id in track["baseIds"]}
+    base_by_id = {asset["assetId"]: asset for asset in manifest["assets"]}
+    for track in tracks:
+        for base_id in track["baseIds"]:
+            if base_id not in base_by_id:
+                raise ValueError(f"Missing registered base asset {base_id}")
+    expected_stage_ids = {
+        f"{track['prefix']}-{'b' if track['kind'] == 'tomb' else 'l'}{level:02d}"
+        for track in tracks for level in range(2, int(track["maxLevel"]) + 1)
     }
+    existing = []
+    for asset in manifest["assets"]:
+        asset_id = asset["assetId"]
+        stale = any(re.fullmatch(re.escape(prefix) + r"-(?:l|b)\d{2}", asset_id) for prefix in track_prefixes)
+        if not stale or asset_id in expected_stage_ids or asset_id in base_ids:
+            existing.append(asset)
+    manifest["assets"] = existing
+    known_ids = {asset["assetId"] for asset in existing}
+    progressions = []
+    for track in tracks:
+        kind = str(track["kind"])
+        base = base_by_id[str(track["artBase"])]
+        stages = []
+        for level in range(1, int(track["maxLevel"]) + 1):
+            row = track["canonicalRows"][level]
+            visible = visible_profile(row, kind)
+            asset_id = str(track["artBase"]) if level == 1 else f"{track['prefix']}-{'b' if kind == 'tomb' else 'l'}{level:02d}"
+            stages.append({"level": level, "assetId": asset_id, "canonicalProfile": row, "visibleProfile": visible})
+            if level == 1:
+                base["variant"] = "winter-ink-canonical-progression-v4"
+                base["provenance"] = ART_PROVENANCE + f" Canonical level 1 of {track['display']}."
+                sheet_key, col, row_number = cell_for(track, level)
+                base["referenceSource"] = f"assets/source/concepts/{SHEETS[sheet_key][0]}#cell={col},{row_number}"
+                continue
+            if asset_id in known_ids:
+                manifest["assets"] = [asset for asset in manifest["assets"] if asset["assetId"] != asset_id]
+            entry = copy.deepcopy(base)
+            entry.update({
+                "assetId": asset_id,
+                "variant": "winter-ink-canonical-progression-v4",
+                "revision": 1,
+                "source": f"assets/source/buildings/{asset_id}.svg",
+                "referenceSource": f"assets/source/concepts/{SHEETS[cell_for(track, level)[0]][0]}#cell={cell_for(track, level)[1]},{cell_for(track, level)[2]}",
+                "provenance": ART_PROVENANCE + f" Canonical {track['display']} {track['unit']} {level}; profile is stored verbatim.",
+                "status": "draft",
+            })
+            entry["layers"], entry["lodVariants"] = asset_paths(asset_id, str(track["artBase"]))
+            manifest["assets"].append(entry)
+            known_ids.add(asset_id)
+        progressions.append({
+            "baseAssetIds": list(track["baseIds"]),
+            "trackName": track["name"],
+            "unit": track["unit"],
+            "maxLevel": track["maxLevel"],
+            "canonicalRegistry": track["display"],
+            "canonicalSource": track["canonicalPath"],
+            "canonicalSection": track["canonicalSection"],
+            "stageIdsUseExactLevels": True,
+            "stages": stages,
+        })
+    manifest["buildingProgressions"] = progressions
+    manifest["assets"].sort(key=lambda asset: asset["assetId"])
+    return manifest
+
+
+def remove_stale_art(tracks: list[dict[str, object]]) -> None:
+    prefixes = [str(track["prefix"]) for track in tracks]
+    base_ids = {str(asset_id) for track in tracks for asset_id in track["baseIds"]}
+    expected = {f"{track['prefix']}-{'b' if track['kind'] == 'tomb' else 'l'}{level:02d}" for track in tracks for level in range(2, int(track["maxLevel"]) + 1)}
+    for path in SOURCE_DIR.glob("*.svg"):
+        if any(re.fullmatch(re.escape(prefix) + r"-(?:l|b)\d{2}", path.stem) for prefix in prefixes) and path.stem not in expected:
+            path.unlink()
+    for folder in PUBLIC_DIR.iterdir():
+        if folder.is_dir() and folder.name not in base_ids and any(re.fullmatch(re.escape(prefix) + r"-(?:l|b)\d{2}", folder.name) for prefix in prefixes) and folder.name not in expected:
+            shutil.rmtree(folder)
+    obsolete_helper = SOURCE_DIR / "polar-farmhouse-l02-base.svg"
+    obsolete_helper.unlink(missing_ok=True)
+
+
+def write_all(tracks: list[dict[str, object]], manifest: dict[str, object]) -> None:
+    remove_stale_art(tracks)
+    concepts: dict[tuple[str, int, int], Image.Image] = {}
+    for track in tracks:
+        kind = str(track["kind"])
+        for level in range(1, int(track["maxLevel"]) + 1):
+            sheet_key, col, row_number = cell_for(track, level)
+            cache_key = (sheet_key, col, row_number)
+            if cache_key not in concepts:
+                concepts[cache_key] = selected_sprite(sheet_key, col, row_number)
+            asset_id = str(track["artBase"]) if level == 1 else f"{track['prefix']}-{'b' if kind == 'tomb' else 'l'}{level:02d}"
+            title = f"{track['name']} · {track['unit']} {level}"
+            record = track["canonicalRows"][level]
+            description = f"Canonical registry {track['display']}; source row: " + " · ".join(f"{key}: {value}" for key, value in record.items())
+            render_asset(asset_id, title, concepts[cache_key], description, primary=level == 1)
+            body_size = (PUBLIC_DIR / asset_id / "body.svg").stat().st_size
+            print(f"{asset_id}: {SHEETS[sheet_key][0]} cell {col},{row_number}; {body_size:,} B SVG")
+    expected_cells = {key: columns * rows for key, (_, columns, rows) in SHEETS.items()}
+    for key, count in expected_cells.items():
+        actual = sum(1 for assigned_key, _ in _sheet_assignments if assigned_key == key)
+        if actual != count:
+            raise RuntimeError(f"Atlas {key} supplied {actual} unique sprites; expected {count}")
+    content = json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"
+    MANIFEST.write_text(content, encoding="utf-8")
+    PUBLIC_MANIFEST.write_text(content, encoding="utf-8")
 
 
 def main() -> None:
-    manifest_path = ROOT / "assets" / "manifest.json"
-    runtime_manifest_path = ROOT / "frontend" / "public" / "assets" / "manifest.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    by_id = {asset["assetId"]: asset for asset in manifest["assets"]}
-    old_stage_ids = {f"{family['prefix']}-l{level:02d}" for family in FAMILIES for level in LEVELS}
-    manifest["assets"] = [asset for asset in manifest["assets"] if asset["assetId"] not in old_stage_ids]
-    by_id = {asset["assetId"]: asset for asset in manifest["assets"]}
-    manifest["buildingProgressions"] = [
-        row for row in manifest.get("buildingProgressions", [])
-        if not set(row.get("baseAssetIds", [])) & {alias for family in FAMILIES for alias in family["aliases"]}
-    ]
-    new_assets = []
-
-    for family in FAMILIES:
-        base_id = family["base"]
-        base = by_id[base_id]
-        progression_stages = [{"minLevel": 1, "maxLevel": 5, "assetId": base_id}]
-        base_scale = float(base.get("presentationScale", 1))
-        source_base_href = f"../../../frontend/public/assets/buildings/{base_id}/body.svg"
-
-        for index, level in enumerate(LEVELS):
-            asset_id = f"{family['prefix']}-l{level:02d}"
-            title = f"{family['name']} · phát triển cấp {level}"
-            source_svg = render_svg(f"{title} · master", source_base_href, family["kind"], index + 1)
-            (SOURCE / f"{asset_id}.svg").write_text(source_svg, encoding="utf-8")
-            folder = PUBLIC / asset_id
-            folder.mkdir(parents=True, exist_ok=True)
-            layers = write_runtime_exports(folder, title, family["kind"], base_id, index + 1)
-            stage = copy.deepcopy(base)
-            stage.update({
-                "assetId": asset_id,
-                "variant": "winter-ink-building-progression-v2",
-                "revision": int(base["revision"]) + index + 1,
-                "presentationScale": round(base_scale * SCALE_FACTORS[index], 2),
-                "layers": layers,
-                "source": f"assets/source/buildings/{asset_id}.svg",
-                "provenance": f"Original editable winter-ink upgrade artwork composed from the registered {base_id} SVG and attached architectural details for level {level}; art-only progression, no raster payload.",
-                "license": "Original project artwork, created for Ice Age Lord.",
-                "status": "draft",
-            })
-            runtime = f"/assets/buildings/{asset_id}"
-            stage["lodVariants"] = {
-                "close": {"body": f"{runtime}/body.svg", "base": f"{runtime}/base.svg", "upper": f"{runtime}/upper.svg", "shadow": f"{runtime}/shadow.svg"},
-                "district": {"body": f"{runtime}/body.svg", "base": f"{runtime}/base.svg", "shadow": f"{runtime}/shadow.svg", "icon": f"{runtime}/icon.svg"},
-                "regional": {"body": f"{runtime}/body.svg", "base": f"{runtime}/base.svg", "shadow": f"{runtime}/shadow.svg", "icon": f"{runtime}/icon.svg"},
-            }
-            new_assets.append(stage)
-            progression_stages.append({"minLevel": level, "maxLevel": min(30, level + 4), "assetId": asset_id})
-        manifest["buildingProgressions"].append({"baseAssetIds": family["aliases"], "stages": progression_stages})
-
-    manifest["assets"].extend(new_assets)
-    serialized = json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"
-    manifest_path.write_text(serialized, encoding="utf-8")
-    runtime_manifest_path.write_text(serialized, encoding="utf-8")
-    print(f"Generated {len(new_assets)} compact stage assets for {len(FAMILIES)} building families; stages cover levels 1–30.")
+    tracks = read_tracks()
+    manifest = build_manifest(tracks)
+    write_all(tracks, manifest)
+    print("Canonical progression caps: " + ", ".join(f"{track['prefix']}={track['maxLevel']}" for track in tracks))
+    print(f"Unique SVG stage designs above level 1: {sum(int(track['maxLevel']) - 1 for track in tracks)}")
 
 
 if __name__ == "__main__":

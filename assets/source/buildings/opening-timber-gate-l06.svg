@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Cổng Gỗ · phát triển cấp 6 · master">
-<title>Cổng Gỗ · phát triển cấp 6 · master</title>
-<g id="painted-sprite" shape-rendering="geometricPrecision">
-<use href="../../../frontend/public/assets/buildings/opening-timber-gate/body.svg#painted-sprite"/>
-<g id="upgrade-6"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M177,183l127,55 M184,174l126,54 M204,179l-7,18 M235,192l-7,18 M266,205l-7,18 M296,217l-7,18" fill="none" stroke="#444b50" stroke-width="4.5"/><path d="M181,175l128,55" fill="none" stroke="#b6bfbd" stroke-width="2"/></g></g>
-</g>
-</svg>

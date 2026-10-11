@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" role="img" aria-label="Tiệm May · phát triển cấp 6 · body">
-<title>Tiệm May · phát triển cấp 6 · body</title>
-<g id="painted-sprite" shape-rendering="geometricPrecision">
-<use href="../opening-tailor/body.svg#painted-sprite"/>
-<g id="upgrade-6"><g stroke="#343b43" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M111,161q48,17 87,-2 M112,166q48,18 88,-1" fill="none" stroke="#8d6d5d" stroke-width="2.5"/><path d="M143,164v47m28,-42v43" stroke="#665548" stroke-width="2"/></g></g>
-</g>
-</svg>
