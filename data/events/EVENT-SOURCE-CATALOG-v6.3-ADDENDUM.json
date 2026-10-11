@@ -1,0 +1,173 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-6.3-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-6.2-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 63 sequential review of printed Chapters 1042–1051 using Bqquge. Cumulative ledger is EVENT-SOURCE-ITEMS-v6.3.csv. Catalog baseline remains v4.6 with append-only v4.7–v6.3 addenda; fixed schedule unchanged.",
+  "item_ids": [
+    "SX-0927",
+    "SX-0928",
+    "SX-0929",
+    "SX-0930",
+    "SX-0931",
+    "SX-0932",
+    "SX-0933",
+    "SX-0934",
+    "SX-0935",
+    "SX-0936",
+    "SX-0937",
+    "SX-0938",
+    "SX-0939",
+    "SX-0940"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 1042,
+      "event": "Post-war loot includes seven named Divine Fires, Divine Power Fragments x2,100, Divine Crystals x30, a Legendary Ogre Savage Staff and Decay Shoulder Strap; the captured magic weapon Bloodcry Kōming is inspected. Victoria's new skill Light Dragon Radiance is revealed."
+    },
+    {
+      "chapter": 1043,
+      "event": "Malenina enters her Divine form after absorbing 9,999 Divine Power Fragments and using the Golden Dragon Horn; fragments/Dragon Horn are prior items."
+    },
+    {
+      "chapter": 1044,
+      "event": "Malenina's divine abilities are detailed; no item receipt."
+    },
+    {
+      "chapter": 1045,
+      "event": "Northern Kingdom strategy meeting; no item receipts."
+    },
+    {
+      "chapter": 1046,
+      "event": "Five Divine Fires and 600 fragments are distributed to northern rulers; transfers from stored stock, not new loot."
+    },
+    {
+      "chapter": 1047,
+      "event": "The Heretic Arbiter recruitment scroll is used to summon a demi-god ally; scroll was acquired previously."
+    },
+    {
+      "chapter": 1048,
+      "event": "Allen receives Wind Insignia relic and later breaks through to Legendary. Four allies receive Flawless Divine Fires from existing stock and transform to demi-gods."
+    },
+    {
+      "chapter": 1049,
+      "event": "Bojie merges a fourth dragon blood and gains additional abilities; progression, not a new item receipt."
+    },
+    {
+      "chapter": 1050,
+      "event": "Character development; no new item receipt."
+    },
+    {
+      "chapter": 1051,
+      "event": "Continues post-battle relationship/war storyline; no item receipt."
+    }
+  ],
+  "non_receipts": [
+    "The total ten-fire summary includes three additional fires from prior god battles; only the seven named fires on the Ch1042 transfer line are recorded here.",
+    "The five fires and 600 fragments allocated in Ch1046 are transfers from inventory, not new acquisitions.",
+    "Malenina's 9,999 fragments and Golden Dragon Horn in Ch1043 are consumed/used existing stock.",
+    "The Heretic Arbiter scroll used in Ch1047 is a previously recorded Ch1033 item.",
+    "Three additional unnamed fires and unspecified battle loot are not inferred."
+  ],
+  "item_receipts": [
+    {
+      "chapter": 923,
+      "ids": [
+        "SX-0668"
+      ],
+      "note": "Sea chart gifted by the Icefield Giant chief."
+    },
+    {
+      "chapter": 925,
+      "ids": [
+        "SX-0671"
+      ],
+      "note": "Storm Destroyer occupation and vessel ownership state."
+    },
+    {
+      "chapter": 926,
+      "ids": [
+        "SX-0669",
+        "SX-0670"
+      ],
+      "note": "One explicitly excavated Silver and one Gold chest."
+    },
+    {
+      "chapter": 929,
+      "ids": [
+        "SX-0672",
+        "SX-0673",
+        "SX-0674",
+        "SX-0675",
+        "SX-0676",
+        "SX-0677",
+        "SX-0678",
+        "SX-0679",
+        "SX-0680",
+        "SX-0681",
+        "SX-0682",
+        "SX-0683",
+        "SX-0684",
+        "SX-0685",
+        "SX-0686",
+        "SX-0687",
+        "SX-0688",
+        "SX-0689",
+        "SX-0690",
+        "SX-0691",
+        "SX-0692",
+        "SX-0693",
+        "SX-0694",
+        "SX-0695",
+        "SX-0696",
+        "SX-0697"
+      ],
+      "note": "Chest count snapshot and explicit loot categories from the 29 Silver/Gold boxes, three Moon boxes, and one Red box. See ledger for all 26 receipt rows."
+    },
+    {
+      "chapter": 930,
+      "ids": [
+        "SX-0698",
+        "SX-0699",
+        "SX-0700"
+      ],
+      "note": "Two individual frozen chest pickups and one broken sailboat."
+    },
+    {
+      "chapter": 931,
+      "ids": [
+        "SX-0701",
+        "SX-0702",
+        "SX-0703"
+      ],
+      "note": "Three Sacrifice Pearls, one each of unknown, orange, and green quality."
+    }
+  ],
+  "quest": "Lucky Goddess/undersea ruins lead-in is active. Chapter 931 has the altar yield three Sacrifice Pearls; the Lucky Wheel challenge is not yet shown as opened or resolved.",
+  "inventory_caveat": "All extracted items remain source research, not LL01 initial inventory, guaranteed new-game drops, or active event contracts.",
+  "next_unprocessed_chapter": 932,
+  "source_urls": [
+    "https://www.bqquge.org/851/227800",
+    "https://www.bqquge.org/851/227801",
+    "https://www.bqquge.org/851/227802",
+    "https://www.bqquge.org/851/227803",
+    "https://www.bqquge.org/851/227804",
+    "https://www.bqquge.org/851/236476",
+    "https://www.bqquge.org/851/236477",
+    "https://www.bqquge.org/851/236478",
+    "https://www.bqquge.org/851/236479",
+    "https://www.bqquge.org/851/236514"
+  ],
+  "mirror_note": "Direct chapter text and continuation pages checked on Bqquge; primary 69shuba sequence remains inaccessible beyond Ch921.",
+  "chapter_source_urls": [
+    "https://www.bqquge.org/851/444588",
+    "https://www.bqquge.org/851/454232",
+    "https://www.bqquge.org/851/468401",
+    "https://www.bqquge.org/851/479053",
+    "https://www.bqquge.org/851/511407",
+    "https://www.bqquge.org/851/530723",
+    "https://www.bqquge.org/851/553893",
+    "https://www.bqquge.org/851/554309",
+    "https://www.bqquge.org/851/561076",
+    "https://www.bqquge.org/851/568512"
+  ]
+}
