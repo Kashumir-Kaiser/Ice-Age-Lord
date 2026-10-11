@@ -1,0 +1,27 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-6.9.1-CORRECTION",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-6.9-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Corrects only 13 malformed market/hidden-shop offer rows in Round 69 (SX-1089, SX-1090, SX-1102, SX-1104–SX-1113). All other Round 69 entries are carried forward unchanged.",
+  "data_file": "EVENT-SOURCE-ITEMS-v6.9.1.csv",
+  "corrected_item_ids": [
+    "SX-1089",
+    "SX-1090",
+    "SX-1102",
+    "SX-1104",
+    "SX-1105",
+    "SX-1106",
+    "SX-1107",
+    "SX-1108",
+    "SX-1109",
+    "SX-1110",
+    "SX-1111",
+    "SX-1112",
+    "SX-1113"
+  ],
+  "corrected_offer_count": 13,
+  "correction_reason": "The v6.9 row generator shifted offer fields into incorrect CSV columns. The corrected rows now map names, Vietnamese labels, subtype, printed chapter, prices, currencies, stock limits and source URLs to their intended columns.",
+  "source_facts_unchanged": true,
+  "original_release_retained": true,
+  "authority_note": "Use v6.9.1 as the current Round 69 cumulative item file; v6.9 remains archived for traceability."
+}
