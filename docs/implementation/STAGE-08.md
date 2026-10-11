@@ -47,7 +47,7 @@ npm run test:stage08          6/6
 
 The initial Stage02 run caught an old hard-coded source commit/catalog assertion. It was updated to check the current source pin and v4.6 research input, then passed 9/9. The initial Stage08 rank assertion tried to read an event list from the save aggregate; the actual storage API exposes player-event paging separately. The test now checks the persisted rank snapshot and idempotent settlement directly, and passes.
 
-Frontend unit/build checks were attempted but cannot run in this local checkout: `frontend/node_modules` was absent, the offline lockfile install stops at uncached `yallist@3.1.1`, and `tsc`/Vite are therefore unavailable. Browser E2E was not run locally. The GitHub Actions result for the updated branch is recorded in the merge report once available.
+Frontend unit/build checks could not run in this local checkout: `frontend/node_modules` was absent, the offline lockfile install stopped at uncached `yallist@3.1.1`, and `tsc`/Vite were unavailable. GitHub Actions run [38123942852](https://github.com/Kashumir-Kaiser/Ice-Age-Lord/actions/runs/38123942852) passed after fixing the stale frontend build and E2E view fixture. It ran content compilation and coverage, Stage02–08 backend suites, frontend build and unit tests, and the 60-case Chromium/mobile browser matrix (55 passed, 5 skipped).
 
 ## Main files
 
