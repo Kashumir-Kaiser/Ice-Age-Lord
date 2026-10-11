@@ -91,5 +91,173 @@
     "planned_shop_cost_total": 5500000,
     "stated_remaining_dream_shards": 2250000,
     "arithmetic_conflict": "The displayed balances plus crystal conversion equal 9,754,345 Dream Shards; subtracting the stated 5,500,000 planned total leaves 4,254,345, not the stated 2,250,000. Preserve both source statements without correcting either."
-  }
+  },
+  "item_details": [
+    {
+      "id": "SX-0593",
+      "source_chapter": 886,
+      "panel": "Light Godfire increases breakthrough success for Light-type Legendary beings; reduces success for other systems; can be purified into Pure Godfire by spending 2,000 divine-power points."
+    },
+    {
+      "id": "SX-0594",
+      "source_chapter": 886,
+      "panel": {
+        "skill": "光明之枪·贯穿因果",
+        "grade": "Half-God skill",
+        "learner": "Level 150+ Light-type Half-God",
+        "cost": "30–600 divine power",
+        "cooldown": "48 hours",
+        "rules": "30 divine power creates one spear; each additional 30 creates one more; maximum 20. Each spear has Causality Lock, ignores spatial barriers, evasion skills, and low-grade fate interference, and is stated to hit. Damage: (divine-power maximum + Spirit + Attack × 5,746%) piercing damage. Adds Holy Burn: 1% max HP per second for 10 seconds, doubled against divine beings. Against targets with darkness, curse, evil-god or similar negative status, damage increases 300%."
+      }
+    },
+    {
+      "id": "SX-0595",
+      "source_chapter": 886,
+      "panel": {
+        "rank": "Upper divine nature; max level 300",
+        "attributes": [
+          "Light",
+          "Order",
+          "Purification"
+        ],
+        "fusion_conditions": [
+          "Level 200 Half-God",
+          "At least one of Light/Order/Purification divinities",
+          "Heavenly Light divinity purity above 80%",
+          "Pass a divinity trial of faith, will and law comprehension"
+        ],
+        "unfused_effects": [
+          "Carrier is immune to all darkness and curse damage from beings below divine level",
+          "Taking the Godhead out of inventory continuously purifies surroundings",
+          "Activate to reduce all attributes of hostile beings below divine level by 20%; double effect against dark beings; 48-hour cooldown"
+        ],
+        "status": "Received; not fused through Ch891."
+      }
+    },
+    {
+      "id": "SX-0596",
+      "source_chapter": 886,
+      "panel": "Selectable Legendary Relic Box; the source says it contains 108 choices. No random odds are given."
+    },
+    {
+      "id": "SX-0597",
+      "source_chapter": 888,
+      "panel": {
+        "selection": "Relic: Annihilation Blood selected from the 108-choice box.",
+        "effects": [
+          "Core material for a special-bloodline breakthrough to Legendary; can harmonize conflicting bloodlines and may awaken an extra ability.",
+          "Can be forcibly absorbed for a new bloodline: stated 25% activation chance and 75% chance of bursting to death."
+        ],
+        "observed_use": "Combined with an already-held Legendary Heart for Berje's successful breakthrough; the risky forced-absorption option is not used."
+      }
+    },
+    {
+      "id": "SX-0598",
+      "source_chapter": 887,
+      "panel": {
+        "grade": "Half-artifact",
+        "level": 150,
+        "type": "Off-hand weapon",
+        "divine_power": "0/5000; natural recovery 5 per day",
+        "core": "Light Authority: all attributes +20000, Spirit +20000 additional, Light attack range +100%, Light damage +80%.",
+        "retained": "Six equipment effects, 41 Light skills across three chapters, and three Legendary effects (with slight number increases).",
+        "new_effects": [
+          {
+            "name": "Scripture Manifestation: Lightforged Armor",
+            "cost": 200,
+            "cooldown": "12 hours",
+            "rule": "Creates armor for self or ally with durability equal to 30% of caster max HP, +30% armor and movement speed, regenerates 0.5% durability per second; reduces Light damage by 30%; non-Light hits apply Holy Burn (caster Attack ×21% each second for 5 sec, max 5 stacks); can detonate for remaining durability ×200% area damage and restore caster 20% HP. Only Legendary or higher beings can receive it."
+          },
+          {
+            "name": "Trinity: Light Tide",
+            "cost": 1000,
+            "rule": "Stage 1: 4×20 km flood, enemies move 80% slower and take Attack ×675% every 0.5 sec for 5 sec. Stage 2: up to 10 targeted 100×100 m beams, each Attack ×2588%. Stage 3: collapse explosion for Attack ×8725%; survivors take +100% Light damage for 1 hour."
+          }
+        ],
+        "note": "Three existing Codex volumes fuse after 300 Divine Power Shards are consumed; Isabella binds the output in Ch890."
+      }
+    },
+    {
+      "id": "SX-0599",
+      "source_chapter": 886,
+      "panel": "50 Divine Power Shards received with the Uproot 90% stage reward."
+    }
+  ],
+  "mechanics_observations": [
+    {
+      "chapter": 882,
+      "topic": "Renis's Time Reversal",
+      "result": "Rewinds allies other than the distant Catastrophe Dragon to their states five seconds earlier, restoring health/status, resetting skills and equipment effects used in that span, and refreshing End-Time Redemption. The source does not establish a reusable item receipt in these chapters."
+    },
+    {
+      "chapter": 889,
+      "topic": "Berje's Legendary breakthrough",
+      "result": "Legendary Heart and Annihilation Blood consumed; Berje becomes Legendary Dragon-Demon Emperor, with level cap 150, 1000% base-attribute increase, 200% attack range increase and +500 prosperity. New passive Dragon-Demon Body and active Three-Bloodline Fusion: Destruction Axe are unlocked; divine-power gauge opens."
+    },
+    {
+      "chapter": 889,
+      "topic": "Berje's new skill panels",
+      "details": {
+        "passive": "Dragon-Demon Body: damage from fire, dark, ice, water and curse reduced 40%; instant-death skill trigger chance forcibly reduced 20%. Below 60% HP: Norn blood adds 50% attack range and 30% healing received. Below 50% HP: Ice Dragon blood adds Iceburst to all attacks, splashing 45% damage to up to seven nearby enemies. Below 40% HP: Demon blood adds 35% Attack and true damage equal to Attack ×10% for five seconds.",
+        "active": "Three-Bloodline Fusion: Destruction Axe costs 30 divine power, cooldown 24 hours; hit deals Attack ×4742% plus max HP ×20%, physical/ice/shadow mix; heals 30% of damage dealt, has 50% chance to Deep Freeze for three seconds, and critical hits add a 30%-damage Darkflame explosion. Can be used with weapon effects."
+      }
+    },
+    {
+      "chapter": 889,
+      "topic": "Fourth bloodline risk",
+      "result": "Berje estimates under 20% success for fusing Cracatoa's Crystal Dragon Blood at his current strength; at High Legendary or Mutated Overlord potential, success improves and a failed attempt causes severe backlash rather than immediate death. No fusion attempt occurs."
+    },
+    {
+      "chapter": 890,
+      "topic": "Fortune Goddess's Favor S-rank quest",
+      "status": "Accepted at 0/3; no stage reward claimed.",
+      "stages": [
+        {
+          "name": "Lucky Wheel",
+          "coordinates": [
+            4177,
+            12523,
+            21522
+          ],
+          "objective": "Find Lucky Altar and offer a sacrifice for its test.",
+          "reward": [
+            "Legendary Lucky Altar blueprint",
+            "Divine Power Shards ×100"
+          ]
+        },
+        {
+          "name": "Battle Against Misfortune",
+          "coordinates": [
+            4822,
+            19245,
+            32116
+          ],
+          "objective": "Kill Half-God Misfortune Beast Modis.",
+          "reward": [
+            "Fortune God's Dice (unknown effect)",
+            "Divine Power Shards ×100"
+          ]
+        },
+        {
+          "name": "Chapter of Divine Favor (hidden)",
+          "trigger": "Final blow on Modis must be a critical hit.",
+          "reward": "Unknown"
+        }
+      ]
+    },
+    {
+      "chapter": 891,
+      "topic": "Dream Layer activity close",
+      "result": "Activity portal closes at 00:00 on Day 152; Dream Shop remains open until 06:00. Cao Xing turns in accumulated activity spoils; aggregate balances and unconfirmed shop prompts are separately documented."
+    }
+  ],
+  "source_arithmetic_conflicts": [
+    {
+      "chapter": 891,
+      "claim_a": "Current inventory 7,592,345 Dream Shards + 2,162 Dream Crystals convertible to 2,162,000 shards = 9,754,345 total.",
+      "claim_b": "After purchases totaling 5,500,000, source states 2,250,000 shards remain.",
+      "calculation": "9,754,345 - 5,500,000 = 4,254,345.",
+      "status": "UNRESOLVED_SOURCE_ARITHMETIC_MISMATCH; do not normalize or silently correct."
+    }
+  ]
 }
