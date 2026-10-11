@@ -10,7 +10,7 @@
 | `design/buildings/SOURCE-GROUNDED-BUILDING-REDESIGN.md` | Source-first functional building distinctions | Reference and proposal |
 | `data/events/EVENT-TIMELINE-v0.6.json` | Reconciled fixed 30-event calendar | New-game candidate, not retroactive live migration |
 | `data/events/EVENT-SOURCE-CATALOG-v4.6.json` + `data/events/EVENT-SOURCE-CATALOG-v4.7-ADDENDUM.json` | Catalog baseline (590 items, 239 effects) plus Round 47 event/reward addendum for Ch882–891 | Research, not guaranteed loot |
-| `data/events/EVENT-SOURCE-ITEMS-v4.7.csv` | Cumulative human-review item catalog (599 entries; nine Round 47 additions) | Review |
+| `data/events/EVENT-SOURCE-ITEMS-v4.7.csv` | Cumulative human-review item catalog (602 entries; twelve Round 47 receipt rows) | Review |
 | `data/events/EVENT-TIMELINE-v0.6.csv` | Human-review schedule diff | Review |
 | `data/structures/SOURCE-STRUCTURE-CATALOG-v1.0.json` | Round 46 review: twenty source-observed/reported structures and one route report; updated city operation evidence, no LL01 construction contracts | Research only, not T0 world data |
 | `references/canonical/LORD-DND-01..07.md` | Underlying mechanics, fixed T0, world/hero/lair/quest data | Historical authoritative rules, require typed migration |
