@@ -1,4 +1,4 @@
-name: Stage 02–07 regression and browser journey
+name: Stage 02–08 regression and browser journey
 on:
   push:
     branches:
@@ -12,6 +12,8 @@ on:
       - 'docs/implementation/STAGE-03.md'
       - 'docs/implementation/STAGE-04.md'
       - 'docs/implementation/STAGE-07.md'
+      - 'docs/implementation/STAGE-08.md'
+      - 'docs/implementation/STAGE-08-CONTENT-COVERAGE.md'
       - 'package.json'
       - '.github/workflows/frontend-demo.yml'
   workflow_dispatch:
@@ -26,12 +28,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - run: npm run content:compile
+      - run: npm run content:coverage:stage08
       - run: npm run test:stage02
       - run: npm run test:stage03
       - run: npm run test:stage04
       - run: npm run test:stage05
       - run: npm run test:stage06
       - run: npm run test:stage07
+      - run: npm run test:stage08
   frontend:
     needs: backend
     runs-on: ubuntu-latest

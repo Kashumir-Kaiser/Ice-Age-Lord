@@ -238,5 +238,6 @@ lines.push('', '## Gate disposition', '',
 
 const output = resolve(root, 'docs/implementation/STAGE-08-CONTENT-COVERAGE.md');
 mkdirSync(resolve(root, 'docs/implementation'), { recursive: true });
+while (lines.at(-1) === '') lines.pop();
 writeFileSync(output, `${lines.join('\n')}\n`, 'utf8');
 process.stdout.write(`Wrote ${output}: ${entries.length} entries, ${catalog.source_effect_records.length} effects, ${catalog.source_observations.length} observations, ${catalog.event_mechanic_extractions.length} extractions, ${structuresCatalog.structures.length} structures, ${conflicts.length} conflicts.\n`);

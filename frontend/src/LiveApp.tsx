@@ -704,7 +704,6 @@ function LiveApp() {
             {selectedMove && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || (travelActorId === view.player.id && !selectedMove.enabled)} onClick={() => moveToEntity(selectedEntity)}><ArrowRight size={16} /> Move here {travelActorId === view.player.id && selectedMove.preview?.value ? `· ${selectedMove.preview.value}` : ''}</button>}
             {selectedBuilding && <button className="live-button live-button--secondary" onClick={() => { setFocusedConstructionBuildingId(selectedBuilding.id); setScreen('buildings'); }}><Hammer size={16} /> Open {selectedBuilding.name} inspector</button>}
             {selectedEntity.ref.type === 'site' && selectedEntity.ref.id === 'SITE-LL01-000' && <button className="live-button live-button--secondary" onClick={() => { setFocusedConstructionBuildingId(null); setScreen('buildings'); }}><Hammer size={16} /> Open H0 construction inspector</button>}
-            {selectedHarvest && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !selectedHarvest.enabled} onClick={() => harvestSelectedResource(selectedEntity)}>Harvest one unit</button>}
             {selectedOpen && <small>{availabilityMessage(selectedOpen)}</small>}
             {selectedInspect && !selectedInspect.enabled && <small>{availabilityMessage(selectedInspect)}</small>}
             {selectedMove && !selectedMove.enabled && <small>{availabilityMessage(selectedMove)}</small>}
@@ -743,7 +742,6 @@ function LiveApp() {
               const rx = feature.footprintMm.widthMm / horizontalSpanMm * 50;
               const ry = feature.footprintMm.depthMm / spanMm * 50;
               const channelRatio = (channel: string) => feature.channels.find(item => item.channel === channel)?.remainingRatio ?? 1;
-              const canopy = channelRatio('canopy');
               const groundcover = channelRatio('groundcover');
               const channel = feature.terrainKind === 'forest' ? 'canopy'
                 : feature.terrainKind === 'outcrop' ? 'rock_mass'
