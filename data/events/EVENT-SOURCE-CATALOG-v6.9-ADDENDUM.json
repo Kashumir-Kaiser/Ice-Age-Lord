@@ -1,0 +1,274 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-6.9-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-6.8-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 69: printed Chapters 1102–1111. Chapter titles and primary text checked on Bq8xsw; relevant continuations and receipts checked independently on Bqquge. Vietnamese translation catalogs were searched across multiple sites but did not expose reliably aligned chapter text for this range.",
+  "data_file": "EVENT-SOURCE-ITEMS-v6.9.csv",
+  "total_item_ids": [
+    "SX-1081",
+    "SX-1082",
+    "SX-1083",
+    "SX-1084",
+    "SX-1085",
+    "SX-1086",
+    "SX-1087",
+    "SX-1088",
+    "SX-1089",
+    "SX-1090",
+    "SX-1091",
+    "SX-1092",
+    "SX-1093",
+    "SX-1094",
+    "SX-1095",
+    "SX-1096",
+    "SX-1097",
+    "SX-1098",
+    "SX-1099",
+    "SX-1100",
+    "SX-1101",
+    "SX-1102",
+    "SX-1103",
+    "SX-1104",
+    "SX-1105",
+    "SX-1106",
+    "SX-1107",
+    "SX-1108",
+    "SX-1109",
+    "SX-1110",
+    "SX-1111",
+    "SX-1112",
+    "SX-1113",
+    "SX-1114",
+    "SX-1115",
+    "SX-1116",
+    "SX-1117",
+    "SX-1118",
+    "SX-1119",
+    "SX-1120",
+    "SX-1121"
+  ],
+  "offer_ids": [
+    "SX-1089",
+    "SX-1090",
+    "SX-1102",
+    "SX-1104",
+    "SX-1105",
+    "SX-1106",
+    "SX-1107",
+    "SX-1108",
+    "SX-1109",
+    "SX-1110",
+    "SX-1111",
+    "SX-1112",
+    "SX-1113"
+  ],
+  "confirmed_acquisition_ids": [
+    "SX-1081",
+    "SX-1082",
+    "SX-1083",
+    "SX-1084",
+    "SX-1086",
+    "SX-1091",
+    "SX-1092",
+    "SX-1093",
+    "SX-1094",
+    "SX-1095",
+    "SX-1096",
+    "SX-1097",
+    "SX-1098",
+    "SX-1099",
+    "SX-1100",
+    "SX-1101",
+    "SX-1103",
+    "SX-1114",
+    "SX-1115",
+    "SX-1116"
+  ],
+  "confirmed_outcomes": [
+    {
+      "chapter": 1102,
+      "event": "No new itemized or quantified receipt; the chapter advances the phase-one aftermath and directs retrieval of pooled spoils."
+    },
+    {
+      "chapter": 1103,
+      "event": "Day 14 pooled battle spoils received: 27,920,000 Ice Dragon Marks, 14,150,000 Glacier Fragments, 361 Ice Dragon Crystals, and 247 unknown frostland rune stones; following receipt text is elided. Phase-one victory grants each survivor a 5,000,000-mark Dragon Shop redemption quota, the Continent Defender title, +20% all attributes during the Dragon War, and one lord-only revival."
+    },
+    {
+      "chapter": 1104,
+      "event": "Dragon market lists Legendary Icefield Giant Rhino meat and Demi-god Blood Whale meat. Sale proceeds are 11,200,000,000 Ice Dragon Marks and 1,980 Legendary Ancient Planks (portion mix unspecified). Redeems the globally unique 10,000,000,000-mark upper-god Ice Core."
+    },
+    {
+      "chapter": 1105,
+      "event": "Purchases 20 expert, 10 master and 2 legendary proficiency emblems plus two choice relic boxes for 260,000,000 marks; boxes yield Snake God Remnant and Ancient Ivory. Purchases 40 tier-10 boss Dragonblood Warrior scrolls and 3 legendary commander scrolls for 1,400,000,000 marks; all 43 are used."
+    },
+    {
+      "chapter": 1106,
+      "event": "Previously acquired relics cause legendary-heart breakouts; no second acquisition."
+    },
+    {
+      "chapter": 1107,
+      "event": "Previously acquired proficiency emblems are distributed; no second acquisition."
+    },
+    {
+      "chapter": 1108,
+      "event": "Dragon Soul Envoy NPC arrives and offers trials and hidden shop access; no reward receipt."
+    },
+    {
+      "chapter": 1109,
+      "event": "Sells 1,500,000 rhino meat portions for 7,500,000,000 marks. Hidden shop sells 5 dragon-language spell scrolls (2 Natural Dragon, 2 Dark Flame Dragon, 1 Star Dragon) for 7,500,000,000 marks. Other listed stock remains offers only."
+    },
+    {
+      "chapter": 1110,
+      "event": "Explains effects of five already purchased spell scrolls; no consumption or additional acquisition."
+    },
+    {
+      "chapter": 1111,
+      "event": "Phase II rules: Eternal Disaster Nests spawn monsters; nest destruction grants 1,000,000 score, 1,000,000 marks, 1 Gold Point and 100 reputation each; divine-level Ice Nest monster kill grants 10,000,000 score, one Doomah Frostblood Crystal and 10 Gold Points. No nest or divine monster is killed in the chapter."
+    }
+  ],
+  "rank_reward_rule_ids": [],
+  "event_rule_ids": [
+    "SX-1085",
+    "SX-1087",
+    "SX-1088",
+    "SX-1117",
+    "SX-1118",
+    "SX-1119",
+    "SX-1120",
+    "SX-1121"
+  ],
+  "receipt_groups": {
+    "chapter_1103": [
+      "SX-1081",
+      "SX-1082",
+      "SX-1083",
+      "SX-1084",
+      "SX-1085",
+      "SX-1086",
+      "SX-1087",
+      "SX-1088"
+    ],
+    "chapter_1104": [
+      "SX-1091",
+      "SX-1092",
+      "SX-1093"
+    ],
+    "chapter_1105": [
+      "SX-1094",
+      "SX-1095",
+      "SX-1096",
+      "SX-1097",
+      "SX-1098",
+      "SX-1099",
+      "SX-1100",
+      "SX-1101"
+    ],
+    "chapter_1109": [
+      "SX-1103",
+      "SX-1114",
+      "SX-1115",
+      "SX-1116"
+    ]
+  },
+  "shop_offer_groups": {
+    "chapter_1104": [],
+    "chapter_1109": []
+  },
+  "phase_two_repeatable_rewards": {
+    "chapter_1111": [
+      "SX-1117",
+      "SX-1118",
+      "SX-1119",
+      "SX-1120",
+      "SX-1121"
+    ]
+  },
+  "unresolved_conflicts": [
+    "Vietnamese catalogs for Cơm Nguội Novel and Bách Ngọc Sách did not expose chapter text aligned to printed Chapters 1102–1111. Cơm Nguội's browser view exposed only its page shell/footer, while Bách Ngọc Sách uses split-segment numbering that cannot be safely mapped from catalog counts. Vietnamese search results were used to locate these catalogs, not to assert extraction facts.",
+    "The Day 14 pooled receipt in Ch1103 is visibly elided after the four named and quantified items; no quantities were inferred for omitted lines.",
+    "Ch1104 gives aggregate market-sale proceeds but does not state how many portions were sold through currency versus ancient-plank barter.",
+    "Ch1109's hidden shop shows multiple global stock offers; only the five explicitly purchased dragon spell scrolls are recorded as acquired."
+  ],
+  "non_receipts": [
+    "Ch1102 gives no new counted receipt; prior balances and costs are not new acquisition.",
+    "Ch1103's 5,000,000-mark phase-one reward is redemption quota, not Ice Dragon Marks deposited. Title, temporary attribute buff and lord-only revival are event rewards/effects, not item inventory.",
+    "Ch1104 shop menu rows are offer terms; market stock is not assumed sold. The upper-god Ice Core is recorded as acquired only because redemption is explicit.",
+    "Ch1105 relic boxes and recruitment scrolls are immediately opened/used; downstream effects in Ch1106–1107 do not duplicate their acquisition.",
+    "Ch1108 NPC/shop availability is not an item or reward receipt.",
+    "Ch1110 describes the five owned scrolls without showing use.",
+    "Ch1111 reward amounts are repeatable event rules, not actual receipts. Doomah Frostblood Crystal is distinct from Ice Dragon Crystal."
+  ],
+  "source_checks": [
+    {
+      "site": "Bq8xsw",
+      "url": "https://www.bq8xsw.com/chapterlist/110975.html",
+      "use": "Directory maps printed Chapter 1102–1111 titles to linked chapter pages."
+    },
+    {
+      "site": "Bq8xsw",
+      "url": "https://www.bq8xsw.com/10082436/11075740.html",
+      "use": "Primary text pages for Chapters 1102–1111; followed directory links because text IDs are non-consecutive."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851",
+      "use": "Independent chapter directory and title sequence."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1504854-4",
+      "use": "Independent Chapter 1103 receipt and phase-one reward continuation."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1508447-3",
+      "use": "Independent Chapter 1104 market transaction and Ice Core redemption."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1508702-4",
+      "use": "Independent Chapter 1105 purchases and relic box outcomes."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1509469-4",
+      "use": "Independent Chapter 1109 hidden shop purchases and sale receipt."
+    },
+    {
+      "site": "Bqquge",
+      "url": "https://www.bqquge.org/851/1510046-4",
+      "use": "Independent Chapter 1111 Phase II rules and repeatable rewards."
+    },
+    {
+      "site": "Cơm Nguội Novel (Vietnamese)",
+      "url": "https://comnguoinovel.com/truyen/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia",
+      "use": "Vietnamese-title catalog located and checked; chapter text for this range was not exposed in the rendered page."
+    },
+    {
+      "site": "Bách Ngọc Sách (Vietnamese)",
+      "url": "https://bachngocsach.me/truyen/doc-quyen-dich-bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia",
+      "use": "Vietnamese title catalog located and checked; split-chapter numbering could not be aligned to printed novel chapter numbers."
+    }
+  ],
+  "printed_chapter_urls": [
+    "https://www.bq8xsw.com/10082436/11075740.html",
+    "https://www.bq8xsw.com/10082436/11075742.html",
+    "https://www.bq8xsw.com/10082436/11075744.html",
+    "https://www.bq8xsw.com/10082436/11075746.html",
+    "https://www.bq8xsw.com/10082436/11075748.html",
+    "https://www.bq8xsw.com/10082436/11075750.html",
+    "https://www.bq8xsw.com/10082436/11075752.html",
+    "https://www.bq8xsw.com/10082436/11075754.html",
+    "https://www.bq8xsw.com/10082436/11075756.html",
+    "https://www.bq8xsw.com/10082436/11075759.html"
+  ],
+  "continuation_urls": [
+    "https://www.bqquge.org/851/1504854-4",
+    "https://www.bqquge.org/851/1508447-3",
+    "https://www.bqquge.org/851/1508702-4",
+    "https://www.bqquge.org/851/1509469-4",
+    "https://www.bqquge.org/851/1510046-4"
+  ],
+  "next_unprocessed_chapter": 1112,
+  "inventory_caveat": "Source-only extraction. None of these rewards, item drops, event effects, shop quotas, score values, or reputation values are LL01 starting inventory, guaranteed new-game loot, or active fixed-calendar rules."
+}
