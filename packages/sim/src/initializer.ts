@@ -288,7 +288,13 @@ export function assertCleanStart(state: GameState, world: WorldDefinition): void
   if (state.fieldChestStates.some(chest => chest.state !== 'unopened')) contamination.push('opened field chest');
   if (state.quests.some(quest => quest.state !== 'dormant' || quest.rewardReceipt !== null)) contamination.push('quest progress');
   if (state.calendar.length !== 30 || state.calendar.some(event => event.status !== 'scheduled' || event.openReceiptSequence !== null || event.resolutionReceiptSequence !== null)) contamination.push('calendar state');
-  if (state.corpses.some(corpse => corpse.createdAtElapsedMs !== 0 || corpse.ownershipId !== null || corpse.state !== 'unobserved')) contamination.push('corpse lifecycle');
+  const stage07Corpses = state.corpses.filter(corpse => corpse.id === STAGE07_OPENING_CORPSE_ID);
+  const expectedStage07Corpse = stage07OpeningCorpse();
+  const fixedCorpseContamination = state.corpses.some(corpse => corpse.id !== STAGE07_OPENING_CORPSE_ID
+    && (corpse.createdAtElapsedMs !== 0 || corpse.ownershipId !== null || corpse.state !== 'unobserved'));
+  if (stage07Corpses.length !== 1 || canonicalStateHash(stage07Corpses[0]) !== canonicalStateHash(expectedStage07Corpse)
+    || fixedCorpseContamination) contamination.push('corpse lifecycle');
+  if (canonicalStateHash(state.combat) !== canonicalStateHash(createStage07CombatState(world))) contamination.push('combat lifecycle');
   if (state.buildings.find(building => building.kind === 'lord_house')?.status !== 'damaged') contamination.push('lord house state');
   if (state.player.career.state !== 'unemployed_card_sealed') contamination.push('career card state');
   if (state.inventory.containers.length !== 2 || state.inventory.containers.some(container => container.stacks.some(item => item.equipped))) contamination.push('starter asset ownership/equipment');
