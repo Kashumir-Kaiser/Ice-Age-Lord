@@ -15,7 +15,7 @@ Append-only review of printed Chapters 912–921, continuing from Round 49. The 
 - Ch918 — https://www.69shuba.com/txt/58776/40564921
 - Ch919 — https://www.69shuba.com/txt/58776/40564922
 - Ch920 — https://www.69shuba.com/txt/58776/40564923
-- Ch921 — https://www.69shuba.com/txt/58776/40564924 (page returned an internal error during review)
+- Ch921 — https://www.bqquge.org/851/227710 (accessible alternate mirror; 69shuba page returned an internal error)
 
 ## Confirmed rewards, items and outcomes
 
@@ -28,7 +28,7 @@ Append-only review of printed Chapters 912–921, continuing from Round 49. The 
 - **Ch918:** Revived ancient Icefield Giants accept allegiance after healing. This is recruitment/state change, not an item receipt.
 - **Ch919:** 63 giants receive a combined buff sequence within Nesha's Blessing Aura. A Seven-Colored Crystal is discussed as a possible future reinforcement input; none is consumed in this chapter.
 - **Ch920:** The protagonist spends 200 Divine Power Fragments each to purify Echo Godfire and Nightmare Godfire, then transfers Ice Dragon Crystals and Divine Power Fragments to Bron and Malenina for their breakthroughs. These are costs and transfers of existing stock, not fresh receipts.
-- **Ch921:** The 69shuba page returned an internal error. Mirror indexes surfaced inconsistent chapter numbering/titles. No item or reward assertion is made from title listings alone.
+- **Ch921:** Alternate mirror text confirms Bron's half-god breakthrough fails (level -20; all attributes -30% for seven days; Icefield divinity -50%), while Malenina succeeds and becomes a half-god. No item reward is received. The 69shuba page itself remains unavailable.
 
 ## Boundaries
 
