@@ -79,11 +79,77 @@ export function consumeItem(state: GameState, world: WorldDefinition, input: { a
   return { state: next, event: { sequence: 0, type: 'inventory_food_consumed', occurredAtElapsedMs: state.simElapsedMs, payload: { containerId: container.id, itemId: stack.itemId, templateId: stack.templateId, quantity: input.quantity, foodUnits: consumedUnits } }, code: null };
 }
 
-export function equipmentBlocker(state: GameState, unitId: string, itemId: string): string | null {
-  const unit = state.ownedUnits.find(candidate => candidate.id === unitId);
+export function equipmentBlocker(state: GameState, world: WorldDefinition, unitId: string, itemId: string, slotId: string): string | null {
+  const unit = state.ownedUnits.find(candidate => candidate.id === unitId && candidate.ownerId === state.player.id);
   if (!unit) return 'UNIT_NOT_OWNED';
-  const item = state.inventory.containers.flatMap(container => container.stacks).find(candidate => candidate.itemId === itemId);
-  if (!item) return 'ITEM_NOT_OWNED';
-  if (unit.equipmentRequirements.status === 'source_profile_not_compiled') return 'EQUIPMENT_PROFILE_NOT_COMPILED';
-  return 'EQUIPMENT_SLOT_RULE_NOT_COMPILED';
+  if (unit.equipmentRequirements.status !== 'compiled' || !unit.equipmentSlots) return 'EQUIPMENT_PROFILE_NOT_COMPILED';
+  if (!unit.position || Math.hypot(unit.position.xMm - state.player.position.xMm, unit.position.yMm - state.player.position.yMm) > world.navigationOverlay.interactionRangeMm) return 'UNIT_NOT_ACCESSIBLE';
+  const slot = unit.equipmentSlots.find(candidate => candidate.slotId === slotId);
+  if (!slot) return 'EQUIPMENT_SLOT_UNKNOWN';
+  if (slot.occupiedItemId) return 'EQUIPMENT_SLOT_OCCUPIED';
+  const matches = state.inventory.containers.flatMap(container => container.stacks.map(stack => ({ container, stack }))).find(entry => entry.stack.itemId === itemId);
+  if (!matches || !matches.container.observed || !canReachContainer(state, world, state.player.id, matches.container.id)) return 'ITEM_NOT_ACCESSIBLE';
+  const item = matches.stack;
+  if (item.equipped) return 'ITEM_ALREADY_EQUIPPED';
+  if (item.ownerId !== state.player.id || item.quantity - (item.reservedQuantity ?? 0) < 1) return 'ITEM_NOT_OWNED';
+  const tags = item.equipmentTags ?? [];
+  if (!tags.length || !slot.allowedTags.some(tag => tags.includes(tag))) return 'EQUIPMENT_TAG_MISMATCH';
+  return null;
+}
+
+export function unequipBlocker(state: GameState, world: WorldDefinition, unitId: string, itemId: string): string | null {
+  const unit = state.ownedUnits.find(candidate => candidate.id === unitId && candidate.ownerId === state.player.id);
+  if (!unit) return 'UNIT_NOT_OWNED';
+  if (unit.equipmentRequirements.status !== 'compiled' || !unit.equipmentSlots) return 'EQUIPMENT_PROFILE_NOT_COMPILED';
+  if (!unit.position || Math.hypot(unit.position.xMm - state.player.position.xMm, unit.position.yMm - state.player.position.yMm) > world.navigationOverlay.interactionRangeMm) return 'UNIT_NOT_ACCESSIBLE';
+  if (!unit.equipmentIds.includes(itemId) || !unit.equipmentSlots.some(slot => slot.occupiedItemId === itemId)) return 'ITEM_NOT_EQUIPPED';
+  const matches = state.inventory.containers.flatMap(container => container.stacks.map(stack => ({ container, stack }))).find(entry => entry.stack.itemId === itemId);
+  if (!matches || !matches.stack.equipped || !canReachContainer(state, world, state.player.id, matches.container.id)) return 'ITEM_NOT_ACCESSIBLE';
+  return null;
+}
+
+export function equipItem(state: GameState, world: WorldDefinition, unitId: string, itemId: string, slotId: string): InventoryMutation {
+  const code = equipmentBlocker(state, world, unitId, itemId, slotId);
+  if (code) return { state, event: null, code };
+  const unit = state.ownedUnits.find(candidate => candidate.id === unitId)!;
+  const item = state.inventory.containers.flatMap(container => container.stacks).find(candidate => candidate.itemId === itemId)!;
+  return {
+    state: {
+      ...state,
+      inventory: { ...state.inventory, containers: state.inventory.containers.map(container => ({
+        ...container, stacks: container.stacks.map(stack => stack.itemId === itemId
+          ? { ...stack, equipped: true, equippedSlotId: slotId, ownerId: unitId }
+          : stack),
+      })) },
+      ownedUnits: state.ownedUnits.map(candidate => candidate.id !== unitId ? candidate : {
+        ...candidate,
+        equipmentIds: [...candidate.equipmentIds, itemId],
+        equipmentSlots: candidate.equipmentSlots!.map(slot => slot.slotId === slotId ? { ...slot, occupiedItemId: itemId } : slot),
+      }),
+    },
+    event: { type: 'unit_equipment_changed', occurredAtElapsedMs: state.simElapsedMs, payload: { unitId, itemId, templateId: item.templateId, slotId } },
+    code: null,
+  };
+}
+
+export function unequipItem(state: GameState, world: WorldDefinition, unitId: string, itemId: string): InventoryMutation {
+  const code = unequipBlocker(state, world, unitId, itemId);
+  if (code) return { state, event: null, code };
+  return {
+    state: {
+      ...state,
+      inventory: { ...state.inventory, containers: state.inventory.containers.map(container => ({
+        ...container, stacks: container.stacks.map(stack => stack.itemId === itemId
+          ? { ...stack, equipped: false, equippedSlotId: null, ownerId: state.player.id }
+          : stack),
+      })) },
+      ownedUnits: state.ownedUnits.map(unit => unit.id !== unitId ? unit : {
+        ...unit,
+        equipmentIds: unit.equipmentIds.filter(id => id !== itemId),
+        equipmentSlots: unit.equipmentSlots!.map(slot => slot.occupiedItemId === itemId ? { ...slot, occupiedItemId: null } : slot),
+      }),
+    },
+    event: { type: 'unit_equipment_removed', occurredAtElapsedMs: state.simElapsedMs, payload: { unitId, itemId } },
+    code: null,
+  };
 }

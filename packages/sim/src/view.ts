@@ -4,6 +4,7 @@ import { currentSight, previewMovement, startHarvestJob } from './spatial.ts';
 import { OPENING_BUILDINGS } from '../../content/src/buildings.ts';
 import { constructionWorkRate, farmhouseCapacity } from './construction.ts';
 import { elapsedMsToWorldClock } from './time.ts';
+import { butcherCorpse, directReviveAvailability } from './stage07.ts';
 
 export function entityKey(ref: EntityRef): string {
   return `${ref.type}:${ref.id}`;
@@ -147,7 +148,23 @@ function progressFor(state: GameState, jobId: string): number | null {
 
 export function projectPlayerView(state: GameState, world: WorldDefinition): PlayerView {
   if (state.worldPackageId !== world.id) throw new Error('PLAYER_VIEW_WORLD_PACKAGE_MISMATCH');
-  const entities = [...siteEntities(state, world), ...resourceEntities(state, world), ...cacheEntities(state, world)];
+  const knownCorpseIds = new Set(state.playerKnowledge.knownCorpseIds ?? []);
+  const corpseEntities: PlayerEntityView[] = state.corpses.filter(corpse => knownCorpseIds.has(corpse.id) && corpse.state !== 'destroyed' && corpse.state !== 'butchered' && corpse.state !== 'revived').flatMap(corpse => {
+    const position = corpse.location.kind === 'site' || corpse.location.kind === 'buried'
+      ? world.sites.find(site => site.id === corpse.location.siteId)?.position
+      : corpse.location.carrierId === state.player.id ? state.player.position : state.ownedUnits.find(unit => unit.id === corpse.location.carrierId)?.position ?? undefined;
+    if (!position) return [];
+    return [{
+      ref: { type: 'corpse' as const, id: corpse.id },
+      label: corpse.bodyRecord?.name && state.playerKnowledge.lastInspectedEntityIds.includes(entityKey({ type: 'corpse', id: corpse.id })) ? corpse.bodyRecord.name : 'Unidentified corpse',
+      category: 'corpse',
+      knowledge: 'current' as const,
+      observedAtElapsedMs: corpse.createdAtElapsedMs,
+      position,
+      actions: [action('inspect_entity', true)],
+    }];
+  });
+  const entities = [...siteEntities(state, world), ...resourceEntities(state, world), ...cacheEntities(state, world), ...corpseEntities];
   const knownBuildings = state.buildings.map(building => ({
     id: building.id, name: building.name, status: building.status, kind: building.kind, level: building.level,
     ...(building.siteId ? { siteId: building.siteId } : {}), ...(building.position ? { position: building.position } : {}),
@@ -162,9 +179,9 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
     slots: container.capacitySlots ?? 0,
     occupiedSlots: container.stacks.length,
     capacitySlots: container.capacitySlots,
-    accessible: canAccessStarterContainer(container.id, state, world),
+    accessible: canAccessStarterContainer(container.id, state, world) || (container.location.kind === 'carried' && container.location.ownerId === state.player.id),
     location: container.location,
-    items: container.stacks.map(stack => ({ itemId: stack.itemId, label: stack.templateId, quantity: stack.quantity, reservedQuantity: stack.reservedQuantity ?? 0, unit: stack.unit ?? null, quality: stack.quality ?? null, ownerId: stack.ownerId ?? null, equipped: stack.equipped, equippedSlotId: stack.equippedSlotId ?? null, foodUnitsPerItem: stack.foodUnitsPerItem ?? null, provenance: stack.provenance })),
+    items: container.stacks.map(stack => ({ itemId: stack.itemId, label: stack.templateId, quantity: stack.quantity, reservedQuantity: stack.reservedQuantity ?? 0, unit: stack.unit ?? null, quality: stack.quality ?? null, condition: stack.condition ?? null, ownerId: stack.ownerId ?? null, equipped: stack.equipped, equippedSlotId: stack.equippedSlotId ?? null, foodUnitsPerItem: stack.foodUnitsPerItem ?? null, equipmentTags: stack.equipmentTags ?? [], combatEffects: stack.combatEffects ?? {}, provenance: stack.provenance })),
   }));
   const sights = currentSight(state, world);
 
@@ -193,6 +210,8 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
       attributes: state.player.attributes,
       mana: { current: state.player.mana.current, max: state.player.mana.max },
       careerState: state.player.career.state === 'active' ? 'active' : 'unemployed',
+      skills: state.player.career.skills ?? [],
+      pendingGrowth: state.player.career.pendingGrowth ?? 0,
       position: state.player.position,
     },
     territory: {
@@ -241,6 +260,8 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
     },
     careerCard: {
       observed: state.playerKnowledge.careerCardObserved,
+      active: state.player.career.state === 'active',
+      openingSkillLearned: (state.player.career.skills ?? []).some(skill => skill.templateId === state.player.career.sealedPayload.openingSkillId),
       career: state.playerKnowledge.careerCardObserved ? { id: state.player.career.sealedPayload.careerId, name: 'Tử Linh Triệu Hoán Sư', openingSkillId: state.player.career.sealedPayload.openingSkillId, growthAllocation: state.player.career.sealedPayload.growthAllocation } : null,
     },
     inventory: {
@@ -254,6 +275,26 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
       containers: knownContainers,
     },
     units: state.ownedUnits,
+    corpses: state.corpses.filter(corpse => knownCorpseIds.has(corpse.id)).map(corpse => {
+      const inspected = state.playerKnowledge.lastInspectedEntityIds.includes(entityKey({ type: 'corpse', id: corpse.id }));
+      const atReach = corpse.location.kind === 'site' || corpse.location.kind === 'buried'
+        ? (() => { const position = world.sites.find(site => site.id === corpse.location.siteId)?.position; return Boolean(position && Math.hypot(position.xMm - state.player.position.xMm, position.yMm - state.player.position.yMm) <= world.navigationOverlay.interactionRangeMm); })()
+        : corpse.location.kind === 'carried' && (corpse.location.carrierId === state.player.id || state.ownedUnits.some(unit => unit.id === corpse.location.carrierId && unit.position && Math.hypot(unit.position.xMm - state.player.position.xMm, unit.position.yMm - state.player.position.yMm) <= world.navigationOverlay.interactionRangeMm));
+      const revive = directReviveAvailability(state, world, state.player.id, corpse.id);
+      const butcher = butcherCorpse(state, world, state.player.id, corpse.id);
+      return {
+        id: corpse.id, actorId: corpse.actorId,
+        label: inspected ? corpse.bodyRecord?.name ?? 'Unknown person' : 'Unidentified corpse',
+        position: corpse.location.kind === 'site' || corpse.location.kind === 'buried' ? world.sites.find(site => site.id === corpse.location.siteId)?.position ?? null : null,
+        state: corpse.state, integrity: inspected ? corpse.integrity ?? null : null,
+        tier: inspected ? corpse.bodyRecord?.formTier ?? null : null,
+        level: inspected ? corpse.bodyRecord?.level ?? null : null,
+        grade: inspected ? corpse.bodyRecord?.grade ?? null : null,
+        hero: inspected ? corpse.bodyRecord?.hero ?? null : null,
+        accessible: atReach, inspected, revive: { actionId: 'revive', enabled: !revive.code, reasonCode: revive.code, requirements: revive.requirements, ...(!revive.code ? { preview: { label: 'Direct Tử Phục', value: '0 mana · 0 materials · 0 time' } } : {}) },
+        butcher: { actionId: 'butcher_corpse', enabled: !butcher.code, reasonCode: butcher.code, requirements: butcher.requirements, ...(!butcher.code ? { preview: { label: 'Dispose body', value: '0 materials · 0 time; recorded gear recovered once' } } : {}) },
+      };
+    }),
     jobs: state.jobs.map(job => ({ ...job, progressPercent: progressFor(state, job.id) })),
     visibleMap: {
       coordinateSystem: world.coordinateSystem,

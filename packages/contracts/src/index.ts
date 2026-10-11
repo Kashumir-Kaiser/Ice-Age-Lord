@@ -187,6 +187,40 @@ export type ScheduledEventState = Omit<FixedEventScheduleRow, 'statusAtT0'> & {
   resolutionReceiptSequence: number | null;
 };
 
+export type SkillInstanceState = { id: Id; templateId: Id; mastery: number; active: boolean; sourceRuleVersion: string };
+export type EquipmentSlotState = { slotId: Id; allowedTags: readonly string[]; occupiedItemId: Id | null };
+export type DirectReviveProvenance = {
+  creationRoute: 'DIRECT_TU_PHUC'; reviverCharacterId: Id; talentInstanceId: Id; rootOwnerId: Id;
+  mirrorStartAtElapsedMs: number; originatingCorpseId: Id; originatingActorId: Id; secondDeathLocked: boolean;
+};
+export type CorpseBodyRecord = {
+  sourceProfileState: 'complete' | 'incomplete'; sourceProfileBlockers: readonly string[];
+  authoring: 'canonical_source' | 'user_authorized_stage07_overlay';
+  name?: string;
+  speciesId: Id | null; anatomyTemplateId: Id | null; formTier: number | null; level: number | null; xp: number | null;
+  grade: string | null; faction: string | null; hero: boolean | null; rawAttributes: Readonly<Record<string, number>> | null;
+  health: { current: number; max: number } | null; integrity: number | null;
+  skills: readonly SkillInstanceState[]; talents: readonly Id[]; equipmentInstanceIds: readonly Id[];
+  heldEquipment?: readonly { itemId: Id; templateId: Id; tags: readonly string[]; quality: number; condition: number; unit: string; combatEffects?: Readonly<Record<string, number>> }[];
+  growthLedger: Readonly<Record<string, number>> | null; primaryFaction: string | null;
+  holyState: 'holy' | 'non_holy' | 'unknown'; sealTags: readonly string[];
+  directHolyLock: boolean; holyFieldExcess: boolean; memoryFragments: readonly Id[];
+  sourceRef: SourceRef | null; sourceProfileId: Id | null;
+  deathHistory: readonly { eventId: Id; atElapsedMs: number; cause: string }[];
+  equipmentSlots: readonly EquipmentSlotState[];
+};
+
+export type XpTransactionState = {
+  id: Id; transactionKind: 'NORMAL_AWARD' | 'OWNER_XP_MIRROR'; sourceEventId: Id;
+  sourceTransactionId: Id | null; sourceRecipientId: Id | null; recipientId: Id;
+  sourceCategory: 'combat' | 'labor' | 'quest' | 'other'; templateId: Id;
+  grossXp: number; netXp: number; contributionShare: number;
+  modifiers: { gap: number; novelty: number; risk: number; antiFarm: number };
+  occurredAtElapsedMs: number; ruleVersion: string; levelBefore: number; xpBefore: number;
+  thresholdsCrossed: readonly number[]; levelAfter: number; xpAfter: number;
+  growthDelta: Readonly<Record<string, number>>;
+};
+
 export type InventoryContainerState = {
   id: Id;
   kind: 'territory_supply' | 'carried_bag' | 'backpack' | 'building_storage' | 'unit_inventory';
@@ -194,7 +228,7 @@ export type InventoryContainerState = {
   occupiedSlots: number | null;
   location: { kind: 'site'; siteId: Id } | { kind: 'carried'; ownerId: Id } | { kind: 'building'; buildingId: Id } | { kind: 'unit'; unitId: Id };
   observed: boolean;
-  stacks: readonly { itemId: Id; templateId: Id; quantity: number; reservedQuantity?: number; unit?: string; ownerId?: Id; equipped: boolean; equippedSlotId?: Id | null; quality?: number | null; foodUnitsPerItem?: number; provenance: ProvenanceClass }[];
+  stacks: readonly { itemId: Id; templateId: Id; quantity: number; reservedQuantity?: number; unit?: string; ownerId?: Id; equipped: boolean; equippedSlotId?: Id | null; quality?: number | null; condition?: number; foodUnitsPerItem?: number; equipmentTags?: readonly string[]; combatEffects?: Readonly<Record<string, number>>; provenance: ProvenanceClass }[];
 };
 
 export type PlayerUnitState = {
@@ -209,8 +243,17 @@ export type PlayerUnitState = {
   location: { kind: 'site'; siteId: Id } | { kind: 'travel'; orderId: Id } | { kind: 'field'; coordinate: CoordinateMm } | { kind: 'building'; buildingId: Id };
   equipmentIds: readonly Id[];
   sourceStats: { formTier: number; grade: string; level: number; xp: number; faction: string; hero: boolean; loyalty: string };
+  attributes?: Readonly<Record<string, number>>;
+  talents?: readonly Id[];
+  memoryFragments?: readonly Id[];
+  integrity?: number;
   anatomyTemplateId: Id;
-  equipmentRequirements: { status: 'source_profile_not_compiled'; requiredSlotIds: readonly Id[] };
+  equipmentRequirements: { status: 'source_profile_not_compiled' | 'compiled'; requiredSlotIds: readonly Id[] };
+  equipmentSlots?: readonly EquipmentSlotState[];
+  skills?: readonly SkillInstanceState[];
+  health?: { current: number; max: number };
+  directReviveProvenance?: DirectReviveProvenance;
+  growthLedger?: Readonly<Record<string, number>>;
   xpMirrorEligible: boolean;
   baseLaborRateWuPerHour: number;
   laborRuleVersion: 'TOMB-ZOMBIE-LABOR-1.0' | string;
@@ -416,10 +459,20 @@ export type CorpseState = {
   id: Id;
   actorId: Id;
   location: { kind: 'site'; siteId: Id } | { kind: 'carried'; carrierId: Id } | { kind: 'buried'; siteId: Id };
-  state: 'unobserved' | 'known' | 'preserved' | 'damaged' | 'revived' | 'buried' | 'destroyed';
+  state: 'unobserved' | 'known' | 'preserved' | 'damaged' | 'revived' | 'buried' | 'destroyed' | 'butchered' | 'second_death_locked';
   sourceStatus: string;
   createdAtElapsedMs: number;
   ownershipId: Id | null;
+  disposition?: 'unclaimed' | 'carried' | 'butchered' | 'destroyed' | 'revived' | 'second_death_locked';
+  accessState?: 'unobserved' | 'inaccessible' | 'accessible' | 'carried';
+  integrity?: number | null;
+  deathAtElapsedMs?: number | null;
+  deathHistory?: readonly { eventId: Id; actorId: Id; atElapsedMs: number; cause: string }[];
+  sealTags?: readonly string[];
+  directHolyLock?: boolean;
+  holyFieldExcess?: boolean;
+  secondDeathLock?: boolean;
+  bodyRecord?: CorpseBodyRecord | null;
 };
 
 export type QuestProgressState = {
@@ -544,10 +597,14 @@ export type PlayerView = {
     attributes: Readonly<Record<string, number>>;
     mana: { current: number; max: number };
     careerState: 'unemployed' | 'active';
+    skills?: readonly SkillInstanceState[];
+    pendingGrowth?: number;
     position: CoordinateMm;
   };
   careerCard: {
     observed: boolean;
+    active: boolean;
+    openingSkillLearned: boolean;
     career: null | { id: Id; name: string; openingSkillId: Id; growthAllocation: 'SPI/PRE' };
   };
   territory: {
@@ -589,9 +646,16 @@ export type PlayerView = {
   };
   inventory: {
     inspectableContainers: readonly { containerId: Id; label: string; kind: 'territory_supply' | 'carried_bag' }[];
-    containers: readonly { id: Id; kind: InventoryContainerState['kind']; label: string; slots: number; occupiedSlots: number; capacitySlots: number | null; accessible: boolean; location: InventoryContainerState['location']; items: readonly { itemId: Id; label: string; quantity: number; reservedQuantity: number; unit: string | null; quality: number | null; ownerId: Id | null; equipped: boolean; equippedSlotId: Id | null; foodUnitsPerItem: number | null; provenance: ProvenanceClass }[] }[];
+    containers: readonly { id: Id; kind: InventoryContainerState['kind']; label: string; slots: number; occupiedSlots: number; capacitySlots: number | null; accessible: boolean; location: InventoryContainerState['location']; items: readonly { itemId: Id; label: string; quantity: number; reservedQuantity: number; unit: string | null; quality: number | null; ownerId: Id | null; equipped: boolean; equippedSlotId: Id | null; foodUnitsPerItem: number | null; equipmentTags?: readonly string[]; combatEffects?: Readonly<Record<string, number>>; condition?: number | null; provenance: ProvenanceClass }[] }[];
   };
   units: readonly PlayerUnitState[];
+  corpses?: readonly {
+    id: Id; actorId: Id; label: string; position: CoordinateMm | null;
+    state: CorpseState['state']; integrity: number | null; tier: number | null; level: number | null;
+    grade: string | null; hero: boolean | null; accessible: boolean; inspected: boolean;
+    revive: ActionAvailability;
+    butcher: ActionAvailability;
+  }[];
   jobs: readonly (RuntimeJobState & { progressPercent: number | null })[];
   visibleMap: VisibleMap;
   spatial: {
@@ -650,6 +714,9 @@ export type GameState = {
     career: {
       state: 'unemployed_card_sealed' | 'active';
       sealedPayload: { careerId: 'JOB-SUM-NECRO-01'; openingSkillId: 'SK-OPEN-NECRO-01'; growthAllocation: 'SPI/PRE' };
+      skills?: readonly SkillInstanceState[];
+      pendingGrowth?: number;
+      allocatedGrowth?: Readonly<Record<string, number>>;
     };
     position: CoordinateMm;
     location: { kind: 'site'; siteId: Id } | { kind: 'travel'; orderId: Id } | { kind: 'field'; coordinate: CoordinateMm };
@@ -705,12 +772,14 @@ export type GameState = {
     knownResourceIds: readonly Id[];
     knownRouteIds: readonly Id[];
     knownSignalIds: readonly Id[];
+    knownCorpseIds?: readonly Id[];
     careerCardObserved: boolean;
     lastSeenByEntity: Readonly<Record<string, { observedAtElapsedMs: number; knowledge: KnowledgeStatus }>>;
     lastInspectedEntityIds: readonly Id[];
   };
   fieldChestStates: readonly FieldChestRuntimeState[];
   corpses: readonly CorpseState[];
+  progression?: { transactions: readonly XpTransactionState[]; mirrorReceiptKeys: readonly string[] };
   quests: readonly QuestProgressState[];
   calendar: readonly ScheduledEventState[];
   offers: readonly ShopOfferState[];
@@ -751,6 +820,7 @@ export type CommandType =
   | 'build'
   | 'craft'
   | 'revive'
+  | 'butcher_corpse'
   | 'equip'
   | 'attack'
   | 'shop_transaction'
@@ -795,6 +865,7 @@ export type CommandPayloadByType = {
   unequip_item: { unitId: Id; itemId: Id };
   craft: { actorId: Id; recipeId: Id };
   revive: { actorId: Id; corpseId: Id };
+  butcher_corpse: { actorId: Id; corpseId: Id };
   equip: { unitId: Id; itemId: Id; slotId: Id };
   attack: { actorIds: readonly Id[]; targetId: Id };
   shop_transaction: { offerId: Id; quantity: number };
@@ -854,7 +925,7 @@ export interface GameClient {
 const commandTypes = new Set<CommandType>([
   'inspect_entity', 'inspect_starter_container', 'inspect_career_card', 'activate_career_card', 'set_clock_speed',
   'advance_to_boundary', 'enqueue_tomb', 'cancel_tomb', 'refuel_fire', 'extinguish_fire', 'light_fire', 'move', 'cancel_travel', 'survey', 'search', 'harvest', 'cancel_spatial_job', 'transfer_item',
-  'open_cache', 'repair', 'build', 'craft', 'revive', 'equip', 'attack', 'shop_transaction', 'assign_construction_workers', 'cancel_construction_job', 'recruit_resident', 'operate_heater', 'split_stack', 'merge_stacks', 'consume_item', 'unequip_item',
+  'open_cache', 'repair', 'build', 'craft', 'revive', 'butcher_corpse', 'equip', 'attack', 'shop_transaction', 'assign_construction_workers', 'cancel_construction_job', 'recruit_resident', 'operate_heater', 'split_stack', 'merge_stacks', 'consume_item', 'unequip_item',
 ]);
 
 const payloadFields: Readonly<Record<CommandType, readonly string[]>> = {
@@ -881,6 +952,7 @@ const payloadFields: Readonly<Record<CommandType, readonly string[]>> = {
   build: ['actorId', 'blueprintId', 'siteId', 'containerId', 'position'],
   craft: ['actorId', 'recipeId'],
   revive: ['actorId', 'corpseId'],
+  butcher_corpse: ['actorId', 'corpseId'],
   equip: ['unitId', 'itemId', 'slotId'],
   attack: ['actorIds', 'targetId'],
   shop_transaction: ['offerId', 'quantity'],

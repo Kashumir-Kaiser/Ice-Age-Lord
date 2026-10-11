@@ -5,7 +5,8 @@ import { canAccessStarterContainer } from './access.ts';
 import { entityKey } from './view.ts';
 import { cancelTombJob, enqueueTombJob, selectedSpeed, TOMB_STANDARD_BLUEPRINT_ID } from './time.ts';
 import { assignConstructionWorkers, cancelConstructionJob, previewBuild, previewHeaterService, previewRepair, recruitResidents, startConstructionJob, startHeaterService } from './construction.ts';
-import { consumeItem, equipmentBlocker, mergeStacks, splitStack } from './inventory.ts';
+import { consumeItem, equipItem, equipmentBlocker, mergeStacks, splitStack, unequipBlocker, unequipItem } from './inventory.ts';
+import { activateOpeningCareer, butcherCorpse, directReviveAvailability, reviveDirect } from './stage07.ts';
 import {
   actorAvailability,
   cancelSpatialJob,
@@ -46,6 +47,7 @@ const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | '
   consume_item: { code: 'ITEM_CONSUMPTION_CONTRACT_NOT_COMPILED', message: 'Only food with a compiled consumption contract can be consumed.' },
   unequip_item: { code: 'EQUIPMENT_PROFILE_NOT_COMPILED', message: 'The unit equipment slot profile is not compiled.' },
   revive: { code: 'REVIVAL_RULES_STAGE_07', message: 'Revival is unavailable until corpse identity and eligibility rules are implemented.' },
+  butcher_corpse: { code: 'CORPSE_DISPOSITION_STAGE_07', message: 'Corpse disposal is unavailable until exclusive lifecycle rules are implemented.' },
   equip: { code: 'EQUIPMENT_RULES_STAGE_07', message: 'Equipment changes are unavailable until the item and unit ledgers are implemented.' },
   attack: { code: 'COMBAT_RULES_STAGE_07', message: 'Combat is unavailable until encounters and deterministic resolution are implemented.' },
   shop_transaction: { code: 'TRADE_RULES_STAGE_08', message: 'Transactions are unavailable until offer, currency and receipt rules are implemented.' },
@@ -70,7 +72,7 @@ export function actionAvailability(type: CommandType): ActionAvailability {
   if (type === 'move' || type === 'search' || type === 'harvest' || type === 'cancel_travel' || type === 'cancel_spatial_job' || type === 'transfer_item' || type === 'open_cache') {
     return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
   }
-  if (type === 'split_stack' || type === 'merge_stacks' || type === 'consume_item') return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
+  if (type === 'split_stack' || type === 'merge_stacks' || type === 'consume_item' || type === 'activate_career_card' || type === 'revive' || type === 'butcher_corpse' || type === 'equip' || type === 'unequip_item') return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
   return staticAvailability(type);
 }
 
@@ -88,7 +90,7 @@ function isKnownEntity(ref: EntityRef, state: GameState): boolean {
         : building.kind === 'lord_house' ? siteId === 'SITE-LL01-001'
           : siteId === 'SITE-LL01-003';
     }));
-    case 'corpse': return false;
+    case 'corpse': return (state.playerKnowledge.knownCorpseIds ?? []).includes(ref.id);
   }
 }
 
@@ -157,6 +159,25 @@ export function previewCommand(
     return state.player.career.state === 'unemployed_card_sealed'
       ? actionAvailability(command.type)
       : { actionId: command.type, enabled: false, reasonCode: 'NOT_ACCESSIBLE', requirements: ['The opening card is no longer available.'] };
+  }
+  if (command.type === 'activate_career_card') {
+    if (command.payload.cardId !== state.player.career.sealedPayload.careerId) return unavailable(command.type, 'CAREER_CARD_UNKNOWN', 'Use the career encoded by the sealed opening card.');
+    if (!state.playerKnowledge.careerCardObserved) return unavailable(command.type, 'CAREER_CARD_NOT_INSPECTED', 'Inspect the sealed card before activating it.');
+    return state.player.career.state === 'active'
+      ? actionAvailability(command.type)
+      : actionAvailability(command.type);
+  }
+  if (command.type === 'butcher_corpse') {
+    const result = butcherCorpse(state, world, command.payload.actorId, command.payload.corpseId);
+    return result.code
+      ? unavailable(command.type, result.code, result.requirements.join(' '))
+      : actionAvailability(command.type);
+  }
+  if (command.type === 'revive') {
+    const result = directReviveAvailability(state, world, command.payload.actorId, command.payload.corpseId);
+    return result.code
+      ? unavailable(command.type, result.code, result.requirements.join(' '))
+      : { actionId: command.type, enabled: true, reasonCode: null, requirements: [], preview: { label: 'Direct Tử Phục', value: '0 mana · 0 materials · 0 time' } };
   }
   if (command.type === 'set_clock_speed' || command.type === 'advance_to_boundary') return actionAvailability(command.type);
   if (command.type === 'enqueue_tomb') {
@@ -245,12 +266,12 @@ export function previewCommand(
     return result.code ? unavailable(command.type, result.code, 'The food item must be observed, accessible, unreserved, and have a consumption contract.') : actionAvailability(command.type);
   }
   if (command.type === 'equip') {
-    const reason = equipmentBlocker(state, command.payload.unitId, command.payload.itemId);
-    return unavailable(command.type, reason ?? 'EQUIPMENT_SLOT_RULE_NOT_COMPILED', 'The unit anatomy and compatible equipment slot contract must be compiled.');
+    const reason = equipmentBlocker(state, world, command.payload.unitId, command.payload.itemId, command.payload.slotId);
+    return reason ? unavailable(command.type, reason, 'The unit must be nearby; the slot and item anatomy tags must match.') : actionAvailability(command.type);
   }
   if (command.type === 'unequip_item') {
-    const reason = equipmentBlocker(state, command.payload.unitId, command.payload.itemId);
-    return unavailable(command.type, reason ?? 'EQUIPMENT_SLOT_RULE_NOT_COMPILED', 'The unit anatomy and compatible equipment slot contract must be compiled.');
+    const reason = unequipBlocker(state, world, command.payload.unitId, command.payload.itemId);
+    return reason ? unavailable(command.type, reason, 'The equipped item and unit must be accessible.') : actionAvailability(command.type);
   }
   if (command.type === 'open_cache') {
     const chest = world.fieldChests.find(candidate => candidate.id === command.payload.chestId && state.playerKnowledge.knownChestIds.includes(candidate.id));
@@ -396,6 +417,19 @@ export function reduceCommand(
     }, 'career_card_inspected', {}, 'CAREER_CARD_INSPECTED', 'The sealed career card was inspected; the career remains inactive.');
   }
 
+  if (command.type === 'activate_career_card') {
+    if (command.payload.cardId !== state.player.career.sealedPayload.careerId) return reject(state, command.commandId, 'CAREER_CARD_UNKNOWN', 'That career is not on Lí Lan’s sealed opening card.', requestSha256);
+    if (!state.playerKnowledge.careerCardObserved) return reject(state, command.commandId, 'CAREER_CARD_NOT_INSPECTED', 'Inspect the sealed card before activating it.', requestSha256);
+    if (state.player.career.state === 'active') return acceptWithoutMutation(state, command, requestSha256, 'ALREADY_ACTIVE', 'The sealed career and its single opening skill are already active.');
+    const activated = activateOpeningCareer(state);
+    return acceptMutation(state, command, requestSha256, { player: activated.player }, 'career_activated', {
+      careerId: state.player.career.sealedPayload.careerId,
+      skillId: state.player.career.sealedPayload.openingSkillId,
+      skillCount: 1,
+      manaAfter: state.player.mana.current,
+    }, 'CAREER_ACTIVATED', 'Tử Linh Triệu Hoán Sư is active; Tử Khí Châm was learned once and Mana was unchanged.');
+  }
+
   if (command.type === 'move') {
     const destination = resolvedDestination(state, world, command.payload);
     if (!destination) return reject(state, command.commandId, 'NOT_ACCESSIBLE', 'Choose a coordinate or an entity already shown in the player view.', requestSha256);
@@ -519,9 +553,38 @@ export function reduceCommand(
     return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'ITEM_CONSUMED', 'The food item was consumed and removed from inventory.');
   }
 
-  if (command.type === 'equip' || command.type === 'unequip_item') {
-    const reason = equipmentBlocker(state, command.payload.unitId, command.payload.itemId);
-    return reject(state, command.commandId, reason ?? 'EQUIPMENT_SLOT_RULE_NOT_COMPILED', 'Equipment was not changed because the source anatomy and slot contract is unavailable.', requestSha256);
+  if (command.type === 'butcher_corpse') {
+    const corpse = state.corpses.find(item => item.id === command.payload.corpseId);
+    const result = butcherCorpse(state, world, command.payload.actorId, command.payload.corpseId);
+    if (result.code) return reject(state, command.commandId, result.code, result.requirements.join(' '), requestSha256);
+    const event = { type: 'corpse_butchered', occurredAtElapsedMs: state.simElapsedMs, payload: {
+      corpseId: command.payload.corpseId, recoveredItemIds: corpse?.bodyRecord?.equipmentInstanceIds ?? [], elapsedMs: 0,
+    } };
+    return acceptMutationMany(state, command, requestSha256, result.state, [event], 'CORPSE_BUTCHERED', 'The body was disposed of and its recorded gear recovered once.');
+  }
+
+  if (command.type === 'revive') {
+    const unitId = `TU-PHUC-${canonicalStateHash({ saveId: state.saveId, corpseId: command.payload.corpseId }).slice(0, 20).toUpperCase()}`;
+    const result = reviveDirect(state, world, command.payload.actorId, command.payload.corpseId, unitId);
+    if (result.code) return reject(state, command.commandId, result.code, result.requirements.join(' '), requestSha256);
+    const revived = result.state.ownedUnits.find(unit => unit.id === unitId)!;
+    const event = { type: 'corpse_revived', occurredAtElapsedMs: state.simElapsedMs, payload: {
+      corpseId: command.payload.corpseId, actorId: revived.id, creationRoute: revived.creationRoute,
+      sourceTier: revived.sourceStats.formTier, sourceLevel: revived.level, manaSpent: 0, materialsSpent: [], elapsedMs: 0,
+    } };
+    return acceptMutationMany(state, command, requestSha256, result.state, [event], 'CORPSE_REVIVED', 'Tử Phục completed immediately at no Mana or material cost.');
+  }
+
+  if (command.type === 'equip') {
+    const result = equipItem(state, world, command.payload.unitId, command.payload.itemId, command.payload.slotId);
+    if (result.code || !result.event) return reject(state, command.commandId, result.code ?? 'EQUIPMENT_SLOT_RULE_NOT_COMPILED', 'Equipment could not be attached to that unit.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'UNIT_EQUIPPED', 'The item was assigned to a compatible open slot.');
+  }
+
+  if (command.type === 'unequip_item') {
+    const result = unequipItem(state, world, command.payload.unitId, command.payload.itemId);
+    if (result.code || !result.event) return reject(state, command.commandId, result.code ?? 'ITEM_NOT_EQUIPPED', 'The item could not be removed from that unit.', requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'UNIT_UNEQUIPPED', 'The item was removed and returned to Lí Lan’s carried gear.');
   }
 
   if (command.type === 'open_cache') {

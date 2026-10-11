@@ -431,7 +431,8 @@ function validateBackupEvent(value: unknown, index: number, saveId: string, rece
     'spatial_search_tick_settled', 'spatial_search_completed', 'spatial_search_cancelled', 'chest_signal_detected',
     'harvest_job_started', 'harvest_arrived_at_workfront', 'resource_extracted', 'harvest_work_completed',
     'harvest_job_blocked', 'harvest_cargo_returned', 'harvest_job_cancelled', 'inventory_item_transferred',
-    'resource_daily_quotas_reset',
+    'resource_daily_quotas_reset', 'career_activated', 'corpse_revived', 'corpse_butchered',
+    'unit_equipment_changed', 'unit_equipment_removed', 'xp_awarded',
   ]);
   if (value.eventType === 'career_card_inspected') return Object.keys(value.payload).length === 0;
   if (value.eventType === 'starter_container_inspected') return (value.payload.containerId === 'LL-CNT-CARRIED-FOOD-BAG-01' && value.payload.containerKind === 'carried_bag')
@@ -444,6 +445,7 @@ function validateBackupEvent(value: unknown, index: number, saveId: string, rece
     if (entity.type === 'cache') return state.playerKnowledge.knownSignalIds.includes(entity.id) || state.playerKnowledge.knownChestIds.includes(entity.id);
     if (entity.type === 'route') return state.playerKnowledge.knownRouteIds.includes(entity.id);
     if (entity.type === 'unit') return state.ownedUnits.some(unit => unit.id === entity.id);
+    if (entity.type === 'corpse') return (state.playerKnowledge.knownCorpseIds ?? []).includes(entity.id);
     if (entity.type === 'item') return state.inventory.containers.some(container => container.observed && container.stacks.some(stack => stack.itemId === entity.id));
     return false;
   }
@@ -999,6 +1001,7 @@ export class GameApplicationService {
         || payloadRef.type === 'cache' && (state.playerKnowledge.knownSignalIds.includes(payloadRef.id) || state.playerKnowledge.knownChestIds.includes(payloadRef.id))
         || payloadRef.type === 'route' && state.playerKnowledge.knownRouteIds.includes(payloadRef.id)
         || payloadRef.type === 'unit' && state.ownedUnits.some(unit => unit.id === payloadRef.id)
+        || payloadRef.type === 'corpse' && (state.playerKnowledge.knownCorpseIds ?? []).includes(payloadRef.id)
         || payloadRef.type === 'item' && state.inventory.containers.some(container => container.observed && container.stacks.some(stack => stack.itemId === payloadRef.id))
       );
       if (!known) {
@@ -1090,6 +1093,12 @@ export class GameApplicationService {
       construction_job_cancelled: { category: 'construction', title: 'Construction cancelled', text: 'Unconsumed material and tool reservations were released; completed work was not refunded.' },
       lord_house_repaired: { category: 'construction', title: 'Lord House repaired', text: 'The house is active and exactly eleven built-in Level 1 building options are unlocked.' },
       construction_building_completed: { category: 'construction', title: 'Building completed', text: `${String(event.payload.blueprintId)} finished; reserved costs were consumed once and the building instance is active.` },
+      career_activated: { category: 'character', title: 'Nghề đã kích hoạt', text: 'Tử Khí Châm đã được học một lần; Mana không đổi.' },
+      corpse_revived: { category: 'forces', title: 'Tử Phục thành công', text: 'Đơn vị được thêm vào quân lực với hồ sơ, cấp độ, kinh nghiệm và các vật phẩm đã ghi nhận.' },
+      corpse_butchered: { category: 'forces', title: 'Thi thể đã được phân giải', text: 'Thi thể đã được tiêu dùng một lần; trang bị còn ghi nhận được thu hồi.' },
+      unit_equipment_changed: { category: 'inventory', title: 'Trang bị đã cập nhật', text: String(event.payload.templateId) + ' được gắn vào ' + String(event.payload.unitId) + '.' },
+      unit_equipment_removed: { category: 'inventory', title: 'Đã tháo trang bị', text: 'Vật phẩm trở lại túi hành trang của Lí Lan.' },
+      xp_awarded: { category: 'progression', title: 'Kinh nghiệm đã quyết toán', text: String(event.payload.netXp) + ' XP lao động đã được ghi nhận; Lí Lan nhận phản chiếu ' + String(event.payload.mirroredNetXp) + ' XP.' },
       construction_reward_entitlement_pending: { category: 'achievement', title: 'First-build reward pending', text: `${String(event.payload.achievementId)} is recorded as pending; no reward item was created until its eligibility contract resolves.` },
       farmhouse_residents_recruited: { category: 'population', title: 'Farmhouse residents recruited', text: `${String(event.payload.quantity)} resident(s) joined after paying ${String(event.payload.foodUnitsSpent)} FOOD units.` },
       heater_service_started: { category: 'production', title: 'Heater fuel cycle started', text: 'One WOOD is reserved for 20 minutes of heat service (+15–20°C in a room up to 30 m²). The territory-wide cold model is unchanged.' },

@@ -17,6 +17,7 @@
     "db:migrate": "node --experimental-strip-types packages/storage/tools/migrate.ts",
     "api:start": "node --experimental-strip-types packages/api/tools/server.ts",
     "backup:export": "node --experimental-strip-types packages/api/tools/backup.ts export",
-    "backup:import": "node --experimental-strip-types packages/api/tools/backup.ts import"
+    "backup:import": "node --experimental-strip-types packages/api/tools/backup.ts import",
+    "test:stage07": "node --experimental-strip-types --test packages/sim/test/stage07.test.ts"
   }
 }

@@ -49,8 +49,37 @@ function errorMessage(error: unknown): string {
 }
 
 function availabilityMessage(availability: ActionAvailability): string {
-  const reason = availability.reasonCode || availability.requirements.join(' ');
-  return reason || 'Hành động hiện không khả dụng.';
+  const messages: Record<string, string> = {
+    CORPSE_NOT_FOUND: 'Không tìm thấy thi thể này.',
+    CORPSE_NOT_KNOWN: 'Hãy tìm thấy thi thể trước khi tương tác.',
+    CORPSE_NOT_INSPECTED: 'Hãy kiểm tra thi thể trước khi Tử Phục.',
+    CORPSE_ALREADY_REVIVED: 'Thi thể này đã được dùng để Tử Phục.',
+    CORPSE_ALREADY_BUTCHERED: 'Thi thể này đã bị phân giải.',
+    CORPSE_DESTROYED: 'Thi thể không còn nguyên vẹn.',
+    SECOND_DEATH_LOCKED: 'Thi thể đã tử vong lần thứ hai và không thể được Tử Phục lại.',
+    CORPSE_INTEGRITY_ZERO: 'Thi thể không còn độ nguyên vẹn.',
+    CORPSE_INTEGRITY_UNKNOWN: 'Chưa ghi nhận được độ nguyên vẹn của thi thể.',
+    CORPSE_EQUIPMENT_RECORD_INCOMPLETE: 'Chưa thể đối chiếu trang bị đang giữ với hồ sơ thi thể.',
+    CORPSE_GEAR_ALREADY_TRANSFERRED: 'Trang bị của thi thể đã được thu hồi.',
+    CORPSE_BODY_PROFILE_INCOMPLETE: 'Thiếu dữ liệu cần thiết về cơ thể này.',
+    CORPSE_NOT_ACCESSIBLE: 'Hãy đến gần hoặc mang thi thể tới Lí Lan.',
+    SEAL_BLOCKS_TU_PHUC: 'Phong ấn trên thi thể chặn Tử Phục.',
+    DEATH_TRACE_PURGED: 'Dấu vết tử vong đã bị xóa.',
+    HOLY_DIRECT_REVIVE_LOCKED: 'Thi thể Thánh này có hạn chế Tử Phục riêng.',
+    HOLY_FIELD_EXCESS: 'Trường Thánh vượt giới hạn Tử Phục.',
+    HOLY_TIER_TRANSFORM_UNAVAILABLE: 'Bậc của thi thể không thể chuyển đổi hợp lệ.',
+    CORPSE_TIER_EXCEEDS_REVIVER: 'Bậc của thi thể vượt quá Bậc hiện tại của Lí Lan.',
+    EQUIPMENT_PROFILE_NOT_COMPILED: 'Chưa có sơ đồ trang bị cho đơn vị này.',
+    UNIT_NOT_ACCESSIBLE: 'Đưa đơn vị và vật phẩm tới gần nhau trước khi trang bị.',
+    ITEM_NOT_ACCESSIBLE: 'Vật phẩm không nằm trong túi có thể tiếp cận.',
+    EQUIPMENT_TAG_MISMATCH: 'Vật phẩm không vừa với ô trang bị này.',
+    EQUIPMENT_SLOT_OCCUPIED: 'Ô trang bị này đã có vật phẩm.',
+    ITEM_ALREADY_EQUIPPED: 'Vật phẩm đã được trang bị.',
+  };
+  const reasonCode = availability.reasonCode;
+  if (reasonCode && messages[reasonCode]) return messages[reasonCode];
+  const reason = availability.requirements.join(' ');
+  return reason || (reasonCode ? 'Hành động hiện không khả dụng.' : 'Hành động hiện không khả dụng.');
 }
 
 function fireArtwork(manifest: AssetManifest | null, level: number) {
@@ -530,6 +559,8 @@ function LiveApp() {
     const selectedInspect = selectedEntity?.actions.find(item => item.actionId === 'inspect_entity');
     const selectedOpen = selectedEntity?.actions.find(item => item.actionId === 'open_cache');
     const selectedHarvest = selectedEntity?.actions.find(item => item.actionId === 'harvest');
+    const selectedCorpseId = selectedEntity?.ref.type === 'corpse' ? selectedEntity.ref.id : null;
+    const selectedCorpse = view.corpses?.find(corpse => corpse.id === selectedCorpseId);
     return <div className="live-section-stack">
       <section className="live-panel">
         <div className="live-panel-heading">
@@ -616,7 +647,13 @@ function LiveApp() {
         {selectedEntity && <div className="live-inspector">
           <div><span className="live-eyebrow">SELECTED · {selectedEntity.category}</span><h3>{entityLabel(selectedEntity)}</h3><p>{selectedEntity.knowledge} · observed at {elapsedLabel(selectedEntity.observedAtElapsedMs)}</p></div>
           <div className="live-action-stack">
-            {selectedInspect && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !selectedInspect.enabled} onClick={() => void runInspection(selectedEntity)}><Eye size={16} /> Inspect</button>}
+            {selectedInspect && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !selectedInspect.enabled} onClick={() => void runInspection(selectedEntity)}><Eye size={16} /> Kiểm tra</button>}
+            {selectedCorpse?.inspected && <div><p>Thi thể: Bậc {selectedCorpse.tier ?? '—'} · Cấp {selectedCorpse.level ?? '—'} · Phẩm {selectedCorpse.grade ?? '—'} · nguyên vẹn {selectedCorpse.integrity ?? '—'}%</p>
+              <button className="live-button" disabled={working || Boolean(pendingCommand) || !selectedCorpse.revive.enabled} onClick={() => void sendCommand(commandFor(view, 'revive', { actorId: view.player.id, corpseId: selectedCorpse.id }))}>Tử Phục · không tốn Mana, vật liệu hay thời gian</button>
+              {!selectedCorpse.revive.enabled && <small>{availabilityMessage(selectedCorpse.revive)}</small>}
+              <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !selectedCorpse.butcher.enabled} onClick={() => void sendCommand(commandFor(view, 'butcher_corpse', { actorId: view.player.id, corpseId: selectedCorpse.id }))}>Phân giải vĩnh viễn · thu hồi trang bị đã ghi nhận</button>
+              {!selectedCorpse.butcher.enabled && <small>{availabilityMessage(selectedCorpse.butcher)}</small>}
+            </div>}
             {selectedMove && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || (travelActorId === view.player.id && !selectedMove.enabled)} onClick={() => moveToEntity(selectedEntity)}><ArrowRight size={16} /> Move here {travelActorId === view.player.id && selectedMove.preview?.value ? `· ${selectedMove.preview.value}` : ''}</button>}
             {selectedBuilding && <button className="live-button live-button--secondary" onClick={() => { setFocusedConstructionBuildingId(selectedBuilding.id); setScreen('buildings'); }}><Hammer size={16} /> Open {selectedBuilding.name} inspector</button>}
             {selectedEntity.ref.type === 'site' && selectedEntity.ref.id === 'SITE-LL01-000' && <button className="live-button live-button--secondary" onClick={() => { setFocusedConstructionBuildingId(null); setScreen('buildings'); }}><Hammer size={16} /> Open H0 construction inspector</button>}
@@ -650,7 +687,7 @@ function LiveApp() {
     const normalizedInventoryFilter = inventoryFilter.trim().toLocaleLowerCase();
     const inventoryContainers = view.inventory.containers.map(container => ({
       ...container,
-      items: container.items.filter(item => !normalizedInventoryFilter || `${item.label} ${item.itemId} ${item.ownerId ?? ''} ${item.unit ?? ''} ${item.provenance}`.toLocaleLowerCase().includes(normalizedInventoryFilter)),
+      items: container.items.filter(item => !normalizedInventoryFilter || `${item.label} ${item.itemId} ${item.ownerId ?? ''} ${item.unit ?? ''} ${item.equipmentTags?.join(' ') ?? ''} ${item.provenance}`.toLocaleLowerCase().includes(normalizedInventoryFilter)),
     })).filter(container => !normalizedInventoryFilter || container.items.length > 0 || `${container.label} ${container.id} ${container.location.kind}`.toLocaleLowerCase().includes(normalizedInventoryFilter));
     const selectedBlueprint = view.construction.blueprints.find(blueprint => blueprint.id === constructionBlueprintId);
     const parsedX = Number(constructionXMetres);
@@ -714,7 +751,11 @@ function LiveApp() {
           <section className="live-panel">
             <div className="live-panel-heading"><div><span className="live-eyebrow">CAREER CARD</span><h3>{view.careerCard.observed ? 'Đã quan sát' : 'Đang niêm phong'}</h3></div><Shield size={21} /></div>
             {view.careerCard.observed && view.careerCard.career
-              ? <p>{view.careerCard.career.name} · {view.careerCard.career.growthAllocation}</p>
+              ? <><p>{view.careerCard.career.name} · phân bổ tăng trưởng {view.careerCard.career.growthAllocation}</p>
+                <p>{view.careerCard.active ? 'Nghề nghiệp đã kích hoạt.' : 'Thẻ đã mở; Lí Lan có thể kích hoạt nghề nghiệp.'} {view.careerCard.openingSkillLearned ? 'Kỹ năng mở đầu đã học.' : 'Kỹ năng chưa được học.'}</p>
+                {!view.careerCard.active && <button className="live-button" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'activate_career_card', { cardId: view.careerCard.career!.id }))}>Kích hoạt nghề nghiệp</button>}
+                {view.player.skills?.map(skill => <small key={skill.id}>Kỹ năng mở đầu · thông thạo {skill.mastery}</small>)}
+              </>
               : <><p>Không hiển thị nội dung trước khi API xác nhận thao tác kiểm tra.</p><button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'inspect_career_card', {}))}><Eye size={16} /> Kiểm tra thẻ nghề nghiệp</button></>}
           </section>
         </div>
@@ -804,7 +845,7 @@ function LiveApp() {
                 {container.items.length
                   ? <ul className="live-plain-list">{container.items.map(item => <li key={item.itemId}>
                     <strong>{item.label} · × {item.quantity} · free {Math.max(0, item.quantity - item.reservedQuantity)}{item.equipped ? ' · equipped' : ''}</strong>
-                    <span>{item.reservedQuantity} reserved · owner {item.ownerId ?? 'legacy/unspecified'} · {item.unit ?? 'unit unspecified'} · quality {item.quality ?? 'unspecified'} · {item.provenance} · {item.equipped ? `equipped${item.equippedSlotId ? ` (${item.equippedSlotId})` : ''}` : 'not equipped'}{item.foodUnitsPerItem !== null ? ` · ${item.foodUnitsPerItem} food units/item` : ''} · {view.inventory.containers.filter(target => target.id !== container.id).map(target => <button key={target.id} className="live-text-button" disabled={working || Boolean(pendingCommand) || !container.accessible || !target.accessible || item.quantity <= item.reservedQuantity} title={!container.accessible || !target.accessible ? 'Move Lí Lan within reach of both containers.' : `Transfer unreserved items to ${target.label}.`} onClick={() => void sendCommand(commandFor(view, 'transfer_item', {
+                    <span>{item.reservedQuantity} reserved · owner {item.ownerId ?? 'legacy/unspecified'} · {item.unit ?? 'unit unspecified'} · quality {item.quality ?? 'unspecified'}{item.condition !== null && item.condition !== undefined ? ` · độ bền ${Math.round(item.condition * 100)}%` : ''} · {item.provenance} · {item.equipped ? `equipped${item.equippedSlotId ? ` (${item.equippedSlotId})` : ''}` : 'not equipped'}{item.foodUnitsPerItem !== null ? ` · ${item.foodUnitsPerItem} food units/item` : ''}{item.equipmentTags?.length ? ` · loại: ${item.equipmentTags.map(tag => tag === 'WEAPON' || tag === 'WEAPON_1H' ? 'vũ khí' : tag === 'ARMOR' || tag === 'ARMOR_LIGHT' ? 'giáp nhẹ' : tag).join(', ')}` : ''} · {view.inventory.containers.filter(target => target.id !== container.id).map(target => <button key={target.id} className="live-text-button" disabled={working || Boolean(pendingCommand) || !container.accessible || !target.accessible || item.quantity <= item.reservedQuantity} title={!container.accessible || !target.accessible ? 'Move Lí Lan within reach of both containers.' : `Transfer unreserved items to ${target.label}.`} onClick={() => void sendCommand(commandFor(view, 'transfer_item', {
                       actorId: view.player.id, sourceContainerId: container.id, destinationContainerId: target.id, itemId: item.itemId, quantity: item.quantity - item.reservedQuantity,
                     }))}>→ {target.label}</button>)}</span>
                   </li>)}</ul>
@@ -830,8 +871,39 @@ function LiveApp() {
       return <section className="live-panel">
         <div className="live-panel-heading"><div><span className="live-eyebrow">OWNED UNITS</span><h2>Quân lực</h2></div><Users size={22} /></div>
         {view.units.length
-          ? <ul className="live-plain-list">{view.units.map(unit => <li key={unit.id}><strong>{unit.name} · Bậc {unit.sourceStats.formTier} · {unit.sourceStats.grade}</strong><span>{unit.creationRoute} · {unit.baseLaborRateWuPerHour} WU/h · XP {unit.xp}{unit.xpMirrorEligible ? ' · XP mirror' : ' · không XP mirror'}</span></li>)}</ul>
-          : <p className="live-empty-state">Snapshot không có đơn vị thuộc sở hữu người chơi.</p>}
+          ? <div className="live-section-stack">{view.units.map(unit => {
+            const routeLabel = unit.creationRoute === 'DIRECT_TU_PHUC' ? 'Được Lí Lan Tử Phục' : unit.creationRoute === 'TOMB_QUEUE' ? 'Được tạo từ Mộ' : 'Đơn vị thuộc quyền Lí Lan';
+            const accessibleItems = view.inventory.containers.filter(container => container.accessible).flatMap(container => container.items);
+            return <article key={unit.id} className="live-container-card">
+              <div className="live-panel-heading"><h3>{unit.name}</h3><span className="live-data-chip">{routeLabel}</span></div>
+              <p>Bậc {unit.sourceStats.formTier} · Cấp {unit.level} · Phẩm {unit.sourceStats.grade} · XP {unit.xp}</p>
+              {unit.health && <p>Sức khỏe {unit.health.current}/{unit.health.max} · độ nguyên vẹn {unit.integrity ?? '—'}%</p>}
+              <p>{unit.xpMirrorEligible ? 'Lí Lan nhận bản sao XP hợp lệ của đơn vị này.' : 'XP của đơn vị này không được chuyển cho Lí Lan.'} · công việc {unit.baseLaborRateWuPerHour} WU/h</p>
+              {unit.attributes && <p>Thuộc tính: {Object.entries(unit.attributes).map(([stat, value]) => `${stat} ${value}`).join(' · ')}</p>}
+              {unit.skills?.length ? <p>Kỹ năng: {unit.skills.map(skill => `${skill.templateId} · thông thạo ${skill.mastery}`).join(' · ')}</p> : <p>Chưa ghi nhận kỹ năng riêng.</p>}
+              {unit.equipmentSlots?.map(slot => {
+                const item = accessibleItems.find(candidate => candidate.itemId === slot.occupiedItemId);
+                const options = accessibleItems.filter(candidate => !candidate.equipped && candidate.ownerId === view.player.id
+                  && (candidate.equipmentTags ?? []).some(tag => slot.allowedTags.includes(tag)));
+                return <div className="live-container-row" key={slot.slotId}>
+                  <div><strong>{slot.slotId === 'MAIN_HAND' ? 'Tay chính' : slot.slotId === 'BODY' ? 'Thân' : slot.slotId}</strong>
+                    <small>{item ? item.label : 'Trống'}{item?.condition !== null && item?.condition !== undefined ? ` · độ bền ${Math.round(item.condition * 100)}%` : ''}</small>{item && item.combatEffects && <small>{Object.entries(item.combatEffects).map(([effect, value]) => `${effect === 'weaponBase' ? 'sát thương cơ bản' : effect === 'armor' ? 'giáp' : effect} ${value}`).join(' · ')}</small>}</div>
+                  {item
+                    ? <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'unequip_item', { unitId: unit.id, itemId: item.itemId }))}>Tháo</button>
+                    : options[0] && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'equip', { unitId: unit.id, itemId: options[0].itemId, slotId: slot.slotId }))}>Trang bị {options[0].label}</button>}
+                </div>;
+              })}
+            </article>;
+          })}</div>
+          : <p className="live-empty-state">Chưa có đơn vị thuộc quyền người chơi.</p>}
+        {view.corpses && view.corpses.length > 0 && <><h3>Thi thể đã biết</h3><ul className="live-plain-list">{view.corpses.map(corpse => <li key={corpse.id}>
+          <strong>{corpse.label}</strong><span>{corpse.inspected ? `Bậc ${corpse.tier ?? '—'} · Cấp ${corpse.level ?? '—'} · Phẩm ${corpse.grade ?? '—'} · nguyên vẹn ${corpse.integrity ?? '—'}%` : 'Chưa kiểm tra.'}</span>
+          {!corpse.inspected && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'inspect_entity', { entity: { type: 'corpse', id: corpse.id } }))}>Kiểm tra thi thể</button>}
+          {corpse.inspected && <button className="live-button" disabled={working || Boolean(pendingCommand) || !corpse.revive.enabled} onClick={() => void sendCommand(commandFor(view, 'revive', { actorId: view.player.id, corpseId: corpse.id }))}>Tử Phục</button>}
+          {corpse.inspected && !corpse.revive.enabled && <small>{availabilityMessage(corpse.revive)}</small>}
+          {corpse.inspected && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !corpse.butcher.enabled} onClick={() => void sendCommand(commandFor(view, 'butcher_corpse', { actorId: view.player.id, corpseId: corpse.id }))}>Phân giải vĩnh viễn</button>}
+          {corpse.inspected && !corpse.butcher.enabled && <small>{availabilityMessage(corpse.butcher)}</small>}
+        </li>)}</ul></>}
         <h3>Việc Mộ đang chờ</h3>
         <TombQueueList view={view} working={working} blocked={Boolean(pendingCommand)} onCancel={cancelTombJob} />
       </section>;

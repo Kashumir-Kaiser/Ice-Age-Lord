@@ -7,6 +7,7 @@ import {
   OPENING_BUILDINGS, OPENING_BUILDINGS_RULE_VERSION,
 } from '../../content/src/buildings.ts';
 import { canAccessStarterContainer } from './access.ts';
+import { settleOrdinaryLaborXp } from './stage07.ts';
 
 const HOUR_MS = 3_600_000;
 const WORK_TICKS_PER_WU = 300;
@@ -599,6 +600,29 @@ export function settleConstructionCompletions(state: GameState, at: number): Com
         events.push(event('construction_reward_entitlement_pending', at, {
           achievementId: 'ACH-OPEN-POLAR-HOUSE', reason: 'FIRST_WORLDWIDE_TRIGGER_NOT_SETTLED', rewardNotMinted: true,
         }));
+      }
+    }
+
+    // Stage 07's versioned work contract gives each actual unit a share before one final floor.
+    if (job.workerIds.length > 0) {
+      const rates = job.workerIds.map(actorId => actorBaseRate(state, actorId) * Object.values(actorConditionFactors(state, actorId)).reduce((product, factor) => product * factor, 1));
+      const totalRate = rates.reduce((sum, rate) => sum + rate, 0);
+      for (let index = 0; index < job.workerIds.length; index++) {
+        const workerId = job.workerIds[index];
+        const contributionShare = 0.60 / job.workerIds.length + 0.40 * (totalRate > 0 ? rates[index] / totalRate : 1 / job.workerIds.length);
+        const workUnits = job.workUnitsRequired;
+        const transactionId = `STAGE07-LABOR-${job.id}-${workerId}`;
+        const settlement = settleOrdinaryLaborXp(state, workerId, workUnits, transactionId, at, contributionShare);
+        Object.assign(state, settlement.state);
+        if (settlement.transactions.length > 0) {
+          const normal = settlement.transactions[0];
+          const mirror = settlement.transactions.find(transaction => transaction.transactionKind === 'OWNER_XP_MIRROR');
+          events.push(event('xp_awarded', at, {
+            sourceTransactionId: normal.id, recipientId: workerId, netXp: normal.netXp,
+            mirrorRecipientId: mirror?.recipientId ?? null, mirroredNetXp: mirror?.netXp ?? 0,
+            contributionShare, ruleVersion: normal.ruleVersion,
+          }));
+        }
       }
     }
   }

@@ -5,6 +5,7 @@ import { OPENING_BUILDINGS_RULE_VERSION, PLACEMENT_OVERLAY_VERSION, LABOR_OVERLA
 import { canonicalStateHash } from './hash.ts';
 import { seedConvenienceBag } from './bag.ts';
 import { seedSpatialKnowledge } from './spatial.ts';
+import { stage07OpeningCorpse, STAGE07_OPENING_CORPSE_ID } from './stage07.ts';
 
 export type NewGameOptions = {
   saveId: string;
@@ -221,6 +222,7 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
       knownResourceIds: empty,
       knownRouteIds: empty,
       knownSignalIds: empty,
+      knownCorpseIds: [STAGE07_OPENING_CORPSE_ID],
       careerCardObserved: false,
       lastSeenByEntity: { 'site:SITE-LL01-000': { observedAtElapsedMs: 0, knowledge: 'current' } },
       lastInspectedEntityIds: empty,
@@ -236,15 +238,19 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
       claimedById: null,
       carrierId: null,
     })),
-    corpses: world.fixedActors.filter(actor => actor.lifeStateAtT0 === 'corpse').map(actor => ({
-      id: `CORPSE-${actor.id}`,
-      actorId: actor.id,
-      location: { kind: 'site' as const, siteId: actor.fixedSiteId },
-      state: 'unobserved' as const,
-      sourceStatus: actor.fixedStatus,
-      createdAtElapsedMs: 0,
-      ownershipId: null,
-    })),
+    corpses: [
+      ...world.fixedActors.filter(actor => actor.lifeStateAtT0 === 'corpse').map(actor => ({
+        id: `CORPSE-${actor.id}`,
+        actorId: actor.id,
+        location: { kind: 'site' as const, siteId: actor.fixedSiteId },
+        state: 'unobserved' as const,
+        sourceStatus: actor.fixedStatus,
+        createdAtElapsedMs: 0,
+        ownershipId: null,
+      })),
+      stage07OpeningCorpse(),
+    ],
+    progression: { transactions: [], mirrorReceiptKeys: [] },
     quests: world.dormantQuestIds.map(questId => ({ questId, state: 'dormant' as const, acceptedAt: null, completedAt: null, rewardReceipt: null })),
     calendar: world.eventSchedule.map(({ statusAtT0: _sourceStatus, ...event }) => ({
       ...event,
