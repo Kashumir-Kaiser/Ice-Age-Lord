@@ -1,0 +1,339 @@
+{
+  "release_id": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.6-ADDENDUM",
+  "parent_release": "LL01-WEB-EVENT-SOURCE-EXTRACTION-7.5-ADDENDUM",
+  "authority": "SOURCE_RESEARCH_ONLY_NOT_ACTIVE_T0_WORLD",
+  "source_scope": "Round 76: printed Chinese Chapters 1172–1181; Bqquge primary text reviewed through visible continuations. Vietnamese title/index comparison checked on Cơm Nguội, Hắc Hoàng Đại Đế, and Xa Lộ Sách; local numbering diverges and Xa Lộ Sách has split chapters. Vietnamese pages were used for title/index alignment only; gated bodies did not supply mechanics.",
+  "data_file": "EVENT-SOURCE-ITEMS-v7.6.csv",
+  "cumulative_rows": 1372,
+  "columns": 69,
+  "total_item_ids": [
+    "SX-1322",
+    "SX-1323",
+    "SX-1324",
+    "SX-1325",
+    "SX-1326",
+    "SX-1327",
+    "SX-1328",
+    "SX-1329",
+    "SX-1330",
+    "SX-1331",
+    "SX-1332",
+    "SX-1333",
+    "SX-1334",
+    "SX-1335",
+    "SX-1336",
+    "SX-1337",
+    "SX-1338",
+    "SX-1339",
+    "SX-1340",
+    "SX-1341",
+    "SX-1342",
+    "SX-1343",
+    "SX-1344",
+    "SX-1345",
+    "SX-1346",
+    "SX-1347",
+    "SX-1348",
+    "SX-1349",
+    "SX-1350",
+    "SX-1351",
+    "SX-1352",
+    "SX-1353",
+    "SX-1354",
+    "SX-1355",
+    "SX-1356",
+    "SX-1357",
+    "SX-1358",
+    "SX-1359",
+    "SX-1360",
+    "SX-1361",
+    "SX-1362",
+    "SX-1363",
+    "SX-1364",
+    "SX-1365",
+    "SX-1366",
+    "SX-1367",
+    "SX-1368",
+    "SX-1369",
+    "SX-1370",
+    "SX-1371",
+    "SX-1372"
+  ],
+  "chapter_item_ids": {
+    "1162": [
+      "SX-1322",
+      "SX-1323"
+    ],
+    "1163": [
+      "SX-1324",
+      "SX-1325",
+      "SX-1326"
+    ],
+    "1164": [
+      "SX-1327",
+      "SX-1328",
+      "SX-1329"
+    ],
+    "1165": [
+      "SX-1330",
+      "SX-1331",
+      "SX-1332"
+    ],
+    "1166": [
+      "SX-1333"
+    ],
+    "1167": [
+      "SX-1334"
+    ],
+    "1169": [
+      "SX-1335",
+      "SX-1336"
+    ],
+    "1170": [
+      "SX-1337"
+    ],
+    "1171": [
+      "SX-1338",
+      "SX-1339"
+    ],
+    "1173": [
+      "SX-1340",
+      "SX-1341"
+    ],
+    "1174": [
+      "SX-1342",
+      "SX-1343",
+      "SX-1344",
+      "SX-1345",
+      "SX-1346"
+    ],
+    "1175": [
+      "SX-1347"
+    ],
+    "1176": [
+      "SX-1348",
+      "SX-1349"
+    ],
+    "1177": [
+      "SX-1350"
+    ],
+    "1178": [
+      "SX-1351"
+    ],
+    "1179": [
+      "SX-1352"
+    ],
+    "1181": [
+      "SX-1353",
+      "SX-1354",
+      "SX-1355",
+      "SX-1356",
+      "SX-1357",
+      "SX-1358",
+      "SX-1359",
+      "SX-1360",
+      "SX-1361",
+      "SX-1362",
+      "SX-1363",
+      "SX-1364",
+      "SX-1365",
+      "SX-1366",
+      "SX-1367",
+      "SX-1368",
+      "SX-1369",
+      "SX-1370",
+      "SX-1371",
+      "SX-1372"
+    ]
+  },
+  "receipt_groups": {
+    "ROUND_75_STORM_AXE": [
+      "SX-1322",
+      "SX-1323"
+    ],
+    "ROUND_75_MASS_PROMOTION": [
+      "SX-1324",
+      "SX-1325",
+      "SX-1326",
+      "SX-1327"
+    ],
+    "ROUND_75_TRIAL_REWARDS": [
+      "SX-1328",
+      "SX-1329"
+    ],
+    "ROUND_75_GENESIS_SHIELD": [
+      "SX-1330",
+      "SX-1331",
+      "SX-1332"
+    ],
+    "ROUND_75_ABYSS_CAMPAIGN": [
+      "SX-1333",
+      "SX-1334",
+      "SX-1335",
+      "SX-1336",
+      "SX-1337",
+      "SX-1338",
+      "SX-1339"
+    ],
+    "ROUND_76_AILIN_GODS_DESCENT": [
+      "SX-1340",
+      "SX-1341",
+      "SX-1342",
+      "SX-1352",
+      "SX-1353"
+    ],
+    "ROUND_76_ALPHONSE_DROPS": [
+      "SX-1343",
+      "SX-1344",
+      "SX-1345",
+      "SX-1346",
+      "SX-1347"
+    ],
+    "ROUND_76_ABYSS_CAMPAIGN": [
+      "SX-1348",
+      "SX-1349",
+      "SX-1350",
+      "SX-1351"
+    ],
+    "ROUND_76_SS_TASK_REWARDS": [
+      "SX-1354",
+      "SX-1355",
+      "SX-1356",
+      "SX-1357",
+      "SX-1358",
+      "SX-1359",
+      "SX-1360",
+      "SX-1361",
+      "SX-1362",
+      "SX-1363",
+      "SX-1364",
+      "SX-1365",
+      "SX-1366",
+      "SX-1367",
+      "SX-1368"
+    ],
+    "ROUND_76_BREAKTHROUGH_AND_PENDING_CHESTS": [
+      "SX-1369",
+      "SX-1370",
+      "SX-1371",
+      "SX-1372"
+    ]
+  },
+  "next_item_id": "SX-1373",
+  "next_unprocessed_chapter": 1182,
+  "confirmed_outcomes": [
+    {
+      "chapter": 1162,
+      "event": "Cao Xing receives the repaired original Storm Axe as a Quasi-artifact; it lacks a core godhead and requires level 190."
+    },
+    {
+      "chapter": 1163,
+      "event": "Imperial resources are delivered for mass Hero promotion; rounded shipment narration differs slightly from exact altar-consumption values. 97,164 promotions are displayed."
+    },
+    {
+      "chapter": 1164,
+      "event": "Mass promotion completes; second War God trial ring awards Heart of Genesis and one War Plane Teleport Stone."
+    },
+    {
+      "chapter": 1165,
+      "event": "Heart of Genesis is fused with Bloom's Genesis Shield to create semi-artifact Genesis Shield–Anodite; its defense, linking, healing and revival field are recorded."
+    },
+    {
+      "chapter": 1166,
+      "event": "Abyss invasion is staged; Death Bag + Necromantic Flute are the planned means to carry Oliviaus past the rule seal."
+    },
+    {
+      "chapter": 1167,
+      "event": "Oliviaus is successfully carried out of the Church divine realm; 30 km Heavenly Fortune Ark stays outside the Abyss with one Destiny Judgment launcher use."
+    },
+    {
+      "chapter": 1168,
+      "event": "Church leadership has secretly agreed to ally against Cao; team reaches the Abyss portal. No battle loot is obtained."
+    },
+    {
+      "chapter": 1169,
+      "event": "Abyss entry awards 50,000,000 Exploration XP and 100,000 Prestige; Church Holy Spirit Absolute Seal trap disables spatial transport and debuffs the team."
+    },
+    {
+      "chapter": 1170,
+      "event": "Starfire reinforcements arrive; battle with Church begins, with no reward closure."
+    },
+    {
+      "chapter": 1171,
+      "event": "Abyss confrontation continues unresolved. Shield absorption, damage outputs and combat debuffs are recorded as battle observations, not loot."
+    },
+    {
+      "chapter": 1173,
+      "event": "Thorn Saintess Ailin Iv260 joins as midgod; population +200, prosperity +100k, human fortune +100k, loyalty 100; Gods’ Lord title buffs update."
+    },
+    {
+      "chapter": 1174,
+      "event": "Alphonse dies and explicitly drops Guardian Godhead (midgod), Holy Shield · Wall of the Word, and Mace · Child’s Holocaust; kill XP shown. Drop list tail is incomplete."
+    },
+    {
+      "chapter": 1176,
+      "event": "Abyss kill reward panels include one clear Nektar reward and later garbled/duplicated labels; aggregate inventory shows 39 Spirit Flames and 12 Mutated Overlord Souls."
+    },
+    {
+      "chapter": 1177,
+      "event": "Abyss Terminator SS mission reaches 100/100; settlement is deferred. The sword’s separate 100 divine-kill evolution condition remains distinct."
+    },
+    {
+      "chapter": 1178,
+      "event": "Rule seal fully breaks; gods awaken worldwide."
+    },
+    {
+      "chapter": 1179,
+      "event": "Global Age of Gods Descending event opens Faction System, with Divine Chosen allegiance, blessings and deity-control terms."
+    },
+    {
+      "chapter": 1181,
+      "event": "SS mission settlement lists staged chests, six semi-artifact set pieces, Flawless Divine Fire, choice Godhead, Random Divine Skill Chest, title and Prestige. Cao Xing selects Crystal Godhead; later text begins opening three chests without revealing contents by cutoff."
+    },
+    {
+      "chapter": 1181,
+      "event": "Source arithmetic conflict preserved: stage entries total 3,200 Divine Power Fragments; later narration claims 3,400. No silent normalization."
+    }
+  ],
+  "unresolved_conflicts": [
+    "Ch1163 shipment narration uses rounded quantities while altar system display reports exact consumption values; both are retained rather than normalized.",
+    "Ch1163 shows 97,164 new Hero promotions after 120,000 gather and 25,000 are held back; preserve displayed outcome.",
+    "Vietnamese edition chapter numbering diverges materially: Cơm Nguội and Hắc Hoàng Đại Đế Ch1162 title an ice-statue goddess story, while Xa Lộ Sách local Ch1162 is a split chapter on demigod breakthrough/return to territory. These titles do not establish the Chinese printed Ch1162 story contents or item facts.",
+    "No result is shown for the Abyss battle by Ch1171; no victory/loot should be inferred.",
+    "Ch1174 Alphonse death reward line is visibly truncated after explicit Guardian Godhead, shield and mace; additional drops remain unknown.",
+    "Ch1176 post-Nektar pseudogod reward labels are garbled/duplicated; retain uncertain attribution.",
+    "Ch1175 sword evolution requires 100 divine kills; do not equate that counter with SS mission 100/100.",
+    "Ch1181 staged divine-power fragment entries sum to 3,200, but subsequent narrative says 3,400; both are preserved pending source clarification.",
+    "Ch1181 three chests are opened at the end of the chapter, but no result panel is visible before cutoff; contents unresolved.",
+    "Vietnamese edition-local chapter numbering/title arcs diverge from Bqquge printed Chinese numbering; no remapping inferred."
+  ],
+  "source_checks": [
+    {
+      "source": "Bqquge",
+      "url": "https://www.bqquge.org/851/2232787",
+      "checked_chapters": "1172–1181",
+      "use": "Primary Chinese text; visible continuations inspected for each chapter."
+    },
+    {
+      "source": "Cơm Nguội Novel",
+      "url": "https://comnguoinovel.com/truyen/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong/1172",
+      "checked_chapters": "local 1172",
+      "title": "Oan gia ngõ hẹp, sát cục tại Minh Uyên Chi Địa!",
+      "use": "Visible title only; body requests login."
+    },
+    {
+      "source": "Hắc Hoàng Đại Đế",
+      "url": "https://hachoangdaide.online/tan-the-bang-phong-ta-xay-dung-hoan-my-lanh-dia/chuong-1172",
+      "checked_chapters": "local 1172",
+      "title": "Oan Gia Ngõ Hẹp, Sát Cục Tại Minh Uyên Chi Địa",
+      "use": "Visible title only; site says only first 100 chapters are readable without login."
+    },
+    {
+      "source": "Xa Lộ Sách",
+      "url": "https://xalosach.com/bang-phong-tan-the-ta-che-tao-hoan-my-lanh-dia-0.html?P=12#danhsachchuong",
+      "checked_chapters": "catalog local 1101–1200",
+      "title": "Local Ch1172–1173 “Toàn viên biến dị chúa tể, Thủ Vọng Giả dần dần điên cuồng” split (1)/(2); local Ch1180–1181 “Toàn bộ server ban thưởng, chiến công tăng vọt” split (1)/(2).",
+      "use": "Visible catalog only; split/numbering divergence recorded."
+    }
+  ]
+}

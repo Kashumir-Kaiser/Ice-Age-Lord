@@ -58,3 +58,7 @@ The React/Vite visual demo now lives in `frontend/` on `main`. It uses the origi
 
 - `data/events/EVENT-SOURCE-CATALOG-v7.5-ADDENDUM.json`: Round 75 item receipts, trial rewards, Abyss rules and battle context, Vietnamese edition comparison, and unresolved conflicts.
 - `research/extraction-audits/ROUND-75-SEVENTY-FIFTH-EXTRACTION.md`: Round 75 audit for Chapters 1162–1171.
+
+- `data/events/EVENT-SOURCE-ITEMS-v7.6.csv`: cumulative source-item ledger through printed Chapter 1181.
+- `data/events/EVENT-SOURCE-CATALOG-v7.6-ADDENDUM.json`: Round 76 drops, SS task rewards, event rules, three-site Vietnamese edition checks, and unresolved conflicts.
+- `research/extraction-audits/ROUND-76-SEVENTY-SIXTH-EXTRACTION.md`: Round 76 audit for Chapters 1172–1181.
