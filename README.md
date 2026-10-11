@@ -12,7 +12,7 @@ This is a **new game**: do not import earlier campaign inventories, unit rosters
 
 - `references/canonical/`: original Lord DnD source rulebooks and lineage, retained **as references** (not an already-compiled runtime).
 - `design/`: latest web-game content design, magical buildings and source-grounded construction proposals.
-- `data/events/`: cumulative source-item CSV v7.19 with 1,581 rows through Round 90 (LanaGarden displayed Chapters 1312–1321); round audits and catalog addenda are in `research/extraction-audits/` and `data/events/`. The cumulative source catalog JSON remains v4.6 (590 items, 239 effects) with v4.7–v7.20 addenda and the v7.2.1 metadata correction. Catalog numbering varies by one in this arc; align exact titles and see the Round 89–90 audits. The fixed 30-event v0.6 timeline is unchanged. Extracted entries are not automatically obtainable in a new game.
+- `data/events/`: cumulative source-item CSV v7.20 with 1,615 rows through Round 91 (LanaGarden displayed Chapters 1322–1331); round audits and catalog addenda are in `research/extraction-audits/` and `data/events/`. The cumulative source catalog JSON remains v4.6 (590 items, 239 effects) with v4.7–v7.21 addenda and the v7.2.1 metadata correction. Catalog numbering varies by one in this arc; align exact titles and see the Round 89–91 audits. The fixed 30-event v0.6 timeline is unchanged. Extracted entries are not automatically obtainable in a new game.
 - `research/extraction-audits/`: **all eighty-nine extraction rounds**, including the Round 29 continuation addendum (v2.9.1), Round 35, Round 36, Round 38, Round 39, Round 40, Round 41, Round 42, Round 43, and Rounds 44–74 audits, with append-only research and immutable earlier releases.
 - `research/snapshots/`: chronological catalogs and design versions retained for traceability.
 
@@ -103,3 +103,7 @@ The React/Vite visual demo now lives in `frontend/` on `main`. It uses the origi
 - `data/events/EVENT-SOURCE-ITEMS-v7.19.csv`: cumulative source-item ledger through Round 90 (1,581 rows), covering inheritance rewards and assignments, tower-trial rewards, synthesis, transformations, and item evolution in LanaGarden Chapters 1312–1321.
 - `data/events/EVENT-SOURCE-CATALOG-v7.20-ADDENDUM.json`: Round 90 outcomes and explicit unresolved chest, stock, and assignment details.
 - `research/extraction-audits/ROUND-90-NINETIETH-EXTRACTION.md`: Round 90 audit; resumes at LanaGarden Chapter 1322 / SX-1582.
+
+- `data/events/EVENT-SOURCE-ITEMS-v7.20.csv`: cumulative source-item ledger through Round 91 (1,615 rows), including fourth- and fifth-floor trial rewards, Huang Tian armor restoration, sixth-floor final rewards, and global buffs from LanaGarden Chapters 1322–1331.
+- `data/events/EVENT-SOURCE-CATALOG-v7.21-ADDENDUM.json`: Round 91 outcomes, world-wide trial effects, and final-reward attribution notes.
+- `research/extraction-audits/ROUND-91-NINETY-FIRST-EXTRACTION.md`: Round 91 audit; resumes at LanaGarden Chapter 1332 / SX-1616.
