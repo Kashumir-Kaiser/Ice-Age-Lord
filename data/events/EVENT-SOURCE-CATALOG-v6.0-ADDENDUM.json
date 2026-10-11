@@ -28,31 +28,20 @@
     "SX-0888",
     "SX-0889",
     "SX-0890",
-    "SX-0891",
-    "SX-0892",
-    "SX-0893",
-    "SX-0894",
-    "SX-0895",
-    "SX-0896",
-    "SX-0897",
-    "SX-0898",
-    "SX-0899",
-    "SX-0900",
-    "SX-0901",
-    "SX-0902"
+    "SX-0891"
   ],
   "confirmed_outcomes": [
     {
       "chapter": 1012,
-      "event": "Potion production outputs include three demi-god potions and a large batch of named Legendary potions, itemized in the ledger."
+      "event": "Potion production outputs include three demi-god potions and named Legendary potion batches, itemized in the ledger."
     },
     {
       "chapter": 1013,
-      "event": "Three legions hand over 30% of their Coldland loot; itemized resources include Ice Dragon Marks, Glacier Shards, Ice Dragon Crystals, rune stones, Death Energy Spheres, glacier cores and attributes books. Bronn completes his demi-god breakthrough."
+      "event": "Three legions hand over 30% of their Coldland loot; itemized resources include Ice Dragon Marks, Glacier Shards, Ice Dragon Crystals, rune stones, Death Energy Spheres, glacier cores and attribute books. Bronn completes his demi-god breakthrough."
     },
     {
       "chapter": 1014,
-      "event": "Silver-Blood Saint Potion is prepared; no combat reward itemized."
+      "event": "Silver-Blood Saint Potion is prepared; no itemized receipt in this chapter."
     },
     {
       "chapter": 1015,
@@ -64,7 +53,7 @@
     },
     {
       "chapter": 1017,
-      "event": "Three allies receive Divine Fires and fragments for breakthroughs; transfers/uses from previous stock."
+      "event": "Three allies receive Divine Fires and fragments for breakthroughs; transfers from previous stock."
     },
     {
       "chapter": 1018,
