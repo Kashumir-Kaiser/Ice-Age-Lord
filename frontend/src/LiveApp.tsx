@@ -9,12 +9,15 @@ import type {
   CoordinateMm, EntityRef, PlayerEntityView, PlayerView,
 } from '../../packages/contracts/src/index.ts';
 import type { PlayerEvent, SaveSummary } from '../../packages/contracts/src/api.ts';
-import { loadAssetManifest } from './assets/assetRegistry';
-import type { AssetManifest } from './assets/assetRegistry';
 import { MarkerGraphic } from './map/MapLayers';
 import { entityRefKey, GameApiError, HttpGameClient } from './live/HttpGameClient';
 import { SaveResponseScopeGate } from './live/saveScope';
 import { LIVE_SCREENS, type LiveScreen } from './live/screens';
+import TerritoryScene from './territory/TerritoryScene';
+import { territorySceneFromApi } from './live/territoryAdapter';
+import type { EntityRef as DemoEntityRef, LayoutDraft } from './game/GameClient';
+import type { TerritoryCamera } from './territory/projection';
+import type { ReadabilityMode } from './territory/BuildingSprite';
 import { EventBoard } from './shared/EventBoard';
 import { CharacterSummary, PageFrame, ScreenHeading } from './shared/PageFrame';
 import { InspectorFrame, InspectorHeading } from './shared/InspectorFrame';
@@ -247,8 +250,6 @@ function LiveApp() {
   const [working, setWorking] = useState(false);
   const [pendingCommand, setPendingCommand] = useState<CommandEnvelope | null>(null);
   const [feedback, setFeedback] = useState<Feedback>({ kind: 'idle', text: '' });
-  const [manifest, setManifest] = useState<AssetManifest | null>(null);
-  const [manifestError, setManifestError] = useState(false);
   const [customSpeed, setCustomSpeed] = useState('10');
   const [customSelection, setCustomSelection] = useState(false);
   const [chooseDestination, setChooseDestination] = useState(false);
@@ -267,8 +268,6 @@ function LiveApp() {
   const [dispatchMode, setDispatchMode] = useState<'chest' | 'hunt'>('chest');
   const [dispatchPreview, setDispatchPreview] = useState<ActionAvailability | null>(null);
   const [huntActorId, setHuntActorId] = useState('');
-  const [huntActorIds, setHuntActorIds] = useState<string[]>([]);
-  const [huntSquadCustomized, setHuntSquadCustomized] = useState(false);
   const [travelActorId, setTravelActorId] = useState('LI_LAN');
   const [harvestActorId, setHarvestActorId] = useState('LI_LAN');
   const [harvestQuantity, setHarvestQuantity] = useState(1);
@@ -294,16 +293,6 @@ function LiveApp() {
     });
     return () => { active = false; };
   }, [client]);
-
-  useEffect(() => {
-    let active = true;
-    loadAssetManifest().then(result => {
-      if (active) setManifest(result);
-    }).catch(() => {
-      if (active) setManifestError(true);
-    });
-    return () => { active = false; };
-  }, []);
 
   useEffect(() => {
     if (!authenticated || !view) return;
@@ -1055,7 +1044,7 @@ function LiveApp() {
     if (!view) return null;
     const livingUnits = view.units.filter(unit => unit.health && unit.health.current > 0 && unit.position);
     const lead = dispatchLeadActorId === view.player.id ? view.player : livingUnits.find(unit => unit.id === dispatchLeadActorId) ?? view.player;
-    const center = dispatchCenter ?? lead.position;
+    const center = dispatchCenter ?? lead.position ?? view.player.position;
     const busyActorIds = new Set([
       ...view.spatial.movementOrders.filter(order => order.status === 'active').flatMap(order => order.actorIds),
       ...view.spatial.searchJobs.filter(job => job.status === 'active').flatMap(job => job.actorIds),
@@ -1079,8 +1068,7 @@ function LiveApp() {
     const knownTarget = view.combat?.target;
     const defaultHunter = livingUnits[0]?.id ?? '';
     const selectedHunter = livingUnits.some(unit => unit.id === huntActorId) ? huntActorId : defaultHunter;
-    const selectedHunters = huntActorIds.filter(id => livingUnits.some(unit => unit.id === id));
-    const huntingSquadIds = huntSquadCustomized ? selectedHunters : selectedHunter ? [selectedHunter] : [];
+    const huntingSquadIds = selectedHunter ? [selectedHunter] : [];
     const hunterPosition = livingUnits.find(unit => unit.id === selectedHunter)?.position;
     const huntRangeMetres = knownTarget && hunterPosition
       ? Math.round(Math.hypot(hunterPosition.xMm - knownTarget.position.xMm, hunterPosition.yMm - knownTarget.position.yMm) / 1_000)
@@ -1134,16 +1122,12 @@ function LiveApp() {
       {busy && <small className="live-resource-access">A selected actor is already assigned to travel, combat, or another field job.</small>}
       {dispatchPreview && <p className={dispatchPreview.enabled ? 'live-preview-success' : 'live-inline-error'}>{dispatchPreview.enabled ? `${dispatchPreview.preview?.label}: ${dispatchPreview.preview?.value}` : availabilityMessage(dispatchPreview)}</p>}
       {knownTarget?.state === 'available' && <div className="live-hunt-row">
-        <fieldset className="live-dispatch-units"><legend>Hunting squad</legend>{livingUnits.map(unit => <label key={unit.id}>
-          <input type="checkbox" checked={huntingSquadIds.includes(unit.id)} disabled={busyActorIds.has(unit.id)} onChange={event => {
-            setHuntSquadCustomized(true);
-            setHuntActorId(unit.id);
-            setHuntActorIds(current => event.target.checked ? [...new Set([...current, unit.id])] : current.filter(id => id !== unit.id));
-          }} />{unit.name}{busyActorIds.has(unit.id) ? ' · assigned' : ''}
-        </label>)}</fieldset>
+        <label className="live-inline-field">Fighter<select value={selectedHunter} onChange={event => setHuntActorId(event.target.value)}>
+          <option value="">Choose a living owned unit</option>{livingUnits.map(unit => <option key={unit.id} value={unit.id} disabled={busyActorIds.has(unit.id)}>{unit.name}{busyActorIds.has(unit.id) ? ' · assigned' : ''}</option>)}
+        </select></label>
         <span>Known target · {knownTarget.label}{huntRangeMetres === null ? '' : ` · ${huntRangeMetres} m away`}</span>
-        <button className="live-button" data-testid="engage-known-target" disabled={working || Boolean(pendingCommand) || huntingSquadIds.length === 0 || huntingSquadIds.some(id => busyActorIds.has(id))} onClick={() => void sendCommand(commandFor(view, 'attack', { actorIds: huntingSquadIds, targetId: knownTarget.id }))}>Engage known target</button>
-        <small>When the sweep detects a target, engage it with the selected squad. Fighters share one encounter and the existing XP award; extra units do not create prey or extra rewards.</small>
+        <button className="live-button" data-testid="engage-known-target" disabled={working || Boolean(pendingCommand) || huntingSquadIds.length === 0 || huntingSquadIds.some(id => busyActorIds.has(id))} onClick={() => void sendCommand(commandFor(view, 'attack', { actorIds: huntingSquadIds, targetId: knownTarget.id }))}>Engage target</button>
+        <small>Each encounter currently uses one fighter. Other units can continue their own work.</small>
       </div>}
     </section>;
   }

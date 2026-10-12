@@ -18,7 +18,17 @@ export function playerView(revision = 1): PlayerView {
     eventProgressionBlocker: null,
     quests: [],
     currency: [],
-    stage08: { caravan: null, marketOffers: [], auctionLots: [], auctionBids: [] },
+    stage08: {
+      caravan: null,
+      marketOffers: [],
+      auctionLots: [],
+      auctionBids: [],
+      rankSnapshots: [],
+      openingBoard: {
+        boardId: 'OPENING_LEVEL', status: 'scheduled', opensAtElapsedMs: 0, closesAtElapsedMs: 0,
+        displayDelayMs: 0, rows: [], rewardClaimStatus: 'unavailable',
+      },
+    },
     worldClock: { day: 1, hour: 7, minute: 0, lightPhase: 'daylight' },
     survival: { coldLoad: null, coldStatus: 'weather_unresolved', blocker: 'OPENING_WEATHER_RECORD_NOT_SEEDED', hungerState: 'FED' },
     player: {
@@ -30,7 +40,7 @@ export function playerView(revision = 1): PlayerView {
     careerCard: { observed: false, active: false, openingSkillLearned: false, career: null },
     territory: {
       id: 'H0', stage: 'H0', position: { xMm: 0, yMm: 0 },
-      survivalFire: { ref: fireRef, level: 1, active: true, heatRadiusMetres: 10, fuelRemaining: null, fuelKnowledge: 'state_unobserved', nextFuelConsumptionAtElapsedMs: null, fuelBlocker: 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED', protection: 'active' },
+      survivalFire: { ref: fireRef, level: 1, active: true, heatRadiusMetres: 10, fuelRemaining: null, hasFuel: false, fuelKnowledge: 'state_unobserved', nextFuelConsumptionAtElapsedMs: null, fuelBlocker: 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED', protection: 'active' },
       tomb: {
         level: 1,
         deathQi: { current: 20, capacity: 20, nextRefillAtElapsedMs: 61200000 },

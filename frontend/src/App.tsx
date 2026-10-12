@@ -395,7 +395,7 @@ export default function App() {
           {screen==='inventory'&&<Inventory items={playerView.items} selectedEntity={selectedEntity} selectEntity={selectEntity} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen}/>}
           {screen==='forces'&&<Forces samples={playerView.forces} units={playerView.units}/>}
           {screen==='buildings'&&<Buildings sites={playerView.buildings} selectedEntity={selectedEntity} selectEntity={selectEntity} navigate={navigate} onFocusBuilding={focusBuilding} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen}/>}
-          {screen==='events'&&<EventBoard mode="demo" events={demoEventContracts} nowElapsedMs={clockSeconds*1000} formatTime={elapsedMs=>`T+${Math.floor(elapsedMs/3_600_000)}h${String(Math.floor((elapsedMs%3_600_000)/60_000)).padStart(2,'0')}`}/>}
+          {screen==='events'&&<EventBoard mode="demo" events={demoEventContracts} nowElapsedMs={clockSeconds*1000} formatTime={elapsedMs=>elapsedMs===null?'—':`T+${Math.floor(elapsedMs/3_600_000)}h${String(Math.floor((elapsedMs%3_600_000)/60_000)).padStart(2,'0')}`}/>}
           {screen==='journal'&&<Journal entries={playerView.journal}/>}
         </PageFrame>
       </main>
