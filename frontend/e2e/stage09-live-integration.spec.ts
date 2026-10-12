@@ -40,7 +40,7 @@ test('all nine live screens remain on one server-owned save projection at releas
         await expect.poll(() => portrait.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
       }
       if (screen === 'Sự kiện') {
-        await expect(page.locator('.live-calendar-row')).toHaveCount(30);
+        await expect(page.locator('.shared-event-card')).toHaveCount(30);
         await expect(page.getByRole('heading', { name: 'Xếp hạng và quyết toán' })).toBeVisible();
       }
       if (screen === 'Bản đồ') {

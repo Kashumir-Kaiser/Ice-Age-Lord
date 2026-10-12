@@ -21,6 +21,7 @@ import type { ReadabilityMode } from './territory/BuildingSprite';
 import { EventBoard } from './shared/EventBoard';
 import { CharacterArtwork, CharacterSummary, PageFrame, ScreenHeading } from './shared/PageFrame';
 import { InspectorFrame, InspectorHeading } from './shared/InspectorFrame';
+import { OpeningRankingBoard } from './shared/OpeningRankingBoard';
 
 type Screen = LiveScreen;
 type Feedback = { kind: 'idle' | 'saving' | 'committed' | 'rejected' | 'disconnected'; text: string };
@@ -1207,7 +1208,17 @@ function LiveApp() {
         </section>
       </div>;
     }
-    if (screen === 'events') return eventBoard();
+    if (screen === 'events') return <div className="live-section-stack">
+      {eventBoard()}
+      <OpeningRankingBoard
+        board={view.stage08.openingBoard}
+        snapshots={view.stage08.rankSnapshots}
+        playerId={view.player.id}
+        formatTime={elapsedLabel}
+        busy={working || Boolean(pendingCommand)}
+        onClaim={boardId => { void sendCommand(commandFor(view, 'claim_opening_rank_reward', { boardId })); }}
+      />
+    </div>;
     if (screen === 'overview') {
       return <div className="live-section-stack">
         <section className="live-hero">
