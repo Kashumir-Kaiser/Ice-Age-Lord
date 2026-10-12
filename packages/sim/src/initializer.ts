@@ -9,6 +9,7 @@ import { RESOURCE_STORAGE } from '../../content/src/resourceBalance.ts';
 import { stage07OpeningCorpse, STAGE07_OPENING_CORPSE_ID } from './stage07.ts';
 import { createStage07CombatState } from './combat.ts';
 import { initialStage08State } from './stage08.ts';
+import { OPENING_FIRE_STARTER_FUEL_UNITS, OPENING_WEATHER_RECORD } from '../../content/src/openingEnvironment.ts';
 
 export type NewGameOptions = {
   saveId: string;
@@ -76,9 +77,9 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
     survival: {
       coldLoadMicro: 0,
       coldLoadRemainder: 0,
-      coldStatus: 'weather_unresolved',
-      environment: null,
-      blocker: 'OPENING_WEATHER_RECORD_NOT_SEEDED',
+      coldStatus: 'clear',
+      environment: { ...OPENING_WEATHER_RECORD },
+      blocker: null,
       hungerState: 'FED',
     },
     player: {
@@ -110,10 +111,10 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
         active: true,
         heatRadiusMetres: 10,
         heatDeltaCelsius: { min: 5, max: 20 },
-        fuelRemaining: null,
+        fuelRemaining: OPENING_FIRE_STARTER_FUEL_UNITS,
         fuelKnowledge: 'state_unobserved',
-        nextFuelConsumptionAtElapsedMs: null,
-        fuelBlocker: 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED',
+        nextFuelConsumptionAtElapsedMs: hourMs / 4,
+        fuelBlocker: null,
         protectedThroughElapsedMs: 144 * hourMs,
         protectionEventId: 'EV00-SAFE-FIRE',
         protectionStatus: 'pending_opening_settlement',

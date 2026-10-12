@@ -1,5 +1,6 @@
 export const CONTRACT_SCHEMA_VERSION = 1 as const;
-export const GAME_STATE_SCHEMA_VERSION = 7 as const;
+export const PLAYER_VIEW_SCHEMA_VERSION = 2 as const;
+export const GAME_STATE_SCHEMA_VERSION = 10 as const;
 export const MAX_HARVEST_COMMAND_UNITS = 100_000 as const;
 export const UNIT_INVENTORY_CONTAINER_PREFIX = 'LL-CNT-UNIT-';
 
@@ -196,6 +197,17 @@ export type FixedEventScheduleRow = {
   durationHours: number;
   settlementHours: number;
   basis: string;
+  researchEvidence: {
+    releaseId: 'LL01-WEB-EVENT-SOURCE-ITEMS-7.24';
+    sourceRows: number;
+    researchOnlyRows: number;
+    verifiedAcquisitions: number;
+    verifiedShopOffers: number;
+    observedChestOutcomes: number;
+    unresolvedRowShapes: number;
+    unresolvedConflicts: number;
+    mechanicFlags: readonly string[];
+  };
   statusAtT0: 'scheduled';
   source: SourceRef;
 };
@@ -216,11 +228,28 @@ export type EventProgressionBlocker = {
   receiptSequence: number | null;
 };
 
+export type EventContractDefinition = {
+  eventId: Id;
+  handlerFamily: string;
+  runtimeStatus: 'active' | 'planned';
+  participationRequirement: string;
+  objectives: string;
+  scoring: string;
+  encounters: string;
+  rewardContract: string;
+  shopContract: string;
+  stockAndExpiry: string;
+  settlement: string;
+  source: string;
+};
+
 export type PlayerCalendarEvent = {
   id: Id;
   displayName: string;
   status: ScheduledEventState['status'];
-  readiness: 'executable_lifecycle' | 'calendar_only' | 'mandatory_content_blocked';
+  readiness: 'executable_lifecycle' | 'calendar_only' | 'settlement_blocked' | 'mandatory_content_blocked';
+  eventContract: Omit<EventContractDefinition, 'eventId'>;
+  researchEvidence: FixedEventScheduleRow['researchEvidence'];
   opensAtElapsedMs: number;
   locksAtElapsedMs: number;
   resolvesAtElapsedMs: number;
@@ -419,12 +448,22 @@ export type MovementOrderState = {
 
 export type SearchJobState = {
   id: Id;
+  mode: 'chest' | 'hunt';
   observerLineageId: Id;
   actorIds: readonly Id[];
   center: CoordinateMm;
   envelopeRadiusMm: number;
   laneWidthMm: number;
   path: readonly CoordinateMm[];
+  returnPath?: readonly CoordinateMm[];
+  phase?: 'sweeping' | 'returning';
+  speedMmPerHour?: number;
+  sweepStartProgressMm?: number;
+  stopAtElapsedMs?: number | null;
+  targetCount?: number | null;
+  foundChestIds?: readonly Id[];
+  foundTargetIds: readonly Id[];
+  returnReason?: 'area_complete' | 'target_count' | 'time_limit' | 'recalled';
   pathProgressMm: number;
   tickStartProgressMm: number;
   tickStartAtElapsedMs: number;
@@ -439,6 +478,7 @@ export type SearchJobState = {
   repeatedAreaM2: number;
   interruptionCode: string | null;
 };
+export type SearchJobPlayerView = Omit<SearchJobState, 'foundChestIds' | 'foundTargetIds'> & { foundChestCount: number; foundTargetCount: number };
 
 export type HarvestJobState = {
   id: Id;
@@ -604,8 +644,52 @@ export type Stage08RankSnapshot = {
   settledAtElapsedMs: number;
   sourceContract: Id;
   reasonCode: Id | null;
-  rows: readonly { playerId: Id; rank: number; completionAtElapsedMs: number }[];
+  rows: readonly {
+    playerId: Id;
+    playerName: string;
+    rank: number;
+    level: number;
+    completionAtElapsedMs: number;
+    rewardBandId: string;
+    rewardStatus: 'pending' | 'claimed' | 'npc_materialized';
+    rewardItems: readonly { instanceId: Id; itemTemplateId: Id; quantity: number; status: 'committed' | 'blocked'; blocker: string | null }[];
+    claimReceiptId: Id | null;
+  }[];
   snapshotSha256: string;
+};
+export type OpeningRivalActionState = {
+  id: Id;
+  contenderId: Id;
+  action: 'hunt' | 'forage' | 'recover';
+  occurredAtElapsedMs: number;
+  result: 'completed' | 'no_target' | 'resource_shortage';
+  targetsConsumed: number;
+  xpAwarded: number;
+  levelBefore: number;
+  levelAfter: number;
+  resourcesBefore: { rations: number; firewood: number; prey: number };
+  resourcesAfter: { rations: number; firewood: number; prey: number };
+  ruleVersion: string;
+};
+export type OpeningRivalRuntimeState = {
+  contenderId: Id;
+  level: number;
+  xp: number;
+  completionAtElapsedMs: number | null;
+  nextActionAtElapsedMs: number | null;
+  actionIntervalMs: number;
+  actionsTaken: number;
+  resources: { rations: number; firewood: number; prey: number; nextMealAtElapsedMs: number; nextFirewoodAtElapsedMs: number };
+  actionLedger: readonly OpeningRivalActionState[];
+};
+export type OpeningBoardView = {
+  boardId: Id;
+  status: 'scheduled' | 'open' | 'closed';
+  opensAtElapsedMs: number;
+  closesAtElapsedMs: number;
+  displayDelayMs: number;
+  rows: readonly { playerId: Id; playerName: string; rank: number; level: number; completionAtElapsedMs: number }[];
+  rewardClaimStatus: 'unavailable' | 'pending' | 'claimed';
 };
 export type Stage08RuntimeState = {
   enabled: boolean;
@@ -615,12 +699,15 @@ export type Stage08RuntimeState = {
   auctionBids: readonly Stage08AuctionBidState[];
   rewardClaimReceipts: readonly Id[];
   rankSnapshots: readonly Stage08RankSnapshot[];
+  openingRivals: readonly OpeningRivalRuntimeState[];
 };
 export type Stage08PlayerView = {
   caravan: Pick<CaravanState, 'id' | 'status' | 'locationSiteId' | 'deadlineAtElapsedMs' | 'arrivalAtElapsedMs'> | null;
   marketOffers: readonly Stage08MarketOfferState[];
   auctionLots: readonly Stage08AuctionLotState[];
   auctionBids: readonly Stage08AuctionBidState[];
+  rankSnapshots: readonly Stage08RankSnapshot[];
+  openingBoard: OpeningBoardView;
 };
 export type TombQueueEntry = {
   id: Id;
@@ -680,6 +767,8 @@ export type WorldDefinition = {
   navigationOverlay: NavigationOverlay;
   dormantQuestIds: readonly Id[];
   eventSchedule: readonly FixedEventScheduleRow[];
+  eventContractRegistryVersion: string;
+  eventContracts: readonly EventContractDefinition[];
   lockedSourceHashes: Readonly<Record<string, string>>;
   contentSha256: string;
 };
@@ -754,7 +843,7 @@ export type VisibleMap = {
 };
 
 export type Stage07CombatView = {
-  target: { id: Id; label: string; state: 'available' | 'reacting' | 'retreated' | 'dead'; regionId: Id; regionalPopulationRemaining: number; position: CoordinateMm; attack: ActionAvailability } | null;
+  target: { id: Id; label: string; state: 'available' | 'reacting' | 'retreated' | 'dead'; regionId: Id; regionalPopulationRemaining: number | null; position: CoordinateMm; attack: ActionAvailability } | null;
   encounter: null | {
     id: Id; status: 'active' | 'victory' | 'defeat' | 'retreated'; actorIds: readonly Id[]; round: number;
     nextTurnAtElapsedMs: number | null; targetHealth: { current: number; max: number };
@@ -763,7 +852,7 @@ export type Stage07CombatView = {
 };
 
 export type PlayerView = {
-  schemaVersion: typeof CONTRACT_SCHEMA_VERSION;
+  schemaVersion: typeof PLAYER_VIEW_SCHEMA_VERSION;
   saveId: Id;
   revision: number;
   lastEventSequence: number;
@@ -808,6 +897,7 @@ export type PlayerView = {
       active: boolean;
       heatRadiusMetres: number;
       fuelRemaining: number | null;
+      hasFuel: boolean;
       fuelKnowledge: 'state_unobserved' | 'known';
       nextFuelConsumptionAtElapsedMs: number | null;
       fuelBlocker: string | null;
@@ -852,7 +942,7 @@ export type PlayerView = {
   spatial: {
     navigationRuleVersion: 'LL01-NAVIGATION-OVERLAY-1.0';
     movementOrders: readonly MovementOrderState[];
-    searchJobs: readonly SearchJobState[];
+    searchJobs: readonly SearchJobPlayerView[];
     harvestJobs: readonly HarvestJobState[];
     resources: readonly {
       resourceId: Id;
@@ -1078,6 +1168,7 @@ export type CommandType =
   | 'negotiate_caravan'
   | 'escort_caravan'
   | 'claim_quest_reward'
+  | 'claim_opening_rank_reward'
   | 'place_auction_bid'
   | 'cancel_auction_bid'
   | 'assign_construction_workers'
@@ -1104,7 +1195,7 @@ export type CommandPayloadByType = {
   move: { actorId: Id; destinationId?: Id; destination?: CoordinateMm };
   cancel_travel: { orderId: Id };
   survey: { actorId: Id; targetId: Id };
-  search: { actorId: Id; center: CoordinateMm; radiusMm: number };
+  search: { actorId: Id; center: CoordinateMm; radiusMm: number; mode?: 'chest' | 'hunt'; additionalActorIds?: readonly Id[]; targetCount?: number; timeLimitMinutes?: number };
   harvest: { actorId: Id; resourceId: Id; materialId: Id; quantity: number; toolItemId: Id };
   cancel_spatial_job: { jobId: Id };
   transfer_item: { actorId: Id; sourceContainerId: Id; destinationContainerId: Id; itemId: Id; quantity: number };
@@ -1130,6 +1221,7 @@ export type CommandPayloadByType = {
   negotiate_caravan: { questId: Id; route: 'trade_one_grain_sack' };
   escort_caravan: { questId: Id };
   claim_quest_reward: { questId: Id };
+  claim_opening_rank_reward: { boardId: Id };
   place_auction_bid: { lotId: Id; quantity: number; unitBid: number };
   cancel_auction_bid: { bidId: Id };
 };
@@ -1188,7 +1280,7 @@ export interface GameClient {
 const commandTypes = new Set<CommandType>([
   'inspect_entity', 'inspect_starter_container', 'inspect_career_card', 'activate_career_card', 'set_clock_speed',
   'advance_to_boundary', 'enqueue_tomb', 'cancel_tomb', 'refuel_fire', 'extinguish_fire', 'light_fire', 'move', 'cancel_travel', 'survey', 'search', 'harvest', 'cancel_spatial_job', 'transfer_item',
-  'open_cache', 'repair', 'build', 'craft', 'revive', 'butcher_corpse', 'equip', 'attack', 'retreat', 'shop_transaction', 'accept_quest', 'negotiate_caravan', 'escort_caravan', 'claim_quest_reward', 'place_auction_bid', 'cancel_auction_bid', 'assign_construction_workers', 'cancel_construction_job', 'recruit_resident', 'operate_heater', 'split_stack', 'merge_stacks', 'consume_item', 'unequip_item',
+  'open_cache', 'repair', 'build', 'craft', 'revive', 'butcher_corpse', 'equip', 'attack', 'retreat', 'shop_transaction', 'accept_quest', 'negotiate_caravan', 'escort_caravan', 'claim_quest_reward', 'claim_opening_rank_reward', 'place_auction_bid', 'cancel_auction_bid', 'assign_construction_workers', 'cancel_construction_job', 'recruit_resident', 'operate_heater', 'split_stack', 'merge_stacks', 'consume_item', 'unequip_item',
 ]);
 
 const payloadFields: Readonly<Record<CommandType, readonly string[]>> = {
@@ -1224,6 +1316,7 @@ const payloadFields: Readonly<Record<CommandType, readonly string[]>> = {
   negotiate_caravan: ['questId', 'route'],
   escort_caravan: ['questId'],
   claim_quest_reward: ['questId'],
+  claim_opening_rank_reward: ['boardId'],
   place_auction_bid: ['lotId', 'quantity', 'unitBid'],
   cancel_auction_bid: ['bidId'],
   assign_construction_workers: ['jobId', 'workerIds'],
@@ -1291,7 +1384,10 @@ export function validateCommandEnvelope(input: unknown): CommandValidationResult
   for (const key of required) {
     if (!(key in payload)) return issue('COMMAND_PAYLOAD_INVALID', `$.payload.${key}`, 'Required command field is missing.');
   }
-  const optional: Partial<Record<CommandType, readonly string[]>> = { move: ['destinationId', 'destination'] };
+  const optional: Partial<Record<CommandType, readonly string[]>> = {
+    move: ['destinationId', 'destination'],
+    search: ['mode', 'additionalActorIds', 'targetCount', 'timeLimitMinutes'],
+  };
   const allowed = commandType === 'set_clock_speed' ? ['speed', 'customMultiplier', 'stopCondition'] : [...required, ...(optional[commandType] ?? [])];
   for (const key of Object.keys(payload)) {
     if (!allowed.includes(key)) return issue('COMMAND_PAYLOAD_FIELD_UNKNOWN', `$.payload.${key}`, 'Command payload contains an unregistered field.');
@@ -1336,6 +1432,22 @@ export function validateCommandEnvelope(input: unknown): CommandValidationResult
   if (input.type === 'search' && (!validCoordinate(payload.center) || !Number.isSafeInteger(payload.radiusMm)
     || Number(payload.radiusMm) < 1 || Number(payload.radiusMm) > 2_000_000)) {
     return issue('COMMAND_PAYLOAD_INVALID', '$.payload', 'Search center and radius must be valid map coordinates within the supported envelope.');
+  }
+  if (input.type === 'search' && payload.mode !== undefined && payload.mode !== 'chest' && payload.mode !== 'hunt') {
+    return issue('COMMAND_PAYLOAD_INVALID', '$.payload.mode', 'Search mode must be chest or hunt.');
+  }
+  if (input.type === 'search' && 'additionalActorIds' in payload
+    && (!Array.isArray(payload.additionalActorIds) || payload.additionalActorIds.some(id => typeof id !== 'string' || id.trim() === '')
+      || new Set(payload.additionalActorIds).size !== payload.additionalActorIds.length || payload.additionalActorIds.includes(payload.actorId as string))) {
+    return issue('COMMAND_PAYLOAD_INVALID', '$.payload.additionalActorIds', 'Additional search actors must be unique actor IDs, excluding the lead.');
+  }
+  if (input.type === 'search' && 'targetCount' in payload
+    && (!Number.isSafeInteger(payload.targetCount) || Number(payload.targetCount) < 1 || Number(payload.targetCount) > 192)) {
+    return issue('COMMAND_PAYLOAD_INVALID', '$.payload.targetCount', 'The target count must be a whole number from 1 to 192.');
+  }
+  if (input.type === 'search' && 'timeLimitMinutes' in payload
+    && (!Number.isSafeInteger(payload.timeLimitMinutes) || Number(payload.timeLimitMinutes) < 15 || Number(payload.timeLimitMinutes) > 10_080)) {
+    return issue('COMMAND_PAYLOAD_INVALID', '$.payload.timeLimitMinutes', 'The time limit must be 15 minutes to seven days.');
   }
   if (input.type === 'harvest' && (!Number.isSafeInteger(payload.quantity) || Number(payload.quantity) < 1 || Number(payload.quantity) > MAX_HARVEST_COMMAND_UNITS)) {
     return issue('COMMAND_PAYLOAD_INVALID', '$.payload.quantity', 'Expected a positive whole resource quantity within the command limit.');

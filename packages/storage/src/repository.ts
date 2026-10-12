@@ -3,7 +3,7 @@ import { mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
-import type { CommandEnvelope, CommandEvent, CommandReceipt, GameState, StoredCommandReceipt } from '../../contracts/src/index.ts';
+import { GAME_STATE_SCHEMA_VERSION, type CommandEnvelope, type CommandEvent, type CommandReceipt, type GameState, type StoredCommandReceipt } from '../../contracts/src/index.ts';
 import type { BackupEnvelope, CheckpointSummary, SaveSummary } from '../../contracts/src/api.ts';
 import { canonicalStateHash } from '../../sim/src/hash.ts';
 import { upgradeGameState } from '../../sim/src/upgrade.ts';
@@ -127,6 +127,7 @@ export class SqliteRepository {
     this.db.exec('PRAGMA synchronous = FULL;');
     this.db.exec('PRAGMA journal_mode = WAL;');
     this.applyMigrations();
+    this.migratePersistedGameStates();
   }
 
   close(): void { this.db.close(); }
@@ -166,6 +167,34 @@ export class SqliteRepository {
     for (const row of knownRows) {
       if (!availableVersions.has(row.version)) throw new RepositoryError('MIGRATION_MISSING', `Applied migration ${row.filename} is no longer available.`, 500);
     }
+  }
+
+  /** Materialize state-schema upgrades once without touching the committed event, receipt, or checkpoint ledgers. */
+  private migratePersistedGameStates(): void {
+    const rows = this.db.prepare('SELECT save_id, revision, event_sequence, world_package_id, content_version, ruleset_version, state_json, state_sha256 FROM saves ORDER BY save_id').all() as Array<{
+      save_id: string; revision: number; event_sequence: number; world_package_id: string; content_version: string;
+      ruleset_version: string; state_json: string; state_sha256: string;
+    }>;
+    const pending = rows.filter(row => {
+      const state = parseJson<Record<string, unknown>>(row.state_json, 'SAVE_STATE_CORRUPT');
+      if (canonicalStateHash(state) !== row.state_sha256) throw new RepositoryError('SAVE_CHECKSUM_MISMATCH', 'The stored save checksum does not match.', 500);
+      return state.schemaVersion !== undefined && state.schemaVersion !== GAME_STATE_SCHEMA_VERSION;
+    });
+    if (!pending.length) return;
+    this.transaction('game-state-schema-upgrade', () => {
+      const update = this.db.prepare(`UPDATE saves SET content_version = ?, ruleset_version = ?, state_json = ?, state_sha256 = ?
+        WHERE save_id = ? AND revision = ? AND event_sequence = ? AND state_sha256 = ?`);
+      for (const row of pending) {
+        const stored = parseJson<unknown>(row.state_json, 'SAVE_STATE_CORRUPT');
+        const state = upgradeGameState(stored);
+        if (state.saveId !== row.save_id || state.revision !== row.revision || state.lastEventSequence !== row.event_sequence
+          || state.worldPackageId !== row.world_package_id) throw new RepositoryError('SAVE_INDEX_MISMATCH', 'The save index changed during schema migration.', 500);
+        const stateJson = JSON.stringify(state);
+        const result = update.run(state.contentVersion, state.rulesetVersion, stateJson, canonicalStateHash(state),
+          row.save_id, row.revision, row.event_sequence, row.state_sha256);
+        if (result.changes !== 1) throw new RepositoryError('SAVE_INDEX_MISMATCH', 'The save changed during schema migration.', 500);
+      }
+    });
   }
 
   private transaction<T>(name: string, body: () => T): T {
@@ -522,9 +551,12 @@ export class SqliteRepository {
       if (!source) throw new RepositoryError('SAVE_NOT_FOUND', 'The save was not found.', 404);
       const checkpoint = this.db.prepare('SELECT * FROM checkpoints WHERE checkpoint_id = ? AND save_id = ?').get(checkpointId, saveId) as CheckpointRow | undefined;
       if (!checkpoint) throw new RepositoryError('CHECKPOINT_NOT_FOUND', 'The checkpoint was not found.', 404);
-      const state = parseJson<GameState>(checkpoint.state_json, 'CHECKPOINT_CORRUPT');
-      if (canonicalStateHash(state) !== checkpoint.state_sha256 || state.saveId !== saveId
-        || state.revision !== checkpoint.revision || state.lastEventSequence !== checkpoint.event_sequence) {
+      const storedState = parseJson<unknown>(checkpoint.state_json, 'CHECKPOINT_CORRUPT');
+      if (canonicalStateHash(storedState) !== checkpoint.state_sha256) {
+        throw new RepositoryError('CHECKPOINT_CHECKSUM_MISMATCH', 'The checkpoint checksum does not match.', 500);
+      }
+      const state = upgradeGameState(storedState);
+      if (state.saveId !== saveId || state.revision !== checkpoint.revision || state.lastEventSequence !== checkpoint.event_sequence) {
         throw new RepositoryError('CHECKPOINT_CHECKSUM_MISMATCH', 'The checkpoint checksum does not match.', 500);
       }
       const fork: GameState = { ...state, saveId: newSaveId, revision: 0, lastEventSequence: 0, receipts: [] };

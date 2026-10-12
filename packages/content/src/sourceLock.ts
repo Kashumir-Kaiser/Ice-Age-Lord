@@ -1,5 +1,5 @@
-export const CONTENT_VERSION = 'LL01-CONTENT-0.3.0' as const;
-export const RULESET_VERSION = 'LL01-RULESET-0.3.0' as const;
+export const CONTENT_VERSION = 'LL01-CONTENT-0.4.0' as const;
+export const RULESET_VERSION = 'LL01-RULESET-0.4.0' as const;
 export const SOURCE_MAIN_COMMIT = '32f34d8b5bb85671ec6301a30f045e30c0f8f161' as const;
 export const READ_ONLY_FRONTEND_REFERENCE = {
   branch: 'frontend/demo-ui-v0',
@@ -19,6 +19,8 @@ export const SOURCE_LOCK = {
   'references/canonical/LORD-DND-07.md': 'b4734c66751d197134b334450bf01c0fbc5b53f0c033a10392701f7f075992e4',
   'data/events/EVENT-SOURCE-CATALOG-v4.6.json': '3798c889de3ca79afe5941acdf9a674c8618442d0a4343777095f3d054f788b1',
   'data/events/EVENT-SOURCE-ITEMS-v4.6.csv': '9b79b5d34a9060f682bf56bb54606c8f48402f88df036b6b03001f9098363bee',
+  'data/events/EVENT-SOURCE-ITEMS-v7.24.csv': '33b430500c3eb6422a8bb894c7b62198f5a409f87b30ad0f512cebd5e87b3e28',
+  'data/events/EVENT-SOURCE-CATALOG-v7.25-ADDENDUM.json': 'ba06a81fc3918573d973d133a5faf2195feaceaa2f3f442f51eebf03f34bd96c',
   'data/events/EVENT-TIMELINE-v0.6.json': '4ae98de45c94eb9b639a0ce6b8fab6f3af0719deebb0dd9f21bf3d7d03a84c22',
   'data/structures/SOURCE-STRUCTURE-CATALOG-v1.0.json': 'dd1d7d5d11a926ce02b0f1bf735bade395f7b5c4f7b2db0ef24fd276ae40e62c',
 } as const;
@@ -36,6 +38,8 @@ export const SOURCE_RELEASES: Readonly<Record<keyof typeof SOURCE_LOCK, string>>
   'references/canonical/LORD-DND-07.md': 'LORD-DND-07-1.3.0',
   'data/events/EVENT-SOURCE-CATALOG-v4.6.json': 'LL01-WEB-EVENT-SOURCE-EXTRACTION-4.6-ON-TIMELINE-0.6',
   'data/events/EVENT-SOURCE-ITEMS-v4.6.csv': 'LL01-WEB-EVENT-SOURCE-ITEMS-4.6',
+  'data/events/EVENT-SOURCE-ITEMS-v7.24.csv': 'LL01-WEB-EVENT-SOURCE-ITEMS-7.24',
+  'data/events/EVENT-SOURCE-CATALOG-v7.25-ADDENDUM.json': 'LL01-WEB-EVENT-SOURCE-EXTRACTION-7.25-ADDENDUM',
   'data/events/EVENT-TIMELINE-v0.6.json': 'LL01-WEB-EVENT-TIMELINE-RECONCILIATION-0.6-RC1',
   'data/structures/SOURCE-STRUCTURE-CATALOG-v1.0.json': 'LL01-ICE-AGE-LORD-SOURCE-STRUCTURES-1.0',
 } as const;

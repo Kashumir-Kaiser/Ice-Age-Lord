@@ -1,33 +1,73 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import {
-  AlertCircle, ArrowRight, Bell, CheckCircle2, Eye, Flame, Hammer, Map as MapIcon,
-  MapPin, PackageOpen, RefreshCw, ScrollText, Shield, Sparkles, Users,
+  AlertCircle, ArrowRight, Bell, CalendarDays, CheckCircle2, Eye, Flame, Hammer, Map as MapIcon,
+  MapPin, PackageOpen, RefreshCw, ScrollText, Shield, Sparkles, Users, Trophy, UserRound,
 } from 'lucide-react';
 import type {
   ActionAvailability, ClockSpeedSelection, CommandEnvelope, CommandPayloadByType, CommandType,
   CoordinateMm, EntityRef, PlayerEntityView, PlayerView,
 } from '../../packages/contracts/src/index.ts';
 import type { PlayerEvent, SaveSummary } from '../../packages/contracts/src/api.ts';
-import { findAsset, layerPath, loadAssetManifest } from './assets/assetRegistry';
+import { loadAssetManifest } from './assets/assetRegistry';
 import type { AssetManifest } from './assets/assetRegistry';
+import { MarkerGraphic } from './map/MapLayers';
 import { entityRefKey, GameApiError, HttpGameClient } from './live/HttpGameClient';
 import { SaveResponseScopeGate } from './live/saveScope';
 import { LIVE_SCREENS, type LiveScreen } from './live/screens';
+import TerritoryScene from './territory/TerritoryScene';
+import { territorySceneFromApi } from './live/territoryAdapter';
+import type { EntityRef as DemoEntityRef, LayoutDraft } from './game/GameClient';
+import type { TerritoryCamera } from './territory/projection';
+import type { ReadabilityMode } from './territory/BuildingSprite';
 
 type Screen = LiveScreen;
 type Feedback = { kind: 'idle' | 'saving' | 'committed' | 'rejected' | 'disconnected'; text: string };
 const SAVE_KEY = 'ice-age-lord.live.last-save';
 const CREATE_KEY_PREFIX = 'ice-age-lord.live.create-key:';
 const RESOURCE_CARGO_IDS = new Set(['WOOD', 'STONE', 'RAW-ICE-WATER', 'BROWN-COAL', 'RAW-SALT', 'WILD-FOOD']);
+const ITEM_ART_BY_TEMPLATE: Readonly<Record<string, string>> = {
+  WOOD: 'wood', STONE: 'stone', ORE: 'ore', BREAD: 'bread', 'WOODEN-STAFF': 'staff',
+  'STONE-AXE': 'axe', 'STONE-HAMMER': 'stone-hammer', 'IRON-POT': 'iron-pot',
+  'WOODEN-ROUND-SHIELD': 'round-shield', 'CONVENIENCE-FOOD-BAG': 'convenience-bag',
+  'RAW-ICE-WATER': 'water', 'RAW-SALT': 'salt', 'BROWN-COAL': 'ore',
+};
+
+function itemArtPath(templateId: string): string | null {
+  const asset = ITEM_ART_BY_TEMPLATE[templateId];
+  return asset ? `/assets/items/${asset}.svg` : null;
+}
+
+function liveMapMarkerKind(entity: PlayerEntityView): string {
+  if (entity.ref.type === 'site') {
+    if (entity.ref.id === 'SITE-LL01-000') return 'fire';
+    if (entity.ref.id === 'SITE-LL01-001') return 'house';
+    if (entity.ref.id === 'SITE-LL01-002') return 'supply';
+    if (entity.ref.id === 'SITE-LL01-003') return 'tomb';
+    return 'site';
+  }
+  if (entity.ref.type === 'cache') return 'chest';
+  if (entity.ref.type === 'resource') {
+    const materialIds = entity.resourceDeposit?.materials.map(material => material.materialId) ?? [];
+    if (materialIds.includes('WOOD')) return 'wood';
+    if (materialIds.includes('STONE')) return 'stone';
+    if (materialIds.some(id => id === 'BROWN-COAL' || id === 'ORE')) return 'ore';
+    if (materialIds.includes('RAW-SALT')) return 'salt';
+    if (materialIds.includes('WILD-HERBS')) return 'herbs';
+    return 'water';
+  }
+  return 'site';
+}
 
 const screenIcons: Record<Screen, typeof Sparkles> = {
   overview: Sparkles,
+  character: UserRound,
   territory: Shield,
   map: MapIcon,
   inventory: PackageOpen,
   forces: Users,
   buildings: Hammer,
+  events: CalendarDays,
   journal: ScrollText,
 };
 const navigation = LIVE_SCREENS.map(screen => ({ ...screen, icon: screenIcons[screen.id] }));
@@ -97,6 +137,16 @@ function availabilityMessage(availability: ActionAvailability): string {
   return reason || (reasonCode ? 'Hành động hiện không khả dụng.' : 'Hành động hiện không khả dụng.');
 }
 
+function territoryRef(ref: EntityRef | null): DemoEntityRef | null {
+  if (!ref) return null;
+  switch (ref.type) {
+    case 'site': case 'resource': case 'cache': case 'item': case 'unit':
+      return { type: ref.type, id: ref.id };
+    default:
+      return null;
+  }
+}
+
 function harvestBlockerMessage(availability: ActionAvailability): string {
   const messages: Readonly<Record<string, string>> = {
     ACTOR_ALREADY_TRAVELLING: 'This worker is travelling.',
@@ -113,13 +163,6 @@ function harvestBlockerMessage(availability: ActionAvailability): string {
     WORKFORCE_AND_FUEL_REQUIREMENTS_NOT_MET: 'This workfront needs its worker and fuel requirements first.',
   };
   return messages[availability.reasonCode ?? ''] ?? availability.requirements[0] ?? availability.reasonCode?.replaceAll('_', ' ').toLocaleLowerCase() ?? 'Harvesting is currently blocked.';
-}
-
-function fireArtwork(manifest: AssetManifest | null, level: number) {
-  if (!manifest) return undefined;
-  const stage = manifest.fireProgression?.find(item => level >= item.minLevel && level <= item.maxLevel);
-  if (stage) return findAsset(manifest, stage.assetId);
-  return manifest.assets.find(item => item.assetId === 'campfire-start');
 }
 
 function sameRef(a: EntityRef | null, b: EntityRef | null): boolean {
@@ -197,6 +240,10 @@ function LiveApp() {
   const eventSequenceRef = useRef(0);
   const [screen, setScreen] = useState<Screen>('overview');
   const [selectedRef, setSelectedRef] = useState<EntityRef | null>(null);
+  const [territoryCamera, setTerritoryCamera] = useState<TerritoryCamera | null>(null);
+  const [territoryDrafts, setTerritoryDrafts] = useState<LayoutDraft[]>([]);
+  const [territoryReadability, setTerritoryReadability] = useState<ReadabilityMode>('normal');
+  const [followTerritoryPlayer, setFollowTerritoryPlayer] = useState(false);
   const [combatActorId, setCombatActorId] = useState('');
   const [selectedCombatTargetId, setSelectedCombatTargetId] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
@@ -213,6 +260,17 @@ function LiveApp() {
   const [destination, setDestination] = useState<CoordinateMm | null>(null);
   const [destinationAvailability, setDestinationAvailability] = useState<ActionAvailability | null>(null);
   const [searchRadiusMetres, setSearchRadiusMetres] = useState(500);
+  const [dispatchLeadActorId, setDispatchLeadActorId] = useState('LI_LAN');
+  const [dispatchAdditionalActorIds, setDispatchAdditionalActorIds] = useState<string[]>([]);
+  const [dispatchCenter, setDispatchCenter] = useState<CoordinateMm | null>(null);
+  const [chooseDispatchCenter, setChooseDispatchCenter] = useState(false);
+  const [dispatchTargetCount, setDispatchTargetCount] = useState('');
+  const [dispatchTimeLimitMinutes, setDispatchTimeLimitMinutes] = useState('');
+  const [dispatchMode, setDispatchMode] = useState<'chest' | 'hunt'>('chest');
+  const [dispatchPreview, setDispatchPreview] = useState<ActionAvailability | null>(null);
+  const [huntActorId, setHuntActorId] = useState('');
+  const [huntActorIds, setHuntActorIds] = useState<string[]>([]);
+  const [huntSquadCustomized, setHuntSquadCustomized] = useState(false);
   const [travelActorId, setTravelActorId] = useState('LI_LAN');
   const [harvestActorId, setHarvestActorId] = useState('LI_LAN');
   const [harvestQuantity, setHarvestQuantity] = useState(1);
@@ -346,6 +404,10 @@ function LiveApp() {
     const scope = saveScope.activate(saveId);
     setView(null);
     setEvents([]);
+    setTerritoryCamera(null);
+    setTerritoryDrafts([]);
+    setTerritoryReadability('normal');
+    setFollowTerritoryPlayer(false);
     eventSequenceRef.current = 0;
     setSelectedRef(null);
     await client.selectSave(saveId);
@@ -373,6 +435,10 @@ function LiveApp() {
     const generation = saveScope.clear();
     setView(null);
     setSelectedRef(null);
+    setTerritoryCamera(null);
+    setTerritoryDrafts([]);
+    setTerritoryReadability('normal');
+    setFollowTerritoryPlayer(false);
     setEvents([]);
     eventSequenceRef.current = 0;
     setDestination(null);
@@ -709,14 +775,6 @@ function LiveApp() {
   const fireEntity = view && fireRef
     ? view.visibleMap.entities.find(entity => sameRef(entity.ref, fireRef)) || null
     : null;
-  const fireAsset = view ? fireArtwork(manifest, view.territory.survivalFire.level) : undefined;
-  const fireIcon = layerPath(fireAsset, 'uiIcon', 'district');
-  const fireBody = layerPath(fireAsset, 'body', 'close');
-  const fireBase = layerPath(fireAsset, 'base', 'close');
-  const fireUpper = layerPath(fireAsset, 'upper', 'close');
-  const fireShadow = layerPath(fireAsset, 'shadow', 'close');
-  const fireVfx = layerPath(fireAsset, 'vfx', 'close');
-
   async function runInspection(entity: PlayerEntityView) {
     const inspection = entity.actions.find(action => action.actionId === 'inspect_entity');
     if (!inspection?.enabled) {
@@ -807,7 +865,7 @@ function LiveApp() {
         </div>}
         {selectedCombatTarget && <div className="live-inspector" data-testid="combat-target-inspector">
           <div><span className="live-eyebrow">ENCOUNTER TARGET · H0</span><h3>{selectedCombatTarget.label}</h3>
-            <p>{selectedCombatTarget.state === 'available' ? 'A known snow hare track is within sight.' : 'The hare has reacted to the encounter.'} · R0 population {selectedCombatTarget.regionalPopulationRemaining}</p></div>
+            <p>{selectedCombatTarget.state === 'available' ? 'A known snow hare track is within sight.' : 'The hare has reacted to the encounter.'} · Population total is not surveyed.</p></div>
           <div className="live-action-stack">
             <label className="live-inline-field">Fighter <select value={selectedCombatActorId} onChange={event => setCombatActorId(event.target.value)}>
               <option value="">Choose a living owned unit</option>{view.units.filter(unit => unit.health && unit.health.current > 0).map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
@@ -819,11 +877,18 @@ function LiveApp() {
         </div>}
 
         <div className="live-map-canvas" data-testid="live-map" onClick={event => {
-          if (!chooseDestination) return;
+          if (!chooseDestination && !chooseDispatchCenter) return;
           const rect = event.currentTarget.getBoundingClientRect();
           const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
           const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
-          previewCoordinateDestination({ xMm: Math.round(center.xMm + (x - 0.5) * horizontalSpanMm), yMm: Math.round(center.yMm - (y - 0.5) * spanMm), sourceZMetres: center.sourceZMetres ?? 0 });
+          const coordinate = { xMm: Math.round(center.xMm + (x - 0.5) * horizontalSpanMm), yMm: Math.round(center.yMm - (y - 0.5) * spanMm), sourceZMetres: center.sourceZMetres ?? 0 };
+          if (chooseDispatchCenter) {
+            setDispatchCenter(coordinate);
+            setDispatchPreview(null);
+            setChooseDispatchCenter(false);
+            setChooseDestination(false);
+            setFeedback({ kind: 'idle', text: `Search area center selected · ${coordinate.xMm}, ${coordinate.yMm} mm.` });
+          } else previewCoordinateDestination(coordinate);
         }}>
           <div className="live-map-crosshair" aria-hidden="true" />
           <svg className="live-map-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
@@ -866,7 +931,7 @@ function LiveApp() {
             })}
             {view.visibleMap.knownRoutes.map(route => <polyline key={route.id} className="live-map-route" points={toPolyline(route.path)} />)}
             {view.visibleMap.activeOrders.map(order => <polyline key={order.id} className="live-map-order" points={toPolyline(order.path)} />)}
-            {view.spatial.searchJobs.filter(job => job.status === 'active').map(job => <polyline key={job.id} className="live-map-search-path" points={toPolyline(job.path)} />)}
+            {view.spatial.searchJobs.filter(job => job.status === 'active').map(job => <polyline key={job.id} className={job.mode === 'hunt' ? 'live-map-hunt-path' : 'live-map-search-path'} points={toPolyline(job.phase === 'returning' ? job.returnPath ?? job.path : job.path)} />)}
             {view.spatial.harvestJobs.filter(job => job.status === 'active').map(job => <polyline key={job.id} className="live-map-order" points={toPolyline(job.stage === 'returning' ? job.routeReturn : job.routeOut)} />)}
             {view.visibleMap.currentSight.map((sight, index) => {
               const projected = point(sight.center);
@@ -899,7 +964,9 @@ function LiveApp() {
                 ? `${entity.label} · ${entity.resourceDeposit.materials.map(material => `${material.materialName}: ${material.remaining === null ? 'unknown' : `${material.remaining.toLocaleString()} ${material.unit}`}`).join(' · ')}`
                 : entity.label}
             >
-              {isFire && fireIcon ? <img src={fireIcon} alt="" /> : <MapPin size={19} aria-hidden="true" />}
+              <svg className="live-map-marker-art" viewBox="-24 -24 48 48" aria-hidden="true" focusable="false">
+                <MarkerGraphic kind={liveMapMarkerKind(entity)} />
+              </svg>
               <span>{entity.label}</span>
             </button>;
           })}
@@ -971,16 +1038,109 @@ function LiveApp() {
             })}</ul>
         </div>}
       </section>
-      <section className="live-panel">
-        <div className="live-panel-heading"><div><span className="live-eyebrow">SEARCH · FIXED 15-MINUTE SWEEPS</span><h3>Focused search</h3></div><Eye size={20} /></div>
-        <div className="live-button-row"><label className="live-inline-field">Lane radius <select value={searchRadiusMetres} onChange={event => setSearchRadiusMetres(Number(event.target.value))}><option value={250}>250 m</option><option value={500}>500 m</option><option value={1000}>1 km</option><option value={2000}>2 km</option></select></label>
-          <button className="live-button" disabled={working || Boolean(pendingCommand) || view.spatial.searchJobs.some(job => job.status === 'active')} onClick={() => void sendCommand(commandFor(view, 'search', { actorId: view.player.id, center: view.player.position, radiusMm: searchRadiusMetres * 1000 }))}>Start search from current position</button>
-        </div>
-        {view.spatial.searchJobs.length > 0 && <ul className="live-plain-list">{view.spatial.searchJobs.map(job => <li key={job.id}><strong>Search · {job.status} · {Math.floor(view.jobs.find(item => item.id === job.id)?.progressPercent ?? 0)}%</strong><span>{job.uniqueAreaM2.toFixed(0)} m² unique · {job.repeatedAreaM2.toFixed(0)} m² repeated {job.status === 'active' && <button className="live-text-button" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'cancel_spatial_job', { jobId: job.id }))}>Cancel</button>}</span></li>)}</ul>}
+      {renderDispatchPanel()}
+      {view.spatial.searchJobs.length > 0 && <ul className="live-plain-list">{view.spatial.searchJobs.map(job => <li key={job.id}><strong>{job.mode === 'hunt' ? 'Hunt sweep' : 'Chest search'} · {job.phase ?? 'sweeping'} · {job.status} · {Math.floor(view.jobs.find(item => item.id === job.id)?.progressPercent ?? 0)}%</strong><span>{job.actorIds.length} unit(s) · {job.uniqueAreaM2.toFixed(0)} m² unique · {job.repeatedAreaM2.toFixed(0)} m² repeated · {job.mode === 'hunt' ? `targets ${job.foundTargetCount}` : `signals ${job.foundChestCount}`} {job.status === 'active' && <button className="live-text-button" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'cancel_spatial_job', { jobId: job.id }))}>{job.phase === 'returning' ? 'Returning' : 'Recall'}</button>}</span></li>)}</ul>}
         {view.spatial.harvestJobs.length > 0 && <ul className="live-plain-list">{view.spatial.harvestJobs.map(job => <li key={job.id}><strong>Harvest · {job.stage} · {job.status}</strong><span>{job.extractedQuantity}/{job.requestedQuantity} gathered {job.status === 'active' && <button className="live-text-button" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'cancel_spatial_job', { jobId: job.id }))}>Cancel</button>}</span></li>)}</ul>}
         {destinationAvailability && !destinationAvailability.enabled && <p className="live-inline-error">{availabilityMessage(destinationAvailability)}</p>}
       </section>
     </div>;
+  }
+
+  function renderDispatchPanel(): ReactNode {
+    if (!view) return null;
+    const livingUnits = view.units.filter(unit => unit.health && unit.health.current > 0 && unit.position);
+    const lead = dispatchLeadActorId === view.player.id ? view.player : livingUnits.find(unit => unit.id === dispatchLeadActorId) ?? view.player;
+    const center = dispatchCenter ?? lead.position;
+    const busyActorIds = new Set([
+      ...view.spatial.movementOrders.filter(order => order.status === 'active').flatMap(order => order.actorIds),
+      ...view.spatial.searchJobs.filter(job => job.status === 'active').flatMap(job => job.actorIds),
+      ...view.spatial.harvestJobs.filter(job => job.status === 'active').flatMap(job => job.actorIds),
+      ...(view.combat?.encounter?.status === 'active' ? view.combat.encounter.actorIds : []),
+    ]);
+    const additionalIds = dispatchAdditionalActorIds.filter(id => id !== dispatchLeadActorId && livingUnits.some(unit => unit.id === id));
+    const targetCount = dispatchTargetCount.trim() === '' ? undefined : Number(dispatchTargetCount);
+    const timeLimitMinutes = dispatchTimeLimitMinutes.trim() === '' ? undefined : Number(dispatchTimeLimitMinutes);
+    const payload = {
+      actorId: dispatchLeadActorId,
+      center,
+      radiusMm: searchRadiusMetres * 1_000,
+      mode: dispatchMode,
+      ...(additionalIds.length ? { additionalActorIds: additionalIds } : {}),
+      ...(targetCount === undefined ? {} : { targetCount }),
+      ...(timeLimitMinutes === undefined ? {} : { timeLimitMinutes }),
+    };
+    const searchCommand = commandFor(view, 'search', payload);
+    const busy = busyActorIds.has(dispatchLeadActorId) || additionalIds.some(id => busyActorIds.has(id));
+    const knownTarget = view.combat?.target;
+    const defaultHunter = livingUnits[0]?.id ?? '';
+    const selectedHunter = livingUnits.some(unit => unit.id === huntActorId) ? huntActorId : defaultHunter;
+    const selectedHunters = huntActorIds.filter(id => livingUnits.some(unit => unit.id === id));
+    const huntingSquadIds = huntSquadCustomized ? selectedHunters : selectedHunter ? [selectedHunter] : [];
+    const hunterPosition = livingUnits.find(unit => unit.id === selectedHunter)?.position;
+    const huntRangeMetres = knownTarget && hunterPosition
+      ? Math.round(Math.hypot(hunterPosition.xMm - knownTarget.position.xMm, hunterPosition.yMm - knownTarget.position.yMm) / 1_000)
+      : null;
+
+    async function previewSearch() {
+      if (working || !view) return;
+      const scope = saveScope.capture(view.saveId);
+      if (!scope) return;
+      setWorking(true);
+      setDispatchPreview(null);
+      try {
+        const result = await client.previewCommand(searchCommand);
+        if (!saveScope.isCurrent(scope)) return;
+        setDispatchPreview(result.availability);
+      } catch (error) {
+        if (saveScope.isCurrent(scope)) setFeedback({ kind: 'rejected', text: errorMessage(error) });
+      } finally {
+        setWorking(false);
+      }
+    }
+
+    return <section className="live-panel live-dispatch-panel" aria-label="Unit dispatch">
+      <div className="live-panel-heading"><div><span className="live-eyebrow">AREA EXPEDITIONS · API CONTROLLED</span><h3>Unit dispatch</h3></div><Eye size={20} /></div>
+      <p className="live-muted">Choose a chest search or wildlife hunt, set the sweep radius and optional stop limits, then send the selected squad. Limit conditions stop field work and start the return journey.</p>
+      <label className="live-inline-field">Expedition task<select value={dispatchMode} onChange={event => { setDispatchMode(event.target.value as 'chest' | 'hunt'); setDispatchPreview(null); }}>
+        <option value="chest">Search for chests</option><option value="hunt">Hunt mobs</option>
+      </select></label>
+      <div className="live-dispatch-grid">
+        <label className="live-inline-field">Lead unit<select value={dispatchLeadActorId} onChange={event => { setDispatchLeadActorId(event.target.value); setDispatchPreview(null); }}>
+          <option value={view.player.id}>{view.player.name}</option>{livingUnits.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
+        </select></label>
+        <label className="live-inline-field">Area radius<select value={searchRadiusMetres} onChange={event => { setSearchRadiusMetres(Number(event.target.value)); setDispatchPreview(null); }}><option value={250}>250 m</option><option value={500}>500 m</option><option value={1000}>1 km</option><option value={2000}>2 km</option></select></label>
+        <label className="live-inline-field">Stop after targets<input type="number" min={1} max={192} step={1} placeholder="No target limit" value={dispatchTargetCount} onChange={event => { setDispatchTargetCount(event.target.value); setDispatchPreview(null); }} /></label>
+        <label className="live-inline-field">Work time limit<select value={dispatchTimeLimitMinutes} onChange={event => { setDispatchTimeLimitMinutes(event.target.value); setDispatchPreview(null); }}><option value="">No time limit</option><option value={15}>15 minutes</option><option value={30}>30 minutes</option><option value={60}>1 hour</option><option value={240}>4 hours</option><option value={480}>8 hours</option><option value={1440}>24 hours</option></select></label>
+      </div>
+      {livingUnits.length > 0 && <fieldset className="live-dispatch-units"><legend>Additional scouts</legend>{livingUnits.filter(unit => unit.id !== dispatchLeadActorId).map(unit => <label key={unit.id}>
+        <input type="checkbox" checked={additionalIds.includes(unit.id)} disabled={busyActorIds.has(unit.id)} onChange={event => {
+          setDispatchAdditionalActorIds(current => event.target.checked ? [...new Set([...current, unit.id])] : current.filter(id => id !== unit.id));
+          setDispatchPreview(null);
+        }} />{unit.name}{busyActorIds.has(unit.id) ? ' · assigned' : ''}
+      </label>)}</fieldset>}
+      <div className="live-dispatch-center"><span>Center · {center.xMm.toLocaleString()} / {center.yMm.toLocaleString()} mm{dispatchCenter ? ' · custom' : ' · lead position'}</span>
+        <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => { setChooseDestination(false); setChooseDispatchCenter(true); }}>{chooseDispatchCenter ? 'Click the map to set center' : 'Pick center on map'}</button>
+        {dispatchCenter && <button className="live-text-button" onClick={() => { setDispatchCenter(null); setDispatchPreview(null); }}>Use lead position</button>}
+      </div>
+      <div className="live-button-row">
+        <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || busy} onClick={() => void previewSearch()}>Preview expedition</button>
+        <button className="live-button" data-testid={dispatchMode === 'hunt' ? 'hunt-area' : 'search-for-chests'} disabled={working || Boolean(pendingCommand) || busy || !dispatchPreview?.enabled} onClick={() => void sendCommand(searchCommand)}>{dispatchMode === 'hunt' ? 'Hunt mobs' : 'Search for chests'}</button>
+      </div>
+      {busy && <small className="live-resource-access">A selected actor is already assigned to travel, combat, or another field job.</small>}
+      {dispatchPreview && <p className={dispatchPreview.enabled ? 'live-preview-success' : 'live-inline-error'}>{dispatchPreview.enabled ? `${dispatchPreview.preview?.label}: ${dispatchPreview.preview?.value}` : availabilityMessage(dispatchPreview)}</p>}
+      {knownTarget?.state === 'available' && <div className="live-hunt-row">
+        <fieldset className="live-dispatch-units"><legend>Hunting squad</legend>{livingUnits.map(unit => <label key={unit.id}>
+          <input type="checkbox" checked={huntingSquadIds.includes(unit.id)} disabled={busyActorIds.has(unit.id)} onChange={event => {
+            setHuntSquadCustomized(true);
+            setHuntActorId(unit.id);
+            setHuntActorIds(current => event.target.checked ? [...new Set([...current, unit.id])] : current.filter(id => id !== unit.id));
+          }} />{unit.name}{busyActorIds.has(unit.id) ? ' · assigned' : ''}
+        </label>)}</fieldset>
+        <span>Known target · {knownTarget.label}{huntRangeMetres === null ? '' : ` · ${huntRangeMetres} m away`}</span>
+        <button className="live-button" data-testid="engage-known-target" disabled={working || Boolean(pendingCommand) || huntingSquadIds.length === 0 || huntingSquadIds.some(id => busyActorIds.has(id))} onClick={() => void sendCommand(commandFor(view, 'attack', { actorIds: huntingSquadIds, targetId: knownTarget.id }))}>Engage known target</button>
+        <small>When the sweep detects a target, engage it with the selected squad. Fighters share one encounter and the existing XP award; extra units do not create prey or extra rewards.</small>
+      </div>}
+    </section>;
   }
 
   function pageContent(): ReactNode {
@@ -1018,6 +1178,104 @@ function LiveApp() {
       const reserved = stack.reduce((sum, item) => sum + item.reservedQuantity, 0);
       return `${templateId}: ${required} needed · ${Math.max(0, quantity - reserved)} available · ${reserved} reserved`;
     };
+    if (screen === 'character') {
+      const equipped = view.inventory.containers.flatMap(container => container.items
+        .filter(item => item.equipped && item.ownerId === view.player.id));
+      const stats = Object.entries(view.player.attributes);
+      return <div className="live-section-stack">
+        <section className="live-panel live-character-panel">
+          <div className="live-character-art">
+            <img src="/assets/characters/li-lan-t0-fullbody.svg?v=20261010" alt="Toàn thân Lí Lan" />
+          </div>
+          <div className="live-character-profile">
+            <span className="live-eyebrow">HỒ SƠ NHÂN VẬT · API SAVE</span>
+            <h2>{view.player.name}</h2>
+            <p>Lãnh chúa · Bậc {view.player.formTier} · Cấp {view.player.level}</p>
+            <span className="live-character-talent"><Sparkles size={15} /> {view.player.talent.name} · {view.player.talent.grade}</span>
+            <div className="live-stat-grid">
+              <article className="live-stat"><span>Kinh nghiệm</span><strong>{view.player.xp.toLocaleString('vi-VN')} XP</strong></article>
+              <article className="live-stat"><span>Mana</span><strong>{view.player.mana.current} / {view.player.mana.max}</strong></article>
+              <article className="live-stat"><span>Kỹ năng</span><strong>{view.player.skills?.length ?? 0}</strong></article>
+              <article className="live-stat"><span>Đang trang bị</span><strong>{equipped.length}</strong></article>
+            </div>
+          </div>
+        </section>
+        <div className="live-two-column">
+          <section className="live-panel">
+            <div className="live-panel-heading"><div><span className="live-eyebrow">THUỘC TÍNH · TRẠNG THÁI HIỆN TẠI</span><h3>Chỉ số của Lí Lan</h3></div><UserRound size={20} /></div>
+            <div className="live-attribute-grid">{stats.map(([name, value]) => <article key={name}><span>{name}</span><strong>{value}</strong></article>)}</div>
+            {view.player.skills?.length ? <ul className="live-plain-list">{view.player.skills.map(skill => <li key={skill.id}><strong>{skill.templateId}</strong><span>Thông thạo {skill.mastery} · {skill.active ? 'đang kích hoạt' : 'chưa kích hoạt'}</span></li>)}</ul>
+              : <p className="live-empty-state">Chưa có kỹ năng nào được API ghi nhận.</p>}
+          </section>
+          <section className="live-panel">
+            <div className="live-panel-heading"><div><span className="live-eyebrow">TRANG BỊ ĐANG MANG</span><h3>Vật phẩm thực trong lượt lưu</h3></div><Shield size={20} /></div>
+            {equipped.length ? <ul className="live-plain-list">{equipped.map(item => <li key={item.itemId}><strong>{item.label}</strong><span>{item.itemId} · {item.condition == null ? 'độ bền chưa xác định' : `độ bền ${Math.round(item.condition * 100)}%`}</span></li>)}</ul>
+              : <p className="live-empty-state">Chưa có vật phẩm nào được trang bị cho Lí Lan. Túi và trang bị đơn vị vẫn xem ở Kho vật phẩm và Quân lực.</p>}
+            <div className="live-character-portrait"><img src="/assets/characters/li-lan-t0-portrait.svg?v=20261010" alt="Chân dung Lí Lan" /><span>Vị trí · {view.player.position.xMm.toLocaleString('vi-VN')}, {view.player.position.yMm.toLocaleString('vi-VN')} mm</span></div>
+          </section>
+        </div>
+      </div>;
+    }
+
+    if (screen === 'events') {
+      const readinessLabel = (readiness: string) => readiness === 'executable_lifecycle' ? 'Luật sự kiện đã triển khai'
+        : readiness === 'settlement_blocked' ? 'Đang chờ quyết toán bảng xếp hạng'
+          : readiness === 'mandatory_content_blocked' ? 'Đã công bố hợp đồng · chờ bộ xử lý trò chơi'
+            : 'Mới có lịch cố định';
+      return <div className="live-section-stack">
+        <section className="live-hero">
+          <div><span className="live-eyebrow">LỊCH CỐ ĐỊNH · 30 SỰ KIỆN</span><h2>Sự kiện và phần thưởng</h2>
+            <p>Lịch lấy từ gói nội dung của chiến dịch; trạng thái, thời điểm và quyết toán lấy từ lượt lưu API này.</p></div>
+          <div className="live-hero-mark"><CalendarDays size={32} /><span>30</span></div>
+        </section>
+        {view.eventProgressionBlocker && <div className="live-inline-error" role="alert"><strong>{view.eventProgressionBlocker.displayName}</strong><p>{view.eventProgressionBlocker.playerMessage} · {elapsedLabel(view.eventProgressionBlocker.blockedAtElapsedMs)}</p></div>}
+        <section className="live-panel">
+          <div className="live-panel-heading"><div><span className="live-eyebrow">EVENT-TIMELINE-v0.6</span><h3>Lịch sự kiện thế giới</h3></div><span className="live-data-chip">{view.calendar.length} / 30</span></div>
+          <div className="live-calendar-list">{view.calendar.map(event => <article className={'live-calendar-row live-calendar-row--' + event.status} key={event.id}>
+            <div className="live-calendar-time"><strong>{event.id}</strong><span>{elapsedLabel(event.opensAtElapsedMs)}</span></div>
+            <div className="live-calendar-copy"><strong>{event.displayName}</strong><span>{readinessLabel(event.readiness)}</span>
+              <small>{event.eventContract.runtimeStatus === 'active' ? 'Đang hoạt động' : 'Bộ xử lý đang lên kế hoạch'} · {event.eventContract.handlerFamily} · {event.eventContract.source}</small>
+              <details className="live-event-contract">
+                <summary>Xem luật tham gia, mục tiêu, điểm và thưởng</summary>
+                <p><strong>Tham gia:</strong> {event.eventContract.participationRequirement}</p>
+                <p><strong>Mục tiêu:</strong> {event.eventContract.objectives}</p>
+                <p><strong>Chấm điểm:</strong> {event.eventContract.scoring}</p>
+                <p><strong>Gặp gỡ:</strong> {event.eventContract.encounters}</p>
+                <p><strong>Thưởng:</strong> {event.eventContract.rewardContract}</p>
+                <p><strong>Cửa hàng:</strong> {event.eventContract.shopContract}</p>
+                <p><strong>Tồn kho / hết hạn:</strong> {event.eventContract.stockAndExpiry}</p>
+                <p><strong>Quyết toán:</strong> {event.eventContract.settlement}</p>
+              </details>
+              {event.researchEvidence.sourceRows > 0 && <small>{event.researchEvidence.sourceRows} research rows · {event.researchEvidence.verifiedAcquisitions} aligned verified acquisitions · {event.researchEvidence.verifiedShopOffers} aligned offers · {event.researchEvidence.observedChestOutcomes} observed chest outcomes · {event.researchEvidence.unresolvedRowShapes} rows held for field alignment</small>}
+              {event.researchEvidence.mechanicFlags.length > 0 && <small>Research flags: {event.researchEvidence.mechanicFlags.join(' · ')}</small>}
+            </div>
+            <span className="live-calendar-status">{event.status === 'active' ? 'Đang mở' : event.status === 'locked' ? 'Đã khóa' : event.status === 'resolved' ? 'Đã kết thúc' : event.status === 'blocked' ? 'Tạm dừng' : event.status === 'cancelled' ? 'Đã hủy' : 'Sắp mở'}</span>
+          </article>)}</div>
+        </section>
+        <section className="live-panel">
+          <div className="live-panel-heading"><div><span className="live-eyebrow">BẢNG CẤP KHAI CUỘC · +48H ĐẾN +144H</span><h3>Xếp hạng và quyết toán</h3></div><Trophy size={21} /></div>
+          <p className="live-muted">Trạng thái: {view.stage08.openingBoard.status === 'scheduled' ? 'chưa mở' : view.stage08.openingBoard.status === 'open' ? 'đang mở' : 'đã khóa'} · cập nhật sau 3 phút · Cấp 10 mới đủ điều kiện.</p>
+          {view.stage08.openingBoard.rows.length > 0 && !view.stage08.rankSnapshots.length && <ol className="live-opening-board-list">{view.stage08.openingBoard.rows.map(row => <li key={row.playerId}><strong>#{row.rank} · {row.playerName}</strong><span>Cấp {row.level} · đạt điều kiện {elapsedLabel(row.completionAtElapsedMs)}</span></li>)}</ol>}
+          {view.stage08.rankSnapshots.length ? view.stage08.rankSnapshots.map(snapshot => <div className="live-ranking-snapshot" key={snapshot.boardId}>
+            <strong>{snapshot.boardId} · {snapshot.status === 'settled' ? 'Đã khóa kết quả' : 'Chưa thể quyết toán'}</strong>
+            <span>{snapshot.reasonCode ?? 'RWD-OPENING-FIXED-2.0'} · {elapsedLabel(snapshot.settledAtElapsedMs)}</span>
+            {snapshot.rows.length ? <ol>{snapshot.rows.map(row => <li key={row.playerId}><strong>#{row.rank} · {row.playerName}</strong><span>Cấp {row.level} · hoàn thành {elapsedLabel(row.completionAtElapsedMs)} · {row.rewardBandId}</span>
+              {row.playerId === view.player.id && <small>{row.rewardItems.map(item => `${item.quantity} ${item.itemTemplateId}${item.status === 'blocked' ? ` (${item.blocker})` : ''}`).join(' · ')}</small>}
+            </li>)}</ol>
+              : <p>Chưa có kết quả đủ điều kiện. Không phát thưởng mặc định khi chưa có hàng xếp hạng đã quyết toán.</p>}
+            {snapshot.status === 'settled' && view.stage08.openingBoard.rewardClaimStatus === 'pending' && snapshot.rows.some(row => row.playerId === view.player.id) && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'claim_opening_rank_reward', { boardId: snapshot.boardId }))}>Nhận thưởng Bảng Cấp</button>}
+            {snapshot.status === 'settled' && view.stage08.openingBoard.rewardClaimStatus === 'claimed' && <p className="live-preview-success">Phần thưởng của lượt lưu này đã được nhận.</p>}
+          </div>) : view.stage08.openingBoard.rows.length > 0 ? null : <p className="live-empty-state">{view.stage08.openingBoard.status === 'scheduled'
+            ? 'Bảng chưa mở. Lượt lưu bắt đầu với 0 hàng và không có thứ hạng trước đó.'
+            : 'Chưa có người hoàn tất Cấp 10 đủ điều kiện được ghi nhận.'}</p>}
+          <p className="live-muted">Điều kiện: đạt Cấp 10 trước giờ khóa. Bảng dùng hành động, tài nguyên và thời điểm hoàn thành đã ghi; dự báo chỉ lập lịch cho các đối thủ.</p>
+        </section>
+        <section className="live-panel"><div className="live-panel-heading"><div><span className="live-eyebrow">EVENT SHOP</span><h3>Gian hàng sự kiện</h3></div><PackageOpen size={20} /></div>
+          <p className="live-empty-state">Chưa có hợp đồng mua sắm sự kiện nào được kích hoạt cho thời điểm này. Các mục nghiên cứu chưa được cấp làm vật phẩm hoặc tiền tệ.</p>
+        </section>
+      </div>;
+    }
+
     if (screen === 'overview') {
       return <div className="live-section-stack">
         <section className="live-hero">
@@ -1091,31 +1349,36 @@ function LiveApp() {
     }
 
     if (screen === 'territory') {
+      const settlement = territorySceneFromApi(view);
+      const territorySelection = territoryRef(selectedRef);
       return <div className="live-section-stack">
         <section className="live-panel">
           <div className="live-panel-heading">
             <div><span className="live-eyebrow">LÃNH ĐỊA</span><h2>Lãnh địa</h2></div>
             <span className="live-data-chip">Ref {fireRef ? entityRefKey(fireRef) : 'chưa có'}</span>
           </div>
-          <p className="live-muted">Ảnh cấu trúc lấy từ asset manifest; trạng thái và cấp độ lấy từ cùng PlayerView với bản đồ.</p>
-          <figure className="live-settlement-canvas">
-            <div className="live-settlement-grid" aria-hidden="true" />
-            {fireRef && <button
-              className="live-settlement-structure"
-              data-testid="territory-campfire-structure"
-              data-entity-ref={entityRefKey(fireRef)}
-              aria-label={entityLabel(fireEntity)}
-              onClick={() => setSelectedRef(fireRef)}
-            >
-              {fireAsset && fireShadow && <img className="live-fire-layer live-fire-layer--shadow" src={fireShadow} alt="" />}
-              {fireAsset && fireBase && fireUpper ? <>
-                <img className="live-fire-layer live-fire-layer--base" src={fireBase} alt="" />
-                <img className="live-fire-layer live-fire-layer--upper" src={fireUpper} alt="" />
-              </> : fireAsset && fireBody ? <img className="live-fire-layer live-fire-layer--body" src={fireBody} alt={entityLabel(fireEntity)} /> : <span className="live-art-missing">{manifestError ? 'Asset chưa sẵn sàng' : 'Đang tải artwork'}</span>}
-              {view.territory.survivalFire.active && fireAsset && fireVfx && <img className="live-fire-layer live-fire-layer--vfx" src={fireVfx} alt="" />}
-            </button>}
-            <figcaption>{entityLabel(fireEntity)} · {view.territory.survivalFire.active ? 'đang hoạt động' : 'đã tắt'}</figcaption>
-          </figure>
+          <p className="live-muted">Bố cục isometric và artwork dùng chung với bản xem thử. Vị trí, trạng thái, cấp và lựa chọn đều đọc từ PlayerView của lượt lưu đang mở.</p>
+          <TerritoryScene
+            mode="live"
+            playerMarkerVisible
+            settlement={settlement}
+            placementDefinitions={[]}
+            camera={territoryCamera}
+            onCameraChange={setTerritoryCamera}
+            drafts={territoryDrafts}
+            onDraftsChange={setTerritoryDrafts}
+            selectedRef={territorySelection}
+            onSelectEntity={ref => setSelectedRef(ref)}
+            focusedBuildingId={focusedConstructionBuildingId}
+            onFocusHandled={() => setFocusedConstructionBuildingId(null)}
+            readability={territoryReadability}
+            onReadabilityChange={setTerritoryReadability}
+            playerName={view.player.name}
+            playerPosition={{ x: view.player.position.xMm / 1_000, y: view.player.position.yMm / 1_000 }}
+            followPlayer={followTerritoryPlayer}
+            onFollowPlayerChange={setFollowTerritoryPlayer}
+            onOpenPlayerProfile={() => setScreen('character')}
+          />
         </section>
         <div className="live-two-column">
           <section className="live-panel">
@@ -1127,10 +1390,10 @@ function LiveApp() {
             {view.territory.survivalFire.fuelBlocker && <p className="live-muted">Chặn nhiên liệu: {view.territory.survivalFire.fuelBlocker}</p>}
             <div className="live-button-row">
               {fireEntity && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void runInspection(fireEntity)}><Eye size={15} /> Kiểm tra lửa</button>}
-              <button className="live-button live-button--secondary" title={view.territory.survivalFire.fuelKnowledge !== 'known' ? 'Không thể tính tổng nhiên liệu chính xác khi lượng gỗ mở đầu chưa được ghi nhận.' : woodFuel ? 'Chuyển 1 gỗ đã quan sát vào lửa.' : 'Không có gỗ đã quan sát trong container sở hữu và có thể truy cập.'} disabled={working || Boolean(pendingCommand) || !woodFuel || view.territory.survivalFire.fuelKnowledge !== 'known'} onClick={() => woodFuel && void sendCommand(commandFor(view, 'refuel_fire', { containerId: woodFuel.containerId, itemId: woodFuel.itemId, quantity: 1 }))}>Nạp 1 gỗ</button>
+              <button className="live-button live-button--secondary" title={woodFuel ? 'Chuyển 1 gỗ đã quan sát vào lửa; tổng nhiên liệu mở đầu vẫn chưa được tiết lộ.' : 'Không có gỗ đã quan sát trong container sở hữu và có thể truy cập.'} disabled={working || Boolean(pendingCommand) || !woodFuel} onClick={() => woodFuel && void sendCommand(commandFor(view, 'refuel_fire', { containerId: woodFuel.containerId, itemId: woodFuel.itemId, quantity: 1 }))}>Nạp 1 gỗ</button>
               {view.territory.survivalFire.active
                 ? <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'extinguish_fire', {}))}>Tắt lửa</button>
-                : <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || (view.territory.survivalFire.fuelRemaining ?? 0) < 1} onClick={() => void sendCommand(commandFor(view, 'light_fire', {}))}>Nhóm lửa</button>}
+                : <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !view.territory.survivalFire.hasFuel} onClick={() => void sendCommand(commandFor(view, 'light_fire', {}))}>Nhóm lửa</button>}
             </div>
             {fireEntity && <button className="live-button live-button--secondary" onClick={() => setScreen('map')}>Chọn cùng entity trên bản đồ <ArrowRight size={15} /></button>}
           </section>
@@ -1166,7 +1429,8 @@ function LiveApp() {
                 <div className="live-panel-heading"><h3>{container.label}</h3><span>{container.occupiedSlots}/{container.capacitySlots ?? '∞'} ô</span></div>
                 <small className="live-container-access">Vị trí: {container.location.kind === 'site' ? container.location.siteId : container.location.kind === 'carried' ? `carried by ${container.location.ownerId}` : container.location.kind === 'building' ? container.location.buildingId : `unit ${container.location.unitId}`} · {container.accessible ? 'accessible' : 'out of reach'}</small>
                 {container.items.length
-                  ? <ul className="live-plain-list">{container.items.map(item => <li key={item.itemId}>
+                  ? <ul className="live-plain-list live-inventory-art-list">{container.items.map(item => <li key={item.itemId}>
+                    {itemArtPath(item.label) && <img className="live-item-art" src={itemArtPath(item.label)!} alt="" aria-hidden="true" />}
                     <strong>{item.label} · × {item.quantity} · free {Math.max(0, item.quantity - item.reservedQuantity)}{item.equipped ? ' · equipped' : ''}</strong>
                     <span>{item.reservedQuantity} reserved · owner {item.ownerId ?? 'legacy/unspecified'} · {item.unit ?? 'unit unspecified'} · quality {item.quality ?? 'unspecified'}{item.condition !== null && item.condition !== undefined ? ` · độ bền ${Math.round(item.condition * 100)}%` : ''} · {item.provenance} · {item.equipped ? `equipped${item.equippedSlotId ? ` (${item.equippedSlotId})` : ''}` : 'not equipped'}{item.foodUnitsPerItem !== null ? ` · ${item.foodUnitsPerItem} food units/item` : ''}{item.equipmentTags?.length ? ` · loại: ${item.equipmentTags.map(tag => tag === 'WEAPON' || tag === 'WEAPON_1H' ? 'vũ khí' : tag === 'ARMOR' || tag === 'ARMOR_LIGHT' ? 'giáp nhẹ' : tag).join(', ')}` : ''} · {view.inventory.containers.filter(target => target.id !== container.id).map(target => <button key={target.id} className="live-text-button" disabled={working || Boolean(pendingCommand) || !container.accessible || !target.accessible || item.quantity <= item.reservedQuantity} title={!container.accessible || !target.accessible ? 'Move Lí Lan within reach of both containers.' : `Transfer unreserved items to ${target.label}.`} onClick={() => void sendCommand(commandFor(view, 'transfer_item', {
                       actorId: view.player.id, sourceContainerId: container.id, destinationContainerId: target.id, itemId: item.itemId, quantity: item.quantity - item.reservedQuantity,
@@ -1239,12 +1503,12 @@ function LiveApp() {
     }
 
     if (screen === 'forces') {
-      return <section className="live-panel">
+      return <div className="live-section-stack">{renderDispatchPanel()}<section className="live-panel">
         <div className="live-panel-heading"><div><span className="live-eyebrow">OWNED UNITS</span><h2>Quân lực</h2></div><Users size={22} /></div>
         {view.combat?.target && <article className="live-container-card" data-testid="stage07-combat-panel">
           <div className="live-panel-heading"><div><span className="live-eyebrow">H0 · OPENING ENCOUNTER</span><h3>{view.combat.target.label}</h3></div>
             <span className="live-data-chip">{view.combat.target.state}</span></div>
-          <p>Thỏ băng thuộc quần thể có sẵn ECO-LL01-R0. Còn {view.combat.target.regionalPopulationRemaining} trong tổng số ban đầu; cá thể này không được tạo lại khi rút lui hay tải save.</p>
+          <p>Đây là cá thể đã có trong hồ sơ quần thể H0. Không tiết lộ tổng số cá thể chưa được quan sát; mục tiêu đã bị săn sẽ không được tạo lại khi rút lui hay tải save.</p>
           {view.combat.target.state === 'available' && <div className="live-button-row">
             <label className="live-inline-field">Chiến binh<select aria-label="Chiến binh giao chiến" value={combatActorId || view.units.find(unit => unit.health && unit.health.current > 0)?.id || ''}
               onChange={event => setCombatActorId(event.target.value)}>
@@ -1308,7 +1572,7 @@ function LiveApp() {
         </li>)}</ul></>}
         <h3>Việc Mộ đang chờ</h3>
         <TombQueueList view={view} working={working} blocked={Boolean(pendingCommand)} onCancel={cancelTombJob} />
-      </section>;
+      </section></div>;
     }
 
     if (screen === 'buildings') {

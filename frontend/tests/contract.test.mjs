@@ -11,9 +11,9 @@ import { isLiveScreen, LIVE_SCREENS } from '../src/live/screens.ts';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const read = path => readFileSync(join(root, path), 'utf8');
 
-test('live navigation exposes exactly seven unique runtime screens', () => {
+test('live navigation exposes all demo screens plus events', () => {
   const ids = LIVE_SCREENS.map(screen => screen.id);
-  assert.deepEqual(ids, ['overview', 'territory', 'map', 'inventory', 'forces', 'buildings', 'journal']);
+  assert.deepEqual(ids, ['overview', 'character', 'territory', 'map', 'inventory', 'forces', 'buildings', 'events', 'journal']);
   assert.equal(new Set(ids).size, ids.length);
   for (const id of ids) assert.equal(isLiveScreen(id), true);
   assert.equal(isLiveScreen('demo-gallery'), false);
@@ -54,6 +54,8 @@ test('workflow event filters include pushes, pull requests, dispatch, and compil
     assert.ok(event.paths.includes('data/events/EVENT-TIMELINE-v0.6.json'));
     assert.ok(event.paths.includes('data/events/EVENT-SOURCE-CATALOG-v4.6.json'));
     assert.ok(event.paths.includes('data/events/EVENT-SOURCE-ITEMS-v4.6.csv'));
+    assert.ok(event.paths.includes('data/events/EVENT-SOURCE-ITEMS-v7.24.csv'));
+    assert.ok(event.paths.includes('data/events/EVENT-SOURCE-CATALOG-v7.25-ADDENDUM.json'));
     assert.ok(event.paths.includes('data/structures/SOURCE-STRUCTURE-CATALOG-v1.0.json'));
     assert.ok(event.paths.includes('docs/FRESH_START.md'));
   }

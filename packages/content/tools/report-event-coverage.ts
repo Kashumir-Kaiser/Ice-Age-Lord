@@ -2,21 +2,28 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { ACTIVE_WORLD_PACKAGE } from '../src/index.ts';
+import { EVENT_CONTRACT_REGISTRY_VERSION } from '../src/eventContracts.ts';
 import { EVENT_LIFECYCLE_VERSION, eventRuntimeReadiness } from '../src/eventReadiness.ts';
+import { parseEventSourceLedger } from '../src/eventLedger.ts';
 import { SOURCE_LOCK, SOURCE_RELEASES } from '../src/sourceLock.ts';
 
 type Row = Record<string, any>;
 
 const root = process.cwd();
 const catalogPath = resolve(root, 'data/events/EVENT-SOURCE-CATALOG-v4.6.json');
-const itemsPath = resolve(root, 'data/events/EVENT-SOURCE-ITEMS-v4.6.csv');
+const legacyItemsPath = resolve(root, 'data/events/EVENT-SOURCE-ITEMS-v4.6.csv');
+const itemsPath = resolve(root, 'data/events/EVENT-SOURCE-ITEMS-v7.24.csv');
+const addendumPath = resolve(root, 'data/events/EVENT-SOURCE-CATALOG-v7.25-ADDENDUM.json');
 const timelinePath = resolve(root, 'data/events/EVENT-TIMELINE-v0.6.json');
 const structuresPath = resolve(root, 'data/structures/SOURCE-STRUCTURE-CATALOG-v1.0.json');
 const catalogBytes = readFileSync(catalogPath);
+const legacyItemsBytes = readFileSync(legacyItemsPath);
 const itemsBytes = readFileSync(itemsPath);
+const addendumBytes = readFileSync(addendumPath);
 const timelineBytes = readFileSync(timelinePath);
 const structuresBytes = readFileSync(structuresPath);
 const catalog = JSON.parse(catalogBytes.toString('utf8')) as Row;
+const addendum = JSON.parse(addendumBytes.toString('utf8')) as Row;
 const timeline = JSON.parse(timelineBytes.toString('utf8')) as Row;
 const structuresCatalog = JSON.parse(structuresBytes.toString('utf8')) as Row;
 const sha256 = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
@@ -50,24 +57,39 @@ function parseCsv(source: string): string[][] {
   return rows;
 }
 
-const csvRows = parseCsv(itemsBytes.toString('utf8'));
-const [csvHeader, ...csvData] = csvRows;
-if (!csvHeader || csvHeader[0] !== 'id' || csvData.some(row => row.length !== csvHeader.length)) {
-  throw new Error('STAGE08_COVERAGE_CSV_SHAPE_MISMATCH');
+const legacyRows = parseCsv(legacyItemsBytes.toString('utf8'));
+const [legacyHeader, ...legacyData] = legacyRows;
+if (!legacyHeader || legacyHeader[0] !== 'id' || legacyData.some(row => row.length !== legacyHeader.length)) {
+  throw new Error('STAGE08_COVERAGE_LEGACY_CSV_SHAPE_MISMATCH');
 }
-const csvIdIndex = csvHeader.indexOf('id');
-const csvById = new Map(csvData.map(row => [row[csvIdIndex]!, Object.fromEntries(csvHeader.map((name, index) => [name, row[index] ?? '']))]));
-const entries: Row[] = catalog.entries;
+const legacyIdIndex = legacyHeader.indexOf('id');
+const legacyById = new Map(legacyData.map(row => [row[legacyIdIndex]!, Object.fromEntries(legacyHeader.map((name, index) => [name, row[index] ?? '']))]));
+const csvHeader = parseCsv(itemsBytes.toString('utf8'))[0];
+const csvData = parseEventSourceLedger(itemsBytes.toString('utf8'));
+if (!csvHeader || csvHeader[0] !== 'id') throw new Error('STAGE08_COVERAGE_CSV_SHAPE_MISMATCH');
+const csvById = new Map(csvData.map(item => [item.fields.id!, item.fields]));
+const entries: Row[] = csvData.map(item => ({
+  ...item.fields,
+  sourceFieldAlignment: item.sourceFieldAlignment,
+  unmappedTrailingFields: item.unmappedTrailingFields,
+  rawSourceFields: item.rawSourceFields,
+}));
 const conflicts: Row[] = catalog.provenance_conflicts;
 const entryIds = entries.map(entry => String(entry.id));
-if (new Set(entryIds).size !== entryIds.length || entryIds.length !== csvData.length
-  || entryIds.some(id => !csvById.has(id)) || [...csvById.keys()].some(id => !entryIds.includes(id))) {
+const legacyEntryIds = (catalog.entries as Row[]).map(entry => String(entry.id));
+if (new Set(entryIds).size !== entryIds.length || entryIds.length !== addendum.cumulative_rows
+  || !Array.isArray(addendum.total_item_ids) || addendum.total_item_ids.length !== entryIds.length
+  || entryIds.some(id => !csvById.has(id) || !addendum.total_item_ids.includes(id))
+  || [...csvById.keys()].some(id => !addendum.total_item_ids.includes(id))
+  || legacyEntryIds.some(id => !legacyById.has(id) || !csvById.has(id))) {
   throw new Error('STAGE08_COVERAGE_JSON_CSV_ID_MISMATCH');
 }
 
 const inputs = [
   ['data/events/EVENT-SOURCE-CATALOG-v4.6.json', catalog.release_id, catalogBytes],
-  ['data/events/EVENT-SOURCE-ITEMS-v4.6.csv', SOURCE_RELEASES['data/events/EVENT-SOURCE-ITEMS-v4.6.csv'], itemsBytes],
+  ['data/events/EVENT-SOURCE-ITEMS-v4.6.csv', SOURCE_RELEASES['data/events/EVENT-SOURCE-ITEMS-v4.6.csv'], legacyItemsBytes],
+  ['data/events/EVENT-SOURCE-ITEMS-v7.24.csv', SOURCE_RELEASES['data/events/EVENT-SOURCE-ITEMS-v7.24.csv'], itemsBytes],
+  ['data/events/EVENT-SOURCE-CATALOG-v7.25-ADDENDUM.json', addendum.release_id, addendumBytes],
   ['data/events/EVENT-TIMELINE-v0.6.json', timeline.release_id, timelineBytes],
   ['data/structures/SOURCE-STRUCTURE-CATALOG-v1.0.json', structuresCatalog.release_id, structuresBytes],
 ] as const;
@@ -93,6 +115,7 @@ const conflictRefs = (row: Row) => {
 };
 
 const missingEntryContract = (entry: Row): string[] => {
+  if (entry.sourceFieldAlignment !== 'verified') return ['repair unaligned source row fields before promotion'];
   const csv = csvById.get(String(entry.id)) as Row;
   const missing: string[] = [];
   if (entry.adoption !== 'ACTIVE') missing.push('explicit promotion and versioned runtime contract');
@@ -109,13 +132,13 @@ const missingEntryContract = (entry: Row): string[] => {
   return [...new Set(missing)];
 };
 
-const sourceActive = entries.filter(entry => entry.adoption === 'ACTIVE');
+const sourceActive = entries.filter(entry => entry.sourceFieldAlignment === 'verified' && entry.adoption === 'ACTIVE');
 const pendingEntries = entries.filter(entry => entry.adoption !== 'ACTIVE');
 const dormantOtherQuests = ACTIVE_WORLD_PACKAGE.dormantQuestIds.filter(id => id !== 'QUEST-LL01-08');
 const lines: string[] = [
   '# Stage 08 content coverage matrix',
   '',
-  `Generated from ${catalog.release_id}, ${SOURCE_RELEASES['data/events/EVENT-SOURCE-ITEMS-v4.6.csv']}, ${timeline.release_id}, and ${structuresCatalog.release_id}. Source hashes and JSON/CSV item IDs are checked before this report is written.`,
+  `Generated from ${catalog.release_id} for provenance conflicts, ${SOURCE_RELEASES['data/events/EVENT-SOURCE-ITEMS-v7.24.csv']} for the cumulative item ledger, ${addendum.release_id}, ${timeline.release_id}, and ${structuresCatalog.release_id}. The v4.6 CSV is retained only to validate the older provenance catalog. Source hashes and all v7.24 IDs are checked against the v7.25 addendum before this report is written.`,
   '',
   '| Input | Release | SHA-256 |',
   '|---|---|---|',
@@ -124,9 +147,12 @@ const lines: string[] = [
   '## Runtime summary',
   '',
   `- Calendar compiler: \`${EVENT_LIFECYCLE_VERSION}\`; exactly ${ACTIVE_WORLD_PACKAGE.eventSchedule.length} adopted v0.6 records, with lifecycle receipts and no recurrence.`,
-  '- EV00 resolves its opening-protection lifecycle. EV01 has a source-fixed opening-level board window and frozen reward contract; its result snapshot is blocked unless the runtime can compile the complete fixed P0 outcome population. EV02–EV29 stop progression at their required-content boundary.',
+  `- Event contract registry: \`${EVENT_CONTRACT_REGISTRY_VERSION}\`; all ${ACTIVE_WORLD_PACKAGE.eventContracts.length} fixed IDs have a published handler-family, participation, objective, scoring, encounter, reward, shop, expiry and settlement contract in the compiled world package and live API projection.`,
+  '- EV00 resolves opening protection. EV01 now simulates finite rival actions, settles from committed completion records, freezes reward bands and supports idempotent player claims. EV02–EV29 have compiled research contracts but remain gated until their event-family handlers record real gameplay outcomes.',
   `- Source registry: ${entries.length} item/offer records (${sourceActive.length} source records promoted; ${pendingEntries.length} remain research/pending), ${catalog.source_effect_records.length} effects, ${catalog.source_observations.length} observations, ${catalog.event_mechanic_extractions.length} mechanic extractions, ${conflicts.length} provenance conflicts.`,
-  `- Human-review CSV: ${csvData.length} rows and ${csvHeader.length} columns; every row ID matches the JSON catalog exactly.`,
+  `- v7.24 cumulative CSV: ${csvData.length} rows and ${csvHeader.length} declared columns; every row ID matches the v7.25 cumulative ID ledger. The older v4.6 catalog has ${legacyEntryIds.length} entries and is used only to attach prior conflict evidence.`,
+  `- ${csvData.filter(row => row.sourceFieldAlignment === 'unresolved').length} source rows have unaligned adoption/verification fields. Their purchase or acquisition flags are excluded from event evidence counts and their promotion is blocked. ${csvData.filter(row => row.unmappedTrailingFields.length > 0).length} rows also contain unheaded trailing fields, which remain visible and uninterpreted.`,
+  `- v7.25 addendum: ${Array.isArray(addendum.chapter_item_ids) ? addendum.chapter_item_ids.length : 0} chapter IDs, ${Array.isArray(addendum.receipt_groups) ? addendum.receipt_groups.length : 0} receipt groups, ${Array.isArray(addendum.confirmed_outcomes) ? addendum.confirmed_outcomes.length : 0} confirmed outcomes, ${Array.isArray(addendum.unresolved_conflicts) ? addendum.unresolved_conflicts.length : 0} unresolved conflicts, ${Array.isArray(addendum.retracted_source_ids) ? addendum.retracted_source_ids.length : 0} retracted IDs.`,
   `- Research-only structure records: ${structuresCatalog.structures.length}; fixed quest identities outside the implemented Q08 path: ${dormantOtherQuests.length}.`,
   '- Three Stage08 runtime additions are explicit game-design contracts, not source-catalog promotions: the one-sack bridge negotiation choice, a posted-price bread offer, and an unfilled six-salt auction lot. They retain a `versioned_game_design`/no-source-entry trail.',
   '',
@@ -162,7 +188,7 @@ lines.push(
   '| Event-exclusive item instances | No research-catalog item with a verified, adopted per-item expiration has been promoted. The selected Q08 bread offer is explicitly permanent (`exclusiveEventId=null`, `expiresAtElapsedMs=null`); the auction lot expires and its open escrow is refunded. Therefore item-expiry propagation through equipment/jobs/other containers is not falsely claimed as covered by an active event-exclusive content contract. |',
   '| Exclusive quest reward claim | Q08 reward key is unique; repeated claim cannot pay a second 60 Krona or reopen the route contract. |',
   '| Save and backup reload | Quest state, inventory purchase/consumption lineage, currency, market stock and receipts survive process restart and backup import. |',
-  '| Source-version update | Catalog 3.7 and CSV 3.7 hashes and all row IDs are verified; research-only changes do not mutate the pinned save’s committed calendar or claims. |',
+  '| Source-version update | The v7.24 CSV and v7.25 addendum hashes, cumulative count and every source ID are verified; the v4.6 catalog/CSV pair remains a prior-provenance comparison. Research-only changes do not mutate the pinned save’s committed calendar or claims. |',
   '',
   '## Ranking source and settlement', '',
   '- `LORD-DND-01.md` §13.3–13.4 defines `OPENING_LEVEL`: open +48h, close +144h, top 100 actors reaching level 10, level then progress, completion timestamp then stable player ID, three-minute data delay, and fixed `RWD-OPENING-FIXED-2.0` payloads for seven rank bands. A zero-qualifier result is empty and pays nothing.',
@@ -175,17 +201,17 @@ lines.push(
   '| `SX-0274` / `EV06-CONSTRUCTION-WEEK` / Chapter 285 | Source panel explicitly lists 5,000 Krona for 1 Kingdom Honor point; offer verified, acquisition not verified; introduced after the first Construction Week day and tied to Dolon Lake siege; remote view but physical pickup at army camp or Vĩnh Sương main city. | `purchase_limit` absent and `scope=UNKNOWN`; no source-confirmed cap, exchange ceiling, exact opening timestamp, LL01 map binding for either pickup site, or receipt. It remains `RESEARCH_CANDIDATE_NOT_ACTIVE`; no honor point or Krona conversion is invented. |',
   '',
   '## Every source entry', '',
-  `All ${entries.length} JSON entries and matching CSV rows are shown. Missing fields describe promotion/runtime work, not an assertion that the source passage contains no facts.`,
+  `All ${entries.length} v7.24 CSV rows and their v7.25 cumulative IDs are shown. The 590-entry v4.6 catalog is a separate provenance/conflict input. Missing fields describe promotion/runtime work, not an assertion that the source passage contains no facts.`,
   '',
-  '| Source ID | Event | Channel / subtype | Adoption | Price / currency / limit / quantity | Missing promotion/runtime contract fields | Conflicts |',
-  '|---|---|---|---|---|---|---|',
+  '| Source ID | Event | Channel / subtype | Adoption | Price / currency / limit / quantity | Missing promotion/runtime contract fields | Row alignment | Unmapped trailing fields | Conflicts |',
+  '|---|---|---|---|---|---|---|---:|---|',
 );
 for (const entry of entries) {
   const facts = [entry.price == null || entry.price === '' ? 'price unknown' : `price ${entry.price}`,
     entry.currency == null || entry.currency === '' ? 'currency unknown' : `currency ${entry.currency}`,
     entry.purchase_limit == null || entry.purchase_limit === '' ? `limit unknown${entry.scope ? ` (${entry.scope})` : ''}` : `limit ${entry.purchase_limit} (${entry.scope ?? 'scope unknown'})`,
     entry.quantity == null || entry.quantity === '' ? 'quantity unknown' : `quantity ${entry.quantity}`].join(' / ');
-  lines.push(`| \`${cell(entry.id)}\` | ${cell(entry.event_id)} | ${cell(entry.channel)} / ${cell(entry.subtype)} | ${cell(entry.adoption)} | ${cell(facts)} | ${cell(compact(missingEntryContract(entry)))} | ${cell(conflictRefs(entry))} |`);
+  lines.push(`| \`${cell(entry.id)}\` | ${cell(entry.event_id)} | ${cell(entry.channel)} / ${cell(entry.subtype)} | ${cell(entry.sourceFieldAlignment === 'verified' ? entry.adoption : 'ROW_ALIGNMENT_UNRESOLVED')} | ${cell(facts)} | ${cell(compact(missingEntryContract(entry)))} | ${cell(entry.sourceFieldAlignment)} | ${cell(entry.unmappedTrailingFields.join('; '))} | ${cell(conflictRefs(entry))} |`);
 }
 
 lines.push('', '## Source effect records', '', '| Effect ID | Event | Source contract status | Remaining promotion work | Conflicts |', '|---|---|---|---|---|');

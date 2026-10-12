@@ -19,7 +19,7 @@ import {
   startSearchJob,
   transferItem,
 } from './spatial.ts';
-import { acceptQ08, cancelAuctionBid, claimQ08Reward, escortQ08, negotiateQ08, placeAuctionBid, purchaseMarketOffer } from './stage08.ts';
+import { acceptQ08, cancelAuctionBid, claimOpeningLevelReward, claimQ08Reward, escortQ08, negotiateQ08, placeAuctionBid, purchaseMarketOffer } from './stage08.ts';
 
 const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | 'inspect_starter_container' | 'inspect_career_card'>, { code: string; message: string }>> = {
   activate_career_card: { code: 'CAREER_CARD_FLOW_NOT_IMPLEMENTED', message: 'Career activation is unavailable until its verified flow is implemented.' },
@@ -33,7 +33,7 @@ const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | '
   move: { code: 'MOVEMENT_RULES_STAGE_05', message: 'Travel is unavailable until routes, access and settlement rules are implemented.' },
   cancel_travel: { code: 'MOVEMENT_ORDER_NOT_ACTIVE', message: 'The selected movement order is no longer active.' },
   survey: { code: 'SURVEY_RULES_STAGE_05', message: 'Surveying is unavailable until its source-locked contracts are implemented.' },
-  search: { code: 'SEARCH_RULES_STAGE_05', message: 'Searching is unavailable until spatial sweep and target rules are implemented.' },
+  search: { code: 'SEARCH_RULES_STAGE_05', message: 'Choose an area and a chest-search or hunt sweep mode.' },
   harvest: { code: 'RESOURCE_LEDGER_STAGE_05', message: 'Resource extraction is unavailable until the authoritative balance ledger is implemented.' },
   cancel_spatial_job: { code: 'SPATIAL_JOB_NOT_ACTIVE', message: 'The selected spatial job is no longer active.' },
   transfer_item: { code: 'CONTAINER_NOT_ACCESSIBLE', message: 'Both containers must be accessible to the player.' },
@@ -59,6 +59,7 @@ const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | '
   negotiate_caravan: { code: 'CARAVAN_NOT_ACCESSIBLE', message: 'The caravan negotiation is not available at this location.' },
   escort_caravan: { code: 'CARAVAN_NOT_READY_TO_ESCORT', message: 'The caravan is not ready to travel.' },
   claim_quest_reward: { code: 'QUEST_REWARD_NOT_CLAIMABLE', message: 'The selected quest has no claimable reward.' },
+  claim_opening_rank_reward: { code: 'OPENING_REWARD_NOT_CLAIMABLE', message: 'The fixed opening-board reward is not ready to claim.' },
   place_auction_bid: { code: 'AUCTION_LOT_NOT_OPEN', message: 'The selected auction lot is not open.' },
   cancel_auction_bid: { code: 'AUCTION_BID_NOT_OPEN', message: 'The selected bid is not open.' },
 };
@@ -69,6 +70,25 @@ function staticAvailability(type: CommandType): ActionAvailability {
   }
   const reason = disabledReasons[type];
   return { actionId: type, enabled: false, reasonCode: reason.code, requirements: [reason.message] };
+}
+
+function routePointAt(points: readonly CoordinateMm[], distanceMm: number): CoordinateMm {
+  let remaining = Math.max(0, distanceMm);
+  for (let index = 1; index < points.length; index += 1) {
+    const from = points[index - 1]!;
+    const to = points[index]!;
+    const segment = Math.hypot(to.xMm - from.xMm, to.yMm - from.yMm);
+    if (remaining <= segment || index === points.length - 1) {
+      const ratio = segment === 0 ? 1 : Math.min(1, remaining / segment);
+      return {
+        xMm: Math.round(from.xMm + (to.xMm - from.xMm) * ratio),
+        yMm: Math.round(from.yMm + (to.yMm - from.yMm) * ratio),
+        sourceZMetres: from.sourceZMetres ?? 0,
+      };
+    }
+    remaining -= segment;
+  }
+  return points[0] ?? { xMm: 0, yMm: 0 };
 }
 
 export function actionAvailability(type: CommandType): ActionAvailability {
@@ -84,7 +104,7 @@ export function actionAvailability(type: CommandType): ActionAvailability {
   }
   if (type === 'split_stack' || type === 'merge_stacks' || type === 'consume_item' || type === 'activate_career_card' || type === 'revive' || type === 'butcher_corpse' || type === 'equip' || type === 'unequip_item' || type === 'attack' || type === 'retreat') return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
   if (type === 'shop_transaction' || type === 'accept_quest' || type === 'negotiate_caravan' || type === 'escort_caravan'
-    || type === 'claim_quest_reward' || type === 'place_auction_bid' || type === 'cancel_auction_bid') return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
+    || type === 'claim_quest_reward' || type === 'claim_opening_rank_reward' || type === 'place_auction_bid' || type === 'cancel_auction_bid') return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
   return staticAvailability(type);
 }
 
@@ -218,9 +238,9 @@ export function previewCommand(
     const container = state.inventory.containers.find(item => item.id === command.payload.containerId);
     const accessible = Boolean(container && canAccessStarterContainer(container.id, state, world));
     const wood = container?.stacks.find(item => item.itemId === command.payload.itemId && item.templateId === 'WOOD');
-    return state.territory.survivalFire.fuelKnowledge === 'known' && accessible && container?.observed && wood && wood.quantity >= command.payload.quantity
+    return accessible && container?.observed && wood && wood.quantity >= command.payload.quantity
       ? actionAvailability(command.type)
-      : { actionId: command.type, enabled: false, reasonCode: state.territory.survivalFire.fuelKnowledge !== 'known' ? 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED' : 'FUEL_NOT_ACCESSIBLE', requirements: [state.territory.survivalFire.fuelKnowledge !== 'known' ? 'The opening fire fuel amount is unknown, so an exact remaining-fuel total cannot be calculated.' : 'Accessible, observed WOOD must be present in an owned container.'] };
+      : { actionId: command.type, enabled: false, reasonCode: 'FUEL_NOT_ACCESSIBLE', requirements: ['Accessible, observed WOOD must be present in an owned container.'] };
   }
   if (command.type === 'extinguish_fire') {
     return state.territory.survivalFire.active ? actionAvailability(command.type)
@@ -244,8 +264,31 @@ export function previewCommand(
       ? actionAvailability(command.type) : unavailable(command.type, 'MOVEMENT_ORDER_NOT_ACTIVE', 'The movement order is unavailable.');
   }
   if (command.type === 'search') {
-    const result = startSearchJob(state, world, 'PREVIEW-SEARCH', command.payload.actorId, command.payload.center, command.payload.radiusMm);
-    return result.job ? actionAvailability(command.type) : unavailable(command.type, result.code ?? 'SEARCH_UNAVAILABLE', 'The actor cannot search this area.');
+    const result = startSearchJob(state, world, 'PREVIEW-SEARCH', command.payload.actorId, command.payload.center, command.payload.radiusMm, command.payload);
+    const routeDistance = (points: readonly CoordinateMm[]) => points.slice(1).reduce((sum, point, index) => sum + Math.hypot(point.xMm - points[index]!.xMm, point.yMm - points[index]!.yMm), 0);
+    return result.job ? { actionId: command.type, enabled: true, reasonCode: null, requirements: [], preview: {
+      label: result.job!.mode === 'hunt' ? 'Area hunt plus return' : 'Area sweep plus return',
+      value: (() => {
+        const outboundMm = result.job!.path.length > 1 ? Math.hypot(result.job!.path[1]!.xMm - result.job!.path[0]!.xMm, result.job!.path[1]!.yMm - result.job!.path[0]!.yMm) : 0;
+        const speed = result.job!.speedMmPerHour!;
+        const routeMm = routeDistance(result.job!.path);
+        const sweepMm = Math.max(0, routeMm - outboundMm);
+        const fullSweepMinutes = Math.ceil(sweepMm * 60 / speed);
+        const workLimitMinutes = command.payload.timeLimitMinutes ?? null;
+        const workMinutes = workLimitMinutes === null ? fullSweepMinutes : Math.min(workLimitMinutes, fullSweepMinutes);
+        const stoppedEarlyByTime = workLimitMinutes !== null && workLimitMinutes < fullSweepMinutes;
+        const stopPosition = stoppedEarlyByTime
+          ? routePointAt(result.job!.path, outboundMm + workMinutes * speed / 60)
+          : result.job!.path.at(-1)!;
+        const returnMm = stoppedEarlyByTime
+          ? Math.hypot(stopPosition.xMm - result.job!.path[0]!.xMm, stopPosition.yMm - result.job!.path[0]!.yMm)
+          : routeDistance(result.job!.returnPath ?? []);
+        const etaMinutes = Math.ceil(outboundMm * 60 / speed) + workMinutes + Math.ceil(returnMm * 60 / speed);
+        const areaM2 = Math.PI * result.job!.envelopeRadiusMm ** 2 / 1_000_000;
+        const limits = [result.job!.targetCount ? `first ${result.job!.targetCount} signal(s)` : null, workLimitMinutes === null ? null : `${workLimitMinutes} min search-work limit`].filter(Boolean).join(' or ');
+        return `${(outboundMm / 1_000_000).toFixed(2)} km outbound · ${(sweepMm / 1_000_000).toFixed(2)} km sweep (${Math.round(areaM2).toLocaleString()} m² area) · ${(returnMm / 1_000_000).toFixed(2)} km estimated return · ~${etaMinutes} min total${limits ? ` · search stops at ${limits}, then returns` : ''}${result.job!.targetCount ? ' · target-count ETA uses a full-sweep estimate because hidden density is not disclosed' : ''} · ${result.job!.actorIds.length} scout(s)`;
+      })(),
+    } } : unavailable(command.type, result.code ?? 'SEARCH_UNAVAILABLE', 'The actors cannot search this area.');
   }
   if (command.type === 'harvest') {
     const result = startHarvestJob(state, world, 'PREVIEW-HARVEST', command.payload.actorId, command.payload.resourceId, command.payload.materialId, command.payload.quantity, command.payload.toolItemId);
@@ -311,6 +354,10 @@ export function previewCommand(
   }
   if (command.type === 'claim_quest_reward') {
     const result = claimQ08Reward(state, world, 'PREVIEW');
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
+  }
+  if (command.type === 'claim_opening_rank_reward') {
+    const result = claimOpeningLevelReward(state, 'PREVIEW', command.payload.boardId);
     return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
   }
   if (command.type === 'shop_transaction') {
@@ -510,6 +557,12 @@ export function reduceCommand(
     return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'QUEST_REWARD_CLAIMED', result.message);
   }
 
+  if (command.type === 'claim_opening_rank_reward') {
+    const result = claimOpeningLevelReward(state, command.commandId, command.payload.boardId);
+    if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'OPENING_RANK_REWARD_CLAIMED', result.message);
+  }
+
   if (command.type === 'shop_transaction') {
     const result = purchaseMarketOffer(state, world, command.payload.offerId, command.payload.destinationContainerId, command.payload.quantity, command.commandId);
     if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
@@ -562,16 +615,21 @@ export function reduceCommand(
   if (command.type === 'search') {
     const idHash = canonicalStateHash({ saveId: state.saveId, commandId: command.commandId }).slice(0, 20).toUpperCase();
     const jobId = `SEARCH-${idHash}`;
-    const result = startSearchJob(state, world, jobId, command.payload.actorId, command.payload.center, command.payload.radiusMm);
-    if (!result.job) return reject(state, command.commandId, result.code ?? 'SEARCH_UNAVAILABLE', 'The actor cannot search this area.', requestSha256);
+    const result = startSearchJob(state, world, jobId, command.payload.actorId, command.payload.center, command.payload.radiusMm, command.payload);
+    if (!result.job) return reject(state, command.commandId, result.code ?? 'SEARCH_UNAVAILABLE', 'The selected actors cannot search this area.', requestSha256);
     const next = structuredClone(state);
     next.spatial.searchJobs = [...next.spatial.searchJobs, result.job];
     next.jobs = [...next.jobs, { id: jobId, kind: 'spatial_search', status: 'active', actorIds: [...result.job.actorIds], reservedItemIds: [], startedAtElapsedMs: state.simElapsedMs, completedAtElapsedMs: null }];
     next.exploration.searchHistory = [...next.exploration.searchHistory, { searchId: jobId, startedAtElapsedMs: state.simElapsedMs, status: 'active' }];
     return acceptMutationMany(state, command, requestSha256, next, [{
       type: 'spatial_search_started', occurredAtElapsedMs: state.simElapsedMs,
-      payload: { jobId, actorId: command.payload.actorId, envelopeRadiusMm: result.job.envelopeRadiusMm, laneWidthMm: result.job.laneWidthMm },
-    }], 'SEARCH_STARTED', 'The search job was started.');
+      payload: { jobId, mode: result.job.mode, actorIds: result.job.actorIds, center: result.job.center, envelopeRadiusMm: result.job.envelopeRadiusMm,
+        laneWidthMm: result.job.laneWidthMm, sweepDistanceMm: result.job.path.reduce((sum, point, index, path) => index === 0 ? sum : sum + Math.hypot(point.xMm - path[index - 1]!.xMm, point.yMm - path[index - 1]!.yMm), 0),
+        speedMmPerHour: result.job.speedMmPerHour, returnDistanceMm: Math.hypot(result.job.path.at(-1)!.xMm - result.job.path[0]!.xMm, result.job.path.at(-1)!.yMm - result.job.path[0]!.yMm),
+        targetCount: result.job.targetCount, stopAtElapsedMs: result.job.stopAtElapsedMs },
+    }], result.job.mode === 'hunt' ? 'HUNT_STARTED' : 'SEARCH_STARTED', result.job.mode === 'hunt'
+      ? 'The area hunt started; targets are detected from existing population records and the squad returns at its selected stop condition.'
+      : 'The chest-field sweep started; the units return when the area or selected limit is complete.');
   }
 
   if (command.type === 'harvest') {
@@ -594,7 +652,8 @@ export function reduceCommand(
   if (command.type === 'cancel_spatial_job') {
     const result = cancelSpatialJob(state, command.payload.jobId, state.simElapsedMs);
     if (!result.event) return reject(state, command.commandId, result.code ?? 'SPATIAL_JOB_NOT_ACTIVE', 'The spatial job is unavailable.', requestSha256);
-    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'SPATIAL_JOB_CANCELLED', 'The spatial job was cancelled.');
+    const isSearchRecall = result.event.type === 'spatial_search_recall_started';
+    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], isSearchRecall ? 'SPATIAL_JOB_RECALLING' : 'SPATIAL_JOB_CANCELLED', isSearchRecall ? 'The search stopped and the squad is returning to its starting point.' : 'The spatial job was cancelled.');
   }
 
   if (command.type === 'transfer_item') {
@@ -749,9 +808,7 @@ export function reduceCommand(
     const container = state.inventory.containers.find(item => item.id === command.payload.containerId);
     const accessible = Boolean(container && canAccessStarterContainer(container.id, state, world));
     const stack = container?.stacks.find(item => item.itemId === command.payload.itemId && item.templateId === 'WOOD');
-    if (state.territory.survivalFire.fuelKnowledge !== 'known' || state.territory.survivalFire.fuelRemaining === null) {
-      return reject(state, command.commandId, 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED', 'The opening fire fuel amount is unknown, so an exact remaining-fuel total cannot be calculated.', requestSha256);
-    }
+    if (state.territory.survivalFire.fuelRemaining === null) return reject(state, command.commandId, 'FUEL_LEDGER_NOT_MATERIALIZED', 'The fire fuel ledger is unavailable in this save version.', requestSha256);
     if (!container || !stack || !accessible || !container.observed) return reject(state, command.commandId, 'FUEL_NOT_ACCESSIBLE', 'Accessible, observed WOOD is required.', requestSha256);
     if (stack.quantity - (stack.reservedQuantity ?? 0) < command.payload.quantity) return reject(state, command.commandId, 'INSUFFICIENT_WOOD', 'The container does not hold enough unreserved WOOD.', requestSha256);
     const containers = state.inventory.containers.map(item => item.id === container.id ? {
@@ -765,11 +822,11 @@ export function reduceCommand(
       territory: { ...state.territory, survivalFire: {
         ...fire,
         fuelRemaining: knownFuel,
-        fuelKnowledge: 'known',
+        fuelKnowledge: fire.fuelKnowledge,
         fuelBlocker: null,
         nextFuelConsumptionAtElapsedMs: fire.active ? (fire.nextFuelConsumptionAtElapsedMs ?? state.simElapsedMs + 15 * 60_000) : null,
       } },
-    }, 'fire_refuelled', { itemId: stack.itemId, quantity: command.payload.quantity, remaining: knownFuel }, 'FIRE_REFUELLED', 'WOOD was transferred to the survival fire.');
+    }, 'fire_refuelled', { itemId: stack.itemId, quantity: command.payload.quantity }, 'FIRE_REFUELLED', 'WOOD was transferred to the survival fire.');
   }
 
   if (command.type === 'extinguish_fire') {

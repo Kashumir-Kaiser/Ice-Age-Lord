@@ -3,9 +3,10 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import test from 'node:test';
+import { DatabaseSync } from 'node:sqlite';
 import { ACTIVE_WORLD_PACKAGE } from '../../content/src/index.ts';
 import { RULESET_VERSION } from '../../content/src/sourceLock.ts';
-import type { GameState, WorldDefinition } from '../../contracts/src/index.ts';
+import { GAME_STATE_SCHEMA_VERSION, type GameState, type WorldDefinition } from '../../contracts/src/index.ts';
 import { GameApplicationService } from '../../api/src/service.ts';
 import { SqliteRepository } from '../../storage/src/repository.ts';
 import { STAGE07_OPENING_CORPSE_ID } from '../src/stage07.ts';
@@ -13,6 +14,7 @@ import { createNewGame } from '../src/initializer.ts';
 import { reduceCommand } from '../src/reducer.ts';
 import { advanceTo } from '../src/time.ts';
 import { projectPlayerView } from '../src/view.ts';
+import { canonicalStateHash } from '../src/hash.ts';
 
 const ownerId = 'local-owner';
 const world = ACTIVE_WORLD_PACKAGE;
@@ -100,7 +102,7 @@ test('fresh API save reveals opening contents by inspection and preserves one-ti
   try {
     const initial = harness.currentState();
     const view = harness.created.view;
-    assert.equal(initial.schemaVersion, 7);
+    assert.equal(initial.schemaVersion, GAME_STATE_SCHEMA_VERSION);
     assert.equal(initial.simElapsedMs, 0);
     assert.equal(initial.ownedUnits.length, 0);
     assert.equal(initial.revision, 1);
@@ -119,8 +121,10 @@ test('fresh API save reveals opening contents by inspection and preserves one-ti
     assert.equal(view.units.length, 0);
     assert.deepEqual(view.inventory.inspectableContainers.map(container => container.containerId), ['LL-CNT-CARRIED-FOOD-BAG-01']);
     assert.equal(view.territory.survivalFire.fuelRemaining, null);
-    assert.equal(view.territory.survivalFire.fuelBlocker, 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED');
-    assert.equal(initial.survival.blocker, 'OPENING_WEATHER_RECORD_NOT_SEEDED');
+    assert.equal(view.territory.survivalFire.fuelBlocker, null);
+    assert.equal(initial.survival.environment?.apparentTemperatureC, 0);
+    assert.equal(initial.survival.blocker, null);
+    assert.equal(initial.territory.survivalFire.fuelRemaining, 24);
     assert.equal(view.corpses?.find(corpse => corpse.id === STAGE07_OPENING_CORPSE_ID)?.label, 'Unidentified corpse');
 
     const bagBefore = structuredClone(initial.inventory.containers.find(container => container.id === 'LL-CNT-CARRIED-FOOD-BAG-01'));
@@ -153,14 +157,14 @@ test('fresh API save reveals opening contents by inspection and preserves one-ti
     assert.equal(rook.xp, 24);
     assert.equal(rook.xpMirrorEligible, true);
     assert.equal(harness.service.loadSave(harness.saveId).view.units.some(unit => unit.id === rook.id), true);
-    assert.equal(harness.currentState().territory.survivalFire.fuelRemaining, null);
-    assert.equal(harness.currentState().survival.blocker, 'OPENING_WEATHER_RECORD_NOT_SEEDED');
+    assert.equal(harness.currentState().territory.survivalFire.fuelRemaining, 24);
+    assert.equal(harness.currentState().survival.blocker, null);
   } finally {
     await harness.close();
   }
 });
 
-test('physical supply and harvest use real inventory; fire stays blocked until its referenced starter ledger is materialized', async () => {
+test('physical supply, harvest and fire refuelling use conserved inventory; survival state survives restart', async () => {
   const harness = createHarness();
   try {
     assert.deepEqual(harness.created.view.inventory.inspectableContainers.map(container => container.containerId), ['LL-CNT-CARRIED-FOOD-BAG-01']);
@@ -211,16 +215,21 @@ test('physical supply and harvest use real inventory; fire stays blocked until i
     const deliveredWood = completedState.inventory.containers.find(container => container.id === bagId)?.stacks.find(stack => stack.templateId === 'WOOD');
     assert.equal(deliveredWood?.quantity, 1, 'completed real harvest delivers a real WOOD stack to the player bag');
 
-    const beforeFuelAttempt = structuredClone(completedState.inventory.containers.find(container => container.id === bagId)?.stacks);
+    await harness.send('move', { actorId: 'LI_LAN', destination: world.origin });
+    await completeActiveMove(harness);
+    const beforeFuelAttempt = structuredClone(harness.currentState().inventory.containers.find(container => container.id === bagId)?.stacks);
+    const fuelBeforeRefuel = harness.currentState().territory.survivalFire.fuelRemaining;
     const refuelRequest = {
-      schemaVersion: 1, saveId: harness.saveId, commandId: 'stage09-refuel-unknown-fuel', expectedRevision: completedState.revision,
+      schemaVersion: 1, saveId: harness.saveId, commandId: 'stage09-refuel-known-fuel', expectedRevision: harness.currentState().revision,
       type: 'refuel_fire', payload: { containerId: bagId, itemId: deliveredWood!.itemId, quantity: 1 },
     };
-    assert.equal(harness.service.preview(harness.saveId, refuelRequest).availability.reasonCode, 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED');
-    await assert.rejects(harness.service.executeCommand(harness.saveId, refuelRequest), error => error.code === 'RULE_NOT_READY');
-    assert.deepEqual(harness.currentState().inventory.containers.find(container => container.id === bagId)?.stacks, beforeFuelAttempt);
-    assert.equal(harness.currentState().territory.survivalFire.fuelRemaining, null);
-    assert.equal(harness.currentState().survival.blocker, 'OPENING_WEATHER_RECORD_NOT_SEEDED');
+    assert.equal(harness.service.preview(harness.saveId, refuelRequest).availability.enabled, true);
+    const refuel = await harness.service.executeCommand(harness.saveId, refuelRequest);
+    assert.equal(refuel.receipt.accepted, true);
+    assert.deepEqual(harness.currentState().inventory.containers.find(container => container.id === bagId)?.stacks, beforeFuelAttempt?.filter(stack => stack.itemId !== deliveredWood!.itemId));
+    assert.equal(harness.currentState().territory.survivalFire.fuelRemaining, fuelBeforeRefuel! + 1);
+    assert.equal(harness.currentState().territory.survivalFire.fuelKnowledge, 'state_unobserved');
+    assert.equal(harness.currentState().survival.blocker, null);
 
     const beforeRestart = harness.currentState();
     const recovered = harness.restart();
@@ -230,10 +239,41 @@ test('physical supply and harvest use real inventory; fire stays blocked until i
     assert.deepEqual(recoveredState.playerKnowledge, beforeRestart.playerKnowledge);
     assert.deepEqual(recoveredState.inventory, beforeRestart.inventory);
     assert.deepEqual(recoveredState.spatial.harvestJobs, beforeRestart.spatial.harvestJobs);
-    assert.equal(recoveredState.territory.survivalFire.fuelRemaining, null);
-    assert.equal(recoveredState.survival.blocker, 'OPENING_WEATHER_RECORD_NOT_SEEDED');
+    assert.equal(recoveredState.territory.survivalFire.fuelRemaining, beforeRestart.territory.survivalFire.fuelRemaining);
+    assert.deepEqual(recoveredState.survival, beforeRestart.survival);
     assert.equal(recoveredState.clockControl.status, 'paused', 'restart policy pauses time without advancing the world');
     assert.ok(recoveredState.lastEventSequence >= beforeRestart.lastEventSequence);
+  } finally {
+    await harness.close();
+  }
+});
+
+test('schema 7 saves migrate once on disk while preserving receipts, events, checkpoints, and earned state', async () => {
+  const harness = createHarness();
+  try {
+    const checkpoint = harness.repository.createCheckpoint(ownerId, harness.saveId, 'before legacy migration');
+    const before = harness.currentState();
+    const legacy = structuredClone(before) as unknown as Record<string, any>;
+    legacy.schemaVersion = 7;
+    legacy.survival.environment = null;
+    legacy.survival.blocker = 'OPENING_WEATHER_RECORD_NOT_SEEDED';
+    legacy.territory.survivalFire.fuelRemaining = null;
+    legacy.territory.survivalFire.fuelBlocker = 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED';
+    const database = new DatabaseSync(harness.databasePath);
+    const json = JSON.stringify(legacy);
+    database.prepare('UPDATE saves SET state_json = ?, state_sha256 = ? WHERE save_id = ?')
+      .run(json, canonicalStateHash(legacy), harness.saveId);
+    database.close();
+
+    harness.restart();
+    const migrated = harness.currentState();
+    assert.equal(migrated.schemaVersion, GAME_STATE_SCHEMA_VERSION);
+    assert.equal(migrated.territory.survivalFire.fuelRemaining, 24);
+    assert.equal(migrated.survival.environment?.apparentTemperatureC, 0);
+    assert.equal(migrated.lastEventSequence, before.lastEventSequence);
+    assert.equal(migrated.revision, before.revision);
+    assert.deepEqual(harness.repository.listCheckpoints(ownerId, harness.saveId).map(row => row.checkpointId), [checkpoint.checkpointId]);
+    assert.deepEqual(harness.currentState().receipts, before.receipts);
   } finally {
     await harness.close();
   }
@@ -277,4 +317,41 @@ test('private-world sentinel stays out of views and errors until a real movement
   assert.ok(arrived.playerKnowledge.knownSiteIds.includes(sentinelId));
   const revealed = projectPlayerView(arrived, fixtureWorld).visibleMap.entities.find(entity => entity.ref.type === 'site' && entity.ref.id === sentinelId);
   assert.equal(revealed?.label, sentinelName, 'a sentinel is allowed to appear after the player physically discovers it');
+});
+
+test('area hunt reserves its squad across reload, detects only the seeded hare, and never awards a timer-based kill', async () => {
+  const harness = createHarness();
+  try {
+    const initial = harness.currentState();
+    const started = await harness.send('search', {
+      actorId: initial.player.id,
+      center: initial.player.position,
+      radiusMm: 10_000,
+      mode: 'hunt',
+      targetCount: 1,
+      timeLimitMinutes: 15,
+    });
+    assert.equal(started.receipt.accepted, true, started.receipt.code);
+    const dispatched = harness.currentState();
+    const jobId = dispatched.spatial.searchJobs.at(-1)?.id;
+    assert.ok(jobId);
+    assert.equal(dispatched.spatial.searchJobs.at(-1)?.mode, 'hunt');
+    assert.deepEqual(dispatched.spatial.searchJobs.at(-1)?.actorIds, [initial.player.id]);
+
+    const reloaded = harness.restart();
+    assert.equal(reloaded.state.spatial.searchJobs.find(job => job.id === jobId)?.mode, 'hunt');
+    assert.deepEqual(reloaded.state.spatial.searchJobs.find(job => job.id === jobId)?.foundTargetIds, []);
+    await harness.startClock();
+    const settled = await harness.advanceSimulationBy(60 * 60_000);
+    const job = settled.spatial.searchJobs.find(candidate => candidate.id === jobId)!;
+    assert.equal(job.status, 'completed');
+    assert.equal(job.foundTargetIds.length, 1);
+    assert.equal(job.foundTargetIds[0], settled.combat?.target.actorId);
+    assert.equal(settled.combat?.target.status, 'available', 'finding a target does not auto-resolve combat');
+    assert.equal(settled.corpses.some(corpse => corpse.actorId === settled.combat?.target.actorId), false);
+    assert.equal((settled.progression?.transactions ?? []).filter(transaction => transaction.sourceCategory === 'combat').length, 0);
+    assert.equal(harness.service.loadSave(harness.saveId).view.spatial.searchJobs.find(candidate => candidate.id === jobId)?.foundTargetCount, 1);
+  } finally {
+    await harness.close();
+  }
 });

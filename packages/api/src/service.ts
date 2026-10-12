@@ -9,10 +9,11 @@ import { eventRuntimeReadiness, mandatoryEventBlocker } from '../../content/src/
 import { CONTENT_VERSION, RULESET_VERSION } from '../../content/src/sourceLock.ts';
 import { canonicalStateHash } from '../../sim/src/hash.ts';
 import { createNewGame } from '../../sim/src/initializer.ts';
+import { upgradeGameState } from '../../sim/src/upgrade.ts';
 import { previewCommand, reduceCommand } from '../../sim/src/reducer.ts';
 import { projectPlayerView } from '../../sim/src/view.ts';
 import { verifyStage08State } from '../../sim/src/stage08.ts';
-import { advanceTo, DAY_MS, HOUR_MS, MINUTE_MS, nextMidnightAfter, TOMB_STANDARD_BLUEPRINT_ID, TOMB_STANDARD_DURATION_MS, TOMB_STANDARD_RECIPE_ID, type StopCondition } from '../../sim/src/time.ts';
+import { advanceTo, coldLoadRateMicroPerMinute, DAY_MS, HOUR_MS, MINUTE_MS, nextMidnightAfter, TOMB_STANDARD_BLUEPRINT_ID, TOMB_STANDARD_DURATION_MS, TOMB_STANDARD_RECIPE_ID, type StopCondition } from '../../sim/src/time.ts';
 import { RepositoryError, SqliteRepository } from '../../storage/src/repository.ts';
 import { ApiProblem, fromRepositoryError } from './errors.ts';
 
@@ -139,9 +140,21 @@ function validateStage05State(candidate: GameState, world: WorldDefinition, base
   for (const job of candidate.spatial.searchJobs) {
     if (!isRecord(job) || !isNonEmptyString(job.id) || spatialJobIds.has(job.id) || !Array.isArray(job.actorIds)
       || !Array.isArray(job.path) || job.path.length < 2 || job.path.some(point => !validPosition(point))
+      || !['chest', 'hunt'].includes(String(job.mode)) || !Array.isArray(job.foundTargetIds)
+      || job.foundTargetIds.some((id: unknown) => typeof id !== 'string' || id.trim() === '')
+      || new Set(job.foundTargetIds).size !== job.foundTargetIds.length
+      || (job.returnPath !== undefined && (!Array.isArray(job.returnPath) || job.returnPath.length < 2 || job.returnPath.some(point => !validPosition(point))))
+      || (job.phase !== undefined && !['sweeping', 'returning'].includes(job.phase))
+      || (job.phase === 'returning' && (!Array.isArray(job.returnPath) || job.returnPath.length < 2))
+      || (job.speedMmPerHour !== undefined && !isSafeInt(job.speedMmPerHour, 1))
+      || (job.stopAtElapsedMs !== undefined && job.stopAtElapsedMs !== null && !isSafeInt(job.stopAtElapsedMs, 1))
+      || (job.targetCount !== undefined && job.targetCount !== null && (!isSafeInt(job.targetCount, 1) || job.targetCount > 192))
+      || (job.foundChestIds !== undefined && (!Array.isArray(job.foundChestIds) || job.foundChestIds.some(id => !knownChests.has(id)) || new Set(job.foundChestIds).size !== job.foundChestIds.length))
+      || (job.returnReason !== undefined && !['area_complete', 'target_count', 'time_limit', 'recalled'].includes(job.returnReason))
       || !isSafeInt(job.envelopeRadiusMm, 1) || job.envelopeRadiusMm > 2_000_000 || !isSafeInt(job.laneWidthMm, 1)
       || !isSafeInt(job.pathProgressMm) || !isSafeInt(job.startedAtElapsedMs) || job.startedAtElapsedMs > candidate.simElapsedMs
       || !['active', 'paused', 'blocked', 'completed', 'cancelled'].includes(job.status)) invalid('Search job state is malformed.');
+    if (job.actorIds.length < 1 || new Set(job.actorIds).size !== job.actorIds.length) invalid('Search job actors must be unique.');
     spatialJobIds.add(job.id);
     if (job.actorIds.some((id: unknown) => id !== candidate.player.id && !candidate.ownedUnits.some(unit => unit.id === id))) invalid('Search jobs contain an actor outside the save roster.');
   }
@@ -229,7 +242,9 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
     || !isRecord(value.bagSeed)) {
     throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup save state is malformed.', 'Bản sao lưu không hợp lệ.');
   }
-  const candidate = value as unknown as GameState;
+  let candidate: GameState;
+  try { candidate = upgradeGameState(value, world); }
+  catch { throw new ApiProblem(400, 'CONTENT_MISMATCH', 'The backup save schema cannot be migrated safely.', 'Phiên bản schema của bản sao lưu không thể nâng cấp an toàn.'); }
   const acceptedSourceHashes = [
     canonicalStateHash(world.lockedSourceHashes),
     canonicalStateHash({ ...world.lockedSourceHashes, 'README.md': LEGACY_README_SHA256 }),
@@ -298,7 +313,9 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
       if (!isRecord(candidateEncounter) || !isNonEmptyString(candidateEncounter.id) || !isSafeInt(candidateEncounter.sequence)
         || !['active', 'victory', 'defeat', 'retreated'].includes(String(candidateEncounter.status))
         || candidateEncounter.targetActorId !== baseTarget.actorId || !Array.isArray(candidateEncounter.actorIds)
-        || candidateEncounter.actorIds.length !== 1 || typeof candidateEncounter.actorIds[0] !== 'string'
+        || candidateEncounter.actorIds.length < 1 || candidateEncounter.actorIds.length > 12
+        || candidateEncounter.actorIds.some((id: unknown) => typeof id !== 'string')
+        || new Set(candidateEncounter.actorIds).size !== candidateEncounter.actorIds.length
         || !Array.isArray(candidateEncounter.log) || candidateEncounter.log.length > 100
         || !isSafeInt(candidateEncounter.startedAtElapsedMs) || candidateEncounter.startedAtElapsedMs > candidate.simElapsedMs
         || !isSafeInt(candidateEncounter.round) || !isRecord(candidateEncounter.targetHealth)
@@ -313,14 +330,14 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
       encounterIds.add(encounterId);
       encounterSequences.add(sequence);
       maxSequence = Math.max(maxSequence, sequence);
-      const actorId = candidateEncounter.actorIds[0] as string;
-      if (!candidate.ownedUnits.some(unit => unit.id === actorId && unit.ownerId === candidate.player.id)) badCombat();
+      const actorIds = candidateEncounter.actorIds as string[];
+      if (actorIds.some(actorId => !candidate.ownedUnits.some(unit => unit.id === actorId && unit.ownerId === candidate.player.id))) badCombat();
       if (candidateEncounter.status === 'active') {
         activeCount += 1;
         if (!isSafeInt(candidateEncounter.nextTurnAtElapsedMs) || candidateEncounter.nextTurnAtElapsedMs <= candidate.simElapsedMs
           || candidateEncounter.completedAtElapsedMs !== null) badCombat();
       } else if (candidateEncounter.nextTurnAtElapsedMs !== null || candidateEncounter.completedAtElapsedMs === null) badCombat();
-      const streamId = 'stage07-combat:' + encounterId;
+      const streamId = (actorIds.length > 1 ? 'stage07-group-combat:' : 'stage07-combat:') + encounterId;
       const stream = candidate.rngStreams?.[streamId];
       if (!stream || stream.algorithm !== 'HASH-PRIMITIVE-1.0' || !isSafeInt(stream.counter)) badCombat();
       if (!candidateEncounter.log.every(entry => isRecord(entry) && isSafeInt(entry.atElapsedMs) && entry.atElapsedMs <= candidate.simElapsedMs
@@ -415,18 +432,28 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
     nextDawnAtElapsedMs: nextDailyBoundary(elapsed),
     protectionExpiryAtElapsedMs: expectedExpiry,
   };
+  const cold = candidate.survival;
+  let coldEnvironmentValid = cold.environment === null;
+  if (cold.environment !== null) {
+    try { coldLoadRateMicroPerMinute(cold.environment); coldEnvironmentValid = true; } catch { coldEnvironmentValid = false; }
+  }
+  const coldBand = cold.coldLoadMicro >= 1_200_000_000 ? 'danger'
+    : cold.coldLoadMicro >= 300_000_000 ? 'warning' : 'clear';
   if (canonicalStateHash(candidate.timeBoundaries) !== canonicalStateHash(expectedBoundaries)
     || candidate.player.mana.current !== candidate.player.mana.max || candidate.player.mana.max !== baseline.player.mana.max
     || candidate.player.mana.lastSettledAtElapsedMs !== elapsed || candidate.player.mana.baseRegenPerSecond !== 0.45
-    || candidate.survival.coldStatus !== 'weather_unresolved' || candidate.survival.environment !== null
-    || candidate.survival.coldLoadMicro !== 0 || candidate.survival.coldLoadRemainder !== 0
-    || candidate.survival.blocker !== 'OPENING_WEATHER_RECORD_NOT_SEEDED' || candidate.survival.hungerState !== 'FED') {
+    || !isSafeInt(cold.coldLoadMicro) || !isSafeInt(cold.coldLoadRemainder) || cold.coldLoadRemainder >= MINUTE_MS
+    || !coldEnvironmentValid || !['weather_unresolved', 'clear', 'warning', 'danger'].includes(cold.coldStatus)
+    || (cold.environment === null ? cold.coldStatus !== 'weather_unresolved' : cold.coldStatus !== coldBand)
+    || (cold.environment === null ? cold.blocker === null : cold.blocker !== null)
+    || cold.hungerState !== 'FED') {
     throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup contains an invalid time or survival state.', 'Trạng thái thời gian hoặc sinh tồn trong bản sao lưu không hợp lệ.');
   }
   const fire = candidate.territory.survivalFire;
   const expectedProtection = elapsed >= 144 * HOUR_MS ? 'expired' : 'active';
-  if (fire.fuelRemaining !== null || fire.fuelKnowledge !== 'state_unobserved' || fire.nextFuelConsumptionAtElapsedMs !== null
-    || fire.fuelBlocker !== 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED' || fire.protectionStatus !== expectedProtection
+  if (!isSafeInt(fire.fuelRemaining) || !['state_unobserved', 'known'].includes(fire.fuelKnowledge)
+    || (fire.active ? !isSafeInt(fire.nextFuelConsumptionAtElapsedMs, elapsed + 1) || fire.fuelRemaining < 1 : fire.nextFuelConsumptionAtElapsedMs !== null)
+    || fire.fuelBlocker !== null || fire.protectionStatus !== expectedProtection
     || candidate.clockControl.stopCondition === undefined
     || !['paused', 'running'].includes(candidate.clockControl.status)
     || !['paused', '1x', '2x', '5x', 'custom'].includes(candidate.clockControl.selection)
@@ -569,7 +596,8 @@ function validateBackupEvent(value: unknown, index: number, saveId: string, rece
     'simulation_time_advanced', 'simulation_hour_settled', 'world_day_started', 'world_sunset',
     'world_night_started', 'world_dawn', 'opening_protection_started', 'opening_protection_expired',
     'event_calendar_opened', 'event_calendar_locked', 'event_calendar_resolved', 'mandatory_event_blocked',
-    'event_rank_settlement_blocked', 'caravan_departed', 'caravan_distress_opened', 'caravan_arrived', 'quest_completed',
+    'event_rank_settlement_blocked', 'opening_rival_action_committed', 'event_rank_settled', 'opening_rank_reward_claimed',
+    'caravan_departed', 'caravan_distress_opened', 'caravan_arrived', 'quest_completed',
     'market_opened', 'caravan_window_closed', 'auction_bid_expired', 'shop_offer_expired',
     'quest_accepted', 'caravan_safe_passage_negotiated', 'caravan_escort_started', 'quest_reward_claimed',
     'shop_purchase_committed', 'auction_bid_placed', 'auction_bid_cancelled',
@@ -577,7 +605,8 @@ function validateBackupEvent(value: unknown, index: number, saveId: string, rece
     'fire_refuelled', 'survival_fire_lit', 'tomb_job_queued', 'tomb_job_started', 'tomb_job_blocked',
     'tomb_job_cancelled', 'tomb_unit_completed', 'tomb_death_qi_refilled',
     'movement_order_started', 'movement_order_completed', 'movement_order_cancelled', 'spatial_search_started',
-    'spatial_search_tick_settled', 'spatial_search_completed', 'spatial_search_cancelled', 'chest_signal_detected',
+    'spatial_search_tick_settled', 'spatial_search_return_started', 'spatial_search_returned', 'spatial_search_recall_started',
+    'spatial_search_completed', 'spatial_search_cancelled', 'chest_signal_detected', 'hunt_target_detected',
     'harvest_job_started', 'harvest_arrived_at_workfront', 'resource_extracted', 'harvest_work_completed',
     'harvest_job_blocked', 'harvest_cargo_returned', 'harvest_job_cancelled', 'inventory_item_transferred',
     'inventory_stack_split', 'inventory_stacks_merged', 'inventory_food_consumed',
@@ -616,13 +645,14 @@ function validateBackup(value: unknown, world: WorldDefinition): BackupEnvelope 
     throw new ApiProblem(413, 'PAYLOAD_TOO_LARGE', 'The backup contains too many records.', 'Bản sao lưu vượt giới hạn kích thước.');
   }
 
+  if (canonicalStateHash(value.state) !== value.stateSha256) throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup state checksum does not match.', 'Bản sao lưu không hợp lệ.');
+  const rawState = value.state as Record<string, unknown>;
   const state = validateBackupState(value.state, world);
-  if (canonicalStateHash(state) !== value.stateSha256) throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup state checksum does not match.', 'Bản sao lưu không hợp lệ.');
   const save = value.save;
   if (!isNonEmptyString(save.saveId) || save.saveId !== state.saveId || !isNonEmptyString(save.slotName, 80)
     || !isSafeInt(save.revision) || save.revision !== state.revision || !isSafeInt(save.lastEventSequence)
     || save.lastEventSequence !== state.lastEventSequence || save.worldPackageId !== state.worldPackageId
-    || save.contentVersion !== state.contentVersion || save.rulesetVersion !== state.rulesetVersion
+    || save.contentVersion !== rawState.contentVersion || save.rulesetVersion !== rawState.rulesetVersion
     || !checkIsoUtc(save.createdAtUtc) || !checkIsoUtc(save.updatedAtUtc)
     || !(save.forkedFrom === null || (isRecord(save.forkedFrom) && isNonEmptyString(save.forkedFrom.saveId) && isNonEmptyString(save.forkedFrom.checkpointId)))) {
     throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup save metadata does not match its state.', 'Bản sao lưu không hợp lệ.');
@@ -1233,6 +1263,9 @@ export class GameApplicationService {
       event_calendar_locked: { category: 'event', title: 'Sự kiện đã khóa ghi nhận', text: `${String(event.payload.displayName ?? 'Sự kiện')} đã đến hạn khóa.` },
       event_calendar_resolved: { category: 'event', title: 'Mốc sự kiện đã quyết toán', text: `${String(event.payload.displayName ?? 'Sự kiện')} đã kết thúc. Không tự cấp phần thưởng khi thiếu kết quả hợp lệ.` },
       event_rank_settlement_blocked: { category: 'event', title: 'Opening rank settlement held', text: 'The fixed contender roster is not compiled, so no rank or reward was assigned.' },
+      opening_rival_action_committed: { category: 'ranking', title: 'Đối thủ đã hoàn tất một hành động', text: `${String(event.payload.contenderId)} · ${String(event.payload.action)} · ${String(event.payload.result)} · +${String(event.payload.xpAwarded)} XP · Cấp ${String(event.payload.levelAfter)}.` },
+      event_rank_settled: { category: 'ranking', title: 'Bảng Cấp đã khóa kết quả', text: `${String(event.payload.resultRows)} hàng đủ điều kiện đã được xếp theo thời điểm hoàn thành; hạng của Lí Lan: ${String(event.payload.playerRank ?? 'chưa đủ điều kiện')}.` },
+      opening_rank_reward_claimed: { category: 'reward', title: 'Đã nhận thưởng Bảng Cấp', text: `Hạng ${String(event.payload.rank)} · ${String(event.payload.rewardBandId)} · ${Array.isArray(event.payload.items) ? event.payload.items.length : 0} loại vật phẩm đã giao.` },
       mandatory_event_blocked: { category: 'event', title: 'Tiến trình sự kiện đang tạm dừng', text: 'Luật cho sự kiện kế tiếp chưa được triển khai. Tiến trình đã dừng an toàn và lưu game được giữ nguyên.' },
       simulation_time_advanced: { category: 'time', title: 'Thời gian mô phỏng đã tiến', text: `T+${String(event.payload.toElapsedMs ?? event.occurredAtElapsedMs)} ms.` },
       simulation_hour_settled: { category: 'time', title: 'Đã quyết toán một giờ mô phỏng', text: 'Các mốc giờ được quyết toán theo thứ tự máy chủ.' },
@@ -1257,11 +1290,15 @@ export class GameApplicationService {
       movement_order_started: { category: 'travel', title: 'Travel started', text: `${(Number(event.payload.distanceMm) / 1_000_000).toFixed(2)} km planned · ${event.payload.uncertainty === true ? 'route uncertain' : 'known route'}.` },
       movement_order_completed: { category: 'travel', title: 'Travel completed', text: `${(Number(event.payload.distanceMm) / 1_000_000).toFixed(2)} km travelled.` },
       movement_order_cancelled: { category: 'travel', title: 'Travel cancelled', text: 'Travel stopped at the actor’s current position.' },
-      spatial_search_started: { category: 'exploration', title: 'Search started', text: 'The assigned observer began a focused spatial sweep.' },
+      spatial_search_started: { category: 'exploration', title: 'Area search started', text: 'The assigned squad began its area sweep.' },
       spatial_search_tick_settled: { category: 'exploration', title: 'Search sweep settled', text: `${Number(event.payload.grossAreaM2).toFixed(1)} m² swept in this 15-minute tick.` },
-      spatial_search_completed: { category: 'exploration', title: 'Search completed', text: 'The planned search lane was completed.' },
+      spatial_search_return_started: { category: 'exploration', title: 'Return journey started', text: `The squad is returning after ${String(event.payload.reason)}.` },
+      spatial_search_returned: { category: 'exploration', title: 'Squad returned', text: 'The search squad reached its starting point.' },
+      spatial_search_recall_started: { category: 'exploration', title: 'Squad recalled', text: 'The search stopped and the squad is returning to its starting point.' },
+      spatial_search_completed: { category: 'exploration', title: 'Area search completed', text: 'The squad returned after completing its selected sweep.' },
       spatial_search_cancelled: { category: 'exploration', title: 'Search cancelled', text: 'The search stopped at the observer’s current position.' },
       chest_signal_detected: { category: 'exploration', title: 'Buried signal detected', text: 'A buried signal was detected in the swept lane.' },
+      hunt_target_detected: { category: 'combat', title: 'Wildlife contact detected', text: 'The hunting sweep found a target from the existing population record.' },
       harvest_job_started: { category: 'logistics', title: 'Harvest trip started', text: `Reserved ${String(event.payload.quantity)} units of ${String(event.payload.materialId)} for a round trip.` },
       harvest_arrived_at_workfront: { category: 'logistics', title: 'Arrived at resource', text: 'The worker reached the resource and began gathering.' },
       resource_extracted: { category: 'logistics', title: 'Resource gathered', text: `${String(event.payload.quantity)} ${String(event.payload.materialId)} unit(s) gathered.` },

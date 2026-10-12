@@ -15,6 +15,8 @@ const ORIENTATION_LABEL:Record<LayoutDraft['orientation'],string>={north:'Bắc'
 const fixtureFootprint = { kind:'rectangle' as const, widthM:2, depthM:2, provenance:'frontend-fixture' as const, assumptionId:'TERRITORY-QA-V1', note:'Kích thước giả định cho fixture QA.' };
 type PanGesture = { pointerId:number; x:number; y:number; origin:TerritoryCamera; moved:boolean; playerMarker:boolean };
 type Props = {
+  mode?: 'demo' | 'live';
+  playerMarkerVisible?: boolean;
   settlement: SettlementView;
   placementDefinitions: PlayerView['placementDefinitions'];
   camera: TerritoryCamera | null;
@@ -50,7 +52,9 @@ function worldBounds(camera:TerritoryCamera,width:number,height:number):{minX:nu
   return {minX:Math.min(...points.map(p=>p.x)),maxX:Math.max(...points.map(p=>p.x)),minY:Math.min(...points.map(p=>p.y)),maxY:Math.max(...points.map(p=>p.y))};
 }
 
-export default function TerritoryScene({ settlement, placementDefinitions, camera, onCameraChange, drafts, onDraftsChange, selectedRef, onSelectEntity, focusedBuildingId, onFocusHandled, readability, onReadabilityChange, playerName, playerPosition, followPlayer, onFollowPlayerChange, onOpenPlayerProfile }:Props) {
+export default function TerritoryScene({ mode='demo', playerMarkerVisible=false, settlement, placementDefinitions, camera, onCameraChange, drafts, onDraftsChange, selectedRef, onSelectEntity, focusedBuildingId, onFocusHandled, readability, onReadabilityChange, playerName, playerPosition, followPlayer, onFollowPlayerChange, onOpenPlayerProfile }:Props) {
+  const liveApi = mode === 'live';
+  const showPlayerMarker = playerMarkerVisible || followPlayer;
   const rootRef=useRef<HTMLDivElement>(null);
   const svgRef=useRef<SVGSVGElement>(null);
   const gesture=useRef<PanGesture|null>(null);
@@ -298,7 +302,7 @@ export default function TerritoryScene({ settlement, placementDefinitions, camer
       <span><ThermometerSun size={14}/> Nhiệt thật: <b>{settlement.fireActive?`${settlement.heatRadiusM} m`:'Tắt'}</b></span>
       <span className={heatPreview==='actual'?'':'is-preview'}>Hiển thị: {displayedRadius>=1000?`${(displayedRadius/1000).toLocaleString('vi-VN')} km`:`${displayedRadius} m`}{heatPreview!=='actual'?' · xem thử':''}</span>
       <span><Compass size={14}/> Bao phủ nền: {actualInside} trong · {actualPartial} giao cắt · {actualOutside} ngoài · luật chưa xác định</span>
-      <label className="territory-heat-preview">Xem thử vùng nhiệt <select aria-label="Xem thử vùng nhiệt" value={heatPreview} onChange={event=>setHeatPreview(event.target.value as typeof heatPreview)}><option value="actual">Nguồn thực tế</option><option value="2500">2.5 km · minh họa</option><option value="25000">25 km · minh họa</option><option value="off">Tắt · minh họa</option></select></label>
+      {!liveApi&&<label className="territory-heat-preview">Xem thử vùng nhiệt <select aria-label="Xem thử vùng nhiệt" value={heatPreview} onChange={event=>setHeatPreview(event.target.value as typeof heatPreview)}><option value="actual">Nguồn thực tế</option><option value="2500">2.5 km · minh họa</option><option value="25000">25 km · minh họa</option><option value="off">Tắt · minh họa</option></select></label>}
     </div>
     <div className="territory-stage" ref={rootRef}>
       <svg ref={svgRef} className="territory-scene-svg" viewBox={`0 0 ${size.width} ${size.height}`} role="img" aria-label="Lãnh địa theo phối cảnh isometric cố định. Kéo để di chuyển, cuộn để thu phóng, dùng phím mũi tên để điều hướng."
@@ -323,7 +327,8 @@ export default function TerritoryScene({ settlement, placementDefinitions, camer
         {denseQa&&visibleQa.map(item=><BuildingSprite key={item.id} id={item.id} name="Fixture QA" asset={findAsset(manifest,item.assetId)} assetId={item.assetId} point={{x:origin.x+item.x,y:origin.y+item.y}} footprint={item.footprint} orientation={item.orientation} camera={activeCamera} viewport={size} mode={effectiveMode} selected={false} faded={false} draft/>) }
         {activeDefinition&&<BuildingSprite id="placement-ghost" name={activeDefinition.name} asset={findAsset(manifest,activeDefinition.assetId)} assetId={activeDefinition.assetId} point={snapPlanningPoint(currentPlacementPoint)} footprint={activeDefinition.footprint} orientation={placingOrientation} camera={activeCamera} viewport={size} mode="planning" selected={false} faded={false} draft blocked={Boolean(validation?.blockers.length)}/>}
         {displayedRadius>0&&<circle cx={firePoint.x} cy={firePoint.y} r="11" fill="#db8c56" stroke="#ffe0ac" strokeWidth="2" pointerEvents="none"/>}
-        {followPlayer&&<g className="territory-player-marker" transform={`translate(${playerPoint.x} ${playerPoint.y})`} role="button" tabIndex={0} aria-label={`${playerName} — mở hồ sơ người chơi`}
+        {showPlayerMarker&&<g className="territory-player-marker" transform={`translate(${playerPoint.x} ${playerPoint.y})`} role="button" tabIndex={0} aria-label={`${playerName} — mở hồ sơ người chơi`}
+          onClick={onOpenPlayerProfile}
           onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();onOpenPlayerProfile();}}}>
           <circle r="17" fill="#123c4b" stroke="#ffe1a9" strokeWidth="2"/>
           <circle r="13" fill="none" stroke="#a6d7d2" strokeWidth="1" strokeDasharray="2.5 2.5"/>
@@ -331,7 +336,7 @@ export default function TerritoryScene({ settlement, placementDefinitions, camer
         </g>}
         <g className="territory-north" transform={`translate(${Math.min(size.width-35,Math.max(25,fireNorth.x))} ${Math.min(size.height-30,Math.max(35,fireNorth.y))}) rotate(63.435)`} pointerEvents="none"><path d="M0 14V-13m0 0-6 8m6-8 6 8" stroke="#d5e2d9" strokeWidth="2"/><text x="0" y="-20" textAnchor="middle">N</text></g>
       </svg>
-      <div className="territory-stage-tools"><button aria-pressed={readability==='normal'} onClick={()=>onReadabilityChange('normal')}>Bình thường</button><button aria-pressed={readability==='focus'} onClick={()=>onReadabilityChange(readability==='focus'?'normal':'focus')}><Eye size={14}/> Làm mờ phần che</button><button aria-pressed={readability==='planning'} onClick={()=>onReadabilityChange(readability==='planning'?'normal':'planning')}><Grid3X3 size={14}/> Mặt bằng</button></div>
+      <div className="territory-stage-tools"><button aria-pressed={readability==='normal'} onClick={()=>onReadabilityChange('normal')}>Bình thường</button><button aria-pressed={readability==='focus'} onClick={()=>onReadabilityChange(readability==='focus'?'normal':'focus')}><Eye size={14}/> Làm mờ phần che</button>{!liveApi&&<button aria-pressed={readability==='planning'} onClick={()=>onReadabilityChange(readability==='planning'?'normal':'planning')}><Grid3X3 size={14}/> Mặt bằng</button>}</div>
       <div className="territory-scale"><span style={{width:Math.max(12,Math.min(110,scalePixels))}}/><b>{scaleDistance>=1000?`${scaleDistance/1000} km`:`${scaleDistance} m`}</b></div>
       <div className="territory-drag-hint">{activeDefinition?'Chạm mặt đất để đặt bản nháp · R xoay · Esc hủy':'Kéo để di chuyển · Cuộn để thu phóng · 1 m lưới khi xem gần'}</div>
       <div className="territory-minimap-wrap"><div className="territory-minimap-heading">Bố cục đã biết</div><svg className="territory-minimap" viewBox="0 0 146 94" aria-label="Minimap lãnh địa" onClick={changeMinimap}>
@@ -345,7 +350,7 @@ export default function TerritoryScene({ settlement, placementDefinitions, camer
     </div>
     <div className="territory-legend"><span><i className="heat-legend"/> Vùng nhiệt</span><span><i className="footprint-legend"/> Nền công trình</span><span><i className="unknown-legend"/> Điều kiện xây dựng chưa biết</span><span><i className="memory-legend"/> Địa hình chưa được khảo sát</span></div>
     <div className="territory-workbench">
-      <section className="panel territory-build-tray">
+      {!liveApi&&<section className="panel territory-build-tray">
         <div className="territory-section-heading"><div><span className="eyebrow">BỐ TRÍ MINH HỌA</span><h3>Công trình</h3></div>{placingId&&<button className="text-button" onClick={cancelPlacement}><X size={14}/> Hủy</button>}</div>
         <div className="territory-definition-grid">{placementDefinitions.map(definition=>{
           const artwork=findAsset(manifest,definition.assetId);
@@ -357,7 +362,7 @@ export default function TerritoryScene({ settlement, placementDefinitions, camer
         })}</div>
         {placingId&&<div className="territory-placement-controls"><span><b>{activeDefinition?.name}</b> · hướng {ORIENTATION_LABEL[placingOrientation]} · lưới 1 m</span><button onClick={rotatePlacement} disabled={(activeDefinition?.orientations.length??0)<2}><RotateCw size={15}/> Xoay 90° <kbd>R</kbd></button><button onClick={cancelPlacement}><X size={15}/> Hủy</button></div>}
         <p className="territory-fixture-note"><AlertTriangle size={14}/> Mặt bằng và chi phí vật liệu đang được hoàn thiện. Vùng nhiệt không tự quyết định quyền xây.</p>
-      </section>
+      </section>}
       <section className="panel territory-instance-panel">
         <div className="territory-section-heading"><div><span className="eyebrow">CÔNG TRÌNH ĐÃ BIẾT</span><h3>Công trình tại lãnh địa</h3></div><label className="territory-search"><Search size={14}/><input aria-label="Tìm công trình trong lãnh địa" placeholder="Lọc công trình" value={search} onChange={event=>setSearch(event.target.value)}/></label></div>
         <div className="territory-instance-list" role="list">{filteredBuildings.map(building=>{
@@ -366,14 +371,14 @@ export default function TerritoryScene({ settlement, placementDefinitions, camer
           const artwork=findAsset(manifest,resolveSettlementAssetId(manifest,building.assetId,settlement.fireLevel,building.ref.id===settlement.fireRef.id,building.visualState,building.level));
           return <div className={`territory-instance${selected?' is-selected':''}`} key={building.id} role="listitem"><button className="territory-instance-main" onClick={()=>focusBuilding(building)}><span className="territory-instance-icon"><img src={artwork?.layers.body??artwork?.layers.uiIcon??'/assets/buildings/survival-fire-l01/icon.svg'} alt=""/></span><span><b>{building.name}</b><small>{building.x>=0?'+':''}{building.x}, {building.y>=0?'+':''}{building.y} m · {heat==='inside'?'Trong nhiệt':heat==='partial'?'Giao cắt':'Ngoài nhiệt'}</small></span><LocateFixed size={15}/></button><button className="territory-instance-focus" onClick={()=>{focusBuilding(building);setMessage(`Đang xem ${building.name}; vị trí nguồn không đổi.`);}}>Đến</button><small className="territory-instance-state">{building.state} · kích thước mặt bằng tạm tính</small></div>;
         })}{filteredBuildings.length===0&&<p className="muted-text">Không có công trình khớp bộ lọc.</p>}</div>
-        {drafts.length>0&&<div className="territory-draft-list"><div><b>Bố trí đang xem trước</b><button className="text-button" onClick={()=>{onDraftsChange([]);setMessage('Đã xóa mọi bố trí xem trước.');}}>Xóa tất cả</button></div>{drafts.map(draft=>{const validation=validatePlacement({point:{x:draft.x,y:draft.y},footprint:draft.footprint,orientation:draft.orientation,heatRadiusM:actualRadius,heatActive:settlement.fireActive,existing:[...settlement.buildings,...drafts],ignoreId:draft.id});const definitionName=placementDefinitions.find(item=>item.id===draft.definitionId)?.name??'Công trình';return <div key={draft.id}><span>{definitionName} · ({draft.x}, {draft.y}) m · {validation.blockers.length?'bị cản trở':'có thể đặt'}</span><button aria-label={`Xoay ${definitionName}`} onClick={()=>onDraftsChange(previous=>previous.map(item=>item.id===draft.id?{...item,orientation:orientationCycle[(orientationCycle.indexOf(item.orientation)+1)%orientationCycle.length]}:item))}><RotateCw size={14}/></button><button aria-label={`Xóa ${definitionName}`} onClick={()=>onDraftsChange(previous=>previous.filter(item=>item.id!==draft.id))}><X size={14}/></button></div>;})}</div>}
+        {!liveApi&&drafts.length>0&&<div className="territory-draft-list"><div><b>Bố trí đang xem trước</b><button className="text-button" onClick={()=>{onDraftsChange([]);setMessage('Xóa bố trí xem trước.');}}>Xóa tất cả</button></div>{drafts.map(draft=>{const validation=validatePlacement({point:{x:draft.x,y:draft.y},footprint:draft.footprint,orientation:draft.orientation,heatRadiusM:actualRadius,heatActive:settlement.fireActive,existing:[...settlement.buildings,...drafts],ignoreId:draft.id});const definitionName=placementDefinitions.find(item=>item.id===draft.definitionId)?.name??'Công trình';return <div key={draft.id}><span>{definitionName} · ({draft.x}, {draft.y}) m · {validation.blockers.length?'bị cản trở':'có thể đặt'}</span><button aria-label={`Xoay ${definitionName}`} onClick={()=>onDraftsChange(previous=>previous.map(item=>item.id===draft.id?{...item,orientation:orientationCycle[(orientationCycle.indexOf(item.orientation)+1)%orientationCycle.length]}:item))}><RotateCw size={14}/></button><button aria-label={`Xóa ${definitionName}`} onClick={()=>onDraftsChange(previous=>previous.filter(item=>item.id!==draft.id))}><X size={14}/></button></div>;})}</div>}
       </section>
     </div>
-    <details className="panel territory-calibration" open={calibrationOpen} onToggle={event=>setCalibrationOpen(event.currentTarget.open)}><summary><span><EyeOff size={15}/> Hiệu chỉnh hình minh họa</span><small>Chỉ thay đổi cách hiển thị</small></summary>
+    {!liveApi&&<details className="panel territory-calibration" open={calibrationOpen} onToggle={event=>setCalibrationOpen(event.currentTarget.open)}><summary><span><EyeOff size={15}/> Hiệu chỉnh hình minh họa</span><small>Chỉ thay đổi cách hiển thị</small></summary>
       <div className="territory-calibration-body"><div className="territory-calibration-preview"><svg viewBox="0 0 240 200" aria-label="Hiệu chỉnh vị trí hình ảnh"><defs><pattern id="asset-cal-grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#86a6aa" strokeOpacity=".25"/></pattern></defs><rect width="240" height="200" fill="#102a37"/><rect width="240" height="200" fill="url(#asset-cal-grid)"/><image href={selectedCalibrationAsset?.layers.shadow??''} width="240" height="200"/><image href={selectedCalibrationAsset?.layers.base??''} width="240" height="200"/><image href={selectedCalibrationAsset?.layers.upper??''} width="240" height="200"/><line x1="120" y1="0" x2="120" y2="200" stroke="#e4ba7f" strokeDasharray="3 4"/><line x1="0" y1="164" x2="240" y2="164" stroke="#e4ba7f" strokeDasharray="3 4"/><circle cx="120" cy="164" r="5" fill="#ffd897"/></svg><span>Lưới · điểm neo · lớp hình ảnh</span></div>
         <div className="territory-calibration-info"><label>Hình minh họa <select value={calibrationAssetId} onChange={event=>setCalibrationAssetId(event.target.value)}>{assetIds.map(id=><option key={id}>{id}</option>)}</select></label><p>Điểm neo: {selectedCalibrationAsset?`${Math.round(selectedCalibrationAsset.groundAnchor.x*100)}%, ${Math.round(selectedCalibrationAsset.groundAnchor.y*100)}%`:'mặc định'} · khung 240 × 200</p><p>Vùng chọn, che khuất và kích thước hiển thị được căn chỉnh riêng trong thư viện hình ảnh.</p><label className="territory-qa-toggle"><input type="checkbox" checked={denseQa} onChange={event=>setDenseQa(event.target.checked)}/> Hiện 520 công trình minh họa</label><button className="text-button" onClick={frameDenseQa}>Xem nhóm công trình minh họa</button><span>Đang hiển thị {visibleQa.length} / {denseQa?520:0} công trình minh họa.</span><span>{manifestError?'Không tải được thư viện hình ảnh; dùng hình thay thế.':`Đã tải ${manifest?.assets.length??0} hình ảnh.`}</span></div>
       </div>
-    </details>
-    <div className="territory-accessible-status" role="status" aria-live="polite">{message||'Bản xem thử chỉ hiển thị vị trí và bố trí; không thực hiện lệnh trong thế giới.'}</div>
+    </details>}
+    <div className="territory-accessible-status" role="status" aria-live="polite">{message||(liveApi?'Vị trí, trạng thái và artwork lấy từ save đang chọn. Điều khiển camera không thay đổi mô phỏng.':'Bản xem thử chỉ hiển thị vị trí và bố trí; không thực hiện lệnh trong thế giới.')}</div>
   </section>;
 }

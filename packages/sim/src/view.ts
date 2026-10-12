@@ -1,4 +1,4 @@
-import type { ActionAvailability, CoordinateMm, EntityRef, GameState, PlayerEntityView, PlayerView, WorldDefinition } from '../../contracts/src/index.ts';
+import { PLAYER_VIEW_SCHEMA_VERSION, type ActionAvailability, type CoordinateMm, type EntityRef, type GameState, type PlayerEntityView, type PlayerView, type WorldDefinition } from '../../contracts/src/index.ts';
 import { eventRuntimeReadiness } from '../../content/src/eventReadiness.ts';
 import { canAccessStarterContainer } from './access.ts';
 import { carryCapacityForFireLevel, currentSight, harvestingRateUnitsPerHour, previewMovement, startHarvestJob } from './spatial.ts';
@@ -7,7 +7,7 @@ import { constructionWorkRate, farmhouseCapacity } from './construction.ts';
 import { elapsedMsToWorldClock } from './time.ts';
 import { butcherCorpse, directReviveAvailability } from './stage07.ts';
 import { projectStage07Combat } from './combat.ts';
-import { Q08_ID } from './stage08.ts';
+import { openingBoardView, Q08_ID } from './stage08.ts';
 
 export function entityKey(ref: EntityRef): string {
   return `${ref.type}:${ref.id}`;
@@ -271,7 +271,7 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
   }
 
   return {
-    schemaVersion: 1,
+    schemaVersion: PLAYER_VIEW_SCHEMA_VERSION,
     saveId: state.saveId,
     revision: state.revision,
     lastEventSequence: state.lastEventSequence,
@@ -279,14 +279,29 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
     clockControl: state.clockControl,
     clockStatus: { driver: 'unclaimed', catchingUp: false, targetSimElapsedMs: state.simElapsedMs, leaseRemainingMs: 0 },
     calendar: state.calendar.flatMap(event => {
-      if (event.status === 'scheduled' && event.id !== 'EV00-SAFE-FIRE') return [];
       const source = world.eventSchedule.find(row => row.id === event.id);
       if (!source) return [];
+      const contract = world.eventContracts.find(candidate => candidate.eventId === event.id);
+      if (!contract) throw new Error(`EVENT_CONTRACT_MISSING:${event.id}`);
       return [{
         id: event.id,
         displayName: source.displayName,
         status: event.status,
         readiness: eventRuntimeReadiness(event.id),
+        eventContract: {
+          handlerFamily: contract.handlerFamily,
+          runtimeStatus: contract.runtimeStatus,
+          participationRequirement: contract.participationRequirement,
+          objectives: contract.objectives,
+          scoring: contract.scoring,
+          encounters: contract.encounters,
+          rewardContract: contract.rewardContract,
+          shopContract: contract.shopContract,
+          stockAndExpiry: contract.stockAndExpiry,
+          settlement: contract.settlement,
+          source: contract.source,
+        },
+        researchEvidence: source.researchEvidence,
         opensAtElapsedMs: event.opensAtMs,
         locksAtElapsedMs: event.locksAtMs,
         resolvesAtElapsedMs: event.resolvesAtMs,
@@ -314,6 +329,8 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
       marketOffers: atKronaGate ? state.stage08.marketOffers : [],
       auctionLots: atKronaGate ? state.stage08.auctionLots.filter(lot => lot.status !== 'closed') : [],
       auctionBids: atKronaGate ? state.stage08.auctionBids.filter(bid => bid.bidderId === state.player.id) : [],
+      rankSnapshots: state.stage08.rankSnapshots,
+      openingBoard: openingBoardView(state),
     },
     worldClock: elapsedMsToWorldClock(state.simElapsedMs),
     survival: {
@@ -345,7 +362,8 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
         level: state.territory.survivalFire.level,
         active: state.territory.survivalFire.active,
         heatRadiusMetres: state.territory.survivalFire.heatRadiusMetres,
-        fuelRemaining: state.territory.survivalFire.fuelRemaining,
+        fuelRemaining: state.territory.survivalFire.fuelKnowledge === 'known' ? state.territory.survivalFire.fuelRemaining : null,
+        hasFuel: state.territory.survivalFire.fuelRemaining > 0,
         fuelKnowledge: state.territory.survivalFire.fuelKnowledge,
         nextFuelConsumptionAtElapsedMs: state.territory.survivalFire.nextFuelConsumptionAtElapsedMs,
         fuelBlocker: state.territory.survivalFire.fuelBlocker,
@@ -452,7 +470,11 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
     spatial: {
       navigationRuleVersion: world.navigationOverlay.id,
       movementOrders: state.travel.orders,
-      searchJobs: state.spatial.searchJobs,
+      searchJobs: state.spatial.searchJobs.map(({ foundChestIds = [], foundTargetIds = [], ...job }) => ({
+        ...job,
+        foundChestCount: foundChestIds.length,
+        foundTargetCount: foundTargetIds.length,
+      })),
       harvestJobs: state.spatial.harvestJobs,
       resources: state.spatial.resourceBalances.flatMap(balance => {
         const resource = world.resources.find(candidate => candidate.id === balance.resourceId);

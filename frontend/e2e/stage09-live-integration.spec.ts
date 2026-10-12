@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const screens = ['Tổng quan', 'Lãnh địa', 'Bản đồ', 'Kho vật phẩm', 'Quân lực', 'Công trình', 'Nhật ký'];
+const screens = ['Tổng quan', 'Nhân vật', 'Lãnh địa', 'Bản đồ', 'Kho vật phẩm', 'Quân lực', 'Công trình', 'Sự kiện', 'Nhật ký'];
 
 async function connectAndCreate(page: import('@playwright/test').Page, slotName: string) {
   const ownerKey = process.env.ILL_TEST_OWNER_KEY;
@@ -16,7 +16,7 @@ async function connectAndCreate(page: import('@playwright/test').Page, slotName:
   await expect(page.getByText('Ngày 1 · 07:00')).toBeVisible();
 }
 
-test('all seven live screens remain on one server-owned save projection at release viewports', async ({ page }, testInfo) => {
+test('all nine live screens remain on one server-owned save projection at release viewports', async ({ page }, testInfo) => {
   await connectAndCreate(page, 'Stage 09 screens ' + crypto.randomUUID());
   const initialFooter = await page.locator('.live-footer').innerText();
   const initialRevision = initialFooter.match(/revision (\d+)/)?.[1];
@@ -34,6 +34,35 @@ test('all seven live screens remain on one server-owned save projection at relea
       await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: new RegExp(`^${screen}`) }).click();
       await expect(page.getByRole('heading', { level: 1, name: screen })).toBeVisible();
       await expect(page.locator('.live-footer')).toContainText(`revision ${initialRevision}`);
+      if (screen === 'Nhân vật') {
+        const portrait = page.getByRole('img', { name: 'Toàn thân Lí Lan' });
+        await expect(portrait).toBeVisible();
+        await expect.poll(() => portrait.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+      }
+      if (screen === 'Sự kiện') {
+        await expect(page.locator('.live-calendar-row')).toHaveCount(30);
+        await expect(page.getByRole('heading', { name: 'Xếp hạng và quyết toán' })).toBeVisible();
+      }
+      if (screen === 'Bản đồ') {
+        await expect(page.getByTestId('search-for-chests')).toBeVisible();
+        const mapArt = page.locator('[data-testid="map-campfire-marker"] .live-map-marker-art image');
+        await expect(mapArt).toHaveAttribute('href', '/assets/buildings/survival-fire-l01/icon.svg');
+        const assetLoaded = await page.evaluate(async path => (await fetch(path)).ok, '/assets/buildings/survival-fire-l01/icon.svg');
+        expect(assetLoaded).toBe(true);
+      }
+      if (screen === 'Quân lực') await expect(page.getByTestId('search-for-chests')).toBeVisible();
+      if (screen === 'Lãnh địa') {
+        const fireSprite = page.locator('.territory-building[data-building-id="SITE-LL01-000"]');
+        await expect(page.locator('.territory-scene-svg')).toBeVisible();
+        await expect(fireSprite).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Mặt bằng' })).toHaveCount(0);
+        await expect(page.locator('.territory-build-tray')).toHaveCount(0);
+        const artwork = fireSprite.locator('image').first();
+        await expect(artwork).toBeVisible();
+        const assetPath = await artwork.getAttribute('href');
+        expect(assetPath).toMatch(/^\/assets\//);
+        expect(await page.evaluate(async path => path ? (await fetch(path)).ok : false, assetPath)).toBe(true);
+      }
       const horizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
       expect(horizontalOverflow, `unexpected horizontal page overflow at ${viewport.width}×${viewport.height} on ${screen}`).toBe(false);
     }
@@ -46,6 +75,28 @@ test('all seven live screens remain on one server-owned save projection at relea
   const revisionBeforeCameraInput = await page.locator('.live-footer span').nth(1).innerText();
   await page.getByRole('button', { name: 'Show map overview' }).click();
   await expect(page.locator('.live-footer span').nth(1)).toHaveText(revisionBeforeCameraInput);
+});
+
+test('map expedition preview and area search commit through the selected save API', async ({ page }) => {
+  await connectAndCreate(page, 'Stage 09 area expedition ' + crypto.randomUUID());
+  await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Bản đồ/ }).click();
+  await page.getByRole('button', { name: 'Pick center on map' }).click();
+  const map = page.locator('[data-testid="live-map"]');
+  const bounds = await map.boundingBox();
+  expect(bounds).toBeTruthy();
+  await map.click({ position: { x: bounds!.width / 2, y: bounds!.height / 2 } });
+  await expect(page.getByText(/· custom$/)).toBeVisible();
+  await page.getByLabel('Stop after targets').fill('1');
+  await page.getByLabel('Work time limit').selectOption('15');
+  await page.getByRole('button', { name: 'Preview expedition' }).click();
+  const estimate = page.locator('.live-preview-success');
+  await expect(estimate).toContainText('outbound');
+  await expect(estimate).toContainText('estimated return');
+  await expect(estimate).toContainText('total');
+  await expect(estimate).toContainText('then returns');
+  await page.getByTestId('search-for-chests').click();
+  await expect(page.locator('.live-map-search-path')).toHaveCount(1);
+  await expect(page.locator('.live-footer')).toContainText(/revision [2-9]\d*/);
 });
 
 test('switching saves clears selection and ignores a delayed response from the prior save', async ({ page }) => {

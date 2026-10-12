@@ -91,7 +91,7 @@ test('the runtime compiles exactly the thirty adopted v0.6 rows and creates no r
   }
   assert.equal(new Set(world.eventSchedule.map(row => row.opensAtMs)).size, world.eventSchedule.length, 'fixed opens do not collide');
   assert.equal(eventRuntimeReadiness('EV00-SAFE-FIRE'), 'executable_lifecycle');
-  assert.equal(eventRuntimeReadiness('EV01-OPENING-LEVEL'), 'settlement_blocked');
+  assert.equal(eventRuntimeReadiness('EV01-OPENING-LEVEL'), 'executable_lifecycle');
   for (const event of world.eventSchedule.slice(2)) assert.equal(eventRuntimeReadiness(event.id), 'mandatory_content_blocked');
 });
 
@@ -451,16 +451,20 @@ test('a 5x clock settles through a restart, keeps earlier play available, then b
     assert.ok(state.calendar.filter(event => event.status === 'resolved' && event.id !== 'EV00-SAFE-FIRE').every(event => event.resolutionReceiptSequence));
     assert.equal(state.stage08.rankSnapshots.length, 1, 'the fixed opening rank settles once at EV01 close');
     assert.equal(state.stage08.rankSnapshots[0]?.boardId, 'OPENING_LEVEL');
-    assert.equal(state.stage08.rankSnapshots[0]?.status, 'blocked');
+    assert.equal(state.stage08.rankSnapshots[0]?.status, 'settled');
     assert.equal(state.stage08.rankSnapshots[0]?.settledAtElapsedMs, 144 * HOUR_MS);
-    assert.equal(state.stage08.rankSnapshots[0]?.reasonCode, 'P0_FIXED_CONTENDER_RUNTIME_NOT_COMPILED');
-    assert.equal(state.stage08.rankSnapshots[0]?.rows.length, 0, 'the player is not falsely ranked first without the frozen P0 results');
-    assert.equal(settleOpeningLevelRank(state, 144 * HOUR_MS), null, 'the frozen blocked snapshot cannot settle or emit twice');
+    assert.equal(state.stage08.rankSnapshots[0]?.reasonCode, null);
+    assert.ok(state.stage08.rankSnapshots[0]?.rows.every(row => row.level >= 10 && row.completionAtElapsedMs <= 144 * HOUR_MS));
+    assert.equal(state.stage08.rankSnapshots[0]?.rows.some(row => row.playerId === state.player.id), false, 'an inactive player is not awarded a rank from rival simulation');
+    assert.equal(settleOpeningLevelRank(state, 144 * HOUR_MS), null, 'the frozen result cannot settle or emit twice');
     assert.equal(state.currency.length, 0);
     assert.equal(state.offers.length, 0);
     assert.ok(state.quests.every(quest => quest.state === 'dormant'));
     const view = projectPlayerView(state, world);
-    assert.deepEqual(view.calendar.map(event => event.id), ['EV00-SAFE-FIRE', 'EV01-OPENING-LEVEL', 'EV02-DRAGON-REVIVAL']);
+    assert.deepEqual(view.calendar.map(event => event.id), world.eventSchedule.map(event => event.id), 'the live view retains the complete fixed 30-event calendar');
+    assert.ok(view.calendar.every(event => event.eventContract.participationRequirement && event.eventContract.objectives && event.eventContract.scoring && event.eventContract.rewardContract && event.eventContract.settlement), 'every calendar row exposes its authored executable-contract fields');
+    assert.equal(view.calendar.find(event => event.id === 'EV02-DRAGON-REVIVAL')?.eventContract.handlerFamily, 'dragon_nest_hunt');
+    assert.equal(view.calendar.find(event => event.id === 'EV02-DRAGON-REVIVAL')?.eventContract.runtimeStatus, 'planned');
     assert.equal(view.eventProgressionBlocker?.displayName, blocked.displayName);
     assert.deepEqual(view.quests, []);
     assert.deepEqual(view.currency, []);
@@ -498,7 +502,7 @@ test('schema 5 migration adds pinned labels and pauses overdue rows without rewi
   });
 
   const upgraded = upgradeGameState(legacy, world);
-  assert.equal(upgraded.schemaVersion, 7);
+  assert.equal(upgraded.schemaVersion, 10);
   assert.equal(upgraded.simElapsedMs, 144 * HOUR_MS, 'migration never rewinds elapsed time');
   assert.equal(upgraded.clockControl.status, 'paused');
   assert.equal(upgraded.eventProgressionBlocker?.eventId, 'EV01-OPENING-LEVEL');

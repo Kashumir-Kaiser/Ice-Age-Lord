@@ -3,12 +3,24 @@ import type {
   Stage08AuctionLotState, Stage08MarketOfferState, Stage08RuntimeState, WorldDefinition,
 } from '../../contracts/src/index.ts';
 import { canonicalStateHash } from './hash.ts';
+import {
+  OPENING_LEVEL_BOARD_ID, OPENING_LEVEL_CLOSES_AT_MS, OPENING_LEVEL_OPENS_AT_MS,
+  OPENING_LEVEL_QUALIFYING_LEVEL, OPENING_LEVEL_REWARD_CONTRACT, OPENING_RIVAL_SIMULATION_VERSION, OPENING_LEVEL_RIVALS,
+  forecastOpeningRival, openingLevelRewardBand, openingRivalStartingResources,
+  rankOpeningLevelCompletions, visibleOpeningLevelRows,
+} from './openingRanking.ts';
+import { playerLevelThreshold } from './stage07.ts';
 
 export const STAGE08_RULE_VERSION = 'LL01-STAGE-08-QUEST-TRADE-1.0';
 export const Q08_ID = 'QUEST-LL01-08';
 export const Q08_CARAVAN_ID = 'CARAVAN-LL01-01';
 export const KRONA_CURRENCY_ID = 'KRONA';
 export const Q08_REWARD_CONTRACT = 'RW-LL01-08';
+export const OPENING_RANK_CLAIM_KEY = `${OPENING_LEVEL_BOARD_ID}|LI_LAN|${OPENING_LEVEL_REWARD_CONTRACT}`;
+const RIVAL_HOUR_MS = 60 * 60_000;
+const RIVAL_DAY_MS = 24 * RIVAL_HOUR_MS;
+const RIVAL_MEAL_INTERVAL_MS = 12 * RIVAL_HOUR_MS;
+const RIVAL_ACTION_RULE = OPENING_RIVAL_SIMULATION_VERSION;
 export const Q08_ROUTE_ID = 'ROUTE-TRADE-LL01-A';
 export const MARKET_BREAD_OFFER_ID = 'MARKET-LL01-046-BREAD-01';
 export const CARAVAN_SALT_AUCTION_ID = 'AUCTION-LL01-08-SALT-01';
@@ -51,7 +63,55 @@ export function initialStage08State(): Stage08RuntimeState {
     auctionBids: [],
     rewardClaimReceipts: [],
     rankSnapshots: [],
+    openingRivals: initializeOpeningRivals(),
   };
+}
+
+function expectedOpeningActions(rivalId: string): number {
+  const rival = OPENING_LEVEL_RIVALS.find(item => item.id === rivalId);
+  if (!rival) throw new Error('OPENING_RIVAL_REGISTRY_MISMATCH');
+  const resources = openingRivalStartingResources(rival);
+  const averageTargets = Math.min(resources.targetsPerHunt, 2);
+  let level = 1;
+  let xp = 0;
+  let actions = 0;
+  while (level < 10 && actions < 1_000) {
+    const award = Math.floor(20 * Math.pow(level, 1.45)) * averageTargets;
+    xp += award;
+    actions += 1;
+    while (level < 10 && xp >= playerLevelThreshold(level)) {
+      xp -= playerLevelThreshold(level);
+      level += 1;
+    }
+  }
+  if (level < 10) throw new Error('OPENING_RIVAL_ACTION_FORECAST_DID_NOT_CONVERGE');
+  return actions;
+}
+
+export function initializeOpeningRivals(): Stage08RuntimeState['openingRivals'] {
+  return OPENING_LEVEL_RIVALS.map((rival, index) => {
+    const resources = openingRivalStartingResources(rival);
+    const forecast = forecastOpeningRival(rival);
+    const actionIntervalMs = Math.max(15 * 60_000, Math.floor(forecast.projectedDurationMinutes * 60_000 / expectedOpeningActions(rival.id)));
+    const staggerMs = index * 3 * 60_000;
+    return {
+      contenderId: rival.id,
+      level: 1,
+      xp: 0,
+      completionAtElapsedMs: null,
+      nextActionAtElapsedMs: Math.max(1, actionIntervalMs - staggerMs),
+      actionIntervalMs,
+      actionsTaken: 0,
+      resources: {
+        rations: 12 + Math.floor(rival.supply / 4),
+        firewood: 2 + Math.floor(rival.supply / 20),
+        prey: resources.prey,
+        nextMealAtElapsedMs: RIVAL_MEAL_INTERVAL_MS,
+        nextFirewoodAtElapsedMs: RIVAL_DAY_MS,
+      },
+      actionLedger: [],
+    };
+  });
 }
 
 export type Stage08Mutation = {
@@ -350,22 +410,128 @@ export function cancelAuctionBid(state: GameState, bidId: string, commandId: str
   };
 }
 
+function levelRival(rival: Stage08RuntimeState['openingRivals'][number], xpAwarded: number, at: number) {
+  let level = rival.level;
+  let xp = rival.xp + xpAwarded;
+  let completionAtElapsedMs = rival.completionAtElapsedMs;
+  while (level < 10 && xp >= playerLevelThreshold(level)) {
+    xp -= playerLevelThreshold(level);
+    level += 1;
+    if (level === 10 && completionAtElapsedMs === null) completionAtElapsedMs = at;
+  }
+  return { level, xp, completionAtElapsedMs };
+}
+
+function settleOpeningRivalActions(state: GameState, at: number): Omit<CommandEvent, 'sequence'>[] {
+  if (at > OPENING_LEVEL_CLOSES_AT_MS) return [];
+  const events: Omit<CommandEvent, 'sequence'>[] = [];
+  state.stage08.openingRivals = state.stage08.openingRivals.map(original => {
+    let rival = original;
+    while (rival.nextActionAtElapsedMs !== null && rival.nextActionAtElapsedMs <= at
+      && rival.nextActionAtElapsedMs <= OPENING_LEVEL_CLOSES_AT_MS && rival.completionAtElapsedMs === null) {
+      const actionAt = rival.nextActionAtElapsedMs;
+      const profile = OPENING_LEVEL_RIVALS.find(item => item.id === rival.contenderId);
+      if (!profile) throw new Error('OPENING_RIVAL_RUNTIME_UNKNOWN');
+      const limits = openingRivalStartingResources(profile);
+      const resourcesBefore = { rations: rival.resources.rations, firewood: rival.resources.firewood, prey: rival.resources.prey };
+      let rations = rival.resources.rations;
+      let firewood = rival.resources.firewood;
+      let prey = rival.resources.prey;
+      let nextMealAtElapsedMs = rival.resources.nextMealAtElapsedMs;
+      let nextFirewoodAtElapsedMs = rival.resources.nextFirewoodAtElapsedMs;
+      let firewoodShortage = false;
+      while (actionAt >= nextMealAtElapsedMs) {
+        if (rations > 0) rations -= 1;
+        nextMealAtElapsedMs += RIVAL_MEAL_INTERVAL_MS;
+      }
+      while (actionAt >= nextFirewoodAtElapsedMs) {
+        if (firewood > 0) firewood -= 1;
+        else firewoodShortage = true;
+        nextFirewoodAtElapsedMs += RIVAL_DAY_MS;
+      }
+
+      const levelBefore = rival.level;
+      let action: 'hunt' | 'forage' | 'recover' = 'hunt';
+      let result: 'completed' | 'no_target' | 'resource_shortage' = 'completed';
+      let targetsConsumed = 0;
+      let xpAwarded = 0;
+      if (rations === 0 || firewoodShortage) {
+        action = 'recover';
+        result = 'resource_shortage';
+      } else if (prey === 0) {
+        action = 'forage';
+        result = 'no_target';
+      } else {
+        const groupSize = 1 + ((rival.actionsTaken + Number(profile.id.slice(-1))) % 3);
+        targetsConsumed = Math.min(prey, limits.targetsPerHunt, groupSize);
+        prey -= targetsConsumed;
+        for (let target = 0; target < targetsConsumed; target += 1) {
+          // XP_base = 20 × EnemyLevel^1.45 × RankMult; same-tier opening prey has RankMult=1.
+          xpAwarded += Math.floor(20 * Math.pow(rival.level, 1.45));
+        }
+      }
+      const nextLevel = levelRival(rival, xpAwarded, actionAt);
+      rival = {
+        ...rival,
+        ...nextLevel,
+        actionsTaken: rival.actionsTaken + 1,
+        resources: { rations, firewood, prey, nextMealAtElapsedMs, nextFirewoodAtElapsedMs },
+        nextActionAtElapsedMs: actionAt < OPENING_LEVEL_CLOSES_AT_MS && rival.completionAtElapsedMs === null && nextLevel.completionAtElapsedMs === null
+          ? Math.min(OPENING_LEVEL_CLOSES_AT_MS, actionAt + rival.actionIntervalMs)
+          : null,
+      };
+      const actionId = `${rival.contenderId}|${String(rival.actionsTaken).padStart(4, '0')}`;
+      const receipt = {
+        id: actionId,
+        contenderId: rival.contenderId,
+        action,
+        occurredAtElapsedMs: actionAt,
+        result,
+        targetsConsumed,
+        xpAwarded,
+        levelBefore,
+        levelAfter: rival.level,
+        resourcesBefore,
+        resourcesAfter: { rations, firewood, prey },
+        ruleVersion: RIVAL_ACTION_RULE,
+      } as const;
+      rival = { ...rival, actionLedger: [...rival.actionLedger, receipt] };
+      events.push(emit('opening_rival_action_committed', actionAt, {
+        contenderId: rival.contenderId, actionId, action, result, targetsConsumed, xpAwarded,
+        levelBefore, levelAfter: rival.level, resourcesBefore, resourcesAfter: receipt.resourcesAfter,
+        completionAtElapsedMs: rival.completionAtElapsedMs, ruleVersion: RIVAL_ACTION_RULE,
+      }));
+    }
+    return rival;
+  });
+  return events;
+}
+
+export function catchUpOpeningRivals(state: GameState, throughAtElapsedMs: number): void {
+  settleOpeningRivalActions(state, throughAtElapsedMs);
+}
+
 export function nextStage08BoundaryAt(state: GameState): number | null {
-  if (!state.stage08.enabled) return null;
-  const caravan = state.stage08.caravan;
   const candidates: number[] = [];
-  if (caravan.status === 'at_checkpoint' && state.simElapsedMs < caravan.departsAtElapsedMs) candidates.push(caravan.departsAtElapsedMs);
-  if (caravan.status === 'departed' && state.simElapsedMs < caravan.distressAtElapsedMs) candidates.push(caravan.distressAtElapsedMs);
-  if (caravan.status !== 'arrived' && caravan.status !== 'withdrawn' && state.simElapsedMs < caravan.deadlineAtElapsedMs) candidates.push(caravan.deadlineAtElapsedMs);
-  if (caravan.status === 'escorting' && caravan.arrivalAtElapsedMs !== null && caravan.arrivalAtElapsedMs > state.simElapsedMs) candidates.push(caravan.arrivalAtElapsedMs);
-  for (const lot of state.stage08.auctionLots) if (lot.status === 'open' && lot.closesAtElapsedMs > state.simElapsedMs) candidates.push(lot.closesAtElapsedMs);
-  for (const offer of state.stage08.marketOffers) if (offer.status === 'active' && offer.expiresAtElapsedMs !== null && offer.expiresAtElapsedMs > state.simElapsedMs) candidates.push(offer.expiresAtElapsedMs);
+  for (const rival of state.stage08.openingRivals) {
+    if (rival.nextActionAtElapsedMs !== null && rival.nextActionAtElapsedMs > state.simElapsedMs) candidates.push(rival.nextActionAtElapsedMs);
+  }
+  if (state.stage08.enabled) {
+    const caravan = state.stage08.caravan;
+    if (caravan.status === 'at_checkpoint' && state.simElapsedMs < caravan.departsAtElapsedMs) candidates.push(caravan.departsAtElapsedMs);
+    if (caravan.status === 'departed' && state.simElapsedMs < caravan.distressAtElapsedMs) candidates.push(caravan.distressAtElapsedMs);
+    if (caravan.status !== 'arrived' && caravan.status !== 'withdrawn' && state.simElapsedMs < caravan.deadlineAtElapsedMs) candidates.push(caravan.deadlineAtElapsedMs);
+    if (caravan.status === 'escorting' && caravan.arrivalAtElapsedMs !== null && caravan.arrivalAtElapsedMs > state.simElapsedMs) candidates.push(caravan.arrivalAtElapsedMs);
+    for (const lot of state.stage08.auctionLots) if (lot.status === 'open' && lot.closesAtElapsedMs > state.simElapsedMs) candidates.push(lot.closesAtElapsedMs);
+    for (const offer of state.stage08.marketOffers) if (offer.status === 'active' && offer.expiresAtElapsedMs !== null && offer.expiresAtElapsedMs > state.simElapsedMs) candidates.push(offer.expiresAtElapsedMs);
+  }
   return candidates.length ? Math.min(...candidates) : null;
 }
 
 export function settleStage08Boundary(state: GameState, at: number): readonly Omit<CommandEvent, 'sequence'>[] {
-  if (!state.stage08.enabled) return [];
   const events: Omit<CommandEvent, 'sequence'>[] = [];
+  events.push(...settleOpeningRivalActions(state, at));
+  if (!state.stage08.enabled) return events;
   let caravan = state.stage08.caravan;
   if (caravan.status === 'at_checkpoint' && caravan.departsAtElapsedMs === at) {
     caravan = { ...caravan, status: 'departed' };
@@ -438,6 +604,7 @@ export function verifyStage08State(state: GameState): void {
     || new Set(auctionLots.map(item => item.id)).size !== auctionLots.length
     || new Set(auctionBids.map(item => item.id)).size !== auctionBids.length
     || !Array.isArray(rewardClaimReceipts) || new Set(rewardClaimReceipts).size !== rewardClaimReceipts.length
+    || !Array.isArray(state.stage08.openingRivals) || new Set(state.stage08.openingRivals.map(rival => rival.contenderId)).size !== state.stage08.openingRivals.length
     || state.currency.some(balance => !Number.isSafeInteger(balance.amount) || balance.amount < 0)
     || new Set(state.currency.map(balance => balance.currencyId)).size !== state.currency.length) throw new Error('STAGE08_STATE_INVALID');
   for (const offer of marketOffers) {
@@ -500,29 +667,189 @@ export function verifyStage08State(state: GameState): void {
       || !Number.isSafeInteger(expectedCurrency) || expectedCurrency < 0 || krona !== expectedCurrency
       || state.currency.some(balance => balance.currencyId !== KRONA_CURRENCY)) throw new Error('STAGE08_ECONOMY_OR_QUEST_INVARIANT');
   }
+  for (const rival of state.stage08.openingRivals) {
+    if (!OPENING_LEVEL_RIVALS.some(profile => profile.id === rival.contenderId)
+      || !Number.isSafeInteger(rival.level) || rival.level < 1 || rival.level > 10
+      || !Number.isSafeInteger(rival.xp) || rival.xp < 0
+      || !(rival.completionAtElapsedMs === null || (Number.isSafeInteger(rival.completionAtElapsedMs) && rival.completionAtElapsedMs <= state.simElapsedMs))
+      || !(rival.nextActionAtElapsedMs === null || (Number.isSafeInteger(rival.nextActionAtElapsedMs) && rival.nextActionAtElapsedMs >= 0))
+      || !Number.isSafeInteger(rival.actionIntervalMs) || rival.actionIntervalMs < 1
+      || !Number.isSafeInteger(rival.actionsTaken) || rival.actionsTaken !== rival.actionLedger.length
+      || !Array.isArray(rival.actionLedger)
+      || ['rations', 'firewood', 'prey'].some(key => !Number.isSafeInteger(rival.resources[key as 'rations' | 'firewood' | 'prey']) || rival.resources[key as 'rations' | 'firewood' | 'prey'] < 0)) {
+      throw new Error('OPENING_RIVAL_RUNTIME_INVARIANT');
+    }
+    for (const action of rival.actionLedger) {
+      if (action.contenderId !== rival.contenderId || action.ruleVersion !== RIVAL_ACTION_RULE
+        || !Number.isSafeInteger(action.occurredAtElapsedMs) || action.occurredAtElapsedMs > state.simElapsedMs
+        || !Number.isSafeInteger(action.xpAwarded) || action.xpAwarded < 0
+        || !Number.isSafeInteger(action.targetsConsumed) || action.targetsConsumed < 0) throw new Error('OPENING_RIVAL_ACTION_INVARIANT');
+    }
+  }
+  for (const snapshot of state.stage08.rankSnapshots) {
+    if (snapshot.sourceContract.includes(RIVAL_ACTION_RULE)) {
+      const expectedHash = canonicalStateHash({
+        boardId: snapshot.boardId,
+        sourceContract: snapshot.sourceContract,
+        settledAtElapsedMs: snapshot.settledAtElapsedMs,
+        rows: snapshot.rows,
+      });
+      if (snapshot.status !== 'settled' || snapshot.reasonCode !== null || snapshot.snapshotSha256 !== expectedHash) throw new Error('OPENING_RANK_SNAPSHOT_HASH_INVARIANT');
+    }
+  }
+  const openingClaimed = rewardClaimReceipts.includes(OPENING_RANK_CLAIM_KEY);
+  const openingSnapshot = state.stage08.rankSnapshots.find(snapshot => snapshot.boardId === OPENING_LEVEL_BOARD_ID && snapshot.status === 'settled');
+  const openingPlayerRow = openingSnapshot?.rows.find(row => row.playerId === state.player.id);
+  const deliveredStacks = state.inventory.containers.flatMap(container => container.stacks);
+  const openingRewardItems = openingPlayerRow?.rewardItems ?? [];
+  if (openingClaimed && !openingPlayerRow) throw new Error('OPENING_RANK_CLAIM_RECEIPT_INVARIANT');
+  for (const item of openingRewardItems) {
+    const matches = deliveredStacks.filter(stack => stack.itemId === item.instanceId);
+    if (openingClaimed && item.status === 'committed'
+      && (matches.length !== 1 || matches[0]?.templateId !== item.itemTemplateId || matches[0]?.quantity !== item.quantity)) {
+      throw new Error('OPENING_RANK_REWARD_DELIVERY_INVARIANT');
+    }
+    if ((!openingClaimed || item.status === 'blocked') && matches.length > 0) throw new Error('OPENING_RANK_REWARD_PREMATURE_MINT_INVARIANT');
+  }
+}
+
+function playerOpeningCompletionAt(state: GameState): number | null {
+  return (state.progression?.transactions ?? [])
+    .filter(transaction => transaction.recipientId === state.player.id && transaction.thresholdsCrossed.includes(OPENING_LEVEL_QUALIFYING_LEVEL))
+    .map(transaction => transaction.occurredAtElapsedMs)
+    .sort((a, b) => a - b)[0] ?? null;
+}
+
+function openingCompletionRecords(state: GameState) {
+  const records = state.stage08.openingRivals.flatMap(rival => {
+    if (rival.completionAtElapsedMs === null) return [];
+    const profile = OPENING_LEVEL_RIVALS.find(item => item.id === rival.contenderId)!;
+    return [{ playerId: rival.contenderId, realName: profile.name, level: rival.level, progressToNextLevelPermille: 0, completionAtElapsedMs: rival.completionAtElapsedMs }];
+  });
+  const playerCompletion = playerOpeningCompletionAt(state);
+  if (playerCompletion !== null) records.push({
+    playerId: state.player.id,
+    realName: state.player.name,
+    level: state.player.level,
+    progressToNextLevelPermille: Math.min(999, Math.floor(state.player.xp / Math.max(1, playerLevelThreshold(state.player.level)) * 1_000)),
+    completionAtElapsedMs: playerCompletion,
+  });
+  return records;
+}
+
+export function openingBoardView(state: GameState) {
+  const frozen = state.stage08.rankSnapshots.find(snapshot => snapshot.boardId === OPENING_LEVEL_BOARD_ID);
+  const closed = state.simElapsedMs >= OPENING_LEVEL_CLOSES_AT_MS || Boolean(frozen);
+  const status = closed ? 'closed' as const : state.simElapsedMs >= OPENING_LEVEL_OPENS_AT_MS ? 'open' as const : 'scheduled' as const;
+  const completions = openingCompletionRecords(state);
+  const liveRows = visibleOpeningLevelRows(completions, state.simElapsedMs).map(row => ({
+    playerId: row.playerId,
+    playerName: row.realName,
+    rank: row.rank,
+    level: row.level,
+    completionAtElapsedMs: row.completionAtElapsedMs,
+  }));
+  const frozenRows = frozen?.status === 'settled' ? frozen.rows.map(row => ({
+    playerId: row.playerId, playerName: row.playerName, rank: row.rank, level: row.level, completionAtElapsedMs: row.completionAtElapsedMs,
+  })) : [];
+  const playerRow = frozen?.rows.find(row => row.playerId === state.player.id);
+  return {
+    boardId: OPENING_LEVEL_BOARD_ID,
+    status,
+    opensAtElapsedMs: OPENING_LEVEL_OPENS_AT_MS,
+    closesAtElapsedMs: OPENING_LEVEL_CLOSES_AT_MS,
+    displayDelayMs: 3 * 60_000,
+    rows: closed ? frozenRows : liveRows,
+    rewardClaimStatus: !playerRow ? 'unavailable' as const
+      : state.stage08.rewardClaimReceipts.includes(OPENING_RANK_CLAIM_KEY) ? 'claimed' as const : 'pending' as const,
+  };
+}
+
+export function claimOpeningLevelReward(state: GameState, commandId: string, boardId: string): Stage08Mutation {
+  if (boardId !== OPENING_LEVEL_BOARD_ID) return unchanged(state, 'OPENING_REWARD_BOARD_UNKNOWN', 'That fixed reward board is not available.');
+  const snapshot = state.stage08.rankSnapshots.find(item => item.boardId === boardId && item.status === 'settled');
+  if (!snapshot) return unchanged(state, 'OPENING_REWARD_NOT_SETTLED', 'The opening board must finish settlement before its reward can be claimed.');
+  const row = snapshot.rows.find(item => item.playerId === state.player.id);
+  if (!row) return unchanged(state, 'OPENING_REWARD_NOT_EARNED', 'This save has no qualifying row on the frozen opening board.');
+  if (state.stage08.rewardClaimReceipts.includes(OPENING_RANK_CLAIM_KEY)) return unchanged(state, 'OPENING_REWARD_ALREADY_CLAIMED', 'This frozen reward contract has already been claimed.');
+  const deliverable = row.rewardItems.filter(item => item.status === 'committed');
+  if (deliverable.length === 0) return unchanged(state, 'OPENING_REWARD_SLOTS_BLOCKED', 'Every item slot in this reward band is waiting for its source candidate pool.');
+  const bag = state.inventory.containers.find(container => container.kind === 'carried_bag' && container.location.kind === 'carried' && container.location.ownerId === state.player.id);
+  if (!bag) return unchanged(state, 'OPENING_REWARD_DELIVERY_UNAVAILABLE', 'The carried inventory destination is missing; the claim remains available.');
+  const next = structuredClone(state);
+  next.inventory.containers = next.inventory.containers.map(container => container.id !== bag.id ? container : {
+    ...container,
+    observed: true,
+    stacks: [...container.stacks, ...deliverable.map(item => ({
+      itemId: item.instanceId,
+      templateId: item.itemTemplateId,
+      quantity: item.quantity,
+      reservedQuantity: 0,
+      unit: 'item',
+      ownerId: state.player.id,
+      equipped: false,
+      equippedSlotId: null,
+      quality: null,
+      provenance: 'campaign_fixed' as const,
+    }))],
+  });
+  next.stage08.rewardClaimReceipts = [...next.stage08.rewardClaimReceipts, OPENING_RANK_CLAIM_KEY];
+  return {
+    state: next,
+    events: [emit('opening_rank_reward_claimed', state.simElapsedMs, {
+      boardId, recipientId: state.player.id, rank: row.rank, rewardBandId: row.rewardBandId,
+      rewardContract: OPENING_LEVEL_REWARD_CONTRACT, commandId,
+      items: deliverable.map(item => ({ instanceId: item.instanceId, itemTemplateId: item.itemTemplateId, quantity: item.quantity })),
+      blockedSlots: row.rewardItems.filter(item => item.status === 'blocked').map(item => ({ instanceId: item.instanceId, blocker: item.blocker })),
+    })],
+    code: null,
+    message: 'The frozen opening-board reward was delivered once; source-blocked reward slots remain ungranted.',
+  };
 }
 
 export function settleOpeningLevelRank(state: GameState, at: number): Omit<CommandEvent, 'sequence'> | null {
-  if (state.stage08.rankSnapshots.some(snapshot => snapshot.boardId === 'OPENING_LEVEL')) return null;
-  // File 07 supplies the frozen ten-contender P0 roster. Its committed actor
-  // outcome simulation, level-completion events, and eligibility ledger are not
-  // compiled into runtime state yet. Ranking only the player would falsely make
-  // an incomplete population appear to be rank 1 and mint a source-fixed prize.
-  const sourceContract = 'OPENING_LEVEL|RWD-OPENING-FIXED-2.0|LORD-DND-01-2.7.0|LORD-DND-07-1.3.0';
-  const reasonCode = 'P0_FIXED_CONTENDER_RUNTIME_NOT_COMPILED';
-  const rows: Stage08RuntimeState['rankSnapshots'][number]['rows'] = [];
+  if (at !== OPENING_LEVEL_CLOSES_AT_MS) throw new Error('OPENING_RANK_SETTLEMENT_BOUNDARY_INVALID');
+  if (state.stage08.rankSnapshots.some(snapshot => snapshot.boardId === OPENING_LEVEL_BOARD_ID)) return null;
+  const sourceContract = `${OPENING_LEVEL_BOARD_ID}|${OPENING_LEVEL_REWARD_CONTRACT}|LORD-DND-01-2.7.0|LORD-DND-02-1.7.0|LORD-DND-07-1.3.0|${RIVAL_ACTION_RULE}`;
+  const ranked = rankOpeningLevelCompletions(openingCompletionRecords(state), OPENING_LEVEL_CLOSES_AT_MS);
+  const rows: Stage08RuntimeState['rankSnapshots'][number]['rows'] = ranked.map(row => {
+    const band = openingLevelRewardBand(row.rank);
+    if (!band) throw new Error('OPENING_RANK_REWARD_BAND_MISSING');
+    const rewardItems = band.payload.map((item, index) => {
+      const randomSlot = item.item === 'tier_2_random_recruitment_scroll' || item.item === 'green_weapon_choice';
+      return {
+        instanceId: `OPENING-REWARD-${row.playerId}-${String(index + 1).padStart(2, '0')}`,
+        itemTemplateId: item.item.toUpperCase(),
+        quantity: item.quantity,
+        status: randomSlot ? 'blocked' as const : 'committed' as const,
+        blocker: randomSlot ? 'SOURCE_CANDIDATE_POOL_NOT_COMPILED' : null,
+      };
+    });
+    return {
+      playerId: row.playerId,
+      playerName: row.realName,
+      rank: row.rank,
+      level: row.level,
+      completionAtElapsedMs: row.completionAtElapsedMs,
+      rewardBandId: band.id,
+      rewardStatus: row.playerId === state.player.id ? 'pending' as const : 'npc_materialized' as const,
+      rewardItems,
+      claimReceiptId: null,
+    };
+  });
   const snapshot = {
-    boardId: 'OPENING_LEVEL',
-    status: 'blocked' as const,
+    boardId: OPENING_LEVEL_BOARD_ID,
+    status: 'settled' as const,
     settledAtElapsedMs: at,
     sourceContract,
-    reasonCode,
+    reasonCode: null,
     rows,
-    snapshotSha256: canonicalStateHash({ boardId: 'OPENING_LEVEL', sourceContract, settledAtElapsedMs: at, reasonCode, rows }),
+    snapshotSha256: canonicalStateHash({ boardId: OPENING_LEVEL_BOARD_ID, sourceContract, settledAtElapsedMs: at, rows }),
   };
   state.stage08.rankSnapshots = [...state.stage08.rankSnapshots, snapshot];
-  return emit('event_rank_settlement_blocked', at, {
-    boardId: snapshot.boardId, reasonCode, sourceContract, snapshotSha256: snapshot.snapshotSha256,
-    resultRows: 0, rewardsMinted: 0,
+  return emit('event_rank_settled', at, {
+    boardId: snapshot.boardId, sourceContract, snapshotSha256: snapshot.snapshotSha256,
+    resultRows: rows.length, rewardContract: OPENING_LEVEL_REWARD_CONTRACT,
+    playerRank: rows.find(row => row.playerId === state.player.id)?.rank ?? null,
   });
 }

@@ -82,6 +82,8 @@ test('long and short deterministic advances produce the same mana, Tomb queue, u
   let start = freshState();
   start.player.mana.current = 0;
   start.survival.environment = { apparentTemperatureC: 0, windKph: 0, wetness: 0, activityFactor: 1, insulation: 1, shelter: 1 };
+  start.player.position = { xMm: 10_001, yMm: 0, sourceZMetres: 0 };
+  start.player.location = { kind: 'field', coordinate: start.player.position };
   const queuedEvents: string[] = [];
   for (const id of ['TOMB-1', 'TOMB-2', 'TOMB-3']) {
     const result = enqueueTombJob(start, id, `UNIT-${id}`);
@@ -166,17 +168,29 @@ test('midnight refills Death Qi once to current capacity; capacity upgrades do n
   assert.equal(lower.territory.tomb.deathQi.current, 15);
 });
 
-test('fire fuel boundaries are exact; unknown opening fuel is not consumed or converted into an invented total', () => {
-  const unknown = freshState();
-  const unknownAdvance = advanceTo(unknown, 2 * FIRE_WOOD_CONSUMPTION_MS);
-  assert.equal(unknownAdvance.state.territory.survivalFire.fuelRemaining, null);
-  assert.equal(unknownAdvance.state.territory.survivalFire.active, true);
-  assert.equal(unknownAdvance.events.some(event => event.type === 'fire_fuel_consumed'), false);
-  const refuelUnknown = reduceCommand(unknown, command(unknown, 'refuel-unknown', 'refuel_fire', {
+test('opening weather and hidden fuel seed settle exact boundaries; camp heat applies only in range', () => {
+  const opening = freshState();
+  assert.equal(opening.territory.survivalFire.fuelRemaining, 24);
+  assert.equal(opening.territory.survivalFire.fuelKnowledge, 'state_unobserved');
+  assert.equal(opening.territory.survivalFire.nextFuelConsumptionAtElapsedMs, FIRE_WOOD_CONSUMPTION_MS);
+  assert.equal(opening.survival.blocker, null);
+  const oneFuel = advanceTo(opening, FIRE_WOOD_CONSUMPTION_MS);
+  assert.equal(oneFuel.state.territory.survivalFire.fuelRemaining, 23);
+  assert.equal(oneFuel.events.filter(event => event.type === 'fire_fuel_consumed').length, 1);
+  const twoFuel = advanceTo(oneFuel.state, 2 * FIRE_WOOD_CONSUMPTION_MS);
+  assert.equal(twoFuel.state.territory.survivalFire.fuelRemaining, 22);
+  assert.equal(twoFuel.state.survival.coldLoadMicro, 73_333_320);
+  const outside = structuredClone(opening);
+  outside.player.position = { xMm: 10_001, yMm: 0, sourceZMetres: 0 };
+  outside.player.location = { kind: 'field', coordinate: outside.player.position };
+  const outsideAdvance = advanceTo(outside, FIRE_WOOD_CONSUMPTION_MS);
+  assert.equal(outsideAdvance.state.survival.coldLoadMicro, 120_000_000);
+
+  const refuelUnknown = reduceCommand(opening, command(opening, 'refuel-with-hidden-total', 'refuel_fire', {
     containerId: 'LL-CNT-CARRIED-FOOD-BAG-01', itemId: 'WOOD-1', quantity: 1,
   }), world);
   assert.equal(refuelUnknown.receipt.accepted, false);
-  assert.equal(refuelUnknown.receipt.code, 'INITIAL_FUEL_AMOUNT_NOT_SPECIFIED');
+  assert.equal(refuelUnknown.receipt.code, 'FUEL_NOT_ACCESSIBLE');
 
   const fire = structuredClone(freshState());
   fire.territory.survivalFire.fuelKnowledge = 'known';

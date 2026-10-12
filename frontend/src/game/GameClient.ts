@@ -93,7 +93,7 @@ export type SettlementView = {
   heatRadiusM: number;
   buildings: readonly SettlementBuildingView[];
   obstacles: readonly { id: string; x: number; y: number; radiusM: number }[];
-  knowledge: 'demo-fixture';
+  knowledge: 'demo-fixture' | 'live-api';
 };
 export type SettlementPlacementDefinition = {
   id: string;

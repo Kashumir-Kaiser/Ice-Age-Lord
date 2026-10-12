@@ -9,14 +9,15 @@ import { RULESET_VERSION } from '../../content/src/sourceLock.ts';
 import { GameApplicationService } from '../../api/src/service.ts';
 import { SqliteRepository } from '../../storage/src/repository.ts';
 import { createNewGame } from '../src/initializer.ts';
-import { reduceCommand } from '../src/reducer.ts';
+import { STAGE07_OPENING_CORPSE_ID } from '../src/stage07.ts';
+import { previewCommand, reduceCommand } from '../src/reducer.ts';
 import { upgradeGameState } from '../src/upgrade.ts';
 import { advanceTo, HOUR_MS, MINUTE_MS } from '../src/time.ts';
 import { enqueueTombJob } from '../src/time.ts';
 import { carryCapacityForFireLevel, planRoute, previewMovement, seedSpatialKnowledge } from '../src/spatial.ts';
 import { projectPlayerView } from '../src/view.ts';
 import { canonicalStateHash } from '../src/hash.ts';
-import { UNIT_INVENTORY_CONTAINER_PREFIX } from '../../contracts/src/index.ts';
+import { GAME_STATE_SCHEMA_VERSION, UNIT_INVENTORY_CONTAINER_PREFIX } from '../../contracts/src/index.ts';
 
 let stateCounter = 0;
 
@@ -56,7 +57,7 @@ test('schema 2 saves migrate into the persistent spatial state without changing 
   delete legacy.playerKnowledge.knownSignalIds;
 
   const upgraded = upgradeGameState(legacy, world);
-  assert.equal(upgraded.schemaVersion, 7);
+  assert.equal(upgraded.schemaVersion, GAME_STATE_SCHEMA_VERSION);
   assert.deepEqual(upgraded.player.position, world.origin);
   assert.deepEqual(upgraded.territory.position, world.origin);
   assert.deepEqual(upgraded.travel.orders, []);
@@ -172,7 +173,7 @@ test('owned harvesters use unit inventory, save their load and gain packs throug
   legacy.schemaVersion = 4;
   legacy.inventory.containers = legacy.inventory.containers.filter((container: Record<string, any>) => container.id !== packId);
   const migrated = upgradeGameState(legacy, world);
-  assert.equal(migrated.schemaVersion, 7);
+  assert.equal(migrated.schemaVersion, GAME_STATE_SCHEMA_VERSION);
   assert.ok(migrated.inventory.containers.some(container => container.id === packId && container.kind === 'unit_inventory'));
 });
 
@@ -276,40 +277,139 @@ test('focused searches settle on fixed ticks, preserve revisit history and revea
 
   state = apply(state, 'search-first-sweep', 'search', { actorId: 'LI_LAN', center: eligibleChest.position, radiusMm: 100_000 });
   assert.equal(state.spatial.searchJobs[0].nextTickAtElapsedMs, 15 * MINUTE_MS);
-  const firstSweep = advanceTo(state, 15 * MINUTE_MS, {}, world);
+  let firstSweep: ReturnType<typeof advanceTo> | null = null;
+  let sweepAt = 15 * MINUTE_MS;
+  while (!firstSweep && sweepAt <= 3 * HOUR_MS) {
+    const settled = advanceTo(state, sweepAt, {}, world);
+    if (settled.events.some(event => event.type === 'chest_signal_detected')) firstSweep = settled;
+    else state = settled.state;
+    sweepAt += 15 * MINUTE_MS;
+  }
+  assert.ok(firstSweep, 'the area sweep eventually reaches the known fixed chest field');
   assert.equal(firstSweep.events.filter(event => event.type === 'chest_signal_detected').length, 1);
   state = firstSweep.state;
+  assert.equal(state.spatial.searchJobs[0].status, 'active');
+  assert.equal(state.spatial.searchJobs[0].phase, 'sweeping');
+  assert.equal(state.exploration.searchHistory[0].status, 'active');
+  const detectedChestId = String(firstSweep.events.find(event => event.type === 'chest_signal_detected')?.payload.chestId);
+  const detectedChest = world.fieldChests.find(chest => chest.id === detectedChestId)!;
+  assert.ok(state.fieldChestStates.find(chest => chest.chestId === detectedChestId)?.discovery === 'signal');
+  const firstSignal = state.spatial.signals.find(signal => signal.targetId === detectedChestId)!;
+  const signalId = firstSignal.signalId;
+  const routeLength = (points: readonly { xMm: number; yMm: number }[]) => points.slice(1).reduce((sum, point, index) => sum + Math.hypot(point.xMm - points[index]!.xMm, point.yMm - points[index]!.yMm), 0);
+  const completedSweepAt = Math.ceil(routeLength(state.spatial.searchJobs[0].path) * HOUR_MS
+    / state.spatial.searchJobs[0].speedMmPerHour! / (15 * MINUTE_MS)) * 15 * MINUTE_MS;
+  state = advanceTo(state, Math.max(completedSweepAt, state.simElapsedMs), {}, world).state;
+  assert.equal(state.spatial.searchJobs[0].status, 'active');
+  assert.equal(state.spatial.searchJobs[0].phase, 'returning');
+  const completedReturnAt = state.simElapsedMs + Math.ceil(routeLength(state.spatial.searchJobs[0].returnPath!) * HOUR_MS
+    / state.spatial.searchJobs[0].speedMmPerHour!);
+  state = advanceTo(state, completedReturnAt, {}, world).state;
   assert.equal(state.spatial.searchJobs[0].status, 'completed');
   assert.equal(state.exploration.searchHistory[0].status, 'completed');
-  assert.ok(state.fieldChestStates.find(chest => chest.chestId === eligibleChest.id)?.discovery === 'signal');
-  const firstSignal = state.spatial.signals.find(signal => signal.targetId === eligibleChest.id)!;
-  const signalId = firstSignal.signalId;
   const unidentifiedView = projectPlayerView(state, world);
   const unidentifiedJson = JSON.stringify(unidentifiedView);
   assert.ok(!unidentifiedJson.includes(eligibleChest.id));
   const signalEntity = unidentifiedView.visibleMap.entities.find(entity => entity.ref.type === 'cache' && entity.ref.id === signalId)!;
   assert.equal(signalEntity.knowledge, 'signs_only');
-  assert.ok(Math.hypot(signalEntity.position!.xMm - eligibleChest.position.xMm, signalEntity.position!.yMm - eligibleChest.position.yMm) <= Math.SQRT2 * 50_000);
+  assert.ok(Math.hypot(signalEntity.position!.xMm - detectedChest.position.xMm, signalEntity.position!.yMm - detectedChest.position.yMm) <= Math.SQRT2 * 50_000);
 
-  state.player.position = eligibleChest.position;
-  state.player.location = { kind: 'field', coordinate: eligibleChest.position };
-  state = apply(state, 'search-repeat-sweep', 'search', { actorId: 'LI_LAN', center: eligibleChest.position, radiusMm: 100_000 });
-  state = advanceTo(state, 30 * MINUTE_MS, {}, world).state;
-  assert.equal(state.spatial.signals.filter(signal => signal.targetId === eligibleChest.id).length, 1);
+  state.player.position = detectedChest.position;
+  state.player.location = { kind: 'field', coordinate: detectedChest.position };
+  state = apply(state, 'search-repeat-sweep', 'search', { actorId: 'LI_LAN', center: detectedChest.position, radiusMm: 100_000 });
+  state = advanceTo(state, completedReturnAt + 15 * MINUTE_MS, {}, world).state;
+  assert.equal(state.spatial.signals.filter(signal => signal.targetId === detectedChestId).length, 1);
   assert.ok(state.spatial.searchJobs[1].repeatedAreaM2 > 0);
-  assert.equal(state.spatial.signals.find(signal => signal.targetId === eligibleChest.id)?.signalId, signalId);
+  assert.equal(state.spatial.signals.find(signal => signal.targetId === detectedChestId)?.signalId, signalId);
 
-  state.player.position = eligibleChest.position;
-  state.player.location = { kind: 'field', coordinate: eligibleChest.position };
+  state.player.position = detectedChest.position;
+  state.player.location = { kind: 'field', coordinate: detectedChest.position };
   state = apply(state, 'inspect-search-signal', 'inspect_entity', { entity: { type: 'cache', id: signalId } });
-  assert.ok(state.playerKnowledge.knownChestIds.includes(eligibleChest.id));
-  assert.equal(state.fieldChestStates.find(chest => chest.chestId === eligibleChest.id)?.discovery, 'identified');
+  assert.ok(state.playerKnowledge.knownChestIds.includes(detectedChestId));
+  assert.equal(state.fieldChestStates.find(chest => chest.chestId === detectedChestId)?.discovery, 'identified');
   const identifiedView = projectPlayerView(state, world);
-  assert.ok(JSON.stringify(identifiedView).includes(eligibleChest.id));
-  const opened = reduceCommand(state, command(state, 'open-uncompiled-chest', 'open_cache', { actorId: 'LI_LAN', chestId: eligibleChest.id }), world);
+  assert.ok(JSON.stringify(identifiedView).includes(detectedChestId));
+  const opened = reduceCommand(state, command(state, 'open-uncompiled-chest', 'open_cache', { actorId: 'LI_LAN', chestId: detectedChestId }), world);
   assert.equal(opened.receipt.accepted, false);
   assert.equal(opened.receipt.code, 'CHEST_LOOT_CANDIDATE_POOL_NOT_COMPILED');
-  assert.equal(opened.state.fieldChestStates.find(chest => chest.chestId === eligibleChest.id)?.state, 'unopened');
+  assert.equal(opened.state.fieldChestStates.find(chest => chest.chestId === detectedChestId)?.state, 'unopened');
+});
+
+test('area dispatch reserves a co-located squad, honors a time stop, returns on recall and is time-step deterministic', () => {
+  const base = freshState();
+  let seed = apply(base, 'inspect-dispatch-rook', 'inspect_entity', { entity: { type: 'corpse', id: STAGE07_OPENING_CORPSE_ID } });
+  seed = apply(seed, 'revive-dispatch-rook', 'revive', { actorId: seed.player.id, corpseId: STAGE07_OPENING_CORPSE_ID });
+  const rookId = seed.ownedUnits.at(-1)!.id;
+  const selectedChest = world.fieldChests.find(chest => chest.grade === 'Mộc'
+    && (chest.position.sourceZMetres ?? 0) >= -2
+    && !/sealed|deep|owned|quest[- ]locked|chống sập|yêu cầu chống|khóa|niêm phong/i.test(chest.accessStatement))!;
+  seed.player.position = selectedChest.position;
+  seed.player.location = { kind: 'field', coordinate: selectedChest.position };
+  seed.ownedUnits = seed.ownedUnits.map(unit => unit.id === rookId ? { ...unit, position: selectedChest.position } : unit);
+
+  const dispatched = apply(seed, 'dispatch-squad', 'search', {
+    actorId: seed.player.id, additionalActorIds: [rookId], center: selectedChest.position,
+    radiusMm: 250_000, targetCount: 192, timeLimitMinutes: 30,
+  });
+  const job = dispatched.spatial.searchJobs[0]!;
+  assert.deepEqual(job.actorIds, [seed.player.id, rookId]);
+  assert.ok(job.path.length > 4, 'the route is a multi-lane circle sweep, not a single radius line');
+  assert.ok(job.laneWidthMm > 25_000, 'the second scout improves practical coverage');
+  assert.equal(job.targetCount, 192);
+  assert.ok(job.stopAtElapsedMs! > 30 * MINUTE_MS, 'work time begins after outbound travel reaches the area');
+  const preview = previewCommand(seed, command(seed, 'preview-dispatch-squad', 'search', {
+    actorId: seed.player.id, additionalActorIds: [rookId], center: selectedChest.position,
+    radiusMm: 250_000, targetCount: 192, timeLimitMinutes: 30,
+  }), world);
+  assert.equal(preview.enabled, true);
+  assert.match(preview.preview?.value ?? '', /outbound.*sweep.*estimated return.*total/u);
+  assert.match(preview.preview?.value ?? '', /search stops at first 192 signal\(s\) or 30 min search-work limit, then returns/u);
+  const overlapping = reduceCommand(dispatched, command(dispatched, 'dispatch-overlap', 'search', {
+    actorId: seed.player.id, additionalActorIds: [rookId], center: selectedChest.position, radiusMm: 250_000,
+  }), world);
+  assert.equal(overlapping.receipt.accepted, false);
+  assert.equal(overlapping.receipt.code, 'ACTOR_ASSIGNED_TO_SEARCH');
+  const firstLimit = advanceTo(dispatched, job.stopAtElapsedMs!, {}, world);
+  assert.equal(firstLimit.state.spatial.searchJobs[0]?.phase, 'returning');
+  assert.equal(firstLimit.state.spatial.searchJobs[0]?.returnReason, 'time_limit');
+  assert.equal(firstLimit.events.some(event => event.type === 'spatial_search_return_started'), true);
+  const foundChestIds = firstLimit.state.spatial.searchJobs[0]?.foundChestIds ?? [];
+  assert.ok(foundChestIds.length > 0, 'the test sweep intersects a real fixed chest');
+  const playerViewJson = JSON.stringify(projectPlayerView(firstLimit.state, world));
+  assert.equal(playerViewJson.includes(foundChestIds[0]!), false);
+
+  const partial = advanceTo(dispatched, 15 * MINUTE_MS, {}, world).state;
+  const recall = reduceCommand(partial, command(partial, 'recall-squad', 'cancel_spatial_job', { jobId: job.id }), world);
+  assert.equal(recall.receipt.accepted, true);
+  assert.equal(recall.state.spatial.searchJobs[0]?.phase, 'returning');
+  assert.equal(recall.state.spatial.searchJobs[0]?.returnReason, 'recalled');
+  const duplicateRecall = reduceCommand(recall.state, command(recall.state, 'recall-squad-again', 'cancel_spatial_job', { jobId: job.id }), world);
+  assert.equal(duplicateRecall.receipt.accepted, false);
+  assert.equal(duplicateRecall.receipt.code, 'SEARCH_ALREADY_RETURNING');
+
+  const sameSeed = structuredClone(seed);
+  sameSeed.saveId = 'area-dispatch-step-size-comparison';
+  const firstRun = apply(sameSeed, 'dispatch-determinism', 'search', {
+    actorId: sameSeed.player.id, additionalActorIds: [rookId], center: selectedChest.position,
+    radiusMm: 250_000, timeLimitMinutes: 30,
+  });
+  const longStep = advanceTo(firstRun, 3 * HOUR_MS, {}, world).state;
+  let shortSteps = firstRun;
+  for (let at = 15 * MINUTE_MS; at <= 3 * HOUR_MS; at += 15 * MINUTE_MS) shortSteps = advanceTo(shortSteps, at, {}, world).state;
+  assert.deepEqual(shortSteps.spatial.searchJobs, longStep.spatial.searchJobs);
+  assert.deepEqual(shortSteps.spatial.sweepHistory, longStep.spatial.sweepHistory);
+  assert.deepEqual(shortSteps.fieldChestStates, longStep.fieldChestStates);
+
+  const targetState = structuredClone(seed);
+  targetState.saveId = 'area-dispatch-target-stop';
+  const targetRun = apply(targetState, 'dispatch-first-signal', 'search', {
+    actorId: targetState.player.id, additionalActorIds: [rookId], center: selectedChest.position,
+    radiusMm: 250_000, targetCount: 1,
+  });
+  const targetSettled = advanceTo(targetRun, 3 * HOUR_MS, {}, world).state;
+  assert.equal(targetSettled.spatial.searchJobs[0]?.phase, 'returning');
+  assert.equal(targetSettled.spatial.searchJobs[0]?.returnReason, 'target_count');
+  assert.ok(targetSettled.spatial.searchJobs[0]?.foundChestIds.length);
 });
 
 test('harvest reserves finite source quantity, returns cargo and conserves inventory and balance', () => {

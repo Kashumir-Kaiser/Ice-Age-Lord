@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import type {
   ChestCacheCenter,
   EcologyRecord,
+  EventContractDefinition,
   FixedWorldActor,
   FieldChest,
   FixedEventScheduleRow,
@@ -18,14 +19,18 @@ import type {
 import { CONTENT_VERSION, RULESET_VERSION, SOURCE_LOCK, SOURCE_RELEASES, SOURCE_MAIN_COMMIT } from './sourceLock.ts';
 import { buildNavigationOverlay } from './navigationOverlay.ts';
 import { RESOURCE_ECONOMY_VERSION, RESOURCE_FEATURES, resourceFromFeature, worldFeatureFromSpec } from './resourceBalance.ts';
+import { parseEventSourceLedger } from './eventLedger.ts';
+import { assertEventContractCoverage, EVENT_CONTRACTS, EVENT_CONTRACT_REGISTRY_VERSION } from './eventContracts.ts';
 
 export type ContentManifest = {
-  schemaVersion: 1;
+  schemaVersion: 2;
   contentVersion: string;
   rulesetVersion: string;
   sourceMainCommit: string;
   activeWorldPackageId: string;
   timelineVersion: string;
+  eventContractRegistryVersion: string;
+  eventContractCount: number;
   approvedGameplayModules: readonly string[];
   conversionManifest: readonly { input: string; output: string; decision: string }[];
   sources: readonly {
@@ -516,17 +521,35 @@ function parseHoursFromT0(value: string): number {
   return Number(match[1]) * 60 * 60 * 1000;
 }
 
-function parseEventSchedule(timelineText: string): FixedEventScheduleRow[] {
+function parseEventSchedule(timelineText: string, itemLedgerText: string, addendumText: string, catalogText: string): FixedEventScheduleRow[] {
   const timeline = JSON.parse(timelineText) as { release_id?: string; event_schedule?: Record<string, unknown>[] };
   if (timeline.release_id !== SOURCE_RELEASES['data/events/EVENT-TIMELINE-v0.6.json']) {
     throw new Error(`EVENT_TIMELINE_RELEASE_MISMATCH: ${timeline.release_id}`);
   }
   if (!Array.isArray(timeline.event_schedule)) throw new Error('EVENT_TIMELINE_SCHEDULE_MISSING');
+  const ledger = parseEventSourceLedger(itemLedgerText);
+  const addendum = JSON.parse(addendumText) as { release_id?: string; data_file?: string; cumulative_rows?: number; total_item_ids?: string[] };
+  const catalog = JSON.parse(catalogText) as { provenance_conflicts?: { event_id?: string }[] };
+  if (addendum.release_id !== SOURCE_RELEASES['data/events/EVENT-SOURCE-CATALOG-v7.25-ADDENDUM.json']
+    || addendum.data_file !== 'data/events/EVENT-SOURCE-ITEMS-v7.24.csv'
+    || addendum.cumulative_rows !== ledger.length
+    || !Array.isArray(addendum.total_item_ids)
+    || addendum.total_item_ids.length !== ledger.length
+    || new Set(ledger.map(item => item.fields.id)).size !== ledger.length
+    || addendum.total_item_ids.some(id => !ledger.some(item => item.fields.id === id))) {
+    throw new Error('EVENT_RESEARCH_LEDGER_ADDENDUM_MISMATCH');
+  }
+  const conflictsByEvent = new Map<string, number>();
+  for (const conflict of catalog.provenance_conflicts ?? []) {
+    if (conflict.event_id) conflictsByEvent.set(conflict.event_id, (conflictsByEvent.get(conflict.event_id) ?? 0) + 1);
+  }
   return timeline.event_schedule.map(row => {
     if (typeof row.event_id !== 'string' || typeof row.event_title_legacy !== 'string'
       || typeof row.opens_at !== 'string' || typeof row.locks_at !== 'string' || typeof row.resolves_at !== 'string') {
       throw new Error(`EVENT_TIMELINE_ROW_INVALID: ${JSON.stringify(row)}`);
     }
+    const eventRows = ledger.filter(item => item.fields.event_id === row.event_id
+      || (item.sourceFieldAlignment === 'verified' && item.fields.secondary_event_id === row.event_id));
     return {
       id: row.event_id,
       displayName: row.event_title_legacy.replace(/\s*;\s*ch\.?[^;]*$/iu, '').trim(),
@@ -536,6 +559,17 @@ function parseEventSchedule(timelineText: string): FixedEventScheduleRow[] {
       durationHours: Number(row.duration_hours),
       settlementHours: Number(row.settlement_hours),
       basis: String(row.basis),
+      researchEvidence: {
+        releaseId: 'LL01-WEB-EVENT-SOURCE-ITEMS-7.24',
+        sourceRows: eventRows.length,
+        researchOnlyRows: eventRows.filter(item => item.rawSourceFields.some(value => value === 'RESEARCH_CANDIDATE_NOT_ACTIVE' || value === 'SOURCE_REVIEW_PENDING_GAME_EVENT_PACK')).length,
+        verifiedAcquisitions: eventRows.filter(item => item.sourceFieldAlignment === 'verified' && item.fields.acquisition_verified === 'true').length,
+        verifiedShopOffers: eventRows.filter(item => item.sourceFieldAlignment === 'verified' && item.fields.shop_offer_verified === 'true').length,
+        observedChestOutcomes: eventRows.filter(item => item.fields.channel.includes('CHEST_OBSERVED') || item.fields.subtype === 'CHEST_OBSERVED').length,
+        unresolvedRowShapes: eventRows.filter(item => item.sourceFieldAlignment === 'unresolved').length,
+        unresolvedConflicts: conflictsByEvent.get(String(row.event_id)) ?? 0,
+        mechanicFlags: Array.isArray(row.mechanic_flags) ? row.mechanic_flags.map(String) : [],
+      },
       statusAtT0: 'scheduled',
       source: { path: 'data/events/EVENT-TIMELINE-v0.6.json', heading: 'event_schedule', recordId: row.event_id },
     };
@@ -546,6 +580,7 @@ function verifyEventAndHeroContracts(file01: string, file04: string, file05: str
   if (calendar.length !== 30 || calendar[0]?.id !== 'EV00-SAFE-FIRE' || calendar[29]?.id !== 'EV29-FINAL-CALAMITY') {
     throw new Error(`EVENT_CALENDAR_COUNT_MISMATCH: expected EV00–EV29, got ${calendar.length}`);
   }
+  assertEventContractCoverage(calendar.map(row => row.id));
   if (!file01.includes('CANON-EVENT-LEDGER-4.0') || !file05.includes('EV00–EV29')) {
     throw new Error('EVENT_LEDGER_BINDING_MISSING');
   }
@@ -568,6 +603,8 @@ function sourceManifest(sources: Readonly<Record<string, string>>) {
     let uses: { authorityClass: string; runtimeUse: string };
     if (path.includes('EVENT-TIMELINE')) {
       uses = { authorityClass: 'campaign_fixed', runtimeUse: 'Explicitly selected as the reconciled 30-row new-game schedule.' };
+    } else if (isResearch && path.includes('EVENT-SOURCE-ITEMS-v7.24')) {
+      uses = { authorityClass: 'unresolved_research', runtimeUse: 'Counted into per-event evidence summaries; never compiled as active items, drops, shops or rewards.' };
     } else if (isResearch) {
       uses = { authorityClass: 'unresolved_research', runtimeUse: 'Evidence only; not compiled as active items, structures, shops, rewards or inventory.' };
     } else if (path.includes('LORD-DND-03')) {
@@ -595,6 +632,9 @@ export function compileContent(root: string): { manifest: ContentManifest; world
   const file04 = sources['references/canonical/LORD-DND-04.md'];
   const file05 = sources['references/canonical/LORD-DND-05.md'];
   const timelineText = sources['data/events/EVENT-TIMELINE-v0.6.json'];
+  const eventItemLedger = sources['data/events/EVENT-SOURCE-ITEMS-v7.24.csv'];
+  const eventFinalAddendum = sources['data/events/EVENT-SOURCE-CATALOG-v7.25-ADDENDUM.json'];
+  const eventResearchCatalog = sources['data/events/EVENT-SOURCE-CATALOG-v4.6.json'];
   verifyWorldTableHashes(file03);
 
   const sites = parseSites(file03);
@@ -608,7 +648,7 @@ export function compileContent(root: string): { manifest: ContentManifest; world
   const routes = parseRoutes(file03);
   const navigationOverlay = buildNavigationOverlay(routes, sites, { xMm: 0, yMm: 0, sourceZMetres: 0 });
   const dormantQuestIds = parseDormantQuests(file05);
-  const eventSchedule = parseEventSchedule(timelineText);
+  const eventSchedule = parseEventSchedule(timelineText, eventItemLedger, eventFinalAddendum, eventResearchCatalog);
   verifyEventAndHeroContracts(file01, file04, file05, eventSchedule, lairs, units);
 
   if (sites.length !== 38 || chestCacheCenters.length !== 41 || anchors.length !== 10 || fieldChests.length !== 192 || lairs.length !== 15) {
@@ -654,19 +694,23 @@ export function compileContent(root: string): { manifest: ContentManifest; world
     navigationOverlay,
     dormantQuestIds,
     eventSchedule,
+    eventContractRegistryVersion: EVENT_CONTRACT_REGISTRY_VERSION,
+    eventContracts: EVENT_CONTRACTS satisfies readonly EventContractDefinition[],
     lockedSourceHashes,
   };
   const contentSha256 = sha256(stableStringify(worldBody));
   const world = { ...worldBody, contentSha256 } satisfies WorldDefinition;
   const sourcesInManifest = sourceManifest(sources);
   const manifestBody = {
-    schemaVersion: 1 as const,
+    schemaVersion: 2 as const,
     contentVersion: CONTENT_VERSION,
     rulesetVersion: RULESET_VERSION,
     sourceMainCommit: SOURCE_MAIN_COMMIT,
     activeWorldPackageId: world.id,
     timelineVersion: 'LL01-WEB-EVENT-TIMELINE-RECONCILIATION-0.6-RC1',
-    approvedGameplayModules: ['clean-start-initialization', 'known-entity-inspection', 'player-view-projection', 'navigation-overlay-v1', 'spatial-search-v1', 'resource-logistics-v1', 'terrain-linked-resource-economy-v1', 'stage06-construction-inventory-v1', 'stage07-revival-combat-xp-v1', 'stage08-fixed-calendar-q08-market-and-escrow-v1'],
+    eventContractRegistryVersion: EVENT_CONTRACT_REGISTRY_VERSION,
+    eventContractCount: EVENT_CONTRACTS.length,
+    approvedGameplayModules: ['clean-start-initialization', 'known-entity-inspection', 'player-view-projection', 'navigation-overlay-v1', 'spatial-search-v1', 'resource-logistics-v1', 'terrain-linked-resource-economy-v1', 'stage06-construction-inventory-v1', 'stage07-revival-combat-xp-v1', 'stage08-fixed-calendar-q08-market-and-escrow-v1', 'event-research-evidence-v1'],
     conversionManifest: [
       {
         input: 'data/events/EVENT-TIMELINE-v0.6.json',
@@ -674,9 +718,14 @@ export function compileContent(root: string): { manifest: ContentManifest; world
         decision: 'Use its 30 rows as the new-game fixed schedule; initialize every row SCHEDULED. Stage 04 alone settles the zero-time EV00 opening transition.',
       },
       {
-        input: 'data/events/EVENT-SOURCE-CATALOG-v4.6.json and data/events/EVENT-SOURCE-ITEMS-v4.6.csv',
-        output: 'source-locked-event-evidence and explicit Stage 08 promotions only',
-        decision: 'Retain all source adoption states. Runtime promotions are additive, linked to exact source IDs and validated handlers; unresolved offers, rewards, and effects stay pending.',
+        input: 'references/canonical/LORD-DND-01.md §14.3, references/canonical/LORD-DND-07.md §§6, 9, 12, and user-authorized versioned event-family defaults',
+        output: 'WorldDefinition.eventContracts and PlayerView.calendar[].eventContract',
+        decision: 'Bind all 30 fixed event IDs to a named handler family and publish participation, objective, scoring, encounter, reward, shop, expiry, settlement and source references. Only EV00 and EV01 are runtime-active; later contracts remain visible while their gameplay families are staged.',
+      },
+      {
+        input: 'data/events/EVENT-SOURCE-ITEMS-v7.24.csv, data/events/EVENT-SOURCE-CATALOG-v7.25-ADDENDUM.json and data/events/EVENT-SOURCE-CATALOG-v4.6.json',
+        output: 'per-event source evidence summaries',
+        decision: 'Verify the final 1,682-row ID ledger against its addendum and expose row/offer/acquisition/observed-chest counts plus timeline flags. Evidence rows remain research only; no observed outcome becomes loot and no research candidate becomes an active reward.',
       },
       {
         input: 'data/structures/SOURCE-STRUCTURE-CATALOG-v1.0.json',
@@ -721,6 +770,9 @@ export function assertCompiledWorld(world: WorldDefinition): void {
       !world.resources.some(resource => resource.id === channel.resourceId && resource.featureId === feature.id)))) {
     throw new Error('WORLD_RESOURCE_FEATURE_INVARIANT_FAILED');
   }
+  assertEventContractCoverage(world.eventContracts.map(contract => contract.eventId));
+  if (world.eventContractRegistryVersion !== EVENT_CONTRACT_REGISTRY_VERSION
+    || world.eventContracts.length !== world.eventSchedule.length) throw new Error('WORLD_EVENT_CONTRACT_REGISTRY_INVALID');
   for (let leftIndex = 0; leftIndex < world.resourceFeatures.length; leftIndex++) {
     const left = world.resourceFeatures[leftIndex];
     for (const right of world.resourceFeatures.slice(leftIndex + 1)) {

@@ -1,0 +1,9 @@
+# Opening environment adapter 1.0
+
+The opening source schema says nearby weather is seeded before play and points the Level 1 fire at a starter-fuel ledger. Those numeric records were not in the active package. This adapter fills both gaps as `versioned_game_design`; the numbers below are gameplay inputs, not claims that the novel supplied exact values.
+
+At T0, the player weather row is 0°C apparent temperature, calm and dry, with activity 1.0, insulation 1.5, and shelter 1.5. A living Level 1 fire adds the midpoint of its source-defined +5–20°C heat range while the player is within its 10 m radius. The rate continues to use the canonical cold-load formula and thresholds. Leaving the radius or losing the fire removes that heat modifier on the next simulation boundary.
+
+The hidden fire reservoir starts with 24 WOOD-equivalent fuel units, consumed at one unit per 15 minutes. These units are fire state, not player inventory. The player sees no exact total until the runtime has an explicit inspection rule; refuelling still consumes an observed WOOD item and preserves the hidden total.
+
+Save schema 9 upgrades schema 7 saves through schema 8. Schema 8 adds sweep return metadata and materializes a weather row from the migration time forward; schema 9 assigns legacy searches to chest mode with no recorded wildlife contacts. An active fire with no recorded balance receives the same one-time hidden reservoir so the prior missing ledger does not extinguish it retroactively. An inactive fire stays inactive. The migration does not replay fuel use or cold exposure, alter event receipts, rewrite committed events, change rank history, or recreate earned rewards. The database updates the save checksum and content/ruleset metadata atomically while keeping the event, receipt, and checkpoint ledgers intact.

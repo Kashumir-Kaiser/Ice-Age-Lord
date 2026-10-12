@@ -12,7 +12,7 @@ import type {
   WorldDefinition,
   WorldResource,
 } from '../../contracts/src/index.ts';
-import { isActorInActiveCombat } from './combat.ts';
+import { isActorInActiveCombat, STAGE07_HARE_ACTOR_ID } from './combat.ts';
 import { canonicalStateHash } from './hash.ts';
 import { harvestProgressionForFireLevel } from '../../content/src/resourceBalance.ts';
 
@@ -311,7 +311,9 @@ function actorFor(state: GameState, actorId: string): Actor | null {
   if (actorId === state.player.id) return { id: actorId, position: state.player.position, unit: null, perception: Number(state.player.attributes.PER), intelligence: Number(state.player.attributes.INT) };
   const unit = state.ownedUnits.find(candidate => candidate.id === actorId);
   if (!unit || !unit.position) return null;
-  return { id: actorId, position: unit.position, unit, perception: null, intelligence: null };
+  return { id: actorId, position: unit.position, unit,
+    perception: typeof unit.attributes?.PER === 'number' ? unit.attributes.PER : null,
+    intelligence: typeof unit.attributes?.INT === 'number' ? unit.attributes.INT : null };
 }
 
 export function actorAvailability(state: GameState, actorId: string): string | null {
@@ -540,6 +542,10 @@ function updateKnowledgeAt(state: GameState, world: WorldDefinition, at: number)
         }
       }
     }
+    const wildlife = state.combat?.target;
+    if (wildlife && sameLayer(observer.position, wildlife.position) && distanceMm(observer.position, wildlife.position) <= sightRangeMm) {
+      lastSeenByEntity[`wildlife:${wildlife.actorId}`] = { observedAtElapsedMs: at, knowledge: 'current' };
+    }
     knownRouteIds.push(...worldRouteIdsNear(world, observer.position, world.navigationOverlay.signalRangeMm));
     const geometryId = `OBS-${observer.id}-${observer.position.xMm}-${observer.position.yMm}-${observer.position.sourceZMetres ?? 0}-${sightRangeMm}`;
     if (!state.exploration.exploredGeometry.some(area => area.id === geometryId)) {
@@ -605,6 +611,30 @@ function cellIdsCoveredByLane(from: CoordinateMm, to: CoordinateMm, laneWidthMm:
   return ids;
 }
 
+function polylineSegmentsBetween(points: readonly CoordinateMm[], fromMm: number, toMm: number): { from: CoordinateMm; to: CoordinateMm }[] {
+  const start = Math.max(0, Math.min(fromMm, toMm));
+  const end = Math.max(start, toMm);
+  const segments: { from: CoordinateMm; to: CoordinateMm }[] = [];
+  let traversed = 0;
+  for (let index = 1; index < points.length; index += 1) {
+    const from = points[index - 1]!;
+    const to = points[index]!;
+    const length = distanceMm(from, to);
+    const overlapStart = Math.max(start, traversed);
+    const overlapEnd = Math.min(end, traversed + length);
+    if (overlapEnd > overlapStart && length > 0) {
+      const atFraction = (distance: number) => {
+        const ratio = (distance - traversed) / length;
+        return { xMm: Math.round(from.xMm + (to.xMm - from.xMm) * ratio), yMm: Math.round(from.yMm + (to.yMm - from.yMm) * ratio), sourceZMetres: from.sourceZMetres ?? 0 };
+      };
+      segments.push({ from: atFraction(overlapStart), to: atFraction(overlapEnd) });
+    }
+    traversed += length;
+    if (traversed >= end) break;
+  }
+  return segments;
+}
+
 function carriedResourceUnits(state: GameState, actorId: string): number {
   const container = actorContainer(state, actorId);
   return container?.stacks.filter(stack => RESOURCE_CARGO_TEMPLATES.has(stack.templateId)).reduce((sum, stack) => sum + stack.quantity, 0) ?? 0;
@@ -629,34 +659,83 @@ function addCargo(state: GameState, actorId: string, materialId: string, quantit
   return true;
 }
 
-export function startSearchJob(state: GameState, world: WorldDefinition, jobId: string, actorId: string, center: CoordinateMm, radiusMm: number): { job: SearchJobState | null; code: string | null } {
-  const unavailable = actorAvailability(state, actorId);
-  if (unavailable) return { job: null, code: unavailable };
-  const actor = actorFor(state, actorId)!;
-  if (actor.perception === null || actor.intelligence === null) return { job: null, code: 'SEARCHER_ATTRIBUTES_NOT_COMPILED' };
+function buildAreaSweepPath(center: CoordinateMm, radiusMm: number, laneWidthMm: number, origin: CoordinateMm): CoordinateMm[] {
+  const spacing = Math.max(1, Math.min(laneWidthMm, radiusMm));
+  const firstOffset = -radiusMm + Math.min(spacing / 2, radiusMm);
+  const rows: number[] = [];
+  for (let offset = firstOffset; offset < radiusMm; offset += spacing) rows.push(offset);
+  if (rows.length === 0 || rows[0]! > -radiusMm) rows.unshift(-radiusMm);
+  if (rows.at(-1)! < radiusMm - spacing / 2) rows.push(radiusMm);
+  const path: CoordinateMm[] = [copyPosition(origin)];
+  rows.forEach((offset, index) => {
+    const y = center.yMm + offset;
+    const halfChord = Math.sqrt(Math.max(0, radiusMm * radiusMm - offset * offset));
+    const left = { xMm: Math.round(center.xMm - halfChord), yMm: Math.round(y), sourceZMetres: center.sourceZMetres ?? 0 };
+    const right = { xMm: Math.round(center.xMm + halfChord), yMm: Math.round(y), sourceZMetres: center.sourceZMetres ?? 0 };
+    const from = index % 2 === 0 ? left : right;
+    const to = index % 2 === 0 ? right : left;
+    if (distanceMm(path.at(-1)!, from) > 1) path.push(from);
+    if (distanceMm(path.at(-1)!, to) > 1) path.push(to);
+  });
+  return path;
+}
+
+export function startSearchJob(
+  state: GameState,
+  world: WorldDefinition,
+  jobId: string,
+  actorId: string,
+  center: CoordinateMm,
+  radiusMm: number,
+  options: { mode?: 'chest' | 'hunt'; additionalActorIds?: readonly string[]; targetCount?: number; timeLimitMinutes?: number } = {},
+): { job: SearchJobState | null; code: string | null } {
+  const actorIds = [actorId, ...(options.additionalActorIds ?? [])];
+  if (new Set(actorIds).size !== actorIds.length) return { job: null, code: 'SEARCH_ACTORS_NOT_UNIQUE' };
+  for (const id of actorIds) {
+    const unavailable = actorAvailability(state, id);
+    if (unavailable) return { job: null, code: unavailable };
+  }
+  const actors = actorIds.map(id => actorFor(state, id));
+  if (actors.some(item => !item || item.perception === null || item.intelligence === null)) return { job: null, code: 'SEARCHER_ATTRIBUTES_NOT_COMPILED' };
+  const actor = actors[0]!;
+  if (actors.some(item => distanceMm(item!.position, actor.position) > 1)) return { job: null, code: 'SEARCH_ACTORS_NOT_MUSTERED' };
   if (!sameLayer(actor.position, center) || (center.sourceZMetres ?? 0) < -2) return { job: null, code: 'UNDERGROUND_ACCESS_REQUIRED' };
   if (distanceMm(actor.position, center) > world.navigationOverlay.interactionRangeMm) return { job: null, code: 'SEARCH_CENTER_OUT_OF_REACH' };
   if (radiusMm < 1 || radiusMm > 2 * MM_PER_KM) return { job: null, code: 'SEARCH_ENVELOPE_OUT_OF_BOUNDS' };
-  if (Math.hypot(center.xMm, center.yMm) > world.activeMapRadiusKm * MM_PER_KM) return { job: null, code: 'SEARCH_ENVELOPE_OUTSIDE_ACTIVE_MAP' };
-  const end = { xMm: center.xMm + radiusMm, yMm: center.yMm, sourceZMetres: center.sourceZMetres ?? 0 };
-  if (Math.hypot(end.xMm, end.yMm) > world.activeMapRadiusKm * MM_PER_KM) return { job: null, code: 'SEARCH_ENVELOPE_OUTSIDE_ACTIVE_MAP' };
-  const laneWidthMm = Math.max(25_000, Math.min(120_000, 25_000 + 3_000 * actor.perception));
+  if (Math.hypot(center.xMm, center.yMm) + radiusMm > world.activeMapRadiusKm * MM_PER_KM) return { job: null, code: 'SEARCH_ENVELOPE_OUTSIDE_ACTIVE_MAP' };
+  const perception = Math.max(...actors.map(item => item!.perception!));
+  const laneWidthMm = Math.max(25_000, Math.min(120_000, 25_000 + 3_000 * perception + 5_000 * (actorIds.length - 1)));
+  const path = buildAreaSweepPath(center, radiusMm, laneWidthMm, actor.position);
+  const returnPath = [copyPosition(path.at(-1)!), copyPosition(actor.position)];
+  const speedMmPerHour = Math.min(...actorIds.map(id => actorSpeedMmPerHour(state, world, id)));
+  const sweepStartProgressMm = distanceMm(path[0]!, path[1]!);
+  const outboundMs = Math.ceil(sweepStartProgressMm * HOUR_MS / speedMmPerHour);
+  const stopAtElapsedMs = options.timeLimitMinutes === undefined ? null : state.simElapsedMs + outboundMs + options.timeLimitMinutes * 60_000;
   return {
     code: null,
     job: {
       id: jobId,
+      mode: options.mode ?? 'chest',
       observerLineageId: `OBSERVER-LINEAGE-${actorId}`,
-      actorIds: [actorId],
+      actorIds,
       center: copyPosition(center),
       envelopeRadiusMm: radiusMm,
       laneWidthMm,
-      path: [copyPosition(actor.position), end],
+      path,
+      returnPath,
+      phase: 'sweeping',
+      speedMmPerHour,
+      sweepStartProgressMm,
+      stopAtElapsedMs,
+      targetCount: options.targetCount ?? null,
+      foundChestIds: [],
+      foundTargetIds: [],
       pathProgressMm: 0,
       tickStartProgressMm: 0,
       tickStartAtElapsedMs: state.simElapsedMs,
       lastSettledAtElapsedMs: state.simElapsedMs,
       startedAtElapsedMs: state.simElapsedMs,
-      nextTickAtElapsedMs: state.simElapsedMs + SPATIAL_TICK_MS,
+      nextTickAtElapsedMs: Math.min(state.simElapsedMs + SPATIAL_TICK_MS, stopAtElapsedMs ?? Number.MAX_SAFE_INTEGER),
       tickMinutes: 15,
       status: 'active',
       haulAssignmentId: null,
@@ -846,7 +925,14 @@ export function nextSpatialBoundary(state: GameState): number | null {
       });
       return [state.simElapsedMs + Math.min(untilTick, remaining), ...segmentEnds];
     }),
-    ...state.spatial.searchJobs.filter(job => job.status === 'active').map(job => job.nextTickAtElapsedMs),
+    ...state.spatial.searchJobs.filter(job => job.status === 'active').flatMap(job => {
+      const speed = job.speedMmPerHour ?? 1;
+      const route = job.phase === 'returning' ? job.returnPath ?? [job.path.at(-1)!, job.path[0]!] : job.path;
+      const arrival = job.phase === 'returning'
+        ? state.simElapsedMs + Math.ceil(Math.max(0, polylineDistance(route) - job.pathProgressMm) * HOUR_MS / speed)
+        : Number.MAX_SAFE_INTEGER;
+      return [Math.min(job.nextTickAtElapsedMs, job.stopAtElapsedMs ?? Number.MAX_SAFE_INTEGER), arrival];
+    }),
     ...state.spatial.harvestJobs.filter(job => job.status === 'active').map(job => {
       if (job.stage === 'outbound') return state.simElapsedMs + Math.ceil(Math.max(0, job.routeOutDistanceMm - job.routeProgressMm) * HOUR_MS / job.speedMmPerHour);
       if (job.stage === 'returning') return state.simElapsedMs + Math.ceil(Math.max(0, job.routeReturnDistanceMm - job.routeProgressMm) * HOUR_MS / job.speedMmPerHour);
@@ -878,10 +964,11 @@ export function integrateSpatialTo(state: GameState, world: WorldDefinition, tar
 
   state.spatial.searchJobs = state.spatial.searchJobs.map(job => {
     if (job.status !== 'active') return job;
-    const speed = actorSpeedMmPerHour(state, world, job.actorIds[0]);
-    const current = Math.min(polylineDistance(job.path), job.tickStartProgressMm + Math.floor(speed * Math.max(0, target - job.tickStartAtElapsedMs) / HOUR_MS));
-    const position = pointAlongPolyline(job.path, current);
-    applyActorPosition(state, world, job.actorIds[0], position);
+    const route = job.phase === 'returning' ? job.returnPath ?? [job.path.at(-1)!, job.path[0]!] : job.path;
+    const speed = job.speedMmPerHour ?? actorSpeedMmPerHour(state, world, job.actorIds[0]);
+    const current = Math.min(polylineDistance(route), job.tickStartProgressMm + Math.floor(speed * Math.max(0, target - job.tickStartAtElapsedMs) / HOUR_MS));
+    const position = pointAlongPolyline(route, current);
+    for (const actorId of job.actorIds) applyActorPosition(state, world, actorId, position);
     return { ...job, pathProgressMm: current, lastSettledAtElapsedMs: target };
   });
 
@@ -930,29 +1017,31 @@ function addDiscoveredChestSignal(state: GameState, world: WorldDefinition, ches
   return signal.signalId;
 }
 
-function detectChests(state: GameState, world: WorldDefinition, job: SearchJobState, from: CoordinateMm, to: CoordinateMm, at: number): string[] {
+function detectChests(state: GameState, world: WorldDefinition, job: SearchJobState, segments: readonly { from: CoordinateMm; to: CoordinateMm }[], at: number): string[] {
   const actor = actorFor(state, job.actorIds[0]);
-  if (!actor || actor.perception === null || actor.intelligence === null) return [];
+  if (!actor || actor.perception === null || actor.intelligence === null || segments.length === 0) return [];
   const history = lineageHistory(state, job.observerLineageId);
   const index = buildSpatialIndex(world);
-  const minX = Math.min(from.xMm, to.xMm) - job.laneWidthMm / 2;
-  const maxX = Math.max(from.xMm, to.xMm) + job.laneWidthMm / 2;
-  const minY = Math.min(from.yMm, to.yMm) - job.laneWidthMm / 2;
-  const maxY = Math.max(from.yMm, to.yMm) + job.laneWidthMm / 2;
+  const pathPoints = segments.flatMap((segment, index) => index === 0 ? [segment.from, segment.to] : [segment.to]);
+  const minX = Math.min(...pathPoints.map(point => point.xMm)) - job.laneWidthMm / 2;
+  const maxX = Math.max(...pathPoints.map(point => point.xMm)) + job.laneWidthMm / 2;
+  const minY = Math.min(...pathPoints.map(point => point.yMm)) - job.laneWidthMm / 2;
+  const maxY = Math.max(...pathPoints.map(point => point.yMm)) + job.laneWidthMm / 2;
   const center = { xMm: Math.round((minX + maxX) / 2), yMm: Math.round((minY + maxY) / 2) };
   const radius = Math.hypot(maxX - minX, maxY - minY) / 2 + job.laneWidthMm;
+  const distanceFromPath = (position: CoordinateMm) => Math.min(...segments.map(segment => distancePointToSegmentMm(position, segment.from, segment.to)));
   const candidates = querySpatialIndex(index, center, radius).filter(entry => entry.kind === 'chest')
     .map(entry => world.fieldChests.find(chest => chest.id === entry.id)!)
     .filter(chest => chest.position.xMm >= minX - 1 && chest.position.xMm <= maxX + 1 && chest.position.yMm >= minY - 1 && chest.position.yMm <= maxY + 1)
     .filter(chest => distanceMm(chest.position, job.center) <= job.envelopeRadiusMm)
-    .filter(chest => sameLayer(chest.position, from) && distancePointToSegmentMm(chest.position, from, to) <= job.laneWidthMm / 2)
+    .filter(chest => sameLayer(chest.position, job.center) && distanceFromPath(chest.position) <= job.laneWidthMm / 2)
     .filter(chest => isAvailableChest(chest.id, state, world))
     .map(chest => {
       const chestOrdinal = Number(chest.id.slice(-3));
       const offset = (chestOrdinal - 1) % 5;
       const concealmentBase = chest.grade === 'Mộc' ? 8 : chest.grade === 'Thanh Đồng' ? 12 : chest.grade === 'Bạch Ngân' ? 16 : chest.grade === 'Hoàng Kim' ? 20 : 24;
       const localMinutes = (history.focusedMinutesByChest[chest.id] ?? 0) + job.tickMinutes;
-      const directDistance = distancePointToSegmentMm(chest.position, from, to);
+      const directDistance = distanceFromPath(chest.position);
       const score = actor.perception! + Math.floor(actor.intelligence! / 2) + Math.floor(localMinutes / 10) + (directDistance <= 2_000 ? 10 : 0);
       return { chest, score, concealment: concealmentBase + offset, distance: directDistance, localMinutes };
     })
@@ -977,6 +1066,33 @@ function detectChests(state: GameState, world: WorldDefinition, job: SearchJobSt
   return found.map(item => item.chest.id);
 }
 
+function detectHuntTargets(state: GameState, world: WorldDefinition, job: SearchJobState, segments: readonly { from: CoordinateMm; to: CoordinateMm }[], at: number): string[] {
+  if (job.mode !== 'hunt' || segments.length === 0) return [];
+  const target = state.combat?.target;
+  if (!target || target.actorId !== STAGE07_HARE_ACTOR_ID || target.status !== 'available'
+    || job.foundTargetIds.includes(target.actorId)) return [];
+  const region = world.ecology.find(item => item.id === target.sourceEcologyId);
+  if (!region || Number(region.counts[target.populationKey] ?? 0) <= 0
+    || !sameLayer(target.position, job.center) || distanceMm(target.position, job.center) > job.envelopeRadiusMm) return [];
+  const actorProfiles = job.actorIds.map(id => actorFor(state, id)).filter((actor): actor is Actor => Boolean(actor));
+  const bestObserver = actorProfiles
+    .filter(actor => actor.perception !== null && actor.intelligence !== null)
+    .sort((a, b) => (b.perception! + Math.floor(b.intelligence! / 2)) - (a.perception! + Math.floor(a.intelligence! / 2)) || a.id.localeCompare(b.id))[0];
+  if (!bestObserver) return [];
+  const directDistance = Math.min(...segments.map(segment => distancePointToSegmentMm(target.position, segment.from, segment.to)));
+  const sweepMinutes = Math.max(15, Math.ceil((job.lastSettledAtElapsedMs - job.startedAtElapsedMs) / 60_000) + job.tickMinutes);
+  const detectionScore = bestObserver.perception! + Math.floor(bestObserver.intelligence! / 2) + Math.floor(sweepMinutes / 10) + (directDistance <= 2_000 ? 10 : 0);
+  if (directDistance > job.laneWidthMm / 2 || detectionScore < target.combatProfile.concealment) return [];
+  state.playerKnowledge = {
+    ...state.playerKnowledge,
+    lastSeenByEntity: {
+      ...state.playerKnowledge.lastSeenByEntity,
+      [`wildlife:${target.actorId}`]: { observedAtElapsedMs: at, knowledge: 'current' },
+    },
+  };
+  return [target.actorId];
+}
+
 export function settleSpatialBoundary(state: GameState, world: WorldDefinition, at: number): SpatialEvent[] {
   const events: SpatialEvent[] = [];
   const arrivals = state.travel.orders.filter(order => order.status === 'active'
@@ -997,35 +1113,73 @@ export function settleSpatialBoundary(state: GameState, world: WorldDefinition, 
   state.spatial.movementOrders = state.travel.orders;
 
   for (const job of state.spatial.searchJobs.filter(candidate => candidate.status === 'active' && candidate.nextTickAtElapsedMs === at)) {
-    const start = pointAlongPolyline(job.path, job.tickStartProgressMm);
-    const end = pointAlongPolyline(job.path, job.pathProgressMm);
-    const distance = distanceMm(start, end);
-    const grossArea = distance * job.laneWidthMm / (MM_PER_M * MM_PER_M);
-    const history = lineageHistory(state, job.observerLineageId);
-    const cells = cellIdsCoveredByLane(start, end, job.laneWidthMm);
-    const priorCells = new Set(history.cellIds);
-    const freshCells = cells.filter(id => !priorCells.has(id));
-    const newHistory = { ...history, cellIds: [...new Set([...history.cellIds, ...cells])], lastSettledAtElapsedMs: at };
-    state.spatial = { ...state.spatial, sweepHistory: [...state.spatial.sweepHistory.filter(candidate => candidate.observerLineageId !== job.observerLineageId), newHistory] };
-    const foundChestIds = detectChests(state, world, job, start, end, at);
+    const returning = job.phase === 'returning';
+    const route = returning ? job.returnPath ?? [job.path.at(-1)!, job.path[0]!] : job.path;
+    const rawEnd = pointAlongPolyline(route, job.pathProgressMm);
+    const sweepStart = returning ? 0 : (job.sweepStartProgressMm ?? 0);
+    const effectiveStartProgress = Math.max(job.tickStartProgressMm, sweepStart);
+    const end = rawEnd;
+    const sweepSegments = returning || job.pathProgressMm <= sweepStart ? [] : polylineSegmentsBetween(route, effectiveStartProgress, job.pathProgressMm);
+    const actualSweepDistance = sweepSegments.reduce((sum, segment) => sum + distanceMm(segment.from, segment.to), 0);
+    const grossArea = actualSweepDistance * job.laneWidthMm / (MM_PER_M * MM_PER_M);
+    let freshCells: string[] = [];
+    const searching = !returning && job.pathProgressMm > sweepStart;
+    const foundChestIds = searching && job.mode === 'chest' ? detectChests(state, world, job, sweepSegments, at) : [];
+    const foundTargetIds = searching && job.mode === 'hunt' ? detectHuntTargets(state, world, job, sweepSegments, at) : [];
+    if (searching) {
+      const history = lineageHistory(state, job.observerLineageId);
+      const cells = sweepSegments.flatMap(segment => cellIdsCoveredByLane(segment.from, segment.to, job.laneWidthMm));
+      const priorCells = new Set(history.cellIds);
+      freshCells = [...new Set(cells.filter(id => !priorCells.has(id)))];
+      const newHistory = { ...history, cellIds: [...new Set([...history.cellIds, ...cells])], lastSettledAtElapsedMs: at };
+      state.spatial = { ...state.spatial, sweepHistory: [...state.spatial.sweepHistory.filter(candidate => candidate.observerLineageId !== job.observerLineageId), newHistory] };
+    }
     const nextProgress = job.pathProgressMm;
-    const completed = nextProgress >= polylineDistance(job.path) - 1;
+    const reachedRouteEnd = nextProgress >= polylineDistance(route) - 1;
+    const allFound = [...new Set([...(job.foundChestIds ?? []), ...foundChestIds])];
+    const allFoundTargets = [...new Set([...(job.foundTargetIds ?? []), ...foundTargetIds])];
+    const returnReason = returning ? job.returnReason ?? 'area_complete'
+      : job.stopAtElapsedMs !== null && job.stopAtElapsedMs !== undefined && at >= job.stopAtElapsedMs ? 'time_limit'
+        : job.targetCount !== null && job.targetCount !== undefined && (job.mode === 'hunt' ? allFoundTargets.length : allFound.length) >= job.targetCount ? 'target_count'
+      : reachedRouteEnd ? 'area_complete' : undefined;
+    const completed = returning && reachedRouteEnd;
+    const beginReturn = !returning && returnReason !== undefined;
+    const recallPosition = end;
     state.spatial.searchJobs = state.spatial.searchJobs.map(candidate => candidate.id === job.id ? {
       ...candidate,
-      tickStartProgressMm: nextProgress,
-      tickStartAtElapsedMs: at,
+      ...(beginReturn ? {
+        phase: 'returning' as const,
+        returnPath: [copyPosition(recallPosition), copyPosition(candidate.path[0]!)],
+        returnReason,
+        stopAtElapsedMs: null,
+        pathProgressMm: 0,
+        tickStartProgressMm: 0,
+        tickStartAtElapsedMs: at,
+        nextTickAtElapsedMs: Math.min(at + SPATIAL_TICK_MS, at + Math.ceil(distanceMm(recallPosition, candidate.path[0]!) * HOUR_MS / (candidate.speedMmPerHour ?? 1))),
+      } : {
+        tickStartProgressMm: nextProgress,
+        tickStartAtElapsedMs: at,
+        nextTickAtElapsedMs: returning ? Math.min(at + SPATIAL_TICK_MS, at + Math.ceil(Math.max(0, polylineDistance(route) - nextProgress) * HOUR_MS / (candidate.speedMmPerHour ?? 1)))
+          : Math.min(at + SPATIAL_TICK_MS, candidate.stopAtElapsedMs ?? Number.MAX_SAFE_INTEGER),
+      }),
       lastSettledAtElapsedMs: at,
-      nextTickAtElapsedMs: at + SPATIAL_TICK_MS,
       status: completed ? 'completed' : candidate.status,
+      foundChestIds: allFound,
+      foundTargetIds: allFoundTargets,
       grossAreaM2: candidate.grossAreaM2 + grossArea,
       uniqueAreaM2: candidate.uniqueAreaM2 + freshCells.length * SEARCH_CELL_MM * SEARCH_CELL_MM / (MM_PER_M * MM_PER_M),
       repeatedAreaM2: candidate.repeatedAreaM2 + Math.max(0, grossArea - freshCells.length * SEARCH_CELL_MM * SEARCH_CELL_MM / (MM_PER_M * MM_PER_M)),
     } : candidate);
     state.jobs = state.jobs.map(candidate => candidate.id === job.id ? { ...candidate, status: completed ? 'completed' : 'active', completedAtElapsedMs: completed ? at : null } : candidate);
     if (completed) state.exploration.searchHistory = state.exploration.searchHistory.map(entry => entry.searchId === job.id ? { ...entry, status: 'completed' } : entry);
-    events.push({ type: 'spatial_search_tick_settled', occurredAtElapsedMs: at, payload: { jobId: job.id, grossAreaM2: grossArea, uniqueCells: freshCells.length, found: foundChestIds.length > 0 } });
+    events.push({ type: 'spatial_search_tick_settled', occurredAtElapsedMs: at, payload: { jobId: job.id, mode: job.mode, phase: returning ? 'returning' : 'sweeping', grossAreaM2: grossArea, uniqueCells: freshCells.length, found: foundChestIds.length + foundTargetIds.length > 0 } });
     for (const chestId of foundChestIds) events.push({ type: 'chest_signal_detected', occurredAtElapsedMs: at, payload: { jobId: job.id, chestId } });
-    if (completed) events.push({ type: 'spatial_search_completed', occurredAtElapsedMs: at, payload: { jobId: job.id } });
+    for (const targetId of foundTargetIds) events.push({ type: 'hunt_target_detected', occurredAtElapsedMs: at, payload: { jobId: job.id, targetId, sourceEcologyId: state.combat?.target.sourceEcologyId ?? null } });
+    if (beginReturn) events.push({ type: 'spatial_search_return_started', occurredAtElapsedMs: at, payload: { jobId: job.id, reason: returnReason, foundChestIds: allFound } });
+    if (completed) {
+      events.push({ type: 'spatial_search_returned', occurredAtElapsedMs: at, payload: { jobId: job.id, reason: job.returnReason ?? 'area_complete' } });
+      events.push({ type: 'spatial_search_completed', occurredAtElapsedMs: at, payload: { jobId: job.id } });
+    }
   }
 
   for (const job of state.spatial.harvestJobs.filter(candidate => candidate.status === 'active')) {
@@ -1112,11 +1266,17 @@ export function settleSpatialBoundary(state: GameState, world: WorldDefinition, 
 export function cancelSpatialJob(state: GameState, jobId: string, at: number): { state: GameState; event: SpatialEvent | null; code: string | null } {
   const search = state.spatial.searchJobs.find(job => job.id === jobId && job.status === 'active');
   if (search) {
+    if (search.phase === 'returning' || search.returnReason === 'recalled') return { state, event: null, code: 'SEARCH_ALREADY_RETURNING' };
+    const actor = actorFor(state, search.actorIds[0]!);
+    if (!actor) return { state, event: null, code: 'SEARCH_ACTOR_UNAVAILABLE' };
     const next = structuredClone(state);
-    next.spatial.searchJobs = next.spatial.searchJobs.map(job => job.id === jobId ? { ...job, status: 'cancelled' } : job);
-    next.exploration.searchHistory = next.exploration.searchHistory.map(entry => entry.searchId === jobId ? { ...entry, status: 'cancelled' } : entry);
-    next.jobs = next.jobs.map(job => job.id === jobId ? { ...job, status: 'cancelled', completedAtElapsedMs: at } : job);
-    return { state: next, code: null, event: { type: 'spatial_search_cancelled', occurredAtElapsedMs: at, payload: { jobId, sweepProgressMm: search.pathProgressMm } } };
+    next.spatial.searchJobs = next.spatial.searchJobs.map(job => job.id === jobId ? {
+      ...job, phase: 'returning', returnPath: [copyPosition(actor.position), copyPosition(job.path[0]!)], returnReason: 'recalled',
+      stopAtElapsedMs: null,
+      pathProgressMm: 0, tickStartProgressMm: 0, tickStartAtElapsedMs: at,
+      lastSettledAtElapsedMs: at, nextTickAtElapsedMs: Math.min(at + SPATIAL_TICK_MS, at + Math.ceil(distanceMm(actor.position, job.path[0]!) * HOUR_MS / (job.speedMmPerHour ?? actorSpeedMmPerHour(next, world, actor.id)))),
+    } : job);
+    return { state: next, code: null, event: { type: 'spatial_search_recall_started', occurredAtElapsedMs: at, payload: { jobId, sweepProgressMm: search.pathProgressMm } } };
   }
   const harvest = state.spatial.harvestJobs.find(job => job.id === jobId && job.status === 'active');
   if (!harvest) return { state, event: null, code: 'SPATIAL_JOB_NOT_ACTIVE' };

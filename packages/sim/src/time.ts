@@ -4,6 +4,7 @@ import { integrateSpatialTo, nextSpatialBoundary, settleSpatialBoundary } from '
 import { integrateConstructionWork, nextConstructionCompletionAt, nextHeaterServiceCompletionAt, settleConstructionCompletions, settleHeaterServices } from './construction.ts';
 import { nextCombatBoundaryAt, settleCombatBoundary } from './combat.ts';
 import { nextStage08BoundaryAt, settleOpeningLevelRank, settleStage08Boundary } from './stage08.ts';
+import { OPENING_FIRE_EFFECTIVE_TEMPERATURE_C } from '../../content/src/openingEnvironment.ts';
 
 export const MINUTE_MS = 60_000;
 export const HOUR_MS = 60 * MINUTE_MS;
@@ -12,7 +13,7 @@ export const TOMB_STANDARD_BLUEPRINT_ID = 'LL-TOMB-ZOMBIE-STANDARD-01';
 export const TOMB_STANDARD_RECIPE_ID = 'NECRO-QUEUE-2.2:STANDARD-T0-COMMON';
 export const TOMB_STANDARD_DURATION_MS = 20 * MINUTE_MS;
 export const FIRE_WOOD_CONSUMPTION_MS = 15 * MINUTE_MS;
-export const MAX_BOUNDARIES_PER_BATCH = 500;
+export const MAX_BOUNDARIES_PER_BATCH = 5_000;
 
 export type StopCondition = 'none' | 'next_completion' | 'danger';
 export type SettledEvent = { type: string; occurredAtElapsedMs: number; payload: Record<string, unknown> };
@@ -54,6 +55,27 @@ export function coldLoadRateMicroPerMinute(environment: ColdEnvironment): number
   const deficit = Math.max(0, 18 - apparentTemperatureC);
   const windWetness = Math.max(1, Math.min(3, 1 + 0.03 * windKph + wetness));
   return Math.round((deficit * windWetness * activityFactor / (insulation * shelter)) * 1_000_000);
+}
+
+function currentColdLoadRate(state: GameState): number {
+  const environment = state.survival.environment;
+  if (environment === null) return 0;
+  const fire = state.territory.survivalFire;
+  const protectedByFire = fire.active && Math.hypot(
+    state.player.position.xMm - state.territory.position.xMm,
+    state.player.position.yMm - state.territory.position.yMm,
+  ) <= fire.heatRadiusMetres * 1_000;
+  const heater = (state.construction.operatingServices ?? []).find(service => {
+    if (service.status !== 'active') return false;
+    const building = state.buildings.find(candidate => candidate.id === service.buildingId);
+    if (!building?.position) return false;
+    const roomRadiusMm = Math.sqrt(service.roomAreaCapM2 / Math.PI) * 1_000;
+    return Math.hypot(state.player.position.xMm - building.position.xMm, state.player.position.yMm - building.position.yMm) <= roomRadiusMm;
+  });
+  const warming = (protectedByFire ? OPENING_FIRE_EFFECTIVE_TEMPERATURE_C : 0) + (heater?.heatDeltaCelsius.min ?? 0);
+  return coldLoadRateMicroPerMinute(warming > 0
+    ? { ...environment, apparentTemperatureC: environment.apparentTemperatureC + warming }
+    : environment);
 }
 
 function nextColdThresholdAt(state: GameState, rateMicroPerMinute: number): number | null {
@@ -463,13 +485,13 @@ export function advanceTo(
   if (state.eventProgressionBlocker) {
     return { state, events, targetSimElapsedMs, caughtUp: true, stoppedBy: 'event_content_blocked' };
   }
-  const coldRate = state.survival.environment === null ? 0 : coldLoadRateMicroPerMinute(state.survival.environment);
   let processed = 0;
   let sameTimestampEvents = 0;
   let lastBoundaryAt = -1;
   let stoppedBy: AdvanceResult['stoppedBy'] = null;
 
   while (state.simElapsedMs <= targetSimElapsedMs) {
+    const coldRate = currentColdLoadRate(state);
     const at = nextEventTime(state, targetSimElapsedMs, coldRate, world);
     const spatialBoundary = world ? nextSpatialBoundary(state) : null;
     const hadBoundary = [

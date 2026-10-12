@@ -2,8 +2,8 @@ export const EVENT_LIFECYCLE_VERSION = 'LL01-EVENT-LIFECYCLE-1.0' as const;
 
 export type EventRuntimeReadiness = 'executable_lifecycle' | 'calendar_only' | 'settlement_blocked' | 'mandatory_content_blocked';
 
-const EXECUTABLE_EVENT_IDS = new Set(['EV00-SAFE-FIRE']);
-const SETTLEMENT_BLOCKED_EVENT_IDS = new Set(['EV01-OPENING-LEVEL']);
+const EXECUTABLE_EVENT_IDS = new Set(['EV00-SAFE-FIRE', 'EV01-OPENING-LEVEL']);
+const SETTLEMENT_BLOCKED_EVENT_IDS = new Set<string>();
 
 export function eventRuntimeReadiness(eventId: string): EventRuntimeReadiness {
   if (EXECUTABLE_EVENT_IDS.has(eventId)) return 'executable_lifecycle';

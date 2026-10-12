@@ -4,6 +4,7 @@ import test from 'node:test';
 import { ACTIVE_CONTENT, ACTIVE_WORLD_PACKAGE } from '../../content/src/index.ts';
 import { SOURCE_LOCK, SOURCE_MAIN_COMMIT, RULESET_VERSION } from '../../content/src/sourceLock.ts';
 import { assertSourceHashes } from '../../content/src/compiler.ts';
+import { parseEventSourceLedger } from '../../content/src/eventLedger.ts';
 import { createNewGame, elapsedMsToWorldClock } from '../src/initializer.ts';
 import { canonicalStateHash, hash64, randomIntFromFields } from '../src/hash.ts';
 import { actionAvailability, reduceCommand } from '../src/reducer.ts';
@@ -25,7 +26,11 @@ test('content authority is pinned and the world compiles from the selected sourc
   assert.equal(ACTIVE_CONTENT.manifest.sourceMainCommit, SOURCE_MAIN_COMMIT);
   assert.equal(ACTIVE_CONTENT.manifest.activeWorldPackageId, 'WORLD-PACKAGE-LL01-1.0');
   assert.equal(ACTIVE_CONTENT.manifest.timelineVersion, 'LL01-WEB-EVENT-TIMELINE-RECONCILIATION-0.6-RC1');
-  assert.equal(ACTIVE_CONTENT.manifest.conversionManifest.length, 6);
+  assert.equal(ACTIVE_CONTENT.manifest.schemaVersion, 2);
+  assert.equal(ACTIVE_CONTENT.manifest.conversionManifest.length, 7);
+  assert.equal(ACTIVE_CONTENT.manifest.eventContractCount, 30);
+  assert.equal(world.eventContractRegistryVersion, 'LL01-EVENT-CONTRACT-REGISTRY-1.0');
+  assert.equal(world.eventContracts.length, 30);
   assert.ok(ACTIVE_CONTENT.manifest.sources.find(source => source.path.endsWith('EVENT-SOURCE-CATALOG-v4.6.json'))?.runtimeUse.includes('not compiled'));
   assert.ok(ACTIVE_CONTENT.manifest.sources.find(source => source.path.endsWith('SOURCE-STRUCTURE-CATALOG-v1.0.json'))?.runtimeUse.includes('not compiled'));
   const freshStartContract = ACTIVE_CONTENT.manifest.sources.find(source => source.path === 'docs/FRESH_START.md');
@@ -36,6 +41,19 @@ test('content authority is pinned and the world compiles from the selected sourc
   assert.equal(Object.keys(world.lockedSourceHashes).length, Object.keys(SOURCE_LOCK).length);
   assert.ok(Object.isFrozen(world));
   assert.ok(Object.isFrozen(world.sites));
+});
+
+test('v7.24 ledger IDs are complete and misaligned research flags stay out of verified counts', () => {
+  const source = readFileSync('data/events/EVENT-SOURCE-ITEMS-v7.24.csv', 'utf8');
+  const ledger = parseEventSourceLedger(source);
+  assert.equal(ledger.length, 1_682);
+  assert.equal(new Set(ledger.map(row => row.fields.id)).size, 1_682);
+  assert.equal(ledger.find(row => row.fields.id === 'SX-0279')?.sourceFieldAlignment, 'unresolved');
+
+  const dragonRevival = world.eventSchedule.find(event => event.id === 'EV02-DRAGON-REVIVAL')!;
+  assert.ok(dragonRevival.researchEvidence.observedChestOutcomes > 0);
+  assert.ok(dragonRevival.researchEvidence.unresolvedRowShapes > 0);
+  assert.equal(dragonRevival.researchEvidence.verifiedAcquisitions, 0);
 });
 
 test('fixed source geometry and chest commitments retain every declared identity and grade', () => {
@@ -110,7 +128,11 @@ test('clean initializer is deterministic and uses one source ledger for starter 
   assert.equal(first.player.mana.current, 236);
   assert.equal(first.player.mana.max, 236);
   assert.equal(first.player.career.state, 'unemployed_card_sealed');
-  assert.equal(first.territory.survivalFire.fuelRemaining, null);
+  assert.equal(first.territory.survivalFire.fuelRemaining, 24);
+  assert.equal(first.territory.survivalFire.fuelKnowledge, 'state_unobserved');
+  assert.equal(first.territory.survivalFire.nextFuelConsumptionAtElapsedMs, 15 * 60_000);
+  assert.equal(first.survival.environment?.apparentTemperatureC, 0);
+  assert.equal(first.survival.blocker, null);
   assert.equal(first.territory.survivalFire.protectedThroughElapsedMs, 144 * 60 * 60 * 1000);
   assert.equal(first.territory.survivalFire.protectionStatus, 'pending_opening_settlement');
   assert.deepEqual(first.territory.tomb.deathQi, { current: 20, capacity: 20, refillAtWorldTime: '00:00', nextRefillAtElapsedMs: 17 * 60 * 60 * 1000 });
@@ -149,7 +171,7 @@ test('player projection excludes unobserved world state and sealed career data',
   const state = createNewGame(options, world);
   const view = projectPlayerView(state, world);
   const serialized = JSON.stringify(view);
-  assert.equal(view.schemaVersion, 1);
+  assert.equal(view.schemaVersion, 2);
   assert.equal(view.simElapsedMs, 0);
   assert.deepEqual(view.visibleMap.entities.map(entity => entity.ref.id), ['SITE-LL01-000', 'RES-LL01-06', 'RES-LL01-07', STAGE07_OPENING_CORPSE_ID]);
   assert.equal(view.visibleMap.heatOverlays[0].radiusMm, 10_000);

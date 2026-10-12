@@ -1,12 +1,17 @@
 import { GAME_STATE_SCHEMA_VERSION, UNIT_INVENTORY_CONTAINER_PREFIX, type GameState, type WorldDefinition } from '../../contracts/src/index.ts';
 import { ACTIVE_WORLD_PACKAGE } from '../../content/src/index.ts';
 import { OPENING_BUILDINGS, OPENING_BUILDINGS_RULE_VERSION, PLACEMENT_OVERLAY_VERSION, LABOR_OVERLAY_VERSION } from '../../content/src/buildings.ts';
-import { DAY_MS, HOUR_MS, nextMidnightAfter } from './time.ts';
+import { DAY_MS, HOUR_MS, MINUTE_MS, nextMidnightAfter } from './time.ts';
 import { LEGACY_WORK_MS_PER_RESOURCE_UNIT, seedSpatialKnowledge } from './spatial.ts';
 import { RESOURCE_STORAGE } from '../../content/src/resourceBalance.ts';
 import { stage07OpeningCorpse } from './stage07.ts';
 import { createStage07CombatState } from './combat.ts';
-import { initialStage08State, verifyStage08State } from './stage08.ts';
+import { catchUpOpeningRivals, initialStage08State, verifyStage08State } from './stage08.ts';
+import { OPENING_LEVEL_CLOSES_AT_MS } from './openingRanking.ts';
+import { canonicalStateHash } from './hash.ts';
+import { RULESET_VERSION } from '../../content/src/sourceLock.ts';
+import { OPENING_FIRE_STARTER_FUEL_UNITS, OPENING_WEATHER_RECORD } from '../../content/src/openingEnvironment.ts';
+import { actorSpeedMmPerHour } from './spatial.ts';
 
 function nextDailyBoundary(elapsed: number, offset: number): number {
   return offset + (Math.floor((elapsed - offset) / DAY_MS) + 1) * DAY_MS;
@@ -343,6 +348,118 @@ function migrateV6ToV7(candidate: Record<string, any>, world: WorldDefinition): 
   return { ...candidate, schemaVersion: 7, stage08, quests } as GameState;
 }
 
+function migrateV7ToV8(candidate: Record<string, any>, world: WorldDefinition): GameState {
+  if (candidate.worldPackageId !== world.id || !Number.isSafeInteger(candidate.simElapsedMs) || candidate.simElapsedMs < 0
+    || !Array.isArray(candidate.spatial?.searchJobs) || !candidate.territory?.survivalFire || !candidate.survival) {
+    throw new Error('SAVE_STATE_SCHEMA_MIGRATION_INVALID:_AREA_DISPATCH_AND_OPENING_ENVIRONMENT');
+  }
+  const elapsed = candidate.simElapsedMs as number;
+  const migrated = candidate as unknown as GameState;
+  const searchJobs = candidate.spatial.searchJobs.map((job: Record<string, any>) => {
+    if (!Array.isArray(job.path) || job.path.length < 2 || !Array.isArray(job.actorIds) || job.actorIds.length < 1) {
+      throw new Error('SAVE_STATE_SCHEMA_MIGRATION_INVALID:_AREA_SEARCH_ROUTE');
+    }
+    return {
+      ...job,
+      returnPath: job.returnPath ?? [job.path.at(-1), job.path[0]],
+      phase: job.phase ?? 'sweeping',
+      speedMmPerHour: job.speedMmPerHour ?? actorSpeedMmPerHour(migrated, world, job.actorIds[0]),
+      sweepStartProgressMm: job.sweepStartProgressMm ?? (job.path.length > 1 ? Math.hypot(job.path[1].xMm - job.path[0].xMm, job.path[1].yMm - job.path[0].yMm) : 0),
+      stopAtElapsedMs: job.stopAtElapsedMs ?? null,
+      targetCount: job.targetCount ?? null,
+      foundChestIds: job.foundChestIds ?? [],
+    };
+  });
+  const fire = candidate.territory.survivalFire;
+  const fireFuel = fire.fuelRemaining == null
+    ? (fire.active ? OPENING_FIRE_STARTER_FUEL_UNITS : 0)
+    : fire.fuelRemaining;
+  const activeFire = fire.active && fireFuel > 0;
+  const coldLoad = Number.isSafeInteger(candidate.survival.coldLoadMicro) ? candidate.survival.coldLoadMicro : 0;
+  const coldStatus = coldLoad >= 1_200_000_000 ? 'danger' : coldLoad >= 300_000_000 ? 'warning' : 'clear';
+  return {
+    ...candidate,
+    schemaVersion: 8,
+    contentVersion: world.contentVersion,
+    contentSourceSetSha256: canonicalStateHash(world.lockedSourceHashes),
+    rulesetVersion: RULESET_VERSION,
+    survival: {
+      ...candidate.survival,
+      environment: candidate.survival.environment ?? { ...OPENING_WEATHER_RECORD },
+      coldStatus: candidate.survival.environment == null ? coldStatus : candidate.survival.coldStatus,
+      blocker: null,
+    },
+    territory: {
+      ...candidate.territory,
+      survivalFire: {
+        ...fire,
+        active: activeFire,
+        fuelRemaining: fireFuel,
+        fuelKnowledge: fire.fuelKnowledge ?? 'state_unobserved',
+        nextFuelConsumptionAtElapsedMs: activeFire
+          ? (fire.nextFuelConsumptionAtElapsedMs ?? elapsed + 15 * MINUTE_MS)
+          : null,
+        fuelBlocker: null,
+      },
+    },
+    spatial: { ...candidate.spatial, searchJobs },
+  } as GameState;
+}
+
+function migrateV8ToV9(candidate: Record<string, any>, world: WorldDefinition): GameState {
+  if (candidate.worldPackageId !== world.id || !Number.isSafeInteger(candidate.simElapsedMs) || candidate.simElapsedMs < 0
+    || !Array.isArray(candidate.spatial?.searchJobs)) {
+    throw new Error('SAVE_STATE_SCHEMA_MIGRATION_INVALID:_AREA_HUNT_DISPATCH');
+  }
+  return {
+    ...candidate,
+    schemaVersion: 9,
+    spatial: {
+      ...candidate.spatial,
+      searchJobs: candidate.spatial.searchJobs.map((job: Record<string, any>) => ({
+        ...job,
+        mode: 'chest',
+        foundTargetIds: [],
+      })),
+    },
+  } as GameState;
+}
+
+function migrateV9ToV10(candidate: Record<string, any>, world: WorldDefinition): GameState {
+  if (candidate.worldPackageId !== world.id || !Number.isSafeInteger(candidate.simElapsedMs) || candidate.simElapsedMs < 0) {
+    throw new Error('SAVE_STATE_SCHEMA_MIGRATION_INVALID:_OPENING_RIVAL_LEDGER');
+  }
+  const baseline = initialStage08State();
+  const priorStage08 = candidate.stage08 ?? {};
+  const priorRankSnapshots = Array.isArray(priorStage08.rankSnapshots) ? priorStage08.rankSnapshots : [];
+  const hasLegacyOpeningSettlement = priorRankSnapshots.some((snapshot: Record<string, any>) => snapshot.boardId === 'OPENING_LEVEL');
+  const stage08 = {
+    ...baseline,
+    ...priorStage08,
+    rankSnapshots: priorRankSnapshots.map((snapshot: Record<string, any>) => ({
+      ...snapshot,
+      rows: (snapshot.rows ?? []).map((row: Record<string, any>) => ({
+        ...row,
+        playerName: row.playerName ?? row.playerId,
+        level: row.level ?? 10,
+        rewardBandId: row.rewardBandId ?? 'LEGACY_RESULT_PRESERVED',
+        rewardStatus: row.rewardStatus ?? 'npc_materialized',
+        rewardItems: row.rewardItems ?? [],
+        claimReceiptId: row.claimReceiptId ?? null,
+      })),
+    })),
+    // Previously settled or blocked results stay frozen. We never replay the board and mint a retroactive prize during migration.
+    openingRivals: hasLegacyOpeningSettlement || candidate.simElapsedMs >= OPENING_LEVEL_CLOSES_AT_MS
+      ? []
+      : (Array.isArray(priorStage08.openingRivals) ? priorStage08.openingRivals : baseline.openingRivals),
+  };
+  const migrated = { ...candidate, schemaVersion: 10, stage08 } as unknown as GameState;
+  if (!hasLegacyOpeningSettlement && migrated.simElapsedMs < OPENING_LEVEL_CLOSES_AT_MS) {
+    catchUpOpeningRivals(migrated, migrated.simElapsedMs);
+  }
+  return migrated;
+}
+
 export function upgradeGameState(value: unknown, world: WorldDefinition = ACTIVE_WORLD_PACKAGE): GameState {
   let candidate = asRecord(value);
   if (candidate.schemaVersion === 1) candidate = migrateV1ToV2(candidate);
@@ -351,6 +468,9 @@ export function upgradeGameState(value: unknown, world: WorldDefinition = ACTIVE
   if (candidate.schemaVersion === 4) candidate = migrateV4ToV5(candidate, world);
   if (candidate.schemaVersion === 5) candidate = migrateV5ToV6(candidate, world);
   if (candidate.schemaVersion === 6) candidate = migrateV6ToV7(candidate, world);
+  if (candidate.schemaVersion === 7) candidate = migrateV7ToV8(candidate, world);
+  if (candidate.schemaVersion === 8) candidate = migrateV8ToV9(candidate, world);
+  if (candidate.schemaVersion === 9) candidate = migrateV9ToV10(candidate, world);
   if (candidate.schemaVersion !== GAME_STATE_SCHEMA_VERSION) throw new Error('SAVE_STATE_SCHEMA_UNSUPPORTED');
   if (candidate.construction && !Array.isArray(candidate.construction.operatingServices)) candidate.construction.operatingServices = [];
   verifyStage08State(candidate as unknown as GameState);
