@@ -14,8 +14,7 @@ Generated from LL01-WEB-EVENT-SOURCE-EXTRACTION-4.6-ON-TIMELINE-0.6 for provenan
 ## Runtime summary
 
 - Calendar compiler: `LL01-EVENT-LIFECYCLE-1.0`; exactly 30 adopted v0.6 records, with lifecycle receipts and no recurrence.
-- Event contract registry: `LL01-EVENT-CONTRACT-REGISTRY-1.0`; all 30 fixed IDs have a published handler-family, participation, objective, scoring, encounter, reward, shop, expiry and settlement contract in the compiled world package and live API projection.
-- EV00 resolves opening protection. EV01 now simulates finite rival actions, settles from committed completion records, freezes reward bands and supports idempotent player claims. EV02–EV29 have compiled research contracts but remain gated until their event-family handlers record real gameplay outcomes.
+- EV00 resolves its opening-protection lifecycle. EV01 has a source-fixed opening-level board window and frozen reward contract; its result snapshot is blocked unless the runtime can compile the complete fixed P0 outcome population. EV02–EV29 now have playable versioned objective, score/shop, settlement, and claim mechanics (Stage 10); those game-design rules do not promote source-catalog candidates.
 - Source registry: 1682 item/offer records (0 source records promoted; 1682 remain research/pending), 239 effects, 202 observations, 13 mechanic extractions, 25 provenance conflicts.
 - v7.24 cumulative CSV: 1682 rows and 69 declared columns; every row ID matches the v7.25 cumulative ID ledger. The older v4.6 catalog has 590 entries and is used only to attach prior conflict evidence.
 - 490 source rows have unaligned adoption/verification fields. Their purchase or acquisition flags are excluded from event evidence counts and their promotion is blocked. 428 rows also contain unheaded trailing fields, which remain visible and uninterpreted.
@@ -28,35 +27,35 @@ Generated from LL01-WEB-EVENT-SOURCE-EXTRACTION-4.6-ON-TIMELINE-0.6 for provenan
 | Event ID | Opens | Locks | Resolves | Readiness | Boundary verification |
 |---|---:|---:|---:|---|---|
 | `EV00-SAFE-FIRE` | T0+0h | T0+144h | T0+144h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV01-OPENING-LEVEL` | T0+48h | T0+144h | T0+144h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV02-DRAGON-REVIVAL` | T0+144h | T0+312h | T0+336h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV03-ICE-HORN` | T0+192h | T0+264h | T0+288h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV04-FIRST-MERGE-DRAGON-POINTS` | T0+312h | T0+552h | T0+576h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV05-ANNO-FISHING` | T0+408h | T0+480h | T0+504h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV06-CONSTRUCTION-WEEK` | T0+552h | T0+720h | T0+720h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV07-KINGDOM-WRATH` | T0+720h | T0+792h | T0+816h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV08-WORLD-BOSS` | T0+792h | T0+1032h | T0+1056h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV09-ORACLE-WAR` | T0+1056h | T0+1776h | T0+1776h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV10-MONSTER-SIEGE` | T0+1944h | T0+1968h | T0+1968h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV11-MIST-DISASTER` | T0+1968h | T0+2064h | T0+2088h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV12-LEGION-RACE` | T0+2088h | T0+2256h | T0+2280h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV13-BLOOD-CHAOS` | T0+2280h | T0+2448h | T0+2472h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV14-DREAM-SHARD` | T0+2472h | T0+4872h | T0+4896h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV15-SKORK-RAT` | T0+2496h | T0+3216h | T0+3240h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV16-GIANT-CITY` | T0+3240h | T0+3312h | T0+3336h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV17-NORTH-UNIFICATION` | T0+3336h | T0+3504h | T0+3528h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV18-LIGHT-GOD-FINAL` | T0+3528h | T0+3696h | T0+3720h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV19-ICE-SNOW-CHOICE` | T0+3720h | T0+3888h | T0+3912h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV20-DEEP-SEA-ARK` | T0+3912h | T0+3984h | T0+4008h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV21-WEST-CHURCH-WAR` | T0+4008h | T0+4176h | T0+4200h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV22-ANCIENT-DRAGON-P1` | T0+4200h | T0+4272h | T0+4296h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV23-ANCIENT-DRAGON-P2` | T0+4296h | T0+4368h | T0+4392h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV24-DRAGON-FESTIVAL` | T0+4392h | T0+4560h | T0+4584h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV25-ABYSS-EXPEDITION` | T0+4584h | T0+4752h | T0+4776h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV26-GODS-CHAOS` | T0+4776h | T0+4944h | T0+4968h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV27-WORLD-PROTECTOR` | T0+4968h | T0+5136h | T0+5160h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV28-ANCIENT-DRAGON-HUNT` | T0+5160h | T0+5232h | T0+5256h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
-| `EV29-FINAL-CALAMITY` | T0+5256h | T0+5424h | T0+5448h | mandatory_content_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV01-OPENING-LEVEL` | T0+48h | T0+144h | T0+144h | settlement_blocked | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV02-DRAGON-REVIVAL` | T0+144h | T0+312h | T0+336h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV03-ICE-HORN` | T0+192h | T0+264h | T0+288h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV04-FIRST-MERGE-DRAGON-POINTS` | T0+312h | T0+552h | T0+576h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV05-ANNO-FISHING` | T0+408h | T0+480h | T0+504h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV06-CONSTRUCTION-WEEK` | T0+552h | T0+720h | T0+720h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV07-KINGDOM-WRATH` | T0+720h | T0+792h | T0+816h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV08-WORLD-BOSS` | T0+792h | T0+1032h | T0+1056h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV09-ORACLE-WAR` | T0+1056h | T0+1776h | T0+1776h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV10-MONSTER-SIEGE` | T0+1944h | T0+1968h | T0+1968h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV11-MIST-DISASTER` | T0+1968h | T0+2064h | T0+2088h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV12-LEGION-RACE` | T0+2088h | T0+2256h | T0+2280h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV13-BLOOD-CHAOS` | T0+2280h | T0+2448h | T0+2472h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV14-DREAM-SHARD` | T0+2472h | T0+4872h | T0+4896h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV15-SKORK-RAT` | T0+2496h | T0+3216h | T0+3240h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV16-GIANT-CITY` | T0+3240h | T0+3312h | T0+3336h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV17-NORTH-UNIFICATION` | T0+3336h | T0+3504h | T0+3528h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV18-LIGHT-GOD-FINAL` | T0+3528h | T0+3696h | T0+3720h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV19-ICE-SNOW-CHOICE` | T0+3720h | T0+3888h | T0+3912h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV20-DEEP-SEA-ARK` | T0+3912h | T0+3984h | T0+4008h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV21-WEST-CHURCH-WAR` | T0+4008h | T0+4176h | T0+4200h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV22-ANCIENT-DRAGON-P1` | T0+4200h | T0+4272h | T0+4296h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV23-ANCIENT-DRAGON-P2` | T0+4296h | T0+4368h | T0+4392h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV24-DRAGON-FESTIVAL` | T0+4392h | T0+4560h | T0+4584h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV25-ABYSS-EXPEDITION` | T0+4584h | T0+4752h | T0+4776h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV26-GODS-CHAOS` | T0+4776h | T0+4944h | T0+4968h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV27-WORLD-PROTECTOR` | T0+4968h | T0+5136h | T0+5160h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV28-ANCIENT-DRAGON-HUNT` | T0+5160h | T0+5232h | T0+5256h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
+| `EV29-FINAL-CALAMITY` | T0+5256h | T0+5424h | T0+5448h | executable_lifecycle | exact row/order, just-before/at/after, receipt uniqueness and no recurrence |
 
 ## Playable Stage08 contract
 
@@ -80,7 +79,7 @@ Generated from LL01-WEB-EVENT-SOURCE-EXTRACTION-4.6-ON-TIMELINE-0.6 for provenan
 | Event-exclusive item instances | No research-catalog item with a verified, adopted per-item expiration has been promoted. The selected Q08 bread offer is explicitly permanent (`exclusiveEventId=null`, `expiresAtElapsedMs=null`); the auction lot expires and its open escrow is refunded. Therefore item-expiry propagation through equipment/jobs/other containers is not falsely claimed as covered by an active event-exclusive content contract. |
 | Exclusive quest reward claim | Q08 reward key is unique; repeated claim cannot pay a second 60 Krona or reopen the route contract. |
 | Save and backup reload | Quest state, inventory purchase/consumption lineage, currency, market stock and receipts survive process restart and backup import. |
-| Source-version update | The v7.24 CSV and v7.25 addendum hashes, cumulative count and every source ID are verified; the v4.6 catalog/CSV pair remains a prior-provenance comparison. Research-only changes do not mutate the pinned save’s committed calendar or claims. |
+| Source-version update | Catalog 4.6 and CSV 4.6 hashes and all row IDs are verified; research-only changes do not mutate the pinned save’s committed calendar or claims. |
 
 ## Ranking source and settlement
 
@@ -2328,7 +2327,7 @@ The catalog does not assign observation IDs; array locators are report locators 
 
 ## Gate disposition
 
-- Gate 1 — passed: all 30 adopted rows and exact open/lock/resolve boundaries, no recurrence, plus 5× clock and restart at the EV02 blocker.
+- Gate 1 — passed: all 30 adopted rows and exact open/lock/resolve boundaries, no recurrence, plus 5× clock/restart coverage; EV02–EV29 progression is now executable under the Stage 10 overlay. EV01 ranking settlement remains blocked on the fixed P0 outcome ledger.
 - Gate 2 — passed for the implemented Q08 contract: fixed actors/route/deadline/conditions/reward, legitimate site and time eligibility, inventory/effect path, persistence, and reload. The grain-for-passage cost and market/auction terms are versioned design choices because the fixed source contract does not price them.
 - Gate 3 — covered for the active fixed-price offer and unfilled auction: stale last-stock request, duplicate receipt, no funds, capacity full, exact offer close, escrow bid/cancel/expiry and no premature salt ownership. Variable-price quotes and auction seller acceptance are not active contracts; no quote or fictional buyer is simulated.
 - Gate 4 — partial/applicability-limited: unique reward claim and auction escrow expiry are tested. There is no promoted source event-exclusive item with an adopted per-instance expiry contract; the selected bread is explicitly permanent. Per-item expiry through equipment/jobs/other containers therefore remains unclaimed until an eligible source/design item contract is adopted.

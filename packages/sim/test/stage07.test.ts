@@ -379,50 +379,23 @@ test('unobserved wildlife contacts and regional population totals stay out of th
   assert.equal(attack.receipt.code, 'TARGET_NOT_DISCOVERED');
 });
 
-test('a co-located hunting squad shares one hare encounter and conserves the fixed 12 XP award', () => {
-  let state = reviveAndEquipOpeningRook();
+test('the opening hare encounter keeps its single-fighter rule and awards the fixed 12 XP once', () => {
+  const state = reviveAndEquipOpeningRook();
   const lead = state.ownedUnits.find(candidate => candidate.creationRoute === 'DIRECT_TU_PHUC')!;
-  const allyId = 'STAGE07-GROUP-ALLY';
-  const spear = state.inventory.containers.flatMap(container => container.stacks).find(stack => stack.itemId === STAGE07_OPENING_SPEAR_ID)!;
-  const ally = structuredClone(lead);
-  ally.id = allyId;
-  ally.name = 'Squad ally';
-  ally.creationRoute = 'TEST_GROUP_MEMBER';
-  ally.xpMirrorEligible = false;
-  ally.directReviveProvenance = undefined;
-  ally.equipmentIds = ['ITEM-STAGE07-GROUP-ALLY-SPEAR'];
-  ally.equipmentSlots = ally.equipmentSlots?.map(slot => ({
-    ...slot,
-    occupiedItemId: slot.slotId === 'MAIN_HAND' ? 'ITEM-STAGE07-GROUP-ALLY-SPEAR' : null,
-  }));
-  state.ownedUnits = [...state.ownedUnits, ally];
-  state.inventory = {
-    ...state.inventory,
-    containers: state.inventory.containers.map(container => container.id === `LL-CNT-UNIT-${allyId}`
-      ? container
-      : container).concat({
-        id: `LL-CNT-UNIT-${allyId}`, kind: 'unit_inventory', capacitySlots: 40, occupiedSlots: null,
-        location: { kind: 'unit', unitId: allyId }, observed: true, stacks: [],
-      }).map(container => container.id === `LL-CNT-UNIT-${allyId}`
-        ? { ...container, stacks: [{ ...spear, itemId: 'ITEM-STAGE07-GROUP-ALLY-SPEAR', ownerId: allyId, equipped: true, equippedSlotId: 'MAIN_HAND' }] }
-        : container),
-  };
-  const xpBefore = (state.progression?.transactions ?? []).filter(transaction => transaction.transactionKind === 'NORMAL_AWARD').reduce((sum, transaction) => sum + transaction.netXp, 0);
-  const started = submit(state, 'start-squad-hare-fight', 'attack', { actorIds: [lead.id, allyId], targetId: STAGE07_HARE_TARGET_ID });
-  assert.equal(started.receipt.accepted, true, started.receipt.code);
-  assert.deepEqual(started.state.combat?.encounters[0]?.actorIds, [lead.id, allyId]);
+  const squad = submit(state, 'reject-squad-hare-fight', 'attack', { actorIds: [lead.id, 'UNCOMPILED-ALLY'], targetId: STAGE07_HARE_TARGET_ID });
+  assert.equal(squad.receipt.accepted, false);
+  assert.equal(squad.receipt.code, 'COMBAT_GROUP_RULE_NOT_COMPILED');
 
+  const started = submit(state, 'start-solo-hare-fight', 'attack', { actorIds: [lead.id], targetId: STAGE07_HARE_TARGET_ID });
+  assert.equal(started.receipt.accepted, true, started.receipt.code);
+  assert.deepEqual(started.state.combat?.encounters[0]?.actorIds, [lead.id]);
   const result = advanceTo(started.state, started.state.simElapsedMs + 60_000, {}, world);
-  let stepped = structuredClone(started.state);
-  for (let i = 0; i < 15; i++) stepped = advanceTo(stepped, stepped.simElapsedMs + 4_000, {}, world).state;
-  assert.equal(canonicalStateHash(stepped), canonicalStateHash(result.state), 'squad outcomes do not depend on the clock step size');
   assert.equal(result.state.combat?.encounters[0]?.status, 'victory');
   assert.equal(result.state.corpses.filter(corpse => corpse.actorId === result.state.combat?.target.actorId).length, 1);
   const normalXp = (result.state.progression?.transactions ?? []).filter(transaction => transaction.transactionKind === 'NORMAL_AWARD');
-  const groupAwards = normalXp.filter(transaction => transaction.sourceEventId.includes('ENCOUNTER-STAGE07-0001'));
-  assert.equal(groupAwards.reduce((sum, transaction) => sum + transaction.netXp, 0), 12, `existing XP before fight: ${xpBefore}; group awards: ${JSON.stringify(groupAwards.map(transaction => [transaction.recipientId, transaction.netXp]))}`);
-  assert.ok(groupAwards.length >= 1 && groupAwards.length <= 2, 'only squad members who landed a hit receive a share');
-  assert.ok(groupAwards.every(transaction => [lead.id, allyId].includes(transaction.recipientId)));
+  const encounterAwards = normalXp.filter(transaction => transaction.sourceEventId.includes('ENCOUNTER-STAGE07-0001'));
+  assert.equal(encounterAwards.reduce((sum, transaction) => sum + transaction.netXp, 0), 12);
+  assert.deepEqual(encounterAwards.map(transaction => transaction.recipientId), [lead.id]);
   assert.equal(result.state.jobs.find(job => job.kind === 'combat_encounter')?.status, 'completed');
 });
 

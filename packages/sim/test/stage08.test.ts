@@ -15,7 +15,7 @@ import { reduceCommand } from '../src/reducer.ts';
 import { upgradeGameState } from '../src/upgrade.ts';
 import { projectPlayerView } from '../src/view.ts';
 import { verifyStage08State, CARAVAN_SALT_AUCTION_ID, MARKET_BREAD_OFFER_ID, Q08_ID, settleOpeningLevelRank } from '../src/stage08.ts';
-import type { GameState, ScheduledEventState } from '../../contracts/src/index.ts';
+import { GAME_STATE_SCHEMA_VERSION, type GameState, type ScheduledEventState } from '../../contracts/src/index.ts';
 
 let serial = 0;
 const timeline = JSON.parse(readFileSync(resolve(process.cwd(), 'data/events/EVENT-TIMELINE-v0.6.json'), 'utf8')) as {
@@ -91,8 +91,8 @@ test('the runtime compiles exactly the thirty adopted v0.6 rows and creates no r
   }
   assert.equal(new Set(world.eventSchedule.map(row => row.opensAtMs)).size, world.eventSchedule.length, 'fixed opens do not collide');
   assert.equal(eventRuntimeReadiness('EV00-SAFE-FIRE'), 'executable_lifecycle');
-  assert.equal(eventRuntimeReadiness('EV01-OPENING-LEVEL'), 'executable_lifecycle');
-  for (const event of world.eventSchedule.slice(2)) assert.equal(eventRuntimeReadiness(event.id), 'mandatory_content_blocked');
+  assert.equal(eventRuntimeReadiness('EV01-OPENING-LEVEL'), 'settlement_blocked');
+  for (const event of world.eventSchedule.slice(2)) assert.equal(eventRuntimeReadiness(event.id), 'executable_lifecycle');
 });
 
 test('all thirty calendar rows honor exact open, lock and resolution boundaries with unique receipts', () => {
@@ -162,7 +162,12 @@ test('all thirty calendar rows honor exact open, lock and resolution boundaries 
       state.calendar.find(row => row.id === schedule.id)?.resolutionReceiptSequence,
     ].filter(value => value !== null)).size, 3);
     assert.ok(lifecycleEvents.filter(event => event.payload.eventId === schedule.id).every(event =>
-      ['opening_protection_started', 'event_calendar_opened', 'event_calendar_locked', 'event_calendar_resolved'].includes(event.type)));
+      ['opening_protection_started', 'event_calendar_opened', 'event_calendar_locked', 'event_calendar_resolved', 'event_objective_settled'].includes(event.type)));
+    const progress = state.eventProgress.find(row => row.eventId === schedule.id);
+    if (progress) {
+      assert.equal(progress.outcome, 'nonparticipant', `${schedule.id} settles with no contribution and no award`);
+      assert.ok(lifecycleEvents.some(event => event.type === 'event_objective_settled' && event.payload.eventId === schedule.id));
+    }
     assert.equal(state.currency.length, 0, 'calendar settlement cannot mint event currency');
     assert.ok(state.quests.every(quest => quest.state === 'dormant'), 'calendar settlement cannot advance quests');
 
@@ -386,7 +391,7 @@ test('the Stage 08 source path survives a SQLite restart and strict backup impor
   }
 });
 
-test('a 5x clock settles through a restart, keeps earlier play available, then blocks exactly at EV02 without awards', async () => {
+test('a 5x clock settles through a restart and advances beyond EV02 while preserving the unresolved EV01 rank result', async () => {
   const directory = mkdtempSync(resolve(tmpdir(), 'ill-stage08-calendar-'));
   const databasePath = resolve(directory, 'saves.sqlite');
   let firstNow = 0;
@@ -436,18 +441,16 @@ test('a 5x clock settles through a restart, keeps earlier play available, then b
     secondNow = 96 * HOUR_MS / 5;
     await secondService.settleClockBeforeCommand(saveId);
     state = secondRepository.loadSave('local-owner', saveId).state;
-    assert.equal(state.simElapsedMs, 144 * HOUR_MS, 'a large clock target stops at the exact mandatory boundary');
-    assert.equal(state.clockControl.status, 'paused');
+    assert.equal(state.simElapsedMs, 144 * HOUR_MS, 'a large clock target reaches the requested campaign time');
+    assert.equal(state.clockControl.status, 'running');
     assert.equal(state.territory.survivalFire.protectionStatus, 'expired');
     assert.equal(state.calendar.find(event => event.id === 'EV00-SAFE-FIRE')?.status, 'resolved');
     assert.equal(state.calendar.find(event => event.id === 'EV01-OPENING-LEVEL')?.status, 'resolved');
-    const blocked = state.calendar.find(event => event.id === 'EV02-DRAGON-REVIVAL')!;
-    assert.equal(blocked.status, 'blocked');
-    assert.equal(blocked.openReceiptSequence, null);
-    assert.ok(blocked.blockedReceiptSequence);
-    assert.equal(state.eventProgressionBlocker?.eventId, blocked.id);
-    assert.equal(state.eventProgressionBlocker?.blockedAtElapsedMs, state.simElapsedMs);
-    assert.equal(state.eventProgressionBlocker?.receiptSequence, blocked.blockedReceiptSequence);
+    const opened = state.calendar.find(event => event.id === 'EV02-DRAGON-REVIVAL')!;
+    assert.equal(opened.status, 'active');
+    assert.ok(opened.openReceiptSequence);
+    assert.equal(opened.blockedReceiptSequence, null);
+    assert.equal(state.eventProgressionBlocker, null);
     assert.ok(state.calendar.filter(event => event.status === 'resolved' && event.id !== 'EV00-SAFE-FIRE').every(event => event.resolutionReceiptSequence));
     assert.equal(state.stage08.rankSnapshots.length, 1, 'the fixed opening rank settles once at EV01 close');
     assert.equal(state.stage08.rankSnapshots[0]?.boardId, 'OPENING_LEVEL');
@@ -461,19 +464,15 @@ test('a 5x clock settles through a restart, keeps earlier play available, then b
     assert.equal(state.offers.length, 0);
     assert.ok(state.quests.every(quest => quest.state === 'dormant'));
     const view = projectPlayerView(state, world);
-    assert.deepEqual(view.calendar.map(event => event.id), world.eventSchedule.map(event => event.id), 'the live view retains the complete fixed 30-event calendar');
-    assert.ok(view.calendar.every(event => event.eventContract.participationRequirement && event.eventContract.objectives && event.eventContract.scoring && event.eventContract.rewardContract && event.eventContract.settlement), 'every calendar row exposes its authored executable-contract fields');
-    assert.equal(view.calendar.find(event => event.id === 'EV02-DRAGON-REVIVAL')?.eventContract.handlerFamily, 'dragon_nest_hunt');
-    assert.equal(view.calendar.find(event => event.id === 'EV02-DRAGON-REVIVAL')?.eventContract.runtimeStatus, 'planned');
-    assert.equal(view.eventProgressionBlocker?.displayName, blocked.displayName);
+    assert.deepEqual(view.calendar.map(event => event.id), world.eventSchedule.map(event => event.id));
+    assert.equal(view.eventProgressionBlocker, null);
     assert.deepEqual(view.quests, []);
     assert.deepEqual(view.currency, []);
     const unavailableClock = secondService.preview(saveId, {
       schemaVersion: 1, saveId, commandId: 'stage08-no-resume', expectedRevision: state.revision,
       type: 'set_clock_speed', payload: { speed: '1x' },
     }, 'stage08-session-2', 'stage08-tab-2');
-    assert.equal(unavailableClock.availability.enabled, false);
-    assert.equal(unavailableClock.availability.reasonCode, 'EVENT_CONTENT_BLOCKED');
+    assert.equal(unavailableClock.availability.enabled, true);
 
     const backup = secondService.exportBackup(saveId);
     const imported = secondService.importBackup(backup, 'Stage 08 validation copy');
@@ -502,11 +501,13 @@ test('schema 5 migration adds pinned labels and pauses overdue rows without rewi
   });
 
   const upgraded = upgradeGameState(legacy, world);
-  assert.equal(upgraded.schemaVersion, 10);
+    assert.equal(upgraded.schemaVersion, GAME_STATE_SCHEMA_VERSION);
   assert.equal(upgraded.simElapsedMs, 144 * HOUR_MS, 'migration never rewinds elapsed time');
   assert.equal(upgraded.clockControl.status, 'paused');
-  assert.equal(upgraded.eventProgressionBlocker?.eventId, 'EV01-OPENING-LEVEL');
-  assert.equal(upgraded.calendar.find(event => event.id === 'EV01-OPENING-LEVEL')?.status, 'blocked');
+  assert.equal(upgraded.eventProgressionBlocker, null);
+  assert.equal(upgraded.calendar.find(event => event.id === 'EV01-OPENING-LEVEL')?.status, 'resolved');
+  assert.equal(upgraded.stage08.rankSnapshots.some(snapshot => snapshot.boardId === 'OPENING_LEVEL'), false,
+    'migration preserves the unavailable legacy result instead of minting a retroactive rank');
   const ev00 = upgraded.calendar.find(event => event.id === 'EV00-SAFE-FIRE')!;
   assert.equal(ev00.status, 'resolved');
   assert.equal(ev00.lockReceiptSequence, null, 'legacy EV00 resolution is not reused as a lock receipt');

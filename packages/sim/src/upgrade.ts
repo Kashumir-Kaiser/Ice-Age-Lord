@@ -12,6 +12,8 @@ import { canonicalStateHash } from './hash.ts';
 import { RULESET_VERSION } from '../../content/src/sourceLock.ts';
 import { OPENING_FIRE_STARTER_FUEL_UNITS, OPENING_WEATHER_RECORD } from '../../content/src/openingEnvironment.ts';
 import { actorSpeedMmPerHour } from './spatial.ts';
+import { initialWildlifeState } from './wildlife.ts';
+import { EVENT_SHOP_RULE_VERSION, initialEventProgress } from './eventRuntime.ts';
 
 function nextDailyBoundary(elapsed: number, offset: number): number {
   return offset + (Math.floor((elapsed - offset) / DAY_MS) + 1) * DAY_MS;
@@ -460,6 +462,91 @@ function migrateV9ToV10(candidate: Record<string, any>, world: WorldDefinition):
   return migrated;
 }
 
+function migrateV10ToV11(candidate: Record<string, any>, world: WorldDefinition): GameState {
+  if (candidate.worldPackageId !== world.id || !Number.isSafeInteger(candidate.simElapsedMs) || candidate.simElapsedMs < 0
+    || !Array.isArray(candidate.calendar) || !Array.isArray(candidate.fieldChestStates)
+    || !candidate.playerKnowledge || !candidate.spatial) {
+    throw new Error('SAVE_STATE_SCHEMA_MIGRATION_INVALID:_STAGE10_RUNTIME');
+  }
+  const elapsed = candidate.simElapsedMs as number;
+  const blockerEventId = candidate.eventProgressionBlocker?.eventId ?? null;
+  const expiredLegacyBlockerIds = new Set<string>();
+  const calendar = (candidate.calendar as GameState['calendar']).map(event => {
+    if (event.id === blockerEventId && event.status === 'blocked' && event.resolvesAtMs <= elapsed) {
+      expiredLegacyBlockerIds.add(event.id);
+      return { ...event, status: 'resolved' as const };
+    }
+    if (event.id === blockerEventId && event.status === 'blocked' && event.opensAtMs <= elapsed && event.locksAtMs > elapsed) {
+      return { ...event, status: 'scheduled' as const };
+    }
+    return event;
+  });
+  const priorProgress = Array.isArray(candidate.eventProgress) ? candidate.eventProgress as Partial<GameState['eventProgress'][number]>[] : [];
+  const defaults = initialEventProgress(world);
+  const eventProgress = defaults.map(base => {
+    const prior = priorProgress.find(progress => progress.eventId === base.eventId);
+    const calendarRow = calendar.find(event => event.id === base.eventId);
+    if (!prior) return {
+      ...base,
+      ...(expiredLegacyBlockerIds.has(base.eventId) ? {
+        outcome: 'nonparticipant' as const,
+        objectiveProgress: 0,
+        score: 0,
+        participated: false,
+        scoreSpent: 0,
+      } : {}),
+      shopStatus: calendarRow?.status === 'resolved' ? 'expired' as const
+        : calendarRow?.status === 'locked' ? 'closed' as const
+          : calendarRow?.status === 'active' ? 'active' as const : 'scheduled' as const,
+    };
+    return {
+      ...base,
+      ...prior,
+      ...(expiredLegacyBlockerIds.has(base.eventId) ? {
+        outcome: 'nonparticipant' as const,
+        objectiveProgress: 0,
+        score: 0,
+        participated: false,
+        rewardKrona: 0,
+        scoreSpent: 0,
+        shopPurchasedQuantity: 0,
+      } : {}),
+      choiceId: prior.choiceId ?? null,
+      scoreSpent: Number.isSafeInteger(prior.scoreSpent) ? prior.scoreSpent : 0,
+      shopRuleVersion: prior.shopRuleVersion ?? EVENT_SHOP_RULE_VERSION,
+      shopStatus: prior.shopStatus ?? (calendarRow?.status === 'resolved' ? 'expired'
+        : calendarRow?.status === 'locked' ? 'closed' : calendarRow?.status === 'active' ? 'active' : 'scheduled'),
+      shopInitialStock: Number.isSafeInteger(prior.shopInitialStock) ? prior.shopInitialStock : base.shopInitialStock,
+      shopStockRemaining: Number.isSafeInteger(prior.shopStockRemaining) ? prior.shopStockRemaining : base.shopStockRemaining,
+      shopPurchasedQuantity: Number.isSafeInteger(prior.shopPurchasedQuantity) ? prior.shopPurchasedQuantity : 0,
+      shopExpiresAtElapsedMs: Number.isSafeInteger(prior.shopExpiresAtElapsedMs) ? prior.shopExpiresAtElapsedMs : base.shopExpiresAtElapsedMs,
+      expiredItemQuantities: prior.expiredItemQuantities ?? {},
+    };
+  });
+  const fieldChestStates = candidate.fieldChestStates.map((chest: Record<string, unknown>) => ({ ...chest, lootOutcome: chest.lootOutcome ?? null }));
+  const priorCombat = candidate.combat ?? createStage07CombatState(world);
+  const combat = { ...priorCombat, wildlifeTargets: priorCombat.wildlifeTargets ?? [] };
+  return {
+    ...candidate,
+    schemaVersion: 11,
+    calendar,
+    eventProgress,
+    eventProgressionBlocker: null,
+    fieldChestStates,
+    playerKnowledge: { ...candidate.playerKnowledge, knownWildlifeGroupIds: candidate.playerKnowledge.knownWildlifeGroupIds ?? [] },
+    spatial: {
+      ...candidate.spatial,
+      searchJobs: (candidate.spatial.searchJobs ?? []).map((job: Record<string, unknown>) => ({
+        ...job,
+        mode: job.mode ?? 'chest',
+        foundTargetIds: job.foundTargetIds ?? [],
+      })),
+    },
+    wildlife: initialWildlifeState(world, elapsed),
+    combat,
+  } as GameState;
+}
+
 export function upgradeGameState(value: unknown, world: WorldDefinition = ACTIVE_WORLD_PACKAGE): GameState {
   let candidate = asRecord(value);
   if (candidate.schemaVersion === 1) candidate = migrateV1ToV2(candidate);
@@ -471,6 +558,7 @@ export function upgradeGameState(value: unknown, world: WorldDefinition = ACTIVE
   if (candidate.schemaVersion === 7) candidate = migrateV7ToV8(candidate, world);
   if (candidate.schemaVersion === 8) candidate = migrateV8ToV9(candidate, world);
   if (candidate.schemaVersion === 9) candidate = migrateV9ToV10(candidate, world);
+  if (candidate.schemaVersion === 10) candidate = migrateV10ToV11(candidate, world);
   if (candidate.schemaVersion !== GAME_STATE_SCHEMA_VERSION) throw new Error('SAVE_STATE_SCHEMA_UNSUPPORTED');
   if (candidate.construction && !Array.isArray(candidate.construction.operatingServices)) candidate.construction.operatingServices = [];
   verifyStage08State(candidate as unknown as GameState);

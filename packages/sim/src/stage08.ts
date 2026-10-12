@@ -661,7 +661,9 @@ export function verifyStage08State(state: GameState): void {
             : quest?.state === 'accepted';
     const marketSpent = marketOffers.reduce((sum, offer) => sum + offer.purchasedQuantity * offer.unitPrice, 0);
     const activeEscrow = auctionBids.filter(bid => bid.status === 'open').reduce((sum, bid) => sum + bid.escrowAmount, 0);
-    const expectedCurrency = (claimed ? 60 : 0) - marketSpent - activeEscrow;
+    const eventClaims = state.eventProgress.filter(progress => progress.outcome === 'claimed')
+      .reduce((sum, progress) => sum + progress.rewardKrona, 0);
+    const expectedCurrency = (claimed ? 60 : 0) + eventClaims - marketSpent - activeEscrow;
     const krona = state.currency.find(balance => balance.currencyId === KRONA_CURRENCY)?.amount ?? 0;
     if (!validProgress || !Number.isSafeInteger(marketSpent) || !Number.isSafeInteger(activeEscrow)
       || !Number.isSafeInteger(expectedCurrency) || expectedCurrency < 0 || krona !== expectedCurrency

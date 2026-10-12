@@ -51,7 +51,9 @@ export function mergeStacks(state: GameState, world: WorldDefinition, input: { a
   if (!source || !target || source.itemId === target.itemId) return { state, event: null, code: 'ITEM_NOT_FOUND' };
   const sameDefinition = source.templateId === target.templateId && source.unit === target.unit && source.provenance === target.provenance
     && (source.quality ?? null) === (target.quality ?? null) && (source.foodUnitsPerItem ?? null) === (target.foodUnitsPerItem ?? null)
-    && (source.ownerId ?? null) === (target.ownerId ?? null);
+    && (source.ownerId ?? null) === (target.ownerId ?? null)
+    && (source.exclusiveEventId ?? null) === (target.exclusiveEventId ?? null)
+    && (source.expiresAtElapsedMs ?? null) === (target.expiresAtElapsedMs ?? null);
   if (!sameDefinition || source.equipped || target.equipped || (source.reservedQuantity ?? 0) > 0 || (target.reservedQuantity ?? 0) > 0) {
     return { state, event: null, code: 'STACKS_NOT_COMPATIBLE' };
   }

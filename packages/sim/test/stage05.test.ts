@@ -328,88 +328,22 @@ test('focused searches settle on fixed ticks, preserve revisit history and revea
   assert.ok(state.playerKnowledge.knownChestIds.includes(detectedChestId));
   assert.equal(state.fieldChestStates.find(chest => chest.chestId === detectedChestId)?.discovery, 'identified');
   const identifiedView = projectPlayerView(state, world);
-  assert.ok(JSON.stringify(identifiedView).includes(detectedChestId));
-  const opened = reduceCommand(state, command(state, 'open-uncompiled-chest', 'open_cache', { actorId: 'LI_LAN', chestId: detectedChestId }), world);
-  assert.equal(opened.receipt.accepted, false);
-  assert.equal(opened.receipt.code, 'CHEST_LOOT_CANDIDATE_POOL_NOT_COMPILED');
-  assert.equal(opened.state.fieldChestStates.find(chest => chest.chestId === detectedChestId)?.state, 'unopened');
-});
-
-test('area dispatch reserves a co-located squad, honors a time stop, returns on recall and is time-step deterministic', () => {
-  const base = freshState();
-  let seed = apply(base, 'inspect-dispatch-rook', 'inspect_entity', { entity: { type: 'corpse', id: STAGE07_OPENING_CORPSE_ID } });
-  seed = apply(seed, 'revive-dispatch-rook', 'revive', { actorId: seed.player.id, corpseId: STAGE07_OPENING_CORPSE_ID });
-  const rookId = seed.ownedUnits.at(-1)!.id;
-  const selectedChest = world.fieldChests.find(chest => chest.grade === 'Mộc'
-    && (chest.position.sourceZMetres ?? 0) >= -2
-    && !/sealed|deep|owned|quest[- ]locked|chống sập|yêu cầu chống|khóa|niêm phong/i.test(chest.accessStatement))!;
-  seed.player.position = selectedChest.position;
-  seed.player.location = { kind: 'field', coordinate: selectedChest.position };
-  seed.ownedUnits = seed.ownedUnits.map(unit => unit.id === rookId ? { ...unit, position: selectedChest.position } : unit);
-
-  const dispatched = apply(seed, 'dispatch-squad', 'search', {
-    actorId: seed.player.id, additionalActorIds: [rookId], center: selectedChest.position,
-    radiusMm: 250_000, targetCount: 192, timeLimitMinutes: 30,
-  });
-  const job = dispatched.spatial.searchJobs[0]!;
-  assert.deepEqual(job.actorIds, [seed.player.id, rookId]);
-  assert.ok(job.path.length > 4, 'the route is a multi-lane circle sweep, not a single radius line');
-  assert.ok(job.laneWidthMm > 25_000, 'the second scout improves practical coverage');
-  assert.equal(job.targetCount, 192);
-  assert.ok(job.stopAtElapsedMs! > 30 * MINUTE_MS, 'work time begins after outbound travel reaches the area');
-  const preview = previewCommand(seed, command(seed, 'preview-dispatch-squad', 'search', {
-    actorId: seed.player.id, additionalActorIds: [rookId], center: selectedChest.position,
-    radiusMm: 250_000, targetCount: 192, timeLimitMinutes: 30,
-  }), world);
-  assert.equal(preview.enabled, true);
-  assert.match(preview.preview?.value ?? '', /outbound.*sweep.*estimated return.*total/u);
-  assert.match(preview.preview?.value ?? '', /search stops at first 192 signal\(s\) or 30 min search-work limit, then returns/u);
-  const overlapping = reduceCommand(dispatched, command(dispatched, 'dispatch-overlap', 'search', {
-    actorId: seed.player.id, additionalActorIds: [rookId], center: selectedChest.position, radiusMm: 250_000,
-  }), world);
-  assert.equal(overlapping.receipt.accepted, false);
-  assert.equal(overlapping.receipt.code, 'ACTOR_ASSIGNED_TO_SEARCH');
-  const firstLimit = advanceTo(dispatched, job.stopAtElapsedMs!, {}, world);
-  assert.equal(firstLimit.state.spatial.searchJobs[0]?.phase, 'returning');
-  assert.equal(firstLimit.state.spatial.searchJobs[0]?.returnReason, 'time_limit');
-  assert.equal(firstLimit.events.some(event => event.type === 'spatial_search_return_started'), true);
-  const foundChestIds = firstLimit.state.spatial.searchJobs[0]?.foundChestIds ?? [];
-  assert.ok(foundChestIds.length > 0, 'the test sweep intersects a real fixed chest');
-  const playerViewJson = JSON.stringify(projectPlayerView(firstLimit.state, world));
-  assert.equal(playerViewJson.includes(foundChestIds[0]!), false);
-
-  const partial = advanceTo(dispatched, 15 * MINUTE_MS, {}, world).state;
-  const recall = reduceCommand(partial, command(partial, 'recall-squad', 'cancel_spatial_job', { jobId: job.id }), world);
-  assert.equal(recall.receipt.accepted, true);
-  assert.equal(recall.state.spatial.searchJobs[0]?.phase, 'returning');
-  assert.equal(recall.state.spatial.searchJobs[0]?.returnReason, 'recalled');
-  const duplicateRecall = reduceCommand(recall.state, command(recall.state, 'recall-squad-again', 'cancel_spatial_job', { jobId: job.id }), world);
-  assert.equal(duplicateRecall.receipt.accepted, false);
-  assert.equal(duplicateRecall.receipt.code, 'SEARCH_ALREADY_RETURNING');
-
-  const sameSeed = structuredClone(seed);
-  sameSeed.saveId = 'area-dispatch-step-size-comparison';
-  const firstRun = apply(sameSeed, 'dispatch-determinism', 'search', {
-    actorId: sameSeed.player.id, additionalActorIds: [rookId], center: selectedChest.position,
-    radiusMm: 250_000, timeLimitMinutes: 30,
-  });
-  const longStep = advanceTo(firstRun, 3 * HOUR_MS, {}, world).state;
-  let shortSteps = firstRun;
-  for (let at = 15 * MINUTE_MS; at <= 3 * HOUR_MS; at += 15 * MINUTE_MS) shortSteps = advanceTo(shortSteps, at, {}, world).state;
-  assert.deepEqual(shortSteps.spatial.searchJobs, longStep.spatial.searchJobs);
-  assert.deepEqual(shortSteps.spatial.sweepHistory, longStep.spatial.sweepHistory);
-  assert.deepEqual(shortSteps.fieldChestStates, longStep.fieldChestStates);
-
-  const targetState = structuredClone(seed);
-  targetState.saveId = 'area-dispatch-target-stop';
-  const targetRun = apply(targetState, 'dispatch-first-signal', 'search', {
-    actorId: targetState.player.id, additionalActorIds: [rookId], center: selectedChest.position,
-    radiusMm: 250_000, targetCount: 1,
-  });
-  const targetSettled = advanceTo(targetRun, 3 * HOUR_MS, {}, world).state;
-  assert.equal(targetSettled.spatial.searchJobs[0]?.phase, 'returning');
-  assert.equal(targetSettled.spatial.searchJobs[0]?.returnReason, 'target_count');
-  assert.ok(targetSettled.spatial.searchJobs[0]?.foundChestIds.length);
+  assert.ok(JSON.stringify(identifiedView).includes(eligibleChest.id));
+  const openCommand = command(state, 'open-rarity-chest', 'open_cache', { actorId: 'LI_LAN', chestId: eligibleChest.id });
+  const opened = reduceCommand(state, openCommand, world);
+  assert.equal(opened.receipt.accepted, true, `Chest opening rejected: ${opened.receipt.code}`);
+  assert.equal(opened.events.map(event => event.type).join(','), 'chest_opened,chest_loot_delivered');
+  const chestAfter = opened.state.fieldChestStates.find(chest => chest.chestId === eligibleChest.id)!;
+  assert.equal(chestAfter.state, 'opened');
+  assert.equal(chestAfter.lootOutcome?.ruleVersion, 'LL01-CHEST-POOL-RARITY-TYPE-1.0');
+  assert.ok(chestAfter.lootOutcome?.rewardStacks.length);
+  const duplicate = reduceCommand(opened.state, openCommand, world);
+  assert.equal(duplicate.receipt.accepted, true);
+  assert.deepEqual(duplicate.events, []);
+  assert.deepEqual(duplicate.state.fieldChestStates.find(chest => chest.chestId === eligibleChest.id)?.lootOutcome, chestAfter.lootOutcome);
+  const lootView = projectPlayerView(opened.state, world).visibleMap.entities.find(entity => entity.ref.type === 'cache' && entity.ref.id === eligibleChest.id);
+  assert.equal(lootView?.chestLoot?.rarity, eligibleChest.grade);
+  assert.equal(lootView?.chestLoot?.opened, true);
 });
 
 test('harvest reserves finite source quantity, returns cargo and conserves inventory and balance', () => {

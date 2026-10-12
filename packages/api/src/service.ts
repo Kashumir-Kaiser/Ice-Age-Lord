@@ -13,6 +13,11 @@ import { upgradeGameState } from '../../sim/src/upgrade.ts';
 import { previewCommand, reduceCommand } from '../../sim/src/reducer.ts';
 import { projectPlayerView } from '../../sim/src/view.ts';
 import { verifyStage08State } from '../../sim/src/stage08.ts';
+import { deterministicChestOutcome } from '../../sim/src/chestLoot.ts';
+import { initialWildlifeState, isWildlifeRenewable, wildlifeSpeciesProfile, WILDLIFE_REPLENISHMENT_MS, WILDLIFE_RULE_VERSION } from '../../sim/src/wildlife.ts';
+import { EVENT_MECHANICS_RULE_VERSION, eventMechanicsFor } from '../../content/src/eventRules.ts';
+import { EVENT_REWARD_RULE_VERSION, EVENT_SHOP_INITIAL_STOCK, EVENT_SHOP_MARK_PRICE, EVENT_SHOP_RULE_VERSION } from '../../sim/src/eventRuntime.ts';
+import { CHEST_LOOT_RULE_VERSION, lootTableForChest } from '../../content/src/chestLoot.ts';
 import { advanceTo, coldLoadRateMicroPerMinute, DAY_MS, HOUR_MS, MINUTE_MS, nextMidnightAfter, TOMB_STANDARD_BLUEPRINT_ID, TOMB_STANDARD_DURATION_MS, TOMB_STANDARD_RECIPE_ID, type StopCondition } from '../../sim/src/time.ts';
 import { RepositoryError, SqliteRepository } from '../../storage/src/repository.ts';
 import { ApiProblem, fromRepositoryError } from './errors.ts';
@@ -193,18 +198,34 @@ function validateStage05State(candidate: GameState, world: WorldDefinition, base
   if (candidate.playerKnowledge.knownSiteIds.some(id => !knownSites.has(id))
     || candidate.playerKnowledge.knownResourceIds.some(id => !knownResources.has(id))
     || candidate.playerKnowledge.knownRouteIds.some(id => !knownRoutes.has(id))) invalid('Known map identities are not present in the compiled world.');
-  if (candidate.fieldChestStates.length !== world.fieldChests.length
-    || new Set(candidate.fieldChestStates.map(chest => chest.chestId)).size !== world.fieldChests.length
-    || candidate.fieldChestStates.some(chest => !knownChests.has(chest.chestId) || chest.state !== 'unopened' || chest.openedAtElapsedMs !== null
-      || !['hidden', 'signal', 'identified'].includes(chest.discovery) || chest.custody !== 'world')) invalid('Field chest state changed outside the supported discovery lifecycle.');
-  if (candidate.playerKnowledge.knownChestIds.some(id => !candidate.fieldChestStates.some(chest => chest.chestId === id && chest.discovery === 'identified'))) invalid('Known chest identities disagree with chest discovery state.');
+  const chestStates = new Map(candidate.fieldChestStates.map(chest => [chest.chestId, chest]));
+  if (candidate.fieldChestStates.length !== world.fieldChests.length || chestStates.size !== world.fieldChests.length
+    || candidate.fieldChestStates.some(chest => {
+      const source = world.fieldChests.find(item => item.id === chest.chestId);
+      if (!source || !knownChests.has(chest.chestId) || !['hidden', 'signal', 'identified'].includes(chest.discovery)) return true;
+      if (chest.discovery === 'hidden' && (chest.discoveredAtElapsedMs !== null || chest.signalId !== null)) return true;
+      if (chest.discovery !== 'hidden' && (!isSafeInt(chest.discoveredAtElapsedMs) || chest.discoveredAtElapsedMs > candidate.simElapsedMs)) return true;
+      if (chest.state === 'unopened') return chest.openedAtElapsedMs !== null || chest.custody !== 'world'
+        || chest.claimedById !== null || chest.lootOutcome != null;
+      if (chest.state !== 'opened' || chest.custody !== 'opened' || !isSafeInt(chest.openedAtElapsedMs)
+        || chest.openedAtElapsedMs > candidate.simElapsedMs || !isNonEmptyString(chest.claimedById)
+        || !isRecord(chest.lootOutcome) || chest.lootOutcome.ruleVersion !== CHEST_LOOT_RULE_VERSION
+        || !Array.isArray(chest.lootOutcome.rewardStacks)) return true;
+      const outcome = deterministicChestOutcome(candidate.seed, source);
+      return canonicalStateHash(chest.lootOutcome) !== canonicalStateHash(outcome)
+        || !outcome.rewardStacks.every(stack => stack.quantity > 0 && stack.itemId.startsWith(`CHEST-ITEM-${source.id}-`));
+    })) invalid('Field chest discovery, one-time opening, or committed loot outcome is invalid.');
+  if (candidate.playerKnowledge.knownChestIds.some(id => !candidate.fieldChestStates.some(chest => chest.chestId === id && chest.discovery === 'identified'))
+    || candidate.fieldChestStates.some(chest => chest.discovery === 'identified' && !candidate.playerKnowledge.knownChestIds.includes(chest.chestId))) invalid('Known chest identities disagree with chest discovery state.');
   if (canonicalStateHash(candidate.territory.position) !== canonicalStateHash(baseline.territory.position)) invalid('The H0 anchor was changed.');
 
   const itemIds = new Set<string>();
   const templateTotals = new Map<string, number>();
   const initialTotals = new Map<string, number>();
   for (const container of baseline.inventory.containers) for (const stack of container.stacks) initialTotals.set(stack.templateId, (initialTotals.get(stack.templateId) ?? 0) + stack.quantity);
-  const allowedTemplates = new Set([...initialTotals.keys(), ...world.resources.map(resource => resource.materialId)]);
+  const chestLootTemplates = world.fieldChests.flatMap(chest => lootTableForChest(chest).entries.map(entry => entry.templateId));
+  const eventShopTemplates = world.eventSchedule.slice(2).map(event => `EVENT-MARK-${event.id}`);
+  const allowedTemplates = new Set([...initialTotals.keys(), ...world.resources.map(resource => resource.materialId), ...chestLootTemplates, ...eventShopTemplates]);
   for (const container of candidate.inventory.containers) {
     const original = baseline.inventory.containers.find(item => item.id === container.id);
     if (!original || container.kind !== original.kind || canonicalStateHash(container.location) !== canonicalStateHash(original.location)
@@ -212,22 +233,137 @@ function validateStage05State(candidate: GameState, world: WorldDefinition, base
     for (const stack of container.stacks) {
       if (!isNonEmptyString(stack.itemId) || itemIds.has(stack.itemId) || !allowedTemplates.has(stack.templateId)
         || !isSafeInt(stack.quantity) || stack.equipped !== false) invalid('An inventory item is duplicated or outside the compiled material set.');
+      const templateEvent = world.eventSchedule.find(event => stack.templateId === `EVENT-MARK-${event.id}`
+        || stack.templateId === `EVENT-RELIC-${event.id}`);
+      if (templateEvent && (stack.exclusiveEventId !== templateEvent.id || stack.expiresAtElapsedMs !== templateEvent.resolvesAtMs)) {
+        invalid('Event rewards must retain their event scope and expiry in every container.');
+      }
+      if (stack.exclusiveEventId !== undefined && stack.exclusiveEventId !== null) {
+        const event = world.eventSchedule.find(row => row.id === stack.exclusiveEventId);
+        if (!event || ![`EVENT-MARK-${event.id}`, `EVENT-RELIC-${event.id}`].includes(stack.templateId)
+          || stack.expiresAtElapsedMs !== event.resolvesAtMs || candidate.simElapsedMs >= event.resolvesAtMs) {
+          invalid('An event-exclusive item has invalid ownership or expiry.');
+        }
+      } else if (stack.expiresAtElapsedMs !== undefined && stack.expiresAtElapsedMs !== null) {
+        invalid('An item expiry requires a compiled exclusive event.');
+      }
       itemIds.add(stack.itemId);
       templateTotals.set(stack.templateId, (templateTotals.get(stack.templateId) ?? 0) + stack.quantity);
     }
   }
   const extractedByMaterial = new Map<string, number>();
   for (const job of candidate.spatial.harvestJobs) extractedByMaterial.set(job.materialId, (extractedByMaterial.get(job.materialId) ?? 0) + job.extractedQuantity);
+  const lootedByTemplate = new Map<string, number>();
+  for (const chest of candidate.fieldChestStates) for (const stack of chest.lootOutcome?.rewardStacks ?? []) {
+    lootedByTemplate.set(stack.templateId, (lootedByTemplate.get(stack.templateId) ?? 0) + stack.quantity);
+  }
   const marketPurchased = new Map<string, number>();
   const marketConsumed = new Map<string, number>();
   for (const offer of candidate.stage08.marketOffers) {
     marketPurchased.set(offer.itemTemplateId, (marketPurchased.get(offer.itemTemplateId) ?? 0) + offer.purchasedQuantity * offer.quantityPerPurchase);
     marketConsumed.set(offer.itemTemplateId, (marketConsumed.get(offer.itemTemplateId) ?? 0) + offer.consumedQuantity);
   }
+  const eventShopPurchased = new Map<string, number>();
+  const eventItemsExpired = new Map<string, number>();
+  for (const progress of candidate.eventProgress) {
+    eventShopPurchased.set(`EVENT-MARK-${progress.eventId}`, progress.shopPurchasedQuantity);
+    for (const [templateId, quantity] of Object.entries(progress.expiredItemQuantities ?? {})) {
+      eventItemsExpired.set(templateId, (eventItemsExpired.get(templateId) ?? 0) + quantity);
+    }
+  }
   for (const template of allowedTemplates) {
-    const expected = (initialTotals.get(template) ?? 0) + (extractedByMaterial.get(template) ?? 0)
-      + (marketPurchased.get(template) ?? 0) - (marketConsumed.get(template) ?? 0);
+    const expected = (initialTotals.get(template) ?? 0) + (extractedByMaterial.get(template) ?? 0) + (lootedByTemplate.get(template) ?? 0)
+      + (marketPurchased.get(template) ?? 0) + (eventShopPurchased.get(template) ?? 0)
+      - (marketConsumed.get(template) ?? 0) - (eventItemsExpired.get(template) ?? 0);
     if ((templateTotals.get(template) ?? 0) !== expected) invalid('Inventory totals do not conserve starter and harvested materials.');
+  }
+}
+
+function validateStage10State(candidate: GameState, world: WorldDefinition): void {
+  const invalid = (): never => { throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup has invalid event or wildlife runtime state.', 'Trạng thái sự kiện hoặc động vật hoang dã trong bản sao lưu không hợp lệ.'); };
+  const originalWildlife = initialWildlifeState(world, 0);
+  if (!isRecord(candidate.wildlife) || candidate.wildlife.ruleVersion !== WILDLIFE_RULE_VERSION
+    || !Array.isArray(candidate.wildlife.groups) || candidate.wildlife.groups.length !== originalWildlife.groups.length
+    || !isSafeInt(candidate.wildlife.nextReplenishmentAtElapsedMs, candidate.simElapsedMs + 1)
+    || candidate.wildlife.nextReplenishmentAtElapsedMs - candidate.simElapsedMs > 24 * HOUR_MS
+    || !Array.isArray(candidate.playerKnowledge.knownWildlifeGroupIds)) invalid();
+  const groups = new Map(candidate.wildlife.groups.map(group => [group.id, group]));
+  if (groups.size !== originalWildlife.groups.length) invalid();
+  for (const original of originalWildlife.groups) {
+    const group = groups.get(original.id);
+    if (!group || group.ecologyId !== original.ecologyId || group.populationKey !== original.populationKey
+      || group.speciesId !== original.speciesId || group.displayName !== original.displayName || group.capacity !== original.capacity
+      || canonicalStateHash(group.position) !== canonicalStateHash(original.position)
+      || !isSafeInt(group.remaining) || group.remaining > group.capacity || !isSafeInt(group.nextMemberOrdinal, 1)
+      || group.nextMemberOrdinal > group.capacity + Math.floor(candidate.simElapsedMs / WILDLIFE_REPLENISHMENT_MS) + 1 || !['hidden', 'known'].includes(group.discovery)
+      || (group.discovery === 'hidden' && (group.discoveredAtElapsedMs !== null || group.lastSightingAtElapsedMs !== null))
+      || (group.discovery === 'known' && (!isSafeInt(group.discoveredAtElapsedMs) || group.discoveredAtElapsedMs > candidate.simElapsedMs
+        || !isSafeInt(group.lastSightingAtElapsedMs) || group.lastSightingAtElapsedMs > candidate.simElapsedMs))) invalid();
+  }
+  const knownWildlife = new Set(candidate.playerKnowledge.knownWildlifeGroupIds);
+  if (knownWildlife.size !== candidate.playerKnowledge.knownWildlifeGroupIds.length
+    || [...knownWildlife].some(id => groups.get(id)?.discovery !== 'known')
+    || candidate.wildlife.groups.some(group => (group.discovery === 'known') !== knownWildlife.has(group.id))) invalid();
+
+  const expectedEventIds = world.eventSchedule.slice(2).map(event => event.id);
+  if (!Array.isArray(candidate.eventProgress) || candidate.eventProgress.length !== expectedEventIds.length
+    || new Set(candidate.eventProgress.map(progress => progress.eventId)).size !== expectedEventIds.length) invalid();
+  for (const progress of candidate.eventProgress) {
+    const calendar = candidate.calendar.find(event => event.id === progress.eventId);
+    const rule = progress.ruleVersion === EVENT_MECHANICS_RULE_VERSION ? eventMechanicsFor(progress.eventId) : null;
+    const expectedReward = Math.min(100, 10 + Math.floor(progress.score / 5));
+    if (!rule || !expectedEventIds.includes(progress.eventId) || !calendar || !isSafeInt(progress.objectiveProgress)
+      || !isSafeInt(progress.score) || progress.score !== progress.objectiveProgress || progress.score > rule.target
+      || typeof progress.participated !== 'boolean' || progress.participated !== (progress.score > 0)
+      || !['unsettled', 'success', 'failed', 'nonparticipant', 'claimed', 'expired'].includes(progress.outcome)
+      || !(progress.choiceId === null || progress.choiceId === 'ice' || progress.choiceId === 'snow')
+      || (progress.eventId === 'EV19-ICE-SNOW-CHOICE' && progress.participated !== Boolean(progress.choiceId))
+      || (progress.eventId !== 'EV19-ICE-SNOW-CHOICE' && progress.choiceId !== null)
+      || !isSafeInt(progress.scoreSpent) || progress.scoreSpent > progress.score
+      || progress.shopRuleVersion !== EVENT_SHOP_RULE_VERSION
+      || !['scheduled', 'active', 'closed', 'expired'].includes(progress.shopStatus)
+      || progress.shopInitialStock !== EVENT_SHOP_INITIAL_STOCK || !isSafeInt(progress.shopStockRemaining)
+      || !isSafeInt(progress.shopPurchasedQuantity) || progress.shopStockRemaining + progress.shopPurchasedQuantity !== progress.shopInitialStock
+      || progress.scoreSpent !== progress.shopPurchasedQuantity * EVENT_SHOP_MARK_PRICE
+      || progress.shopExpiresAtElapsedMs !== calendar.resolvesAtMs
+      || !isRecord(progress.expiredItemQuantities)
+      || Object.entries(progress.expiredItemQuantities).some(([templateId, quantity]) => ![`EVENT-MARK-${progress.eventId}`, `EVENT-RELIC-${progress.eventId}`].includes(templateId)
+        || !isSafeInt(quantity))
+      || !isSafeInt(progress.rewardKrona) || progress.rewardKrona > 100
+      || !(progress.claimExpiresAtElapsedMs === null || isSafeInt(progress.claimExpiresAtElapsedMs, 1))
+      || !(progress.claimReceiptId === null || isNonEmptyString(progress.claimReceiptId))) invalid();
+    const expectedShopStatus = calendar.status === 'resolved' ? 'expired'
+      : calendar.status === 'locked' ? 'closed'
+        : calendar.status === 'active' ? 'active' : 'scheduled';
+    if (progress.shopStatus !== expectedShopStatus) invalid();
+    const eventLootQuantity = candidate.fieldChestStates.reduce((total, chestState) => {
+      const sourceChest = world.fieldChests.find(chest => chest.id === chestState.chestId);
+      if (sourceChest?.chestType !== 'event' || sourceChest.eventId !== progress.eventId) return total;
+      return total + (chestState.lootOutcome?.rewardStacks ?? []).reduce((sum, stack) => {
+        return sum + (stack.templateId === `EVENT-MARK-${progress.eventId}` || stack.templateId === `EVENT-RELIC-${progress.eventId}` ? stack.quantity : 0);
+      }, 0);
+    }, 0);
+    const boughtMarks = progress.shopPurchasedQuantity;
+    const eventItemsExpired = Object.values(progress.expiredItemQuantities).reduce((sum, quantity) => sum + quantity, 0);
+    if ((calendar.status !== 'resolved' && eventItemsExpired !== 0) || eventItemsExpired > eventLootQuantity + boughtMarks) invalid();
+    if (progress.outcome === 'unsettled') {
+      if (calendar.status === 'resolved' || progress.rewardKrona !== 0 || progress.claimExpiresAtElapsedMs !== null || progress.claimReceiptId !== null) invalid();
+    } else if (calendar.status !== 'resolved') invalid();
+    if (progress.outcome === 'success') {
+      if (!progress.participated || progress.objectiveProgress < rule.target
+        || progress.rewardKrona !== expectedReward || !isSafeInt(progress.claimExpiresAtElapsedMs, 1)
+        || progress.claimExpiresAtElapsedMs <= calendar.resolvesAtMs || progress.claimReceiptId !== null) invalid();
+    } else if (progress.outcome === 'claimed') {
+      if (!progress.participated || progress.objectiveProgress < rule.target
+        || progress.rewardKrona !== expectedReward || !isSafeInt(progress.claimExpiresAtElapsedMs, 1)
+        || progress.claimExpiresAtElapsedMs <= calendar.resolvesAtMs || !isNonEmptyString(progress.claimReceiptId)) invalid();
+    } else if (progress.outcome === 'expired') {
+      if (!progress.participated || progress.objectiveProgress < rule.target || progress.rewardKrona !== expectedReward
+        || !isSafeInt(progress.claimExpiresAtElapsedMs, 1) || progress.claimExpiresAtElapsedMs > candidate.simElapsedMs
+        || progress.claimReceiptId !== null) invalid();
+    } else if (progress.rewardKrona !== 0 || progress.claimReceiptId !== null
+      || (progress.outcome === 'failed' && (!progress.participated || progress.objectiveProgress >= rule.target))
+      || (progress.outcome === 'nonparticipant' && (progress.participated || progress.objectiveProgress !== 0))) invalid();
   }
 }
 
@@ -266,6 +402,7 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
     if (type === 'route') return Array.isArray(candidate.playerKnowledge.knownRouteIds) && candidate.playerKnowledge.knownRouteIds.includes(id);
     if (type === 'unit') return Array.isArray(candidate.ownedUnits) && candidate.ownedUnits.some(unit => unit.id === id);
     if (type === 'corpse') return (candidate.playerKnowledge.knownCorpseIds ?? []).includes(id);
+    if (type === 'wildlife') return (candidate.playerKnowledge.knownWildlifeGroupIds ?? []).includes(id);
     if (type === 'item') return candidate.inventory.containers.some(container => isRecord(container) && container.observed === true
       && Array.isArray(container.stacks) && container.stacks.some(stack => isRecord(stack) && stack.itemId === id));
     return false;
@@ -283,10 +420,12 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
     contentVersion: candidate.contentVersion,
     seed: candidate.seed,
   }, world);
+  validateStage10State(candidate, world);
   const rawCombat: unknown = (value as Record<string, unknown>).combat;
   if (rawCombat !== undefined) {
     const badCombat = (): never => { throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup contains invalid encounter state.', 'Bản sao lưu có trạng thái giao chiến không hợp lệ.'); };
-    if (!isRecord(rawCombat) || !isSafeInt(rawCombat.nextEncounterSequence) || !isRecord(rawCombat.target) || !Array.isArray(rawCombat.encounters)) badCombat();
+    if (!isRecord(rawCombat) || !isSafeInt(rawCombat.nextEncounterSequence) || !isRecord(rawCombat.target)
+      || !Array.isArray(rawCombat.wildlifeTargets ?? []) || !Array.isArray(rawCombat.encounters)) badCombat();
     const rawTarget = rawCombat.target;
     const baseTarget = baseline.combat!.target;
     const targetStatus = rawTarget.status;
@@ -305,22 +444,53 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
     const movedMm = Math.hypot(Number(rawTarget.position.xMm) - basePosition.xMm, Number(rawTarget.position.yMm) - basePosition.yMm);
     if (!Number.isSafeInteger(rawTarget.position.xMm) || !Number.isSafeInteger(rawTarget.position.yMm)
       || (targetStatus === 'retreated' ? movedMm > 5_100 || movedMm < 4_900 : movedMm !== 0)) badCombat();
+    const preyByActorId = new Map<string, { maxHealth: number; status: string; groupId: string | null }>([
+      [baseTarget.actorId, { maxHealth: baseTarget.bodyRecord.health!.max, status: String(targetStatus), groupId: null }],
+    ]);
+    const wildlifeTargets = (rawCombat.wildlifeTargets ?? []) as unknown[];
+    if (new Set(wildlifeTargets.filter(isRecord).map(target => target.actorId)).size !== wildlifeTargets.length) badCombat();
+    for (const rawPrey of wildlifeTargets) {
+      if (!isRecord(rawPrey) || !isNonEmptyString(rawPrey.wildlifeGroupId) || !isSafeInt(rawPrey.individualOrdinal, 1)) badCombat();
+      const group = candidate.wildlife.groups.find(item => item.id === rawPrey.wildlifeGroupId && item.discovery === 'known');
+      const originalGroup = baseline.wildlife.groups.find(item => item.id === rawPrey.wildlifeGroupId);
+      const ordinal = rawPrey.individualOrdinal as number;
+      if (!group || !originalGroup || ordinal >= group.nextMemberOrdinal || ordinal > group.capacity) badCombat();
+      const expected = wildlifeSpeciesProfile(group.populationKey, group.displayName, group.ecologyId, group.position, group.id, ordinal);
+      const body = rawPrey.bodyRecord;
+      const health = isRecord(body) && isRecord(body.health) ? body.health : null;
+      if (rawPrey.actorId !== expected.actorId || rawPrey.speciesId !== expected.speciesId
+        || rawPrey.sourceEcologyId !== expected.sourceEcologyId || rawPrey.populationKey !== expected.populationKey
+        || rawPrey.siteId !== expected.siteId || !['available', 'reacting', 'retreated', 'dead'].includes(String(rawPrey.status))
+        || !isRecord(rawPrey.position) || !health || !isSafeInt(health.current) || !isSafeInt(health.max)
+        || health.max !== expected.bodyRecord.health.current || health.current > health.max
+        || canonicalStateHash(rawPrey.combatProfile) !== canonicalStateHash(expected.combatProfile)
+        || canonicalStateHash({ ...body, health: { ...health, current: health.max } }) !== canonicalStateHash(expected.bodyRecord)
+        || (rawPrey.status === 'dead' && health.current !== 0) || (rawPrey.status !== 'dead' && health.current <= 0)) badCombat();
+      const preyPosition = rawPrey.position as { xMm: number; yMm: number };
+      const retreatOffset = Math.hypot(preyPosition.xMm - group.position.xMm, preyPosition.yMm - group.position.yMm);
+      const maximumRetreat = 5_000 * (rawCombat.encounters.length + 1);
+      if (!Number.isSafeInteger(preyPosition.xMm) || !Number.isSafeInteger(preyPosition.yMm)
+        || retreatOffset > maximumRetreat || (rawPrey.status === 'available' && retreatOffset !== 0)) badCombat();
+      preyByActorId.set(expected.actorId, { maxHealth: expected.bodyRecord.health.current, status: String(rawPrey.status), groupId: group.id });
+      if (rawPrey.status === 'dead' && !candidate.corpses.some(corpse => corpse.id === `CORPSE-${expected.actorId}` && corpse.actorId === expected.actorId)) badCombat();
+    }
     const encounterIds = new Set<string>();
     const encounterSequences = new Set<number>();
     let activeCount = 0;
+    const activeTargetIds = new Set<string>();
     let maxSequence = 0;
     for (const candidateEncounter of rawCombat.encounters) {
       if (!isRecord(candidateEncounter) || !isNonEmptyString(candidateEncounter.id) || !isSafeInt(candidateEncounter.sequence)
         || !['active', 'victory', 'defeat', 'retreated'].includes(String(candidateEncounter.status))
-        || candidateEncounter.targetActorId !== baseTarget.actorId || !Array.isArray(candidateEncounter.actorIds)
-        || candidateEncounter.actorIds.length < 1 || candidateEncounter.actorIds.length > 12
-        || candidateEncounter.actorIds.some((id: unknown) => typeof id !== 'string')
-        || new Set(candidateEncounter.actorIds).size !== candidateEncounter.actorIds.length
+        || typeof candidateEncounter.targetActorId !== 'string' || !Array.isArray(candidateEncounter.actorIds)
+        || candidateEncounter.actorIds.length !== 1 || typeof candidateEncounter.actorIds[0] !== 'string'
         || !Array.isArray(candidateEncounter.log) || candidateEncounter.log.length > 100
         || !isSafeInt(candidateEncounter.startedAtElapsedMs) || candidateEncounter.startedAtElapsedMs > candidate.simElapsedMs
         || !isSafeInt(candidateEncounter.round) || !isRecord(candidateEncounter.targetHealth)
         || !isSafeInt(candidateEncounter.targetHealth.current) || !isSafeInt(candidateEncounter.targetHealth.max)
-        || candidateEncounter.targetHealth.max !== targetHealth.max || candidateEncounter.targetHealth.current > targetHealth.max
+        || !preyByActorId.has(candidateEncounter.targetActorId)
+        || candidateEncounter.targetHealth.max !== preyByActorId.get(candidateEncounter.targetActorId)!.maxHealth
+        || candidateEncounter.targetHealth.current > candidateEncounter.targetHealth.max
         || !['attack', 'retreat'].includes(String(candidateEncounter.pendingIntent))
         || !(candidateEncounter.completedAtElapsedMs === null || (isSafeInt(candidateEncounter.completedAtElapsedMs) && candidateEncounter.completedAtElapsedMs <= candidate.simElapsedMs))
         || !(candidateEncounter.nextTurnAtElapsedMs === null || isSafeInt(candidateEncounter.nextTurnAtElapsedMs))) badCombat();
@@ -334,22 +504,24 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
       if (actorIds.some(actorId => !candidate.ownedUnits.some(unit => unit.id === actorId && unit.ownerId === candidate.player.id))) badCombat();
       if (candidateEncounter.status === 'active') {
         activeCount += 1;
+        activeTargetIds.add(candidateEncounter.targetActorId as string);
         if (!isSafeInt(candidateEncounter.nextTurnAtElapsedMs) || candidateEncounter.nextTurnAtElapsedMs <= candidate.simElapsedMs
           || candidateEncounter.completedAtElapsedMs !== null) badCombat();
       } else if (candidateEncounter.nextTurnAtElapsedMs !== null || candidateEncounter.completedAtElapsedMs === null) badCombat();
-      const streamId = (actorIds.length > 1 ? 'stage07-group-combat:' : 'stage07-combat:') + encounterId;
+      if (candidateEncounter.status === 'victory' && candidateEncounter.targetHealth.current !== 0) badCombat();
+      if (candidateEncounter.status !== 'victory' && candidateEncounter.targetHealth.current === 0) badCombat();
+      const groupId = preyByActorId.get(candidateEncounter.targetActorId as string)!.groupId;
+      const streamId = (groupId ? 'wildlife-combat:' : 'stage07-combat:') + encounterId;
       const stream = candidate.rngStreams?.[streamId];
       if (!stream || stream.algorithm !== 'HASH-PRIMITIVE-1.0' || !isSafeInt(stream.counter)) badCombat();
       if (!candidateEncounter.log.every(entry => isRecord(entry) && isSafeInt(entry.atElapsedMs) && entry.atElapsedMs <= candidate.simElapsedMs
-        && isNonEmptyString(entry.actorId) && entry.targetActorId === baseTarget.actorId
+        && isNonEmptyString(entry.actorId) && entry.targetActorId === candidateEncounter.targetActorId
         && ['hit', 'miss', 'retreat', 'defeat', 'victory'].includes(String(entry.outcome))
         && isSafeInt(entry.damage) && isSafeInt(entry.damageTaken) && isSafeInt(entry.actorHealth) && isSafeInt(entry.targetHealth))) badCombat();
     }
     if (!isSafeInt(rawCombat.nextEncounterSequence) || (rawCombat.nextEncounterSequence as number) <= maxSequence
-      || activeCount > 1 || (activeCount === 1) !== (targetStatus === 'reacting')
-      || (targetStatus === 'available' && rawCombat.encounters.length > 0)
-      || (targetStatus === 'dead' && !candidate.corpses.some(corpse => corpse.id === 'CORPSE-' + baseTarget.actorId && corpse.actorId === baseTarget.actorId))
-      || (targetStatus === 'retreated' && rawCombat.encounters.length === 0)) badCombat();
+      || activeCount > 1 || (activeCount === 1) !== (activeTargetIds.size === 1)
+      || [...activeTargetIds].some(id => preyByActorId.get(id)?.status !== 'reacting')) badCombat();
   }
   if (!isRecord(candidate.clockControl) || !isRecord(candidate.timeBoundaries) || !isRecord(candidate.survival)
     || !isRecord(candidate.territory) || !isRecord(candidate.territory.survivalFire) || !isRecord(candidate.territory.tomb)
@@ -398,6 +570,8 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
   normalized.exploration = baseline.exploration;
   normalized.spatial = baseline.spatial;
   normalized.fieldChestStates = baseline.fieldChestStates;
+  normalized.wildlife = baseline.wildlife;
+  normalized.eventProgress = baseline.eventProgress;
   normalized.playerKnowledge = structuredClone(candidate.playerKnowledge);
   normalized.stage08 = baseline.stage08;
   normalized.quests = baseline.quests;
@@ -596,6 +770,8 @@ function validateBackupEvent(value: unknown, index: number, saveId: string, rece
     'simulation_time_advanced', 'simulation_hour_settled', 'world_day_started', 'world_sunset',
     'world_night_started', 'world_dawn', 'opening_protection_started', 'opening_protection_expired',
     'event_calendar_opened', 'event_calendar_locked', 'event_calendar_resolved', 'mandatory_event_blocked',
+    'event_objective_progressed', 'event_objective_settled', 'event_choice_made', 'event_shop_purchase_committed',
+    'event_inventory_expired', 'event_reward_claimed', 'event_reward_claim_expired',
     'event_rank_settlement_blocked', 'opening_rival_action_committed', 'event_rank_settled', 'opening_rank_reward_claimed',
     'caravan_departed', 'caravan_distress_opened', 'caravan_arrived', 'quest_completed',
     'market_opened', 'caravan_window_closed', 'auction_bid_expired', 'shop_offer_expired',
@@ -605,8 +781,8 @@ function validateBackupEvent(value: unknown, index: number, saveId: string, rece
     'fire_refuelled', 'survival_fire_lit', 'tomb_job_queued', 'tomb_job_started', 'tomb_job_blocked',
     'tomb_job_cancelled', 'tomb_unit_completed', 'tomb_death_qi_refilled',
     'movement_order_started', 'movement_order_completed', 'movement_order_cancelled', 'spatial_search_started',
-    'spatial_search_tick_settled', 'spatial_search_return_started', 'spatial_search_returned', 'spatial_search_recall_started',
-    'spatial_search_completed', 'spatial_search_cancelled', 'chest_signal_detected', 'hunt_target_detected',
+    'spatial_search_tick_settled', 'spatial_search_completed', 'spatial_search_cancelled', 'chest_signal_detected',
+    'chest_opened', 'chest_loot_delivered', 'wildlife_group_discovered', 'wildlife_group_depleted', 'wildlife_population_replenished',
     'harvest_job_started', 'harvest_arrived_at_workfront', 'resource_extracted', 'harvest_work_completed',
     'harvest_job_blocked', 'harvest_cargo_returned', 'harvest_job_cancelled', 'inventory_item_transferred',
     'inventory_stack_split', 'inventory_stacks_merged', 'inventory_food_consumed',
@@ -632,6 +808,231 @@ function validateBackupEvent(value: unknown, index: number, saveId: string, rece
   }
   if (!systemEventTypes.has(String(value.eventType))) return false;
   return validEventPayload(value.payload);
+}
+
+function validateEventProgressLedger(state: GameState, events: readonly Record<string, any>[], world: WorldDefinition): boolean {
+  const scoreByEvent = new Map<string, number>();
+  const purchasesByEvent = new Map<string, { quantity: number; score: number }>();
+  const expiredByEvent = new Map<string, Record<string, number>>();
+  const choiceByEvent = new Map<string, string>();
+  const settledByEvent = new Map<string, Record<string, unknown>>();
+  const claimedByEvent = new Map<string, { amount: number; commandId: string; count: number }>();
+  const expiredClaims = new Set<string>();
+  const expiredEventIds = new Set<string>();
+  const addExpiry = (eventId: string, quantities: Record<string, unknown>): boolean => {
+    const accumulated = expiredByEvent.get(eventId) ?? {};
+    for (const [templateId, quantity] of Object.entries(quantities)) {
+      if (!isSafeInt(quantity)) return false;
+      accumulated[templateId] = (accumulated[templateId] ?? 0) + quantity;
+    }
+    expiredByEvent.set(eventId, accumulated);
+    return true;
+  };
+
+  for (let index = 0; index < events.length; index += 1) {
+    const event = events[index]!;
+    const eventId = isRecord(event.payload) && typeof event.payload.eventId === 'string' ? event.payload.eventId : null;
+    if (event.eventType === 'event_objective_progressed') {
+      const progress = state.eventProgress.find(item => item.eventId === eventId);
+      const rule = progress ? eventMechanicsFor(progress.eventId) : null;
+      const payload = event.payload;
+      if (!progress || !rule || !isRecord(payload) || payload.ruleVersion !== EVENT_MECHANICS_RULE_VERSION
+        || !isSafeInt(payload.scoreDelta, 1) || !isSafeInt(payload.target) || payload.target !== rule.target
+        || !isSafeInt(payload.objectiveProgress, 1) || !Array.isArray(payload.sourceEventTypes)
+        || !payload.sourceEventTypes.every(type => typeof type === 'string')) return false;
+      const sourceEvents = events.slice(0, index).filter(source => source.causalCommandId === event.causalCommandId
+        && source.occurredAtElapsedMs === event.occurredAtElapsedMs && Object.hasOwn(rule.activityPoints, source.eventType));
+      const sourceTypes = [...new Set(sourceEvents.map(source => source.eventType))].sort();
+      const reportedTypes = [...new Set(payload.sourceEventTypes as string[])].sort();
+      const sourcePoints = sourceEvents.reduce((sum, source) => sum + (rule.activityPoints[source.eventType] ?? 0), 0);
+      const previousScore = scoreByEvent.get(progress.eventId) ?? 0;
+      const expectedDelta = Math.min(sourcePoints, Math.max(0, rule.target - previousScore));
+      const schedule = world.eventSchedule.find(row => row.id === progress.eventId);
+      if (!schedule || event.occurredAtElapsedMs < schedule.opensAtMs || event.occurredAtElapsedMs >= schedule.locksAtMs
+        || sourceEvents.length === 0 || JSON.stringify(sourceTypes) !== JSON.stringify(reportedTypes)
+        || payload.scoreDelta !== expectedDelta || payload.objectiveProgress !== previousScore + expectedDelta) return false;
+      scoreByEvent.set(progress.eventId, previousScore + expectedDelta);
+    } else if (event.eventType === 'event_choice_made') {
+      const payload = event.payload;
+      const schedule = world.eventSchedule.find(row => row.id === eventId);
+      if (!isRecord(payload) || payload.ruleVersion !== EVENT_MECHANICS_RULE_VERSION || payload.choiceId !== 'ice' && payload.choiceId !== 'snow'
+        || !schedule || event.occurredAtElapsedMs < schedule.opensAtMs || event.occurredAtElapsedMs >= schedule.locksAtMs
+        || choiceByEvent.has(eventId!)) return false;
+      choiceByEvent.set(eventId!, payload.choiceId);
+    } else if (event.eventType === 'event_shop_purchase_committed') {
+      const payload = event.payload;
+      const schedule = world.eventSchedule.find(row => row.id === eventId);
+      if (!isRecord(payload) || payload.shopRuleVersion !== EVENT_SHOP_RULE_VERSION || payload.itemTemplateId !== `EVENT-MARK-${eventId}`
+        || !isSafeInt(payload.quantity, 1) || payload.scoreCost !== payload.quantity * EVENT_SHOP_MARK_PRICE
+        || !isSafeInt(payload.stockRemaining) || !schedule || event.occurredAtElapsedMs < schedule.opensAtMs
+        || event.occurredAtElapsedMs >= schedule.locksAtMs) return false;
+      const total = purchasesByEvent.get(eventId!) ?? { quantity: 0, score: 0 };
+      const expectedStock = EVENT_SHOP_INITIAL_STOCK - total.quantity - payload.quantity;
+      const scoreEarnedByNow = scoreByEvent.get(eventId!) ?? 0;
+      if (expectedStock < 0 || payload.stockRemaining !== expectedStock || total.score + payload.scoreCost > scoreEarnedByNow) return false;
+      total.quantity += payload.quantity;
+      total.score += payload.scoreCost;
+      purchasesByEvent.set(eventId!, total);
+    } else if (event.eventType === 'event_inventory_expired') {
+      const payload = event.payload;
+      const schedule = world.eventSchedule.find(row => row.id === eventId);
+      if (!isRecord(payload) || payload.shopRuleVersion !== EVENT_SHOP_RULE_VERSION || !isRecord(payload.expiredByTemplate)
+        || !schedule || event.occurredAtElapsedMs !== schedule.resolvesAtMs || expiredEventIds.has(eventId!)
+        || !events.slice(0, index).some(previous => previous.eventType === 'event_calendar_resolved'
+          && isRecord(previous.payload) && previous.payload.eventId === eventId && previous.occurredAtElapsedMs === event.occurredAtElapsedMs)
+        || !addExpiry(eventId!, payload.expiredByTemplate)) return false;
+      expiredEventIds.add(eventId!);
+    } else if (event.eventType === 'event_objective_settled') {
+      if (!eventId || !isRecord(event.payload) || settledByEvent.has(eventId)) return false;
+      settledByEvent.set(eventId, event.payload);
+    } else if (event.eventType === 'event_reward_claimed') {
+      if (!eventId || !isRecord(event.payload) || !isSafeInt(event.payload.amount, 1)
+        || event.payload.currencyId !== 'KRONA' || !isNonEmptyString(event.payload.commandId)
+        || !settledByEvent.has(eventId)) return false;
+      const total = claimedByEvent.get(eventId) ?? { amount: 0, commandId: event.payload.commandId, count: 0 };
+      total.amount += event.payload.amount;
+      total.count += 1;
+      claimedByEvent.set(eventId, total);
+    } else if (event.eventType === 'event_reward_claim_expired') {
+      const payload = event.payload;
+      const schedule = world.eventSchedule.find(row => row.id === eventId);
+      if (!eventId || !isRecord(payload) || payload.ruleVersion !== EVENT_REWARD_RULE_VERSION
+        || !schedule || !isSafeInt(payload.expiredAtElapsedMs) || event.occurredAtElapsedMs !== payload.expiredAtElapsedMs
+        || expiredClaims.has(eventId)) return false;
+      expiredClaims.add(eventId);
+    }
+  }
+
+  return state.eventProgress.every(progress => {
+    const score = scoreByEvent.get(progress.eventId) ?? 0;
+    const purchase = purchasesByEvent.get(progress.eventId) ?? { quantity: 0, score: 0 };
+    const expired = expiredByEvent.get(progress.eventId) ?? {};
+    const settlement = settledByEvent.get(progress.eventId);
+    const rewardClaims = claimedByEvent.get(progress.eventId) ?? { amount: 0, commandId: '', count: 0 };
+    const choice = choiceByEvent.get(progress.eventId) ?? null;
+    if (progress.score !== score || progress.objectiveProgress !== score
+      || progress.shopPurchasedQuantity !== purchase.quantity || progress.scoreSpent !== purchase.score
+      || JSON.stringify(progress.expiredItemQuantities) !== JSON.stringify(expired)
+      || progress.choiceId !== choice
+      || (progress.outcome === 'unsettled') !== !settlement) return false;
+    if (settlement) {
+      const rule = eventMechanicsFor(progress.eventId)!;
+      const outcome = progress.participated ? (score >= rule.target ? 'success' : 'failed') : 'nonparticipant';
+      const reward = outcome === 'success' ? Math.min(100, 10 + Math.floor(score / 5)) : 0;
+      const schedule = world.eventSchedule.find(row => row.id === progress.eventId)!;
+      if (settlement.outcome !== outcome || settlement.score !== score || settlement.objectiveProgress !== score
+        || settlement.target !== rule.target || settlement.rewardKrona !== reward
+        || settlement.claimExpiresAtElapsedMs !== (outcome === 'success' ? schedule.resolvesAtMs + 7 * DAY_MS : null)) return false;
+    }
+    if ((progress.outcome === 'claimed') !== (rewardClaims.count === 1)
+      || (rewardClaims.count > 0 && (rewardClaims.amount !== progress.rewardKrona || rewardClaims.commandId !== progress.claimReceiptId))) return false;
+    if ((progress.outcome === 'expired') !== expiredClaims.has(progress.eventId)) return false;
+    return true;
+  });
+}
+
+function validateWildlifeProgressLedger(state: GameState, events: readonly Record<string, any>[], world: WorldDefinition): boolean {
+  const initial = initialWildlifeState(world, 0);
+  const groups = new Map(initial.groups.map(group => [group.id, group]));
+  const remaining = new Map(initial.groups.map(group => [group.id, group.capacity]));
+  const discoveredAt = new Map<string, number>();
+  const killedActors = new Set<string>();
+  const depletionReceipts: string[] = [];
+  const expectedDepletions: string[] = [];
+  const replenishmentTimes = new Set<number>();
+  const pointDistanceToSegment = (point: { xMm: number; yMm: number }, from: { xMm: number; yMm: number }, to: { xMm: number; yMm: number }): number => {
+    const dx = to.xMm - from.xMm;
+    const dy = to.yMm - from.yMm;
+    const lengthSquared = dx * dx + dy * dy;
+    const t = lengthSquared === 0 ? 0 : Math.max(0, Math.min(1, ((point.xMm - from.xMm) * dx + (point.yMm - from.yMm) * dy) / lengthSquared));
+    return Math.hypot(point.xMm - (from.xMm + dx * t), point.yMm - (from.yMm + dy * t));
+  };
+
+  for (let index = 0; index < events.length; index += 1) {
+    const event = events[index]!;
+    const payload = event.payload;
+    if (!isRecord(payload)) return false;
+    if (event.eventType === 'wildlife_group_discovered') {
+      const groupId = typeof payload.groupId === 'string' ? payload.groupId : '';
+      const group = groups.get(groupId);
+      const liveGroup = state.wildlife.groups.find(candidate => candidate.id === groupId);
+      const searchJob = state.spatial.searchJobs.find(candidate => candidate.id === payload.jobId);
+      const supportedSweep = Boolean(group && searchJob && searchJob.path.slice(1).some((point, pointIndex) => {
+        const from = searchJob.path[pointIndex]!;
+        return Math.abs((group.position.sourceZMetres ?? 0) - (from.sourceZMetres ?? 0)) <= 2
+          && pointDistanceToSegment(group.position, from, point) <= searchJob.laneWidthMm / 2;
+      }));
+      const hadSettledSearchTick = events.slice(0, index).some(previous => previous.eventType === 'spatial_search_tick_settled'
+        && previous.causalCommandId === event.causalCommandId && previous.occurredAtElapsedMs === event.occurredAtElapsedMs
+        && isRecord(previous.payload) && previous.payload.jobId === payload.jobId);
+      if (!group || !liveGroup || !searchJob || !supportedSweep || !hadSettledSearchTick
+        || discoveredAt.has(groupId) || liveGroup.discovery !== 'known'
+        || payload.ecologyId !== group.ecologyId || payload.speciesId !== group.speciesId
+        || payload.observedCount !== group.capacity || liveGroup.discoveredAtElapsedMs !== event.occurredAtElapsedMs
+        || event.occurredAtElapsedMs < searchJob.startedAtElapsedMs) return false;
+      discoveredAt.set(groupId, event.occurredAtElapsedMs);
+    } else if (event.eventType === 'combat_encounter_won' && typeof payload.wildlifeGroupId === 'string') {
+      const groupId = payload.wildlifeGroupId;
+      const current = remaining.get(groupId);
+      const actorId = typeof payload.targetId === 'string' ? payload.targetId : '';
+      const prey = (state.combat?.wildlifeTargets ?? []).find(candidate => candidate.actorId === actorId);
+      const encounter = state.combat?.encounters.find(candidate => candidate.id === payload.encounterId);
+      const hasSettledVictory = events.slice(0, index).some(previous => previous.eventType === 'combat_turn_settled'
+        && previous.causalCommandId === event.causalCommandId && previous.occurredAtElapsedMs === event.occurredAtElapsedMs
+        && isRecord(previous.payload) && previous.payload.encounterId === payload.encounterId
+        && previous.payload.outcome === 'victory');
+      if (!discoveredAt.has(groupId) || current === undefined || current < 1 || !prey || prey.wildlifeGroupId !== groupId
+        || prey.status !== 'dead' || !encounter || encounter.status !== 'victory' || encounter.targetActorId !== actorId
+        || encounter.completedAtElapsedMs !== event.occurredAtElapsedMs || !hasSettledVictory
+        || killedActors.has(actorId) || payload.corpseId !== `CORPSE-${actorId}`
+        || !state.corpses.some(corpse => corpse.id === payload.corpseId && corpse.actorId === actorId)) return false;
+      killedActors.add(actorId);
+      const afterKill = current - 1;
+      remaining.set(groupId, afterKill);
+      if (afterKill === 0) expectedDepletions.push(`${groupId}|${event.occurredAtElapsedMs}|${event.causalCommandId}`);
+    } else if (event.eventType === 'wildlife_group_depleted') {
+      const groupId = typeof payload.groupId === 'string' ? payload.groupId : '';
+      const signature = `${groupId}|${event.occurredAtElapsedMs}|${event.causalCommandId}`;
+      if (!groups.has(groupId) || remaining.get(groupId) !== 0 || payload.ecologyId !== groups.get(groupId)!.ecologyId) return false;
+      depletionReceipts.push(signature);
+    } else if (event.eventType === 'wildlife_population_replenished') {
+      const groupId = typeof payload.groupId === 'string' ? payload.groupId : '';
+      const original = groups.get(groupId);
+      const current = remaining.get(groupId);
+      const next = current === undefined ? undefined : current + 1;
+      if (!original || current === undefined || next === undefined || !isWildlifeRenewable(original.populationKey)
+        || current >= original.capacity || payload.amount !== 1 || payload.remaining !== next
+        || !isSafeInt(event.occurredAtElapsedMs) || event.occurredAtElapsedMs > state.simElapsedMs) return false;
+      remaining.set(groupId, next);
+      replenishmentTimes.add(event.occurredAtElapsedMs);
+    }
+  }
+
+  const expectedKnownIds = [...discoveredAt.keys()].sort();
+  const knownIds = [...(state.playerKnowledge.knownWildlifeGroupIds ?? [])].sort();
+  if (JSON.stringify(expectedKnownIds) !== JSON.stringify(knownIds)
+    || state.wildlife.groups.some(group => (group.discovery === 'known') !== discoveredAt.has(group.id)
+      || (group.discovery === 'known' && group.discoveredAtElapsedMs !== discoveredAt.get(group.id)))) return false;
+  const wildlifeTargets = state.combat?.wildlifeTargets ?? [];
+  for (const group of initial.groups) {
+    const live = state.wildlife.groups.find(candidate => candidate.id === group.id);
+    const targets = wildlifeTargets.filter(target => target.wildlifeGroupId === group.id);
+    const ordinals = targets.map(target => target.individualOrdinal ?? 0).sort((left, right) => left - right);
+    if (!live || live.remaining !== remaining.get(group.id)
+      || live.nextMemberOrdinal !== targets.length + 1
+      || ordinals.some((ordinal, index) => ordinal !== index + 1)
+      || targets.filter(target => target.status === 'dead').length !== targets.filter(target => killedActors.has(target.actorId)).length
+      || targets.some(target => (target.status === 'dead') !== killedActors.has(target.actorId))) return false;
+  }
+  if (JSON.stringify([...expectedDepletions].sort()) !== JSON.stringify([...depletionReceipts].sort())) return false;
+  const replenishedAt = [...replenishmentTimes].sort((left, right) => left - right);
+  if (replenishedAt.length > 0) {
+    const phase = replenishedAt[0]! % WILDLIFE_REPLENISHMENT_MS;
+    if (replenishedAt.some(at => at % WILDLIFE_REPLENISHMENT_MS !== phase)
+      || state.wildlife.nextReplenishmentAtElapsedMs % WILDLIFE_REPLENISHMENT_MS !== phase
+      || replenishedAt.some(at => (state.wildlife.nextReplenishmentAtElapsedMs - at) % WILDLIFE_REPLENISHMENT_MS !== 0)) return false;
+  }
+  return true;
 }
 
 function validateBackup(value: unknown, world: WorldDefinition): BackupEnvelope {
@@ -669,6 +1070,12 @@ function validateBackup(value: unknown, world: WorldDefinition): BackupEnvelope 
     throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup event ledger is malformed.', 'Bản sao lưu không hợp lệ.');
   }
   const ledgerEvents = value.events as Array<Record<string, any>>;
+  if (!validateEventProgressLedger(state, ledgerEvents, world)) {
+    throw new ApiProblem(400, 'BACKUP_INVALID', 'The event progress does not match its committed runtime receipts.', 'Tiến độ sự kiện không khớp với nhật ký đã quyết toán.');
+  }
+  if (!validateWildlifeProgressLedger(state, ledgerEvents, world)) {
+    throw new ApiProblem(400, 'BACKUP_INVALID', 'The wildlife state does not match its committed search, combat and regeneration receipts.', 'Trạng thái quần thể không khớp với nhật ký tìm kiếm, săn bắt và tái tạo.');
+  }
   const lifecycleReceiptMatches = state.calendar.every(event => {
     const matches = (sequence: number | null, eventType: string): boolean => sequence === null
       || (ledgerEvents[sequence - 1]?.eventType === eventType
@@ -1262,6 +1669,13 @@ export class GameApplicationService {
       event_calendar_opened: { category: 'event', title: 'Một sự kiện đã mở', text: String(event.payload.displayName ?? 'Sự kiện đã mở theo lịch thế giới.') },
       event_calendar_locked: { category: 'event', title: 'Sự kiện đã khóa ghi nhận', text: `${String(event.payload.displayName ?? 'Sự kiện')} đã đến hạn khóa.` },
       event_calendar_resolved: { category: 'event', title: 'Mốc sự kiện đã quyết toán', text: `${String(event.payload.displayName ?? 'Sự kiện')} đã kết thúc. Không tự cấp phần thưởng khi thiếu kết quả hợp lệ.` },
+      event_objective_progressed: { category: 'event', title: 'Mục tiêu sự kiện đã tăng', text: `${String(event.payload.eventId)} · tiến độ ${String(event.payload.objectiveProgress)}/${String(event.payload.target)} · điểm +${String(event.payload.scoreDelta)}.` },
+      event_objective_settled: { category: 'event', title: 'Đã chốt mục tiêu sự kiện', text: `${String(event.payload.eventId)} · kết quả ${String(event.payload.outcome)} · phần thưởng ${String(event.payload.rewardKrona)} Krona.` },
+      event_choice_made: { category: 'event', title: 'Đã ghi lựa chọn chiến dịch', text: `${String(event.payload.eventId)} · con đường ${String(event.payload.choiceId)}.` },
+      event_shop_purchase_committed: { category: 'event', title: 'Đã mua trong cửa hàng sự kiện', text: `${String(event.payload.quantity)} ${String(event.payload.itemTemplateId)} · ${String(event.payload.scoreCost)} điểm · còn ${String(event.payload.stockRemaining)} trong kho.` },
+      event_inventory_expired: { category: 'event', title: 'Vật phẩm sự kiện đã hết hạn', text: `${String(event.payload.eventId)} · vật phẩm gắn với sự kiện đã bị loại khỏi kho khi kết thúc.` },
+      event_reward_claimed: { category: 'event', title: 'Đã nhận thưởng sự kiện', text: `${String(event.payload.amount)} ${String(event.payload.currencyId)} từ ${String(event.payload.eventId)}.` },
+      event_reward_claim_expired: { category: 'event', title: 'Hết hạn nhận thưởng sự kiện', text: `Thời hạn nhận thưởng của ${String(event.payload.eventId)} đã kết thúc.` },
       event_rank_settlement_blocked: { category: 'event', title: 'Opening rank settlement held', text: 'The fixed contender roster is not compiled, so no rank or reward was assigned.' },
       opening_rival_action_committed: { category: 'ranking', title: 'Đối thủ đã hoàn tất một hành động', text: `${String(event.payload.contenderId)} · ${String(event.payload.action)} · ${String(event.payload.result)} · +${String(event.payload.xpAwarded)} XP · Cấp ${String(event.payload.levelAfter)}.` },
       event_rank_settled: { category: 'ranking', title: 'Bảng Cấp đã khóa kết quả', text: `${String(event.payload.resultRows)} hàng đủ điều kiện đã được xếp theo thời điểm hoàn thành; hạng của Lí Lan: ${String(event.payload.playerRank ?? 'chưa đủ điều kiện')}.` },
@@ -1292,13 +1706,14 @@ export class GameApplicationService {
       movement_order_cancelled: { category: 'travel', title: 'Travel cancelled', text: 'Travel stopped at the actor’s current position.' },
       spatial_search_started: { category: 'exploration', title: 'Area search started', text: 'The assigned squad began its area sweep.' },
       spatial_search_tick_settled: { category: 'exploration', title: 'Search sweep settled', text: `${Number(event.payload.grossAreaM2).toFixed(1)} m² swept in this 15-minute tick.` },
-      spatial_search_return_started: { category: 'exploration', title: 'Return journey started', text: `The squad is returning after ${String(event.payload.reason)}.` },
-      spatial_search_returned: { category: 'exploration', title: 'Squad returned', text: 'The search squad reached its starting point.' },
-      spatial_search_recall_started: { category: 'exploration', title: 'Squad recalled', text: 'The search stopped and the squad is returning to its starting point.' },
-      spatial_search_completed: { category: 'exploration', title: 'Area search completed', text: 'The squad returned after completing its selected sweep.' },
+      spatial_search_completed: { category: 'exploration', title: 'Search completed', text: 'The planned search lane was completed.' },
+      wildlife_group_discovered: { category: 'exploration', title: 'Wildlife group discovered', text: `${String(event.payload.observedCount)} ${String(event.payload.speciesId)} individual(s) identified at a known location.` },
+      wildlife_group_depleted: { category: 'combat', title: 'Wildlife group depleted', text: `The finite group ${String(event.payload.groupId)} has no remaining animals.` },
+      wildlife_population_replenished: { category: 'wildlife', title: 'Wildlife population replenished', text: `${String(event.payload.amount)} member(s) returned to group ${String(event.payload.groupId)} under the regional regeneration rule.` },
       spatial_search_cancelled: { category: 'exploration', title: 'Search cancelled', text: 'The search stopped at the observer’s current position.' },
       chest_signal_detected: { category: 'exploration', title: 'Buried signal detected', text: 'A buried signal was detected in the swept lane.' },
-      hunt_target_detected: { category: 'combat', title: 'Wildlife contact detected', text: 'The hunting sweep found a target from the existing population record.' },
+      chest_opened: { category: 'exploration', title: 'Chest opened', text: `${String(event.payload.rarity)} ${String(event.payload.chestType)} chest opened; its compiled rarity and type table was committed.` },
+      chest_loot_delivered: { category: 'inventory', title: 'Chest rewards delivered', text: 'The committed reward stacks were added to the actor’s inventory.' },
       harvest_job_started: { category: 'logistics', title: 'Harvest trip started', text: `Reserved ${String(event.payload.quantity)} units of ${String(event.payload.materialId)} for a round trip.` },
       harvest_arrived_at_workfront: { category: 'logistics', title: 'Arrived at resource', text: 'The worker reached the resource and began gathering.' },
       resource_extracted: { category: 'logistics', title: 'Resource gathered', text: `${String(event.payload.quantity)} ${String(event.payload.materialId)} unit(s) gathered.` },

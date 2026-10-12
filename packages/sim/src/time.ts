@@ -4,6 +4,8 @@ import { integrateSpatialTo, nextSpatialBoundary, settleSpatialBoundary } from '
 import { integrateConstructionWork, nextConstructionCompletionAt, nextHeaterServiceCompletionAt, settleConstructionCompletions, settleHeaterServices } from './construction.ts';
 import { nextCombatBoundaryAt, settleCombatBoundary } from './combat.ts';
 import { nextStage08BoundaryAt, settleOpeningLevelRank, settleStage08Boundary } from './stage08.ts';
+import { replenishWildlife } from './wildlife.ts';
+import { expireEventItems, recordEventActivities, settleEventOutcome, settleExpiredEventClaims, updateEventShopStatus } from './eventRuntime.ts';
 import { OPENING_FIRE_EFFECTIVE_TEMPERATURE_C } from '../../content/src/openingEnvironment.ts';
 
 export const MINUTE_MS = 60_000;
@@ -272,6 +274,7 @@ function nextEventTime(state: GameState, target: number, coldRate: number, world
     target,
     ...(combatBoundary === null ? [] : [combatBoundary]),
     nextStage08BoundaryAt(state) ?? Number.MAX_SAFE_INTEGER,
+    state.wildlife.nextReplenishmentAtElapsedMs,
     state.timeBoundaries.nextHourlySettlementAtElapsedMs,
     state.timeBoundaries.nextMidnightAtElapsedMs,
     state.timeBoundaries.nextDailySettlementAtElapsedMs,
@@ -281,6 +284,7 @@ function nextEventTime(state: GameState, target: number, coldRate: number, world
     state.timeBoundaries.protectionExpiryAtElapsedMs ?? Number.MAX_SAFE_INTEGER,
     nextCalendarBoundaryAt(state) ?? Number.MAX_SAFE_INTEGER,
     state.territory.survivalFire.nextFuelConsumptionAtElapsedMs ?? Number.MAX_SAFE_INTEGER,
+    ...state.eventProgress.map(progress => progress.outcome === 'success' ? progress.claimExpiresAtElapsedMs ?? Number.MAX_SAFE_INTEGER : Number.MAX_SAFE_INTEGER),
     ...state.territory.tomb.queue.filter(entry => entry.status === 'active' && entry.completesAtElapsedMs !== null).map(entry => entry.completesAtElapsedMs as number),
   ];
   const constructionCompletion = nextConstructionCompletionAt(state);
@@ -327,6 +331,7 @@ function settleCalendarBoundary(
       state.calendar = state.calendar.map(row => row.id === event.id
         ? { ...row, status: 'active', openReceiptSequence: sequence }
         : row);
+      updateEventShopStatus(state, event.id, 'active');
       emit(events, 'event_calendar_opened', at, { eventId: event.id, displayName: event.displayName });
     }
     const current = state.calendar.find(row => row.id === event.id);
@@ -335,6 +340,7 @@ function settleCalendarBoundary(
       state.calendar = state.calendar.map(row => row.id === event.id
         ? { ...row, status: 'locked', lockReceiptSequence: sequence }
         : row);
+      updateEventShopStatus(state, event.id, 'closed');
       emit(events, 'event_calendar_locked', at, { eventId: event.id, displayName: event.displayName });
     }
     const locked = state.calendar.find(row => row.id === event.id);
@@ -343,11 +349,16 @@ function settleCalendarBoundary(
       state.calendar = state.calendar.map(row => row.id === event.id
         ? { ...row, status: 'resolved', resolutionReceiptSequence: sequence }
         : row);
+      updateEventShopStatus(state, event.id, 'expired');
       emit(events, 'event_calendar_resolved', at, {
         eventId: event.id,
         displayName: event.displayName,
-        playerSettlement: 'no_default_award',
+        playerSettlement: state.eventProgress.some(progress => progress.eventId === event.id) ? 'objective_and_claim' : 'no_default_award',
       });
+      const inventoryExpiry = expireEventItems(state, event.id, at);
+      if (inventoryExpiry) events.push(inventoryExpiry);
+      const objectiveResult = settleEventOutcome(state, event.id, at);
+      if (objectiveResult) events.push(objectiveResult);
       if (event.id === 'EV01-OPENING-LEVEL') {
         const rankEvent = settleOpeningLevelRank(state, at);
         if (rankEvent) events.push(rankEvent);
@@ -364,6 +375,7 @@ function processBoundary(
   world?: WorldDefinition,
   stopBeforeEvent?: { eventId: string; reasonCode: string; playerMessage: string },
 ): { completed: boolean; danger: boolean; blockedEventId: string | null } {
+  const boundaryEventStart = events.length;
   let completed = false;
   let combatDanger = false;
   if (world) {
@@ -401,6 +413,13 @@ function processBoundary(
   const heaterEvents = settleHeaterServices(state, at);
   events.push(...heaterEvents);
   if (heaterEvents.length > 0) completed = true;
+
+  if (state.wildlife.nextReplenishmentAtElapsedMs === at) {
+    const replenished = replenishWildlife(state, at);
+    for (const result of replenished) emit(events, 'wildlife_population_replenished', at, result);
+  }
+
+  for (const result of settleExpiredEventClaims(state, at)) events.push(result);
 
   const stage08Events = settleStage08Boundary(state, at);
   events.push(...stage08Events);
@@ -463,6 +482,11 @@ function processBoundary(
       emit(events, state.survival.coldStatus === 'danger' ? 'cold_danger_reached' : 'cold_warning_changed', at, { coldLoad, warningBand });
     }
   }
+  const activity = recordEventActivities(state, events.slice(boundaryEventStart));
+  if (activity.events.length > 0) {
+    Object.assign(state, activity.state);
+    events.push(...activity.events);
+  }
   const blockedEventId = settleCalendarBoundary(state, at, events, stopBeforeEvent);
   return { completed, danger: state.survival.coldStatus === 'danger' || combatDanger, blockedEventId };
 }
@@ -509,6 +533,7 @@ export function advanceTo(
       nextHeaterServiceCompletionAt(state),
       nextCombatBoundaryAt(state),
       nextStage08BoundaryAt(state),
+      state.wildlife.nextReplenishmentAtElapsedMs,
       nextColdThresholdAt(state, coldRate),
       spatialBoundary,
     ].includes(at);

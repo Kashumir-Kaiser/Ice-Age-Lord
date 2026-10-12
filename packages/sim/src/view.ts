@@ -6,8 +6,11 @@ import { OPENING_BUILDINGS } from '../../content/src/buildings.ts';
 import { constructionWorkRate, farmhouseCapacity } from './construction.ts';
 import { elapsedMsToWorldClock } from './time.ts';
 import { butcherCorpse, directReviveAvailability } from './stage07.ts';
-import { projectStage07Combat } from './combat.ts';
+import { attackAvailability, projectStage07Combat } from './combat.ts';
 import { openingBoardView, Q08_ID } from './stage08.ts';
+import { chestLootProjection } from './chestLoot.ts';
+import { eventMechanicsFor } from '../../content/src/eventRules.ts';
+import { EVENT_SHOP_MARK_PRICE } from './eventRuntime.ts';
 
 export function entityKey(ref: EntityRef): string {
   return `${ref.type}:${ref.id}`;
@@ -143,8 +146,11 @@ function cacheEntities(state: GameState, world: WorldDefinition): PlayerEntityVi
     actions.push(moveAction(state, world, ref.id, position));
     if (exactChestId) {
       const inReach = Math.hypot(state.player.position.xMm - position.xMm, state.player.position.yMm - position.yMm) <= world.navigationOverlay.interactionRangeMm;
-      actions.push(action('open_cache', false, inReach ? 'CHEST_LOOT_CANDIDATE_POOL_NOT_COMPILED' : 'NOT_ACCESSIBLE', [inReach ? 'The chest reward candidate pool is not compiled.' : 'Move within reach to access this chest.']));
+      const lifecycle = state.fieldChestStates.find(candidate => candidate.chestId === exactChestId);
+      const canOpen = inReach && lifecycle?.state === 'unopened' && lifecycle.custody === 'world';
+      actions.push(action('open_cache', canOpen, canOpen ? null : inReach ? 'CHEST_ALREADY_OPENED' : 'NOT_ACCESSIBLE', canOpen ? [] : [inReach ? 'This chest is no longer available.' : 'Move within reach to access this chest.']));
     }
+    const lifecycle = exactChestId ? state.fieldChestStates.find(candidate => candidate.chestId === exactChestId) : null;
     entities.push({
       ref,
       label: chest ? `Field chest · ${chest.grade}` : signal.discovery === 'signal' ? 'Unidentified buried signal' : 'Identified cache signal',
@@ -153,6 +159,7 @@ function cacheEntities(state: GameState, world: WorldDefinition): PlayerEntityVi
       observedAtElapsedMs: signal.discoveredAtElapsedMs,
       position,
       actions,
+      ...(chest ? { chestLoot: chestLootProjection(chest, lifecycle?.state === 'opened', lifecycle?.lootOutcome?.rewardStacks ?? null) } : {}),
     });
   }
   return entities;
@@ -226,7 +233,22 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
       actions: [action('inspect_entity', true)],
     }];
   });
-  const entities = [...siteEntities(state, world), ...resourceEntities(state, world), ...cacheEntities(state, world), ...corpseEntities];
+  const wildlifeEntities: PlayerEntityView[] = state.wildlife.groups.flatMap(group => {
+    if (group.discovery !== 'known' || !(state.playerKnowledge.knownWildlifeGroupIds ?? []).includes(group.id)) return [];
+    const attackActor = state.ownedUnits.find(unit => unit.ownerId === state.player.id && unit.health && unit.health.current > 0);
+    const targetId = `TARGET-${group.id}`;
+    const attack = attackActor ? attackAvailability(state, world, [attackActor.id], targetId) : { code: 'COMBAT_ACTOR_REQUIRED', requirements: ['Revive and equip a warrior before hunting.'] };
+    return [{
+      ref: { type: 'wildlife', id: group.id },
+      label: `${group.displayName} · ${group.remaining}/${group.capacity}`,
+      category: 'wildlife',
+      knowledge: 'current' as const,
+      observedAtElapsedMs: group.lastSightingAtElapsedMs ?? group.discoveredAtElapsedMs ?? 0,
+      position: group.position,
+      actions: [action('inspect_entity', true), action('attack', !attack.code, attack.code, [...attack.requirements])],
+    }];
+  });
+  const entities = [...siteEntities(state, world), ...resourceEntities(state, world), ...cacheEntities(state, world), ...corpseEntities, ...wildlifeEntities];
   const knownBuildings = state.buildings.map(building => ({
     id: building.id, name: building.name, status: building.status, kind: building.kind, level: building.level,
     ...(building.siteId ? { siteId: building.siteId } : {}), ...(building.position ? { position: building.position } : {}),
@@ -248,14 +270,22 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
     capacitySlots: container.capacitySlots,
     accessible: canAccessStarterContainer(container.id, state, world) || (container.location.kind === 'carried' && container.location.ownerId === state.player.id),
     location: container.location,
-    items: container.stacks.map(stack => ({ itemId: stack.itemId, label: stack.templateId, quantity: stack.quantity, reservedQuantity: stack.reservedQuantity ?? 0, unit: stack.unit ?? null, quality: stack.quality ?? null, condition: stack.condition ?? null, ownerId: stack.ownerId ?? null, equipped: stack.equipped, equippedSlotId: stack.equippedSlotId ?? null, foodUnitsPerItem: stack.foodUnitsPerItem ?? null, equipmentTags: stack.equipmentTags ?? [], combatEffects: stack.combatEffects ?? {}, provenance: stack.provenance })),
+    items: container.stacks.map(stack => ({ itemId: stack.itemId, label: stack.templateId, quantity: stack.quantity, reservedQuantity: stack.reservedQuantity ?? 0, unit: stack.unit ?? null, quality: stack.quality ?? null, condition: stack.condition ?? null, ownerId: stack.ownerId ?? null, equipped: stack.equipped, equippedSlotId: stack.equippedSlotId ?? null, foodUnitsPerItem: stack.foodUnitsPerItem ?? null, equipmentTags: stack.equipmentTags ?? [], combatEffects: stack.combatEffects ?? {}, exclusiveEventId: stack.exclusiveEventId ?? null, expiresAtElapsedMs: stack.expiresAtElapsedMs ?? null, provenance: stack.provenance })),
   }));
   const sights = currentSight(state, world);
   const combat = projectStage07Combat(state, world);
-  const combatTargets = combat.target && (combat.target.state === 'available' || combat.target.state === 'reacting')
+  const fixedCombatTargets = combat.target && (combat.target.state === 'available' || combat.target.state === 'reacting')
     && sights.some(sight => Math.hypot(combat.target!.position.xMm - sight.center.xMm, combat.target!.position.yMm - sight.center.yMm) <= sight.radiusMm)
     ? [{ targetId: combat.target.id, label: combat.target.label, position: combat.target.position, status: combat.target.state as 'available' | 'reacting' }]
     : [];
+  const wildlifeCombatTargets = wildlifeEntities.flatMap(entity => {
+    const group = state.wildlife.groups.find(candidate => candidate.id === entity.ref.id);
+    if (!group || group.remaining <= 0) return [];
+    const target = (state.combat?.wildlifeTargets ?? []).find(candidate => candidate.wildlifeGroupId === group.id && (candidate.status === 'available' || candidate.status === 'reacting'));
+    const status = target?.status === 'reacting' ? 'reacting' as const : 'available' as const;
+    return [{ targetId: `TARGET-${group.id}`, label: entity.label, position: target?.position ?? group.position, status, groupId: group.id, remaining: group.remaining }];
+  });
+  const combatTargets = [...fixedCombatTargets, ...wildlifeCombatTargets];
   const caravan = state.stage08.enabled ? state.stage08.caravan : null;
   const caravanPosition = caravan ? world.sites.find(site => site.id === caravan.locationSiteId)?.position : null;
   const caravanVisible = Boolean(caravanPosition && ['distressed', 'negotiated', 'escorting', 'arrived'].includes(caravan!.status)
@@ -308,6 +338,32 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
         openReceiptSequence: event.openReceiptSequence,
         lockReceiptSequence: event.lockReceiptSequence,
         resolutionReceiptSequence: event.resolutionReceiptSequence,
+        objective: (() => {
+          const rule = eventMechanicsFor(event.id);
+          const progress = state.eventProgress.find(candidate => candidate.eventId === event.id);
+          return rule && progress ? {
+            title: rule.title, progress: progress.objectiveProgress, target: rule.target, score: progress.score,
+            participated: progress.participated, choiceId: progress.choiceId,
+          } : null;
+        })(),
+        outcome: state.eventProgress.find(candidate => candidate.eventId === event.id)?.outcome ?? null,
+        rewardKrona: state.eventProgress.find(candidate => candidate.eventId === event.id)?.rewardKrona ?? 0,
+        claimExpiresAtElapsedMs: state.eventProgress.find(candidate => candidate.eventId === event.id)?.claimExpiresAtElapsedMs ?? null,
+        rewardClaimed: Boolean(state.eventProgress.find(candidate => candidate.eventId === event.id)?.claimReceiptId),
+        eventShop: (() => {
+          const progress = state.eventProgress.find(candidate => candidate.eventId === event.id);
+          return progress ? {
+            status: progress.shopStatus,
+            scoreAvailable: progress.score - progress.scoreSpent,
+            priceScore: EVENT_SHOP_MARK_PRICE,
+            itemTemplateId: `EVENT-MARK-${event.id}`,
+            priceCurrency: 'event_score' as const,
+            stockRemaining: progress.shopStockRemaining,
+            initialStock: progress.shopInitialStock,
+            purchasedQuantity: progress.shopPurchasedQuantity,
+            expiresAtElapsedMs: progress.shopExpiresAtElapsedMs,
+          } : null;
+        })(),
       }];
     }),
     eventProgressionBlocker: state.eventProgressionBlocker ? {

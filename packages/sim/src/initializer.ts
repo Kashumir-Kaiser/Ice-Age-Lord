@@ -9,6 +9,8 @@ import { RESOURCE_STORAGE } from '../../content/src/resourceBalance.ts';
 import { stage07OpeningCorpse, STAGE07_OPENING_CORPSE_ID } from './stage07.ts';
 import { createStage07CombatState } from './combat.ts';
 import { initialStage08State } from './stage08.ts';
+import { initialWildlifeState } from './wildlife.ts';
+import { initialEventProgress } from './eventRuntime.ts';
 import { OPENING_FIRE_STARTER_FUEL_UNITS, OPENING_WEATHER_RECORD } from '../../content/src/openingEnvironment.ts';
 
 export type NewGameOptions = {
@@ -227,6 +229,7 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
       knownRouteIds: empty,
       knownSignalIds: empty,
       knownCorpseIds: [STAGE07_OPENING_CORPSE_ID],
+      knownWildlifeGroupIds: empty,
       careerCardObserved: false,
       lastSeenByEntity: { 'site:SITE-LL01-000': { observedAtElapsedMs: 0, knowledge: 'current' } },
       lastInspectedEntityIds: empty,
@@ -241,7 +244,9 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
       custody: 'world' as const,
       claimedById: null,
       carrierId: null,
+      lootOutcome: null,
     })),
+    wildlife: initialWildlifeState(world),
     corpses: [
       ...world.fixedActors.filter(actor => actor.lifeStateAtT0 === 'corpse').map(actor => ({
         id: `CORPSE-${actor.id}`,
@@ -265,6 +270,7 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
       blockedReceiptSequence: null,
       resolutionReceiptSequence: null,
     })),
+    eventProgress: initialEventProgress(world),
     eventProgressionBlocker: null,
     offers: empty,
     stage08: initialStage08State(),

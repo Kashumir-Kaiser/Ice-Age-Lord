@@ -15,6 +15,7 @@ import type {
 import { isActorInActiveCombat, STAGE07_HARE_ACTOR_ID } from './combat.ts';
 import { canonicalStateHash } from './hash.ts';
 import { harvestProgressionForFireLevel } from '../../content/src/resourceBalance.ts';
+import { discoverWildlifeAlongSweep } from './wildlife.ts';
 
 export const SPATIAL_TICK_MS = 15 * 60_000;
 export const SEARCH_CELL_MM = 10_000;
@@ -1115,25 +1116,20 @@ export function settleSpatialBoundary(state: GameState, world: WorldDefinition, 
   for (const job of state.spatial.searchJobs.filter(candidate => candidate.status === 'active' && candidate.nextTickAtElapsedMs === at)) {
     const returning = job.phase === 'returning';
     const route = returning ? job.returnPath ?? [job.path.at(-1)!, job.path[0]!] : job.path;
-    const rawEnd = pointAlongPolyline(route, job.pathProgressMm);
-    const sweepStart = returning ? 0 : (job.sweepStartProgressMm ?? 0);
-    const effectiveStartProgress = Math.max(job.tickStartProgressMm, sweepStart);
-    const end = rawEnd;
-    const sweepSegments = returning || job.pathProgressMm <= sweepStart ? [] : polylineSegmentsBetween(route, effectiveStartProgress, job.pathProgressMm);
-    const actualSweepDistance = sweepSegments.reduce((sum, segment) => sum + distanceMm(segment.from, segment.to), 0);
-    const grossArea = actualSweepDistance * job.laneWidthMm / (MM_PER_M * MM_PER_M);
-    let freshCells: string[] = [];
-    const searching = !returning && job.pathProgressMm > sweepStart;
-    const foundChestIds = searching && job.mode === 'chest' ? detectChests(state, world, job, sweepSegments, at) : [];
-    const foundTargetIds = searching && job.mode === 'hunt' ? detectHuntTargets(state, world, job, sweepSegments, at) : [];
-    if (searching) {
-      const history = lineageHistory(state, job.observerLineageId);
-      const cells = sweepSegments.flatMap(segment => cellIdsCoveredByLane(segment.from, segment.to, job.laneWidthMm));
-      const priorCells = new Set(history.cellIds);
-      freshCells = [...new Set(cells.filter(id => !priorCells.has(id)))];
-      const newHistory = { ...history, cellIds: [...new Set([...history.cellIds, ...cells])], lastSettledAtElapsedMs: at };
-      state.spatial = { ...state.spatial, sweepHistory: [...state.spatial.sweepHistory.filter(candidate => candidate.observerLineageId !== job.observerLineageId), newHistory] };
-    }
+    const start = pointAlongPolyline(route, job.tickStartProgressMm);
+    const end = pointAlongPolyline(route, job.pathProgressMm);
+    const segments = polylineSegmentsBetween(route, job.tickStartProgressMm, job.pathProgressMm);
+    const distance = distanceMm(start, end);
+    const grossArea = distance * job.laneWidthMm / (MM_PER_M * MM_PER_M);
+    const history = lineageHistory(state, job.observerLineageId);
+    const cells = cellIdsCoveredByLane(start, end, job.laneWidthMm);
+    const priorCells = new Set(history.cellIds);
+    const freshCells = cells.filter(id => !priorCells.has(id));
+    const newHistory = { ...history, cellIds: [...new Set([...history.cellIds, ...cells])], lastSettledAtElapsedMs: at };
+    state.spatial = { ...state.spatial, sweepHistory: [...state.spatial.sweepHistory.filter(candidate => candidate.observerLineageId !== job.observerLineageId), newHistory] };
+    const foundChestIds = returning ? [] : detectChests(state, world, job, segments, at);
+    const foundTargetIds = returning ? [] : detectHuntTargets(state, world, job, segments, at);
+    const foundWildlife = returning ? [] : discoverWildlifeAlongSweep(state, start, end, job.laneWidthMm, at);
     const nextProgress = job.pathProgressMm;
     const reachedRouteEnd = nextProgress >= polylineDistance(route) - 1;
     const allFound = [...new Set([...(job.foundChestIds ?? []), ...foundChestIds])];
@@ -1174,12 +1170,8 @@ export function settleSpatialBoundary(state: GameState, world: WorldDefinition, 
     if (completed) state.exploration.searchHistory = state.exploration.searchHistory.map(entry => entry.searchId === job.id ? { ...entry, status: 'completed' } : entry);
     events.push({ type: 'spatial_search_tick_settled', occurredAtElapsedMs: at, payload: { jobId: job.id, mode: job.mode, phase: returning ? 'returning' : 'sweeping', grossAreaM2: grossArea, uniqueCells: freshCells.length, found: foundChestIds.length + foundTargetIds.length > 0 } });
     for (const chestId of foundChestIds) events.push({ type: 'chest_signal_detected', occurredAtElapsedMs: at, payload: { jobId: job.id, chestId } });
-    for (const targetId of foundTargetIds) events.push({ type: 'hunt_target_detected', occurredAtElapsedMs: at, payload: { jobId: job.id, targetId, sourceEcologyId: state.combat?.target.sourceEcologyId ?? null } });
-    if (beginReturn) events.push({ type: 'spatial_search_return_started', occurredAtElapsedMs: at, payload: { jobId: job.id, reason: returnReason, foundChestIds: allFound } });
-    if (completed) {
-      events.push({ type: 'spatial_search_returned', occurredAtElapsedMs: at, payload: { jobId: job.id, reason: job.returnReason ?? 'area_complete' } });
-      events.push({ type: 'spatial_search_completed', occurredAtElapsedMs: at, payload: { jobId: job.id } });
-    }
+    for (const group of foundWildlife) events.push({ type: 'wildlife_group_discovered', occurredAtElapsedMs: at, payload: { jobId: job.id, groupId: group.id, ecologyId: group.ecologyId, speciesId: group.speciesId, observedCount: group.remaining } });
+    if (completed) events.push({ type: 'spatial_search_completed', occurredAtElapsedMs: at, payload: { jobId: job.id } });
   }
 
   for (const job of state.spatial.harvestJobs.filter(candidate => candidate.status === 'active')) {

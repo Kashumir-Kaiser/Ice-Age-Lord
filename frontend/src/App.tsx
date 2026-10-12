@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   Activity, AlertTriangle, Archive, Award, Bell, BookOpen, Box, ChevronRight, Clock3,
   Compass, Crown, Flame, Hammer, Info, Layers, LayoutDashboard, Map as MapIcon,
-  Footprints, Gem, Hand, LocateFixed, Menu, Package, Search, Shield, ShieldCheck, Shirt, Snowflake, Sparkles, Sword, UserRound, Users, X,
+  CalendarDays, Footprints, Gem, Hand, LocateFixed, Menu, Package, Search, Shield, ShieldCheck, Shirt, Snowflake, Sparkles, Sword, UserRound, Users, X,
   type LucideIcon,
 } from 'lucide-react';
 import MapScene from './MapScene';
@@ -23,10 +23,13 @@ import type { TerritoryCamera } from './territory/projection';
 import type { LayoutDraft } from './game/GameClient';
 import type { ReadabilityMode } from './territory/BuildingSprite';
 import { livingUnitGroups, visibleRaceFilters } from './game/unitGroups';
+import { EventBoard } from './shared/EventBoard';
+import { demoEventContracts } from './demoData';
+import { CharacterSummary, PageFrame, ScreenHeading } from './shared/PageFrame';
 
 const NAV_ICONS: Record<Screen, LucideIcon> = {
   overview: LayoutDashboard, character: UserRound, territory: Crown, map: MapIcon, inventory: Archive,
-  forces: Shield, buildings: Hammer, journal: BookOpen,
+  forces: Shield, buildings: Hammer, events: CalendarDays, journal: BookOpen,
 };
 const HEADINGS: Record<Screen, { title: string; description: string }> = {
   overview: { title:'Tổng quan lãnh địa', description:'Cảnh khởi đầu · Đồng bằng Cổ Chiến Trường' },
@@ -36,6 +39,7 @@ const HEADINGS: Record<Screen, { title: string; description: string }> = {
   inventory: { title:'Kho vật phẩm', description:'Thư viện thẻ vật phẩm mẫu · Chưa phải kho của nhân vật' },
   forces: { title:'Quân lực', description:'Theo dõi lực lượng và khả năng triệu hồi' },
   buildings: { title:'Kiến trúc', description:'Các công trình đã được xác lập trong thiết lập mở đầu' },
+  events: { title:'Sự kiện thế giới', description:'Lịch hợp đồng và tiến độ mô phỏng sự kiện' },
   journal: { title:'Nhật ký thế giới', description:'Trình bày thông tin đã biết, chưa phải lịch sử các lượt chơi' },
 };
 const CATEGORIES: ('Tất cả' | ItemKind)[] = ['Tất cả', 'Tài nguyên', 'Trang bị', 'Vật phẩm', 'Bản vẽ'];
@@ -94,7 +98,7 @@ function Header({ screen, screens, player, onMenu, onOpenPlayerProfile, profileO
   const heading = HEADINGS[screen];
   return <header className="topbar">
     <button className="icon-button mobile-menu" aria-label="Mở điều hướng" onClick={onMenu}><Menu size={21}/></button>
-    <div className="topbar-heading"><span className="breadcrumb">ICE AGE LORD <ChevronRight size={13}/> {screen==='overview'?'CĂN CỨ':screens.find(s=>s.id===screen)?.name.toUpperCase()}</span><h1>{heading.title}</h1><p>{heading.description}</p></div>
+    <ScreenHeading mode="demo" className="topbar-heading" eyebrow={`ICE AGE LORD · ${screen==='overview'?'CĂN CỨ':screens.find(s=>s.id===screen)?.name.toUpperCase()}`} title={heading.title} description={heading.description}/>
     <div className="topbar-actions">
       <div className="clock-player" aria-label="Đồng hồ trong trò chơi">
         <span className="clock-chip" aria-live="off"><Clock3 size={14}/> Ngày {displayDay(clockSeconds)} · {displayClock(clockSeconds)}</span>
@@ -139,8 +143,9 @@ function CharacterEquipment({ player }: {player:PlayerView['player']}) {
   const equipmentLeft=EQUIPMENT_SLOTS.slice(0,3);
   const equipmentRight=EQUIPMENT_SLOTS.slice(3);
   return <div className="page-sections character-page">
+    <CharacterSummary mode="demo" name={player.name} title={player.title} grade={player.grade} level={player.level} xp={player.xp} mana={player.mana}/>
     <section className="panel character-loadout-panel">
-      <div className="character-section-heading"><div><span className="eyebrow">TRANG BỊ NHÂN VẬT</span><h2>{player.name} · Cấp {player.level}</h2></div><span className="character-loadout-status">Chưa trang bị vật phẩm</span></div>
+      <div className="character-section-heading"><div><span className="eyebrow">TRANG BỊ NHÂN VẬT</span><h2>Vật phẩm trang bị</h2></div><span className="character-loadout-status">Chưa trang bị vật phẩm</span></div>
       <div className="character-equipment-layout">
         <div className="equipment-socket-column">{equipmentLeft.map(slot=><EquipmentSocket key={slot.label} {...slot}/>)}</div>
         <div className="character-center-column">
@@ -382,14 +387,17 @@ export default function App() {
       <PlayerProfile player={playerView.player} open={playerProfileOpen} followPlayer={followPlayer} onClose={()=>setPlayerProfileOpen(false)} onFollowChange={setFollowPlayer} onLocate={locatePlayer}/>
       {notificationOpen && <div className="notification-popover" role="status"><div><Bell size={17}/><strong>Trạng thái trò chơi</strong><button className="icon-button" aria-label="Đóng thông báo" onClick={()=>setNotificationOpen(false)}><X size={17}/></button></div><p>Lượt chơi chưa được lưu. Các thao tác hiện tại chỉ thay đổi cách xem.</p></div>}
       <main className="page-content">
-        {screen==='overview'&&<Overview selectedEntity={selectedEntity} mapProps={mapProps} navigate={navigate} clockSeconds={clockSeconds} onClockChange={setClockSeconds}/>}
-        {screen==='character'&&<CharacterEquipment player={playerView.player}/>}
-        {screen==='territory'&&<Territory settlement={playerView.settlement} placementDefinitions={playerView.placementDefinitions} selectedEntity={selectedEntity} units={playerView.units} camera={territoryCamera} onCameraChange={setTerritoryCamera} drafts={layoutDrafts} onDraftsChange={setLayoutDrafts} focusedBuildingId={territoryFocusId} onFocusHandled={handleTerritoryFocusHandled} readability={territoryReadability} onReadabilityChange={setTerritoryReadability} selectEntity={selectEntity} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen} player={playerView.player} followPlayer={followPlayer} onFollowPlayerChange={setFollowPlayer} onOpenPlayerProfile={()=>setPlayerProfileOpen(true)}/>}
-        {screen==='map'&&<MapPage selectedEntity={selectedEntity} mapProps={mapProps} onOpenSettlement={()=>navigate('territory')}/>}
-        {screen==='inventory'&&<Inventory items={playerView.items} selectedEntity={selectedEntity} selectEntity={selectEntity} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen}/>}
-        {screen==='forces'&&<Forces samples={playerView.forces} units={playerView.units}/>}
-        {screen==='buildings'&&<Buildings sites={playerView.buildings} selectedEntity={selectedEntity} selectEntity={selectEntity} navigate={navigate} onFocusBuilding={focusBuilding} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen}/>}
-        {screen==='journal'&&<Journal entries={playerView.journal}/>}
+        <PageFrame mode="demo" className={`demo-screen demo-screen--${screen}`}>
+          {screen==='overview'&&<Overview selectedEntity={selectedEntity} mapProps={mapProps} navigate={navigate} clockSeconds={clockSeconds} onClockChange={setClockSeconds}/>}
+          {screen==='character'&&<CharacterEquipment player={playerView.player}/>}
+          {screen==='territory'&&<Territory settlement={playerView.settlement} placementDefinitions={playerView.placementDefinitions} selectedEntity={selectedEntity} units={playerView.units} camera={territoryCamera} onCameraChange={setTerritoryCamera} drafts={layoutDrafts} onDraftsChange={setLayoutDrafts} focusedBuildingId={territoryFocusId} onFocusHandled={handleTerritoryFocusHandled} readability={territoryReadability} onReadabilityChange={setTerritoryReadability} selectEntity={selectEntity} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen} player={playerView.player} followPlayer={followPlayer} onFollowPlayerChange={setFollowPlayer} onOpenPlayerProfile={()=>setPlayerProfileOpen(true)}/>}
+          {screen==='map'&&<MapPage selectedEntity={selectedEntity} mapProps={mapProps} onOpenSettlement={()=>navigate('territory')}/>}
+          {screen==='inventory'&&<Inventory items={playerView.items} selectedEntity={selectedEntity} selectEntity={selectEntity} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen}/>}
+          {screen==='forces'&&<Forces samples={playerView.forces} units={playerView.units}/>}
+          {screen==='buildings'&&<Buildings sites={playerView.buildings} selectedEntity={selectedEntity} selectEntity={selectEntity} navigate={navigate} onFocusBuilding={focusBuilding} inspectorOpen={inspectorOpen} onInspectorOpenChange={setInspectorOpen}/>}
+          {screen==='events'&&<EventBoard mode="demo" events={demoEventContracts} nowElapsedMs={clockSeconds*1000} formatTime={elapsedMs=>`T+${Math.floor(elapsedMs/3_600_000)}h${String(Math.floor((elapsedMs%3_600_000)/60_000)).padStart(2,'0')}`}/>}
+          {screen==='journal'&&<Journal entries={playerView.journal}/>}
+        </PageFrame>
       </main>
       <footer className="app-footer"><span><Emblem size={21}/> ICE AGE LORD</span><span>Bản xem thử · Không lưu tiến trình</span></footer>
     </div>

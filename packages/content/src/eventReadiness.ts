@@ -1,13 +1,13 @@
 export const EVENT_LIFECYCLE_VERSION = 'LL01-EVENT-LIFECYCLE-1.0' as const;
+import { eventMechanicsFor } from './eventRules.ts';
 
 export type EventRuntimeReadiness = 'executable_lifecycle' | 'calendar_only' | 'settlement_blocked' | 'mandatory_content_blocked';
 
-const EXECUTABLE_EVENT_IDS = new Set(['EV00-SAFE-FIRE', 'EV01-OPENING-LEVEL']);
-const SETTLEMENT_BLOCKED_EVENT_IDS = new Set<string>();
-
 export function eventRuntimeReadiness(eventId: string): EventRuntimeReadiness {
-  if (EXECUTABLE_EVENT_IDS.has(eventId)) return 'executable_lifecycle';
-  if (SETTLEMENT_BLOCKED_EVENT_IDS.has(eventId)) return 'settlement_blocked';
+  if (eventId === 'EV00-SAFE-FIRE') return 'executable_lifecycle';
+  if (eventId === 'EV01-OPENING-LEVEL') return 'settlement_blocked';
+  if (eventMechanicsFor(eventId)) return 'executable_lifecycle';
+  if (/^EV\d\d-/u.test(eventId)) return 'calendar_only';
   return 'mandatory_content_blocked';
 }
 

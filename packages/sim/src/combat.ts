@@ -3,6 +3,7 @@ import type {
 } from '../../contracts/src/index.ts';
 import { randomIntFromFields } from './hash.ts';
 import { lockDirectReviveOnSecondDeath, settleOrdinaryCombatXp } from './stage07.ts';
+import { wildlifeSpeciesProfile } from './wildlife.ts';
 
 export const STAGE07_HARE_ACTOR_ID = 'ACTOR-STAGE07-ICE-HARE-01';
 export const STAGE07_HARE_TARGET_ID = 'TARGET-STAGE07-ICE-HARE-01';
@@ -87,6 +88,30 @@ export function combatStateFor(state: GameState, world: WorldDefinition): Stage0
   return state.combat ?? createStage07CombatState(world);
 }
 
+function preyForTargetId(state: GameState, world: WorldDefinition, targetId: string): { prey: Stage07CombatState['target']; wildlifeGroupId: string | null; newlyMaterialized: boolean } | null {
+  const combat = combatStateFor(state, world);
+  if (targetId === STAGE07_HARE_TARGET_ID) return { prey: combat.target, wildlifeGroupId: null, newlyMaterialized: false };
+  const groupId = targetId.startsWith('TARGET-') ? targetId.slice('TARGET-'.length) : '';
+  const group = state.wildlife.groups.find(candidate => candidate.id === groupId && candidate.discovery === 'known'
+    && (state.playerKnowledge.knownWildlifeGroupIds ?? []).includes(candidate.id) && candidate.remaining > 0);
+  if (!group) return null;
+  const current = (combat.wildlifeTargets ?? []).find(candidate => candidate.wildlifeGroupId === group.id
+    && (candidate.status === 'available' || candidate.status === 'retreated' || candidate.status === 'reacting'));
+  if (current) return { prey: current, wildlifeGroupId: group.id, newlyMaterialized: false };
+  const prey = wildlifeSpeciesProfile(group.populationKey, group.displayName, group.ecologyId, group.position, group.id, group.nextMemberOrdinal);
+  return { prey, wildlifeGroupId: group.id, newlyMaterialized: true };
+}
+
+function preyForEncounter(combat: Stage07CombatState, encounter: CombatEncounterState) {
+  if (combat.target.actorId === encounter.targetActorId) return combat.target;
+  return (combat.wildlifeTargets ?? []).find(candidate => candidate.actorId === encounter.targetActorId) ?? combat.target;
+}
+
+function storePrey(state: GameState, prey: Stage07CombatState['target']): void {
+  if (prey.actorId === state.combat!.target.actorId) state.combat!.target = prey;
+  else state.combat!.wildlifeTargets = (state.combat!.wildlifeTargets ?? []).map(candidate => candidate.actorId === prey.actorId ? prey : candidate);
+}
+
 function encounterBusy(state: GameState, actorId: string): boolean {
   if (state.combat?.encounters.some(encounter => encounter.status === 'active' && encounter.actorIds.includes(actorId))) return true;
   if (state.travel.orders.some(order => order.status === 'active' && order.actorIds.includes(actorId))) return true;
@@ -125,28 +150,25 @@ function h0FrozenTerrain(world: WorldDefinition, state: Stage07CombatState): boo
 
 export function attackAvailability(state: GameState, world: WorldDefinition, actorIds: readonly string[], targetId: string): CombatAvailability {
   const combat = combatStateFor(state, world);
-  if (targetId !== STAGE07_HARE_TARGET_ID) return { code: 'COMBAT_TARGET_UNKNOWN', requirements: ['Chọn mục tiêu đã được phát hiện trên bản đồ.'] };
-  if (!state.playerKnowledge.lastSeenByEntity[`wildlife:${combat.target.actorId}`]) {
+  const resolved = preyForTargetId(state, world, targetId);
+  if (!resolved) return { code: 'COMBAT_TARGET_UNKNOWN', requirements: ['Chọn một cá thể đã được phát hiện bằng tìm kiếm.'] };
+  const prey = resolved.prey;
+  if (resolved.wildlifeGroupId === null && !state.playerKnowledge.lastSeenByEntity[`wildlife:${prey.actorId}`]) {
     return { code: 'TARGET_NOT_DISCOVERED', requirements: ['Dò tìm dấu vết trong khu vực trước khi ra lệnh tấn công.'] };
   }
-  if (combat.target.status !== 'available') return { code: combat.target.status === 'dead' ? 'COMBAT_TARGET_DEAD' : 'COMBAT_TARGET_UNAVAILABLE', requirements: ['Mục tiêu này đã rời hoặc đã kết thúc encounter; không có cá thể mới được tạo.'] };
-  if (actorIds.length < 1 || actorIds.length > 12 || new Set(actorIds).size !== actorIds.length) return { code: 'COMBAT_GROUP_SIZE_INVALID', requirements: ['Chọn từ 1 đến 12 đơn vị khác nhau cho một đội hình săn.'] };
-  const units = actorIds.map(id => state.ownedUnits.find(item => item.id === id));
-  if (units.some(unit => !unit || unit.ownerId !== state.player.id)) return { code: 'COMBAT_ACTOR_NOT_OWNED', requirements: ['Chọn các đơn vị hiện thuộc quyền Lí Lan.'] };
-  const roster = units as PlayerUnitState[];
-  for (const unit of roster) {
-    if (!unit.position || !unit.health || !unit.attributes || unit.health.current <= 0) return { code: 'COMBAT_ACTOR_PROFILE_INCOMPLETE', requirements: ['Mỗi chiến binh cần vị trí, sinh lực và hồ sơ thuộc tính đầy đủ.'] };
-    if (encounterBusy(state, unit.id)) return { code: 'COMBAT_ACTOR_BUSY', requirements: ['Mỗi chiến binh phải đang ở trạng thái sẵn sàng, không đi đường hoặc làm việc khác.'] };
-    if (unit.sourceStats.faction === combat.target.bodyRecord.faction) return { code: 'COMBAT_FACTION_PROTECTED', requirements: ['Không thể đưa đơn vị cùng phe với mục tiêu vào cuộc săn.'] };
-    if ((unit.attributes.PER ?? -1) < combat.target.combatProfile.concealment) return { code: 'TARGET_NOT_PERCEIVED', requirements: ['Mỗi chiến binh cần đủ nhận thức để nhận ra thỏ băng giữa tuyết.'] };
-    const weapon = actorWeapon(state, unit.id);
-    if (!weapon) return { code: 'COMBAT_WEAPON_REQUIRED', requirements: ['Trang bị vũ khí tương thích cho từng chiến binh trong đội hình.'] };
-    const distance = Math.hypot(unit.position.xMm - combat.target.position.xMm, unit.position.yMm - combat.target.position.yMm);
-    if (distance > weapon.rangeMm || distance > world.navigationOverlay.interactionRangeMm) return { code: 'TARGET_OUT_OF_RANGE', requirements: ['Đưa cả đội hình vào tầm vũ khí và tầm tương tác đã biết.'] };
-  }
-  const anchor = roster[0]!.position!;
-  if (roster.some(unit => Math.hypot(unit.position!.xMm - anchor.xMm, unit.position!.yMm - anchor.yMm) > 2_000)) return { code: 'COMBAT_SQUAD_NOT_TOGETHER', requirements: ['Giữ toàn đội trong phạm vi 2 m để chiến đấu cùng nhau.'] };
-  if (!h0FrozenTerrain(world, combat)) return { code: 'COMBAT_TERRAIN_PROFILE_MISSING', requirements: ['Terrain và ecology profile cho encounter mở đầu chưa được biên dịch.'] };
+  if (prey.status !== 'available' && prey.status !== 'retreated') return { code: prey.status === 'dead' ? 'COMBAT_TARGET_DEAD' : 'COMBAT_TARGET_UNAVAILABLE', requirements: ['Mục tiêu này đã rời hoặc đã kết thúc encounter; không có cá thể mới được tạo.'] };
+  if (actorIds.length !== 1) return { code: 'COMBAT_GROUP_RULE_NOT_COMPILED', requirements: ['Encounter mở đầu chỉ biên dịch một chiến binh để giữ nguyên tổn thất cá thể.'] };
+  const unit = state.ownedUnits.find(item => item.id === actorIds[0]);
+  if (!unit || unit.ownerId !== state.player.id) return { code: 'COMBAT_ACTOR_NOT_OWNED', requirements: ['Chọn một đơn vị hiện thuộc quyền Lí Lan.'] };
+  if (!unit.position || !unit.health || !unit.attributes || unit.health.current <= 0) return { code: 'COMBAT_ACTOR_PROFILE_INCOMPLETE', requirements: ['Chiến binh cần vị trí, sinh lực và hồ sơ thuộc tính đầy đủ.'] };
+  if (encounterBusy(state, unit.id)) return { code: 'COMBAT_ACTOR_BUSY', requirements: ['Chiến binh đang đi đường hoặc thực hiện một công việc khác.'] };
+  if (unit.sourceStats.faction === prey.bodyRecord.faction) return { code: 'COMBAT_FACTION_PROTECTED', requirements: ['Không thể tấn công cá thể cùng phe.'] };
+  if (resolved.wildlifeGroupId === null && !h0FrozenTerrain(world, combat)) return { code: 'COMBAT_TERRAIN_PROFILE_MISSING', requirements: ['Terrain và ecology profile cho encounter mở đầu chưa được biên dịch.'] };
+  if ((unit.attributes.PER ?? -1) < prey.combatProfile.concealment) return { code: 'TARGET_NOT_PERCEIVED', requirements: ['Đơn vị cần đủ nhận thức để nhận ra mục tiêu.'] };
+  const weapon = actorWeapon(state, unit.id);
+  if (!weapon) return { code: 'COMBAT_WEAPON_REQUIRED', requirements: ['Trang bị vũ khí tương thích vào ô tay chính trước khi giao chiến.'] };
+  const distance = Math.hypot(unit.position.xMm - prey.position.xMm, unit.position.yMm - prey.position.yMm);
+  if (distance > weapon.rangeMm || distance > world.navigationOverlay.interactionRangeMm) return { code: 'TARGET_OUT_OF_RANGE', requirements: ['Đưa chiến binh vào tầm vũ khí và tầm tương tác đã biết.'] };
   return { code: null, requirements: [] };
 }
 
@@ -168,13 +190,16 @@ export function startStage07Encounter(state: GameState, world: WorldDefinition, 
   const available = attackAvailability(state, world, actorIds, targetId);
   if (available.code) return { state, encounter: null as CombatEncounterState | null, code: available.code, requirements: available.requirements };
   const combat = combatStateFor(state, world);
+  const resolved = preyForTargetId(state, world, targetId)!;
+  const prey = resolved.prey;
   const sequence = combat.nextEncounterSequence;
   const encounterId = 'ENCOUNTER-STAGE07-' + String(sequence).padStart(4, '0');
-  const health = combat.target.bodyRecord.health!;
+  const unit = state.ownedUnits.find(item => item.id === actorIds[0])!;
+  const health = prey.bodyRecord.health!;
   const encounter: CombatEncounterState = {
     id: encounterId,
     sequence,
-    targetActorId: combat.target.actorId,
+    targetActorId: prey.actorId,
     actorIds: [...actorIds],
     status: 'active',
     startedAtElapsedMs: state.simElapsedMs,
@@ -186,15 +211,21 @@ export function startStage07Encounter(state: GameState, world: WorldDefinition, 
     log: [],
   };
   const nextState = structuredClone(state);
-  nextState.combat = {
-    ...combat,
-    nextEncounterSequence: sequence + 1,
-    target: { ...combat.target, status: 'reacting' },
-    encounters: [...combat.encounters, encounter],
+  const activePrey = { ...prey, status: 'reacting' as const };
+  if (resolved.wildlifeGroupId === null) nextState.combat = {
+    ...combat, nextEncounterSequence: sequence + 1, target: activePrey, encounters: [...combat.encounters, encounter],
   };
-  const streamId = HARE_STREAM_PREFIX + encounterId;
-  const groupStreamId = actorIds.length > 1 ? GROUP_STREAM_PREFIX + encounterId : streamId;
-  nextState.rngStreams = { ...nextState.rngStreams, [groupStreamId]: { algorithm: 'HASH-PRIMITIVE-1.0', counter: 0 } };
+  else {
+    const wildlifeTargets = [...(combat.wildlifeTargets ?? [])];
+    const index = wildlifeTargets.findIndex(candidate => candidate.actorId === prey.actorId);
+    if (index >= 0) wildlifeTargets[index] = activePrey;
+    else wildlifeTargets.push(activePrey);
+    nextState.wildlife = { ...state.wildlife, groups: state.wildlife.groups.map(group => group.id === resolved.wildlifeGroupId && resolved.newlyMaterialized
+      ? { ...group, nextMemberOrdinal: group.nextMemberOrdinal + 1 } : group) };
+    nextState.combat = { ...combat, nextEncounterSequence: sequence + 1, wildlifeTargets, encounters: [...combat.encounters, encounter] };
+  }
+  const streamId = (resolved.wildlifeGroupId === null ? HARE_STREAM_PREFIX : 'wildlife-combat:') + encounterId;
+  nextState.rngStreams = { ...nextState.rngStreams, [streamId]: { algorithm: 'HASH-PRIMITIVE-1.0', counter: 0 } };
   nextState.jobs = [...nextState.jobs, {
     id: encounterId, kind: 'combat_encounter', status: 'active', actorIds: [...actorIds],
     reservedItemIds: actorIds.flatMap(id => nextState.ownedUnits.find(unit => unit.id === id)?.equipmentIds ?? []), startedAtElapsedMs: state.simElapsedMs, completedAtElapsedMs: null,
@@ -202,7 +233,7 @@ export function startStage07Encounter(state: GameState, world: WorldDefinition, 
   const event = {
     type: 'combat_encounter_started',
     occurredAtElapsedMs: state.simElapsedMs,
-    payload: { encounterId, actorId: actorIds[0], actorIds: [...actorIds], targetId: combat.target.actorId, sourceEcologyId: combat.target.sourceEcologyId, terrainId: combat.target.combatProfile.terrainId },
+    payload: { encounterId, actorId: unit.id, actorName: unit.name, targetId: prey.actorId, wildlifeGroupId: resolved.wildlifeGroupId, sourceEcologyId: prey.sourceEcologyId, terrainId: prey.combatProfile.terrainId },
   };
   return { state: nextState, encounter, code: null as string | null, requirements: [] as readonly string[], event };
 }
@@ -279,8 +310,7 @@ function addKnownCorpse(state: GameState, corpse: CorpseState, at: number): void
   };
 }
 
-function hareCorpse(state: GameState, encounter: CombatEncounterState, at: number): CorpseState {
-  const prey = state.combat!.target;
+function preyCorpse(encounter: CombatEncounterState, prey: Stage07CombatState['target'], at: number): CorpseState {
   const eventId = 'COMBAT-DEATH-' + encounter.id;
   const body: CorpseBodyRecord = {
     ...prey.bodyRecord,
@@ -292,7 +322,7 @@ function hareCorpse(state: GameState, encounter: CombatEncounterState, at: numbe
     actorId: prey.actorId,
     location: { kind: 'site', siteId: prey.siteId },
     state: 'known',
-    sourceStatus: 'Thỏ băng defeated in the H0 opening encounter',
+    sourceStatus: `${prey.name} defeated in a deterministic wildlife encounter`,
     createdAtElapsedMs: at,
     ownershipId: null,
     disposition: 'unclaimed',
@@ -564,8 +594,8 @@ export function settleCombatBoundary(input: GameState, at: number): { state: Gam
       continue;
     }
     const unit = state.ownedUnits.find(item => item.id === encounter.actorIds[0]);
-    const prey = combat.target;
-    const streamId = HARE_STREAM_PREFIX + encounter.id;
+    const prey = preyForEncounter(combat, encounter);
+    const streamId = (prey.wildlifeGroupId ? 'wildlife-combat:' : HARE_STREAM_PREFIX) + encounter.id;
     let actorHealth = unit?.health?.current ?? 0;
     let targetHealth = encounter.targetHealth.current;
     let actorId = unit?.id ?? encounter.actorIds[0];
@@ -593,7 +623,7 @@ export function settleCombatBoundary(input: GameState, at: number): { state: Gam
       }
       finalStatus = actorHealth <= 0 ? 'defeat' : 'retreated';
       if (finalStatus === 'retreated') {
-        state.combat!.target = { ...prey, status: 'retreated', position: { ...prey.position, xMm: prey.position.xMm + 5_000 } };
+        storePrey(state, { ...prey, status: 'retreated', position: { ...prey.position, xMm: prey.position.xMm + 5_000 } });
         outcome = 'retreat';
       }
     } else {
@@ -602,7 +632,7 @@ export function settleCombatBoundary(input: GameState, at: number): { state: Gam
       if (!weapon || distance > weapon.rangeMm) {
         finalStatus = 'retreated';
         outcome = 'retreat';
-        state.combat!.target = { ...prey, status: 'retreated', position: { ...prey.position, xMm: prey.position.xMm + 5_000 } };
+        storePrey(state, { ...prey, status: 'retreated', position: { ...prey.position, xMm: prey.position.xMm + 5_000 } });
       } else {
         const chance = chanceToHit(unit.attributes ?? {}, prey.bodyRecord.rawAttributes ?? {}, weatherPenalty);
         if (draw(state, streamId, 1, 100) <= chance) {
@@ -642,10 +672,17 @@ export function settleCombatBoundary(input: GameState, at: number): { state: Gam
     };
     state.combat!.encounters = state.combat!.encounters.map(item => item.id === encounter.id ? nextEncounter : item);
     if (finalStatus === 'victory') {
-      const corpse = hareCorpse(state, nextEncounter, at);
+      const corpse = preyCorpse(nextEncounter, prey, at);
       corpseId = corpse.id;
       addKnownCorpse(state, corpse, at);
-      state.combat!.target = { ...state.combat!.target, status: 'dead', bodyRecord: { ...state.combat!.target.bodyRecord, health: { current: 0, max: targetHealth } } };
+      storePrey(state, { ...prey, status: 'dead', bodyRecord: { ...prey.bodyRecord, health: { current: 0, max: targetHealth } } });
+      let depletedGroupId: string | null = null;
+      if (prey.wildlifeGroupId) state.wildlife = { ...state.wildlife, groups: state.wildlife.groups.map(group => {
+        if (group.id !== prey.wildlifeGroupId) return group;
+        const remaining = Math.max(0, group.remaining - 1);
+        if (remaining === 0) depletedGroupId = group.id;
+        return { ...group, remaining };
+      }) };
       const xpId = 'XP-COMBAT-' + encounter.id + '-' + actorId;
       const xp = settleOrdinaryCombatXp(state, actorId, STAGE07_HUNT_XP, xpId, at, 1);
       state = xp.state;
@@ -653,7 +690,8 @@ export function settleCombatBoundary(input: GameState, at: number): { state: Gam
       finishJob(state, encounter.id, at);
       const mirror = xp.transactions.find(transaction => transaction.transactionKind === 'OWNER_XP_MIRROR');
       events.push({ type: 'combat_turn_settled', occurredAtElapsedMs: at, payload: { encounterId: encounter.id, round, actorId, outcome: log.outcome, damage, damageTaken, actorHealth, targetHealth } });
-      events.push({ type: 'combat_encounter_won', occurredAtElapsedMs: at, payload: { encounterId: encounter.id, actorId, actorName: unit?.name ?? actorId, targetId: prey.actorId, corpseId, xpAwarded: xp.transactions.find(transaction => transaction.transactionKind === 'NORMAL_AWARD')?.netXp ?? 0, mirroredXp: mirror?.netXp ?? 0 } });
+      events.push({ type: 'combat_encounter_won', occurredAtElapsedMs: at, payload: { encounterId: encounter.id, actorId, actorName: unit?.name ?? actorId, targetId: prey.actorId, wildlifeGroupId: prey.wildlifeGroupId ?? null, corpseId, xpAwarded: xp.transactions.find(transaction => transaction.transactionKind === 'NORMAL_AWARD')?.netXp ?? 0, mirroredXp: mirror?.netXp ?? 0 } });
+      if (depletedGroupId) events.push({ type: 'wildlife_group_depleted', occurredAtElapsedMs: at, payload: { groupId: depletedGroupId, ecologyId: prey.sourceEcologyId } });
       completed = true;
       continue;
     }
@@ -671,7 +709,7 @@ export function settleCombatBoundary(input: GameState, at: number): { state: Gam
       state.inventory = { ...state.inventory, containers: state.inventory.containers.map(container => ({
         ...container, stacks: container.stacks.filter(stack => !unit?.equipmentIds.includes(stack.itemId)),
       })) };
-      state.combat!.target = { ...state.combat!.target, status: 'retreated', position: { ...state.combat!.target.position, xMm: state.combat!.target.position.xMm + 5_000 } };
+      storePrey(state, { ...prey, status: 'retreated', position: { ...prey.position, xMm: prey.position.xMm + 5_000 } });
       finishJob(state, encounter.id, at);
       events.push({ type: 'combat_turn_settled', occurredAtElapsedMs: at, payload: { encounterId: encounter.id, round, actorId, outcome: 'defeat', damage, damageTaken, actorHealth: 0, targetHealth } });
       events.push({ type: 'combat_unit_defeated', occurredAtElapsedMs: at, payload: { encounterId: encounter.id, actorId, corpseId } });
@@ -688,10 +726,10 @@ export function settleCombatBoundary(input: GameState, at: number): { state: Gam
       continue;
     }
 
-    state.combat!.target = {
+    storePrey(state, {
       ...prey,
       bodyRecord: { ...prey.bodyRecord, health: { current: targetHealth, max: encounter.targetHealth.max } },
-    };
+    });
     events.push({ type: 'combat_turn_settled', occurredAtElapsedMs: at, payload: { encounterId: encounter.id, round, actorId, outcome: log.outcome, damage, damageTaken, actorHealth, targetHealth } });
     danger = actorHealth <= Math.ceil((unit?.health?.max ?? 1) / 4);
   }

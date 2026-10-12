@@ -1,6 +1,6 @@
 import type { EntityRef } from './game/GameClient';
 
-export type Screen = 'overview' | 'character' | 'territory' | 'map' | 'inventory' | 'forces' | 'buildings' | 'journal';
+export type Screen = 'overview' | 'character' | 'territory' | 'map' | 'inventory' | 'forces' | 'buildings' | 'events' | 'journal';
 export type ItemKind = 'Tài nguyên' | 'Trang bị' | 'Vật phẩm' | 'Bản vẽ';
 export type ItemSymbol = 'wood' | 'stone' | 'ore' | 'bread' | 'cloak' | 'staff' | 'axe' | 'chest' | 'scroll' | 'potion' | 'sword' | 'ring'
   | 'iron-pot' | 'stone-hammer' | 'round-shield' | 'convenience-bag' | 'herbs' | 'water' | 'salt' | 'supply-coffer'
@@ -36,7 +36,13 @@ export const screens: { id: Screen; name: string; hint: string }[] = [
   { id: 'inventory', name: 'Kho vật phẩm', hint: 'Hình mẫu' },
   { id: 'forces', name: 'Quân lực', hint: 'Đơn vị' },
   { id: 'buildings', name: 'Công trình', hint: 'Kiến trúc' },
+  { id: 'events', name: 'Sự kiện', hint: 'Hợp đồng mẫu' },
   { id: 'journal', name: 'Nhật ký', hint: 'Sự kiện' },
+];
+export const demoEventContracts = [
+  { id: 'EV02-DRAGON-REVIVAL', displayName: 'Dragon revival', status: 'scheduled', readiness: 'executable_lifecycle', opensAtElapsedMs: 518_400_000, locksAtElapsedMs: 1_123_200_000, resolvesAtElapsedMs: 1_209_600_000, objective: null, outcome: null, rewardKrona: 0, claimExpiresAtElapsedMs: null, rewardClaimed: false, eventShop: null },
+  { id: 'EV19-ICE-SNOW-CHOICE', displayName: 'Ice or snow campaign choice', status: 'scheduled', readiness: 'executable_lifecycle', opensAtElapsedMs: 13_392_000_000, locksAtElapsedMs: 13_996_800_000, resolvesAtElapsedMs: 14_083_200_000, objective: null, outcome: null, rewardKrona: 0, claimExpiresAtElapsedMs: null, rewardClaimed: false, eventShop: null },
+  { id: 'EV29-FINAL-CALAMITY', displayName: 'Final calamity', status: 'scheduled', readiness: 'executable_lifecycle', opensAtElapsedMs: 18_921_600_000, locksAtElapsedMs: 19_526_400_000, resolvesAtElapsedMs: 19_612_800_000, objective: null, outcome: null, rewardKrona: 0, claimExpiresAtElapsedMs: null, rewardClaimed: false, eventShop: null },
 ];
 /** Opening site positions are exact LL01 registry coordinates in metres (+X east, +Y north).\n * They are read-only frontend projections; the site IDs and canonical registry remain authority. */
 export const sites: Site[] = [

@@ -2,38 +2,58 @@
 
 ## Result
 
-The runtime preserves the fixed 30-row v0.6 calendar, executes EV00 and the opening-level EV01 board, and runs the Q08 caravan quest. A versioned contract registry is compiled into the world package and exposed through the live API for all 30 IDs, including named event families, participation, objectives, scoring, encounters, rewards, shops, stock/expiry and settlement. EV02–EV29 retain their authored calendar times and remain gated until those event-family handlers record gameplay outcomes; the campaign is not yet complete. The Events screen shows each contract beside the selected save's lifecycle/readiness, research evidence, rankings, claims and shop state.
+Stage08’s bounded runtime is implemented on top of Stages 06 and 07. The build keeps the full 30-row event calendar, adds one campaign-fixed/source-analogy caravan quest with a real reward and inventory path, persists fixed-price purchases and auction escrow, and writes a coverage report for every current source record. Stage 10 extends this runtime with playable EV02–EV29 objectives, score shops and result claims; see [STAGE-10.md](STAGE-10.md) for the current event, wildlife, chest and shared-UI rules. The selected source set remains `32f34d8b5bb85671ec6301a30f045e30c0f8f161`: Round46 catalog/CSV v4.6, timeline v0.6 and structure catalog v1.0.
 
-Content is pinned as `LL01-CONTENT-0.4.0` / `LL01-RULESET-0.4.0`. Compilation checks the corrected 1,682-row v7.24 item ledger and v7.25 catalog addendum while retaining v4.6 as provenance evidence for conflicts. Source records are not runtime rewards: research-only rows remain inactive, and observed chest outcomes are shown separately from verified acquisitions and offers. An observed opening does not guarantee a drop.
-
-The v7.24 CSV also has malformed/unheaded fields in some rows. The compiler checks all item IDs against the v7.25 addendum, but only counts acquisition and shop flags when the adoption and verification columns remain aligned. It reports 490 unresolved rows separately; those flags cannot be used to promote content or imply guaranteed rewards.
+Remaining source-dependent gaps include promotion of catalog research items, variable-price quote settlement, auction seller acceptance without a validated buyer contract, and the fixed P0 rank outcome simulation. EV02–EV29 use explicit Stage 10 game-design mechanics because their fixed calendar contracts do not supply a complete single-save objective/scoring procedure. No catalog research row is silently promoted and no rank or source prize is fabricated.
 
 ## Implemented
 
-- Schema 10 persists the fixed calendar, Q08 economy, opening-rival action/resource/XP ledgers, frozen rank rows, reward payloads and claim receipts. Schema 9 → 10 seeds the rival runtime for an open board, catches actions up to the saved elapsed time, and preserves any already-frozen legacy settlement without replaying it or issuing a retroactive reward.
-- The calendar advances at exact boundaries in deterministic order. EV00 resolves opening protection. EV01 opens at +48h, filters committed level-10 completions through its three-minute display delay, closes at +144h, sorts by completion timestamp/stable ID, freezes the first 100 rows and assigns the seven literal reward bands. Player reward claims deliver committed items once; a source-dependent random slot can remain blocked independently.
-- The nine File 07 rivals use fixed profiles, anchors, starting environments and forecast formulas to schedule hunting actions. Every action records its timestamp, finite prey/ration/firewood balance, XP and level change. Level-10 timestamps come from those committed actions, not a preset rank; Lí Lan qualifies only through her own XP transaction ledger. Results match across one-shot and hourly simulation advances.
-- `QUEST-LL01-08` has server-side acceptance, negotiation, escort, arrival and claim transitions with fixed actors, route, deadlines and conditions. Its reward and the versioned local bread offer/auction use persistent inventory and currency state, bounded stock, atomic settlement and idempotent claims.
-- The Events screen reads the API’s player-safe calendar, research counts, rank snapshots and shop projection. The Character screen and dispatch controls likewise use the selected save’s API view; demo preview controls remain in demo mode.
-- `LL01-EVENT-CONTRACT-REGISTRY-1.0` compiles one contract for every v0.6 calendar ID into `WorldDefinition` and `PlayerView`. EV00/EV01 are runtime-active; the later handler families are labeled planned and do not pretend their authored contracts are gameplay results.
-- Research compilation keeps separate counts for recorded source rows, research-only rows, verified acquisitions, verified shop offers, observed chest outcomes and unresolved provenance conflicts. None of these counts directly mints a reward.
-- A versioned, explicit opening-action balance overlay turns File 07 forecasts and File 03 habitat classes into finite rival action schedules and starting resource estimates. The exact assumptions are recorded in `docs/implementation/OPENING-RANKING-RUNTIME.md` so they can be tuned without changing the source-locked reward contract.
+- State schema 8 persists the 30 fixed calendar rows, EV02–EV29 progress/score/shop state, finite wildlife groups, chest outcomes, the Stage08 caravan, Q08 progress, claim receipts, Krona, market stock, auction bids/escrow and opening rank snapshots. Schema 5–7 saves upgrade without rewinding elapsed time or receiving retroactive Q08/event rewards.
+- Calendar open, lock and resolve receipts settle at the adopted boundaries in deterministic order. Rows never recur. EV00 retains its opening-protection transition; EV01 closes with a blocked rank snapshot when the frozen contender results are unavailable; EV02–EV29 open and settle through the Stage 10 objective/claim lifecycle. A calendar receipt alone never pays a reward.
+- `QUEST-LL01-08` follows the fixed actors and route: Torven, caravan `CARAVAN-LL01-01`, ledger `QI-LL01-08`, departure at +120h, bridge distress at +122h, close at +126h and arrival at Krona Gate. Acceptance, negotiation, escort, arrival and claim are separate server transitions. Claim requires Torven alive, an intact ledger and at least 3 of 9 draft animals at town.
+- The canonical reward `RW-LL01-08` grants 60 Krona, offers Torven contract `HERO_CONTRACT_OFFER-05`, and unlocks `ROUTE-TRADE-LL01-A`. The 21-day contract terms are 4 Krona/day plus 5% of loot on trips Torven leads; goods still move through the route and are not teleported.
+- The source allows negotiation but does not give its exact price. This build records one real grain sack from the caravan’s 18 as a versioned game-design cost for safe passage. It does not change the caravan’s other source cargo or its survival conditions.
+- The town bread offer is an explicit local market design (`sourceEntryId=null`): 1 Krona each, 24 stock, 10 purchases per save. Purchase commits currency, stock, capacity check and actual BREAD delivery atomically. The purchased instance uses the existing Stage04 food-consumption handler and its market lineage is conserved through consumption and backup import.
+- A versioned design auction exposes the caravan’s six actual salt units. Bids reserve lot quantity and Krona; cancellation and close expiry restore the full escrow. An open bid creates no item ownership. No NPC buyer, auto-fill or sale is invented.
+- The live nine-screen UI shows known event and quest state, transaction receipts, currency, actual bread, stock/cap/price, bid windows, escrow and available Q08 commands. Future unrevealed calendar rows stay hidden.
+- The coverage generator checks current source hashes, parses the CSV quoting rules, verifies every JSON/CSV item ID, and lists all 590 entries, 239 effects, 202 observations, 13 mechanic extractions, 25 provenance conflicts and 20 source structure records.
 
 ## Unfinished contracts
 
-| Area | Current state |
-|---|---|
-| EV00 | Executable opening-protection lifecycle. |
-| EV01 opening board | Implemented and persistent. NPC equipment/loadouts outside the P0 forecast/action abstraction remain future depth; the current contract executes finite hunts and resource limits with committed XP and stable settlement. |
-| EV02–EV29 | Calendar entries and research evidence are present; mandatory mechanics, objectives, encounters, shops and settlements are not executable. |
-| Event item ledger | v7.24 plus the v7.25 addendum are compiled and validated. Evidence is not promoted into game items until each item has a complete acquisition, stock/limit, expiry, effect and claim contract. |
-| Field chest loot | Existing chests are fixed and depleted on opening, but their reward pool is not compiled. An observed result is not treated as a guaranteed drop. |
-| Expedition hunting | The current executable encounter is the fixed H0 hare. General area-based mob groups and replenishment rules are not compiled. |
-
-Q08’s local shop and auction are explicitly versioned game-design contracts; they are not represented as verified event-catalog offers. They do not make the remaining event rows executable.
+| Gate | Result | Evidence / boundary |
+|---|---|---|
+| 1. Exact 30-row timing, boundaries, no recurrence, high-speed restart | **Passed** | Table-driven checks cover every current v0.6 row before/at/after open, lock and resolve, event receipt ordering and no recurrence. EV02–EV29 continue into executable mechanics; EV01’s fixed P0 rank outcome remains independently blocked. |
+| 2. Source-grounded event/quest/shop/effect/reload path | **Passed for Q08** | Fixed caravan/ledger/actors/deadline/reward, legitimate site/time eligibility, real BREAD delivery and food effect, SQLite restart and strict backup import. The explicitly priced negotiation and town shop are labeled game-design additions. |
+| 3. Stock, replay, capacity, currency, expiry and auction escrow | **Passed for active fixed-price/auction contracts** | Duplicate command, stale last-stock race, insufficient Krona, full destination, exact offer expiry rejection, bid reservation/cancel/expiry/refund and no early salt ownership are verified. No variable-price offer is active, so there is no quote acceptance path; no seller/liquidity rule authorizes an auction fill. |
+| 4. Event-exclusive item expiry and exclusive claims | **Passed for Stage 10 event overlay items; source catalog items remain inactive** | Stage 10 event marks and scoped event-chest drops carry the matching event ID and expire at resolution; claim receipts are idempotent and claims expire after seven days. The v4.6 research rows remain unpromoted; this does not claim their source-specific residue/effect rules. Q08 bread remains permanent, and auction escrow still expires/refunds independently. |
+| 5. Source ranking and frozen results | **Safely blocked** | File01 defines `OPENING_LEVEL` at +48h..+144h, top 100 reaching level 10, level/progress metric, timestamp/stable-ID tie rule and seven fixed reward bands. File07 supplies the ten-actor P0 roster. The runtime lacks committed actor outcome/XP/eligibility events, so it writes one immutable zero-row snapshot with `P0_FIXED_CONTENDER_RUNTIME_NOT_COMPILED` and pays nothing. |
+| 6. Coverage of active and pending content | **Passed as a coverage report** | [STAGE-08-CONTENT-COVERAGE.md](STAGE-08-CONTENT-COVERAGE.md) records each entry’s adoption, source fields, missing runtime contract and attached conflict, plus effect/observation/extraction/structure records. Research-only rows remain inactive. |
 
 ## Validation
 
 The content compiler and coverage report validate the locked source hashes and item IDs. Simulation tests cover calendar boundaries, Q08 settlement, replay prevention, rival determinism, exact opening-board settlement, fixed payouts, reward claims, migration and reload continuity. Area-search tests cover reservations, sweep coverage, target/time stops, return/recall and time-step determinism. See the current Stage 09 validation record for this checkout’s exact counts and frontend dependency limitation.
 
-Relevant implementation: `packages/content/src/compiler.ts`, `packages/content/src/eventReadiness.ts`, `packages/sim/src/stage08.ts`, `packages/sim/src/spatial.ts`, `frontend/src/LiveApp.tsx`, and [the generated coverage matrix](STAGE-08-CONTENT-COVERAGE.md).
+```text
+npm run content:compile       38 sites, 192 chests, 15 lairs, 693 fixed lair units, 30 events
+npm run content:coverage:stage08
+npm run test:stage02          9/9
+npm run test:stage03          3/3 (local-only loopback permission enabled)
+npm run test:stage04          11/11
+npm run test:stage05          12/12
+npm run test:stage06          12/12
+npm run test:stage07          1/1 Node test file (the suite’s simulation assertions passed)
+npm run test:stage08          6/6
+npm run test:stage10          9/9
+```
+
+The initial Stage02 run caught an old hard-coded source commit/catalog assertion. It was updated to check the current source pin and v4.6 research input, then passed 9/9. The initial Stage08 rank assertion tried to read an event list from the save aggregate; the actual storage API exposes player-event paging separately. The test now checks the persisted rank snapshot and idempotent settlement directly, and passes.
+
+Frontend unit/build checks could not run in this local checkout: `frontend/node_modules` was absent, the offline lockfile install stopped at uncached `yallist@3.1.1`, and `tsc`/Vite were unavailable. GitHub Actions run [38123942852](https://github.com/Kashumir-Kaiser/Ice-Age-Lord/actions/runs/38123942852) passed after fixing the stale frontend build and E2E view fixture. It ran content compilation and coverage, Stage02–08 backend suites, frontend build and unit tests, and the 60-case Chromium/mobile browser matrix (55 passed, 5 skipped).
+
+## Main files
+
+- `packages/sim/src/stage08.ts` — quest, offer, auction, settlement and invariants.
+- Stage 10 event/wildlife/chest/UI runtime: [STAGE-10.md](STAGE-10.md).
+- `packages/sim/test/stage08.test.ts` — calendar, transaction, persistence, migration and restart coverage.
+- `packages/content/tools/report-event-coverage.ts` — verified source matrix generator.
+- `frontend/src/LiveApp.tsx` — live quest, inventory, market and auction controls.

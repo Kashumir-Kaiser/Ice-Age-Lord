@@ -147,8 +147,7 @@ const lines: string[] = [
   '## Runtime summary',
   '',
   `- Calendar compiler: \`${EVENT_LIFECYCLE_VERSION}\`; exactly ${ACTIVE_WORLD_PACKAGE.eventSchedule.length} adopted v0.6 records, with lifecycle receipts and no recurrence.`,
-  `- Event contract registry: \`${EVENT_CONTRACT_REGISTRY_VERSION}\`; all ${ACTIVE_WORLD_PACKAGE.eventContracts.length} fixed IDs have a published handler-family, participation, objective, scoring, encounter, reward, shop, expiry and settlement contract in the compiled world package and live API projection.`,
-  '- EV00 resolves opening protection. EV01 now simulates finite rival actions, settles from committed completion records, freezes reward bands and supports idempotent player claims. EV02–EV29 have compiled research contracts but remain gated until their event-family handlers record real gameplay outcomes.',
+  '- EV00 resolves its opening-protection lifecycle. EV01 has a source-fixed opening-level board window and frozen reward contract; its result snapshot is blocked unless the runtime can compile the complete fixed P0 outcome population. EV02–EV29 now have playable versioned objective, score/shop, settlement, and claim mechanics (Stage 10); those game-design rules do not promote source-catalog candidates.',
   `- Source registry: ${entries.length} item/offer records (${sourceActive.length} source records promoted; ${pendingEntries.length} remain research/pending), ${catalog.source_effect_records.length} effects, ${catalog.source_observations.length} observations, ${catalog.event_mechanic_extractions.length} mechanic extractions, ${conflicts.length} provenance conflicts.`,
   `- v7.24 cumulative CSV: ${csvData.length} rows and ${csvHeader.length} declared columns; every row ID matches the v7.25 cumulative ID ledger. The older v4.6 catalog has ${legacyEntryIds.length} entries and is used only to attach prior conflict evidence.`,
   `- ${csvData.filter(row => row.sourceFieldAlignment === 'unresolved').length} source rows have unaligned adoption/verification fields. Their purchase or acquisition flags are excluded from event evidence counts and their promotion is blocked. ${csvData.filter(row => row.unmappedTrailingFields.length > 0).length} rows also contain unheaded trailing fields, which remain visible and uninterpreted.`,
@@ -188,7 +187,7 @@ lines.push(
   '| Event-exclusive item instances | No research-catalog item with a verified, adopted per-item expiration has been promoted. The selected Q08 bread offer is explicitly permanent (`exclusiveEventId=null`, `expiresAtElapsedMs=null`); the auction lot expires and its open escrow is refunded. Therefore item-expiry propagation through equipment/jobs/other containers is not falsely claimed as covered by an active event-exclusive content contract. |',
   '| Exclusive quest reward claim | Q08 reward key is unique; repeated claim cannot pay a second 60 Krona or reopen the route contract. |',
   '| Save and backup reload | Quest state, inventory purchase/consumption lineage, currency, market stock and receipts survive process restart and backup import. |',
-  '| Source-version update | The v7.24 CSV and v7.25 addendum hashes, cumulative count and every source ID are verified; the v4.6 catalog/CSV pair remains a prior-provenance comparison. Research-only changes do not mutate the pinned save’s committed calendar or claims. |',
+  '| Source-version update | Catalog 4.6 and CSV 4.6 hashes and all row IDs are verified; research-only changes do not mutate the pinned save’s committed calendar or claims. |',
   '',
   '## Ranking source and settlement', '',
   '- `LORD-DND-01.md` §13.3–13.4 defines `OPENING_LEVEL`: open +48h, close +144h, top 100 actors reaching level 10, level then progress, completion timestamp then stable player ID, three-minute data delay, and fixed `RWD-OPENING-FIXED-2.0` payloads for seven rank bands. A zero-qualifier result is empty and pays nothing.',
@@ -253,7 +252,7 @@ for (const [index, conflict] of conflicts.entries()) {
 }
 
 lines.push('', '## Gate disposition', '',
-  '- Gate 1 — passed: all 30 adopted rows and exact open/lock/resolve boundaries, no recurrence, plus 5× clock and restart at the EV02 blocker.',
+  '- Gate 1 — passed: all 30 adopted rows and exact open/lock/resolve boundaries, no recurrence, plus 5× clock/restart coverage; EV02–EV29 progression is now executable under the Stage 10 overlay. EV01 ranking settlement remains blocked on the fixed P0 outcome ledger.',
   '- Gate 2 — passed for the implemented Q08 contract: fixed actors/route/deadline/conditions/reward, legitimate site and time eligibility, inventory/effect path, persistence, and reload. The grain-for-passage cost and market/auction terms are versioned design choices because the fixed source contract does not price them.',
   '- Gate 3 — covered for the active fixed-price offer and unfilled auction: stale last-stock request, duplicate receipt, no funds, capacity full, exact offer close, escrow bid/cancel/expiry and no premature salt ownership. Variable-price quotes and auction seller acceptance are not active contracts; no quote or fictional buyer is simulated.',
   '- Gate 4 — partial/applicability-limited: unique reward claim and auction escrow expiry are tested. There is no promoted source event-exclusive item with an adopted per-instance expiry contract; the selected bread is explicitly permanent. Per-item expiry through equipment/jobs/other containers therefore remains unclaimed until an eligible source/design item contract is adopted.',

@@ -12,7 +12,6 @@ import {
   actorAvailability,
   cancelSpatialJob,
   cancelTravel,
-  materializeChestLootBlocker,
   previewMovement,
   startHarvestJob,
   startMovement,
@@ -20,6 +19,8 @@ import {
   transferItem,
 } from './spatial.ts';
 import { acceptQ08, cancelAuctionBid, claimOpeningLevelReward, claimQ08Reward, escortQ08, negotiateQ08, placeAuctionBid, purchaseMarketOffer } from './stage08.ts';
+import { openFieldChest } from './chestLoot.ts';
+import { buyEventOffer, claimEventReward, chooseEventPath, recordEventActivities } from './eventRuntime.ts';
 
 const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | 'inspect_starter_container' | 'inspect_career_card'>, { code: string; message: string }>> = {
   activate_career_card: { code: 'CAREER_CARD_FLOW_NOT_IMPLEMENTED', message: 'Career activation is unavailable until its verified flow is implemented.' },
@@ -62,6 +63,9 @@ const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | '
   claim_opening_rank_reward: { code: 'OPENING_REWARD_NOT_CLAIMABLE', message: 'The fixed opening-board reward is not ready to claim.' },
   place_auction_bid: { code: 'AUCTION_LOT_NOT_OPEN', message: 'The selected auction lot is not open.' },
   cancel_auction_bid: { code: 'AUCTION_BID_NOT_OPEN', message: 'The selected bid is not open.' },
+  claim_event_reward: { code: 'EVENT_REWARD_NOT_CLAIMABLE', message: 'No event reward is ready to claim.' },
+  choose_event_path: { code: 'EVENT_CHOICE_NOT_AVAILABLE', message: 'No event path choice is currently open.' },
+  buy_event_offer: { code: 'EVENT_SHOP_CLOSED', message: 'No event shop is currently open.' },
 };
 
 function staticAvailability(type: CommandType): ActionAvailability {
@@ -104,7 +108,8 @@ export function actionAvailability(type: CommandType): ActionAvailability {
   }
   if (type === 'split_stack' || type === 'merge_stacks' || type === 'consume_item' || type === 'activate_career_card' || type === 'revive' || type === 'butcher_corpse' || type === 'equip' || type === 'unequip_item' || type === 'attack' || type === 'retreat') return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
   if (type === 'shop_transaction' || type === 'accept_quest' || type === 'negotiate_caravan' || type === 'escort_caravan'
-    || type === 'claim_quest_reward' || type === 'claim_opening_rank_reward' || type === 'place_auction_bid' || type === 'cancel_auction_bid') return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
+    || type === 'claim_quest_reward' || type === 'place_auction_bid' || type === 'cancel_auction_bid'
+    || type === 'claim_event_reward' || type === 'choose_event_path' || type === 'buy_event_offer') return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
   return staticAvailability(type);
 }
 
@@ -123,6 +128,7 @@ function isKnownEntity(ref: EntityRef, state: GameState): boolean {
           : siteId === 'SITE-LL01-003';
     }));
     case 'corpse': return (state.playerKnowledge.knownCorpseIds ?? []).includes(ref.id);
+    case 'wildlife': return (state.playerKnowledge.knownWildlifeGroupIds ?? []).includes(ref.id);
   }
 }
 
@@ -136,6 +142,9 @@ function resolvedDestination(state: GameState, world: WorldDefinition, payload: 
   if (resource) return { coordinate: resource.location, kind: 'entity' as const, entityId: id };
   const chest = world.fieldChests.find(candidate => candidate.id === id && state.playerKnowledge.knownChestIds.includes(id));
   if (chest) return { coordinate: chest.position, kind: 'entity' as const, entityId: id };
+  const wildlife = state.wildlife.groups.find(candidate => candidate.id === id
+    && candidate.discovery === 'known' && (state.playerKnowledge.knownWildlifeGroupIds ?? []).includes(id));
+  if (wildlife) return { coordinate: wildlife.position, kind: 'entity' as const, entityId: id };
   const signal = state.spatial.signals.find(candidate => candidate.signalId === id && state.playerKnowledge.knownSignalIds.includes(id));
   if (signal) return {
     coordinate: signal.discovery === 'identified' ? signal.exactPosition : signal.approximatePosition,
@@ -356,10 +365,12 @@ export function previewCommand(
     const result = claimQ08Reward(state, world, 'PREVIEW');
     return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
   }
+
   if (command.type === 'claim_opening_rank_reward') {
     const result = claimOpeningLevelReward(state, 'PREVIEW', command.payload.boardId);
     return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
   }
+
   if (command.type === 'shop_transaction') {
     const result = purchaseMarketOffer(state, world, command.payload.offerId, command.payload.destinationContainerId, command.payload.quantity, 'PREVIEW');
     return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
@@ -372,13 +383,21 @@ export function previewCommand(
     const result = cancelAuctionBid(state, command.payload.bidId, 'PREVIEW');
     return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
   }
+  if (command.type === 'claim_event_reward') {
+    const result = claimEventReward(state, command.payload.eventId, 'PREVIEW');
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
+  }
+  if (command.type === 'choose_event_path') {
+    const result = chooseEventPath(state, command.payload.eventId, command.payload.choiceId);
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
+  }
+  if (command.type === 'buy_event_offer') {
+    const result = buyEventOffer(state, world, command.payload.eventId, command.payload.destinationContainerId, command.payload.quantity, 'PREVIEW');
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
+  }
   if (command.type === 'open_cache') {
-    const chest = world.fieldChests.find(candidate => candidate.id === command.payload.chestId && state.playerKnowledge.knownChestIds.includes(candidate.id));
-    const position = actorPosition(state, command.payload.actorId);
-    if (!chest || !position || Math.hypot(position.xMm - chest.position.xMm, position.yMm - chest.position.yMm) > world.navigationOverlay.interactionRangeMm) {
-      return unavailable(command.type, 'NOT_ACCESSIBLE', 'The identified cache must be within reach.');
-    }
-    return unavailable(command.type, materializeChestLootBlocker(world), 'The chest reward candidate pool is not compiled.');
+    const result = openFieldChest(state, world, command.payload.actorId, command.payload.chestId);
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
   }
   return staticAvailability(command.type);
 }
@@ -405,31 +424,37 @@ function acceptWithoutMutation(state: GameState, command: CommandEnvelope, reque
 }
 
 function acceptMutation(state: GameState, command: CommandEnvelope, requestSha256: string, nextPartial: Partial<GameState>, eventType: string, eventPayload: Record<string, unknown>, code: string, message: string): CommandReduction {
-  const nextState: GameState = {
+  const baseState: GameState = {
     ...state,
     ...nextPartial,
-    revision: state.revision + 1,
-    lastEventSequence: state.lastEventSequence + 1,
   };
-  const event: CommandEvent = {
-    sequence: nextState.lastEventSequence,
+  const sourceEvent = {
     type: eventType,
     occurredAtElapsedMs: state.simElapsedMs,
     payload: eventPayload,
   };
-  const receipt = receiptFor(command.commandId, true, nextState.revision, event.sequence, code, message);
+  const activity = recordEventActivities(baseState, [sourceEvent]);
+  const allEvents = [sourceEvent, ...activity.events].map((event, index) => ({ ...event, sequence: state.lastEventSequence + index + 1 }));
+  const nextState: GameState = {
+    ...activity.state,
+    revision: state.revision + 1,
+    lastEventSequence: state.lastEventSequence + allEvents.length,
+  };
+  const receipt = receiptFor(command.commandId, true, nextState.revision, allEvents.at(-1)!.sequence, code, message);
   nextState.receipts = [...state.receipts, { commandId: command.commandId, requestSha256, receipt }];
-  return { state: nextState, events: [event], receipt };
+  return { state: nextState, events: allEvents, receipt };
 }
 
 function acceptMutationMany(state: GameState, command: CommandEnvelope, requestSha256: string, nextState: GameState, events: readonly { type: string; occurredAtElapsedMs: number; payload: Record<string, unknown> }[], code: string, message: string): CommandReduction {
   if (events.length === 0) throw new Error('COMMAND_MUTATION_REQUIRES_EVENT');
   const revision = state.revision + 1;
-  const sequencedEvents = events.map((event, index) => ({ ...event, sequence: state.lastEventSequence + index + 1 }));
+  const activity = recordEventActivities(nextState, events);
+  const combinedEvents = [...events, ...activity.events];
+  const sequencedEvents = combinedEvents.map((event, index) => ({ ...event, sequence: state.lastEventSequence + index + 1 }));
   const finalState: GameState = {
-    ...nextState,
+    ...activity.state,
     revision,
-    lastEventSequence: state.lastEventSequence + events.length,
+    lastEventSequence: state.lastEventSequence + combinedEvents.length,
   };
   const receipt = receiptFor(command.commandId, true, revision, sequencedEvents.at(-1)!.sequence, code, message);
   finalState.receipts = [...state.receipts, { commandId: command.commandId, requestSha256, receipt }];
@@ -524,7 +549,7 @@ export function reduceCommand(
   if (command.type === 'attack') {
     const result = startStage07Encounter(state, world, command.payload.actorIds, command.payload.targetId);
     if (result.code || !result.encounter || !result.event) return reject(state, command.commandId, result.code ?? 'COMBAT_UNAVAILABLE', result.requirements.join(' ') || 'The encounter cannot start.', requestSha256);
-    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'COMBAT_STARTED', 'The selected unit began a timed encounter with the known H0 prey.');
+    return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'COMBAT_STARTED', 'The selected unit began a timed encounter with the known target.');
   }
 
   if (command.type === 'retreat') {
@@ -561,6 +586,24 @@ export function reduceCommand(
     const result = claimOpeningLevelReward(state, command.commandId, command.payload.boardId);
     if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
     return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'OPENING_RANK_REWARD_CLAIMED', result.message);
+  }
+
+  if (command.type === 'claim_event_reward') {
+    const result = claimEventReward(state, command.payload.eventId, command.commandId);
+    if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'EVENT_REWARD_CLAIMED', result.message);
+  }
+
+  if (command.type === 'choose_event_path') {
+    const result = chooseEventPath(state, command.payload.eventId, command.payload.choiceId);
+    if (result.code || !result.event) return reject(state, command.commandId, result.code ?? 'EVENT_CHOICE_INVALID', result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state ?? state, [result.event], 'EVENT_PATH_CHOSEN', result.message);
+  }
+
+  if (command.type === 'buy_event_offer') {
+    const result = buyEventOffer(state, world, command.payload.eventId, command.payload.destinationContainerId, command.payload.quantity, command.commandId);
+    if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'EVENT_SHOP_PURCHASED', result.message);
   }
 
   if (command.type === 'shop_transaction') {
@@ -758,12 +801,9 @@ export function reduceCommand(
   }
 
   if (command.type === 'open_cache') {
-    const chest = world.fieldChests.find(candidate => candidate.id === command.payload.chestId && state.playerKnowledge.knownChestIds.includes(candidate.id));
-    const position = actorPosition(state, command.payload.actorId);
-    if (!chest || !position || Math.hypot(position.xMm - chest.position.xMm, position.yMm - chest.position.yMm) > world.navigationOverlay.interactionRangeMm) {
-      return reject(state, command.commandId, 'NOT_ACCESSIBLE', 'The identified cache must be within reach.', requestSha256);
-    }
-    return reject(state, command.commandId, materializeChestLootBlocker(world), 'The chest reward candidate pool is not compiled.', requestSha256);
+    const result = openFieldChest(state, world, command.payload.actorId, command.payload.chestId);
+    if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'CHEST_OPENED', result.message);
   }
 
   if (command.type === 'set_clock_speed') {

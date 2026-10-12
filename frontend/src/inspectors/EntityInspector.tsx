@@ -1,6 +1,7 @@
 import { Archive, Box, Compass, Flame, Hammer, Info, Mountain, Shield, TreePine, Users, Waves, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { EntityView, UnitGroupView } from '../game/GameClient';
+import { InspectorFrame, InspectorHeading } from '../shared/InspectorFrame';
 
 const glyphs = { fire: Flame, house: Hammer, tomb: Shield, supply: Archive, chest: Box, wood: TreePine, stone: Mountain, ore: Mountain, water: Waves, herbs: TreePine, salt: Mountain, site: Compass, shield: Shield, sparkles: Flame, users: Users } as const;
 const clampPercent = (value: number) => Math.max(0, Math.min(100, value));
@@ -13,10 +14,9 @@ export default function EntityInspector({ entity, units = [], onOpenSettlement }
   const livingGroups=units.filter(unit=>unit.alive>0);
   useEffect(()=>{if(!livingGroups.some(unit=>unit.id===unitGroupId))setUnitGroupId(livingGroups[0]?.id??'');},[livingGroups.map(unit=>unit.id).join('|'),unitGroupId]);
   useEffect(()=>setHarvestOpen(false),[entity?.ref.id]);
-  if (!entity) return <aside className="panel inspector entity-inspector" role="region" aria-label="Thông tin điểm được chọn">
-    <div className="inspector-top"><span className="site-sigil"><Info size={22}/></span><span className="inspector-kicker">THÔNG TIN ĐỊA ĐIỂM</span></div>
-    <h3>Chưa chọn địa điểm</h3><p className="inspector-description">Chọn một điểm đã biết trên bản đồ hoặc trong danh sách.</p>
-  </aside>;
+  if (!entity) return <InspectorFrame className="panel inspector entity-inspector" label="Thông tin điểm được chọn">
+    <InspectorHeading mode="demo" eyebrow="Thông tin địa điểm" title="Chưa chọn địa điểm" description="Chọn một điểm đã biết trên bản đồ hoặc trong danh sách." icon={<Info size={20}/>}/>
+  </InspectorFrame>;
   const Icon = glyphs[entity.iconKind as keyof typeof glyphs] ?? Compass;
   const balance = entity.resourceBalance;
   const canShowBalance = Boolean(balance && balance.material && balance.unit && Number.isFinite(balance.remaining) && balance.remaining !== null);
@@ -28,11 +28,8 @@ export default function EntityInspector({ entity, units = [], onOpenSettlement }
   const harvestResource=entity.ref.type==='resource'&&Boolean(balance);
   const amountLabel=canShowBalance?`${balance!.remaining!.toLocaleString('vi-VN')}${Number.isFinite(balance!.capacity)?` / ${balance!.capacity!.toLocaleString('vi-VN')}`:''} ${balance!.unit}`:'Chưa xác định';
 
-  return <aside className="panel inspector entity-inspector" role="region" aria-label="Thông tin điểm được chọn" data-entity-id={entity.ref.id} data-knowledge={entity.knowledge}>
-    <div className="inspector-top"><span className={`site-sigil sigil-${entity.iconKind}`}><Icon size={22}/></span><span className="inspector-kicker">THÔNG TIN ĐỊA ĐIỂM</span></div>
-    <div className="entity-inspector-provenance"><span>{entity.provenance === 'canonical' ? 'THÔNG TIN GỐC' : entity.provenance === 'modeled' ? 'THÔNG TIN ƯỚC TÍNH' : 'HÌNH MINH HỌA'}</span><span>{entity.knowledge === 'remembered' ? 'ĐÃ GHI NHỚ' : stale ? 'LẦN CUỐI QUAN SÁT' : 'ĐANG QUAN SÁT'}</span></div>
-    <h3>{entity.name}</h3>
-    <div className="muted-text">{entity.label}</div>
+  return <InspectorFrame className="panel inspector entity-inspector" label="Thông tin điểm được chọn" entityId={entity.ref.id} knowledge={entity.knowledge}>
+    <InspectorHeading mode="demo" eyebrow="Thông tin địa điểm" title={entity.name} description={entity.label} icon={<span className={`site-sigil sigil-${entity.iconKind}`}><Icon size={22}/></span>} badges={[entity.provenance === 'canonical' ? 'THÔNG TIN GỐC' : entity.provenance === 'modeled' ? 'THÔNG TIN ƯỚC TÍNH' : 'HÌNH MINH HỌA', entity.knowledge === 'remembered' ? 'ĐÃ GHI NHỚ' : stale ? 'LẦN CUỐI QUAN SÁT' : 'ĐANG QUAN SÁT']}/>
     <div className="inspector-divider"/>
     <div className="detail-line"><span>Trạng thái</span><strong>{stale ? 'Thông tin lần cuối nhìn thấy' : entity.status}</strong></div>
     {entity.lastSeenAt && <div className="detail-line"><span>Quan sát gần nhất</span><strong>{entity.lastSeenAt}</strong></div>}
@@ -60,5 +57,5 @@ export default function EntityInspector({ entity, units = [], onOpenSettlement }
       {stale&&<p className="harvest-dialog-note">Đây là dữ liệu đã ghi nhớ; cần quan sát lại trước khi gửi yêu cầu thu hoạch.</p>}
       <div className="harvest-dialog-actions"><button type="button" className="harvest-cancel" onClick={()=>setHarvestOpen(false)}>Đóng</button><button type="button" className="harvest-submit" disabled title="Lệnh thu hoạch hiện chưa khả dụng.">Thu hoạch · Chưa khả dụng</button></div>
     </section></div>}
-  </aside>;
+  </InspectorFrame>;
 }

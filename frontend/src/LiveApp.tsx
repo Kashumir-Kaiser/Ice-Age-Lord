@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import {
   AlertCircle, ArrowRight, Bell, CalendarDays, CheckCircle2, Eye, Flame, Hammer, Map as MapIcon,
-  MapPin, PackageOpen, RefreshCw, ScrollText, Shield, Sparkles, Users, Trophy, UserRound,
+  MapPin, PackageOpen, RefreshCw, ScrollText, Shield, Sparkles, UserRound, Users,
 } from 'lucide-react';
 import type {
   ActionAvailability, ClockSpeedSelection, CommandEnvelope, CommandPayloadByType, CommandType,
@@ -15,11 +15,9 @@ import { MarkerGraphic } from './map/MapLayers';
 import { entityRefKey, GameApiError, HttpGameClient } from './live/HttpGameClient';
 import { SaveResponseScopeGate } from './live/saveScope';
 import { LIVE_SCREENS, type LiveScreen } from './live/screens';
-import TerritoryScene from './territory/TerritoryScene';
-import { territorySceneFromApi } from './live/territoryAdapter';
-import type { EntityRef as DemoEntityRef, LayoutDraft } from './game/GameClient';
-import type { TerritoryCamera } from './territory/projection';
-import type { ReadabilityMode } from './territory/BuildingSprite';
+import { EventBoard } from './shared/EventBoard';
+import { CharacterSummary, PageFrame, ScreenHeading } from './shared/PageFrame';
+import { InspectorFrame, InspectorHeading } from './shared/InspectorFrame';
 
 type Screen = LiveScreen;
 type Feedback = { kind: 'idle' | 'saving' | 'committed' | 'rejected' | 'disconnected'; text: string };
@@ -844,8 +842,14 @@ function LiveApp() {
         </div>
         {chooseDestination && <p className="live-map-hint">Click an empty map coordinate to preview an order. Confirming travel is a separate action.</p>}
         {fireRef && !fireEntity && <div className="live-inline-error" role="alert">Không tìm thấy Lửa Sinh Tồn trên bản đồ hiện tại.</div>}
-        {selectedEntity && !selectedCombatTarget && <div className="live-inspector">
-          <div><span className="live-eyebrow">SELECTED · {selectedEntity.category}</span><h3>{entityLabel(selectedEntity)}</h3><p>{selectedEntity.knowledge} · observed at {elapsedLabel(selectedEntity.observedAtElapsedMs)}</p></div>
+        {selectedEntity && !selectedCombatTarget && <InspectorFrame as="div" className="live-inspector" label="Selected map entity inspector" entityId={selectedEntity.ref.id} knowledge={selectedEntity.knowledge}>
+          <InspectorHeading mode="live" eyebrow={`Selected · ${selectedEntity.category}`} title={entityLabel(selectedEntity)} description={`${selectedEntity.knowledge} · observed at ${elapsedLabel(selectedEntity.observedAtElapsedMs)}`}/>
+          {selectedEntity.chestLoot && <div className="live-chest-loot" data-testid="chest-loot-inspector">
+              <strong>{selectedEntity.chestLoot.rarity} · {selectedEntity.chestLoot.chestType} chest · {selectedEntity.chestLoot.rollCount} roll(s)</strong>
+              {selectedEntity.chestLoot.eventId && <small>Pool scoped to {selectedEntity.chestLoot.eventId}; event items expire when the event resolves.</small>}
+              {!selectedEntity.chestLoot.opened && <ul>{selectedEntity.chestLoot.odds.map(odds => <li key={odds.templateId}><span>{odds.templateId}</span><span>{(odds.chanceAtLeastOncePermille / 10).toFixed(1)}% chance · {odds.perRollPermille / 10}% per roll</span></li>)}</ul>}
+              {selectedEntity.chestLoot.opened && selectedEntity.chestLoot.outcome && <ul>{selectedEntity.chestLoot.outcome.map(item => <li key={item.templateId}><span>{item.templateId}</span><span>×{item.quantity}</span></li>)}</ul>}
+            </div>}
           <div className="live-action-stack">
             {selectedInspect && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !selectedInspect.enabled} onClick={() => void runInspection(selectedEntity)}><Eye size={16} /> Kiểm tra</button>}
             {selectedCorpse?.inspected && <div><p>Thi thể: Bậc {selectedCorpse.tier ?? '—'} · Cấp {selectedCorpse.level ?? '—'} · Phẩm {selectedCorpse.grade ?? '—'} · nguyên vẹn {selectedCorpse.integrity ?? '—'}%</p>
@@ -858,14 +862,16 @@ function LiveApp() {
             {selectedBuilding && <button className="live-button live-button--secondary" onClick={() => { setFocusedConstructionBuildingId(selectedBuilding.id); setScreen('buildings'); }}><Hammer size={16} /> Open {selectedBuilding.name} inspector</button>}
             {selectedEntity.ref.type === 'site' && selectedEntity.ref.id === 'SITE-LL01-000' && <button className="live-button live-button--secondary" onClick={() => { setFocusedConstructionBuildingId(null); setScreen('buildings'); }}><Hammer size={16} /> Open H0 construction inspector</button>}
             {selectedOpen && <small>{availabilityMessage(selectedOpen)}</small>}
+            {selectedEntity.ref.type === 'cache' && selectedEntity.chestLoot && <button className="live-button" disabled={working || Boolean(pendingCommand) || !selectedOpen?.enabled || selectedEntity.chestLoot.opened}
+              onClick={() => void sendCommand(commandFor(view, 'open_cache', { actorId: view.player.id, chestId: selectedEntity.ref.id }))}>Open chest · commit displayed odds</button>}
             {selectedInspect && !selectedInspect.enabled && <small>{availabilityMessage(selectedInspect)}</small>}
             {selectedMove && !selectedMove.enabled && <small>{availabilityMessage(selectedMove)}</small>}
             {selectedHarvest && !selectedHarvest.enabled && <small>{availabilityMessage(selectedHarvest)}</small>}
           </div>
-        </div>}
-        {selectedCombatTarget && <div className="live-inspector" data-testid="combat-target-inspector">
-          <div><span className="live-eyebrow">ENCOUNTER TARGET · H0</span><h3>{selectedCombatTarget.label}</h3>
-            <p>{selectedCombatTarget.state === 'available' ? 'A known snow hare track is within sight.' : 'The hare has reacted to the encounter.'} · Population total is not surveyed.</p></div>
+        </InspectorFrame>}
+        {selectedCombatTarget && <InspectorFrame as="div" className="live-inspector" label="Combat target inspector" testId="combat-target-inspector" entityId={selectedCombatTarget.id}>
+          <InspectorHeading mode="live" eyebrow="Encounter target · H0" title={selectedCombatTarget.label}
+            description={`${selectedCombatTarget.state === 'available' ? 'A known wildlife track is within sight.' : 'The target has reacted to the encounter.'} · regional population ${selectedCombatTarget.regionalPopulationRemaining}`}/>
           <div className="live-action-stack">
             <label className="live-inline-field">Fighter <select value={selectedCombatActorId} onChange={event => setCombatActorId(event.target.value)}>
               <option value="">Choose a living owned unit</option>{view.units.filter(unit => unit.health && unit.health.current > 0).map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
@@ -874,7 +880,7 @@ function LiveApp() {
               onClick={() => void sendCommand(commandFor(view, 'attack', { actorIds: [selectedCombatActorId], targetId: selectedCombatTarget.id }))}>Engage target</button>
             {!selectedCombatTarget.attack.enabled && <small>{availabilityMessage(selectedCombatTarget.attack)}</small>}
           </div>
-        </div>}
+        </InspectorFrame>}
 
         <div className="live-map-canvas" data-testid="live-map" onClick={event => {
           if (!chooseDestination && !chooseDispatchCenter) return;
@@ -1178,104 +1184,40 @@ function LiveApp() {
       const reserved = stack.reduce((sum, item) => sum + item.reservedQuantity, 0);
       return `${templateId}: ${required} needed · ${Math.max(0, quantity - reserved)} available · ${reserved} reserved`;
     };
+    const accessibleEventContainers = view.inventory.containers.filter(container => container.accessible)
+      .map(container => ({ id: container.id, label: container.label }));
+    const eventBoard = () => <EventBoard
+      mode="live"
+      events={view.calendar}
+      nowElapsedMs={view.simElapsedMs}
+      formatTime={elapsedLabel}
+      destinationOptions={accessibleEventContainers}
+      busy={working || Boolean(pendingCommand)}
+      blocker={view.eventProgressionBlocker}
+      onChoosePath={(eventId, choiceId) => { void sendCommand(commandFor(view, 'choose_event_path', { eventId, choiceId })); }}
+      onClaimReward={eventId => { void sendCommand(commandFor(view, 'claim_event_reward', { eventId })); }}
+      onBuyMark={(eventId, destinationContainerId) => { void sendCommand(commandFor(view, 'buy_event_offer', { eventId, destinationContainerId, quantity: 1 })); }}
+    />;
     if (screen === 'character') {
-      const equipped = view.inventory.containers.flatMap(container => container.items
-        .filter(item => item.equipped && item.ownerId === view.player.id));
-      const stats = Object.entries(view.player.attributes);
       return <div className="live-section-stack">
-        <section className="live-panel live-character-panel">
-          <div className="live-character-art">
-            <img src="/assets/characters/li-lan-t0-fullbody.svg?v=20261010" alt="Toàn thân Lí Lan" />
-          </div>
-          <div className="live-character-profile">
-            <span className="live-eyebrow">HỒ SƠ NHÂN VẬT · API SAVE</span>
-            <h2>{view.player.name}</h2>
-            <p>Lãnh chúa · Bậc {view.player.formTier} · Cấp {view.player.level}</p>
-            <span className="live-character-talent"><Sparkles size={15} /> {view.player.talent.name} · {view.player.talent.grade}</span>
-            <div className="live-stat-grid">
-              <article className="live-stat"><span>Kinh nghiệm</span><strong>{view.player.xp.toLocaleString('vi-VN')} XP</strong></article>
-              <article className="live-stat"><span>Mana</span><strong>{view.player.mana.current} / {view.player.mana.max}</strong></article>
-              <article className="live-stat"><span>Kỹ năng</span><strong>{view.player.skills?.length ?? 0}</strong></article>
-              <article className="live-stat"><span>Đang trang bị</span><strong>{equipped.length}</strong></article>
-            </div>
-          </div>
-        </section>
-        <div className="live-two-column">
-          <section className="live-panel">
-            <div className="live-panel-heading"><div><span className="live-eyebrow">THUỘC TÍNH · TRẠNG THÁI HIỆN TẠI</span><h3>Chỉ số của Lí Lan</h3></div><UserRound size={20} /></div>
-            <div className="live-attribute-grid">{stats.map(([name, value]) => <article key={name}><span>{name}</span><strong>{value}</strong></article>)}</div>
-            {view.player.skills?.length ? <ul className="live-plain-list">{view.player.skills.map(skill => <li key={skill.id}><strong>{skill.templateId}</strong><span>Thông thạo {skill.mastery} · {skill.active ? 'đang kích hoạt' : 'chưa kích hoạt'}</span></li>)}</ul>
-              : <p className="live-empty-state">Chưa có kỹ năng nào được API ghi nhận.</p>}
-          </section>
-          <section className="live-panel">
-            <div className="live-panel-heading"><div><span className="live-eyebrow">TRANG BỊ ĐANG MANG</span><h3>Vật phẩm thực trong lượt lưu</h3></div><Shield size={20} /></div>
-            {equipped.length ? <ul className="live-plain-list">{equipped.map(item => <li key={item.itemId}><strong>{item.label}</strong><span>{item.itemId} · {item.condition == null ? 'độ bền chưa xác định' : `độ bền ${Math.round(item.condition * 100)}%`}</span></li>)}</ul>
-              : <p className="live-empty-state">Chưa có vật phẩm nào được trang bị cho Lí Lan. Túi và trang bị đơn vị vẫn xem ở Kho vật phẩm và Quân lực.</p>}
-            <div className="live-character-portrait"><img src="/assets/characters/li-lan-t0-portrait.svg?v=20261010" alt="Chân dung Lí Lan" /><span>Vị trí · {view.player.position.xMm.toLocaleString('vi-VN')}, {view.player.position.yMm.toLocaleString('vi-VN')} mm</span></div>
-          </section>
-        </div>
-      </div>;
-    }
-
-    if (screen === 'events') {
-      const readinessLabel = (readiness: string) => readiness === 'executable_lifecycle' ? 'Luật sự kiện đã triển khai'
-        : readiness === 'settlement_blocked' ? 'Đang chờ quyết toán bảng xếp hạng'
-          : readiness === 'mandatory_content_blocked' ? 'Đã công bố hợp đồng · chờ bộ xử lý trò chơi'
-            : 'Mới có lịch cố định';
-      return <div className="live-section-stack">
-        <section className="live-hero">
-          <div><span className="live-eyebrow">LỊCH CỐ ĐỊNH · 30 SỰ KIỆN</span><h2>Sự kiện và phần thưởng</h2>
-            <p>Lịch lấy từ gói nội dung của chiến dịch; trạng thái, thời điểm và quyết toán lấy từ lượt lưu API này.</p></div>
-          <div className="live-hero-mark"><CalendarDays size={32} /><span>30</span></div>
-        </section>
-        {view.eventProgressionBlocker && <div className="live-inline-error" role="alert"><strong>{view.eventProgressionBlocker.displayName}</strong><p>{view.eventProgressionBlocker.playerMessage} · {elapsedLabel(view.eventProgressionBlocker.blockedAtElapsedMs)}</p></div>}
+        <CharacterSummary mode="live" name={view.player.name} title={view.player.talent.name} grade={view.player.talent.grade}
+          level={view.player.level} xp={view.player.xp} mana={view.player.mana} />
         <section className="live-panel">
-          <div className="live-panel-heading"><div><span className="live-eyebrow">EVENT-TIMELINE-v0.6</span><h3>Lịch sự kiện thế giới</h3></div><span className="live-data-chip">{view.calendar.length} / 30</span></div>
-          <div className="live-calendar-list">{view.calendar.map(event => <article className={'live-calendar-row live-calendar-row--' + event.status} key={event.id}>
-            <div className="live-calendar-time"><strong>{event.id}</strong><span>{elapsedLabel(event.opensAtElapsedMs)}</span></div>
-            <div className="live-calendar-copy"><strong>{event.displayName}</strong><span>{readinessLabel(event.readiness)}</span>
-              <small>{event.eventContract.runtimeStatus === 'active' ? 'Đang hoạt động' : 'Bộ xử lý đang lên kế hoạch'} · {event.eventContract.handlerFamily} · {event.eventContract.source}</small>
-              <details className="live-event-contract">
-                <summary>Xem luật tham gia, mục tiêu, điểm và thưởng</summary>
-                <p><strong>Tham gia:</strong> {event.eventContract.participationRequirement}</p>
-                <p><strong>Mục tiêu:</strong> {event.eventContract.objectives}</p>
-                <p><strong>Chấm điểm:</strong> {event.eventContract.scoring}</p>
-                <p><strong>Gặp gỡ:</strong> {event.eventContract.encounters}</p>
-                <p><strong>Thưởng:</strong> {event.eventContract.rewardContract}</p>
-                <p><strong>Cửa hàng:</strong> {event.eventContract.shopContract}</p>
-                <p><strong>Tồn kho / hết hạn:</strong> {event.eventContract.stockAndExpiry}</p>
-                <p><strong>Quyết toán:</strong> {event.eventContract.settlement}</p>
-              </details>
-              {event.researchEvidence.sourceRows > 0 && <small>{event.researchEvidence.sourceRows} research rows · {event.researchEvidence.verifiedAcquisitions} aligned verified acquisitions · {event.researchEvidence.verifiedShopOffers} aligned offers · {event.researchEvidence.observedChestOutcomes} observed chest outcomes · {event.researchEvidence.unresolvedRowShapes} rows held for field alignment</small>}
-              {event.researchEvidence.mechanicFlags.length > 0 && <small>Research flags: {event.researchEvidence.mechanicFlags.join(' · ')}</small>}
-            </div>
-            <span className="live-calendar-status">{event.status === 'active' ? 'Đang mở' : event.status === 'locked' ? 'Đã khóa' : event.status === 'resolved' ? 'Đã kết thúc' : event.status === 'blocked' ? 'Tạm dừng' : event.status === 'cancelled' ? 'Đã hủy' : 'Sắp mở'}</span>
-          </article>)}</div>
-        </section>
-        <section className="live-panel">
-          <div className="live-panel-heading"><div><span className="live-eyebrow">BẢNG CẤP KHAI CUỘC · +48H ĐẾN +144H</span><h3>Xếp hạng và quyết toán</h3></div><Trophy size={21} /></div>
-          <p className="live-muted">Trạng thái: {view.stage08.openingBoard.status === 'scheduled' ? 'chưa mở' : view.stage08.openingBoard.status === 'open' ? 'đang mở' : 'đã khóa'} · cập nhật sau 3 phút · Cấp 10 mới đủ điều kiện.</p>
-          {view.stage08.openingBoard.rows.length > 0 && !view.stage08.rankSnapshots.length && <ol className="live-opening-board-list">{view.stage08.openingBoard.rows.map(row => <li key={row.playerId}><strong>#{row.rank} · {row.playerName}</strong><span>Cấp {row.level} · đạt điều kiện {elapsedLabel(row.completionAtElapsedMs)}</span></li>)}</ol>}
-          {view.stage08.rankSnapshots.length ? view.stage08.rankSnapshots.map(snapshot => <div className="live-ranking-snapshot" key={snapshot.boardId}>
-            <strong>{snapshot.boardId} · {snapshot.status === 'settled' ? 'Đã khóa kết quả' : 'Chưa thể quyết toán'}</strong>
-            <span>{snapshot.reasonCode ?? 'RWD-OPENING-FIXED-2.0'} · {elapsedLabel(snapshot.settledAtElapsedMs)}</span>
-            {snapshot.rows.length ? <ol>{snapshot.rows.map(row => <li key={row.playerId}><strong>#{row.rank} · {row.playerName}</strong><span>Cấp {row.level} · hoàn thành {elapsedLabel(row.completionAtElapsedMs)} · {row.rewardBandId}</span>
-              {row.playerId === view.player.id && <small>{row.rewardItems.map(item => `${item.quantity} ${item.itemTemplateId}${item.status === 'blocked' ? ` (${item.blocker})` : ''}`).join(' · ')}</small>}
-            </li>)}</ol>
-              : <p>Chưa có kết quả đủ điều kiện. Không phát thưởng mặc định khi chưa có hàng xếp hạng đã quyết toán.</p>}
-            {snapshot.status === 'settled' && view.stage08.openingBoard.rewardClaimStatus === 'pending' && snapshot.rows.some(row => row.playerId === view.player.id) && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'claim_opening_rank_reward', { boardId: snapshot.boardId }))}>Nhận thưởng Bảng Cấp</button>}
-            {snapshot.status === 'settled' && view.stage08.openingBoard.rewardClaimStatus === 'claimed' && <p className="live-preview-success">Phần thưởng của lượt lưu này đã được nhận.</p>}
-          </div>) : view.stage08.openingBoard.rows.length > 0 ? null : <p className="live-empty-state">{view.stage08.openingBoard.status === 'scheduled'
-            ? 'Bảng chưa mở. Lượt lưu bắt đầu với 0 hàng và không có thứ hạng trước đó.'
-            : 'Chưa có người hoàn tất Cấp 10 đủ điều kiện được ghi nhận.'}</p>}
-          <p className="live-muted">Điều kiện: đạt Cấp 10 trước giờ khóa. Bảng dùng hành động, tài nguyên và thời điểm hoàn thành đã ghi; dự báo chỉ lập lịch cho các đối thủ.</p>
-        </section>
-        <section className="live-panel"><div className="live-panel-heading"><div><span className="live-eyebrow">EVENT SHOP</span><h3>Gian hàng sự kiện</h3></div><PackageOpen size={20} /></div>
-          <p className="live-empty-state">Chưa có hợp đồng mua sắm sự kiện nào được kích hoạt cho thời điểm này. Các mục nghiên cứu chưa được cấp làm vật phẩm hoặc tiền tệ.</p>
+          <div className="live-panel-heading"><div><span className="live-eyebrow">SERVER CHARACTER INSPECTOR</span><h2>{view.player.name}</h2></div><UserRound size={21} /></div>
+          <div className="live-two-column">
+            <article className="live-container-card"><strong>Thuộc tính</strong>
+              <ul className="live-plain-list">{Object.entries(view.player.attributes).map(([key, value]) => <li key={key}><strong>{key}</strong><span>{value}</span></li>)}</ul>
+            </article>
+            <article className="live-container-card"><strong>Nghề nghiệp và kỹ năng</strong>
+              <p>{view.player.careerState === 'active' ? view.careerCard.career?.name ?? 'Đã kích hoạt' : 'Chưa kích hoạt'}</p>
+              {view.player.skills?.length ? <ul className="live-plain-list">{view.player.skills.map(skill => <li key={skill.id}><strong>{skill.templateId}</strong><span>Thông thạo {skill.mastery}{skill.active ? ' · đang dùng' : ''}</span></li>)}</ul> : <p className="live-muted">Chưa có kỹ năng được ghi trong hồ sơ nhân vật.</p>}
+            </article>
+          </div>
+          <p className="live-muted">Vị trí, cấp độ, XP, Mana, thuộc tính và kỹ năng lấy từ cùng PlayerView. Trang không tự tạo trang bị hay thành tựu.</p>
         </section>
       </div>;
     }
-
+    if (screen === 'events') return eventBoard();
     if (screen === 'overview') {
       return <div className="live-section-stack">
         <section className="live-hero">
@@ -1292,23 +1234,7 @@ function LiveApp() {
           <article className="live-stat"><span>Mana</span><strong>{view.player.mana.current} / {view.player.mana.max}</strong></article>
           <article className="live-stat"><span>Revision</span><strong>{view.revision}</strong></article>
         </div>
-        <section className="live-panel" aria-label="Sự kiện đã biết">
-          <div className="live-panel-heading"><div><span className="live-eyebrow">LỊCH SỰ KIỆN ĐÃ BIẾT</span><h3>Sự kiện thế giới</h3></div><span className="live-data-chip">Theo giờ máy chủ</span></div>
-          {view.eventProgressionBlocker && <div className="live-inline-error" role="alert">
-            <strong>{view.eventProgressionBlocker.displayName}</strong>
-            <p>{view.eventProgressionBlocker.playerMessage} · {elapsedLabel(view.eventProgressionBlocker.blockedAtElapsedMs)}</p>
-          </div>}
-          {view.calendar.length
-            ? <ul className="live-plain-list">{view.calendar.map(event => <li key={event.id}>
-              <strong>{event.displayName} · {event.status === 'active' ? 'Đang mở' : event.status === 'locked' ? 'Đã khóa' : event.status === 'resolved' ? 'Đã kết thúc' : event.status === 'blocked' ? 'Tạm dừng' : event.status}</strong>
-              <span>{event.status === 'active' ? `Khóa lúc ${elapsedLabel(event.locksAtElapsedMs)}`
-                : event.status === 'locked' ? `Quyết toán lúc ${elapsedLabel(event.resolvesAtElapsedMs)}`
-                  : event.status === 'resolved' ? `Đã kết thúc lúc ${elapsedLabel(event.resolvesAtElapsedMs)}`
-                    : event.status === 'blocked' ? `Tạm dừng lúc ${elapsedLabel(view.eventProgressionBlocker?.blockedAtElapsedMs ?? view.simElapsedMs)}`
-                      : `Mở lúc ${elapsedLabel(event.opensAtElapsedMs)}`}</span>
-            </li>)}</ul>
-            : <p className="live-empty-state">Chưa có sự kiện nào được biết.</p>}
-        </section>
+        {eventBoard()}
         <section className="live-panel">
           <div className="live-panel-heading"><div><span className="live-eyebrow">LEDGER SNAPSHOT</span><h3>Hậu cần và việc đang chạy</h3></div><PackageOpen size={20} /></div>
           <div className="live-stat-grid">
@@ -1815,7 +1741,7 @@ function LiveApp() {
     </aside>
     <main className="live-main">
       <header className="live-topbar">
-        <div><span className="live-eyebrow">CUỘC HÀNH TRÌNH</span><h1>{navigation.find(item => item.id === screen)?.name}</h1><p>{selectedSave?.slotName || view.player.name} · Ngày {view.worldClock.day} {String(view.worldClock.hour).padStart(2, '0')}:{String(view.worldClock.minute).padStart(2, '0')} · revision {view.revision}</p></div>
+        <ScreenHeading mode="live" className="live-topbar-heading" eyebrow="CUỘC HÀNH TRÌNH" title={navigation.find(item => item.id === screen)?.name ?? screen} description={`${selectedSave?.slotName || view.player.name} · Ngày ${view.worldClock.day} ${String(view.worldClock.hour).padStart(2, '0')}:${String(view.worldClock.minute).padStart(2, '0')} · revision ${view.revision}`}/>
         <div className="live-header-actions">
           <button
             className="live-button live-button--secondary live-save-switch"
@@ -1857,7 +1783,7 @@ function LiveApp() {
       <div className="live-content">
         <StatusBanner feedback={feedback} retry={pendingCommand ? retryPending : undefined} />
         <RuntimeStrip view={view} />
-        {pageContent()}
+        <PageFrame mode="live" className={`live-screen live-screen--${screen}`}>{pageContent()}</PageFrame>
       </div>
       <footer className="live-footer"><span>LIVE · API PLAYER VIEW</span><span>Save {view.saveId} · revision {view.revision}</span></footer>
     </main>

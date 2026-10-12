@@ -19,6 +19,8 @@ import type {
 import { CONTENT_VERSION, RULESET_VERSION, SOURCE_LOCK, SOURCE_RELEASES, SOURCE_MAIN_COMMIT } from './sourceLock.ts';
 import { buildNavigationOverlay } from './navigationOverlay.ts';
 import { RESOURCE_ECONOMY_VERSION, RESOURCE_FEATURES, resourceFromFeature, worldFeatureFromSpec } from './resourceBalance.ts';
+import { assertChestLootTables } from './chestLoot.ts';
+import { assertEventMechanics } from './eventRules.ts';
 import { parseEventSourceLedger } from './eventLedger.ts';
 import { assertEventContractCoverage, EVENT_CONTRACTS, EVENT_CONTRACT_REGISTRY_VERSION } from './eventContracts.ts';
 
@@ -245,6 +247,8 @@ function parseFieldChests(file03: string): FieldChest[] {
       chests.push({
         id,
         cacheId: row[0],
+        chestType: 'field',
+        eventId: null,
         grade: grade as FieldChest['grade'],
         position: { xMm: center.xMm + offset.x, yMm: center.yMm + offset.y },
         ring: row[1],
@@ -641,6 +645,7 @@ export function compileContent(root: string): { manifest: ContentManifest; world
   const chestCacheCenters = parseChestCacheCenters(file03);
   const anchors = parseAnchors(file03);
   const fieldChests = parseFieldChests(file03);
+  assertChestLootTables(fieldChests);
   const { lairs, units } = parseLairConservation(file03);
   const fixedActors = parseFixedActors(file04, sites);
   const { resources, features: resourceFeatures } = parseResources(file03, sites);
@@ -649,6 +654,7 @@ export function compileContent(root: string): { manifest: ContentManifest; world
   const navigationOverlay = buildNavigationOverlay(routes, sites, { xMm: 0, yMm: 0, sourceZMetres: 0 });
   const dormantQuestIds = parseDormantQuests(file05);
   const eventSchedule = parseEventSchedule(timelineText, eventItemLedger, eventFinalAddendum, eventResearchCatalog);
+  assertEventMechanics(eventSchedule);
   verifyEventAndHeroContracts(file01, file04, file05, eventSchedule, lairs, units);
 
   if (sites.length !== 38 || chestCacheCenters.length !== 41 || anchors.length !== 10 || fieldChests.length !== 192 || lairs.length !== 15) {
@@ -708,9 +714,7 @@ export function compileContent(root: string): { manifest: ContentManifest; world
     sourceMainCommit: SOURCE_MAIN_COMMIT,
     activeWorldPackageId: world.id,
     timelineVersion: 'LL01-WEB-EVENT-TIMELINE-RECONCILIATION-0.6-RC1',
-    eventContractRegistryVersion: EVENT_CONTRACT_REGISTRY_VERSION,
-    eventContractCount: EVENT_CONTRACTS.length,
-    approvedGameplayModules: ['clean-start-initialization', 'known-entity-inspection', 'player-view-projection', 'navigation-overlay-v1', 'spatial-search-v1', 'resource-logistics-v1', 'terrain-linked-resource-economy-v1', 'stage06-construction-inventory-v1', 'stage07-revival-combat-xp-v1', 'stage08-fixed-calendar-q08-market-and-escrow-v1', 'event-research-evidence-v1'],
+    approvedGameplayModules: ['clean-start-initialization', 'known-entity-inspection', 'player-view-projection', 'navigation-overlay-v1', 'spatial-search-v1', 'resource-logistics-v1', 'terrain-linked-resource-economy-v1', 'stage06-construction-inventory-v1', 'stage07-revival-combat-xp-v1', 'stage08-fixed-calendar-q08-market-and-escrow-v1', 'stage10-event-lifecycle-wildlife-chests-and-shared-ui-v1'],
     conversionManifest: [
       {
         input: 'data/events/EVENT-TIMELINE-v0.6.json',
@@ -718,14 +722,19 @@ export function compileContent(root: string): { manifest: ContentManifest; world
         decision: 'Use its 30 rows as the new-game fixed schedule; initialize every row SCHEDULED. Stage 04 alone settles the zero-time EV00 opening transition.',
       },
       {
-        input: 'references/canonical/LORD-DND-01.md §14.3, references/canonical/LORD-DND-07.md §§6, 9, 12, and user-authorized versioned event-family defaults',
-        output: 'WorldDefinition.eventContracts and PlayerView.calendar[].eventContract',
-        decision: 'Bind all 30 fixed event IDs to a named handler family and publish participation, objective, scoring, encounter, reward, shop, expiry, settlement and source references. Only EV00 and EV01 are runtime-active; later contracts remain visible while their gameplay families are staged.',
+        input: 'versioned event mechanics overlay LL01-EVENT-MECHANICS-DESIGN-1.0',
+        output: 'EV02–EV29 objectives, player score/shop and result claims',
+        decision: 'Compile bounded local-save objective rules from committed domain outcomes. Keep source catalog candidates inactive; never accept client-supplied score, winner, prize pool or item result.',
       },
       {
-        input: 'data/events/EVENT-SOURCE-ITEMS-v7.24.csv, data/events/EVENT-SOURCE-CATALOG-v7.25-ADDENDUM.json and data/events/EVENT-SOURCE-CATALOG-v4.6.json',
-        output: 'per-event source evidence summaries',
-        decision: 'Verify the final 1,682-row ID ledger against its addendum and expose row/offer/acquisition/observed-chest counts plus timeline flags. Evidence rows remain research only; no observed outcome becomes loot and no research candidate becomes an active reward.',
+        input: 'versioned finite wildlife and chest pool rules',
+        output: 'per-save finite ecology groups, rarity/type loot tables, player projections',
+        decision: 'Expand authored regional counts into deterministic finite groups and bound replenishment to renewable herbivores. Resolve chest reward pools from server seed; event chest entries must match the chest event ID.',
+      },
+      {
+        input: 'data/events/EVENT-SOURCE-CATALOG-v4.6.json and data/events/EVENT-SOURCE-ITEMS-v4.6.csv',
+        output: 'source-locked-event-evidence and explicit Stage 08 promotions only',
+        decision: 'Retain all source adoption states. Runtime promotions are additive, linked to exact source IDs and validated handlers; unresolved offers, rewards, and effects stay pending.',
       },
       {
         input: 'data/structures/SOURCE-STRUCTURE-CATALOG-v1.0.json',
@@ -762,6 +771,8 @@ export function assertCompiledWorld(world: WorldDefinition): void {
   if (world.sites.length !== 38 || world.chestCacheCenters.length !== 41 || world.anchors.length !== 10 || world.fieldChests.length !== 192 || world.lairs.length !== 15 || world.lairUnits.length !== 693 || world.fixedActors.length !== 13) {
     throw new Error('WORLD_PACKAGE_INVARIANT_FAILED: fixed source counts do not match.');
   }
+  assertChestLootTables(world.fieldChests);
+  assertEventMechanics(world.eventSchedule);
   if (world.resourceFeatures.length !== RESOURCE_FEATURES.length
     || new Set(world.resourceFeatures.map(feature => feature.id)).size !== world.resourceFeatures.length
     || new Set(world.resources.map(resource => resource.id)).size !== world.resources.length

@@ -1,6 +1,6 @@
 export const CONTRACT_SCHEMA_VERSION = 1 as const;
 export const PLAYER_VIEW_SCHEMA_VERSION = 2 as const;
-export const GAME_STATE_SCHEMA_VERSION = 10 as const;
+export const GAME_STATE_SCHEMA_VERSION = 11 as const;
 export const MAX_HARVEST_COMMAND_UNITS = 100_000 as const;
 export const UNIT_INVENTORY_CONTAINER_PREFIX = 'LL-CNT-UNIT-';
 
@@ -14,7 +14,8 @@ export type EntityRef =
   | { type: 'building'; id: Id }
   | { type: 'corpse'; id: Id }
   | { type: 'lair'; id: Id }
-  | { type: 'route'; id: Id };
+  | { type: 'route'; id: Id }
+  | { type: 'wildlife'; id: Id };
 
 export type KnowledgeStatus = 'unknown' | 'signs_only' | 'current' | 'remembered';
 export type CoordinateMm = { xMm: number; yMm: number; sourceZMetres?: number };
@@ -44,6 +45,8 @@ export type WorldSite = {
 export type FieldChest = {
   id: Id;
   cacheId: Id;
+  chestType: 'field' | 'event';
+  eventId: Id | null;
   grade: 'Mộc' | 'Thanh Đồng' | 'Bạch Ngân' | 'Hoàng Kim' | 'Hạo Nguyệt';
   position: CoordinateMm;
   ring: string;
@@ -188,6 +191,27 @@ export type EcologyRecord = {
   source: SourceRef;
 };
 
+export type WildlifeGroupState = {
+  id: Id;
+  ecologyId: Id;
+  populationKey: string;
+  speciesId: Id;
+  displayName: string;
+  capacity: number;
+  remaining: number;
+  position: CoordinateMm;
+  discovery: 'hidden' | 'known';
+  discoveredAtElapsedMs: number | null;
+  lastSightingAtElapsedMs: number | null;
+  nextMemberOrdinal: number;
+};
+
+export type WildlifeRuntimeState = {
+  ruleVersion: string;
+  groups: readonly WildlifeGroupState[];
+  nextReplenishmentAtElapsedMs: number;
+};
+
 export type FixedEventScheduleRow = {
   id: Id;
   displayName: string;
@@ -218,6 +242,27 @@ export type ScheduledEventState = Omit<FixedEventScheduleRow, 'statusAtT0'> & {
   lockReceiptSequence: number | null;
   blockedReceiptSequence: number | null;
   resolutionReceiptSequence: number | null;
+};
+
+export type EventProgressState = {
+  eventId: Id;
+  ruleVersion: string;
+  objectiveProgress: number;
+  score: number;
+  participated: boolean;
+  choiceId: 'ice' | 'snow' | null;
+  scoreSpent: number;
+  shopRuleVersion: string;
+  shopStatus: 'scheduled' | 'active' | 'closed' | 'expired';
+  shopInitialStock: number;
+  shopStockRemaining: number;
+  shopPurchasedQuantity: number;
+  shopExpiresAtElapsedMs: number;
+  expiredItemQuantities: Readonly<Record<Id, number>>;
+  outcome: 'unsettled' | 'success' | 'failed' | 'nonparticipant' | 'claimed' | 'expired';
+  rewardKrona: number;
+  claimExpiresAtElapsedMs: number | null;
+  claimReceiptId: Id | null;
 };
 
 export type EventProgressionBlocker = {
@@ -256,6 +301,12 @@ export type PlayerCalendarEvent = {
   openReceiptSequence: number | null;
   lockReceiptSequence: number | null;
   resolutionReceiptSequence: number | null;
+  objective: { title: string; progress: number; target: number; score: number; participated: boolean; choiceId: 'ice' | 'snow' | null } | null;
+  outcome: EventProgressState['outcome'] | null;
+  rewardKrona: number;
+  claimExpiresAtElapsedMs: number | null;
+  rewardClaimed: boolean;
+  eventShop: { status: EventProgressState['shopStatus']; scoreAvailable: number; priceScore: number; itemTemplateId: Id; priceCurrency: 'event_score'; stockRemaining: number; initialStock: number; purchasedQuantity: number; expiresAtElapsedMs: number } | null;
 };
 
 export type SkillInstanceState = { id: Id; templateId: Id; mastery: number; active: boolean; sourceRuleVersion: string };
@@ -299,7 +350,7 @@ export type InventoryContainerState = {
   occupiedSlots: number | null;
   location: { kind: 'site'; siteId: Id } | { kind: 'carried'; ownerId: Id } | { kind: 'building'; buildingId: Id } | { kind: 'unit'; unitId: Id };
   observed: boolean;
-  stacks: readonly { itemId: Id; templateId: Id; quantity: number; reservedQuantity?: number; unit?: string; ownerId?: Id; equipped: boolean; equippedSlotId?: Id | null; quality?: number | null; condition?: number; foodUnitsPerItem?: number; equipmentTags?: readonly string[]; combatEffects?: Readonly<Record<string, number>>; provenance: ProvenanceClass }[];
+  stacks: readonly { itemId: Id; templateId: Id; quantity: number; reservedQuantity?: number; unit?: string; ownerId?: Id; equipped: boolean; equippedSlotId?: Id | null; quality?: number | null; condition?: number; foodUnitsPerItem?: number; equipmentTags?: readonly string[]; combatEffects?: Readonly<Record<string, number>>; exclusiveEventId?: Id | null; expiresAtElapsedMs?: number | null; provenance: ProvenanceClass }[];
 };
 
 export type PlayerUnitState = {
@@ -415,6 +466,7 @@ export type FieldChestRuntimeState = FieldChestLifecycleState & {
   custody: 'world' | 'carried' | 'stored' | 'opened' | 'destroyed';
   claimedById: Id | null;
   carrierId: Id | null;
+  lootOutcome?: { ruleVersion: string; rewardStacks: readonly { itemId: Id; templateId: Id; quantity: number }[] } | null;
 };
 
 export type MovementPathSegment = {
@@ -789,6 +841,16 @@ export type PlayerEntityView = {
   observedAtElapsedMs: number;
   position?: CoordinateMm;
   resourceDeposit?: ResourceDepositView;
+  chestLoot?: {
+    chestType: FieldChest['chestType'];
+    rarity: FieldChest['grade'];
+    eventId: Id | null;
+    ruleVersion: string;
+    rollCount: number;
+    odds: readonly { templateId: Id; perRollPermille: number; chanceAtLeastOncePermille: number }[];
+    opened: boolean;
+    outcome?: readonly { templateId: Id; quantity: number }[];
+  };
   actions: readonly ActionAvailability[];
 };
 
@@ -839,7 +901,7 @@ export type VisibleMap = {
   knownRoutes: readonly { id: Id; label: string; path: readonly CoordinateMm[] }[];
   activeOrders: readonly { id: Id; kind: string; status: string; actorIds: readonly Id[]; position: CoordinateMm; path: readonly CoordinateMm[]; totalDistanceMm: number; etaElapsedMs: number; uncertainty: 'known' | 'uncertain' }[];
   heatOverlays: readonly { center: CoordinateMm; radiusMm: number; minCelsius: number; maxCelsius: number }[];
-  combatTargets?: readonly { targetId: Id; label: string; position: CoordinateMm; status: 'available' | 'reacting' }[];
+  combatTargets?: readonly { targetId: Id; label: string; position: CoordinateMm; status: 'available' | 'reacting'; groupId?: Id; remaining?: number }[];
 };
 
 export type Stage07CombatView = {
@@ -927,7 +989,7 @@ export type PlayerView = {
   };
   inventory: {
     inspectableContainers: readonly { containerId: Id; label: string; kind: 'territory_supply' | 'carried_bag' }[];
-    containers: readonly { id: Id; kind: InventoryContainerState['kind']; ownerId: Id | null; label: string; slots: number; occupiedSlots: number; capacitySlots: number | null; accessible: boolean; location: InventoryContainerState['location']; items: readonly { itemId: Id; label: string; quantity: number; reservedQuantity: number; unit: string | null; quality: number | null; ownerId: Id | null; equipped: boolean; equippedSlotId: Id | null; foodUnitsPerItem: number | null; equipmentTags?: readonly string[]; combatEffects?: Readonly<Record<string, number>>; condition?: number | null; provenance: ProvenanceClass }[] }[];
+    containers: readonly { id: Id; kind: InventoryContainerState['kind']; ownerId: Id | null; label: string; slots: number; occupiedSlots: number; capacitySlots: number | null; accessible: boolean; location: InventoryContainerState['location']; items: readonly { itemId: Id; label: string; quantity: number; reservedQuantity: number; unit: string | null; quality: number | null; ownerId: Id | null; equipped: boolean; equippedSlotId: Id | null; foodUnitsPerItem: number | null; equipmentTags?: readonly string[]; combatEffects?: Readonly<Record<string, number>>; exclusiveEventId?: Id | null; expiresAtElapsedMs?: number | null; condition?: number | null; provenance: ProvenanceClass }[] }[];
   };
   units: readonly PlayerUnitState[];
   corpses?: readonly {
@@ -988,6 +1050,8 @@ export type Stage07PreyState = {
   siteId: Id;
   position: CoordinateMm;
   status: 'available' | 'reacting' | 'retreated' | 'dead';
+  wildlifeGroupId?: Id;
+  individualOrdinal?: number;
   bodyRecord: CorpseBodyRecord;
   combatProfile: { weaponDamage: number; weaponRangeMm: number; armor: number; concealment: number; terrainId: Id };
 };
@@ -1010,6 +1074,7 @@ export type CombatEncounterState = {
 export type Stage07CombatState = {
   nextEncounterSequence: number;
   target: Stage07PreyState;
+  wildlifeTargets?: readonly Stage07PreyState[];
   encounters: readonly CombatEncounterState[];
 };
 
@@ -1109,16 +1174,19 @@ export type GameState = {
     knownRouteIds: readonly Id[];
     knownSignalIds: readonly Id[];
     knownCorpseIds?: readonly Id[];
+    knownWildlifeGroupIds?: readonly Id[];
     careerCardObserved: boolean;
     lastSeenByEntity: Readonly<Record<string, { observedAtElapsedMs: number; knowledge: KnowledgeStatus }>>;
     lastInspectedEntityIds: readonly Id[];
   };
   fieldChestStates: readonly FieldChestRuntimeState[];
+  wildlife: WildlifeRuntimeState;
   corpses: readonly CorpseState[];
   combat?: Stage07CombatState;
   progression?: { transactions: readonly XpTransactionState[]; mirrorReceiptKeys: readonly string[] };
   quests: readonly QuestProgressState[];
   calendar: readonly ScheduledEventState[];
+  eventProgress: readonly EventProgressState[];
   eventProgressionBlocker: EventProgressionBlocker | null;
   offers: readonly ShopOfferState[];
   stage08: Stage08RuntimeState;
@@ -1169,6 +1237,9 @@ export type CommandType =
   | 'escort_caravan'
   | 'claim_quest_reward'
   | 'claim_opening_rank_reward'
+  | 'claim_event_reward'
+  | 'choose_event_path'
+  | 'buy_event_offer'
   | 'place_auction_bid'
   | 'cancel_auction_bid'
   | 'assign_construction_workers'
@@ -1222,6 +1293,9 @@ export type CommandPayloadByType = {
   escort_caravan: { questId: Id };
   claim_quest_reward: { questId: Id };
   claim_opening_rank_reward: { boardId: Id };
+  claim_event_reward: { eventId: Id };
+  choose_event_path: { eventId: Id; choiceId: 'ice' | 'snow' };
+  buy_event_offer: { eventId: Id; destinationContainerId: Id; quantity: number };
   place_auction_bid: { lotId: Id; quantity: number; unitBid: number };
   cancel_auction_bid: { bidId: Id };
 };
@@ -1280,7 +1354,7 @@ export interface GameClient {
 const commandTypes = new Set<CommandType>([
   'inspect_entity', 'inspect_starter_container', 'inspect_career_card', 'activate_career_card', 'set_clock_speed',
   'advance_to_boundary', 'enqueue_tomb', 'cancel_tomb', 'refuel_fire', 'extinguish_fire', 'light_fire', 'move', 'cancel_travel', 'survey', 'search', 'harvest', 'cancel_spatial_job', 'transfer_item',
-  'open_cache', 'repair', 'build', 'craft', 'revive', 'butcher_corpse', 'equip', 'attack', 'retreat', 'shop_transaction', 'accept_quest', 'negotiate_caravan', 'escort_caravan', 'claim_quest_reward', 'claim_opening_rank_reward', 'place_auction_bid', 'cancel_auction_bid', 'assign_construction_workers', 'cancel_construction_job', 'recruit_resident', 'operate_heater', 'split_stack', 'merge_stacks', 'consume_item', 'unequip_item',
+  'open_cache', 'repair', 'build', 'craft', 'revive', 'butcher_corpse', 'equip', 'attack', 'retreat', 'shop_transaction', 'accept_quest', 'negotiate_caravan', 'escort_caravan', 'claim_quest_reward', 'claim_opening_rank_reward', 'claim_event_reward', 'choose_event_path', 'buy_event_offer', 'place_auction_bid', 'cancel_auction_bid', 'assign_construction_workers', 'cancel_construction_job', 'recruit_resident', 'operate_heater', 'split_stack', 'merge_stacks', 'consume_item', 'unequip_item',
 ]);
 
 const payloadFields: Readonly<Record<CommandType, readonly string[]>> = {
@@ -1317,6 +1391,9 @@ const payloadFields: Readonly<Record<CommandType, readonly string[]>> = {
   escort_caravan: ['questId'],
   claim_quest_reward: ['questId'],
   claim_opening_rank_reward: ['boardId'],
+  claim_event_reward: ['eventId'],
+  choose_event_path: ['eventId', 'choiceId'],
+  buy_event_offer: ['eventId', 'destinationContainerId', 'quantity'],
   place_auction_bid: ['lotId', 'quantity', 'unitBid'],
   cancel_auction_bid: ['bidId'],
   assign_construction_workers: ['jobId', 'workerIds'],
@@ -1345,7 +1422,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function validEntityRef(value: unknown): value is EntityRef {
   if (!isRecord(value) || typeof value.id !== 'string') return false;
   if (Object.keys(value).some(key => !['type', 'id'].includes(key))) return false;
-  return ['site', 'resource', 'cache', 'item', 'unit', 'building', 'corpse', 'lair', 'route'].includes(String(value.type));
+  return ['site', 'resource', 'cache', 'item', 'unit', 'building', 'corpse', 'lair', 'route', 'wildlife'].includes(String(value.type));
 }
 
 function validCoordinate(value: unknown): value is CoordinateMm {
@@ -1463,6 +1540,9 @@ export function validateCommandEnvelope(input: unknown): CommandValidationResult
   }
   if (input.type === 'negotiate_caravan' && payload.route !== 'trade_one_grain_sack') {
     return issue('COMMAND_PAYLOAD_INVALID', '$.payload.route', 'Choose a registered caravan negotiation route.');
+  }
+  if (input.type === 'choose_event_path' && payload.choiceId !== 'ice' && payload.choiceId !== 'snow') {
+    return issue('COMMAND_PAYLOAD_INVALID', '$.payload.choiceId', 'Choose either the ice path or the snow path.');
   }
   for (const key of required.filter(field => !['entity', 'actorIds', 'workerIds', 'quantity', 'unitBid', 'center', 'radiusMm', 'position'].includes(field))) {
     if (typeof payload[key] !== 'string' || String(payload[key]).trim() === '') {

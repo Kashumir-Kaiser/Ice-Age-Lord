@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { sameEntityRef } from '../src/game/GameClient.ts';
+import { demoEventContracts } from '../src/demoData.ts';
 import { parseWorkflowTriggers } from '../scripts/workflowTriggers.mjs';
 import { SaveResponseScopeGate } from '../src/live/saveScope.ts';
 import { isLiveScreen, LIVE_SCREENS } from '../src/live/screens.ts';
@@ -11,12 +12,18 @@ import { isLiveScreen, LIVE_SCREENS } from '../src/live/screens.ts';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const read = path => readFileSync(join(root, path), 'utf8');
 
-test('live navigation exposes all demo screens plus events', () => {
+test('live navigation exposes exactly nine unique runtime screens including Character and Events', () => {
   const ids = LIVE_SCREENS.map(screen => screen.id);
   assert.deepEqual(ids, ['overview', 'character', 'territory', 'map', 'inventory', 'forces', 'buildings', 'events', 'journal']);
   assert.equal(new Set(ids).size, ids.length);
   for (const id of ids) assert.equal(isLiveScreen(id), true);
   assert.equal(isLiveScreen('demo-gallery'), false);
+});
+
+test('demo event examples are read-only samples and do not mislabel playable calendar contracts', () => {
+  assert.equal(demoEventContracts.length, 3);
+  assert.ok(demoEventContracts.every(event => event.readiness === 'executable_lifecycle' && event.status === 'scheduled'));
+  assert.ok(demoEventContracts.every(event => event.objective === null && event.eventShop === null));
 });
 
 test('entity references compare by type and stable identity', () => {
