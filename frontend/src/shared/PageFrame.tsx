@@ -25,6 +25,13 @@ export function PageFrame({ mode, children, className = '' }: {
   return <div className={`shared-page-frame shared-page-frame--${mode} ${className}`.trim()}>{children}</div>;
 }
 
+export function CharacterArtwork({ name, className }: { name: string; className: string }) {
+  return <figure className={className}>
+    <img src="/assets/characters/li-lan-t0-fullbody.svg?v=20261010" alt={`Toàn thân ${name}`} loading="eager" />
+    <figcaption>{name}</figcaption>
+  </figure>;
+}
+
 export function CharacterSummary({ mode, name, title, grade, level, xp, mana }: {
   mode: SharedLayoutMode;
   name: string;

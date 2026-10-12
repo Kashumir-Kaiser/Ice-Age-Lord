@@ -25,7 +25,7 @@ import type { ReadabilityMode } from './territory/BuildingSprite';
 import { livingUnitGroups, visibleRaceFilters } from './game/unitGroups';
 import { EventBoard } from './shared/EventBoard';
 import { demoEventContracts } from './demoData';
-import { CharacterSummary, PageFrame, ScreenHeading } from './shared/PageFrame';
+import { CharacterArtwork, CharacterSummary, PageFrame, ScreenHeading } from './shared/PageFrame';
 
 const NAV_ICONS: Record<Screen, LucideIcon> = {
   overview: LayoutDashboard, character: UserRound, territory: Crown, map: MapIcon, inventory: Archive,
@@ -149,7 +149,7 @@ function CharacterEquipment({ player }: {player:PlayerView['player']}) {
       <div className="character-equipment-layout">
         <div className="equipment-socket-column">{equipmentLeft.map(slot=><EquipmentSocket key={slot.label} {...slot}/>)}</div>
         <div className="character-center-column">
-          <figure className="character-fullbody-art"><img src="/assets/characters/li-lan-t0-fullbody.svg?v=20261010" alt={`Toàn thân ${player.name}`}/><figcaption>{player.name}</figcaption></figure>
+          <CharacterArtwork className="character-fullbody-art" name={player.name} />
           <section className="character-accessories" aria-labelledby="character-accessories-title"><h3 id="character-accessories-title">Phụ kiện</h3><div className="character-accessory-row">{ACCESSORY_SLOTS.map(slot=><EquipmentSocket key={slot.label} {...slot} accessory/>)}</div></section>
         </div>
         <div className="equipment-socket-column">{equipmentRight.map(slot=><EquipmentSocket key={slot.label} {...slot}/>)}</div>

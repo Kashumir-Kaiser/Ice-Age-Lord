@@ -85,7 +85,9 @@ test('Stage 07 plays and reloads a timed H0 combat encounter through the browser
   await expect(page.getByTestId('combat-target-inspector')).toBeVisible();
 
   await page.getByLabel('Điều kiện tự dừng').selectOption('next_completion');
-  const engageButton = page.getByRole('button', { name: 'Engage target' });
+  const combatInspector = page.getByTestId('combat-target-inspector');
+  await combatInspector.getByLabel('Fighter').selectOption({ label: 'Rook' });
+  const engageButton = combatInspector.getByRole('button', { name: 'Engage target' });
   await expect(engageButton).toBeEnabled();
   await tapVisualCenter(page, engageButton, testInfo.project.name === 'mobile-chromium');
   await navigation.getByRole('button', { name: /^Quân lực/ }).click();

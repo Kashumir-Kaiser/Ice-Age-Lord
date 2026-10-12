@@ -19,7 +19,7 @@ import type { EntityRef as DemoEntityRef, LayoutDraft } from './game/GameClient'
 import type { TerritoryCamera } from './territory/projection';
 import type { ReadabilityMode } from './territory/BuildingSprite';
 import { EventBoard } from './shared/EventBoard';
-import { CharacterSummary, PageFrame, ScreenHeading } from './shared/PageFrame';
+import { CharacterArtwork, CharacterSummary, PageFrame, ScreenHeading } from './shared/PageFrame';
 import { InspectorFrame, InspectorHeading } from './shared/InspectorFrame';
 
 type Screen = LiveScreen;
@@ -871,8 +871,11 @@ function LiveApp() {
           </div>
         </InspectorFrame>}
 
-        <div className="live-map-canvas" data-testid="live-map" onClick={event => {
+        <div className="live-map-canvas" data-testid="live-map" onClickCapture={event => {
           if (!chooseDestination && !chooseDispatchCenter) return;
+          // Destination and expedition-center selection must take precedence over
+          // marker buttons layered over the map, which stop their own click events.
+          event.stopPropagation();
           const rect = event.currentTarget.getBoundingClientRect();
           const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
           const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
@@ -1185,18 +1188,22 @@ function LiveApp() {
       return <div className="live-section-stack">
         <CharacterSummary mode="live" name={view.player.name} title={view.player.talent.name} grade={view.player.talent.grade}
           level={view.player.level} xp={view.player.xp} mana={view.player.mana} />
-        <section className="live-panel">
-          <div className="live-panel-heading"><div><span className="live-eyebrow">SERVER CHARACTER INSPECTOR</span><h2>{view.player.name}</h2></div><UserRound size={21} /></div>
-          <div className="live-two-column">
-            <article className="live-container-card"><strong>Thuộc tính</strong>
-              <ul className="live-plain-list">{Object.entries(view.player.attributes).map(([key, value]) => <li key={key}><strong>{key}</strong><span>{value}</span></li>)}</ul>
-            </article>
-            <article className="live-container-card"><strong>Nghề nghiệp và kỹ năng</strong>
-              <p>{view.player.careerState === 'active' ? view.careerCard.career?.name ?? 'Đã kích hoạt' : 'Chưa kích hoạt'}</p>
-              {view.player.skills?.length ? <ul className="live-plain-list">{view.player.skills.map(skill => <li key={skill.id}><strong>{skill.templateId}</strong><span>Thông thạo {skill.mastery}{skill.active ? ' · đang dùng' : ''}</span></li>)}</ul> : <p className="live-muted">Chưa có kỹ năng được ghi trong hồ sơ nhân vật.</p>}
-            </article>
+        <section className="live-panel live-character-panel">
+          <CharacterArtwork className="live-character-art" name={view.player.name} />
+          <div className="live-character-profile">
+            <div className="live-panel-heading"><div><span className="live-eyebrow">SERVER CHARACTER INSPECTOR</span><h2>{view.player.name}</h2></div><UserRound size={21} /></div>
+            <p>{view.player.talent.name} · {view.player.talent.grade}</p>
+            <div className="live-two-column">
+              <article className="live-container-card"><strong>Thuộc tính</strong>
+                <ul className="live-plain-list">{Object.entries(view.player.attributes).map(([key, value]) => <li key={key}><strong>{key}</strong><span>{value}</span></li>)}</ul>
+              </article>
+              <article className="live-container-card"><strong>Nghề nghiệp và kỹ năng</strong>
+                <p>{view.player.careerState === 'active' ? view.careerCard.career?.name ?? 'Đã kích hoạt' : 'Chưa kích hoạt'}</p>
+                {view.player.skills?.length ? <ul className="live-plain-list">{view.player.skills.map(skill => <li key={skill.id}><strong>{skill.templateId}</strong><span>Thông thạo {skill.mastery}{skill.active ? ' · đang dùng' : ''}</span></li>)}</ul> : <p className="live-muted">Chưa có kỹ năng được ghi trong hồ sơ nhân vật.</p>}
+              </article>
+            </div>
+            <p>Vị trí, cấp độ, XP, Mana, thuộc tính và kỹ năng lấy từ cùng PlayerView. Trang không tự tạo trang bị hay thành tựu.</p>
           </div>
-          <p className="live-muted">Vị trí, cấp độ, XP, Mana, thuộc tính và kỹ năng lấy từ cùng PlayerView. Trang không tự tạo trang bị hay thành tựu.</p>
         </section>
       </div>;
     }
