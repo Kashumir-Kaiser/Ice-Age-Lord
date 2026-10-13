@@ -1,0 +1,17 @@
+# Image generation checkpoints
+
+The user requires a committed, pushed checkpoint after every 10 generated assets.
+Check git status and the current branch, then git add, git commit and git push all
+current task work. Include original generated files, their source destinations/
+provenance, and related source/manifest changes. Do not generate an 11th asset while
+the preceding batch remains unpublished. Never push these changes
+to main when the task uses a separate branch.
+
+Also commit and push remaining work before stopping or handing off, including a
+clear unfinished-work checkpoint. Verify the remote commit and expected files.
+If saving or pushing fails, report the precise failure immediately; a local path,
+chat image record, or uncommitted working tree is not a durable checkpoint.
+
+For the current map task, use codex/map-25d-overhaul and GitHub integration/Actions.
+Reuse prior generated art. Do not regenerate missing originals merely because a
+new chat cannot access the previous chat's workspace.

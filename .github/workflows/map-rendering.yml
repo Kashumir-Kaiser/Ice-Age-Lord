@@ -56,3 +56,33 @@ jobs:
         with:
           name: map-toolchain-02
           path: /tmp/map-toolchain.part02
+
+  recover-original-art:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package exact committed map art for continuation
+        run: |
+          tar -czf /tmp/map-originals.tar.gz assets/source/terrain frontend/public/assets/map assets/manifest.json frontend/public/assets/manifest.json
+          split -b 20M -d /tmp/map-originals.tar.gz /tmp/map-originals.part
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-originals-00
+          path: /tmp/map-originals.part00
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-originals-01
+          path: /tmp/map-originals.part01
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-originals-02
+          path: /tmp/map-originals.part02
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-originals-03
+          path: /tmp/map-originals.part03
+          retention-days: 7
