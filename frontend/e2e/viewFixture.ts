@@ -29,6 +29,8 @@ export function playerView(revision = 1): PlayerView {
         displayDelayMs: 0, rows: [], rewardClaimStatus: 'unavailable',
       },
     },
+    botBoardSnapshots: [],
+    botInspection: null,
     worldClock: { day: 1, hour: 7, minute: 0, lightPhase: 'daylight' },
     survival: { coldLoad: null, coldStatus: 'weather_unresolved', blocker: 'OPENING_WEATHER_RECORD_NOT_SEEDED', hungerState: 'FED' },
     player: {
