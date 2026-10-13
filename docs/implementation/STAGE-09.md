@@ -2,7 +2,7 @@
 
 ## Result
 
-The live client has nine API-backed screens, including Character and Events, and reuses the demo’s shared artwork and territory scene. The opening environment, versioned migrations, chest-area sweeps, a fixed-population H0 hunt sweep, and the P0 opening-rival/EV01 settlement flow are implemented. Hunt contacts reveal through local sight or a settled search, while aggregate regional population counts remain hidden. EV02–EV29 still gate campaign time until their staged event-family handlers are implemented; wildlife dispatch still uses the current fixed H0 encounter profile. The frontend build/browser suite could not run in this workspace because its pinned Node dependencies are unavailable.
+The live client has nine API-backed screens, including Character and Events, and reuses the demo’s shared artwork and territory scene. The opening environment, versioned migrations, chest-area sweeps, a fixed-population H0 hunt sweep, and the P0 opening-rival/EV01 settlement flow are implemented. Hunt contacts reveal through local sight or a settled search, while aggregate regional population counts remain hidden. EV02–EV29 use the Stage 10 player objective overlay and no longer gate campaign time; they do not have participant-ranked bot scoring. Wildlife dispatch still uses the current fixed H0 encounter profile. The frontend build/browser suite could not run in this workspace because its pinned Node dependencies are unavailable.
 
 No merge, push, hosting or deployment was performed.
 
@@ -59,7 +59,7 @@ The start-of-game report tests never mutate the public API aggregate to fake sup
 |---|---|
 | `INITIAL_FUEL_AMOUNT_NOT_SPECIFIED` (current runtime blocker ID) | Canonical File 06 specifies Fire Level 1, 10 m radius, +5–20°C, and 1 WOOD/15 min; its T0 `fuel_remaining` field is `STATE_UNOBSERVED_SEE_STARTER_LEDGER`. That means the balance is hidden seeded state, not an absent fuel rule. The referenced numeric ledger entry is not present in the active compiled package or loaded by the initializer, so the current clock cannot settle exact consumption and refuel/light remain blocked. |
 | `OPENING_WEATHER_RECORD_NOT_SEEDED` (current runtime blocker ID) | File 03 §28.1 says hourly weather values are campaign-seeded from climate/season/front, and File 06 says nearby weather is seeded before opening. The active compiled world and initializer contain no T0 hourly weather record, so ColdLoad stays unresolved. This is a missing runtime seed materialization, not a source rule saying weather is absent. |
-| `EV01-OPENING-LEVEL` / `P0_FIXED_CONTENDER_RUNTIME_NOT_COMPILED` | The fixed board window and reward bands are present, but the fixed P0 actors’ committed XP, eligibility and completion-time outcomes are not compiled. EV01 emits a blocked zero-row settlement and pays nothing; this does not halt the later event calendar. |
+| `EV01-OPENING-LEVEL` | The +48h..+144h board uses committed player/P0 completion receipts and freezes eligible ranks at the exact close. Unresolved reward item slots remain pending with explicit blockers. The current-checkout 168h P0 acceptance passed for seed `bot-p0-acceptance-2026`; one seed does not establish cross-seed balance. |
 
 Area dispatch selects units, an area center/radius, and optional target/time stops. Preview reports outbound travel, sweep work, return travel and total time. A target/time stop ends work in the area and then starts a return trip. Search uses area-sweep routes over the existing fixed chest field, reserves actors, records only discovered signals, and never opens a chest automatically. Search completion, recall, or a stop condition returns units. Hunting squads stay together; the current target list is limited to the executable H0 hare. A timer cannot kill it or award XP. General mob groups and their density/replenishment rules remain unsupported.
 
@@ -74,7 +74,7 @@ The Stage 09 tests verify fresh initialization, server-backed supply/harvest/ref
 
 ## Remaining implementation gates
 
-- EV02–EV29 remain mandatory content gates. Their canonical objectives and reward contracts are documented; their event-family handlers, stock/expiry state and committed participation records are being implemented incrementally.
+- EV02–EV29 have playable Stage 10 player objective, score-shop, settlement and claim mechanics under a versioned design overlay. They do not gate campaign time, and they do not yet provide participant-ranked bot scoring or settlement.
 - General mob density and replenishment, combat with wildlife groups beyond the fixed H0 hare, and corresponding casualty/cargo behavior remain future dispatch work.
 - The research ledger is now compiled from v7.24 plus the v7.25 addendum. Of 1,682 rows, 490 have unaligned adoption/verification columns and cannot contribute verified acquisition/shop flags; research-only rows, conflicting provenance and observed chest outcomes remain evidence rather than guaranteed grants.
 - The live map shares demo marker artwork, and the territory scene now renders through the shared demo component. Extracting the remaining demo page layouts and inspectors into common live/demo components remains future frontend work.

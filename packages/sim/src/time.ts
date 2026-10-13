@@ -389,7 +389,7 @@ function processBoundary(
     events.push(...spatialEvents);
     if (spatialEvents.some(event => event.type === 'movement_order_completed' || event.type === 'spatial_search_completed' || event.type === 'harvest_cargo_returned')) completed = true;
   }
-  const botEvents = settleBotBoundary(state, at);
+  const botEvents = settleBotBoundary(state, at, world);
   // Bot-only economy and combat receipts stay in their population chunks. Only contact that
   // directly affects Lí Lan enters the player-facing campaign event stream.
   events.push(...botEvents.filter(event => event.type === 'bot_raid_player_attack'));

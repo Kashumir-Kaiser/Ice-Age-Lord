@@ -21,6 +21,7 @@ export function playerView(revision = 1): PlayerView {
     stage08: {
       caravan: null,
       marketOffers: [],
+      botMarketListings: [],
       auctionLots: [],
       auctionBids: [],
       rankSnapshots: [],

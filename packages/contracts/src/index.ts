@@ -293,7 +293,7 @@ export type PlayerCalendarEvent = {
   id: Id;
   displayName: string;
   status: ScheduledEventState['status'];
-  readiness: 'executable_lifecycle' | 'calendar_only' | 'settlement_blocked' | 'mandatory_content_blocked';
+  readiness: 'executable_lifecycle' | 'executable_ranked_board' | 'calendar_only' | 'settlement_blocked' | 'mandatory_content_blocked';
   eventContract: Omit<EventContractDefinition, 'eventId'>;
   researchEvidence: FixedEventScheduleRow['researchEvidence'];
   opensAtElapsedMs: number;
@@ -757,6 +757,17 @@ export type Stage08RuntimeState = {
 export type Stage08PlayerView = {
   caravan: Pick<CaravanState, 'id' | 'status' | 'locationSiteId' | 'deadlineAtElapsedMs' | 'arrivalAtElapsedMs'> | null;
   marketOffers: readonly Stage08MarketOfferState[];
+  botMarketListings: readonly {
+    id: Id;
+    sellerBotId: Id;
+    sellerName: string;
+    blueprintId: Id;
+    paymentResource: 'food' | 'water';
+    askAmount: number;
+    expiresAtElapsedMs: number;
+    compatibleBlueprintId: Id | null;
+    blocker: string | null;
+  }[];
   auctionLots: readonly Stage08AuctionLotState[];
   auctionBids: readonly Stage08AuctionBidState[];
   rankSnapshots: readonly Stage08RankSnapshot[];
@@ -765,7 +776,7 @@ export type Stage08PlayerView = {
 
 export type BotTalentGrade = 'S' | 'A' | 'B' | 'C' | 'D';
 export type BotTalentKind = 'combat' | 'production';
-export type BotWorkKind = 'idle' | 'gather_food' | 'gather_wood' | 'gather_stone' | 'gather_ore' | 'construct' | 'recruit' | 'search' | 'scout' | 'raid' | 'recover' | 'deliver' | 'repair' | 'equip' | 'hunt';
+export type BotWorkKind = 'idle' | 'gather_food' | 'gather_wood' | 'gather_stone' | 'gather_ore' | 'prepare_water' | 'construct' | 'recruit' | 'search' | 'scout' | 'raid' | 'recover' | 'deliver' | 'repair' | 'equip' | 'hunt' | 'learn_blueprint' | 'open_chest' | 'list_blueprint' | 'upgrade_territory';
 export type BotResourceKey = 'food' | 'wood' | 'stone' | 'ore';
 export type BotCargoKey = BotResourceKey | 'firewood';
 export type BotPlanState = {
@@ -775,6 +786,8 @@ export type BotPlanState = {
   startedAtElapsedMs: number;
   completesAtElapsedMs: number;
   targetId: Id | null;
+  /** Set only for a blueprint listing action; a saved plan keeps its payment currency stable across reloads. */
+  marketPaymentResource?: 'food' | 'water';
   workersAssigned: number;
   reserved: Record<BotResourceKey, number>;
   startingResourcesMicro: Record<BotResourceKey, number>;
@@ -840,6 +853,69 @@ export type BotSearchSource = {
   wildlifeDangerPermille?: number;
   /** Multiple settlements can hunt the same finite regional prey stock. */
   sharedStockId?: Id;
+  /** A fixed world chest reference shared with the player's field-chest ledger. */
+  fieldChestId?: Id;
+};
+export type BotBlueprintItem = {
+  instanceId: Id;
+  blueprintId: Id;
+  sourceId: Id;
+  acquiredAtElapsedMs: number;
+  status: 'owned' | 'learned' | 'listed' | 'escrowed' | 'sold';
+  resolvedAtElapsedMs: number | null;
+  transactionId: Id | null;
+  ruleVersion: Id;
+};
+export type BotOwnedChest = {
+  chestId: Id;
+  fieldChestId: Id | null;
+  sourceId: Id;
+  chestType: 'field' | 'event';
+  eventId: Id | null;
+  grade: FieldChest['grade'];
+  lootCommitment: Id;
+  acquiredAtElapsedMs: number;
+  status: 'owned' | 'opened';
+  openedAtElapsedMs: number | null;
+  lootReceiptId: Id | null;
+  lootOutcome: readonly { itemTemplateId: Id; quantity: number }[] | null;
+  ruleVersion: Id;
+};
+export type BotInventoryItem = {
+  instanceId: Id;
+  itemTemplateId: Id;
+  quantity: number;
+  sourceId: Id;
+  acquiredAtElapsedMs: number;
+  ruleVersion: Id;
+};
+export type BotMarketListing = {
+  id: Id;
+  sellerBotId: Id;
+  blueprintItemInstanceId: Id;
+  blueprintId: Id;
+  paymentResource: 'food' | 'water';
+  askAmount: number;
+  createdAtElapsedMs: number;
+  lastRepricedAtElapsedMs: number;
+  repriceCount: number;
+  expiresAtElapsedMs: number;
+  status: 'active' | 'filled' | 'cancelled' | 'expired';
+  buyerBotId: Id | null;
+  transactionId: Id | null;
+  resolvedAtElapsedMs: number | null;
+};
+export type BotMarketTransaction = {
+  id: Id;
+  listingId: Id;
+  sellerBotId: Id;
+  buyerBotId: Id;
+  blueprintItemInstanceId: Id;
+  blueprintId: Id;
+  paymentResource: 'food' | 'water';
+  paymentAmount: number;
+  occurredAtElapsedMs: number;
+  ruleVersion: Id;
 };
 export type BotSharedWildlifeStock = {
   id: Id;
@@ -849,16 +925,33 @@ export type BotSharedWildlifeStock = {
   dangerPermille: number;
 };
 export type BotKnownTarget = { id: Id; kind: 'bot' | 'player'; position: CoordinateMm; observedAtElapsedMs: number };
+export type BotLordFate = {
+  status: 'active' | 'dead' | 'captured' | 'dispossessed';
+  changedAtElapsedMs: number | null;
+  cause: 'starvation' | 'dehydration' | 'cold' | 'battle_capture' | 'territory_loss' | 'settlement_abandoned' | null;
+  triggerId: Id | null;
+};
 export type BotArmyMovement = {
   orderId: Id;
   targetId: Id;
   unitKind: 'army' | 'scout';
   unitCount: number;
+  /** Exact cohort members sent when the force has a durable detachment composition. */
+  cohortMemberCounts?: readonly { cohortId: Id; memberCount: number }[];
   from: CoordinateMm;
   to: CoordinateMm;
   startedAtElapsedMs: number;
   arrivesAtElapsedMs: number;
   status: 'outbound' | 'besieging' | 'surveying' | 'returning';
+};
+export type BotCasualtyLedger = {
+  starvation: number;
+  dehydration: number;
+  fuelExhaustion: number;
+  regionalBlizzard: number;
+  battle: number;
+  wildlife: number;
+  unattributed: number;
 };
 export type BotWorkforceState = {
   gatherFood: number;
@@ -881,6 +974,10 @@ export type BotColdRecord = {
   regionId: Id;
   position: CoordinateMm;
   oldAffinity: string;
+  /** Lord state is independent of civilian population and army counts. */
+  lordFate: BotLordFate;
+  /** Durable resident and troop loss counts by cause; legacy losses remain unattributed. */
+  casualtiesByCause: BotCasualtyLedger;
   aggressionPermille: number;
   riskTolerancePermille: number;
   decisionPhaseMs: number;
@@ -889,6 +986,12 @@ export type BotColdRecord = {
   armyMovement: BotArmyMovement | null;
   workforce: BotWorkforceState;
   blueprintIds: readonly Id[];
+  /** Found blueprints remain owned items until a one-time learn or market settlement. */
+  blueprintItems: readonly BotBlueprintItem[];
+  /** Territory progression is separate from the lord's XP level. */
+  territoryLevel: number;
+  ownedChests: readonly BotOwnedChest[];
+  inventoryItems: readonly BotInventoryItem[];
   structures: readonly BotStructureInstance[];
   cohorts: readonly BotUnitCohort[];
   /** Unopened event items and overflow food remain attributable to their one-time reward receipt. */
@@ -901,6 +1004,14 @@ export type BotColdRecord = {
   carriedCargo: Record<BotCargoKey, number>;
   starvationExposureMs: number;
   coldExposureMs: number;
+  /** Versioned frozen-source overlay; values are millilitres and remain finite. */
+  potableWaterMl: number;
+  localIceRemainingMl: number;
+  waterConsumptionRemainder: number;
+  dehydrationExposureMs: number;
+  lordStarvationExposureMs: number;
+  lordDehydrationExposureMs: number;
+  lordColdExposureMs: number;
   nextActionOrdinal: number;
   nextMemberOrdinal: number;
   lastSafePosition: CoordinateMm;
@@ -984,6 +1095,10 @@ export type BotPopulationState = {
   recoveryRuleVersion: Id;
   eventRewardRuleVersion: Id;
   sharedWildlifeRuleVersion: Id;
+  survivalRuleVersion: Id;
+  weatherRuleVersion: Id;
+  territoryRuleVersion: Id;
+  marketRuleVersion: Id;
   saveSeed: string;
   rulesetSha256: string;
   totalParticipants: number;
@@ -1004,6 +1119,8 @@ export type BotPopulationState = {
   boardSnapshots: readonly BotBoardSnapshot[];
   eventReceipts: readonly BotEventReceipt[];
   rewardReceipts: readonly BotRewardReceipt[];
+  marketListings: readonly BotMarketListing[];
+  marketTransactions: readonly BotMarketTransaction[];
   completedActionCount: number;
   benchmarkCounters: { plannerExpansions: number; integratedBotSegments: number; dirtyChunks: number };
 };
@@ -1019,7 +1136,10 @@ export type BotEventReceipt = {
 export type BotEventInventoryItem = {
   instanceId: Id;
   itemTemplateId: Id;
+  /** Quantity still held; original entitlement remains on the immutable reward receipt. */
   quantity: number;
+  appliedQuantity: number;
+  consumedQuantity: number;
   eventId: Id;
   rewardReceiptId: Id;
   awardedAtElapsedMs: number;
@@ -1034,8 +1154,9 @@ export type BotRewardReceipt = {
   rewardBandId: Id;
   occurredAtElapsedMs: number;
   ruleVersion: Id;
-  /** Literal eligible payload; food item quantities are converted into food stock when capacity allows. */
-  items: readonly { instanceId: Id; itemTemplateId: Id; quantity: number; foodUnitsApplied: number; inventoryQuantity: number }[];
+  /** Original payload is immutable; supported delivery and source-blocked slots remain explicit. */
+  items: readonly { instanceId: Id; itemTemplateId: Id; quantity: number; status: 'committed' | 'blocked'; blocker: string | null;
+    foodUnitsApplied: number; inventoryQuantity: number }[];
 };
 export type BotBoardSnapshot = {
   boardId: Id;
@@ -1055,7 +1176,7 @@ export type BotMapMarker = {
   level: number | null;
   militaryCount: number | null;
   structureCount: number | null;
-  status: 'active' | 'under_attack' | 'destroyed' | 'unknown';
+  status: 'active' | 'under_attack' | 'destroyed' | 'dead' | 'captured' | 'dispossessed' | 'unknown';
 };
 export type BotArmyMarker = {
   botId: Id;
@@ -1074,7 +1195,10 @@ export type BotInspectionView = {
   current: boolean;
   talent: { grade: BotTalentGrade; kind: BotTalentKind } | null;
   level: number | null;
+  territoryLevel: number | null;
   population: number | null;
+  lordFate: BotLordFate | null;
+  potableWaterMl: number | null;
   resourceBalances: Readonly<Partial<Record<BotResourceKey, number>>> | null;
   structures: readonly Pick<BotStructureInstance, 'id' | 'blueprintId' | 'anchor' | 'level' | 'status' | 'workCompleted' | 'workRequired' | 'repairWorkCompleted' | 'repairWorkRequired'>[] | null;
   army: readonly Pick<BotUnitCohort, 'id' | 'templateId' | 'livingCount' | 'level' | 'order' | 'location'>[] | null;
@@ -1561,6 +1685,7 @@ export type CommandType =
   | 'attack'
   | 'retreat'
   | 'shop_transaction'
+  | 'buy_bot_market_listing'
   | 'accept_quest'
   | 'negotiate_caravan'
   | 'escort_caravan'
@@ -1618,6 +1743,7 @@ export type CommandPayloadByType = {
   attack: { actorIds: readonly Id[]; targetId: Id };
   retreat: { actorIds: readonly Id[]; encounterId: Id };
   shop_transaction: { offerId: Id; destinationContainerId: Id; quantity: number };
+  buy_bot_market_listing: { listingId: Id; paymentContainerId: Id; paymentItemId: Id };
   accept_quest: { questId: Id };
   negotiate_caravan: { questId: Id; route: 'trade_one_grain_sack' };
   escort_caravan: { questId: Id };
@@ -1684,7 +1810,7 @@ export interface GameClient {
 const commandTypes = new Set<CommandType>([
   'inspect_entity', 'inspect_bot', 'inspect_starter_container', 'inspect_career_card', 'activate_career_card', 'set_clock_speed',
   'advance_to_boundary', 'enqueue_tomb', 'cancel_tomb', 'refuel_fire', 'extinguish_fire', 'light_fire', 'move', 'cancel_travel', 'survey', 'search', 'harvest', 'cancel_spatial_job', 'transfer_item',
-  'open_cache', 'repair', 'build', 'craft', 'revive', 'butcher_corpse', 'equip', 'attack', 'retreat', 'shop_transaction', 'accept_quest', 'negotiate_caravan', 'escort_caravan', 'claim_quest_reward', 'claim_opening_rank_reward', 'claim_event_reward', 'choose_event_path', 'buy_event_offer', 'place_auction_bid', 'cancel_auction_bid', 'assign_construction_workers', 'cancel_construction_job', 'recruit_resident', 'operate_heater', 'split_stack', 'merge_stacks', 'consume_item', 'unequip_item',
+  'open_cache', 'repair', 'build', 'craft', 'revive', 'butcher_corpse', 'equip', 'attack', 'retreat', 'shop_transaction', 'buy_bot_market_listing', 'accept_quest', 'negotiate_caravan', 'escort_caravan', 'claim_quest_reward', 'claim_opening_rank_reward', 'claim_event_reward', 'choose_event_path', 'buy_event_offer', 'place_auction_bid', 'cancel_auction_bid', 'assign_construction_workers', 'cancel_construction_job', 'recruit_resident', 'operate_heater', 'split_stack', 'merge_stacks', 'consume_item', 'unequip_item',
 ]);
 
 const payloadFields: Readonly<Record<CommandType, readonly string[]>> = {
@@ -1717,6 +1843,7 @@ const payloadFields: Readonly<Record<CommandType, readonly string[]>> = {
   attack: ['actorIds', 'targetId'],
   retreat: ['actorIds', 'encounterId'],
   shop_transaction: ['offerId', 'destinationContainerId', 'quantity'],
+  buy_bot_market_listing: ['listingId', 'paymentContainerId', 'paymentItemId'],
   accept_quest: ['questId'],
   negotiate_caravan: ['questId', 'route'],
   escort_caravan: ['questId'],

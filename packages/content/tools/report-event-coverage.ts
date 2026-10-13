@@ -147,7 +147,7 @@ const lines: string[] = [
   '## Runtime summary',
   '',
   `- Calendar compiler: \`${EVENT_LIFECYCLE_VERSION}\`; exactly ${ACTIVE_WORLD_PACKAGE.eventSchedule.length} adopted v0.6 records, with lifecycle receipts and no recurrence.`,
-  '- EV00 resolves its opening-protection lifecycle. EV01 has a source-fixed opening-level board window and frozen reward contract; its result snapshot is blocked unless the runtime can compile the complete fixed P0 outcome population. EV02–EV29 now have playable versioned objective, score/shop, settlement, and claim mechanics (Stage 10); those game-design rules do not promote source-catalog candidates.',
+  '- EV00 resolves its opening-protection lifecycle. EV01 now settles the source-fixed opening-level board at +144h from committed player and P0 bot completions; unsupported reward slots remain individually blocked under the frozen payload. EV02–EV29 have playable player objective/score/shop/claim overlays (Stage 10), but no participant-ranked bot board or bot reward settlement. Those game-design rules do not promote source-catalog candidates.',
   `- Source registry: ${entries.length} item/offer records (${sourceActive.length} source records promoted; ${pendingEntries.length} remain research/pending), ${catalog.source_effect_records.length} effects, ${catalog.source_observations.length} observations, ${catalog.event_mechanic_extractions.length} mechanic extractions, ${conflicts.length} provenance conflicts.`,
   `- v7.24 cumulative CSV: ${csvData.length} rows and ${csvHeader.length} declared columns; every row ID matches the v7.25 cumulative ID ledger. The older v4.6 catalog has ${legacyEntryIds.length} entries and is used only to attach prior conflict evidence.`,
   `- ${csvData.filter(row => row.sourceFieldAlignment === 'unresolved').length} source rows have unaligned adoption/verification fields. Their purchase or acquisition flags are excluded from event evidence counts and their promotion is blocked. ${csvData.filter(row => row.unmappedTrailingFields.length > 0).length} rows also contain unheaded trailing fields, which remain visible and uninterpreted.`,
@@ -191,8 +191,8 @@ lines.push(
   '',
   '## Ranking source and settlement', '',
   '- `LORD-DND-01.md` §13.3–13.4 defines `OPENING_LEVEL`: open +48h, close +144h, top 100 actors reaching level 10, level then progress, completion timestamp then stable player ID, three-minute data delay, and fixed `RWD-OPENING-FIXED-2.0` payloads for seven rank bands. A zero-qualifier result is empty and pays nothing.',
-  '- `LORD-DND-07.md` §12–13 supplies the frozen ten-actor P0 contender roster and forbids importing test rankings into `SAVE-T0-CLEAN`. The source roster exists. This build does not compile those actors’ committed actions, XP/level outcomes, completion timestamps or eligibility ledger into settlement input.',
-  '- At +144h, the runtime emits one immutable blocked snapshot with `P0_FIXED_CONTENDER_RUNTIME_NOT_COMPILED`, zero rows and zero rewards. It never calls Lí Lan rank 1 by default. Implementing the source ranking requires compiling the fixed actors’ versioned progression/event simulation and validating the source XP/progression path first.',
+  '- `LORD-DND-07.md` §12–13 supplies the fixed opening identities and forbids importing test rankings into `SAVE-T0-CLEAN`. The current P0 population runtime records bot completion times and qualification receipts; player XP transactions supply the player completion timestamp.',
+  '- At +144h, one immutable snapshot ranks eligible completions through the exact cutoff, applies the source tie order and fixed reward bands, and never assigns a default rank. Supported food/medicine slots are delivered once; source-unresolved bags, chests, scrolls, weapons and power hearts remain blocked by slot ID without changing the board result.',
   '',
   '## Specific source row retained as research', '',
   '| ID | Verified source facts | Still unresolved / why not active |',
@@ -252,11 +252,11 @@ for (const [index, conflict] of conflicts.entries()) {
 }
 
 lines.push('', '## Gate disposition', '',
-  '- Gate 1 — passed: all 30 adopted rows and exact open/lock/resolve boundaries, no recurrence, plus 5× clock/restart coverage; EV02–EV29 progression is now executable under the Stage 10 overlay. EV01 ranking settlement remains blocked on the fixed P0 outcome ledger.',
+  '- Gate 1 — passed: all 30 adopted rows and exact open/lock/resolve boundaries, no recurrence, plus 5× clock/restart coverage; EV02–EV29 player progression is executable under the Stage 10 overlay. These objectives are not ranked bot boards.',
   '- Gate 2 — passed for the implemented Q08 contract: fixed actors/route/deadline/conditions/reward, legitimate site and time eligibility, inventory/effect path, persistence, and reload. The grain-for-passage cost and market/auction terms are versioned design choices because the fixed source contract does not price them.',
   '- Gate 3 — covered for the active fixed-price offer and unfilled auction: stale last-stock request, duplicate receipt, no funds, capacity full, exact offer close, escrow bid/cancel/expiry and no premature salt ownership. Variable-price quotes and auction seller acceptance are not active contracts; no quote or fictional buyer is simulated.',
   '- Gate 4 — partial/applicability-limited: unique reward claim and auction escrow expiry are tested. There is no promoted source event-exclusive item with an adopted per-instance expiry contract; the selected bread is explicitly permanent. Per-item expiry through equipment/jobs/other containers therefore remains unclaimed until an eligible source/design item contract is adopted.',
-  '- Gate 5 — safe blocked settlement: source ranking/tie rules and fixed reward bands are recorded; a one-time zero-row blocked snapshot prevents false rank 1 and awards until P0 outcome simulation is compiled.',
+  '- Gate 5 — settled opening board: source ranking/tie rules and fixed reward bands use committed completion receipts; per-slot handlers deliver supported payloads once and retain precise blockers for unresolved content.',
   '- Gate 6 — passed as a coverage artifact: all source entries, effects, observations, extractions, structures and conflicts are enumerated with promotion work and provenance. No research row is silently promoted.',
   '',
   '');

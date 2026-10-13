@@ -4,7 +4,7 @@
 
 Stage 10 adds executable local-save event objectives for EV02–EV29, deterministic type/rarity chest reward tables, finite regional wildlife groups with server-settled combat, and shared screen/inspector components used by both demo and live modes. The event calendar remains the adopted fixed 30-row v0.6 schedule. `LORD-DND-01.md` also materializes event-specific conditions, board metrics, reward contracts and shop identifiers. This stage does not activate those source encounters, rankings, source reward pools or research-candidate shops; it adds a separately versioned local-save loop so players can participate, build progress, spend contribution, settle and claim while those source dependencies remain unpromoted.
 
-The overlay does not claim official source scoring, global ranking, source-item rewards, or source boss appearances, and it must not be presented as implementing the source mechanics described in event contract §14.3.2. It awards local contribution from committed actions already produced by the game runtime. The opening EV01 fixed-contender ranking remains blocked on its required P0 actor-outcome ledger. Opening fire fuel/weather seeds and full frontend browser/visual release verification also remain open, as documented in [STAGE-09.md](STAGE-09.md).
+The overlay does not claim official source scoring, global ranking, source-item rewards, or source boss appearances, and it must not be presented as implementing the source mechanics described in event contract §14.3.2. It awards local contribution from committed actions already produced by the game runtime. EV01 uses the separate fixed-contender P0 simulation and freezes its board at +144h; unsupported reward slots remain pending. Opening fire fuel/weather seeds and full frontend browser/visual release verification also remain open, as documented in [STAGE-09.md](STAGE-09.md).
 
 ## Event lifecycle and economy
 
@@ -91,7 +91,7 @@ Stage 10 acceptance is `npm run test:stage10` (9/9): all 28 objective rules are 
 
 ## Remaining boundaries
 
-- EV01 global ranking remains blocked pending the fixed P0 contenders’ committed progression/outcome ledger; EV02–EV29 local objectives do not fill that gap.
+- EV01 local fixed-contender ranking is implemented from the P0 outcome ledger; it is not a network-wide leaderboard. The current 168h P0 acceptance passed for seed `bot-p0-acceptance-2026`; one seed does not establish cross-seed balance. EV02–EV29 remain player objective overlays without participant-ranked bot boards.
 - The T0 fire fuel ledger and hourly weather seed are still missing from the active source package/initializer, so the source-grounded opening remains uncertified.
 - No event chest is placed in the fixed source world; the type/rarity pool and gated open handler are available when one is authored.
 - `SX-*` research candidates, source-event item effects/limits, auction seller liquidity, and non-opening lair/boss combat remain unpromoted.

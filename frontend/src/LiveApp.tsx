@@ -1436,6 +1436,38 @@ function LiveApp() {
               </article>;
             })}</div>
             : <p className="live-empty-state">Quầy caravan mở sau khi Torven tới Krona Gate. Hàng trong kho chỉ hiện khi Lí Lan ở gần quầy.</p>}
+          {view.stage08.botMarketListings.length > 0
+            ? <div className="live-job-list" aria-label="Blueprint do lãnh chúa bot rao bán">{view.stage08.botMarketListings.map(listing => {
+              const paymentStack = listing.paymentResource === 'food'
+                ? view.inventory.containers.filter(container => container.accessible).flatMap(container => container.items
+                  .filter(item => item.label === 'BREAD' && item.unit === 'item' && item.foodUnitsPerItem === 1
+                    && !item.equipped && item.reservedQuantity === 0 && (item.ownerId === null || item.ownerId === view.player.id)
+                    && item.quantity >= listing.askAmount)
+                  .map(item => ({ containerId: container.id, itemId: item.itemId, containerLabel: container.label })))
+                  .sort((a, b) => a.containerId.localeCompare(b.containerId) || a.itemId.localeCompare(b.itemId))[0]
+                : undefined;
+              const alreadyUnlocked = listing.compatibleBlueprintId !== null
+                && view.construction.unlockedBlueprintIds.includes(listing.compatibleBlueprintId);
+              const blocked = Boolean(listing.blocker) || !listing.compatibleBlueprintId || alreadyUnlocked;
+              const canBuy = !blocked && Boolean(paymentStack) && !working && !pendingCommand;
+              return <article key={listing.id} className="live-container-row" data-testid="bot-market-listing">
+                <div><strong>{listing.blueprintId} · người bán {listing.sellerName}</strong>
+                  <small>{listing.paymentResource === 'food' ? `${listing.askAmount} BREAD` : `${listing.askAmount.toLocaleString()} mL nước`} · hết hạn {elapsedLabel(listing.expiresAtElapsedMs)}</small>
+                  {listing.compatibleBlueprintId && <small>Blueprint nhận được: {listing.compatibleBlueprintId}</small>}
+                  {listing.blocker && <small>Chưa thể mua: {listing.blocker}</small>}
+                  {alreadyUnlocked && <small>Blueprint này đã được mở khóa.</small>}
+                  {!blocked && !paymentStack && <small>Cần một chồng BREAD đủ {listing.askAmount} chiếc trong kho có thể truy cập.</small>}
+                </div>
+                <button className="live-button live-button--secondary" disabled={!canBuy}
+                  title={listing.blocker ?? (alreadyUnlocked ? 'Blueprint đã được mở khóa.' : !paymentStack ? 'Cần BREAD trong kho có thể truy cập.' : 'Máy chủ kiểm tra lại seller, vùng giao dịch và thanh toán trước khi chuyển asset.')}
+                  onClick={() => paymentStack && void sendCommand(commandFor(view, 'buy_bot_market_listing', {
+                    listingId: listing.id, paymentContainerId: paymentStack.containerId, paymentItemId: paymentStack.itemId,
+                  }))}>
+                  {listing.paymentResource === 'food' ? `Mua · ${listing.askAmount} BREAD` : 'Chưa hỗ trợ thanh toán nước'}
+                </button>
+              </article>;
+            })}</div>
+            : <p className="live-empty-state">Danh sách blueprint của bot chỉ hiện khi Lí Lan ở Krona Gate; người mua trả bằng vật phẩm và giao dịch chỉ mở với blueprint tương thích.</p>}
           {view.stage08.auctionLots.map(lot => {
             const balance = view.currency.find(item => item.currencyId === lot.currencyId)?.amount ?? 0;
             const bidId = view.stage08.auctionBids.find(bid => bid.lotId === lot.id && bid.status === 'open')?.id;

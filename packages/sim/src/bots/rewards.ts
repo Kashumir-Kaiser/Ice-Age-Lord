@@ -16,8 +16,9 @@ function ordinalFromId(botId: string): number | null {
 }
 
 /** Materializes one frozen opening-board entitlement per ranked bot into its durable inventory. */
-export function awardBotOpeningRankRewards(
+export function awardBotRankedEventRewards(
   input: BotPopulationState,
+  eventId: string,
   rows: readonly RankedBotRewardRow[],
   at: number,
 ): BotPopulationState {
@@ -32,7 +33,7 @@ export function awardBotOpeningRankRewards(
   for (const row of rows) {
     const botId = row.playerId;
     if (!botId.startsWith('RC-') && !botId.startsWith('BOT-P0-')) continue;
-    const receiptId = `EV01-OPENING-LEVEL:${botId}:REWARD`;
+    const receiptId = `${eventId}:${botId}:REWARD`;
     if (knownReceiptIds.has(receiptId)) continue;
     const ordinal = ordinalFromId(botId);
     if (ordinal === null || ordinal > population.botCount) throw new Error(`BOT_EVENT_REWARD_BOT_UNKNOWN:${botId}`);
@@ -54,7 +55,9 @@ export function awardBotOpeningRankRewards(
       instanceId: `${receiptId}:ITEM:${item.instanceId}:STACK`,
       itemTemplateId: item.itemTemplateId,
       quantity: item.quantity,
-      eventId: 'EV01-OPENING-LEVEL',
+      appliedQuantity: 0,
+      consumedQuantity: 0,
+      eventId,
       rewardReceiptId: receiptId,
       awardedAtElapsedMs: at,
       ruleVersion: BOT_EVENT_REWARD_RULE_VERSION,
@@ -64,19 +67,21 @@ export function awardBotOpeningRankRewards(
     group.offsets.add(offset);
     receipts.push({
       id: receiptId,
-      eventId: 'EV01-OPENING-LEVEL',
+      eventId,
       botId,
       actionReceiptId: qualification.actionReceiptId,
       rank: row.rank,
       rewardBandId: row.rewardBandId,
       occurredAtElapsedMs: at,
       ruleVersion: BOT_EVENT_REWARD_RULE_VERSION,
-      items: awardedItems.map(item => ({
+      items: row.rewardItems.map(item => ({
         instanceId: item.instanceId,
         itemTemplateId: item.itemTemplateId,
         quantity: item.quantity,
+        status: item.status,
+        blocker: item.blocker,
         foodUnitsApplied: 0,
-        inventoryQuantity: item.quantity,
+        inventoryQuantity: item.status === 'committed' ? item.quantity : 0,
       })),
     });
     knownReceiptIds.add(receiptId);
@@ -93,4 +98,13 @@ export function awardBotOpeningRankRewards(
   }
   population = { ...population, rewardReceipts: receipts };
   return inAdvance ? population : finishBotPopulationAdvance(population)!;
+}
+
+/** Opening-level adapter retained for the one currently executable ranked board. */
+export function awardBotOpeningRankRewards(
+  input: BotPopulationState,
+  rows: readonly RankedBotRewardRow[],
+  at: number,
+): BotPopulationState {
+  return awardBotRankedEventRewards(input, 'EV01-OPENING-LEVEL', rows, at);
 }

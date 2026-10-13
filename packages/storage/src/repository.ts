@@ -7,7 +7,7 @@ import { GAME_STATE_SCHEMA_VERSION, type CommandEnvelope, type CommandEvent, typ
 import type { BackupEnvelope, CheckpointSummary, SaveSummary } from '../../contracts/src/api.ts';
 import { canonicalStateHash } from '../../sim/src/hash.ts';
 import { upgradeGameState } from '../../sim/src/upgrade.ts';
-import { botChunkHash, botPopulationRoot, botRowHash, verifyBotPopulation } from '../../sim/src/bots/state.ts';
+import { botChunkHash, botPopulationNeedsMigration, botPopulationRoot, botRowHash, verifyBotPopulation } from '../../sim/src/bots/state.ts';
 import type { BotPopulationState, BotStateChunk } from '../../contracts/src/index.ts';
 
 const ownerRow = 'local-owner';
@@ -225,15 +225,19 @@ export class SqliteRepository {
     const pending = rows.filter(row => {
       const state = parseJson<Record<string, unknown>>(row.state_json, 'SAVE_STATE_CORRUPT');
       if (canonicalStateHash(state) !== row.state_sha256) throw new RepositoryError('SAVE_CHECKSUM_MISMATCH', 'The stored save checksum does not match.', 500);
-      return state.schemaVersion !== undefined && state.schemaVersion !== GAME_STATE_SCHEMA_VERSION;
+      return (state.schemaVersion !== undefined && state.schemaVersion !== GAME_STATE_SCHEMA_VERSION)
+        || botPopulationNeedsMigration(state.botPopulation as BotPopulationState | null | undefined);
     });
     if (!pending.length) return;
     this.transaction('game-state-schema-upgrade', () => {
       const update = this.db.prepare(`UPDATE saves SET content_version = ?, ruleset_version = ?, state_json = ?, state_sha256 = ?
         WHERE save_id = ? AND revision = ? AND event_sequence = ? AND state_sha256 = ?`);
       for (const row of pending) {
-        const storedAggregate = parseJson<unknown>(row.state_json, 'SAVE_STATE_CORRUPT');
-        const state = upgradeGameState(storedAggregate);
+        const storedAggregate = parseJson<GameState>(row.state_json, 'SAVE_STATE_CORRUPT');
+        const materialized = storedAggregate.botPopulation
+          ? this.materializeBotPopulation(row.save_id, storedAggregate).state
+          : storedAggregate;
+        const state = upgradeGameState(materialized);
         if (state.saveId !== row.save_id || state.revision !== row.revision || state.lastEventSequence !== row.event_sequence
           || state.worldPackageId !== row.world_package_id) throw new RepositoryError('SAVE_INDEX_MISMATCH', 'The save index changed during schema migration.', 500);
         const storedRow = serializedSaveRow(state);

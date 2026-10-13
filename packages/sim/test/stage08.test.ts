@@ -15,7 +15,9 @@ import { reduceCommand } from '../src/reducer.ts';
 import { upgradeGameState } from '../src/upgrade.ts';
 import { projectPlayerView } from '../src/view.ts';
 import { verifyStage08State, CARAVAN_SALT_AUCTION_ID, MARKET_BREAD_OFFER_ID, Q08_ID, settleOpeningLevelRank } from '../src/stage08.ts';
-import { GAME_STATE_SCHEMA_VERSION, type GameState, type ScheduledEventState } from '../../contracts/src/index.ts';
+import { botChunkHash, botPopulationRoot, botRowHash, BOT_BLUEPRINT_RULE_VERSION, verifyBotPopulation } from '../src/bots/state.ts';
+import { botMarketAsk } from '../src/bots/market.ts';
+import { GAME_STATE_SCHEMA_VERSION, type BotStateChunk, type GameState, type ScheduledEventState } from '../../contracts/src/index.ts';
 
 let serial = 0;
 const timeline = JSON.parse(readFileSync(resolve(process.cwd(), 'data/events/EVENT-TIMELINE-v0.6.json'), 'utf8')) as {
@@ -79,6 +81,66 @@ function runCommand(state: GameState, type: string, payload: Record<string, unkn
   }, world);
 }
 
+test('a player buys a bot blueprint at Krona Gate with BREAD and settles the seller escrow once', () => {
+  const state = freshState();
+  const gate = world.sites.find(site => site.id === 'SITE-LL01-046')!;
+  state.player.position = gate.position;
+  state.player.location = { kind: 'site', siteId: gate.id };
+  const population = state.botPopulation!;
+  const sourceChunk = population.chunks[0]!;
+  const seller = sourceChunk.cold[0]!;
+  const blueprintId = 'BP-BOT-WALL';
+  const item = { instanceId: `${seller.botId}:MARKET-ITEM-1`, blueprintId, sourceId: seller.searchSources[0]!.id,
+    acquiredAtElapsedMs: 0, status: 'escrowed' as const, resolvedAtElapsedMs: null, transactionId: null,
+    ruleVersion: BOT_BLUEPRINT_RULE_VERSION };
+  const sellerCold = { ...seller, position: gate.position, blueprintItems: [item] };
+  const cold = sourceChunk.cold.slice();
+  cold[0] = sellerCold;
+  const rowSha256 = sourceChunk.rowSha256.slice();
+  const unhashed = { ...sourceChunk, cold, rowSha256, chunkSha256: '' } as BotStateChunk;
+  rowSha256[0] = botRowHash(unhashed, 0);
+  const withRows = { ...unhashed, rowSha256 };
+  const sellerChunk = { ...withRows, chunkSha256: botChunkHash(withRows) };
+  const chunks = population.chunks.slice();
+  chunks[0] = sellerChunk;
+  const askAmount = botMarketAsk(blueprintId, 'food', 0);
+  const listing = {
+    id: `${seller.botId}:MARKET-LISTING-1`, sellerBotId: seller.botId,
+    blueprintItemInstanceId: item.instanceId, blueprintId, paymentResource: 'food' as const, askAmount,
+    createdAtElapsedMs: 0, lastRepricedAtElapsedMs: 0, repriceCount: 0, expiresAtElapsedMs: 48 * HOUR_MS,
+    status: 'active' as const, buyerBotId: null, transactionId: null, resolvedAtElapsedMs: null,
+  };
+  state.botPopulation = { ...population, chunks, chunkRootSha256: botPopulationRoot(chunks), marketListings: [listing] };
+  verifyBotPopulation(state.botPopulation);
+  state.construction.unlockedBlueprintIds = state.construction.unlockedBlueprintIds.filter(id => id !== 'BP-OPEN-WALL-01');
+  const paymentContainerId = 'LL-CNT-CARRIED-FOOD-BAG-01';
+  const paymentItemId = 'MARKET-BREAD-PAYMENT-1';
+  state.inventory.containers = state.inventory.containers.map(container => container.id !== paymentContainerId ? container : {
+    ...container, observed: true, stacks: [...container.stacks, {
+      itemId: paymentItemId, templateId: 'BREAD', quantity: askAmount, unit: 'item', ownerId: state.player.id,
+      equipped: false, equippedSlotId: null, foodUnitsPerItem: 1, provenance: 'versioned_game_design' as const,
+    }],
+  });
+
+  assert.equal(projectPlayerView(state, world).stage08.botMarketListings[0]?.id, listing.id);
+  const command = { schemaVersion: 1, saveId: state.saveId, commandId: 'stage08-bot-blueprint-buy-1', expectedRevision: state.revision,
+    type: 'buy_bot_market_listing', payload: { listingId: listing.id, paymentContainerId, paymentItemId } };
+  const bought = reduceCommand(state, command, world);
+  assert.equal(bought.receipt.accepted, true, bought.receipt.message);
+  const after = bought.state.botPopulation!;
+  verifyBotPopulation(after);
+  const resolvedListing = after.marketListings.find(row => row.id === listing.id)!;
+  assert.equal(resolvedListing.status, 'filled');
+  assert.equal(resolvedListing.buyerBotId, state.player.id);
+  assert.equal(after.marketTransactions[0]?.paymentAmount, askAmount);
+  assert.equal(after.chunks[0]!.cold[0]!.blueprintItems[0]!.status, 'sold');
+  assert.equal(after.chunks[0]!.foodMicro[0], sourceChunk.foodMicro[0]! + askAmount * 1_000_000);
+  assert.ok(bought.state.construction.unlockedBlueprintIds.includes('BP-OPEN-WALL-01'));
+  assert.equal(bought.state.inventory.containers.find(row => row.id === paymentContainerId)?.stacks.some(stack => stack.itemId === paymentItemId), false);
+  assert.equal(projectPlayerView(bought.state, world).stage08.botMarketListings.length, 0);
+  assert.equal(reduceCommand(bought.state, command, world).state.botPopulation!.marketTransactions.length, 1);
+});
+
 test('the runtime compiles exactly the thirty adopted v0.6 rows and creates no recurrence', () => {
   assert.equal(world.eventSchedule.length, 30);
   assert.equal(timeline.event_schedule.length, 30);
@@ -92,7 +154,7 @@ test('the runtime compiles exactly the thirty adopted v0.6 rows and creates no r
   }
   assert.equal(new Set(world.eventSchedule.map(row => row.opensAtMs)).size, world.eventSchedule.length, 'fixed opens do not collide');
   assert.equal(eventRuntimeReadiness('EV00-SAFE-FIRE'), 'executable_lifecycle');
-  assert.equal(eventRuntimeReadiness('EV01-OPENING-LEVEL'), 'settlement_blocked');
+  assert.equal(eventRuntimeReadiness('EV01-OPENING-LEVEL'), 'executable_ranked_board');
   for (const event of world.eventSchedule.slice(2)) assert.equal(eventRuntimeReadiness(event.id), 'executable_lifecycle');
 });
 

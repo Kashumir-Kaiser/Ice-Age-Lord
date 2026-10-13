@@ -32,9 +32,10 @@ export type FactionNeutralCombatResult = {
 };
 
 export function resolveFactionNeutralSquadEncounter(seed: string, encounterId: string, attacker: FactionNeutralCombatSide, defender: FactionNeutralCombatSide): FactionNeutralCombatResult {
-  for (const side of [attacker, defender]) {
+  for (const [index, side] of [attacker, defender].entries()) {
     if (![side.power, side.memberCount, side.defensePermille].every(Number.isSafeInteger)
-      || side.power < 1 || side.memberCount < 1 || side.defensePermille < 0) throw new Error('FACTION_NEUTRAL_COMBAT_SIDE_INVALID');
+      || side.power < 1 || side.memberCount < 0 || (side.memberCount === 0 && (index === 0 || side.defensePermille === 0))
+      || side.defensePermille < 0) throw new Error('FACTION_NEUTRAL_COMBAT_SIDE_INVALID');
   }
   const attackerPower = Math.max(1, Math.floor(attacker.power * 1_000 / (1_000 + defender.defensePermille)));
   const defenderPower = Math.max(1, Math.floor(defender.power * 1_000 / (1_000 + attacker.defensePermille)));
