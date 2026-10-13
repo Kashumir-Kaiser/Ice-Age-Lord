@@ -51,7 +51,9 @@ export class AssetTextureCache {
       }
       e.refs++;this.owned.add(path);
       // Another host can finish a shared load without this host owning its callback.
-      void e.request.then(()=>{if(!this.destroyed)this.invalidate();}).catch(()=>{if(!this.destroyed)this.onError(path);});
+      const ownerEntry=e;
+      const stillOwned=()=>!this.destroyed&&this.owned.has(path)&&shared.get(path)===ownerEntry;
+      void e.request.then(()=>{if(stillOwned())this.invalidate();}).catch(()=>{if(stillOwned())this.onError(path);});
     }
     return e?.image??null;
   }

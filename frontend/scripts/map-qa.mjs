@@ -20,7 +20,7 @@ try{
   await page.getByLabel('Xem thử vùng nhiệt').selectOption('2500');await page.getByRole('button',{name:'Toàn bộ vùng nhiệt',exact:true}).click();await capture(page,'heat-2500',viewport);
   await page.getByLabel('Xem thử vùng nhiệt').selectOption('25000');await page.getByRole('button',{name:'Toàn bộ vùng nhiệt',exact:true}).click();await capture(page,'heat-25000',viewport);
   await page.getByRole('button',{name:'Về lửa trại',exact:true}).click();
-  await page.locator('.territory-calibration > summary').click();await page.getByRole('button',{name:'Đến cụm QA 520',exact:true}).click();await capture(page,'dense-520',viewport);
+  await page.locator('.territory-calibration > summary').click();await page.getByRole('button',{name:'Xem nhóm công trình minh họa',exact:true}).click();await capture(page,'dense-520',viewport);
   await navigateMap(page,'Bản đồ');await capture(page,'local',viewport);
   await page.locator('.map-developer-tools > summary').click();await page.getByLabel('Mô phỏng giờ hiển thị').selectOption('1140');await page.locator('.map-developer-tools > summary').click();await capture(page,'night',viewport);
   await page.getByRole('button',{name:'Chuyển sang bản đồ thế giới',exact:true}).click();await capture(page,'world',viewport);

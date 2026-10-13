@@ -15,3 +15,9 @@ chat image record, or uncommitted working tree is not a durable checkpoint.
 For the current map task, use codex/map-25d-overhaul and GitHub integration/Actions.
 Reuse prior generated art. Do not regenerate missing originals merely because a
 new chat cannot access the previous chat's workspace.
+
+If native git cannot reach GitHub and a large connector image upload stalls,
+transfer small base64 parts through the integration under assets/source/uploads.
+The map-asset-upload workflow verifies the original Git blob hashes, restores
+the PNGs, rebuilds derivatives, commits and pushes them to the map branch.
+Verify that final commit and its original image hashes before generating more.

@@ -14,7 +14,7 @@ try{
   const longTasks=[];await page.exposeFunction('recordMapLongTask',entry=>longTasks.push(entry));
   await page.evaluate(()=>{if(PerformanceObserver.supportedEntryTypes.includes('longtask'))new PerformanceObserver(entries=>entries.getEntries().forEach(e=>window.recordMapLongTask({start:e.startTime,duration:e.duration}))).observe({entryTypes:['longtask']});});
   await navigateMap(page,fixture==='local'||fixture==='world-1023'?'Bản đồ':'Lãnh địa');
-  if(fixture==='dense-520'){await page.locator('.territory-calibration > summary').click();await page.getByRole('button',{name:'Đến cụm QA 520',exact:true}).click();}
+  if(fixture==='dense-520'){await page.locator('.territory-calibration > summary').click();await page.getByRole('button',{name:'Xem nhóm công trình minh họa',exact:true}).click();}
   if(fixture==='populated'){
    await page.getByRole('button',{name:/Thử bố trí Nhà thấp/}).click();const scene=page.locator('.territory-scene-svg');
    const box=await scene.boundingBox();for(let i=0;i<12;i++)await scene.click({position:{x:box.width*(.2+i%4*.15),y:box.height*(.35+Math.floor(i/4)*.15)}});

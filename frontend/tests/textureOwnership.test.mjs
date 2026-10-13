@@ -25,5 +25,8 @@ test('shared pending images survive one owner leaving, failures notify surviving
   images[1].onerror();await new Promise(setImmediate);
   assert.equal(calls.c.length,0);assert.ok(calls.d.includes('/broken.png'),'a shared failure reaches the surviving host');
   assert.equal(d.pending,0);assert.equal(d.reservedBytes,0,'failed images release their reserved allocation');d.destroy();assert.equal(d.reservedBytes,0);
+  const cancelledErrors=[],cancelled=new AssetTextureCache(()=>{},path=>cancelledErrors.push(path),1024);
+  register(cancelled,'/departed-viewport.png');cancelled.acquire('/departed-viewport.png');cancelled.retain(new Set());
+  await new Promise(setImmediate);assert.deepEqual(cancelledErrors,[],'cancelled offscreen loads do not become missing-art failures');assert.equal(cancelled.pending,0);cancelled.destroy();
  } finally {a.destroy();b.destroy();if(OriginalImage===undefined)delete globalThis.Image;else globalThis.Image=OriginalImage;}
 });

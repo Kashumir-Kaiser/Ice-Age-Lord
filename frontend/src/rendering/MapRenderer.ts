@@ -154,7 +154,12 @@ export class MapRenderer {
     const ordered=depthOrder(buildingObjects);if(ordered.cycles.length)this.metrics.error('depth cycle: '+ordered.cycles.join(','));
     const preferDistrict=this.quality==='low'||new Set(buildingObjects.map(b=>b.assetId)).size*4*1048576>this.assets.limit;
     const worldProps=this.sampler.props(bounds,1/scale).filter(p=>!this.snapshot.buildings.some(b=>Math.abs(b.point.x-p.x)<b.footprint.widthM/2+p.size&&Math.abs(b.point.y-p.y)<b.footprint.depthM/2+p.size));
-    const props=worldProps.map(p=>{const ground=this.project(p),height=p.size*scale*(p.kind==='conifer'?1.8:.6),width=height*(p.kind==='conifer'?.65:1.9);return {id:'prop:'+p.id,path:'/assets/map/terrain/'+p.kind+'-'+String(p.variant%(p.kind==='conifer'?6:p.kind==='rock'?8:8)+1).padStart(2,'0')+'.png',x:ground.x-width/2,y:ground.y-height*.9,width,height,alpha:1,depth:ground.y};});
+    const props=worldProps.map(p=>{
+      const ground=this.project(p),path='/assets/map/terrain/'+p.kind+'-'+String(p.variant%(p.kind==='conifer'?6:8)+1).padStart(2,'0')+'.png';
+      const image=this.assets.acquire(path),height=p.size*scale*(p.kind==='conifer'?1.8:.6);
+      const width=height*(image?image.naturalWidth/image.naturalHeight:p.kind==='conifer'?.65:1.9);
+      return {id:'prop:'+p.id,path,x:ground.x-width/2,y:ground.y-height*.94,width,height,alpha:1,depth:ground.y};
+    });
     // Contact/cast shadows lie on the ground below every upright object.
     for(const b of buildingObjects){const asset=b.asset!;this.assets.register(asset,this.quality!=='low');for(const layer of composition(asset,this.snapshot.mode,false,b.active,b.orientation))if(layer.role==='shadow'){
       const exported=exportPath(asset,layer,preferDistrict?'district':'close'),path=(this.failures.has(exported)||this.failures.has(this.assets.url(exported)))?layer.path:exported;

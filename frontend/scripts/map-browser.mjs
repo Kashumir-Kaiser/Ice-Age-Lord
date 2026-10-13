@@ -11,6 +11,8 @@ export async function navigateMap(page,name){
 }
 export async function readyMap(page){
  await page.locator('[data-map-renderer]').waitFor();
+ // Let React's camera update and the renderer's next frame submit their work.
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
  await page.waitForFunction(()=>{
   const m=window.__mapMetrics?.at(-1);
   return m&&m.backend!=='initializing'&&m.queued===0&&m.pendingTextures===0;
