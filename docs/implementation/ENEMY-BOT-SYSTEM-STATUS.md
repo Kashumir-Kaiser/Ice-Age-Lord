@@ -23,8 +23,9 @@ Bot exploration owns finite chests before opening and persists a deterministic l
 | `node --experimental-strip-types --test packages/api/test/bots.test.ts` | Passed: 1 API test file in 15.9s. |
 | `npm run content:coverage:stage08` | Passed in 1.2s; regenerated the report with EV01 marked as an executable ranked board. |
 | `git diff --check` | Passed after code, UI and documentation edits. |
+| [GitHub Actions frontend validation](https://github.com/Kashumir-Kaiser/Ice-Age-Lord/actions/runs/38358710683) | Passed on commit `1c62270`: `npm run build` (TypeScript and Vite) and `npm test` (45/45 tests). The first CI run caught a missing `botMarketListings` field in the E2E player-view fixture; the fixture was fixed before this passing run. |
 
-The frontend build was not available: `frontend/node_modules` and the root tool binaries are absent, including TypeScript, Vite and JSX parsers. The live market UI change is therefore not frontend-compiled or browser-tested in this checkout.
+The frontend toolchain was unavailable in this checkout because `frontend/node_modules` and the root TypeScript, Vite and JSX binaries are absent. GitHub Actions provided the frontend compile and unit-test verification above. The passing run does not include a browser E2E or visual viewport check.
 
 The full `npm run test:bots` and multi-day Stage 08 suite were not run, as the supplied prompt excludes those expensive suites from the initial focused schedule. The Stage 08 multi-day test had previously been interrupted after approximately 4h37m and is not a pass.
 
@@ -68,4 +69,4 @@ The three earlier 32-bot diagnostics used seeds `bot-balance-01`, `bot-balance-0
 - Bot structures provide passive defense values. There is no source-backed staffed tower, ammunition or autonomous attack contract.
 - Bot-only blueprint templates are versioned overlays. Only the wall blueprint has a player construction adapter; the other bot blueprints cannot be sold to the player.
 
-See the [system guide](ENEMY-BOT-SYSTEM.md) for the supported boundary and overlays. The current-checkout 168h P0 run verifies one deterministic seed; it does not establish cross-seed balance or population-wide mortality rates. Reward-content blockers and the unverified frontend build remain listed above.
+See the [system guide](ENEMY-BOT-SYSTEM.md) for the supported boundary and overlays. The current-checkout 168h P0 run verifies one deterministic seed; it does not establish cross-seed balance or population-wide mortality rates. Reward-content blockers remain listed above; the frontend build and 45 unit tests passed in the linked GitHub Actions run.
