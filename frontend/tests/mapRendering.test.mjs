@@ -74,5 +74,5 @@ test('quality requires sustained overload and stable headroom, respecting locked
 });
 test('raster export validation rejects bad formats, anchors/trim/atlas/orientation and stale hashes',()=>{
  const entry=asset.mapExports?.[0];assert.ok(entry,'production raster exports must exist');validateMapExport(entry,asset);
- for(const change of [{path:'/bad.svg'},{width:4096},{sha256:'bad'},{sourceSha256:'bad'},{orientation:'west'},{trim:{x:-1,y:0,width:1,height:1}},{atlas:{path:'/a.png',x:2040,y:0,width:64,height:64,atlasWidth:2048,atlasHeight:2048}}])assert.throws(()=>validateMapExport({...entry,...change},asset));
+ for(const change of [{path:'/bad.svg'},{width:4096},{width:entry.width-1,atlas:undefined},{height:entry.height-1,atlas:undefined},{sha256:'bad'},{sourceSha256:'bad'},{orientation:'west'},{trim:{x:-1,y:0,width:1,height:1}},{atlas:{path:'/a.png',x:2040,y:0,width:64,height:64,atlasWidth:2048,atlasHeight:2048}}])assert.throws(()=>validateMapExport({...entry,...change},asset));
 });

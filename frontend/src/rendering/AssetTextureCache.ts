@@ -12,11 +12,13 @@ export class AssetTextureCache {
   private registrations=new Map<string,{path:string;x:number;y:number;width:number;height:number}>();
   private frames=new Map<string,Texture>();
   private estimates=new Map<string,number>();
+  private rejected=new Set<string>();
+  maxTextureSize=2048;
   register(asset:AssetManifestEntry,useAtlas=true):void{
     for(const path of Object.values(asset.layers))if(typeof path==='string')this.estimates.set(path,asset.logicalCanvas.width*asset.logicalCanvas.height*4);
     for(const entry of asset.mapExports??[]){
       this.estimates.set(entry.path,entry.width*entry.height*4);
-      const previous=this.registrations.get(entry.path),next=useAtlas?entry.atlas:undefined;
+      const previous=this.registrations.get(entry.path),next=useAtlas&&entry.atlas&&entry.atlas.atlasWidth<=this.maxTextureSize&&entry.atlas.atlasHeight<=this.maxTextureSize?entry.atlas:undefined;
       if(previous?.path!==next?.path){this.frames.get(entry.path)?.destroy(false);this.frames.delete(entry.path);}
       if(next){this.registrations.set(entry.path,next);this.estimates.set(next.path,next.atlasWidth*next.atlasHeight*4);}
       else this.registrations.delete(entry.path);
@@ -35,7 +37,8 @@ export class AssetTextureCache {
     let e=shared.get(path);
     if(!this.owned.has(path)){
       const estimated=e?.reservedBytes??this.estimates.get(path)??384*384*4;
-      if(this.reservedBytes+estimated>this.limit){this.onError(path);return null;}
+      if(this.reservedBytes+estimated>this.limit){if(!this.rejected.has(path)){this.rejected.add(path);this.onError(path);}return null;}
+      this.rejected.delete(path);
       if(!e){
         const image=new Image(),controller=new AbortController();image.decoding='async';
         const request=new Promise<HTMLImageElement>((resolve,reject)=>{
@@ -44,7 +47,7 @@ export class AssetTextureCache {
         });
         e={refs:0,image:null,texture:null,request,bytes:0,reservedBytes:estimated,controller,state:'pending'};shared.set(path,e);
         const target=e;
-        void request.then(value=>{target.state='ready';if(!target.refs)return;target.image=value;target.bytes=value.naturalWidth*value.naturalHeight*4;target.reservedBytes=target.bytes;}).catch(()=>{target.state='failed';});
+        void request.then(value=>{target.state='ready';if(!target.refs)return;target.image=value;target.bytes=value.naturalWidth*value.naturalHeight*4;target.reservedBytes=target.bytes;}).catch(()=>{target.state='failed';target.reservedBytes=0;});
       }
       e.refs++;this.owned.add(path);
       // Another host can finish a shared load without this host owning its callback.

@@ -13,6 +13,7 @@ test('shared pending images survive one owner leaving, failures notify surviving
   register(a,'/pool.png');register(b,'/pool.png');register(b,'/second.png');
   a.acquire('/pool.png');b.acquire('/pool.png');assert.equal(images.length,1);assert.equal(b.pending,1);
   b.acquire('/second.png');assert.equal(images.length,1,'pending images already reserve their decoded bytes');assert.deepEqual(calls.d,['/second.png']);
+  b.acquire('/second.png');assert.deepEqual(calls.d,['/second.png'],'rejected admission does not schedule an endless error/redraw loop');
   a.destroy();assert.equal(images[0].src,'/pool.png','departing owner does not cancel a shared request');
   images[0].onload();await new Promise(setImmediate);
   assert.equal(calls.a,0,'late completion never invalidates the departed host');assert.equal(calls.b,1);assert.equal(b.pending,0);assert.equal(b.bytes,1024);
@@ -23,6 +24,6 @@ test('shared pending images survive one owner leaving, failures notify surviving
   register(c,'/broken.png');register(d,'/broken.png');c.acquire('/broken.png');d.acquire('/broken.png');c.destroy();
   images[1].onerror();await new Promise(setImmediate);
   assert.equal(calls.c.length,0);assert.ok(calls.d.includes('/broken.png'),'a shared failure reaches the surviving host');
-  assert.equal(d.pending,0);d.destroy();assert.equal(d.reservedBytes,0);
+  assert.equal(d.pending,0);assert.equal(d.reservedBytes,0,'failed images release their reserved allocation');d.destroy();assert.equal(d.reservedBytes,0);
  } finally {a.destroy();b.destroy();if(OriginalImage===undefined)delete globalThis.Image;else globalThis.Image=OriginalImage;}
 });

@@ -63,7 +63,7 @@ export class MapRenderer {
       if(this.destroyed){app.destroy(false,{children:true,texture:false,textureSource:false});return;}
       this.app=app;
       const gl=(app.renderer as unknown as {gl?:WebGLRenderingContext}).gl;
-      if(gl){const elements=gl.drawElements.bind(gl),arrays=gl.drawArrays.bind(gl);gl.drawElements=(...args)=>{this.draws++;elements(...args);};gl.drawArrays=(...args)=>{this.draws++;arrays(...args);};}
+      if(gl){this.assets.maxTextureSize=gl.getParameter(gl.MAX_TEXTURE_SIZE);const elements=gl.drawElements.bind(gl),arrays=gl.drawArrays.bind(gl);gl.drawElements=(...args)=>{this.draws++;elements(...args);};gl.drawArrays=(...args)=>{this.draws++;arrays(...args);};}
       app.stop();this.transferred=true;app.stage.addChild(this.stage,this.effectsGraphics);this.canvas.addEventListener('webglcontextlost',this.lost);
       this.metrics.data.backend='webgl';this.status('webgl');
     }catch(error){
@@ -128,6 +128,9 @@ export class MapRenderer {
     const bounds={minX:Math.min(...corners.map(p=>p.x)),maxX:Math.max(...corners.map(p=>p.x)),minY:Math.min(...corners.map(p=>p.y)),maxY:Math.max(...corners.map(p=>p.y))};
     const wanted=chunkLevel(scale*(this.snapshot.projection==='territory'?3:1),this.level);
     this.level??=wanted;
+    // A fit/world jump can span thousands of close-up chunks. Switch its request
+    // scale immediately rather than traversing that grid while coarse chunks load.
+    if(Math.abs(wanted-this.level)>1){this.terrain.clearQueued();this.level=wanted;this.previousLevel=undefined;}
     if(wanted!==this.level){
       const nextSpan=64*2**wanted;let ready=true;
       for(let y=Math.floor(bounds.minY/nextSpan);y<=Math.floor(bounds.maxY/nextSpan);y++)for(let x=Math.floor(bounds.minX/nextSpan);x<=Math.floor(bounds.maxX/nextSpan);x++){this.terrain.request(x,y,wanted);if(!this.terrain.get(x,y,wanted))ready=false;}
@@ -152,13 +155,18 @@ export class MapRenderer {
     const preferDistrict=this.quality==='low'||new Set(buildingObjects.map(b=>b.assetId)).size*4*1048576>this.assets.limit;
     const worldProps=this.sampler.props(bounds,1/scale).filter(p=>!this.snapshot.buildings.some(b=>Math.abs(b.point.x-p.x)<b.footprint.widthM/2+p.size&&Math.abs(b.point.y-p.y)<b.footprint.depthM/2+p.size));
     const props=worldProps.map(p=>{const ground=this.project(p),height=p.size*scale*(p.kind==='conifer'?1.8:.6),width=height*(p.kind==='conifer'?.65:1.9);return {id:'prop:'+p.id,path:'/assets/map/terrain/'+p.kind+'-'+String(p.variant%(p.kind==='conifer'?6:p.kind==='rock'?8:8)+1).padStart(2,'0')+'.png',x:ground.x-width/2,y:ground.y-height*.9,width,height,alpha:1,depth:ground.y};});
+    // Contact/cast shadows lie on the ground below every upright object.
+    for(const b of buildingObjects){const asset=b.asset!;this.assets.register(asset,this.quality!=='low');for(const layer of composition(asset,this.snapshot.mode,false,b.active,b.orientation))if(layer.role==='shadow'){
+      const exported=exportPath(asset,layer,preferDistrict?'district':'close'),path=(this.failures.has(exported)||this.failures.has(this.assets.url(exported)))?layer.path:exported;
+      draws.push({id:b.id+':shadow',path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});
+    }}
     // Architectural order from the partial order is preserved; props are inserted by their ground depths.
     let propIndex=0;const sortedProps=props.sort((a,b)=>a.depth-b.depth||a.id.localeCompare(b.id));
     const drawBuilding=(b:typeof buildingObjects[number])=>{
       const asset=b.asset!;this.assets.register(asset,this.quality!=='low');const lod=chooseLOD(2*(b.footprint.widthM+b.footprint.depthM)*scale,this.lod.get(b.id));this.lod.set(b.id,lod);
       const occludes=Boolean(target&&!b.selected&&b.depth>this.project(selected!.point).y&&pointInPolygon(target,artPolygon(asset.occlusionRegion.upper,b.rect)));
       if(lod==='regional'&&this.snapshot.mode!=='planning'){const width=12,height=12;draws.push({id:b.id+':symbol',path:asset.layers.uiIcon!,x:b.ground.x-width/2,y:b.ground.y-height,width,height,alpha:b.draft?.55:1});return;}
-      for(const layer of composition(asset,this.snapshot.mode,occludes,b.active,b.orientation)){const exported=exportPath(asset,layer,preferDistrict||lod!=='close'?'district':'close'),path=(this.failures.has(exported)||this.failures.has(this.assets.url(exported)))?layer.path:exported;draws.push({id:b.id+':'+layer.role,path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});}
+      for(const layer of composition(asset,this.snapshot.mode,occludes,b.active,b.orientation)){if(layer.role==='shadow')continue;const exported=exportPath(asset,layer,preferDistrict||lod!=='close'?'district':'close'),path=(this.failures.has(exported)||this.failures.has(this.assets.url(exported)))?layer.path:exported;draws.push({id:b.id+':'+layer.role,path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});}
     };
     for(const b of ordered.objects){while(propIndex<sortedProps.length&&sortedProps[propIndex].depth<=b.depth)draws.push(sortedProps[propIndex++]);drawBuilding(b);}while(propIndex<sortedProps.length)draws.push(sortedProps[propIndex++]);
     for(const d of draws)if(!d.path.startsWith('chunk:')){used.add(d.path);this.assets.acquire(d.path);}

@@ -215,5 +215,17 @@
     }
   ],
   "recoveredCommit": "90fad0cd8a1e9d2915993edbbe6c868e5fa72233",
-  "retainedPngMasters": 25
+  "retainedPngMasters": 25,
+  "continuationImages": [
+    {
+      "generationId": "exec-b32f617a-e2d0-4d71-ab2c-368974ce0acf",
+      "sourcePath": "assets/source/terrain/snow-continuation-unused.png",
+      "status": "Unused calibration made before previous-chat recovery; preserved but excluded from runtime exports."
+    },
+    {
+      "generationId": "exec-96fea87f-cddc-4519-a252-70aa9a0e308b",
+      "sourcePath": "assets/source/terrain/bank-01.png",
+      "status": "Missing snow-bank family, first master; alpha/ground-contact review pending."
+    }
+  ]
 }

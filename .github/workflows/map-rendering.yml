@@ -12,6 +12,7 @@ jobs:
     timeout-minutes: 45
     env:
       VITE_GAME_MODE: demo
+      PLAYWRIGHT_PREVIEW: '1'
     defaults:
       run:
         working-directory: frontend
@@ -27,6 +28,7 @@ jobs:
       - name: Map interaction journeys
         run: npm run test:e2e -- e2e/map-rendering.spec.ts e2e/territory.spec.ts e2e/map.spec.ts --grep-invert 'visual baselines'
       - name: Capture maps for review
+        if: always() && !cancelled()
         run: node scripts/map-qa.mjs
       - name: Verify benchmark harness
         env:
