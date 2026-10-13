@@ -7,7 +7,8 @@ const out = resolve('map-evidence/baseline');
 mkdirSync(out,{recursive:true});
 const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png'};
 const server=createServer((req,res)=>{
- const path=resolve(root,req.url==='/'?'index.html':decodeURIComponent(req.url.split('?')[0]).slice(1));
+ const pathname=new URL(req.url,'http://127.0.0.1').pathname;
+ const path=resolve(root,pathname==='/'?'index.html':decodeURIComponent(pathname).slice(1));
  if(!path.startsWith(root+sep)||!existsSync(path)){res.writeHead(404);res.end();return;}
  res.writeHead(200,{'Content-Type':mime[extname(path)]??'application/octet-stream'});res.end(readFileSync(path));
 }).listen(4179,'127.0.0.1');
