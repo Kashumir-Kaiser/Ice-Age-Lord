@@ -8,6 +8,7 @@ import { assignConstructionWorkers, cancelConstructionJob, previewBuild, preview
 import { consumeItem, equipItem, equipmentBlocker, mergeStacks, splitStack, unequipBlocker, unequipItem } from './inventory.ts';
 import { activateOpeningCareer, butcherCorpse, directReviveAvailability, reviveDirect } from './stage07.ts';
 import { attackAvailability, orderStage07Retreat, retreatAvailability, startStage07Encounter } from './combat.ts';
+import { attackBotLordFromPlayer, botLordAttackAvailability } from './bots/economy.ts';
 import {
   actorAvailability,
   cancelSpatialJob,
@@ -21,7 +22,7 @@ import {
 } from './spatial.ts';
 import { acceptQ08, botMarketPurchaseAvailability, buyBotMarketListing, cancelAuctionBid, claimOpeningLevelReward, claimQ08Reward, escortQ08, negotiateQ08, placeAuctionBid, purchaseMarketOffer } from './stage08.ts';
 import { OPENING_LEVEL_CLOSES_AT_MS, OPENING_LEVEL_DISPLAY_DELAY_MS, OPENING_LEVEL_OPENS_AT_MS } from './openingRanking.ts';
-import { openFieldChest } from './chestLoot.ts';
+import { openBotRemainsChest, openFieldChest } from './chestLoot.ts';
 import { buyEventOffer, claimEventReward, chooseEventPath, recordEventActivities } from './eventRuntime.ts';
 
 const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | 'inspect_bot' | 'inspect_starter_container' | 'inspect_career_card'>, { code: string; message: string }>> = {
@@ -144,6 +145,12 @@ function botCurrentlyVisible(state: GameState, world: WorldDefinition, botId: st
     && Math.hypot(sight.center.xMm - bot.position.xMm, sight.center.yMm - bot.position.yMm) <= sight.radiusMm);
 }
 
+function botRemainsCurrentlyVisible(state: GameState, world: WorldDefinition, chestId: string): boolean {
+  const chest = state.botPopulation?.remainsChests.find(candidate => candidate.id === chestId);
+  return Boolean(chest && currentSight(state, world).some(sight => ((sight.center.sourceZMetres ?? 0) < -2) === ((chest.position.sourceZMetres ?? 0) < -2)
+    && Math.hypot(sight.center.xMm - chest.position.xMm, sight.center.yMm - chest.position.yMm) <= sight.radiusMm));
+}
+
 function resolvedDestination(state: GameState, world: WorldDefinition, payload: { destinationId?: string; destination?: { xMm: number; yMm: number; sourceZMetres?: number } }) {
   if (payload.destination) return { coordinate: payload.destination, kind: 'coordinate' as const, entityId: null };
   const id = payload.destinationId;
@@ -154,6 +161,8 @@ function resolvedDestination(state: GameState, world: WorldDefinition, payload: 
   if (resource) return { coordinate: resource.location, kind: 'entity' as const, entityId: id };
   const chest = world.fieldChests.find(candidate => candidate.id === id && state.playerKnowledge.knownChestIds.includes(id));
   if (chest) return { coordinate: chest.position, kind: 'entity' as const, entityId: id };
+  const remains = state.botPopulation?.remainsChests.find(candidate => candidate.id === id);
+  if (remains && botRemainsCurrentlyVisible(state, world, id)) return { coordinate: remains.position, kind: 'entity' as const, entityId: id };
   const wildlife = state.wildlife.groups.find(candidate => candidate.id === id
     && candidate.discovery === 'known' && (state.playerKnowledge.knownWildlifeGroupIds ?? []).includes(id));
   if (wildlife) return { coordinate: wildlife.position, kind: 'entity' as const, entityId: id };
@@ -201,6 +210,9 @@ export function previewCommand(
     if (ref.type === 'bot') return botCurrentlyVisible(state, world, ref.id)
       ? actionAvailability(command.type)
       : { actionId: command.type, enabled: false, reasonCode: 'BOT_NOT_CURRENTLY_VISIBLE', requirements: ['A settlement must be in current sight before its details can be inspected.'] };
+    if (ref.type === 'cache' && ref.id.startsWith('BOT-REMAINS-CHEST:')) return botRemainsCurrentlyVisible(state, world, ref.id)
+      ? actionAvailability(command.type)
+      : { actionId: command.type, enabled: false, reasonCode: 'ENTITY_NOT_CURRENTLY_VISIBLE', requirements: ['The remains cache must be in current sight.'] };
     return isKnownEntity(ref, state)
       ? actionAvailability(command.type)
       : { actionId: command.type, enabled: false, reasonCode: 'NOT_ACCESSIBLE', requirements: ['The entity is unavailable in the current player view.'] };
@@ -232,6 +244,10 @@ export function previewCommand(
       : actionAvailability(command.type);
   }
   if (command.type === 'attack') {
+    if (/^(?:RC-\d{3}|BOT-P0-\d{4,})$/u.test(command.payload.targetId)) {
+      const result = botLordAttackAvailability(state, world, command.payload.actorIds, command.payload.targetId);
+      return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
+    }
     const result = attackAvailability(state, world, command.payload.actorIds, command.payload.targetId);
     return result.code ? unavailable(command.type, result.code, result.requirements.join(' ')) : actionAvailability(command.type);
   }
@@ -418,7 +434,10 @@ export function previewCommand(
     return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
   }
   if (command.type === 'open_cache') {
-    const result = openFieldChest(state, world, command.payload.actorId, command.payload.chestId);
+    const isRemains = state.botPopulation?.remainsChests.some(chest => chest.id === command.payload.chestId);
+    const result = isRemains
+      ? openBotRemainsChest(state, world, command.payload.actorId, command.payload.chestId)
+      : openFieldChest(state, world, command.payload.actorId, command.payload.chestId);
     return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
   }
   return staticAvailability(command.type);
@@ -527,13 +546,21 @@ export function reduceCommand(
 
   if (command.type === 'inspect_entity') {
     const ref = command.payload.entity;
-    if (!isKnownEntity(ref, state)) return reject(state, command.commandId, 'NOT_ACCESSIBLE', 'That entity is unavailable in the current player view.', requestSha256);
+    const visibleRemains = ref.type === 'cache' && ref.id.startsWith('BOT-REMAINS-CHEST:') && botRemainsCurrentlyVisible(state, world, ref.id);
+    if (!isKnownEntity(ref, state) && !visibleRemains) return reject(state, command.commandId, 'NOT_ACCESSIBLE', 'That entity is unavailable in the current player view.', requestSha256);
     if (ref.type === 'bot') {
       if (!botCurrentlyVisible(state, world, ref.id)) return reject(state, command.commandId, 'BOT_NOT_CURRENTLY_VISIBLE', 'A settlement must be in current sight before its details can be inspected.', requestSha256);
       const lastInspectedEntityIds = [...new Set([...state.playerKnowledge.lastInspectedEntityIds, entityKey(ref)])].sort();
       return acceptMutation(state, command, requestSha256, {
         playerKnowledge: { ...state.playerKnowledge, inspectedBotId: ref.id, lastInspectedEntityIds },
       }, 'known_entity_inspected', { entity: ref }, 'INSPECTION_RECORDED', 'The settlement currently in sight was inspected.');
+    }
+    if (visibleRemains) {
+      const key = entityKey(ref);
+      const lastInspectedEntityIds = [...new Set([...state.playerKnowledge.lastInspectedEntityIds, key])].sort();
+      return acceptMutation(state, command, requestSha256, {
+        playerKnowledge: { ...state.playerKnowledge, lastInspectedEntityIds },
+      }, 'known_entity_inspected', { entity: ref }, 'INSPECTION_RECORDED', 'The remains cache currently in sight was inspected.');
     }
     const key = entityKey(ref);
     if (state.playerKnowledge.lastInspectedEntityIds.includes(key)) return acceptWithoutMutation(state, command, requestSha256, 'ALREADY_INSPECTED', 'This known entity has already been inspected.');
@@ -599,6 +626,13 @@ export function reduceCommand(
   }
 
   if (command.type === 'attack') {
+    if (/^(?:RC-\d{3}|BOT-P0-\d{4,})$/u.test(command.payload.targetId)) {
+      const result = attackBotLordFromPlayer(state, world, command.payload.actorIds, command.payload.targetId, command.commandId);
+      if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+      const events = result.events.map(event => ({ ...event }));
+      return acceptMutationMany(state, command, requestSha256, result.state, events,
+        'BOT_LORD_ATTACK_RESOLVED', result.message);
+    }
     const result = startStage07Encounter(state, world, command.payload.actorIds, command.payload.targetId);
     if (result.code || !result.encounter || !result.event) return reject(state, command.commandId, result.code ?? 'COMBAT_UNAVAILABLE', result.requirements.join(' ') || 'The encounter cannot start.', requestSha256);
     return acceptMutationMany(state, command, requestSha256, result.state, [result.event], 'COMBAT_STARTED', 'The selected unit began a timed encounter with the known target.');
@@ -859,7 +893,10 @@ export function reduceCommand(
   }
 
   if (command.type === 'open_cache') {
-    const result = openFieldChest(state, world, command.payload.actorId, command.payload.chestId);
+    const isRemains = state.botPopulation?.remainsChests.some(chest => chest.id === command.payload.chestId);
+    const result = isRemains
+      ? openBotRemainsChest(state, world, command.payload.actorId, command.payload.chestId)
+      : openFieldChest(state, world, command.payload.actorId, command.payload.chestId);
     if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
     return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'CHEST_OPENED', result.message);
   }

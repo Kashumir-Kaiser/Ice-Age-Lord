@@ -27,7 +27,12 @@ const ownerId = 'local-owner';
 const MAX_BACKUP_ROWS = 10_000;
 const MAX_BACKUP_CHECKPOINTS = 50;
 const MAX_BACKUP_BYTES = 64 * 1024 * 1024;
-const CLOCK_SIMULATION_SLICE_MS = 16;
+// Catch-up slices yield between bounded batches so commands can observe committed
+// state, but a frame-sized 16 ms budget caused thousands of needless queue and
+// setImmediate round trips when settling large bot populations over many days.
+// Use the simulation's bounded 100 ms ceiling while amortizing that scheduling
+// overhead for deterministic clock catch-up.
+const CLOCK_SIMULATION_SLICE_MS = 100;
 const DEFAULT_CLOCK_LEASE_MS = 5_000;
 const DEFAULT_CLOCK_TICK_MS = 250;
 const LEGACY_README_SHA256 = '6e30d099e63a8253134d9de87d495053744ad868cde4ff468ba4bdc31d53c26b';
@@ -233,7 +238,8 @@ function validateStage05State(candidate: GameState, world: WorldDefinition, base
   for (const container of baseline.inventory.containers) for (const stack of container.stacks) initialTotals.set(stack.templateId, (initialTotals.get(stack.templateId) ?? 0) + stack.quantity);
   const chestLootTemplates = world.fieldChests.flatMap(chest => lootTableForChest(chest).entries.map(entry => entry.templateId));
   const eventShopTemplates = world.eventSchedule.slice(2).map(event => `EVENT-MARK-${event.id}`);
-  const allowedTemplates = new Set([...initialTotals.keys(), ...world.resources.map(resource => resource.materialId), ...chestLootTemplates, ...eventShopTemplates]);
+  const botRewardTemplates = (candidate.botPopulation?.rewardReceipts ?? []).flatMap(receipt => receipt.items.map(item => item.itemTemplateId));
+  const allowedTemplates = new Set([...initialTotals.keys(), ...world.resources.map(resource => resource.materialId), ...chestLootTemplates, ...eventShopTemplates, ...botRewardTemplates]);
   for (const container of candidate.inventory.containers) {
     const original = baseline.inventory.containers.find(item => item.id === container.id);
     if (!original || container.kind !== original.kind || canonicalStateHash(container.location) !== canonicalStateHash(original.location)
@@ -256,14 +262,21 @@ function validateStage05State(candidate: GameState, world: WorldDefinition, base
         invalid('An item expiry requires a compiled exclusive event.');
       }
       itemIds.add(stack.itemId);
-      templateTotals.set(stack.templateId, (templateTotals.get(stack.templateId) ?? 0) + stack.quantity);
+      const recoveredFromBot = stack.itemId.startsWith('BOT-REMAINS-RESOURCE:')
+        || stack.sourceReceiptId?.startsWith('BOT-CHEST-LOOT:') === true
+        || stack.sourceReceiptId?.startsWith('EV01-OPENING-LEVEL:BOT-') === true;
+      if (!recoveredFromBot) templateTotals.set(stack.templateId, (templateTotals.get(stack.templateId) ?? 0) + stack.quantity);
     }
   }
   const extractedByMaterial = new Map<string, number>();
   for (const job of candidate.spatial.harvestJobs) extractedByMaterial.set(job.materialId, (extractedByMaterial.get(job.materialId) ?? 0) + job.extractedQuantity);
   const lootedByTemplate = new Map<string, number>();
-  for (const chest of candidate.fieldChestStates) for (const stack of chest.lootOutcome?.rewardStacks ?? []) {
+  const playerOwnedActorIds = new Set([candidate.player.id, ...candidate.ownedUnits.map(unit => unit.id)]);
+  for (const chest of candidate.fieldChestStates) {
+    if (!chest.claimedById || !playerOwnedActorIds.has(chest.claimedById)) continue;
+    for (const stack of chest.lootOutcome?.rewardStacks ?? []) {
     lootedByTemplate.set(stack.templateId, (lootedByTemplate.get(stack.templateId) ?? 0) + stack.quantity);
+    }
   }
   const marketPurchased = new Map<string, number>();
   const marketConsumed = new Map<string, number>();
@@ -1280,6 +1293,7 @@ export class GameApplicationService {
         deferBotPopulationCommit: true,
         mutatePrivateState: Boolean(driver.pendingState),
         stopCondition: before.clockControl.stopCondition as StopCondition,
+        eventSequenceOffset: driver.pendingEvents?.length ?? 0,
         stopBeforeEvent: blockerEvent && blockerPolicy ? {
           eventId: blockerEvent.id,
           reasonCode: blockerPolicy.reasonCode,

@@ -56,6 +56,41 @@ export function resolveFactionNeutralSquadEncounter(seed: string, encounterId: s
   };
 }
 
+export type PersonalCombatProfile = {
+  actorId: string;
+  attributes: Readonly<Record<string, number>>;
+  weaponDamage: number;
+  weaponCondition: number;
+  armor: number;
+  rangeMm: number;
+};
+export type PersonalAttackResult = { hit: boolean; damage: number; hitChance: number; drawIndex: number };
+
+/** Shared single-actor hit and damage calculation for player units and compact bot lords. */
+export function resolvePersonalAttack(
+  seed: string,
+  encounterId: string,
+  attacker: PersonalCombatProfile,
+  defender: PersonalCombatProfile,
+  distanceMm: number,
+  weatherPenalty = 0,
+): PersonalAttackResult {
+  const numeric = [distanceMm, attacker.weaponDamage, attacker.weaponCondition, attacker.armor, attacker.rangeMm,
+    defender.weaponDamage, defender.weaponCondition, defender.armor, defender.rangeMm, weatherPenalty,
+    ...Object.values(attacker.attributes), ...Object.values(defender.attributes)];
+  if (!attacker.actorId || !defender.actorId || !numeric.every(Number.isFinite)
+    || distanceMm < 0 || attacker.weaponDamage < 0 || attacker.weaponCondition < 0 || attacker.weaponCondition > 1
+    || attacker.armor < 0 || attacker.rangeMm <= 0) throw new Error('PERSONAL_COMBAT_PROFILE_INVALID');
+  if (distanceMm > attacker.rangeMm) return { hit: false, damage: 0, hitChance: 0, drawIndex: 0 };
+  const hitChance = chanceToHit(attacker.attributes, defender.attributes, weatherPenalty);
+  const hit = randomIntFromFields([seed, encounterId, 'PERSONAL-COMBAT-1.0', attacker.actorId, defender.actorId, 'hit'], 1, 100).value <= hitChance;
+  if (!hit) return { hit: false, damage: 0, hitChance, drawIndex: 1 };
+  const draw = randomIntFromFields([seed, encounterId, 'PERSONAL-COMBAT-1.0', attacker.actorId, defender.actorId, 'damage'], 0, 2).value;
+  const damage = Math.max(0, 1 + Math.floor(stat({ attributes: attacker.attributes }, 'STR') / 6)
+    + Math.floor(attacker.weaponDamage * attacker.weaponCondition) + draw - Math.round(defender.armor));
+  return { hit: true, damage, hitChance, drawIndex: 2 };
+}
+
 export type CombatAvailability = { code: string | null; requirements: readonly string[] };
 type WeaponProfile = { damage: number; rangeMm: number; condition: number };
 
@@ -330,6 +365,16 @@ function weaponArmor(state: GameState, unitId: string): number {
     const armor = Number(item.combatEffects?.armor ?? 0);
     return sum + Math.max(0, Math.round(armor * (item.condition ?? 1)));
   }, 0);
+}
+
+/** Builds the same real equipment/stat profile used for player personal attacks. */
+export function personalCombatProfileForUnit(state: GameState, unitId: string): PersonalCombatProfile | null {
+  const unit = state.ownedUnits.find(item => item.id === unitId && item.ownerId === state.player.id);
+  const weapon = actorWeapon(state, unitId);
+  if (!unit || !unit.position || !unit.health || unit.health.current <= 0 || !unit.attributes || !weapon
+    || encounterBusy(state, unitId) || isActorInActiveCombat(state, unitId)) return null;
+  return { actorId: unit.id, attributes: unit.attributes, weaponDamage: weapon.damage, weaponCondition: weapon.condition,
+    armor: weaponArmor(state, unitId), rangeMm: weapon.rangeMm };
 }
 
 function finishJob(state: GameState, encounterId: string, at: number): void {

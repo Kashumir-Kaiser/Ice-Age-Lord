@@ -9,6 +9,10 @@ export const EVENT_SHOP_MARK_PRICE = 5;
 export const EVENT_SHOP_INITIAL_STOCK = 10;
 const CLAIM_WINDOW_MS = 7 * 24 * 60 * 60 * 1_000;
 
+export function eventRewardReceiptId(state: Pick<GameState, 'saveId' | 'player'>, eventId: string): string {
+  return `EVENT-REWARD:${state.saveId}:${eventId}:${state.player.id}:${EVENT_REWARD_RULE_VERSION}:KRONA`;
+}
+
 export function initialEventProgress(world: WorldDefinition): EventProgressState[] {
   return world.eventSchedule.flatMap(event => eventMechanicsFor(event.id) ? [{
     eventId: event.id,
@@ -41,10 +45,9 @@ export function recordEventActivities(
   sourceEvents: readonly { type: string; occurredAtElapsedMs: number; payload: Record<string, unknown> }[],
 ): { state: GameState; events: readonly Omit<CommandEvent, 'sequence'>[] } {
   if (sourceEvents.length === 0 || state.eventProgress.length === 0) return { state, events: [] };
-  const next = structuredClone(state);
   const updates = new Map<string, { points: number; sources: string[] }>();
   for (const source of sourceEvents) {
-    for (const row of next.calendar) {
+    for (const row of state.calendar) {
       if (row.status !== 'active' || source.occurredAtElapsedMs >= row.locksAtMs) continue;
       const rule = eventMechanicsFor(row.id);
       if (!rule) continue;
@@ -56,10 +59,12 @@ export function recordEventActivities(
       updates.set(row.id, current);
     }
   }
+  if (!updates.size) return { state, events: [] };
+
   const events: Omit<CommandEvent, 'sequence'>[] = [];
+  let changed = false;
   const occurredAtElapsedMs = sourceEvents.at(-1)?.occurredAtElapsedMs ?? state.simElapsedMs;
-  if (!updates.size) return { state, events };
-  next.eventProgress = next.eventProgress.map(progress => {
+  const eventProgress = state.eventProgress.map(progress => {
     const update = updates.get(progress.eventId);
     if (!update || progress.outcome !== 'unsettled') return progress;
     const rule = eventMechanicsFor(progress.eventId)!;
@@ -74,9 +79,10 @@ export function recordEventActivities(
       sourceEventTypes: [...new Set(update.sources)].sort(),
       ruleVersion: EVENT_MECHANICS_RULE_VERSION,
     }));
+    changed = true;
     return { ...progress, objectiveProgress, score: progress.score + scoreDelta, participated: true };
   });
-  return { state: next, events };
+  return changed ? { state: { ...state, eventProgress }, events } : { state, events: [] };
 }
 
 export function settleEventOutcome(state: GameState, eventId: string, at: number) {
@@ -214,10 +220,13 @@ function adjustKrona(state: GameState, amount: number): void {
 export function claimEventReward(state: GameState, eventId: string, commandId: string) {
   const progress = state.eventProgress.find(item => item.eventId === eventId);
   const calendar = state.calendar.find(item => item.id === eventId);
-  if (!progress || !calendar || calendar.status !== 'resolved' || progress.outcome !== 'success' || progress.rewardKrona <= 0) {
+  if (!progress || !calendar || !eventMechanicsFor(eventId)) {
     return { state, events: [], code: 'EVENT_REWARD_NOT_CLAIMABLE', message: 'A completed event objective with a pending reward is required.' };
   }
-  if (progress.claimReceiptId) return { state, events: [], code: 'EVENT_REWARD_ALREADY_CLAIMED', message: 'This event reward was already claimed.' };
+  if (progress.claimReceiptId || progress.outcome === 'claimed') return { state, events: [], code: 'EVENT_REWARD_ALREADY_CLAIMED', message: 'This event reward was already claimed.' };
+  if (calendar.status !== 'resolved' || progress.outcome !== 'success' || progress.rewardKrona <= 0) {
+    return { state, events: [], code: 'EVENT_REWARD_NOT_CLAIMABLE', message: 'A completed event objective with a pending reward is required.' };
+  }
   if (progress.claimExpiresAtElapsedMs === null || state.simElapsedMs >= progress.claimExpiresAtElapsedMs) {
     const next = structuredClone(state);
     next.eventProgress = next.eventProgress.map(item => item.eventId === eventId ? { ...item, outcome: 'expired' } : item);
@@ -225,13 +234,15 @@ export function claimEventReward(state: GameState, eventId: string, commandId: s
   }
   const next = structuredClone(state);
   adjustKrona(next, progress.rewardKrona);
+  const receiptId = eventRewardReceiptId(state, eventId);
   next.eventProgress = next.eventProgress.map(item => item.eventId === eventId ? {
-    ...item, outcome: 'claimed', claimReceiptId: commandId,
+    ...item, outcome: 'claimed', claimReceiptId: receiptId,
   } : item);
   return {
     state: next,
     events: [emit('event_reward_claimed', state.simElapsedMs, {
-      eventId, commandId, amount: progress.rewardKrona, currencyId: 'KRONA', ruleVersion: EVENT_REWARD_RULE_VERSION,
+      eventId, commandId, receiptId, participantId: state.player.id, rewardId: `${EVENT_REWARD_RULE_VERSION}:KRONA`,
+      amount: progress.rewardKrona, currencyId: 'KRONA', ruleVersion: EVENT_REWARD_RULE_VERSION,
     })],
     code: null,
     message: `Claimed ${progress.rewardKrona} Krona from ${eventId}.`,

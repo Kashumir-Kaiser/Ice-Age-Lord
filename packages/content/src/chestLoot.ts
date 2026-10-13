@@ -1,6 +1,7 @@
 import type { FieldChest } from '../../contracts/src/index.ts';
 
-export const CHEST_LOOT_RULE_VERSION = 'LL01-CHEST-POOL-RARITY-TYPE-1.0' as const;
+export const LEGACY_CHEST_LOOT_RULE_VERSION = 'LL01-CHEST-POOL-RARITY-TYPE-1.0' as const;
+export const CHEST_LOOT_RULE_VERSION = 'LL01-CHEST-POOL-RARITY-TYPE-1.1' as const;
 
 export type LootEntry = {
   templateId: string;
@@ -28,12 +29,35 @@ const ordinary = (templateId: string, weightPermille: number, minimumQuantity = 
   templateId, weightPermille, minimumQuantity, maximumQuantity, eventId: null,
 });
 
+// Bot construction blueprints are physical loot items in the same field chest
+// tables used by player chests.  Bots therefore learn them from the persisted
+// chest outcome rather than from a second, bot-only search roll.
+const BOT_BLUEPRINT_LOOT = [
+  'BP-BOT-FARM', 'BP-BOT-WOOD-MILL', 'BP-BOT-QUARRY', 'BP-BOT-BARRACKS',
+  'BP-BOT-WATCHTOWER', 'BP-BOT-WALL', 'BP-BOT-INFIRMARY', 'BP-BOT-WORKSHOP',
+] as const;
+
+function fieldEntries(entries: readonly LootEntry[], blueprintWeightEach: number): LootEntry[] {
+  const blueprintWeight = blueprintWeightEach * BOT_BLUEPRINT_LOOT.length;
+  const baseWeight = 1_000 - blueprintWeight;
+  const originalWeight = entries.reduce((sum, entry) => sum + entry.weightPermille, 0);
+  let remaining = baseWeight;
+  const scaled = entries.map((entry, index) => {
+    const weight = index === entries.length - 1
+      ? remaining
+      : Math.floor(entry.weightPermille * baseWeight / originalWeight);
+    remaining -= weight;
+    return { ...entry, weightPermille: weight };
+  });
+  return [...scaled, ...BOT_BLUEPRINT_LOOT.map(id => ordinary(id, blueprintWeightEach))];
+}
+
 const FIELD_TABLES: Readonly<Record<FieldChest['grade'], LootTable>> = {
-  'Mộc': fieldTable('Mộc', 1, [ordinary('WOOD', 500, 1, 2), ordinary('STONE', 300, 1, 2), ordinary('WILD-FOOD', 200)]),
-  'Thanh Đồng': fieldTable('Thanh Đồng', 1, [ordinary('WOOD', 300, 1, 3), ordinary('STONE', 300, 1, 3), ordinary('WILD-FOOD', 200, 1, 2), ordinary('RAW-SALT', 200)]),
-  'Bạch Ngân': fieldTable('Bạch Ngân', 2, [ordinary('STONE', 250, 1, 3), ordinary('RAW-SALT', 250, 1, 2), ordinary('BROWN-COAL', 250, 1, 2), ordinary('RAW-ICE-WATER', 150, 1, 2), ordinary('WILD-FOOD', 100, 1, 2)]),
-  'Hoàng Kim': fieldTable('Hoàng Kim', 2, [ordinary('RAW-SALT', 250, 1, 3), ordinary('BROWN-COAL', 250, 1, 3), ordinary('RAW-ICE-WATER', 200, 1, 3), ordinary('WILD-FOOD', 200, 1, 3), ordinary('STONE', 100, 2, 4)]),
-  'Hạo Nguyệt': fieldTable('Hạo Nguyệt', 3, [ordinary('RAW-SALT', 250, 2, 4), ordinary('BROWN-COAL', 250, 2, 4), ordinary('RAW-ICE-WATER', 200, 2, 4), ordinary('WILD-FOOD', 200, 2, 4), ordinary('STONE', 100, 3, 5)]),
+  'Mộc': fieldTable('Mộc', 1, fieldEntries([ordinary('WOOD', 500, 1, 2), ordinary('STONE', 300, 1, 2), ordinary('WILD-FOOD', 200)], 2)),
+  'Thanh Đồng': fieldTable('Thanh Đồng', 1, fieldEntries([ordinary('WOOD', 300, 1, 3), ordinary('STONE', 300, 1, 3), ordinary('WILD-FOOD', 200, 1, 2), ordinary('RAW-SALT', 200)], 3)),
+  'Bạch Ngân': fieldTable('Bạch Ngân', 2, fieldEntries([ordinary('STONE', 250, 1, 3), ordinary('RAW-SALT', 250, 1, 2), ordinary('BROWN-COAL', 250, 1, 2), ordinary('RAW-ICE-WATER', 150, 1, 2), ordinary('WILD-FOOD', 100, 1, 2)], 5)),
+  'Hoàng Kim': fieldTable('Hoàng Kim', 2, fieldEntries([ordinary('RAW-SALT', 250, 1, 3), ordinary('BROWN-COAL', 250, 1, 3), ordinary('RAW-ICE-WATER', 200, 1, 3), ordinary('WILD-FOOD', 200, 1, 3), ordinary('STONE', 100, 2, 4)], 7)),
+  'Hạo Nguyệt': fieldTable('Hạo Nguyệt', 3, fieldEntries([ordinary('RAW-SALT', 250, 2, 4), ordinary('BROWN-COAL', 250, 2, 4), ordinary('RAW-ICE-WATER', 200, 2, 4), ordinary('WILD-FOOD', 200, 2, 4), ordinary('STONE', 100, 3, 5)], 9)),
 };
 
 const EVENT_IDS = [

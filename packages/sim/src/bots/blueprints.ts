@@ -1,6 +1,6 @@
 import type { BotResourceKey } from '../../../contracts/src/index.ts';
 
-export const BOT_BLUEPRINT_RULES_VERSION = 'BOT-BLUEPRINT-POOL-1.1';
+export const BOT_BLUEPRINT_RULES_VERSION = 'BOT-BLUEPRINT-OWNERSHIP-1.2';
 
 export type BotBlueprintRule = {
   id: string;
@@ -26,15 +26,6 @@ export const BOT_BLUEPRINTS: readonly BotBlueprintRule[] = [
 ] as const;
 
 export const BOT_BLUEPRINT_BY_ID = new Map(BOT_BLUEPRINTS.map(rule => [rule.id, rule]));
-export const BOT_BLUEPRINT_LOOT_RULES = BOT_BLUEPRINTS.map(rule => ({
-  blueprintId: rule.id,
-  tier: rule.tier,
-  candidates: rule.eligibleSearchKinds,
-  baseWeight: rule.kind === 'farm' || rule.kind === 'mill' || rule.kind === 'quarry' ? 24
-    : rule.kind === 'workshop' ? 14 : rule.kind === 'infirmary' ? 10 : rule.tier === 1 ? 12 : 5,
-  duplicatePolicy: 'record_without_compensation' as const,
-}));
-
 export function countActiveBlueprints(records: readonly { blueprintId: string; status: string }[], kind: BotBlueprintRule['kind']): number {
   const ids = new Set(BOT_BLUEPRINTS.filter(rule => rule.kind === kind).map(rule => rule.id));
   return records.filter(record => ids.has(record.blueprintId) && record.status !== 'destroyed').length;

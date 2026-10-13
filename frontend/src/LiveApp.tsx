@@ -10,6 +10,7 @@ import type {
 } from '../../packages/contracts/src/index.ts';
 import type { PlayerEvent, SaveSummary } from '../../packages/contracts/src/api.ts';
 import { MarkerGraphic } from './map/MapLayers';
+import { BotSettlementScene } from './map/BotSettlementScene';
 import { entityRefKey, GameApiError, HttpGameClient } from './live/HttpGameClient';
 import { SaveResponseScopeGate } from './live/saveScope';
 import { LIVE_SCREENS, type LiveScreen } from './live/screens';
@@ -27,7 +28,7 @@ type Screen = LiveScreen;
 type Feedback = { kind: 'idle' | 'saving' | 'committed' | 'rejected' | 'disconnected'; text: string };
 const SAVE_KEY = 'ice-age-lord.live.last-save';
 const CREATE_KEY_PREFIX = 'ice-age-lord.live.create-key:';
-const RESOURCE_CARGO_IDS = new Set(['WOOD', 'STONE', 'RAW-ICE-WATER', 'BROWN-COAL', 'RAW-SALT', 'WILD-FOOD']);
+const RESOURCE_CARGO_IDS = new Set(['WOOD', 'STONE', 'ORE', 'POTABLE-WATER', 'FIREWOOD', 'RAW-ICE-WATER', 'BROWN-COAL', 'RAW-SALT', 'WILD-FOOD']);
 const ITEM_ART_BY_TEMPLATE: Readonly<Record<string, string>> = {
   WOOD: 'wood', STONE: 'stone', ORE: 'ore', BREAD: 'bread', 'WOODEN-STAFF': 'staff',
   'STONE-AXE': 'axe', 'STONE-HAMMER': 'stone-hammer', 'IRON-POT': 'iron-pot',
@@ -840,6 +841,17 @@ function LiveApp() {
               {!selectedEntity.chestLoot.opened && <ul>{selectedEntity.chestLoot.odds.map(odds => <li key={odds.templateId}><span>{odds.templateId}</span><span>{(odds.chanceAtLeastOncePermille / 10).toFixed(1)}% chance · {odds.perRollPermille / 10}% per roll</span></li>)}</ul>}
               {selectedEntity.chestLoot.opened && selectedEntity.chestLoot.outcome && <ul>{selectedEntity.chestLoot.outcome.map(item => <li key={item.templateId}><span>{item.templateId}</span><span>×{item.quantity}</span></li>)}</ul>}
             </div>}
+          {selectedEntity.remainsAssets && <div className="live-chest-loot" data-testid="bot-remains-inspector">
+            <strong>Recorded assets · {selectedEntity.remainsAssets.state}</strong>
+            {selectedEntity.remainsAssets.state === 'claimed' && <small>Claimed by {selectedEntity.remainsAssets.claimedById ?? 'unknown actor'}.</small>}
+            <ul>
+              {Object.entries(selectedEntity.remainsAssets.resourceMicro).filter(([, amount]) => amount > 0).map(([resource, amount]) => <li key={resource}><span>{resource}</span><span>{(amount / 1_000_000).toLocaleString()} units</span></li>)}
+              {selectedEntity.remainsAssets.waterMicro > 0 && <li><span>Potable water</span><span>{(selectedEntity.remainsAssets.waterMicro / 1_000_000).toLocaleString()} L</span></li>}
+              {selectedEntity.remainsAssets.firewoodMicro > 0 && <li><span>Firewood</span><span>{(selectedEntity.remainsAssets.firewoodMicro / 1_000_000).toLocaleString()} units</span></li>}
+              {selectedEntity.remainsAssets.items.map(item => <li key={item.instanceId}><span>{item.itemTemplateId}</span><span>×{item.quantity}</span></li>)}
+              {selectedEntity.remainsAssets.blueprintIds.map(blueprintId => <li key={blueprintId}><span>Blueprint · {blueprintId}</span><span>×1</span></li>)}
+            </ul>
+          </div>}
           <div className="live-action-stack">
             {selectedInspect && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !selectedInspect.enabled} onClick={() => void runInspection(selectedEntity)}><Eye size={16} /> Kiểm tra</button>}
             {selectedCorpse?.inspected && <div><p>Thi thể: Bậc {selectedCorpse.tier ?? '—'} · Cấp {selectedCorpse.level ?? '—'} · Phẩm {selectedCorpse.grade ?? '—'} · nguyên vẹn {selectedCorpse.integrity ?? '—'}%</p>
@@ -852,8 +864,8 @@ function LiveApp() {
             {selectedBuilding && <button className="live-button live-button--secondary" onClick={() => { setFocusedConstructionBuildingId(selectedBuilding.id); setScreen('buildings'); }}><Hammer size={16} /> Open {selectedBuilding.name} inspector</button>}
             {selectedEntity.ref.type === 'site' && selectedEntity.ref.id === 'SITE-LL01-000' && <button className="live-button live-button--secondary" onClick={() => { setFocusedConstructionBuildingId(null); setScreen('buildings'); }}><Hammer size={16} /> Open H0 construction inspector</button>}
             {selectedOpen && <small>{availabilityMessage(selectedOpen)}</small>}
-            {selectedEntity.ref.type === 'cache' && selectedEntity.chestLoot && <button className="live-button" disabled={working || Boolean(pendingCommand) || !selectedOpen?.enabled || selectedEntity.chestLoot.opened}
-              onClick={() => void sendCommand(commandFor(view, 'open_cache', { actorId: view.player.id, chestId: selectedEntity.ref.id }))}>Open chest · commit displayed odds</button>}
+            {selectedEntity.ref.type === 'cache' && selectedOpen && <button className="live-button" disabled={working || Boolean(pendingCommand) || !selectedOpen.enabled || Boolean(selectedEntity.chestLoot?.opened)}
+              onClick={() => void sendCommand(commandFor(view, 'open_cache', { actorId: view.player.id, chestId: selectedEntity.ref.id }))}>{selectedEntity.chestLoot ? 'Open chest · commit displayed odds' : 'Claim recorded assets'}</button>}
             {selectedInspect && !selectedInspect.enabled && <small>{availabilityMessage(selectedInspect)}</small>}
             {selectedMove && !selectedMove.enabled && <small>{availabilityMessage(selectedMove)}</small>}
             {selectedHarvest && !selectedHarvest.enabled && <small>{availabilityMessage(selectedHarvest)}</small>}
@@ -989,7 +1001,7 @@ function LiveApp() {
                 if (bot.knowledge === 'current') void sendCommand(commandFor(view, 'inspect_entity', { entity: { type: 'bot', id: bot.botId } }));
                 else setFeedback({ kind: 'idle', text: 'Return the settlement to current sight to inspect it.' });
               }}
-              aria-label={bot.label} title={bot.label}><MapPin size={19} aria-hidden="true" /><span>{bot.label}</span></button>;
+              aria-label={`${bot.label} · ${bot.status}`} title={`${bot.label} · ${bot.status}`}><MapPin size={19} aria-hidden="true" /><span>{bot.label} · {bot.status.replaceAll('_', ' ')}</span></button>;
           })}
           {(view.visibleMap.enemyArmies ?? []).map(army => {
             const projected = point(army.position);
@@ -1010,11 +1022,26 @@ function LiveApp() {
           {destination && (() => { const projected = point(destination); return <span className="live-map-destination" style={{ left: `${projected.x}%`, top: `${projected.y}%` }} title="Selected destination" />; })()}
           {view.visibleMap.entities.length === 0 && !(view.visibleMap.enemyBots?.length) && !(view.visibleMap.enemyArmies?.length) && <p className="live-map-empty">No explored map entities are known yet.</p>}
         </div>
-        {view.botInspection && <section className="live-bot-inspection" data-testid="bot-settlement-inspection">
+        <section className="live-bot-inspection" data-testid="bot-settlement-inspection" hidden={!view.botInspection}>
+          {view.botInspection && <>
           <strong>{view.botInspection.name}</strong>
           <span>Level {view.botInspection.level} · population {view.botInspection.population} · {view.botInspection.talent?.grade} {view.botInspection.talent?.kind}</span>
+          {view.botInspection.lord && <span data-testid="bot-lord-condition">Lord {view.botInspection.lord.alive ? 'alive' : 'dead'} · {view.botInspection.lord.hp.toFixed(1)}/{view.botInspection.lord.maxHp} HP · food gap {view.botInspection.lord.foodShortfallHours.toFixed(1)} h · water gap {view.botInspection.lord.waterShortfallHours.toFixed(1)} h · cold load {view.botInspection.lord.coldLoad.toFixed(1)}{view.botInspection.lord.cause ? ` · cause ${view.botInspection.lord.cause}` : ''}</span>}
           <span>Army {(view.botInspection.army ?? []).reduce((sum, cohort) => sum + cohort.livingCount, 0)} · structures {(view.botInspection.structures ?? []).filter(item => item.status !== 'destroyed').length}</span>
-          <span>Food {view.botInspection.resourceBalances?.food ?? 0} · wood {view.botInspection.resourceBalances?.wood ?? 0} · stone {view.botInspection.resourceBalances?.stone ?? 0} · ore {view.botInspection.resourceBalances?.ore ?? 0}</span>
+          <span>Food {view.botInspection.resourceBalances?.food ?? 0} · water {view.botInspection.resourceBalances?.water ?? 0} L · wood {view.botInspection.resourceBalances?.wood ?? 0} · firewood {view.botInspection.resourceBalances?.firewood ?? 0} · stone {view.botInspection.resourceBalances?.stone ?? 0} · ore {view.botInspection.resourceBalances?.ore ?? 0}</span>
+          <div className="live-action-stack">
+            {view.botInspection.attackActorIds.length > 0 && <label className="live-inline-field">Attacker <select
+              value={view.botInspection.attackActorIds.includes(combatActorId) ? combatActorId : view.botInspection.attackActorIds[0]}
+              onChange={event => setCombatActorId(event.target.value)}>
+              {view.botInspection.attackActorIds.map(actorId => <option key={actorId} value={actorId}>{view.units.find(unit => unit.id === actorId)?.name ?? actorId}</option>)}
+            </select></label>}
+            <button className="live-button" disabled={working || Boolean(pendingCommand) || !view.botInspection.attack.enabled || view.botInspection.attackActorIds.length === 0}
+              onClick={() => {
+                const actorId = view.botInspection!.attackActorIds.includes(combatActorId) ? combatActorId : view.botInspection!.attackActorIds[0];
+                if (actorId) void sendCommand(commandFor(view, 'attack', { actorIds: [actorId], targetId: view.botInspection!.botId }));
+              }}>Attempt personal attack</button>
+            {!view.botInspection.attack.enabled && <small>{availabilityMessage(view.botInspection.attack)}</small>}
+          </div>
           <div><strong>Structures</strong><ul>{(view.botInspection.structures ?? []).map(structure => <li key={structure.id}>
             {structure.blueprintId} · level {structure.level} · {structure.status}{structure.status === 'under_construction' ? ` · ${Math.floor(structure.workCompleted * 100 / Math.max(1, structure.workRequired))}%`
               : structure.status === 'damaged' && structure.repairWorkRequired > 0 ? ` · repair ${Math.floor(structure.repairWorkCompleted * 100 / structure.repairWorkRequired)}%` : ''}
@@ -1022,7 +1049,9 @@ function LiveApp() {
           <div><strong>Army cohorts</strong><ul>{(view.botInspection.army ?? []).map(cohort => <li key={cohort.id}>
             {cohort.livingCount} · {cohort.templateId} · level {cohort.level} · {cohort.order}
           </li>)}</ul></div>
-        </section>}
+          </>}
+          <BotSettlementScene inspection={view.botInspection} />
+        </section>
         {destination && <div className="live-destination-preview">
           <div><strong>Destination preview</strong><span>{destination.xMm}, {destination.yMm} mm · {destinationAvailability?.preview?.value ?? (destinationAvailability ? availabilityMessage(destinationAvailability) : 'Calculating…')}</span></div>
           <button className="live-button" disabled={working || Boolean(pendingCommand) || !destinationAvailability?.enabled} onClick={() => void sendCommand(commandFor(view, 'move', { actorId: view.player.id, destination }))}>Start travel</button>

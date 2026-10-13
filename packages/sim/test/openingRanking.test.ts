@@ -9,6 +9,7 @@ import {
   OPENING_LEVEL_RIVALS,
   forecastOpeningRival,
   openingLevelRewardBand,
+  openingRankedRowById,
   rankOpeningLevelCompletions,
   visibleOpeningLevelRows,
   type OpeningLevelCompletion,
@@ -52,7 +53,13 @@ test('opening ranking ties use stable player ID, retain at most 100 rows, and re
     playerId: `P-${String(index).padStart(3, '0')}`, realName: `P${index}`, level: 10,
     progressToNextLevelPermille: 0, completionAtElapsedMs: index,
   }));
-  assert.equal(rankOpeningLevelCompletions(crowd).length, OPENING_LEVEL_MAX_ROWS);
+  const top100 = rankOpeningLevelCompletions(crowd);
+  const rankById = Object.fromEntries(top100.map(row => [row.playerId, row.rank]));
+  assert.equal(top100.length, OPENING_LEVEL_MAX_ROWS);
+  assert.equal(openingRankedRowById(top100, rankById, 'P-050')?.rank, 51);
+  assert.equal(openingRankedRowById(top100, rankById, 'P-100'), null, 'non-top-100 participants have no rank row');
+  assert.equal(openingRankedRowById(top100, rankById, 'ABSENT'), null);
+  assert.equal(openingRankedRowById(top100, { 'P-050': 52 }, 'P-050'), null, 'stale rank indexes do not return another participant');
   assert.equal(openingLevelRewardBand(1)?.payload.find(item => item.item === 'meat')?.quantity, 200);
   assert.equal(openingLevelRewardBand(51)?.payload.find(item => item.item === 'bread')?.quantity, 20);
   assert.equal(openingLevelRewardBand(101), null);

@@ -112,6 +112,22 @@ export type OpeningLevelCompletion = {
 
 export type OpeningLevelRow = OpeningLevelCompletion & { rank: number };
 
+export function openingRankIndex<T extends { playerId: string; rank: number }>(rows: readonly T[]): Readonly<Record<string, number>> {
+  return Object.fromEntries(rows.map(row => [row.playerId, row.rank]));
+}
+
+/** O(1) top-100 ID lookup; IDs absent from the bounded board have no rank row. */
+export function openingRankedRowById<T extends { playerId: string; rank: number }>(
+  rows: readonly T[],
+  rankById: Readonly<Record<string, number>>,
+  playerId: string,
+): T | null {
+  const rank = rankById[playerId];
+  if (!Number.isSafeInteger(rank) || rank! < 1 || rank! > rows.length) return null;
+  const row = rows[rank! - 1];
+  return row?.playerId === playerId && row.rank === rank ? row : null;
+}
+
 function compareCompletion(a: OpeningLevelCompletion, b: OpeningLevelCompletion): number {
   return a.completionAtElapsedMs - b.completionAtElapsedMs || (a.playerId < b.playerId ? -1 : a.playerId > b.playerId ? 1 : 0);
 }

@@ -12,7 +12,7 @@ import { createNewGame } from '../src/initializer.ts';
 import { previewCommand, reduceCommand } from '../src/reducer.ts';
 import { advanceTo, DAY_MS, HOUR_MS } from '../src/time.ts';
 import { deterministicChestOutcome } from '../src/chestLoot.ts';
-import { recordEventActivities } from '../src/eventRuntime.ts';
+import { eventRewardReceiptId, recordEventActivities } from '../src/eventRuntime.ts';
 import { initialWildlifeState, replenishWildlife, WILDLIFE_RULE_VERSION } from '../src/wildlife.ts';
 import { projectPlayerView } from '../src/view.ts';
 import { upgradeGameState } from '../src/upgrade.ts';
@@ -153,7 +153,17 @@ test('EV19 records one server-side path, settles a claimable result, and pays on
   const claim = submit(active, 'stage10-claim-event', 'claim_event_reward', { eventId: row.id });
   assert.equal(claim.receipt.accepted, true);
   assert.equal(claim.state.eventProgress.find(progress => progress.eventId === row.id)?.outcome, 'claimed');
+  assert.equal(claim.state.eventProgress.find(progress => progress.eventId === row.id)?.claimReceiptId, eventRewardReceiptId(active, row.id));
   assert.equal(claim.state.currency.find(balance => balance.currencyId === 'KRONA')?.amount, 10);
+  const reloaded = upgradeGameState(claim.state, world);
+  assert.equal(reloaded.eventProgress.find(progress => progress.eventId === row.id)?.claimReceiptId, eventRewardReceiptId(active, row.id));
+  const newRequestRetry = reduceCommand(reloaded, {
+    schemaVersion: 1, saveId: active.saveId, commandId: 'stage10-claim-event-new-command-id', expectedRevision: reloaded.revision,
+    type: 'claim_event_reward', payload: { eventId: row.id },
+  }, world);
+  assert.equal(newRequestRetry.receipt.accepted, false);
+  assert.equal(newRequestRetry.receipt.code, 'EVENT_REWARD_ALREADY_CLAIMED');
+  assert.equal(newRequestRetry.state.currency.find(balance => balance.currencyId === 'KRONA')?.amount, 10);
   const retry = reduceCommand(claim.state, {
     schemaVersion: 1, saveId: active.saveId, commandId: 'stage10-claim-event', expectedRevision: active.revision,
     type: 'claim_event_reward', payload: { eventId: row.id },

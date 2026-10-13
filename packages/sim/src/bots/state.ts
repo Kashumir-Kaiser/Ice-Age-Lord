@@ -5,11 +5,15 @@ import { canonicalStateHash, canonicalStateHashFromStableJson } from '../hash.ts
 import { BOT_TERRITORY_RULE_VERSION } from './territory.ts';
 import { BOT_MARKET_RULE_VERSION as MARKET_RULE_VERSION } from './market.ts';
 import { BOT_WEATHER_RULE_VERSION } from './weather.ts';
+import { BOT_LORD_RULE_VERSION, createBotLord } from './lord.ts';
+import { BOT_BLUEPRINT_RULES_VERSION } from './blueprints.ts';
+import { CHEST_LOOT_RULE_VERSION, LEGACY_CHEST_LOOT_RULE_VERSION } from '../../../content/src/chestLoot.ts';
 
-export const BOT_GENERATION_VERSION = 'BOT-P0-GENERATION-1.3';
-export const BOT_SIMULATION_RULE_VERSION = 'BOT-AUTHORITATIVE-SIM-1.11';
+export const BOT_GENERATION_VERSION = 'BOT-P0-GENERATION-1.4';
+export const BOT_SIMULATION_RULE_VERSION = 'BOT-AUTHORITATIVE-SIM-1.13';
 export const BOT_PLANNER_RULE_VERSION = 'BOT-UTILITY-GOALS-1.7';
-export const BOT_BLUEPRINT_RULE_VERSION = 'BOT-BLUEPRINT-POOL-1.1';
+// Keep saved blueprint ownership and its action receipts on the same canonical rule version.
+export const BOT_BLUEPRINT_RULE_VERSION = BOT_BLUEPRINT_RULES_VERSION;
 export const BOT_TALENT_RULE_VERSION = 'BOT-TALENT-P0-1.1';
 export const BOT_ACTIVITY_XP_RULE_VERSION = 'BOT-ACTION-XP-1.5';
 export const BOT_TALENT_XP_RULE_VERSION = 'BOT-TALENT-XP-P0-1.0';
@@ -22,7 +26,8 @@ export const BOT_EQUIPMENT_RULE_VERSION = 'BOT-EQUIPMENT-OVERLAY-1.0';
 export const BOT_RECOVERY_RULE_VERSION = 'BOT-COHORT-RECOVERY-1.0';
 export const BOT_EVENT_REWARD_RULE_VERSION = 'BOT-OPENING-REWARD-ECONOMY-1.1';
 export const BOT_SHARED_WILDLIFE_RULE_VERSION = 'BOT-REGIONAL-WILDLIFE-STOCK-1.0';
-export const BOT_SURVIVAL_RULE_VERSION = 'BOT-FROZEN-WATER-LORD-SURVIVAL-1.0';
+export const BOT_SURVIVAL_RULE_VERSION = 'BOT-FROZEN-WATER-LORD-SURVIVAL-1.1';
+export { BOT_LORD_RULE_VERSION };
 export const BOT_CHEST_RULE_VERSION = 'BOT-SHARED-FIELD-CHEST-1.0';
 export const BOT_MARKET_RULE_VERSION = MARKET_RULE_VERSION;
 export { BOT_WEATHER_RULE_VERSION };
@@ -400,7 +405,9 @@ function hasZeroUnitMovement(population: BotPopulationState): boolean {
 
 export function botPopulationNeedsMigration(population: BotPopulationState | null | undefined): boolean {
   if (!population) return false;
-  return population.rulesVersion === 'BOT-AUTHORITATIVE-SIM-1.5' && population.plannerRuleVersion === 'BOT-UTILITY-GOAP-1.2'
+  return population.generationVersion !== BOT_GENERATION_VERSION
+    || !Array.isArray(population.activeLordOrdinals) || population.activeLordOrdinals.length !== population.livingLordCount
+    || population.rulesVersion === 'BOT-AUTHORITATIVE-SIM-1.5' && population.plannerRuleVersion === 'BOT-UTILITY-GOAP-1.2'
     || population.rulesVersion === 'BOT-AUTHORITATIVE-SIM-1.6' && population.plannerRuleVersion === 'BOT-UTILITY-GOALS-1.3'
     || population.rulesVersion === 'BOT-AUTHORITATIVE-SIM-1.7' && population.plannerRuleVersion === 'BOT-UTILITY-GOALS-1.4'
     || population.rulesVersion === 'BOT-AUTHORITATIVE-SIM-1.8' && population.plannerRuleVersion === 'BOT-UTILITY-GOALS-1.5'
@@ -408,10 +415,12 @@ export function botPopulationNeedsMigration(population: BotPopulationState | nul
     || population.rulesVersion === 'BOT-AUTHORITATIVE-SIM-1.10' && population.plannerRuleVersion === 'BOT-UTILITY-GOALS-1.7'
     || population.survivalRuleVersion !== BOT_SURVIVAL_RULE_VERSION || hasZeroUnitMovement(population)
     || population.marketRuleVersion !== BOT_MARKET_RULE_VERSION || population.territoryRuleVersion !== BOT_TERRITORY_RULE_VERSION
-    || population.weatherRuleVersion !== BOT_WEATHER_RULE_VERSION
+    || population.weatherRuleVersion !== BOT_WEATHER_RULE_VERSION || population.lordRuleVersion !== BOT_LORD_RULE_VERSION
+    || !Array.isArray(population.remainsChests) || !Number.isSafeInteger(population.livingLordCount)
     || population.eventRewardRuleVersion !== BOT_EVENT_REWARD_RULE_VERSION
     || !Array.isArray(population.rewardReceipts)
     || population.rewardReceipts.some(receipt => receipt.items.some(item => !('status' in item) || !('blocker' in item)))
+    || !Array.isArray(population.boardSnapshots) || population.boardSnapshots.some(snapshot => !snapshot.rankById)
     || !Array.isArray(population.marketListings) || !Array.isArray(population.marketTransactions)
     || population.chunks.some(chunk => chunk.cold.some(cold => !cold.casualtiesByCause || !Array.isArray(cold.blueprintItems)
       || !Array.isArray(cold.ownedChests) || !Array.isArray(cold.inventoryItems) || !Number.isSafeInteger(cold.territoryLevel)
@@ -421,6 +430,10 @@ export function botPopulationNeedsMigration(population: BotPopulationState | nul
 
 /** Upgrades known bot rules prospectively, adds no historical supplies or exposure, and repairs zero-unit routes. */
 export function migrateBotPopulation(population: BotPopulationState): BotPopulationState {
+  const generationMigration = population.generationVersion !== BOT_GENERATION_VERSION;
+  const activeLordIndexMigration = !Array.isArray(population.activeLordOrdinals)
+    || population.activeLordOrdinals.length !== population.livingLordCount;
+  const boardIndexMigration = !Array.isArray(population.boardSnapshots) || population.boardSnapshots.some(snapshot => !snapshot.rankById);
   const legacyRules = population.rulesVersion === 'BOT-AUTHORITATIVE-SIM-1.5' && population.plannerRuleVersion === 'BOT-UTILITY-GOAP-1.2'
     || population.rulesVersion === 'BOT-AUTHORITATIVE-SIM-1.6' && population.plannerRuleVersion === 'BOT-UTILITY-GOALS-1.3'
     || population.rulesVersion === 'BOT-AUTHORITATIVE-SIM-1.7' && population.plannerRuleVersion === 'BOT-UTILITY-GOALS-1.4'
@@ -435,28 +448,100 @@ export function migrateBotPopulation(population: BotPopulationState): BotPopulat
     || !Array.isArray(population.marketListings) || !Array.isArray(population.marketTransactions);
   const movementRepair = hasZeroUnitMovement(population);
   const casualtyMigration = population.chunks.some(chunk => chunk.cold.some(cold => !cold.casualtiesByCause));
+  const lordMigration = population.lordRuleVersion !== BOT_LORD_RULE_VERSION || !Number.isSafeInteger(population.livingLordCount)
+    || population.chunks.some(chunk => chunk.cold.some(cold => !cold.lord || !('retreatRoute' in cold.lord)
+      || !Number.isSafeInteger(cold.lord.retreatDistanceMm) || !Number.isSafeInteger(cold.lord.retreatProgressMm)
+      || !Number.isSafeInteger(cold.lord.retreatSpeedMmPerHour) || !Number.isSafeInteger(cold.lord.retreatTravelRemainder)
+      || !('retreatStartedAtElapsedMs' in cold.lord) || !('retreatThreatActorId' in cold.lord)
+      || !('retreatThreatPosition' in cold.lord) || !('retreatDestination' in cold.lord)
+      || !('encounterThreatActorId' in cold.lord) || !('encounterThreatPosition' in cold.lord)
+      || !Number.isSafeInteger(cold.lord.carriedFoodConsumptionRemainder)
+      || cold.lord.carriedFoodConsumptionRemainder < 0 || cold.lord.carriedFoodConsumptionRemainder >= 20
+      || !Number.isSafeInteger(cold.lord.carriedWaterConsumptionRemainder)
+      || cold.lord.carriedWaterConsumptionRemainder < 0 || cold.lord.carriedWaterConsumptionRemainder >= 216));
   const blueprintItemMigration = population.chunks.some(chunk => chunk.cold.some(cold => !Array.isArray(cold.blueprintItems)
     || !Array.isArray(cold.ownedChests) || !Array.isArray(cold.inventoryItems) || !Number.isSafeInteger(cold.territoryLevel)));
   const chunks = population.chunks.slice() as BotStateChunk[];
-  if (legacyRules || survivalMetadataMigration || rewardMetadataMigration || movementRepair || blueprintItemMigration || casualtyMigration) for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
+  if (legacyRules || survivalMetadataMigration || rewardMetadataMigration || movementRepair || blueprintItemMigration || casualtyMigration || lordMigration) for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
     const chunk = chunks[chunkIndex]!;
     const hasInvalidMovement = chunk.cold.some(cold => cold.armyMovement?.unitCount === 0);
+    const hasMissingLord = chunk.cold.some(cold => !cold.lord);
     const needsRowUpgrade = legacyRules || survivalMetadataMigration || chunk.cold.some(cold => !cold.casualtiesByCause || !Array.isArray(cold.blueprintItems)
+      || !cold.lord || !('retreatRoute' in cold.lord)
+      || !Number.isSafeInteger(cold.lord.retreatDistanceMm) || !Number.isSafeInteger(cold.lord.retreatProgressMm)
+      || !Number.isSafeInteger(cold.lord.retreatSpeedMmPerHour) || !Number.isSafeInteger(cold.lord.retreatTravelRemainder)
+      || !('retreatStartedAtElapsedMs' in cold.lord) || !('retreatThreatActorId' in cold.lord)
+      || !('retreatThreatPosition' in cold.lord) || !('retreatDestination' in cold.lord)
+      || !('encounterThreatActorId' in cold.lord) || !('encounterThreatPosition' in cold.lord)
       || !Array.isArray(cold.ownedChests) || !Array.isArray(cold.inventoryItems) || !cold.lordFate
       || !Number.isSafeInteger(cold.potableWaterMl) || !Number.isSafeInteger(cold.localIceRemainingMl)
       || !Number.isSafeInteger(cold.waterConsumptionRemainder) || !Number.isSafeInteger(cold.dehydrationExposureMs)
       || !Number.isSafeInteger(cold.lordStarvationExposureMs) || !Number.isSafeInteger(cold.lordDehydrationExposureMs)
       || !Number.isSafeInteger(cold.lordColdExposureMs) || !Number.isSafeInteger(cold.territoryLevel)
+      || !cold.lord || !Number.isSafeInteger(cold.lord.carriedFoodConsumptionRemainder)
+      || cold.lord.carriedFoodConsumptionRemainder < 0 || cold.lord.carriedFoodConsumptionRemainder >= 20
+      || !Number.isSafeInteger(cold.lord.carriedWaterConsumptionRemainder)
+      || cold.lord.carriedWaterConsumptionRemainder < 0 || cold.lord.carriedWaterConsumptionRemainder >= 216
       || !Array.isArray(cold.eventInventory) || cold.eventInventory.some(item => !Number.isSafeInteger(item.appliedQuantity) || !Number.isSafeInteger(item.consumedQuantity)
         || item.ruleVersion !== BOT_EVENT_REWARD_RULE_VERSION));
     if (!hasInvalidMovement && !needsRowUpgrade) continue;
     const needsLegacyCasualtyCount = chunk.cold.some(cold => !cold.casualtiesByCause);
-    const hot = hasInvalidMovement || needsLegacyCasualtyCount ? hydrateBotHotArrays(chunk) : null;
+    const hot = hasInvalidMovement || needsLegacyCasualtyCount || hasMissingLord ? hydrateBotHotArrays(chunk) : null;
     const cold = chunk.cold.slice() as BotColdRecord[];
     const repairedOffsets: number[] = [];
     for (let offset = 0; offset < cold.length; offset += 1) {
       const record = cold[offset]!;
       let next = record;
+      if (!record.lord) {
+        const at = hot?.lastIntegratedAtElapsedMs[offset] ?? 0;
+        // Legacy `alive` and fate fields described settlement disposition,
+        // not resolved personal HP death. Preserve recorded troop losses and
+        // initialize the separate normal-human actor alive at migration time.
+        const lord = createBotLord(record.botId, record.position, at);
+        if (hot) {
+          hot.alive[offset] = 1;
+          hot.nextWakeAtElapsedMs[offset] = Math.max(at + 1, Math.min(hot.nextWakeAtElapsedMs[offset]!, at + BOT_STRATEGIC_LATTICE_MS));
+        }
+        next = { ...next, lord, lordFate: { status: 'active', changedAtElapsedMs: null, cause: null, triggerId: null } };
+        if (!repairedOffsets.includes(offset)) repairedOffsets.push(offset);
+      }
+      if (next.lord && (!Number.isSafeInteger(next.lord.carriedFoodConsumptionRemainder)
+        || next.lord.carriedFoodConsumptionRemainder < 0 || next.lord.carriedFoodConsumptionRemainder >= 20
+        || !Number.isSafeInteger(next.lord.carriedWaterConsumptionRemainder)
+        || next.lord.carriedWaterConsumptionRemainder < 0 || next.lord.carriedWaterConsumptionRemainder >= 216)) {
+        next = { ...next, lord: { ...next.lord,
+          carriedFoodConsumptionRemainder: Number.isSafeInteger(next.lord.carriedFoodConsumptionRemainder)
+            && next.lord.carriedFoodConsumptionRemainder >= 0 && next.lord.carriedFoodConsumptionRemainder < 20 ? next.lord.carriedFoodConsumptionRemainder : 0,
+          carriedWaterConsumptionRemainder: Number.isSafeInteger(next.lord.carriedWaterConsumptionRemainder)
+            && next.lord.carriedWaterConsumptionRemainder >= 0 && next.lord.carriedWaterConsumptionRemainder < 216 ? next.lord.carriedWaterConsumptionRemainder : 0,
+        } };
+        if (!repairedOffsets.includes(offset)) repairedOffsets.push(offset);
+      }
+      if (next.lord && (!('retreatRoute' in next.lord)
+        || !Number.isSafeInteger(next.lord.retreatDistanceMm)
+        || !Number.isSafeInteger(next.lord.retreatProgressMm)
+        || !Number.isSafeInteger(next.lord.retreatSpeedMmPerHour)
+        || !Number.isSafeInteger(next.lord.retreatTravelRemainder)
+        || !('retreatStartedAtElapsedMs' in next.lord)
+        || !('retreatThreatActorId' in next.lord)
+        || !('retreatThreatPosition' in next.lord)
+        || !('retreatDestination' in next.lord)
+        || !('encounterThreatActorId' in next.lord)
+        || !('encounterThreatPosition' in next.lord))) {
+        next = { ...next, lord: {
+          ...next.lord,
+          location: next.lord.location === 'retreating' ? 'field'
+            : next.lord.location === 'encounter' ? 'settlement' : next.lord.location,
+          activity: next.lord.activity === 'retreating' ? 'resting'
+            : next.lord.activity === 'encounter' ? 'at_settlement' : next.lord.activity,
+          activeEncounterId: null,
+          encounterThreatActorId: null, encounterThreatPosition: null,
+          retreatRoute: null, retreatDistanceMm: 0, retreatProgressMm: 0,
+          retreatStartedAtElapsedMs: null, retreatSpeedMmPerHour: 0, retreatTravelRemainder: 0,
+          retreatDestination: null, retreatThreatActorId: null, retreatThreatPosition: null,
+        } };
+        if (!repairedOffsets.includes(offset)) repairedOffsets.push(offset);
+      }
       if (!Array.isArray(record.blueprintItems) || !Array.isArray(record.ownedChests) || !Array.isArray(record.inventoryItems)
         || !record.lordFate || record.potableWaterMl === undefined || record.localIceRemainingMl === undefined
         || record.waterConsumptionRemainder === undefined || record.dehydrationExposureMs === undefined
@@ -531,28 +616,41 @@ export function migrateBotPopulation(population: BotPopulationState): BotPopulat
     status: ('status' in item ? item.status : 'committed') as 'committed' | 'blocked',
     blocker: ('blocker' in item ? item.blocker : null) as string | null,
   })) }));
+  const boardSnapshots = (Array.isArray(population.boardSnapshots) ? population.boardSnapshots : []).map(snapshot => {
+    const { snapshotSha256: _oldHash, ...base } = snapshot;
+    const rankById = snapshot.rankById ?? Object.fromEntries(snapshot.rows.map(row => [row.botId, row.rank]));
+    const nextBase = { ...base, rankById };
+    return { ...nextBase, snapshotSha256: canonicalStateHash(nextBase) };
+  });
   return {
     ...population,
+    generationVersion: BOT_GENERATION_VERSION,
+    activeLordOrdinals: nextChunks.flatMap(chunk => chunk.cold.flatMap((cold, offset) => cold.lord?.lifeState === 'alive'
+      ? [chunk.firstOrdinal + offset] : [])),
     chunks: nextChunks,
     eventRewardRuleVersion: BOT_EVENT_REWARD_RULE_VERSION,
     rewardReceipts,
-    ...(legacyRules ? {
+    boardSnapshots,
+    ...(legacyRules || lordMigration ? {
       rulesVersion: BOT_SIMULATION_RULE_VERSION,
       plannerRuleVersion: BOT_PLANNER_RULE_VERSION,
     } : {}),
     survivalRuleVersion: BOT_SURVIVAL_RULE_VERSION,
     weatherRuleVersion: BOT_WEATHER_RULE_VERSION,
+    lordRuleVersion: BOT_LORD_RULE_VERSION,
     marketRuleVersion: BOT_MARKET_RULE_VERSION,
     territoryRuleVersion: BOT_TERRITORY_RULE_VERSION,
     marketListings: Array.isArray(population.marketListings) ? population.marketListings : [],
     marketTransactions: Array.isArray(population.marketTransactions) ? population.marketTransactions : [],
-    ...(legacyRules || survivalMetadataMigration || rewardMetadataMigration || blueprintItemMigration || casualtyMigration || marketMigration ? { rulesetSha256: canonicalStateHash({ priorRulesetSha256: population.rulesetSha256,
-      migration: 'BOT-POPULATION-RULE-MIGRATION-2.5', rulesVersion: BOT_SIMULATION_RULE_VERSION,
+    remainsChests: Array.isArray(population.remainsChests) ? population.remainsChests : [],
+    livingLordCount: nextChunks.reduce((count, chunk) => count + chunk.cold.filter(cold => cold.lord?.lifeState === 'alive').length, 0),
+    ...(generationMigration || activeLordIndexMigration || boardIndexMigration || legacyRules || survivalMetadataMigration || rewardMetadataMigration || blueprintItemMigration || casualtyMigration || marketMigration || lordMigration ? { rulesetSha256: canonicalStateHash({ priorRulesetSha256: population.rulesetSha256,
+      migration: 'BOT-POPULATION-RULE-MIGRATION-2.7', generationVersion: BOT_GENERATION_VERSION, rulesVersion: BOT_SIMULATION_RULE_VERSION,
       plannerRuleVersion: BOT_PLANNER_RULE_VERSION, survivalRuleVersion: BOT_SURVIVAL_RULE_VERSION, weatherRuleVersion: BOT_WEATHER_RULE_VERSION,
-      marketRuleVersion: BOT_MARKET_RULE_VERSION, eventRewardRuleVersion: BOT_EVENT_REWARD_RULE_VERSION }) } : {}),
-    ...(legacyRules || survivalMetadataMigration || rewardMetadataMigration || movementRepair || blueprintItemMigration || casualtyMigration
+      marketRuleVersion: BOT_MARKET_RULE_VERSION, eventRewardRuleVersion: BOT_EVENT_REWARD_RULE_VERSION, lordRuleVersion: BOT_LORD_RULE_VERSION }) } : {}),
+    ...(legacyRules || survivalMetadataMigration || rewardMetadataMigration || movementRepair || blueprintItemMigration || casualtyMigration || lordMigration
       ? { chunkRootSha256: botPopulationRoot(nextChunks) } : {}),
-    ...(movementRepair ? { schedulerHeap: heapifyBotScheduler(nextChunks.map(chunk => {
+    ...(movementRepair || lordMigration ? { schedulerHeap: heapifyBotScheduler(nextChunks.map(chunk => {
       const wake = computeBotChunkWake(chunk);
       return { atElapsedMs: wake.atElapsedMs, chunkIndex: chunk.index, botOrdinal: wake.botOrdinal };
     })) } : {}),
@@ -643,7 +741,9 @@ export function verifyBotPopulation(population: BotPopulationState): void {
     || population.recoveryRuleVersion !== BOT_RECOVERY_RULE_VERSION || population.eventRewardRuleVersion !== BOT_EVENT_REWARD_RULE_VERSION
     || population.sharedWildlifeRuleVersion !== BOT_SHARED_WILDLIFE_RULE_VERSION || population.survivalRuleVersion !== BOT_SURVIVAL_RULE_VERSION
     || population.territoryRuleVersion !== BOT_TERRITORY_RULE_VERSION || population.marketRuleVersion !== BOT_MARKET_RULE_VERSION
-    || population.weatherRuleVersion !== BOT_WEATHER_RULE_VERSION
+    || population.weatherRuleVersion !== BOT_WEATHER_RULE_VERSION || population.lordRuleVersion !== BOT_LORD_RULE_VERSION
+    || !Array.isArray(population.remainsChests) || !Number.isSafeInteger(population.livingLordCount)
+    || !Array.isArray(population.activeLordOrdinals) || population.activeLordOrdinals.length !== population.livingLordCount
     || !population.saveSeed || !/^[a-f0-9]{64}$/i.test(population.rulesetSha256)
     || !Number.isSafeInteger(population.generatedAtElapsedMs) || population.generatedAtElapsedMs !== 0
     || !Number.isSafeInteger(population.playerRaidProtectionEndsAtElapsedMs) || population.playerRaidProtectionEndsAtElapsedMs < 0
@@ -676,6 +776,8 @@ export function verifyBotPopulation(population: BotPopulationState): void {
   const claimedFieldChestIds = new Set<string>();
   const grades = [0, 0, 0, 0, 0];
   const kinds = [0, 0];
+  let livingLordCount = 0;
+  const activeLordOrdinals: number[] = [];
   const requiredActionReceiptIds = new Map<string, Set<string>>();
   for (const receipt of population.eventReceipts) {
     if (receipt && typeof receipt.botId === 'string' && typeof receipt.actionReceiptId === 'string') {
@@ -708,10 +810,24 @@ export function verifyBotPopulation(population: BotPopulationState): void {
       if (!fate || !['active', 'dead', 'captured', 'dispossessed'].includes(fate.status)
         || !(fate.changedAtElapsedMs === null || (Number.isSafeInteger(fate.changedAtElapsedMs) && fate.changedAtElapsedMs >= 0
           && fate.changedAtElapsedMs <= hot.lastIntegratedAtElapsedMs[offset]! + 3_000))
-        || !(fate.cause === null || ['starvation', 'dehydration', 'cold', 'battle_capture', 'territory_loss', 'settlement_abandoned'].includes(fate.cause))
+        || !(fate.cause === null || ['starvation', 'dehydration', 'cold', 'combat', 'battle_capture', 'territory_loss', 'settlement_abandoned'].includes(fate.cause))
         || !(fate.triggerId === null || typeof fate.triggerId === 'string' && fate.triggerId.length > 0)
         || fate.status === 'active' && (fate.changedAtElapsedMs !== null || fate.cause !== null || fate.triggerId !== null)
         || fate.status !== 'active' && (fate.changedAtElapsedMs === null || fate.cause === null || fate.triggerId === null)
+        || !cold.lord || cold.lord.id !== `LORD:${cold.botId}` || cold.lord.ownerId !== cold.botId
+        || cold.lord.profileVersion !== 'BOT-NORMAL-HUMAN-LORD-1.0' || !['alive', 'dead'].includes(cold.lord.lifeState)
+        || !Number.isSafeInteger(cold.lord.hpMicro) || !Number.isSafeInteger(cold.lord.maxHpMicro) || cold.lord.maxHpMicro !== 100_000_000
+        || cold.lord.hpMicro < 0 || cold.lord.hpMicro > cold.lord.maxHpMicro
+        || cold.lord.lifeState === 'alive' && (cold.lord.hpMicro <= 0 || cold.lord.deathRecord !== null)
+        || cold.lord.lifeState === 'dead' && (cold.lord.hpMicro !== 0 || !cold.lord.deathRecord)
+        || (cold.lord.lifeState === 'dead') !== (fate.status === 'dead')
+        || (hot.alive[offset] !== 0) !== (cold.lord.lifeState === 'alive')
+        || cold.lord.lastIntegratedAtElapsedMs !== hot.lastIntegratedAtElapsedMs[offset]
+        || !Number.isSafeInteger(cold.lord.foodShortfallMs) || cold.lord.foodShortfallMs < 0
+        || !Number.isSafeInteger(cold.lord.waterShortfallMs) || cold.lord.waterShortfallMs < 0
+        || !Number.isSafeInteger(cold.lord.carriedFoodConsumptionRemainder) || cold.lord.carriedFoodConsumptionRemainder < 0
+        || !Number.isSafeInteger(cold.lord.carriedWaterConsumptionRemainder) || cold.lord.carriedWaterConsumptionRemainder < 0
+        || !Number.isSafeInteger(cold.lord.coldLoadMicro) || cold.lord.coldLoadMicro < 0
         || !Number.isSafeInteger(cold.potableWaterMl) || cold.potableWaterMl < 0 || cold.potableWaterMl > BOT_WATER_CAPACITY_ML
         || !Number.isSafeInteger(cold.localIceRemainingMl) || cold.localIceRemainingMl < 0 || cold.localIceRemainingMl > BOT_LOCAL_ICE_STOCK_ML
         || !Number.isSafeInteger(cold.waterConsumptionRemainder) || cold.waterConsumptionRemainder < 0 || cold.waterConsumptionRemainder >= 86_400_000
@@ -719,16 +835,58 @@ export function verifyBotPopulation(population: BotPopulationState): void {
         || !Number.isSafeInteger(cold.lordStarvationExposureMs) || cold.lordStarvationExposureMs < 0 || cold.lordStarvationExposureMs > BOT_LORD_STARVATION_FATAL_MS
         || !Number.isSafeInteger(cold.lordDehydrationExposureMs) || cold.lordDehydrationExposureMs < 0 || cold.lordDehydrationExposureMs > BOT_LORD_DEHYDRATION_FATAL_MS
         || !Number.isSafeInteger(cold.lordColdExposureMs) || cold.lordColdExposureMs < 0 || cold.lordColdExposureMs > BOT_LORD_COLD_FATAL_MS) invalid(`lord-survival:${ordinal}`);
+      const lord = cold.lord;
+      if (!['settlement', 'travelling', 'encounter', 'retreating', 'field'].includes(lord.location)
+        || !Number.isSafeInteger(lord.retreatDistanceMm) || lord.retreatDistanceMm < 0
+        || !Number.isSafeInteger(lord.retreatProgressMm) || lord.retreatProgressMm < 0
+        || lord.retreatProgressMm > lord.retreatDistanceMm
+        || !Number.isSafeInteger(lord.retreatSpeedMmPerHour) || lord.retreatSpeedMmPerHour < 0
+        || !Number.isSafeInteger(lord.retreatTravelRemainder) || lord.retreatTravelRemainder < 0
+        || lord.retreatTravelRemainder >= 3_600_000
+        || lord.retreatRoute === null && (lord.retreatDistanceMm !== 0 || lord.retreatProgressMm !== 0
+          || lord.retreatStartedAtElapsedMs !== null || lord.retreatSpeedMmPerHour !== 0
+          || lord.retreatTravelRemainder !== 0 || lord.retreatDestination !== null
+          || lord.retreatThreatActorId !== null || lord.retreatThreatPosition !== null)
+        || lord.retreatRoute !== null && (!Array.isArray(lord.retreatRoute) || lord.retreatRoute.length < 2
+          || lord.retreatRoute.some(point => !Number.isSafeInteger(point.xMm) || !Number.isSafeInteger(point.yMm)
+            || !Number.isFinite(point.sourceZMetres ?? 0))
+          || lord.retreatDistanceMm <= 0 || lord.retreatProgressMm >= lord.retreatDistanceMm
+          || lord.retreatSpeedMmPerHour <= 0 || !Number.isSafeInteger(lord.retreatStartedAtElapsedMs)
+          || lord.retreatStartedAtElapsedMs! < 0 || lord.retreatStartedAtElapsedMs! > lord.lastIntegratedAtElapsedMs
+          || lord.retreatDestination === null || lord.retreatThreatPosition === null
+          || !Number.isSafeInteger(lord.retreatDestination?.xMm) || !Number.isSafeInteger(lord.retreatDestination?.yMm)
+          || !Number.isSafeInteger(lord.retreatThreatPosition?.xMm) || !Number.isSafeInteger(lord.retreatThreatPosition?.yMm)
+          || typeof lord.retreatThreatActorId !== 'string' || lord.retreatThreatActorId.length === 0
+          || lord.retreatDestination?.xMm !== lord.retreatRoute.at(-1)?.xMm
+          || lord.retreatDestination?.yMm !== lord.retreatRoute.at(-1)?.yMm
+          || lord.encounterThreatActorId !== null || lord.encounterThreatPosition !== null
+          || lord.location !== 'retreating' || lord.activity !== 'retreating')) invalid(`lord-retreat:${ordinal}`);
+      const hasEncounterThreat = lord.encounterThreatActorId !== null || lord.encounterThreatPosition !== null;
+      if (hasEncounterThreat && (typeof lord.encounterThreatActorId !== 'string' || lord.encounterThreatActorId.length === 0
+        || !lord.encounterThreatPosition || !Number.isSafeInteger(lord.encounterThreatPosition.xMm)
+        || !Number.isSafeInteger(lord.encounterThreatPosition.yMm) || lord.activeEncounterId === null || lord.activity !== 'encounter')
+        || lord.activity === 'encounter' && (lord.activeEncounterId === null || !hasEncounterThreat)
+        || lord.encounterThreatActorId === null !== (lord.encounterThreatPosition === null)) invalid(`lord-encounter:${ordinal}`);
+      if (!Number.isSafeInteger(lord.carriedFoodMicro) || lord.carriedFoodMicro < 0
+        || !Number.isSafeInteger(lord.carriedWaterMicro) || lord.carriedWaterMicro < 0
+        || !Number.isSafeInteger(lord.carriedFoodConsumptionRemainder) || lord.carriedFoodConsumptionRemainder < 0
+        || lord.carriedFoodConsumptionRemainder >= 20
+        || !Number.isSafeInteger(lord.carriedWaterConsumptionRemainder) || lord.carriedWaterConsumptionRemainder < 0
+        || lord.carriedWaterConsumptionRemainder >= 216) invalid(`lord-carried-supplies:${ordinal}`);
       if (chunk.talentGrades[offset]! > 4 || chunk.talentKinds[offset]! > 1 || !Number.isSafeInteger(chunk.regionIndices[offset])) invalid(`talent:${ordinal}`);
+      if (cold.lord.lifeState === 'alive') { livingLordCount += 1; activeLordOrdinals.push(ordinal); }
       grades[chunk.talentGrades[offset]!] += 1;
       kinds[chunk.talentKinds[offset]!] += 1;
       if (!Number.isSafeInteger(hot.lastIntegratedAtElapsedMs[offset]) || hot.lastIntegratedAtElapsedMs[offset]! < 0
-        || !Number.isSafeInteger(hot.nextWakeAtElapsedMs[offset]) || hot.nextWakeAtElapsedMs[offset]! < hot.lastIntegratedAtElapsedMs[offset]!
-        || !Number.isSafeInteger(hot.foodMicro[offset]) || hot.foodMicro[offset]! < 0 || !Number.isSafeInteger(hot.woodMicro[offset]) || hot.woodMicro[offset]! < 0
-        || !Number.isSafeInteger(hot.stoneMicro[offset]) || hot.stoneMicro[offset]! < 0 || !Number.isSafeInteger(hot.oreMicro[offset]) || hot.oreMicro[offset]! < 0
-        || !Number.isSafeInteger(hot.firewoodMicro[offset]) || hot.firewoodMicro[offset]! < 0
-        || hot.reservedFoodMicro[offset]! > hot.foodMicro[offset]! || hot.reservedWoodMicro[offset]! > hot.woodMicro[offset]!
-        || hot.reservedStoneMicro[offset]! > hot.stoneMicro[offset]! || hot.reservedOreMicro[offset]! > hot.oreMicro[offset]!) invalid(`economy:${ordinal}`);
+        || !Number.isSafeInteger(hot.nextWakeAtElapsedMs[offset]) || hot.nextWakeAtElapsedMs[offset]! < hot.lastIntegratedAtElapsedMs[offset]!) invalid(`economy-time:${ordinal}`);
+      for (const resource of ['food', 'wood', 'stone', 'ore'] as const) {
+        const balance = hot[`${resource}Micro` as const][offset]!;
+        const reserved = hot[`reserved${resource[0]!.toUpperCase()}${resource.slice(1)}Micro` as const][offset]!;
+        if (!Number.isSafeInteger(balance) || balance < 0 || !Number.isSafeInteger(reserved) || reserved < 0 || reserved > balance) {
+          invalid(`economy-${resource}:${ordinal}:${balance}:${reserved}`);
+        }
+      }
+      if (!Number.isSafeInteger(hot.firewoodMicro[offset]) || hot.firewoodMicro[offset]! < 0) invalid(`economy-firewood:${ordinal}`);
       const workforce = cold.workforce;
       const assigned = Object.values(workforce).reduce((sum, value) => sum + value, 0);
       if (!Number.isSafeInteger(hot.workers[offset]) || hot.workers[offset]! < 0 || assigned > hot.workers[offset]!
@@ -817,6 +975,8 @@ export function verifyBotPopulation(population: BotPopulationState): void {
           || !['owned', 'opened'].includes(chest.status)
           || !(chest.openedAtElapsedMs === null || Number.isSafeInteger(chest.openedAtElapsedMs) && chest.openedAtElapsedMs >= chest.acquiredAtElapsedMs)
           || !(chest.lootReceiptId === null || typeof chest.lootReceiptId === 'string')
+          || (chest.lootRuleVersion !== undefined && chest.lootRuleVersion !== CHEST_LOOT_RULE_VERSION
+            && chest.lootRuleVersion !== LEGACY_CHEST_LOOT_RULE_VERSION)
           || !(chest.lootOutcome === null || Array.isArray(chest.lootOutcome) && chest.lootOutcome.every(item => item
             && typeof item.itemTemplateId === 'string' && Number.isSafeInteger(item.quantity) && item.quantity > 0))
           || chest.ruleVersion !== BOT_CHEST_RULE_VERSION
@@ -903,6 +1063,10 @@ export function verifyBotPopulation(population: BotPopulationState): void {
     const scheduled = population.schedulerHeap.find(item => item.chunkIndex === chunkIndex);
     if (!scheduled || scheduled.atElapsedMs !== wake.atElapsedMs || scheduled.botOrdinal !== wake.botOrdinal) invalid(`scheduler:${chunkIndex}`);
   }
+  if (livingLordCount !== population.livingLordCount || population.activeLordOrdinals!.some((ordinal, index) => ordinal !== activeLordOrdinals[index])) {
+    invalid('active-lord-index');
+  }
+  if (population.livingLordCount !== livingLordCount) invalid('living-lord-count');
   if (grades.some((count, index) => count !== quotaValues[index]) || kinds[0] + kinds[1] !== population.botCount
     || Math.abs(kinds[0] - kinds[1]) > 1 || seenIds.size !== population.botCount) invalid('quota');
   // A heap representation is validated as a heap, not a sorted array.
@@ -1000,8 +1164,11 @@ export function verifyBotPopulation(population: BotPopulationState): void {
     || population.marketListings.find(listing => listing.id === transaction.listingId)?.status !== 'filled')) invalid('market-transaction-listing');
   for (const snapshot of population.boardSnapshots) {
     const { snapshotSha256, ...base } = snapshot;
+    const expectedRankById = Object.fromEntries(snapshot.rows.map(row => [row.botId, row.rank]));
     if (snapshot.boardId !== 'OPENING_LEVEL' || !Number.isSafeInteger(snapshot.revision) || snapshot.revision < 1
       || !Number.isSafeInteger(snapshot.asOfSimMs) || !Number.isSafeInteger(snapshot.observedThroughSimMs)
-      || snapshot.rows.length > 100 || snapshot.snapshotSha256 !== canonicalStateHash(base)) invalid('board-snapshot');
+      || snapshot.rows.length > 100 || canonicalStateHash(snapshot.rankById) !== canonicalStateHash(expectedRankById)
+      || snapshot.rows.some((row, index) => !row.botId || row.rank !== index + 1)
+      || snapshot.snapshotSha256 !== canonicalStateHash(base)) invalid('board-snapshot');
   }
 }

@@ -9,6 +9,9 @@ import { expireEventItems, recordEventActivities, settleEventOutcome, settleExpi
 import { OPENING_FIRE_EFFECTIVE_TEMPERATURE_C } from '../../content/src/openingEnvironment.ts';
 import { flushBotPopulationChunks, integrateBotPopulationSegment, nextBotBoundaryAt, settleBotBoundary } from './bots/economy.ts';
 import { beginBotPopulationAdvance, finishBotPopulationAdvance, isBotPopulationAdvanceInProgress } from './bots/state.ts';
+import { coldLoadRateMicroPerMinute } from './cold.ts';
+
+export { coldLoadRateMicroPerMinute } from './cold.ts';
 
 export const MINUTE_MS = 60_000;
 export const HOUR_MS = 60 * MINUTE_MS;
@@ -51,16 +54,6 @@ export function elapsedMsToWorldClock(simElapsedMs: number): { day: number; hour
     ? 'daylight'
     : minuteOfDay >= 16 * 60 + 30 && minuteOfDay < 17 * 60 ? 'twilight' : 'night';
   return { day: Math.floor(shifted / DAY_MS) + 1, hour, minute, lightPhase };
-}
-
-export function coldLoadRateMicroPerMinute(environment: ColdEnvironment): number {
-  const { apparentTemperatureC, windKph, wetness, activityFactor, insulation, shelter } = environment;
-  if (![apparentTemperatureC, windKph, wetness, activityFactor, insulation, shelter].every(Number.isFinite)
-    || windKph < 0 || wetness < 0 || wetness > 1 || insulation <= 0 || shelter <= 0
-    || ![0.7, 1, 1.3].includes(activityFactor)) throw new Error('COLD_ENVIRONMENT_INVALID');
-  const deficit = Math.max(0, 18 - apparentTemperatureC);
-  const windWetness = Math.max(1, Math.min(3, 1 + 0.03 * windKph + wetness));
-  return Math.round((deficit * windWetness * activityFactor / (insulation * shelter)) * 1_000_000);
 }
 
 function currentColdLoadRate(state: GameState): number {
@@ -311,11 +304,12 @@ function settleCalendarBoundary(
   at: number,
   events: SettledEvent[],
   stopBeforeEvent?: { eventId: string; reasonCode: string; playerMessage: string },
+  eventSequenceOffset = 0,
 ): string | null {
   for (const event of state.calendar) {
     if (event.status === 'scheduled' && event.opensAtMs === at) {
       if (stopBeforeEvent?.eventId === event.id) {
-        const sequence = state.lastEventSequence + events.length + 1;
+        const sequence = state.lastEventSequence + eventSequenceOffset + events.length + 1;
         state.calendar = state.calendar.map(row => row.id === event.id
           ? { ...row, status: 'blocked', blockedReceiptSequence: sequence }
           : row);
@@ -333,7 +327,7 @@ function settleCalendarBoundary(
         });
         return event.id;
       }
-      const sequence = state.lastEventSequence + events.length + 1;
+      const sequence = state.lastEventSequence + eventSequenceOffset + events.length + 1;
       state.calendar = state.calendar.map(row => row.id === event.id
         ? { ...row, status: 'active', openReceiptSequence: sequence }
         : row);
@@ -342,7 +336,7 @@ function settleCalendarBoundary(
     }
     const current = state.calendar.find(row => row.id === event.id);
     if (current?.status === 'active' && current.locksAtMs === at) {
-      const sequence = state.lastEventSequence + events.length + 1;
+      const sequence = state.lastEventSequence + eventSequenceOffset + events.length + 1;
       state.calendar = state.calendar.map(row => row.id === event.id
         ? { ...row, status: 'locked', lockReceiptSequence: sequence }
         : row);
@@ -351,7 +345,7 @@ function settleCalendarBoundary(
     }
     const locked = state.calendar.find(row => row.id === event.id);
     if ((locked?.status === 'active' || locked?.status === 'locked') && locked.resolvesAtMs === at) {
-      const sequence = state.lastEventSequence + events.length + 1;
+      const sequence = state.lastEventSequence + eventSequenceOffset + events.length + 1;
       state.calendar = state.calendar.map(row => row.id === event.id
         ? { ...row, status: 'resolved', resolutionReceiptSequence: sequence }
         : row);
@@ -380,6 +374,7 @@ function processBoundary(
   events: SettledEvent[],
   world?: WorldDefinition,
   stopBeforeEvent?: { eventId: string; reasonCode: string; playerMessage: string },
+  eventSequenceOffset = 0,
 ): { completed: boolean; danger: boolean; blockedEventId: string | null } {
   const boundaryEventStart = events.length;
   let completed = false;
@@ -498,7 +493,7 @@ function processBoundary(
     Object.assign(state, activity.state);
     events.push(...activity.events);
   }
-  const blockedEventId = settleCalendarBoundary(state, at, events, stopBeforeEvent);
+  const blockedEventId = settleCalendarBoundary(state, at, events, stopBeforeEvent, eventSequenceOffset);
   return { completed, danger: state.survival.coldStatus === 'danger' || combatDanger, blockedEventId };
 }
 
@@ -514,6 +509,8 @@ export function advanceTo(
     mutatePrivateState?: boolean;
     stopCondition?: StopCondition;
     stopBeforeEvent?: { eventId: string; reasonCode: string; playerMessage: string };
+    /** Public events committed in earlier private slices of this same clock catch-up. */
+    eventSequenceOffset?: number;
   } = {},
   world?: WorldDefinition,
 ): AdvanceResult {
@@ -521,6 +518,7 @@ export function advanceTo(
   const maxBoundaries = options.maxBoundaries ?? MAX_BOUNDARIES_PER_BATCH;
   if (!Number.isSafeInteger(maxBoundaries) || maxBoundaries < 1 || maxBoundaries > 10_000) throw new Error('SIMULATION_BATCH_LIMIT_INVALID');
   if (options.maxWorkMs !== undefined && (!Number.isFinite(options.maxWorkMs) || options.maxWorkMs <= 0 || options.maxWorkMs > 100)) throw new Error('SIMULATION_WORK_BUDGET_INVALID');
+  if (options.eventSequenceOffset !== undefined && (!Number.isSafeInteger(options.eventSequenceOffset) || options.eventSequenceOffset < 0)) throw new Error('SIMULATION_EVENT_SEQUENCE_OFFSET_INVALID');
   const workStartedAt = performance.now();
   let state: GameState;
   if (options.mutatePrivateState) {
@@ -573,7 +571,7 @@ export function advanceTo(
       if (lastBoundaryAt === at) sameTimestampEvents += 1;
       else { lastBoundaryAt = at; sameTimestampEvents = 1; }
       if (sameTimestampEvents > 1_000) throw new Error('SIMULATION_ZERO_TIME_EVENT_LOOP');
-      const outcome = processBoundary(state, at, events, world, options.stopBeforeEvent);
+      const outcome = processBoundary(state, at, events, world, options.stopBeforeEvent, options.eventSequenceOffset ?? 0);
       processed += 1;
       if (outcome.blockedEventId) stoppedBy = 'event_content_blocked';
       else if (options.stopCondition === 'danger' && outcome.danger) stoppedBy = 'danger';

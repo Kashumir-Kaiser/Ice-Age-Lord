@@ -1,0 +1,40 @@
+name: Focused frontend checks
+on:
+  push:
+    paths:
+      - 'frontend/**'
+      - 'packages/contracts/**'
+      - 'packages/content/**'
+      - '.github/workflows/frontend-checks.yml'
+  pull_request:
+    paths:
+      - 'frontend/**'
+      - 'packages/contracts/**'
+      - 'packages/content/**'
+      - '.github/workflows/frontend-checks.yml'
+  workflow_dispatch:
+concurrency:
+  group: frontend-focused-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install locked frontend dependencies
+        run: timeout 180s npm ci --no-audit --no-fund
+      - name: Type-check TypeScript and TSX
+        run: timeout 90s npm run typecheck
+      - name: Build production frontend
+        run: timeout 150s npm run build
+      - name: Run focused frontend smoke tests
+        run: timeout 120s npm test
