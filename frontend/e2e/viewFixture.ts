@@ -7,7 +7,7 @@ export const fireRef: PlayerView['territory']['survivalFire']['ref'] = {
 
 export function playerView(revision = 1): PlayerView {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     saveId: 'save-live-01',
     revision,
     lastEventSequence: revision,
