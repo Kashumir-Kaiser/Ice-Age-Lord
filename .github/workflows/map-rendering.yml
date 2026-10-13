@@ -7,9 +7,9 @@ on:
 permissions:
   contents: read
 jobs:
-  baseline:
+  validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     env:
       VITE_GAME_MODE: demo
     defaults:
@@ -24,38 +24,36 @@ jobs:
       - run: npm run build
       - run: npm test
       - run: npx playwright install --with-deps chromium
-      - name: Capture unmodified map baseline
-        run: node scripts/map-baseline.mjs
-      - name: Prepare pinned renderer toolchain
-        if: always()
-        run: |
-          npm install --save-exact pixi.js@8.10.2 --no-audit --no-fund
-          npm install --save-dev --save-exact @resvg/resvg-js@2.6.2 sharp@0.34.5 --no-audit --no-fund
-          tar -czf /tmp/map-toolchain.tar.gz node_modules package.json package-lock.json
-          split -b 20M -d /tmp/map-toolchain.tar.gz /tmp/map-toolchain.part
+      - name: Map interaction journeys
+        run: npm run test:e2e -- e2e/map-rendering.spec.ts e2e/territory.spec.ts e2e/map.spec.ts --grep-invert 'visual baselines'
+      - name: Capture maps for review
+        run: node scripts/map-qa.mjs
+      - name: Verify benchmark harness
+        env:
+          MAP_BENCH_SECONDS: '5'
+          MAP_BENCH_RUNS: '1'
+          MAP_BENCH_WARMUP: '1'
+        run: node scripts/map-benchmark.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: map-baseline
-          path: |
-            frontend/map-evidence/baseline/
-            frontend/dist/
+          name: map-captures
+          path: frontend/map-evidence/after/
           retention-days: 7
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: map-toolchain-00
-          path: /tmp/map-toolchain.part00
+          name: map-benchmark-diagnostics
+          path: frontend/map-evidence/benchmark/
+          retention-days: 7
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: map-toolchain-01
-          path: /tmp/map-toolchain.part01
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: map-toolchain-02
-          path: /tmp/map-toolchain.part02
+          name: map-interaction-failures
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 7
 
   recover-original-art:
     runs-on: ubuntu-latest
@@ -85,4 +83,24 @@ jobs:
         with:
           name: map-originals-03
           path: /tmp/map-originals.part03
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-originals-04
+          path: /tmp/map-originals.part04
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-originals-05
+          path: /tmp/map-originals.part05
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-originals-06
+          path: /tmp/map-originals.part06
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-originals-07
+          path: /tmp/map-originals.part07
           retention-days: 7

@@ -35,3 +35,7 @@ Rasterized and opened actual 480 px source art: opening and late fire, damaged/r
 CI run https://github.com/Kashumir-Kaiser/Ice-Age-Lord/actions/runs/38407619673 on `c631a16d288253d66887fc6602dd0786beb1e7ca`: baseline production build and all existing frontend unit gates passed. Baseline script fixes reduced motion and captures territory, planning, local/world at 1366×768, 1920×1080 and 390×844. Camera and fixture transitions in that same script will be reused after integration. Screenshots must be opened before acceptance.
 
 Initial local pre-update root checks passed: stage02 (10), stage04 (11), stage05 (12), stage06 (12), stage07 (1 test file), bots API (1 test file). These are audit baseline evidence only; final checks must use the preserved newer work-branch code.
+
+## Continuation source audit
+
+The exact map checkpoint `90fad0cd8a1e9d2915993edbbe6c868e5fa72233` and the follow-up `db7a8e6d0b7d997b776a620c3c3d53aa30e84117` were restored. All tracked files matched the remote Git tree before continuation edits. The original branch contains 25 retained terrain PNG source files and 625 map export files, plus the previously unpublished renderer and API receipt fixes. Main was not changed. Research PDFs remain unread.

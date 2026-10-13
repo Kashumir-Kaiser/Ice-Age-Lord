@@ -1,0 +1,219 @@
+{
+  "sourceChatId": "01a1357a-f6ba-7739-a02f-67372d56d0aa",
+  "sourceChatTitle": "Execute prompt and fix bugs at the }",
+  "sourceBranchHead": "46a9f3c9c13a0a1cb0f9284e8990e1d79924d9d8",
+  "images": [
+    {
+      "generationId": "exec-fc10ecbe-c5b3-4efe-a7ee-c0a3ab1cbc54",
+      "originalPath": "/workspace/generated_images/exec-fc10ecbe-c5b3-4efe-a7ee-c0a3ab1cbc54.png",
+      "sourcePath": "assets/source/terrain/snow-calibration.png",
+      "prompt": "Create an original production game terrain material for Ice Age Lord, matching the two attached existing reference paintings ONLY in their muted winter ink-painted palette and brush character. Produce a single overhead seamless square swatch of undisturbed dirty ivory winter snow. Flat material only: no perspective, horizon, buildings, trees, rocks, objects, text, UI, frames or directional cast shadows. Broad quiet value variation, medium softly wind-sculpted marks, sparse fine grain. Snow highlight #DCE5DE, midtone #A9BDC0, shadow #607D89, no pure white. Painterly semi-realistic preindustrial fantasy, desaturated cool grey and slate-blue. Opposite edges must tile without visible seams. Deliver opaque square texture. Save the source as /workspace/Ice-Age-Lord/assets/source/terrain/snow-calibration.png if a workspace file can be returned.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-5d2e0b33-2f0c-4bce-9603-51e09796666f",
+      "originalPath": "/workspace/generated_images/exec-5d2e0b33-2f0c-4bce-9603-51e09796666f.png",
+      "sourcePath": "assets/source/terrain/rock-01.png",
+      "prompt": "Original production environmental prop for Ice Age Lord matching the attached project's winter ink-painted stone style. ONE low, irregular charcoal-blue rock ledge/boulder partially covered with dirty ivory snow. Fixed 2:1 dimetric camera, upper-left soft light, cool blue-grey shadow. Broad natural facets with weathered hand-painted edges, readable grounded base, at the reference brush scale. Entire object inside frame. ISOLATED transparent background. No pedestal, ground tile, text, UI, hard cast shadow, smoke or glow. No other rocks or collectibles.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-8ef8ad35-e96b-4c68-9fbf-d0cce0bc3773",
+      "originalPath": "/workspace/generated_images/exec-8ef8ad35-e96b-4c68-9fbf-d0cce0bc3773.png",
+      "sourcePath": "assets/source/terrain/snow-quiet.png",
+      "prompt": "Refine this snow material for a game terrain texture. Keep the ink-painted winter palette, but simplify the high-frequency marks radically: broad calm masses with 80 percent quiet low-contrast dirty ivory snow. Very sparse subtle fine grain, soft medium wind banks. No objects or perspective. Make an opaque overhead SQUARE swatch with perfectly matched left/right and top/bottom edges for a seamless repeat. No obvious diagonal repeating motif. Entirely material. Highlights #DCE5DE midtone #A9BDC0 shade #607D89.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-4d10171a-81f8-42c0-aa38-eb4160730f70",
+      "originalPath": "/workspace/generated_images/exec-4d10171a-81f8-42c0-aa38-eb4160730f70.png",
+      "sourcePath": "assets/source/terrain/conifer-01.png",
+      "prompt": "Original production environmental prop for Ice Age Lord matching the attached project's winter ink-painted building style. ONE irregular mature snow-covered conifer with trunk visible at grounded base, asymmetric layered branches and a few broken twigs. Fixed 2:1 dimetric game camera. Upper-left soft light, cool blue-grey shadows, dusty ivory snow, charcoal green needles, weathered muted brown trunk. Entire object inside frame. Hand-painted detailed silhouette at reference brush scale, no geometric triangle or cartoon shapes. ISOLATED transparent background, no pedestal, ground tile, text, UI, hard cast shadow or glow. No other trees.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-65f4a6a2-d551-4dcb-8703-6cad8a5af632",
+      "originalPath": "/workspace/generated_images/exec-65f4a6a2-d551-4dcb-8703-6cad8a5af632.png",
+      "sourcePath": "assets/source/terrain/snow-02.png",
+      "prompt": "Original production game ground material for Ice Age Lord. Match the attached game's winter ink-painted palette and brush scale. Produce ONE overhead perfectly seamless square opaque texture of a smooth low-contrast snow surface with broad faint windswept bands. Flat material only, no perspective, horizon, buildings, objects, text, UI or directional cast shadow. Broad quiet values: at least 80 percent low-contrast calm surface, medium irregular painterly variation and extremely sparse fine detail. Desaturated dirty ivory #DCE5DE, #A9BDC0, shade #607D89, charcoal-blue, earth #62625C where appropriate. No photorealistic noise or bright colors. Opposite edges must match exactly for tile repeat. Do not depict a map or scene.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-5fba07d5-8138-4324-bf61-98f1b3f4c72b",
+      "originalPath": "/workspace/generated_images/exec-5fba07d5-8138-4324-bf61-98f1b3f4c72b.png",
+      "sourcePath": "assets/source/terrain/snow-03.png",
+      "prompt": "Original production game ground material for Ice Age Lord. Match the attached game's winter ink-painted palette and brush scale. Produce ONE overhead perfectly seamless square opaque texture of quiet softly granular snow with sparse wind marks. Flat material only, no perspective, horizon, buildings, objects, text, UI or directional cast shadow. Broad quiet values: at least 80 percent low-contrast calm surface, medium irregular painterly variation and extremely sparse fine detail. Desaturated dirty ivory #DCE5DE, #A9BDC0, shade #607D89, charcoal-blue, earth #62625C where appropriate. No photorealistic noise or bright colors. Opposite edges must match exactly for tile repeat. Do not depict a map or scene.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-c58185c2-c5ea-4195-a886-a5e55c52631b",
+      "originalPath": "/workspace/generated_images/exec-c58185c2-c5ea-4195-a886-a5e55c52631b.png",
+      "sourcePath": "assets/source/terrain/snow-04.png",
+      "prompt": "Original production game ground material for Ice Age Lord. Match the attached game's winter ink-painted palette and brush scale. Produce ONE overhead perfectly seamless square opaque texture of pale grey snow with broad soft blue shaded banks. Flat material only, no perspective, horizon, buildings, objects, text, UI or directional cast shadow. Broad quiet values: at least 80 percent low-contrast calm surface, medium irregular painterly variation and extremely sparse fine detail. Desaturated dirty ivory #DCE5DE, #A9BDC0, shade #607D89, charcoal-blue, earth #62625C where appropriate. No photorealistic noise or bright colors. Opposite edges must match exactly for tile repeat. Do not depict a map or scene.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-dd1064b4-7900-4168-b353-c7f77a9164b9",
+      "originalPath": "/workspace/generated_images/exec-dd1064b4-7900-4168-b353-c7f77a9164b9.png",
+      "sourcePath": "assets/source/terrain/earth-01.png",
+      "prompt": "Original production game ground material for Ice Age Lord. Match the attached game's winter ink-painted palette and brush scale. Produce ONE overhead perfectly seamless square opaque texture of exposed frozen weathered grey-brown earth with sparse frost dust. Flat material only, no perspective, horizon, buildings, objects, text, UI or directional cast shadow. Broad quiet values: at least 80 percent low-contrast calm surface, medium irregular painterly variation and extremely sparse fine detail. Desaturated dirty ivory #DCE5DE, #A9BDC0, shade #607D89, charcoal-blue, earth #62625C where appropriate. No photorealistic noise or bright colors. Opposite edges must match exactly for tile repeat. Do not depict a map or scene.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-83b5ccc3-9e54-4fa2-a1d7-2624c482c9b4",
+      "originalPath": "/workspace/generated_images/exec-83b5ccc3-9e54-4fa2-a1d7-2624c482c9b4.png",
+      "sourcePath": "assets/source/terrain/ice-01.png",
+      "prompt": "Original production game ground material for Ice Age Lord. Match the attached game's winter ink-painted palette and brush scale. Produce ONE overhead perfectly seamless square opaque texture of matte slate-blue frozen ice with faint broad cloudy ivory striations. Flat material only, no perspective, horizon, buildings, objects, text, UI or directional cast shadow. Broad quiet values: at least 80 percent low-contrast calm surface, medium irregular painterly variation and extremely sparse fine detail. Desaturated dirty ivory #DCE5DE, #A9BDC0, shade #607D89, charcoal-blue, earth #62625C where appropriate. No photorealistic noise or bright colors. Opposite edges must match exactly for tile repeat. Do not depict a map or scene.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-51bea1c5-40c6-4094-9a81-0c3428bf273a",
+      "originalPath": "/workspace/generated_images/exec-51bea1c5-40c6-4094-9a81-0c3428bf273a.png",
+      "sourcePath": "assets/source/terrain/dirty-snow-01.png",
+      "prompt": "Original production game ground material for Ice Age Lord. Match the attached game's winter ink-painted palette and brush scale. Produce ONE overhead perfectly seamless square opaque texture of lightly compacted dirty snow with subtle weathered muted earth flecks. Flat material only, no perspective, horizon, buildings, objects, text, UI or directional cast shadow. Broad quiet values: at least 80 percent low-contrast calm surface, medium irregular painterly variation and extremely sparse fine detail. Desaturated dirty ivory #DCE5DE, #A9BDC0, shade #607D89, charcoal-blue, earth #62625C where appropriate. No photorealistic noise or bright colors. Opposite edges must match exactly for tile repeat. Do not depict a map or scene.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-5b06b870-3fd5-4c24-b501-e25ad787e210",
+      "originalPath": "/workspace/generated_images/exec-5b06b870-3fd5-4c24-b501-e25ad787e210.png",
+      "sourcePath": "assets/source/terrain/conifer-02.png",
+      "prompt": "Original production environmental prop for Ice Age Lord. one young slender snow-covered conifer with sparse uneven branches and visible trunk. Match the attached original winter ink-painted reference style and brush scale, no cartoon geometry. Fixed 2:1 dimetric ground camera with the same perspective and scale as the reference conifer. Upper-left soft light, muted dirty ivory snow, cool blue-grey shadow, charcoal desaturated green needles where applicable, muted weathered brown timber. Entire object inside a square frame, grounded base visible. ISOLATED transparent background, crisp clean alpha edges without red/blue fringes. No pedestal, ground tile, text, UI, hard cast shadow, other objects, smoke or glow. Produce one isolated tree, no contact sheet.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-8742ea7e-8128-4996-b685-e8f2b2043031",
+      "originalPath": "/workspace/generated_images/exec-8742ea7e-8128-4996-b685-e8f2b2043031.png",
+      "sourcePath": "assets/source/terrain/conifer-04.png",
+      "prompt": "Original production environmental prop for Ice Age Lord. one medium windswept snow-covered spruce, slender trunk and asymmetric hanging boughs. Match the attached original winter ink-painted reference style and brush scale, no cartoon geometry. Fixed 2:1 dimetric ground camera with the same perspective and scale as the reference conifer. Upper-left soft light, muted dirty ivory snow, cool blue-grey shadow, charcoal desaturated green needles where applicable, muted weathered brown timber. Entire object inside a square frame, grounded base visible. ISOLATED transparent background, crisp clean alpha edges without red/blue fringes. No pedestal, ground tile, text, UI, hard cast shadow, other objects, smoke or glow. Produce one isolated tree, no contact sheet.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-85810e22-5301-4463-870e-b5b3d6447188",
+      "originalPath": "/workspace/generated_images/exec-85810e22-5301-4463-870e-b5b3d6447188.png",
+      "sourcePath": "assets/source/terrain/conifer-03.png",
+      "prompt": "Original production environmental prop for Ice Age Lord. one broad old snow-covered pine with irregular bent branches, visible roots and a broken crown. Match the attached original winter ink-painted reference style and brush scale, no cartoon geometry. Fixed 2:1 dimetric ground camera with the same perspective and scale as the reference conifer. Upper-left soft light, muted dirty ivory snow, cool blue-grey shadow, charcoal desaturated green needles where applicable, muted weathered brown timber. Entire object inside a square frame, grounded base visible. ISOLATED transparent background, crisp clean alpha edges without red/blue fringes. No pedestal, ground tile, text, UI, hard cast shadow, other objects, smoke or glow. Produce one isolated tree, no contact sheet.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-05ec7d0a-63fd-42f4-8b1a-45013394490f",
+      "originalPath": "/workspace/generated_images/exec-05ec7d0a-63fd-42f4-8b1a-45013394490f.png",
+      "sourcePath": "assets/source/terrain/conifer-06.png",
+      "prompt": "Original production environmental prop for Ice Age Lord. one short dense bushy snow-covered conifer with an uneven crown and visible grounded trunk. Match the attached original winter ink-painted reference style and brush scale, no cartoon geometry. Fixed 2:1 dimetric ground camera with the same perspective and scale as the reference conifer. Upper-left soft light, muted dirty ivory snow, cool blue-grey shadow, charcoal desaturated green needles where applicable, muted weathered brown timber. Entire object inside a square frame, grounded base visible. ISOLATED transparent background, crisp clean alpha edges without red/blue fringes. No pedestal, ground tile, text, UI, hard cast shadow, other objects, smoke or glow. Produce one isolated tree, no contact sheet.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-18733abd-b0a8-4027-86a3-267940ecd012",
+      "originalPath": "/workspace/generated_images/exec-18733abd-b0a8-4027-86a3-267940ecd012.png",
+      "sourcePath": "assets/source/terrain/conifer-05.png",
+      "prompt": "Original production environmental prop for Ice Age Lord. one tall ancient snow-covered fir with broad lower branches and weathered bark. Match the attached original winter ink-painted reference style and brush scale, no cartoon geometry. Fixed 2:1 dimetric ground camera with the same perspective and scale as the reference conifer. Upper-left soft light, muted dirty ivory snow, cool blue-grey shadow, charcoal desaturated green needles where applicable, muted weathered brown timber. Entire object inside a square frame, grounded base visible. ISOLATED transparent background, crisp clean alpha edges without red/blue fringes. No pedestal, ground tile, text, UI, hard cast shadow, other objects, smoke or glow. Produce one isolated tree, no contact sheet.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-9020fd56-d365-485d-b1c2-09ade6b08fc6",
+      "originalPath": "/workspace/generated_images/exec-9020fd56-d365-485d-b1c2-09ade6b08fc6.png",
+      "sourcePath": "assets/source/terrain/bare-01.png",
+      "prompt": "Original production environmental prop for Ice Age Lord. one weathered bare dead winter tree with an irregular branching crown and light snow on its thick limbs. Match the attached original winter ink-painted reference style and brush scale, no cartoon geometry. Fixed 2:1 dimetric ground camera with the same perspective and scale as the reference conifer. Upper-left soft light, muted dirty ivory snow, cool blue-grey shadow, charcoal desaturated green needles where applicable, muted weathered brown timber. Entire object inside a square frame, grounded base visible. ISOLATED transparent background, crisp clean alpha edges without red/blue fringes. No pedestal, ground tile, text, UI, hard cast shadow, other objects, smoke or glow. Produce one isolated tree, no contact sheet.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-4f44bc3f-8b9d-4e1a-992f-33acf5cffaa0",
+      "originalPath": "/workspace/generated_images/exec-4f44bc3f-8b9d-4e1a-992f-33acf5cffaa0.png",
+      "sourcePath": "assets/source/terrain/conifer-04.png",
+      "prompt": "Create ONE new isolated environmental prop. A wind-bent spruce with a slender trunk leaning left and most uneven branches sweeping to the right, airy open silhouette and snowy branch tips. The attached BUILDING paintings are solely a reference for Ice Age Lord's original hand-painted winter ink palette and brush scale, NOT for the object shape. Do not reproduce the buildings. Fixed 2:1 dimetric game camera. Upper-left soft light, cool desaturated blue-grey shadow, dirty ivory snow #DCE5DE/#A9BDC0, muted charcoal green foliage where applicable, timber brown or rock slate. Whole object within SQUARE frame. Entire isolated object on transparent background, alpha edges clean, no bright colored fringe. No pedestal, tile, ground painting, hard cast shadow, text, labels, UI, other objects, smoke or glow. Natural asymmetric detailed painterly silhouette, not geometric/cartoon.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-6b0b6be6-0a1d-4581-a5c7-8d947e9cabe1",
+      "originalPath": "/workspace/generated_images/exec-6b0b6be6-0a1d-4581-a5c7-8d947e9cabe1.png",
+      "sourcePath": "assets/source/terrain/conifer-05.png",
+      "prompt": "Create ONE new isolated environmental prop. A tall ancient fir with a thick straight trunk and distinctly layered broad tiered boughs, narrow top and very wide lower branches, intact healthy top. The attached BUILDING paintings are solely a reference for Ice Age Lord's original hand-painted winter ink palette and brush scale, NOT for the object shape. Do not reproduce the buildings. Fixed 2:1 dimetric game camera. Upper-left soft light, cool desaturated blue-grey shadow, dirty ivory snow #DCE5DE/#A9BDC0, muted charcoal green foliage where applicable, timber brown or rock slate. Whole object within SQUARE frame. Entire isolated object on transparent background, alpha edges clean, no bright colored fringe. No pedestal, tile, ground painting, hard cast shadow, text, labels, UI, other objects, smoke or glow. Natural asymmetric detailed painterly silhouette, not geometric/cartoon.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-30e9dba4-6126-448b-b7a5-7d5f53352332",
+      "originalPath": "/workspace/generated_images/exec-30e9dba4-6126-448b-b7a5-7d5f53352332.png",
+      "sourcePath": "assets/source/terrain/rock-02.png",
+      "prompt": "Create ONE new isolated environmental prop. One squat rounded dark granite boulder, asymmetric oval shape with a shallow crack and partial snow cap. No large ledge cluster. The attached BUILDING paintings are solely a reference for Ice Age Lord's original hand-painted winter ink palette and brush scale, NOT for the object shape. Do not reproduce the buildings. Fixed 2:1 dimetric game camera. Upper-left soft light, cool desaturated blue-grey shadow, dirty ivory snow #DCE5DE/#A9BDC0, muted charcoal green foliage where applicable, timber brown or rock slate. Whole object within SQUARE frame. Entire isolated object on transparent background, alpha edges clean, no bright colored fringe. No pedestal, tile, ground painting, hard cast shadow, text, labels, UI, other objects, smoke or glow. Natural asymmetric detailed painterly silhouette, not geometric/cartoon.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-14c28ad6-ec68-4837-bdbe-07a4db4b6983",
+      "originalPath": "/workspace/generated_images/exec-14c28ad6-ec68-4837-bdbe-07a4db4b6983.png",
+      "sourcePath": "assets/source/terrain/conifer-02.png",
+      "prompt": "Create ONE new isolated environmental prop. A very slim young fir with a straight tall trunk, five sparse short tiers of needles, almost pencil-thin silhouette, light snow on small boughs. Strongly different from a broad old pine. The attached BUILDING paintings are solely a reference for Ice Age Lord's original hand-painted winter ink palette and brush scale, NOT for the object shape. Do not reproduce the buildings. Fixed 2:1 dimetric game camera. Upper-left soft light, cool desaturated blue-grey shadow, dirty ivory snow #DCE5DE/#A9BDC0, muted charcoal green foliage where applicable, timber brown or rock slate. Whole object within SQUARE frame. Entire isolated object on transparent background, alpha edges clean, no bright colored fringe. No pedestal, tile, ground painting, hard cast shadow, text, labels, UI, other objects, smoke or glow. Natural asymmetric detailed painterly silhouette, not geometric/cartoon.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-d3b65216-5b87-4219-82b8-e73c1869e307",
+      "originalPath": "/workspace/generated_images/exec-d3b65216-5b87-4219-82b8-e73c1869e307.png",
+      "sourcePath": "assets/source/terrain/conifer-03.png",
+      "prompt": "Create ONE new isolated environmental prop. An old broad Scots pine with a visibly crooked S-shaped trunk and an umbrella-like rounded crown of three irregular horizontal needle clusters, heavy snow caps. Not a triangular spruce. The attached BUILDING paintings are solely a reference for Ice Age Lord's original hand-painted winter ink palette and brush scale, NOT for the object shape. Do not reproduce the buildings. Fixed 2:1 dimetric game camera. Upper-left soft light, cool desaturated blue-grey shadow, dirty ivory snow #DCE5DE/#A9BDC0, muted charcoal green foliage where applicable, timber brown or rock slate. Whole object within SQUARE frame. Entire isolated object on transparent background, alpha edges clean, no bright colored fringe. No pedestal, tile, ground painting, hard cast shadow, text, labels, UI, other objects, smoke or glow. Natural asymmetric detailed painterly silhouette, not geometric/cartoon.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-0df046bf-7a84-43f0-817a-0bbdd124b4ba",
+      "originalPath": "/workspace/generated_images/exec-0df046bf-7a84-43f0-817a-0bbdd124b4ba.png",
+      "sourcePath": "assets/source/terrain/rock-03.png",
+      "prompt": "Create ONE new isolated environmental prop. One angular slanted slate slab, long and low, uneven chipped edges with snow along the upper-left ridge. No boulder cluster. The attached BUILDING paintings are solely a reference for Ice Age Lord's original hand-painted winter ink palette and brush scale, NOT for the object shape. Do not reproduce the buildings. Fixed 2:1 dimetric game camera. Upper-left soft light, cool desaturated blue-grey shadow, dirty ivory snow #DCE5DE/#A9BDC0, muted charcoal green foliage where applicable, timber brown or rock slate. Whole object within SQUARE frame. Entire isolated object on transparent background, alpha edges clean, no bright colored fringe. No pedestal, tile, ground painting, hard cast shadow, text, labels, UI, other objects, smoke or glow. Natural asymmetric detailed painterly silhouette, not geometric/cartoon.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-00a54d91-7ad8-4de3-9bee-9ffe1dde2510",
+      "originalPath": "/workspace/generated_images/exec-00a54d91-7ad8-4de3-9bee-9ffe1dde2510.png",
+      "sourcePath": "assets/source/terrain/conifer-06.png",
+      "prompt": "Create ONE new isolated environmental prop. A short squat bushy dwarf pine, wider than tall, compact rounded irregular needle clusters around a low branching trunk, heavy snow coating. The attached BUILDING paintings are solely a reference for Ice Age Lord's original hand-painted winter ink palette and brush scale, NOT for the object shape. Do not reproduce the buildings. Fixed 2:1 dimetric game camera. Upper-left soft light, cool desaturated blue-grey shadow, dirty ivory snow #DCE5DE/#A9BDC0, muted charcoal green foliage where applicable, timber brown or rock slate. Whole object within SQUARE frame. Entire isolated object on transparent background, alpha edges clean, no bright colored fringe. No pedestal, tile, ground painting, hard cast shadow, text, labels, UI, other objects, smoke or glow. Natural asymmetric detailed painterly silhouette, not geometric/cartoon.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-ba25e388-796e-487b-8ea6-13704a36a10e",
+      "originalPath": "/workspace/generated_images/exec-ba25e388-796e-487b-8ea6-13704a36a10e.png",
+      "sourcePath": "assets/source/terrain/rock-05.png",
+      "prompt": "Create ONE new isolated environmental prop: one long rounded low frozen granite stone with a broad heavy snow cap and few dirty earth flecks. The attached original BUILDING paintings are only Ice Age Lord style references, never copy their subject. Winter ink-painted semi-realistic fantasy with hand-painted weathered edges at the reference brush scale. Fixed 2:1 dimetric ground camera; upper-left soft light, cool slate-grey shade, muted dirty ivory snow, charcoal rock and brown timber as appropriate. Whole object inside frame, grounded base visible. Isolated transparent background with clean alpha edges and no colored halo. No pedestal, ground tile, hard cast shadow, text, UI, smoke, glow or other objects. Distinct natural shape, no cartoon geometry.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-34b3b142-e5e9-41ce-b50f-44b9d3a788f1",
+      "originalPath": "/workspace/generated_images/exec-34b3b142-e5e9-41ce-b50f-44b9d3a788f1.png",
+      "sourcePath": "assets/source/terrain/rock-06.png",
+      "prompt": "Create ONE new isolated environmental prop: one squat split dark basalt boulder with a deep irregular natural crack and thin drifted snow. The attached original BUILDING paintings are only Ice Age Lord style references, never copy their subject. Winter ink-painted semi-realistic fantasy with hand-painted weathered edges at the reference brush scale. Fixed 2:1 dimetric ground camera; upper-left soft light, cool slate-grey shade, muted dirty ivory snow, charcoal rock and brown timber as appropriate. Whole object inside frame, grounded base visible. Isolated transparent background with clean alpha edges and no colored halo. No pedestal, ground tile, hard cast shadow, text, UI, smoke, glow or other objects. Distinct natural shape, no cartoon geometry.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-e6edf28b-f37b-496b-9998-85aae4d178b5",
+      "originalPath": "/workspace/generated_images/exec-e6edf28b-f37b-496b-9998-85aae4d178b5.png",
+      "sourcePath": "assets/source/terrain/rock-04.png",
+      "prompt": "Create ONE new isolated environmental prop: one small jagged triangular charcoal slate boulder with sparse snow on its top, asymmetrical cracked faces. The attached original BUILDING paintings are only Ice Age Lord style references, never copy their subject. Winter ink-painted semi-realistic fantasy with hand-painted weathered edges at the reference brush scale. Fixed 2:1 dimetric ground camera; upper-left soft light, cool slate-grey shade, muted dirty ivory snow, charcoal rock and brown timber as appropriate. Whole object inside frame, grounded base visible. Isolated transparent background with clean alpha edges and no colored halo. No pedestal, ground tile, hard cast shadow, text, UI, smoke, glow or other objects. Distinct natural shape, no cartoon geometry.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-249e5a49-0c25-427c-b017-02792ca14e28",
+      "originalPath": "/workspace/generated_images/exec-249e5a49-0c25-427c-b017-02792ca14e28.png",
+      "sourcePath": "assets/source/terrain/rock-07.png",
+      "prompt": "Create ONE new isolated environmental prop: one low three-facet irregular grey-blue fieldstone with snowy upper-left shoulder. The attached original BUILDING paintings are only Ice Age Lord style references, never copy their subject. Winter ink-painted semi-realistic fantasy with hand-painted weathered edges at the reference brush scale. Fixed 2:1 dimetric ground camera; upper-left soft light, cool slate-grey shade, muted dirty ivory snow, charcoal rock and brown timber as appropriate. Whole object inside frame, grounded base visible. Isolated transparent background with clean alpha edges and no colored halo. No pedestal, ground tile, hard cast shadow, text, UI, smoke, glow or other objects. Distinct natural shape, no cartoon geometry.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-76d29c57-5d77-4f33-89db-ed6862d472d8",
+      "originalPath": "/workspace/generated_images/exec-76d29c57-5d77-4f33-89db-ed6862d472d8.png",
+      "sourcePath": "assets/source/terrain/rock-08.png",
+      "prompt": "Create ONE new isolated environmental prop: one narrow broken upright slate fragment tilted right, chipped base and sparse snow on the top. The attached original BUILDING paintings are only Ice Age Lord style references, never copy their subject. Winter ink-painted semi-realistic fantasy with hand-painted weathered edges at the reference brush scale. Fixed 2:1 dimetric ground camera; upper-left soft light, cool slate-grey shade, muted dirty ivory snow, charcoal rock and brown timber as appropriate. Whole object inside frame, grounded base visible. Isolated transparent background with clean alpha edges and no colored halo. No pedestal, ground tile, hard cast shadow, text, UI, smoke, glow or other objects. Distinct natural shape, no cartoon geometry.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-a5cdcaf1-8255-49bb-a3ed-04550b2a790c",
+      "originalPath": "/workspace/generated_images/exec-a5cdcaf1-8255-49bb-a3ed-04550b2a790c.png",
+      "sourcePath": "assets/source/terrain/bare-02.png",
+      "prompt": "Create ONE new isolated environmental prop: one slender bare birch-like dead tree with a narrow upright trunk, fine irregular branching crown and tiny snow caps. The attached original BUILDING paintings are only Ice Age Lord style references, never copy their subject. Winter ink-painted semi-realistic fantasy with hand-painted weathered edges at the reference brush scale. Fixed 2:1 dimetric ground camera; upper-left soft light, cool slate-grey shade, muted dirty ivory snow, charcoal rock and brown timber as appropriate. Whole object inside frame, grounded base visible. Isolated transparent background with clean alpha edges and no colored halo. No pedestal, ground tile, hard cast shadow, text, UI, smoke, glow or other objects. Distinct natural shape, no cartoon geometry.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    },
+    {
+      "generationId": "exec-29cdb037-b45c-433c-87f2-d404cae32076",
+      "originalPath": "/workspace/generated_images/exec-29cdb037-b45c-433c-87f2-d404cae32076.png",
+      "sourcePath": "assets/source/terrain/bare-03.png",
+      "prompt": "Create ONE new isolated environmental prop: one low gnarled dead winter tree stump with thick crooked branching limbs and heavy snow on the sheltered upper surfaces. The attached original BUILDING paintings are only Ice Age Lord style references, never copy their subject. Winter ink-painted semi-realistic fantasy with hand-painted weathered edges at the reference brush scale. Fixed 2:1 dimetric ground camera; upper-left soft light, cool slate-grey shade, muted dirty ivory snow, charcoal rock and brown timber as appropriate. Whole object inside frame, grounded base visible. Isolated transparent background with clean alpha edges and no colored halo. No pedestal, ground tile, hard cast shadow, text, UI, smoke, glow or other objects. Distinct natural shape, no cartoon geometry.",
+      "recoveryStatus": "Original generation record retained; final source set recovered from committed tree."
+    }
+  ],
+  "recoveredCommit": "90fad0cd8a1e9d2915993edbbe6c868e5fa72233",
+  "retainedPngMasters": 25
+}

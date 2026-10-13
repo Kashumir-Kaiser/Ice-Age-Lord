@@ -13,7 +13,13 @@ export class TerrainChunkCache {
   private disposed=false;
   bytes=0;
   paint:HTMLImageElement|null=null;
-  constructor(readonly sampler:TerrainSampler,public limit:number,public size:number,readonly notify:()=>void,readonly maxQueue=64){
+  readonly sampler:TerrainSampler;
+  limit:number;
+  size:number;
+  readonly notify:()=>void;
+  readonly maxQueue:number;
+  constructor(sampler:TerrainSampler,limit:number,size:number,notify:()=>void,maxQueue=64){
+    this.sampler=sampler;this.limit=limit;this.size=size;this.notify=notify;this.maxQueue=maxQueue;
     if(typeof Worker!=='undefined')try{
       this.worker=new Worker(new URL('./terrain.worker.ts',import.meta.url),{type:'module'});
       this.worker.onmessage=(event:MessageEvent<Job&{buffer:Uint8ClampedArray}>)=>{
@@ -42,7 +48,7 @@ export class TerrainChunkCache {
     const work=this.working;if(!work)return generated;const span=64*2**work.level,step=span/(work.size-2);
     // Incremental fallback checks the budget once per scanline and resumes the same buffer next frame.
     while(work.row<work.size&&performance.now()-start<budget){const py=work.row++;
-      for(let px=0;px<work.size;px++){const color=this.sampler.sample(work.x*span+(px-1)*step,work.y*span+(py-1)*step).color,index=(py*work.size+px)*4;
+      for(let px=0;px<work.size;px++){const color=this.sampler.sample(work.x*span+(px-1)*step,work.y*span+(py-1)*step,step).color,index=(py*work.size+px)*4;
         work.buffer[index]=color[0];work.buffer[index+1]=color[1];work.buffer[index+2]=color[2];work.buffer[index+3]=255;
       }
     }
@@ -52,12 +58,16 @@ export class TerrainChunkCache {
   private install(job:Job&{buffer:Uint8ClampedArray}):void {
     const canvas=document.createElement('canvas');canvas.width=canvas.height=job.size;const ctx=canvas.getContext('2d')!;
     ctx.putImageData(new ImageData(new Uint8ClampedArray(job.buffer),job.size,job.size),0,0);
-    if(this.paint){
+    if(this.paint&&job.level<=2){
       const span=64*2**job.level,worldTile=32,scale=(job.size-2)/span;
       ctx.save();ctx.globalAlpha=.35;ctx.globalCompositeOperation='soft-light';
       // World-anchored UV, shared across chunks and projections, including the one-pixel gutter.
-      ctx.translate(1-job.x*span*scale,1-job.y*span*scale);ctx.scale(worldTile*scale/this.paint.width,worldTile*scale/this.paint.height);
-      const pattern=ctx.createPattern(this.paint,'repeat');if(pattern){ctx.fillStyle=pattern;ctx.fillRect(job.x*span/ worldTile*this.paint.width-2/scale,(job.y*span/worldTile)*this.paint.height-2/scale,span/worldTile*this.paint.width+4/scale,span/worldTile*this.paint.height+4/scale);}ctx.restore();
+      const pattern=ctx.createPattern(this.paint,'repeat');
+      if(pattern){
+        pattern.setTransform(new DOMMatrix([worldTile*scale/this.paint.width,0,0,worldTile*scale/this.paint.height,1-job.x*span*scale,1-job.y*span*scale]));
+        ctx.fillStyle=pattern;ctx.fillRect(0,0,job.size,job.size);
+      }
+      ctx.restore();
     }
     const value:TerrainChunk={key:job.key,x:job.x,y:job.y,level:job.level,span:64*2**job.level,canvas,bytes:job.size*job.size*4};
     const previous=this.cache.get(job.key);if(previous){previous.release?.();previous.canvas.width=0;this.bytes-=previous.bytes;}

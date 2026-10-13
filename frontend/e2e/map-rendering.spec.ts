@@ -32,3 +32,36 @@ test('missing raster derivatives retain registered art and interactions',async({
  await territory(page);await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();
  await page.locator('.territory-building[data-building-id="SITE-LL01-003"]').press('Enter');await expect(page.locator('.territory-building.is-selected')).toHaveAttribute('data-building-id','SITE-LL01-003');
 });
+
+test('twenty map switches dispose departed renderers and preserve territory selection',async({page})=>{
+ test.setTimeout(90000);
+ await page.emulateMedia({reducedMotion:'reduce'});await territory(page);
+ await page.locator('.territory-instance').filter({hasText:'Nhà Lãnh Chúa'}).first().locator('.territory-instance-main').click();
+ for(let i=0;i<20;i++){
+  const menu=page.getByRole('button',{name:'Mở điều hướng'});if(await menu.isVisible())await menu.click();
+  await page.getByRole('navigation',{name:'Các mục giao diện'}).getByRole('button',{name:'Bản đồ',exact:true}).click();
+  await expect(page.locator('.map-render-canvas')).toHaveCount(1);
+  if(await menu.isVisible())await menu.click();
+  await page.getByRole('navigation',{name:'Các mục giao diện'}).getByRole('button',{name:'Lãnh địa',exact:true}).click();
+  await expect(page.locator('.map-render-canvas')).toHaveCount(1);
+ }
+ await expect(page.locator('.territory-building.is-selected')).toHaveAttribute('data-building-id','SITE-LL01-001');
+ await expect.poll(()=>page.evaluate(()=>{
+  const data=(window as unknown as {__mapMetrics:{activeLoops:number;textureBytes:number;queued:number}[]}).__mapMetrics;
+  return data?.slice(0,-1).some(m=>m.activeLoops!==0||m.textureBytes!==0||m.queued!==0);
+ }),{timeout:15000}).toBe(false);
+});
+
+test('losing a WebGL context recovers into one usable canvas with the same selected entity',async({page})=>{
+ await territory(page);
+ const backend=await page.locator('[data-map-renderer]').getAttribute('data-map-renderer');
+ test.skip(backend!=='webgl','Browser has no usable WebGL context; dedicated fallback journey still runs.');
+ await page.locator('.territory-building[data-building-id="SITE-LL01-003"]').press('Enter');
+ await page.locator('.map-render-canvas').evaluate(node=>node.dispatchEvent(new Event('webglcontextlost',{cancelable:true})));
+ await expect(page.locator('[data-map-renderer]')).toHaveAttribute('data-map-renderer','canvas2d');
+ await expect(page.locator('.map-render-canvas')).toHaveCount(1);
+ await expect(page.locator('.territory-building.is-selected')).toHaveAttribute('data-building-id','SITE-LL01-003');
+ await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();
+ await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();
+ await expect(page.locator('.territory-building.is-selected')).toHaveAttribute('data-building-id','SITE-LL01-003');
+});

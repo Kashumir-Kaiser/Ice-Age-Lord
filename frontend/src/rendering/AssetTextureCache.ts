@@ -4,36 +4,51 @@ import type { CompositionLayer } from './SpriteRegistration.ts';
 export function exportPath(asset:AssetManifestEntry,layer:CompositionLayer,lod:'close'|'district'):string {
   return asset.mapExports?.find(e=>e.role===layer.role&&e.lod===lod&&e.orientation===asset.orientation)?.path??layer.path;
 }
-type Entry={refs:number;image:HTMLImageElement|null;texture:Texture|null;request:Promise<HTMLImageElement>;bytes:number;controller:AbortController};
+type Entry={refs:number;image:HTMLImageElement|null;texture:Texture|null;request:Promise<HTMLImageElement>;bytes:number;reservedBytes:number;controller:AbortController;state:'pending'|'ready'|'failed'};
 /** Per-path ownership permits multiple hosts without one destroying another's texture. */
 const shared=new Map<string,Entry>();
 export class AssetTextureCache {
   private owned=new Set<string>();
   private registrations=new Map<string,{path:string;x:number;y:number;width:number;height:number}>();
   private frames=new Map<string,Texture>();
-  register(asset:AssetManifestEntry):void{for(const e of asset.mapExports??[])if(e.atlas)this.registrations.set(e.path,e.atlas);}
+  private estimates=new Map<string,number>();
+  register(asset:AssetManifestEntry,useAtlas=true):void{
+    for(const path of Object.values(asset.layers))if(typeof path==='string')this.estimates.set(path,asset.logicalCanvas.width*asset.logicalCanvas.height*4);
+    for(const entry of asset.mapExports??[]){
+      this.estimates.set(entry.path,entry.width*entry.height*4);
+      const previous=this.registrations.get(entry.path),next=useAtlas?entry.atlas:undefined;
+      if(previous?.path!==next?.path){this.frames.get(entry.path)?.destroy(false);this.frames.delete(entry.path);}
+      if(next){this.registrations.set(entry.path,next);this.estimates.set(next.path,next.atlasWidth*next.atlasHeight*4);}
+      else this.registrations.delete(entry.path);
+    }
+  }
   url(path:string):string{return this.registrations.get(path)?.path??path;}
   frame(path:string):{x:number;y:number;width:number;height:number}|undefined{return this.registrations.get(path);}
   private destroyed=false;
-  constructor(readonly invalidate:()=>void,readonly onError:(path:string)=>void,readonly limit:number){}
+  readonly invalidate:()=>void;
+  readonly onError:(path:string)=>void;
+  limit:number;
+  constructor(invalidate:()=>void,onError:(path:string)=>void,limit:number){this.invalidate=invalidate;this.onError=onError;this.limit=limit;}
   acquire(path:string):HTMLImageElement|null {
     if(this.destroyed)return null;
     path=this.url(path);
     let e=shared.get(path);
     if(!this.owned.has(path)){
+      const estimated=e?.reservedBytes??this.estimates.get(path)??384*384*4;
+      if(this.reservedBytes+estimated>this.limit){this.onError(path);return null;}
       if(!e){
         const image=new Image(),controller=new AbortController();image.decoding='async';
         const request=new Promise<HTMLImageElement>((resolve,reject)=>{
           image.onload=()=>resolve(image);image.onerror=()=>reject(new Error('Cannot decode '+path));
           controller.signal.addEventListener('abort',()=>{image.onload=image.onerror=null;image.src='';reject(new Error('Disposed '+path));},{once:true});image.src=path;
         });
-        e={refs:0,image:null,texture:null,request,bytes:0,controller};shared.set(path,e);
+        e={refs:0,image:null,texture:null,request,bytes:0,reservedBytes:estimated,controller,state:'pending'};shared.set(path,e);
         const target=e;
-        void request.then(value=>{if(!target.refs)return;target.image=value;target.bytes=value.naturalWidth*value.naturalHeight*4;this.invalidate();}).catch(()=>{if(!this.destroyed)this.onError(path);});
+        void request.then(value=>{target.state='ready';if(!target.refs)return;target.image=value;target.bytes=value.naturalWidth*value.naturalHeight*4;target.reservedBytes=target.bytes;}).catch(()=>{target.state='failed';});
       }
       e.refs++;this.owned.add(path);
       // Another host can finish a shared load without this host owning its callback.
-      void e.request.then(()=>{if(!this.destroyed)this.invalidate();}).catch(()=>{});
+      void e.request.then(()=>{if(!this.destroyed)this.invalidate();}).catch(()=>{if(!this.destroyed)this.onError(path);});
     }
     return e?.image??null;
   }
@@ -44,6 +59,9 @@ export class AssetTextureCache {
     let texture=this.frames.get(path);if(!texture){texture=new Texture({source:e.texture.source,frame:new Rectangle(frame.x,frame.y,frame.width,frame.height)});this.frames.set(path,texture);}return texture;
   }
   get bytes():number {let n=0;for(const path of this.owned)n+=shared.get(path)?.bytes??0;return n;}
+  get reservedBytes():number {let n=0;for(const path of this.owned)n+=shared.get(path)?.reservedBytes??0;return n;}
+  get gpuBytes():number {let n=0;for(const path of this.owned){const entry=shared.get(path);if(entry?.texture)n+=entry.bytes;}return n;}
+  get pending():number {let n=0;for(const path of this.owned)if(shared.get(path)?.state==='pending')n++;return n;}
   retain(paths:ReadonlySet<string>):void {
     const resolved=new Set(Array.from(paths).map(path=>this.url(path)));
     for(const path of this.owned)if(!resolved.has(path)){for(const [key,texture] of this.frames)if(this.url(key)===path){texture.destroy(false);this.frames.delete(key);}this.release(path);}

@@ -33,3 +33,13 @@ Finish architecture-aware upper/base/slice behavior, overlap cycling integration
 Rerun exports, production build, all frontend/unit/browser gates, root integration/CI gates and complete the specified deterministic visual matrix. Update the bootstrap workflow into final map validation; it currently prepares baseline/toolchain artifacts, rather than validating the unpublished implementation. Remove the temporary local debug-map.mjs script when continuing.
 
 Implement/run qa:maps and benchmark:maps; the requested full stress/visibility/context-loss/memory experiments and target-device performance validation are not complete. No GPU benchmark or draw-call budget acceptance is claimed. Intel UHD 620 / i3 / 4 GB hardware was unavailable; target-device validation is unverified. No release, merge or deployment occurred.
+
+## Continuation — 2026-10-13
+
+The user recovered and pushed the previous workspace as `90fad0cd8a1e9d2915993edbbe6c868e5fa72233`. Its complete tree and all 25 retained PNG masters were retrieved through the GitHub integration and CI artifacts, verified by Git blob hashes, and restored locally. The thirty image-generation records include superseded variants; no replacement set was generated. The user now requires pushing all work after every ten newly generated assets and before stopping; AGENTS.md records that instruction in committed checkpoint `db7a8e6d0b7d997b776a620c3c3d53aa30e84117`.
+
+CI map run 38427313534 passed production build, the ten frontend test files and deterministic territory/planning/local/world captures. The broader run 38425975418 passed root stages 02–10, then failed the bot lossless-activity-archive assertion. That unrelated failure prevented its frontend job; it is reported rather than hidden or changed in this map task.
+
+Continuation fixes cover complete painted texture gutters, projected bounds/depth shared by scenery and picking, repeated-click overlap cycling, focus picking through faded upper art, planning at strategic zoom, context-loss resource cleanup, pending-image byte admission and surviving shared-image owners. Existing modeled forest/ridge coordinates were retained in the shared sampler; fine snow grain is suppressed at world LOD. New tests cover stale worker results, queue/byte bounds, disposal, shared ownership and late failures. Browser checks now include twenty returns and context-loss fallback.
+
+Executable qa:maps and benchmark:maps scripts were added. Their captures and measurements still require execution and review. The full performance experiment, required asset/orientation coverage and artistic acceptance remain open. No target-device, release or deployment success is claimed.

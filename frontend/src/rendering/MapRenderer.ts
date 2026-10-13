@@ -6,9 +6,10 @@ import type { TerrainChunk } from './TerrainChunkCache.ts';
 import { AssetTextureCache, exportPath } from './AssetTextureCache.ts';
 import { MapMetrics } from './MapMetrics.ts';
 import { MapEffects } from './MapEffects.ts';
-import { artPolygon, composition, spriteRect } from './SpriteRegistration.ts';
+import { artPolygon, composition } from './SpriteRegistration.ts';
 import { pointInPolygon } from './MapPicking.ts';
-import { depthOrder, intersects } from './DepthOrder.ts';
+import { depthOrder } from './DepthOrder.ts';
+import { projectBuildings } from './BuildingGeometry.ts';
 import { MAP_PALETTE, QUALITY, AdaptiveQuality, chooseLOD } from './mapStyle.ts';
 import type { Quality, SceneLOD } from './mapStyle.ts';
 import { screenToWorld, worldToScreen } from '../territory/projection.ts';
@@ -55,8 +56,9 @@ export class MapRenderer {
   }
   async init(forceFallback=false):Promise<void>{
     if(this.destroyed)return;
+    let initializing:Application|null=null;
     if(!forceFallback)try{
-      const app=new Application();
+      const app=new Application();initializing=app;
       await app.init({canvas:this.canvas,preference:'webgl',autoStart:false,sharedTicker:false,background:MAP_PALETTE.snow,antialias:false,resolution:Math.min(devicePixelRatio||1,QUALITY[this.quality].dpr),autoDensity:true,width:this.size.width,height:this.size.height});
       if(this.destroyed){app.destroy(false,{children:true,texture:false,textureSource:false});return;}
       this.app=app;
@@ -64,7 +66,11 @@ export class MapRenderer {
       if(gl){const elements=gl.drawElements.bind(gl),arrays=gl.drawArrays.bind(gl);gl.drawElements=(...args)=>{this.draws++;elements(...args);};gl.drawArrays=(...args)=>{this.draws++;arrays(...args);};}
       app.stop();this.transferred=true;app.stage.addChild(this.stage,this.effectsGraphics);this.canvas.addEventListener('webglcontextlost',this.lost);
       this.metrics.data.backend='webgl';this.status('webgl');
-    }catch(error){this.metrics.error('WebGL initialization: '+String(error));this.app=null;forceFallback=true;}
+    }catch(error){
+      this.metrics.error('WebGL initialization: '+String(error));
+      try{initializing?.destroy(false,{children:false,texture:false,textureSource:false});}catch{ /* Initialization can fail before Pixi creates a renderer. */ }
+      this.app=null;forceFallback=true;
+    }
     if(forceFallback){
       // A canvas that acquired WebGL cannot acquire 2D. Replace its element, preserving the host.
       const old=this.canvas,next=document.createElement('canvas');next.className=old.className;next.setAttribute('aria-hidden','true');old.replaceWith(next);this.canvas=next;
@@ -73,7 +79,8 @@ export class MapRenderer {
     this.resize(this.size);this.invalidate();
   }
   private lost=(event:Event)=>{event.preventDefault();this.metrics.error('WebGL context lost');this.stop();this.canvas.removeEventListener('webglcontextlost',this.lost);
-    this.app?.destroy(false,{children:false,texture:false,textureSource:false});this.app=null;this.clearSprites();this.effectsGraphics=new Graphics();this.stage=new Container();void this.init(true);
+    this.clearSprites();this.effectsGraphics.destroy();this.stage.destroy({children:true,texture:false,textureSource:false});
+    this.app?.destroy(false,{children:false,texture:false,textureSource:false});this.app=null;this.effectsGraphics=new Graphics();this.stage=new Container();void this.init(true);
   };
   update(snapshot:MapSnapshot):void{
     if(this.destroyed)return;
@@ -93,7 +100,7 @@ export class MapRenderer {
   setHidden(hidden:boolean):void{this.hidden=hidden;if(hidden)this.stop();else{this.previous=0;this.invalidate();}}
   invalidate():void{if(this.destroyed)return;this.dirty=true;if(!this.raf&&!this.hidden){this.metrics.data.activeLoops=1;this.raf=requestAnimationFrame(this.frame);}}
   private stop():void{if(this.raf)cancelAnimationFrame(this.raf);this.raf=0;this.metrics.data.activeLoops=0;}
-  private setQuality(quality:Quality):void{if(quality===this.quality)return;this.quality=quality;this.terrain.size=QUALITY[quality].textureSize;this.terrain.limit=QUALITY[quality].terrainBytes;this.terrain.invalidate();this.resize(this.size);}
+  private setQuality(quality:Quality):void{if(quality===this.quality)return;this.quality=quality;this.assets.limit=QUALITY[quality].totalBytes-QUALITY[quality].terrainBytes;this.terrain.size=QUALITY[quality].textureSize;this.terrain.limit=QUALITY[quality].terrainBytes;this.terrain.invalidate();this.resize(this.size);}
   private project=(p:WorldPoint):WorldPoint=>{
     if(this.snapshot.projection==='territory')return worldToScreen(p,this.snapshot.camera,this.size);
     const sy=this.scale(),sx=this.snapshot.northExtent?this.size.width/this.snapshot.northExtent.width:sy;
@@ -140,33 +147,32 @@ export class MapRenderer {
     const x0=Math.floor(bounds.minX/span)-1,x1=Math.floor(bounds.maxX/span)+1,y0=Math.floor(bounds.minY/span)-1,y1=Math.floor(bounds.maxY/span)+1;
     for(let x=x0;x<=x1;x++){this.terrain.request(x,y0,this.level);this.terrain.request(x,y1,this.level);}for(let y=y0+1;y<y1;y++){this.terrain.request(x0,y,this.level);this.terrain.request(x1,y,this.level);}
     const selected=this.snapshot.buildings.find(b=>b.selected),target=selected?this.project(selected.point):null;
-    const buildingObjects=this.snapshot.buildings.flatMap(b=>{
-      if(!b.asset)return [];const ground=this.project(b.point),rect=spriteRect(b.asset,ground,scale),visual={minX:rect.x,minY:rect.y,maxX:rect.x+rect.width,maxY:rect.y+rect.height};
-      if(!intersects(visual,{minX:-16,minY:-16,maxX:this.size.width+16,maxY:this.size.height+16}))return [];
-      const width=b.orientation==='east'||b.orientation==='west'?b.footprint.depthM:b.footprint.widthM,depth=b.orientation==='east'||b.orientation==='west'?b.footprint.widthM:b.footprint.depthM;
-      return [{...b,rect,ground,id:b.id,depth:ground.y,bounds:visual,footprint:{widthM:b.footprint.widthM,depthM:b.footprint.depthM,minX:b.point.x-width/2,maxX:b.point.x+width/2,minY:b.point.y-depth/2,maxY:b.point.y+depth/2}}];
-    });
+    const buildingObjects=projectBuildings(this.snapshot.buildings,this.project,scale,this.size);
     const ordered=depthOrder(buildingObjects);if(ordered.cycles.length)this.metrics.error('depth cycle: '+ordered.cycles.join(','));
+    const preferDistrict=this.quality==='low'||new Set(buildingObjects.map(b=>b.assetId)).size*4*1048576>this.assets.limit;
     const worldProps=this.sampler.props(bounds,1/scale).filter(p=>!this.snapshot.buildings.some(b=>Math.abs(b.point.x-p.x)<b.footprint.widthM/2+p.size&&Math.abs(b.point.y-p.y)<b.footprint.depthM/2+p.size));
     const props=worldProps.map(p=>{const ground=this.project(p),height=p.size*scale*(p.kind==='conifer'?1.8:.6),width=height*(p.kind==='conifer'?.65:1.9);return {id:'prop:'+p.id,path:'/assets/map/terrain/'+p.kind+'-'+String(p.variant%(p.kind==='conifer'?6:p.kind==='rock'?8:8)+1).padStart(2,'0')+'.png',x:ground.x-width/2,y:ground.y-height*.9,width,height,alpha:1,depth:ground.y};});
     // Architectural order from the partial order is preserved; props are inserted by their ground depths.
     let propIndex=0;const sortedProps=props.sort((a,b)=>a.depth-b.depth||a.id.localeCompare(b.id));
     const drawBuilding=(b:typeof buildingObjects[number])=>{
-      const asset=b.asset!;this.assets.register(asset);const lod=chooseLOD(2*(b.footprint.widthM+b.footprint.depthM)*scale,this.lod.get(b.id));this.lod.set(b.id,lod);
+      const asset=b.asset!;this.assets.register(asset,this.quality!=='low');const lod=chooseLOD(2*(b.footprint.widthM+b.footprint.depthM)*scale,this.lod.get(b.id));this.lod.set(b.id,lod);
       const occludes=Boolean(target&&!b.selected&&b.depth>this.project(selected!.point).y&&pointInPolygon(target,artPolygon(asset.occlusionRegion.upper,b.rect)));
-      if(lod==='regional'){const width=12,height=12;draws.push({id:b.id+':symbol',path:asset.layers.uiIcon!,x:b.ground.x-width/2,y:b.ground.y-height,width,height,alpha:b.draft?.55:1});return;}
-      for(const layer of composition(asset,this.snapshot.mode,occludes,b.active,b.orientation)){const exported=exportPath(asset,layer,this.quality==='low'?'district':lod),path=(this.failures.has(exported)||this.failures.has(this.assets.url(exported)))?layer.path:exported;draws.push({id:b.id+':'+layer.role,path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});}
+      if(lod==='regional'&&this.snapshot.mode!=='planning'){const width=12,height=12;draws.push({id:b.id+':symbol',path:asset.layers.uiIcon!,x:b.ground.x-width/2,y:b.ground.y-height,width,height,alpha:b.draft?.55:1});return;}
+      for(const layer of composition(asset,this.snapshot.mode,occludes,b.active,b.orientation)){const exported=exportPath(asset,layer,preferDistrict||lod!=='close'?'district':'close'),path=(this.failures.has(exported)||this.failures.has(this.assets.url(exported)))?layer.path:exported;draws.push({id:b.id+':'+layer.role,path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});}
     };
     for(const b of ordered.objects){while(propIndex<sortedProps.length&&sortedProps[propIndex].depth<=b.depth)draws.push(sortedProps[propIndex++]);drawBuilding(b);}while(propIndex<sortedProps.length)draws.push(sortedProps[propIndex++]);
     for(const d of draws)if(!d.path.startsWith('chunk:')){used.add(d.path);this.assets.acquire(d.path);}
     this.assets.retain(used);
     if(this.app)this.renderWebGL(draws);else if(this.context)this.render2D(draws);
-    const m=this.metrics.data;m.textureBytes=this.assets.bytes+this.terrain.bytes+Math.ceil(this.size.width*this.size.height*QUALITY[this.quality].dpr**2*8);m.terrainBytes=this.terrain.bytes;m.queued=this.terrain.pending;m.visible=buildingObjects.length+props.length;m.total=this.snapshot.buildings.length+worldProps.length;
+    const m=this.metrics.data;
+    let terrainGPUBytes=0;for(const texture of this.chunkTextures.values())terrainGPUBytes+=texture.source.width*texture.source.height*4;
+    m.textureBytes=this.app?this.assets.gpuBytes+terrainGPUBytes+Math.ceil(this.size.width*this.size.height*QUALITY[this.quality].dpr**2*8):0;
+    m.decodedBytes=this.assets.bytes+this.terrain.bytes;m.terrainBytes=terrainGPUBytes;m.queued=this.terrain.pending;m.pendingTextures=this.assets.pending;m.visible=buildingObjects.length+props.length;m.total=this.snapshot.buildings.length+worldProps.length;
   }
   private groundDraw(chunk:TerrainChunk):Draw {
     const scale=this.scale(),step=chunk.span/(chunk.canvas.width-2),ground=this.project({x:chunk.x*chunk.span-step,y:chunk.y*chunk.span-step});
     const matrix=this.snapshot.projection==='territory'?new Matrix(2*step*scale,step*scale,2*step*scale,-step*scale,ground.x,ground.y):new Matrix(step*(this.snapshot.northExtent?this.size.width/this.snapshot.northExtent.width:scale),0,0,-step*scale,ground.x,ground.y);
-    if(!this.chunkTextures.has(chunk.key)&&this.app){const texture=Texture.from(chunk.canvas);this.chunkTextures.set(chunk.key,texture);chunk.release=()=>{texture.destroy(true);this.chunkTextures.delete(chunk.key);};}
+    if(!this.chunkTextures.has(chunk.key)&&this.app){const texture=Texture.from(chunk.canvas);this.chunkTextures.set(chunk.key,texture);chunk.release=()=>{if(!texture.destroyed)texture.destroy(true);this.chunkTextures.delete(chunk.key);};}
     return {id:'chunk:'+chunk.key,path:'chunk:'+chunk.key,x:0,y:0,width:chunk.canvas.width,height:chunk.canvas.height,alpha:1,matrix};
   }
   private renderWebGL(draws:Draw[]):void {
@@ -192,5 +198,5 @@ export class MapRenderer {
     }
   }
   private clearSprites():void{for(const s of this.drawSprites.values())s.destroy();this.drawSprites.clear();for(const t of this.chunkTextures.values())if(!t.destroyed)t.destroy(true);this.chunkTextures.clear();}
-  destroy():void{if(this.destroyed)return;this.destroyed=true;this.stop();this.canvas.removeEventListener('webglcontextlost',this.lost);this.clearSprites();this.terrain.destroy();this.assets.destroy();if(this.app){this.app.destroy(false,{children:true,texture:false,textureSource:false});this.app=null;}this.canvas.width=this.canvas.height=0;this.context=null;Object.assign(this.metrics.data,{textureBytes:0,terrainBytes:0,queued:0,activeLoops:0,visible:0,total:0});void this.transferred;}
+  destroy():void{if(this.destroyed)return;this.destroyed=true;this.stop();this.canvas.removeEventListener('webglcontextlost',this.lost);this.clearSprites();this.terrain.destroy();this.assets.destroy();if(this.app){this.app.destroy(false,{children:true,texture:false,textureSource:false});this.app=null;}this.canvas.width=this.canvas.height=0;this.context=null;Object.assign(this.metrics.data,{textureBytes:0,decodedBytes:0,terrainBytes:0,queued:0,pendingTextures:0,activeLoops:0,visible:0,total:0});void this.transferred;}
 }

@@ -12,6 +12,7 @@ import { FogDefinitions, MapEntityGlyph } from './map/MapLayers';
 import './map-refinement.css';
 import MapCanvas from './rendering/MapCanvas';
 import { explorationSnapshot, permittedEntities } from './rendering/MapSceneAdapter';
+import { qaWorldFixture } from './rendering/mapFixtures';
 
 type LayerState = { buildings: boolean; resources: boolean; discoveries: boolean };
 type PointerPoint = { x: number; y: number; pointerType: string };
@@ -60,11 +61,12 @@ const distance = (a: PointerPoint, b: PointerPoint) => Math.hypot(a.x - b.x, a.y
 const midpoint = (a: PointerPoint, b: PointerPoint): PointerPoint => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, pointerType: 'touch' });
 
 export default function MapScene({
-  selectedEntity, onSelectEntity, compact = false, clockSeconds, onClockChange, visibleMap, camera, onCameraChange,
+  selectedEntity, onSelectEntity, compact = false, clockSeconds, onClockChange, visibleMap:suppliedVisibleMap, camera, onCameraChange,
   fireLevel, onFireLevelChange, fireActive, onFireActiveChange, sourceAtlas, onSourceAtlasChange,
   showHeat, onShowHeatChange, showExploration, onShowExplorationChange, playerName, playerPosition,
   followPlayer, onFollowPlayerChange, onOpenPlayerProfile, onOpenFullMap,
 }: Props) {
+  const visibleMap=useMemo(()=>qaWorldFixture(suppliedVisibleMap),[suppliedVisibleMap]);
   const unique = useId().replace(/[^a-zA-Z0-9]/g, '') || 'map';
   const rootRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);

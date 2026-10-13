@@ -11,12 +11,12 @@ export function pointInPolygon(point: WorldPoint, polygon: readonly WorldPoint[]
   }
   return inside;
 }
-export type Pickable = { id: string; ground: readonly WorldPoint[]; silhouette: readonly WorldPoint[]; selectable: boolean };
+export type Pickable = { id: string; ground: readonly WorldPoint[]; silhouette: readonly WorldPoint[]; silhouettes?: readonly (readonly WorldPoint[])[]; selectable: boolean };
 /** Items are back-to-front. No alpha readback or GPU dependency. */
 export function pickStack(point: WorldPoint, objects: readonly Pickable[], planning: boolean): string[] {
   const art: string[]=[],ground: string[]=[];
   for(let i=objects.length-1;i>=0;i--){const o=objects[i];if(!o.selectable)continue;
-    if(!planning&&pointInPolygon(point,o.silhouette))art.push(o.id);
+    if(!planning&&(pointInPolygon(point,o.silhouette)||o.silhouettes?.some(shape=>pointInPolygon(point,shape))))art.push(o.id);
     else if(pointInPolygon(point,o.ground))ground.push(o.id);
   }
   return [...art,...ground];

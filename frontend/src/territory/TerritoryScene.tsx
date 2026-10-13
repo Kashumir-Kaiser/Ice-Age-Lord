@@ -9,7 +9,9 @@ import './territory.css';
 import MapCanvas from '../rendering/MapCanvas';
 import { territorySnapshot } from '../rendering/MapSceneAdapter';
 import { spriteRect, artPolygon } from '../rendering/SpriteRegistration';
-import { pointInPolygon } from '../rendering/MapPicking';
+import { pointInPolygon, pickStack, cyclePick, pointerCSS } from '../rendering/MapPicking';
+import { projectBuildings } from '../rendering/BuildingGeometry';
+import { depthOrder } from '../rendering/DepthOrder';
 import { cameraOverlayTransform } from '../rendering/transientCamera';
 import { footprintHeatRelation, snapPlanningPoint, validatePlacement } from './placement';
 import { fitWorldBounds, isoToWorld, screenToWorld, worldToIso, worldToScreen, zoomAtScreenPoint } from './projection';
@@ -66,6 +68,7 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
   const touches=useRef(new Map<number,{x:number;y:number}>());
   const pinch=useRef<{ids:[number,number];distance:number;anchor:WorldPoint;origin:TerritoryCamera}|null>(null);
   const ignoreClick=useRef(false);
+  const lastPick=useRef<{point:WorldPoint;ids:string[]}|null>(null);
   const nextDraft=useRef(1);
   const [size,setSize]=useState({width:0,height:0});
   const [manifest,setManifest]=useState<AssetManifest|null>(null);
@@ -337,6 +340,25 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
   };
   const renderDrafts=[...drafts,...(denseQa?denseFixture:[]),...(activeDefinition?[{id:'placement-ghost',definitionId:activeDefinition.id,assetId:activeDefinition.assetId,x:currentPlacementLocal.x,y:currentPlacementLocal.y,footprint:activeDefinition.footprint,orientation:placingOrientation}]:[])];
   const renderSnapshot=useMemo(()=>territorySnapshot(settlement,manifest,activeCamera,effectiveMode,selectedRef?.id??null,renderDrafts),[settlement,manifest,activeCamera,effectiveMode,selectedRef?.id,drafts,denseQa,activeDefinition,ghostWorld,placingOrientation]);
+  const captureSelection=(event:React.MouseEvent<SVGSVGElement>)=>{
+    if(ignoreClick.current){ignoreClick.current=false;event.preventDefault();event.stopPropagation();return;}
+    if(activeDefinition||event.detail===0||event.target instanceof Element&&event.target.closest('.territory-player-marker'))return;
+    const point=pointerCSS({x:event.clientX,y:event.clientY},event.currentTarget.getBoundingClientRect(),size);
+    const order=depthOrder(projectBuildings(renderSnapshot.buildings,p=>worldToScreen(p,transient.current,size),3*transient.current.zoom,size)).objects;
+    const focused=order.find(b=>b.selected);
+    const stack=pickStack(point,order.map(b=>{
+      const f=b.footprint;
+      const ground=[{x:f.minX,y:f.minY},{x:f.maxX,y:f.minY},{x:f.maxX,y:f.maxY},{x:f.minX,y:f.maxY}].map(p=>worldToScreen(p,transient.current,size));
+      const faded=effectiveMode==='focus'&&focused&&!b.selected&&b.depth>focused.depth&&pointInPolygon(focused.ground,artPolygon(b.asset!.occlusionRegion.upper,b.rect));
+      return {id:b.id,ground,silhouette:faded?[]:artPolygon(b.asset!.hitPolygon??b.asset!.artFootprint,b.rect),silhouettes:faded?[]:[artPolygon(b.asset!.occlusionRegion.upper,b.rect)],selectable:!b.draft};
+    }),effectiveMode==='planning');
+    if(!stack.length)return;
+    const previous=lastPick.current,repeated=previous&&Math.hypot(previous.point.x-point.x,previous.point.y-point.y)<6&&previous.ids.join('|')===stack.join('|');
+    const selected=settlement.buildings.find(b=>b.ref.id===selectedRef?.id)?.id??null;
+    const id=repeated||event.altKey?cyclePick(stack,selected):stack[0];
+    const building=settlement.buildings.find(b=>b.id===id);
+    if(building){event.preventDefault();event.stopPropagation();lastPick.current={point,ids:stack};onSelectEntity(building.ref);}
+  };
 
   return <section className="territory-scene-shell" aria-label="Bố cục lãnh địa">
     <div className="territory-toolbar">
@@ -360,7 +382,7 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
     <div className="territory-stage" ref={rootRef}>
       <MapCanvas snapshot={renderSnapshot} label="Địa hình và công trình lãnh địa. Dùng danh sách công trình hoặc điều khiển mặt bằng để chọn."/>
       <svg ref={svgRef} className="territory-scene-svg" viewBox={`0 0 ${size.width} ${size.height}`} role="img" aria-label="Lãnh địa theo phối cảnh isometric cố định. Kéo để di chuyển, cuộn để thu phóng, dùng phím mũi tên để điều hướng."
-        tabIndex={0} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={()=>{presentCamera(transient.current,true);gesture.current=null;pinch.current=null;touches.current.clear();ignoreClick.current=true;setTimeout(()=>{ignoreClick.current=false;},0);}} onLostPointerCapture={event=>{if(gesture.current?.pointerId===event.pointerId){presentCamera(transient.current,true);gesture.current=null;}}} onClickCapture={event=>{if(ignoreClick.current){ignoreClick.current=false;event.preventDefault();event.stopPropagation();}}} onClick={canvasClick} onKeyDown={keyDown}>
+        tabIndex={0} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={()=>{presentCamera(transient.current,true);gesture.current=null;pinch.current=null;touches.current.clear();ignoreClick.current=true;setTimeout(()=>{ignoreClick.current=false;},0);}} onLostPointerCapture={event=>{if(gesture.current?.pointerId===event.pointerId){presentCamera(transient.current,true);gesture.current=null;}}} onClickCapture={captureSelection} onClick={canvasClick} onKeyDown={keyDown}>
         <g className="territory-camera-overlay">
         {displayedRadius>0&&<ellipse cx={firePoint.x} cy={firePoint.y} rx={heatRx} ry={heatRy} fill="none" stroke="#efbf7f" strokeOpacity=".78" strokeWidth="1.6" strokeDasharray="7 6" pointerEvents="none"/>}
         {(showGrid||effectiveMode==='planning')&&gridLines.map(line=>{const a=worldToScreen(line.from,activeCamera,size,PX_PER_ISO_METRE),b=worldToScreen(line.to,activeCamera,size,PX_PER_ISO_METRE);return <line key={line.key} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={line.major?'#c7d8d3':'#a6c1bd'} strokeOpacity={line.major?.13:.06} strokeWidth={line.major?1:.7} pointerEvents="none"/>;})}
