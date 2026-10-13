@@ -8,13 +8,14 @@ import { elapsedMsToWorldClock } from './time.ts';
 import { butcherCorpse, directReviveAvailability } from './stage07.ts';
 import { attackAvailability, projectStage07Combat } from './combat.ts';
 import { openingBoardView, Q08_ID } from './stage08.ts';
-import { projectedBotResources } from './bots/economy.ts';
+import { projectedBotResources, projectedBotWaterMl } from './bots/economy.ts';
 import { botGradeAt, botKindAt } from './bots/generation.ts';
 import { botConstructionPermille } from './bots/state.ts';
 import { botArmyMovementOrder, botArmyPosition } from './bots/movement.ts';
 import { chestLootProjection } from './chestLoot.ts';
 import { eventMechanicsFor } from '../../content/src/eventRules.ts';
 import { EVENT_SHOP_MARK_PRICE } from './eventRuntime.ts';
+import { BOT_MARKET_ACCESS_RADIUS_MM, botMarketListingBlocker, compareMarketListings, playerBlueprintAdapter } from './bots/market.ts';
 
 export function entityKey(ref: EntityRef): string {
   return `${ref.type}:${ref.id}`;
@@ -295,7 +296,10 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
       level: inspected ? chunk.levels[offset]! : null,
       militaryCount: inspected ? chunk.armySize[offset]! : null,
       structureCount: inspected ? bot.structures.filter(item => item.status !== 'destroyed').length : null,
-      status: inspected ? (chunk.alive[offset] === 0 ? 'destroyed' as const : 'active' as const) : 'unknown' as const,
+      status: inspected ? bot.lordFate.status === 'dead' ? 'dead' as const
+        : bot.lordFate.status === 'captured' ? 'captured' as const
+          : bot.lordFate.status === 'dispossessed' ? 'dispossessed' as const
+            : chunk.alive[offset] === 0 ? 'destroyed' as const : 'active' as const : 'unknown' as const,
     }];
   }).sort((a, b) => a.botId < b.botId ? -1 : a.botId > b.botId ? 1 : 0);
   const enemyArmies = (state.botPopulation?.chunks ?? []).flatMap(chunk => chunk.cold.flatMap((bot, offset) => {
@@ -338,7 +342,11 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
     current: true,
     talent: { grade: botGradeAt(inspectedBot.chunk, inspectedBot.offset), kind: botKindAt(inspectedBot.chunk, inspectedBot.offset) },
     level: inspectedBot.chunk.levels[inspectedBot.offset]!,
+    territoryLevel: inspectedBot.bot.territoryLevel,
     population: inspectedBot.chunk.population[inspectedBot.offset]!,
+    lordFate: inspectedBot.bot.lordFate,
+    potableWaterMl: projectedBotWaterMl(inspectedBot.bot, inspectedBot.chunk.population[inspectedBot.offset]!,
+      inspectedBot.chunk.lastIntegratedAtElapsedMs[inspectedBot.offset]!, state.simElapsedMs),
     resourceBalances: projectedBotResources(inspectedBot.chunk, inspectedBot.offset, inspectedBot.bot, state.simElapsedMs),
     structures: inspectedBot.bot.structures.map(structure => ({
       id: structure.id, blueprintId: structure.blueprintId, anchor: structure.anchor, level: structure.level, status: structure.status,
@@ -365,6 +373,23 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
   const caravanVisible = Boolean(caravanPosition && ['distressed', 'negotiated', 'escorting', 'arrived'].includes(caravan!.status)
     && sights.some(sight => Math.hypot(caravanPosition!.xMm - sight.center.xMm, caravanPosition!.yMm - sight.center.yMm) <= sight.radiusMm));
   const atKronaGate = playerAtSiteForView(state, world, 'SITE-LL01-046');
+  const marketPosition = world.sites.find(site => site.id === 'SITE-LL01-046')?.position;
+  const botMarketListings = atKronaGate && marketPosition && state.botPopulation
+    ? state.botPopulation.marketListings.filter(listing => listing.status === 'active' && listing.expiresAtElapsedMs > state.simElapsedMs)
+      .flatMap(listing => {
+        const sellerRow = state.botPopulation!.chunks.flatMap(chunk => chunk.cold.map((bot, offset) => ({ bot, alive: chunk.alive[offset] !== 0 })))
+          .find(row => row.bot.botId === listing.sellerBotId);
+        if (!sellerRow || !sellerRow.alive || sellerRow.bot.lordFate.status !== 'active'
+          || Math.hypot(sellerRow.bot.position.xMm - marketPosition.xMm, sellerRow.bot.position.yMm - marketPosition.yMm) > BOT_MARKET_ACCESS_RADIUS_MM) return [];
+        return [{
+          id: listing.id, sellerBotId: listing.sellerBotId, sellerName: sellerRow.bot.name, blueprintId: listing.blueprintId,
+          paymentResource: listing.paymentResource, askAmount: listing.askAmount, expiresAtElapsedMs: listing.expiresAtElapsedMs,
+          compatibleBlueprintId: playerBlueprintAdapter(listing.blueprintId), blocker: botMarketListingBlocker(listing),
+        }];
+      }).sort((a, b) => compareMarketListings(
+        state.botPopulation!.marketListings.find(row => row.id === a.id)!,
+        state.botPopulation!.marketListings.find(row => row.id === b.id)!))
+    : [];
   const projectedQuests = state.quests.filter(quest => quest.state !== 'dormant');
   const q08 = state.quests.find(quest => quest.questId === Q08_ID);
   if (caravanVisible && caravan?.status === 'distressed' && q08?.state === 'dormant') {
@@ -457,6 +482,7 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
         arrivalAtElapsedMs: caravan.arrivalAtElapsedMs,
       } : null,
       marketOffers: atKronaGate ? state.stage08.marketOffers : [],
+      botMarketListings,
       auctionLots: atKronaGate ? state.stage08.auctionLots.filter(lot => lot.status !== 'closed') : [],
       auctionBids: atKronaGate ? state.stage08.auctionBids.filter(bid => bid.bidderId === state.player.id) : [],
       rankSnapshots: state.stage08.rankSnapshots,

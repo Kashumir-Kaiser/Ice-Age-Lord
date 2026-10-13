@@ -95,11 +95,13 @@ export function EventBoard({
               {mode === 'live' && shop.status === 'active' && shop.scoreAvailable < shop.priceScore && <small>Cần thêm {shop.priceScore - shop.scoreAvailable} điểm để mua một dấu ấn.</small>}
               {shop.status !== 'active' && <small>Quầy {shop.status === 'scheduled' ? 'chưa mở' : shop.status === 'closed' ? 'đã khóa' : 'đã hết hạn'}.</small>}
             </section>}
-            {event.readiness !== 'executable_lifecycle' && <small className="shared-event-card__readiness">{event.readiness === 'calendar_only'
-              ? 'Contracts and reward data only; no executable player flow is active.'
-              : event.readiness === 'settlement_blocked'
-                ? 'The fixed leaderboard result is pending its committed contender outcome ledger.'
-                : 'This event is paused because a required runtime contract is unavailable.'}</small>}
+            {event.readiness !== 'executable_lifecycle' && <small className="shared-event-card__readiness">{event.readiness === 'executable_ranked_board'
+              ? 'The opening board settles at T+144h; unresolved reward item slots stay pending.'
+              : event.readiness === 'calendar_only'
+                ? 'Contracts and reward data only; no executable player flow is active.'
+                : event.readiness === 'settlement_blocked'
+                  ? 'The fixed leaderboard result is pending its committed contender outcome ledger.'
+                  : 'This event is paused because a required runtime contract is unavailable.'}</small>}
           </article>;
         })}</div>}
       <small className="shared-event-board__clock">Thời gian hiện tại: {formatTime(nowElapsedMs)}</small>

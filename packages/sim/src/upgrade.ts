@@ -14,6 +14,7 @@ import { OPENING_FIRE_STARTER_FUEL_UNITS, OPENING_WEATHER_RECORD } from '../../c
 import { actorSpeedMmPerHour } from './spatial.ts';
 import { initialWildlifeState } from './wildlife.ts';
 import { EVENT_SHOP_RULE_VERSION, initialEventProgress } from './eventRuntime.ts';
+import { migrateBotPopulation } from './bots/state.ts';
 
 function nextDailyBoundary(elapsed: number, offset: number): number {
   return offset + (Math.floor((elapsed - offset) / DAY_MS) + 1) * DAY_MS;
@@ -579,6 +580,7 @@ export function upgradeGameState(value: unknown, world: WorldDefinition = ACTIVE
   if (candidate.schemaVersion === 11) candidate = migrateV11ToV12(candidate);
   if (candidate.schemaVersion !== GAME_STATE_SCHEMA_VERSION) throw new Error('SAVE_STATE_SCHEMA_UNSUPPORTED');
   if (candidate.construction && !Array.isArray(candidate.construction.operatingServices)) candidate.construction.operatingServices = [];
+  if (candidate.botPopulation) candidate.botPopulation = migrateBotPopulation(candidate.botPopulation);
   verifyStage08State(candidate as unknown as GameState);
   return candidate as unknown as GameState;
 }

@@ -77,6 +77,10 @@ test('opening rank settlement freezes source reward bands; claim creates the com
   assert.equal(playerRow.rank, 2);
   assert.equal(playerRow.rewardBandId, 'RANK_2');
   assert.ok(playerRow.rewardItems.some(item => item.status === 'blocked' && item.blocker === 'SOURCE_CANDIDATE_POOL_NOT_COMPILED'));
+  assert.ok(playerRow.rewardItems.some(item => item.itemTemplateId === 'MEDIUM_RESOURCE_BAG'
+    && item.status === 'blocked' && item.blocker === 'RESOURCE_BAG_CONTENTS_NOT_COMPILED'));
+  assert.ok(playerRow.rewardItems.every(item => item.status === 'committed'
+    ? ['MEAT', 'BREAD', 'BASIC_MEDICINE'].includes(item.itemTemplateId) : Boolean(item.blocker)));
   const beforeHash = snapshot.snapshotSha256;
 
   const command = {
@@ -95,7 +99,7 @@ test('opening rank settlement freezes source reward bands; claim creates the com
   verifyStage08State(reloaded);
   const retry = reduceCommand(reloaded, { ...command, commandId: 'claim-opening-rank-2', expectedRevision: reloaded.revision }, world);
   assert.equal(retry.receipt.accepted, false);
-  assert.equal(retry.receipt.code, 'OPENING_REWARD_ALREADY_CLAIMED');
+  assert.equal(retry.receipt.code, 'OPENING_REWARD_SLOTS_BLOCKED');
   assert.equal(retry.state.inventory.containers.flatMap(container => container.stacks).filter(stack => stack.itemId.startsWith('OPENING-REWARD-LI_LAN-')).length, claimedItems.length);
   assert.equal(claimOpeningLevelReward(reloaded, 'retry', 'OPENING_LEVEL').code, 'OPENING_REWARD_ALREADY_CLAIMED');
 });

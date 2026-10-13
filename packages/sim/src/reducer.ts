@@ -19,7 +19,7 @@ import {
   startSearchJob,
   transferItem,
 } from './spatial.ts';
-import { acceptQ08, cancelAuctionBid, claimOpeningLevelReward, claimQ08Reward, escortQ08, negotiateQ08, placeAuctionBid, purchaseMarketOffer } from './stage08.ts';
+import { acceptQ08, botMarketPurchaseAvailability, buyBotMarketListing, cancelAuctionBid, claimOpeningLevelReward, claimQ08Reward, escortQ08, negotiateQ08, placeAuctionBid, purchaseMarketOffer } from './stage08.ts';
 import { OPENING_LEVEL_CLOSES_AT_MS, OPENING_LEVEL_DISPLAY_DELAY_MS, OPENING_LEVEL_OPENS_AT_MS } from './openingRanking.ts';
 import { openFieldChest } from './chestLoot.ts';
 import { buyEventOffer, claimEventReward, chooseEventPath, recordEventActivities } from './eventRuntime.ts';
@@ -58,6 +58,7 @@ const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | '
   attack: { code: 'COMBAT_RULES_STAGE_07', message: 'Choose an owned, equipped warrior and the visible H0 target.' },
   retreat: { code: 'COMBAT_ENCOUNTER_NOT_ACTIVE', message: 'There is no active encounter to retreat from.' },
   shop_transaction: { code: 'TRADE_RULES_STAGE_08', message: 'Transactions are unavailable until offer, currency and receipt rules are implemented.' },
+  buy_bot_market_listing: { code: 'BOT_MARKET_LISTING_NOT_AVAILABLE', message: 'The bot blueprint listing is unavailable.' },
   accept_quest: { code: 'QUEST_NOT_OFFERED', message: 'The selected fixed quest is not available.' },
   negotiate_caravan: { code: 'CARAVAN_NOT_ACCESSIBLE', message: 'The caravan negotiation is not available at this location.' },
   escort_caravan: { code: 'CARAVAN_NOT_READY_TO_ESCORT', message: 'The caravan is not ready to travel.' },
@@ -110,6 +111,7 @@ export function actionAvailability(type: CommandType): ActionAvailability {
   }
   if (type === 'split_stack' || type === 'merge_stacks' || type === 'consume_item' || type === 'activate_career_card' || type === 'revive' || type === 'butcher_corpse' || type === 'equip' || type === 'unequip_item' || type === 'attack' || type === 'retreat') return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
   if (type === 'shop_transaction' || type === 'accept_quest' || type === 'negotiate_caravan' || type === 'escort_caravan'
+    || type === 'buy_bot_market_listing'
     || type === 'claim_quest_reward' || type === 'place_auction_bid' || type === 'cancel_auction_bid'
     || type === 'claim_event_reward' || type === 'choose_event_path' || type === 'buy_event_offer') return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
   return staticAvailability(type);
@@ -391,6 +393,10 @@ export function previewCommand(
     const result = purchaseMarketOffer(state, world, command.payload.offerId, command.payload.destinationContainerId, command.payload.quantity, 'PREVIEW');
     return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
   }
+  if (command.type === 'buy_bot_market_listing') {
+    const result = botMarketPurchaseAvailability(state, world, command.payload.listingId, command.payload.paymentContainerId, command.payload.paymentItemId);
+    return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
+  }
   if (command.type === 'place_auction_bid') {
     const result = placeAuctionBid(state, world, command.payload.lotId, command.payload.quantity, command.payload.unitBid, 'PREVIEW');
     return result.code ? unavailable(command.type, result.code, result.message) : actionAvailability(command.type);
@@ -656,6 +662,12 @@ export function reduceCommand(
     const result = purchaseMarketOffer(state, world, command.payload.offerId, command.payload.destinationContainerId, command.payload.quantity, command.commandId);
     if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
     return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'SHOP_PURCHASED', result.message);
+  }
+
+  if (command.type === 'buy_bot_market_listing') {
+    const result = buyBotMarketListing(state, world, command.payload.listingId, command.payload.paymentContainerId, command.payload.paymentItemId);
+    if (result.code) return reject(state, command.commandId, result.code, result.message, requestSha256);
+    return acceptMutationMany(state, command, requestSha256, result.state, result.events, 'BOT_BLUEPRINT_PURCHASED', result.message);
   }
 
   if (command.type === 'place_auction_bid') {

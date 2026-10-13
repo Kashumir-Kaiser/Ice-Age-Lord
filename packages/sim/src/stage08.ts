@@ -12,8 +12,9 @@ import {
 import { playerLevelThreshold } from './stage07.ts';
 import { BOT_SIMULATION_RULE_VERSION } from './bots/state.ts';
 import { verifyBotPopulation } from './bots/state.ts';
-import { flushBotPopulationChunks } from './bots/economy.ts';
+import { flushBotPopulationChunks, settleBotMarketListingForPlayer } from './bots/economy.ts';
 import { awardBotOpeningRankRewards } from './bots/rewards.ts';
+import { BOT_MARKET_ACCESS_RADIUS_MM, botMarketListingBlocker, playerBlueprintAdapter } from './bots/market.ts';
 
 export const STAGE08_RULE_VERSION = 'LL01-STAGE-08-QUEST-TRADE-1.0';
 export const Q08_ID = 'QUEST-LL01-08';
@@ -21,6 +22,26 @@ export const Q08_CARAVAN_ID = 'CARAVAN-LL01-01';
 export const KRONA_CURRENCY_ID = 'KRONA';
 export const Q08_REWARD_CONTRACT = 'RW-LL01-08';
 export const OPENING_RANK_CLAIM_KEY = `${OPENING_LEVEL_BOARD_ID}|LI_LAN|${OPENING_LEVEL_REWARD_CONTRACT}`;
+
+const OPENING_REWARD_HANDLERS = new Set(['MEAT', 'BREAD', 'BASIC_MEDICINE']);
+const OPENING_REWARD_BLOCKERS: Readonly<Record<string, string>> = {
+  MEDIUM_RESOURCE_BAG: 'RESOURCE_BAG_CONTENTS_NOT_COMPILED',
+  SMALL_RESOURCE_BAG: 'RESOURCE_BAG_CONTENTS_NOT_COMPILED',
+  SILVER_CHEST: 'REWARD_CHEST_RARITY_MAPPING_NOT_COMPILED',
+  BLACK_IRON_CHEST: 'REWARD_CHEST_RARITY_MAPPING_NOT_COMPILED',
+  TIER_2_LEADER_RECRUITMENT_SCROLL: 'RECRUITMENT_TEMPLATE_POOL_NOT_COMPILED',
+  TIER_2_RANDOM_RECRUITMENT_SCROLL: 'SOURCE_CANDIDATE_POOL_NOT_COMPILED',
+  BLUE_WEAPON: 'WEAPON_TEMPLATE_POOL_NOT_COMPILED',
+  GREEN_WEAPON: 'WEAPON_TEMPLATE_POOL_NOT_COMPILED',
+  GREEN_WEAPON_CHOICE: 'SOURCE_CANDIDATE_POOL_NOT_COMPILED',
+  WHITE_WEAPON: 'WEAPON_TEMPLATE_POOL_NOT_COMPILED',
+  POWER_HEART: 'POWER_HEART_EFFECT_NOT_COMPILED',
+};
+
+function openingRewardBlocker(itemTemplateId: string): string | null {
+  if (OPENING_REWARD_HANDLERS.has(itemTemplateId)) return null;
+  return OPENING_REWARD_BLOCKERS[itemTemplateId] ?? 'OPENING_REWARD_EFFECT_NOT_COMPILED';
+}
 const RIVAL_HOUR_MS = 60 * 60_000;
 const RIVAL_DAY_MS = 24 * RIVAL_HOUR_MS;
 const RIVAL_MEAL_INTERVAL_MS = 12 * RIVAL_HOUR_MS;
@@ -312,6 +333,72 @@ function canReceiveBread(state: GameState, world: WorldDefinition, containerId: 
     && stack.provenance === 'versioned_game_design' && !stack.equipped && (stack.reservedQuantity ?? 0) === 0);
   if (!hasMergeable && container.capacitySlots !== null && container.stacks.length >= container.capacitySlots) return 'DESTINATION_CAPACITY_FULL';
   return null;
+}
+
+function marketPaymentContainer(state: GameState, world: WorldDefinition, containerId: string) {
+  const container = state.inventory.containers.find(item => item.id === containerId);
+  if (!container || !container.observed) return null;
+  const accessible = container.location.kind === 'carried' && container.location.ownerId === state.player.id
+    || container.location.kind === 'site' && playerAtSite(state, world, container.location.siteId)
+    || container.location.kind === 'building' && state.buildings.some(building => building.id === container.location.buildingId
+      && building.position && Math.hypot(building.position.xMm - state.player.position.xMm, building.position.yMm - state.player.position.yMm) <= INTERACTION_RANGE_MM)
+    || container.location.kind === 'unit' && state.ownedUnits.some(unit => unit.id === container.location.unitId && unit.position
+      && Math.hypot(unit.position.xMm - state.player.position.xMm, unit.position.yMm - state.player.position.yMm) <= INTERACTION_RANGE_MM);
+  return accessible ? container : null;
+}
+
+export function botMarketPurchaseAvailability(state: GameState, world: WorldDefinition, listingId: string, containerId: string, itemId: string) {
+  if (!playerAtSite(state, world, 'SITE-LL01-046')) return { code: 'BOT_MARKET_NOT_ACCESSIBLE', message: 'Travel to Krona Gate to buy a listed blueprint.' };
+  const population = state.botPopulation;
+  const listing = population?.marketListings.find(item => item.id === listingId && item.status === 'active');
+  if (!population || !listing) return { code: 'BOT_MARKET_LISTING_NOT_AVAILABLE', message: 'This blueprint listing is no longer active.' };
+  if (state.simElapsedMs >= listing.expiresAtElapsedMs) return { code: 'BOT_MARKET_LISTING_EXPIRED', message: 'This blueprint listing has expired.' };
+  const blocker = botMarketListingBlocker(listing);
+  if (blocker) return { code: blocker, message: 'This listing has no compiled player blueprint or payment adapter.' };
+  const seller = population.chunks.flatMap(chunk => chunk.cold).find(bot => bot.botId === listing.sellerBotId);
+  if (!seller || seller.lordFate.status !== 'active') return { code: 'BOT_MARKET_SELLER_UNAVAILABLE', message: 'The seller is no longer active.' };
+  const market = world.sites.find(site => site.id === 'SITE-LL01-046')?.position;
+  if (!market || Math.hypot(seller.position.xMm - market.xMm, seller.position.yMm - market.yMm) > BOT_MARKET_ACCESS_RADIUS_MM) {
+    return { code: 'BOT_MARKET_SELLER_OUT_OF_REGION', message: 'The seller is outside the Krona Gate market region.' };
+  }
+  const adapter = playerBlueprintAdapter(listing.blueprintId);
+  if (!adapter) return { code: 'BOT_BLUEPRINT_HAS_NO_PLAYER_CONSTRUCTION_ADAPTER', message: 'This blueprint cannot be used by the player construction system.' };
+  if (state.construction.unlockedBlueprintIds.includes(adapter)) return { code: 'BOT_MARKET_BLUEPRINT_ALREADY_UNLOCKED', message: 'This blueprint is already unlocked.' };
+  const container = marketPaymentContainer(state, world, containerId);
+  const stack = container?.stacks.find(item => item.itemId === itemId);
+  if (!container || !stack || stack.templateId !== 'BREAD' || stack.unit !== 'item'
+    || (stack.ownerId !== undefined && stack.ownerId !== state.player.id) || stack.equipped
+    || (stack.reservedQuantity ?? 0) > 0 || (stack.foodUnitsPerItem ?? 0) !== 1
+    || stack.quantity - (stack.reservedQuantity ?? 0) < listing.askAmount) {
+    return { code: 'BOT_MARKET_PAYMENT_UNAVAILABLE', message: `An accessible, unreserved BREAD stack with ${listing.askAmount} units is required.` };
+  }
+  return { code: null, message: 'The player can pay the full ask and receive a supported blueprint.' };
+}
+
+export function buyBotMarketListing(state: GameState, world: WorldDefinition, listingId: string, containerId: string, itemId: string): Stage08Mutation {
+  const available = botMarketPurchaseAvailability(state, world, listingId, containerId, itemId);
+  if (available.code) return unchanged(state, available.code, available.message);
+  const listing = state.botPopulation!.marketListings.find(item => item.id === listingId && item.status === 'active')!;
+  const adapter = playerBlueprintAdapter(listing.blueprintId)!;
+  const next = structuredClone(state);
+  const container = next.inventory.containers.find(item => item.id === containerId)!;
+  const stack = container.stacks.find(item => item.itemId === itemId)!;
+  container.stacks = stack.quantity === listing.askAmount
+    ? container.stacks.filter(item => item.itemId !== itemId)
+    : container.stacks.map(item => item.itemId !== itemId ? item : { ...item, quantity: item.quantity - listing.askAmount });
+  const settled = settleBotMarketListingForPlayer(next.botPopulation!, listingId, state.simElapsedMs);
+  if (settled.code || !settled.population) return unchanged(state, settled.code ?? 'BOT_MARKET_SETTLEMENT_FAILED', 'The seller could not settle this listing at the current boundary.');
+  next.botPopulation = settled.population;
+  next.construction.unlockedBlueprintIds = [...new Set([...next.construction.unlockedBlueprintIds, adapter])].sort();
+  const events = [
+    ...settled.events.map(event => emit(event.type, event.occurredAtElapsedMs, event.payload)),
+    emit('player_bot_blueprint_purchased', state.simElapsedMs, {
+      listingId, sellerBotId: listing.sellerBotId, blueprintItemInstanceId: listing.blueprintItemInstanceId,
+      botBlueprintId: listing.blueprintId, playerBlueprintId: adapter, paymentTemplateId: 'BREAD',
+      paymentQuantity: listing.askAmount, paymentContainerId: containerId, paymentItemId: itemId,
+    }),
+  ];
+  return { state: next, events, code: null, message: `Paid ${listing.askAmount} BREAD and unlocked ${adapter}.` };
 }
 
 export function purchaseMarketOffer(state: GameState, world: WorldDefinition, offerId: string, destinationContainerId: string, quantity: number, commandId: string): Stage08Mutation {
@@ -715,12 +802,16 @@ export function verifyStage08State(state: GameState): void {
   if (openingClaimed && !openingPlayerRow) throw new Error('OPENING_RANK_CLAIM_RECEIPT_INVARIANT');
   for (const item of openingRewardItems) {
     const matches = deliveredStacks.filter(stack => stack.itemId === item.instanceId);
-    if (openingClaimed && item.status === 'committed'
+    const slotClaimed = rewardClaimReceipts.includes(`${OPENING_RANK_CLAIM_KEY}|SLOT|${item.instanceId}`);
+    const currentlyDeliverable = item.status === 'committed' || openingRewardBlocker(item.itemTemplateId) === null;
+    if (slotClaimed && currentlyDeliverable
       && (matches.length !== 1 || matches[0]?.templateId !== item.itemTemplateId || matches[0]?.quantity !== item.quantity)) {
       throw new Error('OPENING_RANK_REWARD_DELIVERY_INVARIANT');
     }
-    if ((!openingClaimed || item.status === 'blocked') && matches.length > 0) throw new Error('OPENING_RANK_REWARD_PREMATURE_MINT_INVARIANT');
+    if ((!slotClaimed || !currentlyDeliverable) && matches.length > 0) throw new Error('OPENING_RANK_REWARD_PREMATURE_MINT_INVARIANT');
   }
+  if (openingClaimed && openingRewardItems.some(item => !(item.status === 'committed' || openingRewardBlocker(item.itemTemplateId) === null)
+    || !rewardClaimReceipts.includes(`${OPENING_RANK_CLAIM_KEY}|SLOT|${item.instanceId}`))) throw new Error('OPENING_RANK_CLAIM_INCOMPLETE');
 }
 
 function playerOpeningCompletionAt(state: GameState): number | null {
@@ -733,7 +824,9 @@ function playerOpeningCompletionAt(state: GameState): number | null {
 function openingCompletionRecords(state: GameState) {
   const records = state.botPopulation ? state.botPopulation.chunks.flatMap(chunk => chunk.cold.flatMap((bot, offset) => {
     const completionAtElapsedMs = chunk.completionAtElapsedMs[offset]!;
-    if (completionAtElapsedMs <= 0 || chunk.levels[offset]! < OPENING_LEVEL_QUALIFYING_LEVEL) return [];
+    const livingAtCutoff = bot.lordFate.status === 'active'
+      || (bot.lordFate.changedAtElapsedMs ?? Number.MAX_SAFE_INTEGER) > OPENING_LEVEL_CLOSES_AT_MS;
+    if (!livingAtCutoff || completionAtElapsedMs <= 0 || chunk.levels[offset]! < OPENING_LEVEL_QUALIFYING_LEVEL) return [];
     return [{ playerId: bot.botId, realName: bot.name, level: chunk.levels[offset]!, progressToNextLevelPermille: 0, completionAtElapsedMs }];
   })) : state.stage08.openingRivals.flatMap(rival => {
     if (rival.completionAtElapsedMs === null) return [];
@@ -787,15 +880,22 @@ export function claimOpeningLevelReward(state: GameState, commandId: string, boa
   const row = snapshot.rows.find(item => item.playerId === state.player.id);
   if (!row) return unchanged(state, 'OPENING_REWARD_NOT_EARNED', 'This save has no qualifying row on the frozen opening board.');
   if (state.stage08.rewardClaimReceipts.includes(OPENING_RANK_CLAIM_KEY)) return unchanged(state, 'OPENING_REWARD_ALREADY_CLAIMED', 'This frozen reward contract has already been claimed.');
-  const deliverable = row.rewardItems.filter(item => item.status === 'committed');
-  if (deliverable.length === 0) return unchanged(state, 'OPENING_REWARD_SLOTS_BLOCKED', 'Every item slot in this reward band is waiting for its source candidate pool.');
+  const deliveredIds = new Set(state.inventory.containers.flatMap(container => container.stacks.map(stack => stack.itemId)));
+  const currentlyDeliverable = (item: typeof row.rewardItems[number]): boolean => item.status === 'committed' || openingRewardBlocker(item.itemTemplateId) === null;
+  const deliverable = row.rewardItems.filter(item => currentlyDeliverable(item) && !deliveredIds.has(item.instanceId));
+  if (deliverable.length === 0 && row.rewardItems.every(item => !currentlyDeliverable(item) || deliveredIds.has(item.instanceId))) {
+    return unchanged(state, 'OPENING_REWARD_SLOTS_BLOCKED', 'No committed item is currently deliverable; source-blocked slots remain pending with their fixed identities.');
+  }
   const bag = state.inventory.containers.find(container => container.kind === 'carried_bag' && container.location.kind === 'carried' && container.location.ownerId === state.player.id);
   if (!bag) return unchanged(state, 'OPENING_REWARD_DELIVERY_UNAVAILABLE', 'The carried inventory destination is missing; the claim remains available.');
+  const capacity = bag.capacitySlots === null ? deliverable.length : Math.max(0, bag.capacitySlots - bag.stacks.length);
+  const batch = deliverable.slice(0, capacity);
+  if (batch.length === 0) return unchanged(state, 'OPENING_REWARD_DESTINATION_FULL', 'Free carried-bag slots; undelivered reward items remain available under their original slot identities.');
   const next = structuredClone(state);
   next.inventory.containers = next.inventory.containers.map(container => container.id !== bag.id ? container : {
     ...container,
     observed: true,
-    stacks: [...container.stacks, ...deliverable.map(item => ({
+    stacks: [...container.stacks, ...batch.map(item => ({
       itemId: item.instanceId,
       templateId: item.itemTemplateId,
       quantity: item.quantity,
@@ -805,20 +905,30 @@ export function claimOpeningLevelReward(state: GameState, commandId: string, boa
       equipped: false,
       equippedSlotId: null,
       quality: null,
+      ...(item.itemTemplateId === 'MEAT' || item.itemTemplateId === 'BREAD' ? { foodUnitsPerItem: 1 } : {}),
       provenance: 'campaign_fixed' as const,
     }))],
   });
-  next.stage08.rewardClaimReceipts = [...next.stage08.rewardClaimReceipts, OPENING_RANK_CLAIM_KEY];
+  const slotReceipts = batch.map(item => `${OPENING_RANK_CLAIM_KEY}|SLOT|${item.instanceId}`);
+  next.stage08.rewardClaimReceipts = [...next.stage08.rewardClaimReceipts, ...slotReceipts];
+  const allResolved = row.rewardItems.every(item => currentlyDeliverable(item)
+    && (deliveredIds.has(item.instanceId) || batch.some(delivered => delivered.instanceId === item.instanceId)));
+  if (allResolved) next.stage08.rewardClaimReceipts = [...next.stage08.rewardClaimReceipts, OPENING_RANK_CLAIM_KEY];
   return {
     state: next,
     events: [emit('opening_rank_reward_claimed', state.simElapsedMs, {
       boardId, recipientId: state.player.id, rank: row.rank, rewardBandId: row.rewardBandId,
       rewardContract: OPENING_LEVEL_REWARD_CONTRACT, commandId,
-      items: deliverable.map(item => ({ instanceId: item.instanceId, itemTemplateId: item.itemTemplateId, quantity: item.quantity })),
-      blockedSlots: row.rewardItems.filter(item => item.status === 'blocked').map(item => ({ instanceId: item.instanceId, blocker: item.blocker })),
+      items: batch.map(item => ({ instanceId: item.instanceId, itemTemplateId: item.itemTemplateId, quantity: item.quantity })),
+      blockedSlots: row.rewardItems.filter(item => !currentlyDeliverable(item)).map(item => ({ instanceId: item.instanceId,
+        blocker: openingRewardBlocker(item.itemTemplateId) ?? item.blocker })),
+      pendingSlots: row.rewardItems.filter(item => currentlyDeliverable(item) && !deliveredIds.has(item.instanceId)
+        && !batch.some(delivered => delivered.instanceId === item.instanceId)).map(item => item.instanceId),
+      complete: allResolved,
     })],
     code: null,
-    message: 'The frozen opening-board reward was delivered once; source-blocked reward slots remain ungranted.',
+    message: allResolved ? 'All compiled opening-board reward items were delivered once.'
+      : 'This delivery batch was committed once; remaining items and blocked source slots stay pending.',
   };
 }
 
@@ -831,13 +941,14 @@ export function settleOpeningLevelRank(state: GameState, at: number): Omit<Comma
     const band = openingLevelRewardBand(row.rank);
     if (!band) throw new Error('OPENING_RANK_REWARD_BAND_MISSING');
     const rewardItems = band.payload.map((item, index) => {
-      const randomSlot = item.item === 'tier_2_random_recruitment_scroll' || item.item === 'green_weapon_choice';
+      const itemTemplateId = item.item.toUpperCase();
+      const blocker = openingRewardBlocker(itemTemplateId);
       return {
         instanceId: `OPENING-REWARD-${row.playerId}-${String(index + 1).padStart(2, '0')}`,
-        itemTemplateId: item.item.toUpperCase(),
+        itemTemplateId,
         quantity: item.quantity,
-        status: randomSlot ? 'blocked' as const : 'committed' as const,
-        blocker: randomSlot ? 'SOURCE_CANDIDATE_POOL_NOT_COMPILED' : null,
+        status: blocker ? 'blocked' as const : 'committed' as const,
+        blocker,
       };
     });
     return {

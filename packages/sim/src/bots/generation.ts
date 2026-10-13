@@ -1,7 +1,9 @@
 import type { BotActionReceipt, BotColdRecord, BotPopulationState, BotSearchSource, BotSharedWildlifeStock, BotStateChunk, BotTalentGrade, BotTalentKind, BotUnitCohort, BotStructureInstance, CoordinateMm, WorldDefinition } from '../../../contracts/src/index.ts';
 import { canonicalStateHash, hash64, randomIntFromFields } from '../hash.ts';
 import { OPENING_LEVEL_CLOSES_AT_MS, OPENING_LEVEL_OPENS_AT_MS, OPENING_LEVEL_RIVALS } from '../openingRanking.ts';
-import { BOT_ACTION_RECEIPT_ARCHIVE_VERSION, BOT_ACTIVITY_XP_RULE_VERSION, BOT_BLUEPRINT_RULE_VERSION, BOT_CHUNK_SIZE, BOT_EQUIPMENT_RULE_VERSION, BOT_EVENT_REWARD_RULE_VERSION, BOT_GENERATION_VERSION, BOT_HUNT_RULE_VERSION, BOT_KIND_CODE, BOT_MICRO, BOT_PLANNER_RULE_VERSION, BOT_RECOVERY_RULE_VERSION, BOT_REPAIR_RULE_VERSION, BOT_SHARED_WILDLIFE_RULE_VERSION, BOT_SIMULATION_RULE_VERSION, BOT_TALENT_RULE_VERSION, BOT_TALENT_XP_RULE_VERSION, botChunkHash, botPopulationRoot, botRowHash, botSharedWildlifeRoot, computeBotChunkWake, heapifyBotScheduler } from './state.ts';
+import { BOT_ACTION_RECEIPT_ARCHIVE_VERSION, BOT_ACTIVITY_XP_RULE_VERSION, BOT_BLUEPRINT_RULE_VERSION, BOT_CHUNK_SIZE, BOT_EQUIPMENT_RULE_VERSION, BOT_EVENT_REWARD_RULE_VERSION, BOT_GENERATION_VERSION, BOT_HUNT_RULE_VERSION, BOT_KIND_CODE, BOT_MARKET_RULE_VERSION, BOT_MICRO, BOT_PLANNER_RULE_VERSION, BOT_RECOVERY_RULE_VERSION, BOT_REPAIR_RULE_VERSION, BOT_SHARED_WILDLIFE_RULE_VERSION, BOT_SIMULATION_RULE_VERSION, BOT_SURVIVAL_RULE_VERSION, BOT_TALENT_RULE_VERSION, BOT_TALENT_XP_RULE_VERSION, botChunkHash, botPopulationRoot, botRowHash, botSharedWildlifeRoot, computeBotChunkWake, heapifyBotScheduler } from './state.ts';
+import { BOT_TERRITORY_RULE_VERSION } from './territory.ts';
+import { BOT_WEATHER_RULE_VERSION } from './weather.ts';
 
 export const BOT_P0_COUNT = 1_023;
 export const BOT_P0_PARTICIPANTS = BOT_P0_COUNT + 1;
@@ -150,11 +152,16 @@ function starterCohort(botId: string, ordinal: number, position: CoordinateMm, c
   };
 }
 
-function sources(seed: string, regionId: string, botId: string, position: CoordinateMm): BotSearchSource[] {
+function sources(seed: string, regionId: string, botId: string, position: CoordinateMm, world: WorldDefinition): BotSearchSource[] {
   const offsets = [[520_000, 0], [-510_000, 100_000], [0, 620_000], [120_000, -700_000]] as const;
   const kinds = ['field_cache', 'ruin', 'wildlife_track', 'survey_site'] as const;
   return offsets.map(([x, y], index) => {
-    const sourcePosition = { xMm: position.xMm + x, yMm: position.yMm + y, sourceZMetres: position.sourceZMetres ?? 0 };
+    const localPosition = { xMm: position.xMm + x, yMm: position.yMm + y, sourceZMetres: position.sourceZMetres ?? 0 };
+    const chest = index === 0 ? world.fieldChests.filter(item => item.chestType === 'field')
+      .map(item => ({ item, distance: Math.sqrt(distanceSquared(item.position, position)) }))
+      .filter(row => row.distance <= 12_000_000)
+      .sort((a, b) => a.distance - b.distance || compareAscii(a.item.id, b.item.id))[0]?.item : undefined;
+    const sourcePosition = chest?.position ?? localPosition;
     const wildlife = index === 2;
     const cellX = Math.floor(sourcePosition.xMm / CONTACT_INDEX_CELL_MM);
     const cellY = Math.floor(sourcePosition.yMm / CONTACT_INDEX_CELL_MM);
@@ -170,23 +177,24 @@ function sources(seed: string, regionId: string, botId: string, position: Coordi
       position: nodePosition,
       remainingActions: wildlife
         ? randomIntFromFields([seed, BOT_GENERATION_VERSION, sharedStockId!, 'finite-prey-stock'], 2, 5).value
-        : randomIntFromFields([seed, BOT_GENERATION_VERSION, regionId, botId, 'finite-search-stock', String(index)], 2, 5).value,
+        : index === 0 ? 1 : randomIntFromFields([seed, BOT_GENERATION_VERSION, regionId, botId, 'finite-search-stock', String(index)], 2, 5).value,
       eligibleBlueprintIds: ['BP-BOT-FARM', 'BP-BOT-WOOD-MILL', 'BP-BOT-QUARRY', 'BP-BOT-BARRACKS', 'BP-BOT-WATCHTOWER', 'BP-BOT-WALL', 'BP-BOT-INFIRMARY', 'BP-BOT-WORKSHOP'],
       discovered: true,
       ...(wildlife ? {
         sharedStockId,
         wildlifeDangerPermille: randomIntFromFields([seed, BOT_GENERATION_VERSION, sharedStockId!, 'wildlife-danger'], 250, 1_000).value,
       } : {}),
+      ...(chest ? { fieldChestId: chest.id } : {}),
     };
   });
 }
 
-function makeColdRecord(seed: string, ordinal: number, position: CoordinateMm, regionId: string, grade: BotTalentGrade, kind: BotTalentKind): BotColdRecord {
+function makeColdRecord(seed: string, ordinal: number, position: CoordinateMm, regionId: string, grade: BotTalentGrade, kind: BotTalentKind, world: WorldDefinition): BotColdRecord {
   const fixed = ordinal <= OPENING_LEVEL_RIVALS.length ? OPENING_LEVEL_RIVALS[ordinal - 1] : null;
   const botId = fixed?.id ?? `BOT-P0-${String(ordinal).padStart(4, '0')}`;
   const nextUnit = randomIntFromFields([seed, BOT_GENERATION_VERSION, regionId, botId, 'opening-army'], 4, 8).value;
   const army = starterCohort(botId, ordinal, position, nextUnit);
-  const searchSources = sources(seed, regionId, botId, position);
+  const searchSources = sources(seed, regionId, botId, position, world);
   return {
     botId,
     ordinal,
@@ -194,6 +202,8 @@ function makeColdRecord(seed: string, ordinal: number, position: CoordinateMm, r
     regionId,
     position,
     oldAffinity: fixed?.affinity ?? (kind === 'combat' ? 'HUNTER' : 'BUILDER'),
+    lordFate: { status: 'active', changedAtElapsedMs: null, cause: null, triggerId: null },
+    casualtiesByCause: { starvation: 0, dehydration: 0, fuelExhaustion: 0, regionalBlizzard: 0, battle: 0, wildlife: 0, unattributed: 0 },
     aggressionPermille: randomIntFromFields([seed, BOT_GENERATION_VERSION, regionId, botId, 'aggression'], 550, 1_350).value,
     riskTolerancePermille: randomIntFromFields([seed, BOT_GENERATION_VERSION, regionId, botId, 'risk'], 450, 1_250).value,
     decisionPhaseMs: randomIntFromFields([seed, BOT_GENERATION_VERSION, regionId, botId, 'decision-phase'], 0, 2_999).value,
@@ -202,6 +212,10 @@ function makeColdRecord(seed: string, ordinal: number, position: CoordinateMm, r
     armyMovement: null,
     workforce: { gatherFood: 3, gatherWood: 2, gatherStone: 1, gatherOre: 1, farmers: 0, millWorkers: 0, quarryWorkers: 0, smiths: 0, builders: 2, scouts: 1, guards: 3, recruiters: 0 },
     blueprintIds: ['BP-BOT-FARM', 'BP-BOT-WOOD-MILL', 'BP-BOT-QUARRY'],
+    blueprintItems: [],
+    territoryLevel: 1,
+    ownedChests: [],
+    inventoryItems: [],
     structures: [structure(seed, regionId, botId, position, 'KEEP', 0), structure(seed, regionId, botId, position, 'HEARTH', 14_000), structure(seed, regionId, botId, position, 'STORE', -14_000)],
     cohorts: [army],
     eventInventory: [],
@@ -212,6 +226,13 @@ function makeColdRecord(seed: string, ordinal: number, position: CoordinateMm, r
     carriedCargo: { food: 0, wood: 0, stone: 0, ore: 0, firewood: 0 },
     starvationExposureMs: 0,
     coldExposureMs: 0,
+    potableWaterMl: 26_000,
+    localIceRemainingMl: 2_000_000,
+    waterConsumptionRemainder: 0,
+    dehydrationExposureMs: 0,
+    lordStarvationExposureMs: 0,
+    lordDehydrationExposureMs: 0,
+    lordColdExposureMs: 0,
     nextActionOrdinal: 0,
     nextMemberOrdinal: ordinal * 100 + nextUnit,
     lastSafePosition: position,
@@ -242,10 +263,11 @@ export function generateBotPopulation(
 ): BotPopulationState {
   if (!seed.trim()) throw new Error('BOT_GENERATION_SEED_REQUIRED');
   const botCount = options.botCount ?? BOT_P0_COUNT;
-  if (!Number.isSafeInteger(botCount) || botCount !== BOT_P0_COUNT && botCount < 10_000 || botCount > 100_000) throw new Error('BOT_POPULATION_SIZE_UNSUPPORTED');
   const profile = options.profile ?? (botCount === BOT_P0_COUNT ? 'P0_ACTIVE' : 'BENCHMARK_STRESS');
+  if (!Number.isSafeInteger(botCount) || profile === 'P0_ACTIVE' && botCount !== BOT_P0_COUNT
+    || profile === 'BENCHMARK_STRESS' && (botCount < OPENING_LEVEL_RIVALS.length + 1 || botCount > 100_000)) throw new Error('BOT_POPULATION_SIZE_UNSUPPORTED');
   if (profile === 'P0_ACTIVE' && botCount !== BOT_P0_COUNT) throw new Error('BOT_P0_POPULATION_SIZE_INVALID');
-  const mapRadiusKm = options.mapRadiusKm ?? (botCount === BOT_P0_COUNT ? world.activeMapRadiusKm : world.activeMapRadiusKm * Math.sqrt(botCount / BOT_P0_COUNT));
+  const mapRadiusKm = options.mapRadiusKm ?? world.activeMapRadiusKm * Math.max(1, Math.sqrt(botCount / BOT_P0_COUNT));
   if (!Number.isFinite(mapRadiusKm) || mapRadiusKm < world.activeMapRadiusKm) throw new Error('BOT_MAP_RADIUS_INVALID');
   const cacheKey = canonicalStateHash({ seed, worldId: world.id, contentVersion: world.contentVersion, lockedSourceHashes: world.lockedSourceHashes, botCount, mapRadiusKm, profile });
   const cached = generatedPopulationCache.get(cacheKey);
@@ -309,7 +331,7 @@ export function generateBotPopulation(
       const kind = kinds[ordinal - 1]!;
       const position = positions[ordinal - 1]!;
       const region = regionFor(position, radiusMm);
-      const baseRecord = makeColdRecord(seed, ordinal, position, region.id, grade, kind);
+      const baseRecord = makeColdRecord(seed, ordinal, position, region.id, grade, kind, world);
       for (const source of baseRecord.searchSources) if (source.sharedStockId && source.wildlifeDangerPermille !== undefined) {
         const stock: BotSharedWildlifeStock = {
           id: source.sharedStockId,
@@ -409,6 +431,10 @@ export function generateBotPopulation(
     recoveryRuleVersion: BOT_RECOVERY_RULE_VERSION,
     eventRewardRuleVersion: BOT_EVENT_REWARD_RULE_VERSION,
     sharedWildlifeRuleVersion: BOT_SHARED_WILDLIFE_RULE_VERSION,
+    survivalRuleVersion: BOT_SURVIVAL_RULE_VERSION,
+    weatherRuleVersion: BOT_WEATHER_RULE_VERSION,
+    territoryRuleVersion: BOT_TERRITORY_RULE_VERSION,
+    marketRuleVersion: BOT_MARKET_RULE_VERSION,
     rulesOverlayVersion: BOT_GENERATION_RULES_VERSION,
     quotas,
     populationSize: botCount,
@@ -436,6 +462,10 @@ export function generateBotPopulation(
     recoveryRuleVersion: BOT_RECOVERY_RULE_VERSION,
     eventRewardRuleVersion: BOT_EVENT_REWARD_RULE_VERSION,
     sharedWildlifeRuleVersion: BOT_SHARED_WILDLIFE_RULE_VERSION,
+    survivalRuleVersion: BOT_SURVIVAL_RULE_VERSION,
+    weatherRuleVersion: BOT_WEATHER_RULE_VERSION,
+    territoryRuleVersion: BOT_TERRITORY_RULE_VERSION,
+    marketRuleVersion: BOT_MARKET_RULE_VERSION,
     saveSeed: seed,
     rulesetSha256,
     totalParticipants: botCount + 1,
@@ -454,6 +484,8 @@ export function generateBotPopulation(
     boardSnapshots: [],
     eventReceipts: [],
     rewardReceipts: [],
+    marketListings: [],
+    marketTransactions: [],
     completedActionCount: 0,
     benchmarkCounters: { plannerExpansions: 0, integratedBotSegments: 0, dirtyChunks: 0 },
   };
