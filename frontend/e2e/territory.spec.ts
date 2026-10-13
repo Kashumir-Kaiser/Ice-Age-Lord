@@ -72,7 +72,7 @@ test('placement creates reversible drafts without changing the starting building
 test('territory drag distance follows the pointer instead of accumulating movement',async({page})=>{
   await goTo(page,/Lãnh địa/);
   const scene=page.locator('svg.territory-scene-svg');
-  const fire=scene.locator('circle[fill="#db8c56"]');
+  const fire=scene.locator('ellipse').first();
   await expect(fire).toBeVisible();
   const box=await scene.boundingBox();
   expect(box).not.toBeNull();

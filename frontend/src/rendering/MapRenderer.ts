@@ -1,0 +1,196 @@
+import { Application, Container, Graphics, Matrix, Sprite, Texture } from 'pixi.js';
+import type { MapSnapshot } from './MapSceneAdapter.ts';
+import { TerrainSampler, chunkLevel } from './TerrainSampler.ts';
+import { TerrainChunkCache } from './TerrainChunkCache.ts';
+import type { TerrainChunk } from './TerrainChunkCache.ts';
+import { AssetTextureCache, exportPath } from './AssetTextureCache.ts';
+import { MapMetrics } from './MapMetrics.ts';
+import { MapEffects } from './MapEffects.ts';
+import { artPolygon, composition, spriteRect } from './SpriteRegistration.ts';
+import { pointInPolygon } from './MapPicking.ts';
+import { depthOrder, intersects } from './DepthOrder.ts';
+import { MAP_PALETTE, QUALITY, AdaptiveQuality, chooseLOD } from './mapStyle.ts';
+import type { Quality, SceneLOD } from './mapStyle.ts';
+import { screenToWorld, worldToScreen } from '../territory/projection.ts';
+import { BASE_VIEW_HEIGHT_M } from '../map/camera.ts';
+import type { WorldPoint } from '../territory/projection.ts';
+type Size={width:number;height:number};
+type Draw={id:string;path:string;x:number;y:number;width:number;height:number;alpha:number;matrix?:Matrix};
+export class MapRenderer {
+  private app:Application|null=null;
+  private failures=new Set<string>();
+  private draws=0;
+  private context:CanvasRenderingContext2D|null=null;
+  private stage=new Container();
+  private effectsGraphics=new Graphics();
+  private drawSprites=new Map<string,Sprite>();
+  private chunkTextures=new Map<string,Texture>();
+  private assets:AssetTextureCache;
+  private terrain:TerrainChunkCache;
+  private sampler:TerrainSampler;
+  private snapshot:MapSnapshot;
+  private size:Size={width:1,height:1};
+  private raf=0;
+  private destroyed=false;
+  private dirty=true;
+  private previous=0;
+  private lastFrame=0;
+  private level:number|undefined;
+  private previousLevel:number|undefined;
+  private transitionStart=0;
+  private lod=new Map<string,SceneLOD>();
+  private quality:Quality='normal';
+  private adaptive=new AdaptiveQuality();
+  private readonly effects=new MapEffects(24);
+  private reducedMotion=false;
+  private preference:'auto'|Quality='auto';
+  private hidden=false;
+  private transferred=false;
+  readonly metrics:MapMetrics;
+  constructor(private canvas:HTMLCanvasElement,snapshot:MapSnapshot,private status:(backend:string)=>void,enabledMetrics=false){
+    this.snapshot=snapshot;this.metrics=new MapMetrics(enabledMetrics);
+    this.sampler=new TerrainSampler(snapshot.identity,snapshot.geography,snapshot.regions);
+    this.terrain=new TerrainChunkCache(this.sampler,QUALITY.normal.terrainBytes,QUALITY.normal.textureSize,()=>this.invalidate());
+    this.assets=new AssetTextureCache(()=>this.invalidate(),path=>{this.failures.add(path);this.metrics.error('asset: '+path);this.invalidate();},QUALITY.normal.totalBytes-QUALITY.normal.terrainBytes);
+  }
+  async init(forceFallback=false):Promise<void>{
+    if(this.destroyed)return;
+    if(!forceFallback)try{
+      const app=new Application();
+      await app.init({canvas:this.canvas,preference:'webgl',autoStart:false,sharedTicker:false,background:MAP_PALETTE.snow,antialias:false,resolution:Math.min(devicePixelRatio||1,QUALITY[this.quality].dpr),autoDensity:true,width:this.size.width,height:this.size.height});
+      if(this.destroyed){app.destroy(false,{children:true,texture:false,textureSource:false});return;}
+      this.app=app;
+      const gl=(app.renderer as unknown as {gl?:WebGLRenderingContext}).gl;
+      if(gl){const elements=gl.drawElements.bind(gl),arrays=gl.drawArrays.bind(gl);gl.drawElements=(...args)=>{this.draws++;elements(...args);};gl.drawArrays=(...args)=>{this.draws++;arrays(...args);};}
+      app.stop();this.transferred=true;app.stage.addChild(this.stage,this.effectsGraphics);this.canvas.addEventListener('webglcontextlost',this.lost);
+      this.metrics.data.backend='webgl';this.status('webgl');
+    }catch(error){this.metrics.error('WebGL initialization: '+String(error));this.app=null;forceFallback=true;}
+    if(forceFallback){
+      // A canvas that acquired WebGL cannot acquire 2D. Replace its element, preserving the host.
+      const old=this.canvas,next=document.createElement('canvas');next.className=old.className;next.setAttribute('aria-hidden','true');old.replaceWith(next);this.canvas=next;
+      this.context=next.getContext('2d',{alpha:false});if(!this.context)throw new Error('Canvas2D unavailable');this.metrics.data.backend='canvas2d';this.status('canvas2d');
+    }
+    this.resize(this.size);this.invalidate();
+  }
+  private lost=(event:Event)=>{event.preventDefault();this.metrics.error('WebGL context lost');this.stop();this.canvas.removeEventListener('webglcontextlost',this.lost);
+    this.app?.destroy(false,{children:false,texture:false,textureSource:false});this.app=null;this.clearSprites();this.effectsGraphics=new Graphics();this.stage=new Container();void this.init(true);
+  };
+  update(snapshot:MapSnapshot):void{
+    if(this.destroyed)return;
+    if(snapshot.identity!==this.snapshot.identity||JSON.stringify([snapshot.geography,snapshot.regions])!==JSON.stringify([this.snapshot.geography,this.snapshot.regions])){
+      this.terrain.destroy();this.sampler=new TerrainSampler(snapshot.identity,snapshot.geography,snapshot.regions);this.terrain=new TerrainChunkCache(this.sampler,QUALITY[this.quality].terrainBytes,QUALITY[this.quality].textureSize,()=>this.invalidate());this.level=undefined;
+    }
+    this.snapshot=snapshot;this.invalidate();
+  }
+  configure(preference:'auto'|Quality,reduced:boolean):void{this.preference=preference;this.reducedMotion=reduced;if(preference!=='auto')this.setQuality(preference);this.invalidate();}
+  resize(size:Size):void{
+    this.size={width:Math.max(1,size.width),height:Math.max(1,size.height)};
+    const dpr=Math.min(devicePixelRatio||1,QUALITY[this.quality].dpr);
+    if(this.app){this.app.renderer.resolution=dpr;this.app.renderer.resize(this.size.width,this.size.height);}
+    else if(this.context){this.canvas.width=Math.ceil(this.size.width*dpr);this.canvas.height=Math.ceil(this.size.height*dpr);this.canvas.style.width=this.size.width+'px';this.canvas.style.height=this.size.height+'px';}
+    this.invalidate();
+  }
+  setHidden(hidden:boolean):void{this.hidden=hidden;if(hidden)this.stop();else{this.previous=0;this.invalidate();}}
+  invalidate():void{if(this.destroyed)return;this.dirty=true;if(!this.raf&&!this.hidden){this.metrics.data.activeLoops=1;this.raf=requestAnimationFrame(this.frame);}}
+  private stop():void{if(this.raf)cancelAnimationFrame(this.raf);this.raf=0;this.metrics.data.activeLoops=0;}
+  private setQuality(quality:Quality):void{if(quality===this.quality)return;this.quality=quality;this.terrain.size=QUALITY[quality].textureSize;this.terrain.limit=QUALITY[quality].terrainBytes;this.terrain.invalidate();this.resize(this.size);}
+  private project=(p:WorldPoint):WorldPoint=>{
+    if(this.snapshot.projection==='territory')return worldToScreen(p,this.snapshot.camera,this.size);
+    const sy=this.scale(),sx=this.snapshot.northExtent?this.size.width/this.snapshot.northExtent.width:sy;
+    return {x:this.size.width/2+(p.x-this.snapshot.camera.x)*sx,y:this.size.height/2+(-p.y-this.snapshot.camera.y)*sy};
+  };
+  private inverse=(p:WorldPoint):WorldPoint=>{
+    if(this.snapshot.projection==='territory')return screenToWorld(p,this.snapshot.camera,this.size);
+    const sy=this.scale(),sx=this.snapshot.northExtent?this.size.width/this.snapshot.northExtent.width:sy;return {x:this.snapshot.camera.x+(p.x-this.size.width/2)/sx,y:-this.snapshot.camera.y-(p.y-this.size.height/2)/sy};
+  };
+  private scale():number{return this.snapshot.projection==='territory'?3*this.snapshot.camera.zoom:this.size.height*this.snapshot.camera.zoom/BASE_VIEW_HEIGHT_M;}
+  private frame=(time:number)=>{
+    this.raf=0;if(this.destroyed||this.hidden)return;
+    const active=!this.reducedMotion&&this.snapshot.mode!=='planning'&&this.snapshot.buildings.some(b=>b.active)&&Boolean(this.app);
+    const pending=this.terrain.pending>0||this.previousLevel!==undefined;
+    if(time-this.lastFrame>=1000/QUALITY[this.quality].fps-1){
+      const start=performance.now(),generated=this.terrain.process();
+      if(this.dirty||generated||active||this.previousLevel!==undefined){this.effects.update((time-this.previous)/1000,this.reducedMotion);this.render();this.dirty=false;this.metrics.frame(start);this.lastFrame=time;}
+      if(active&&this.previous){const next=this.adaptive.update(time-this.previous,time-this.previous,this.preference==='auto'?undefined:this.preference);this.setQuality(next);}
+      this.previous=time;
+    }
+    if(active||pending||this.terrain.pending||this.dirty||this.previousLevel!==undefined){this.metrics.data.activeLoops=1;this.raf=requestAnimationFrame(this.frame);}else this.metrics.data.activeLoops=0;
+  };
+  private render():void{
+    const scale=this.scale(),corners=[this.inverse({x:0,y:0}),this.inverse({x:this.size.width,y:0}),this.inverse({x:0,y:this.size.height}),this.inverse({x:this.size.width,y:this.size.height})];
+    const bounds={minX:Math.min(...corners.map(p=>p.x)),maxX:Math.max(...corners.map(p=>p.x)),minY:Math.min(...corners.map(p=>p.y)),maxY:Math.max(...corners.map(p=>p.y))};
+    const wanted=chunkLevel(scale*(this.snapshot.projection==='territory'?3:1),this.level);
+    this.level??=wanted;
+    if(wanted!==this.level){
+      const nextSpan=64*2**wanted;let ready=true;
+      for(let y=Math.floor(bounds.minY/nextSpan);y<=Math.floor(bounds.maxY/nextSpan);y++)for(let x=Math.floor(bounds.minX/nextSpan);x<=Math.floor(bounds.maxX/nextSpan);x++){this.terrain.request(x,y,wanted);if(!this.terrain.get(x,y,wanted))ready=false;}
+      if(ready){this.previousLevel=this.reducedMotion?undefined:this.level;this.level=wanted;this.transitionStart=performance.now();}
+    }
+    const span=64*2**this.level,draws:Draw[]=[],used=new Set<string>();
+    const progress=this.previousLevel===undefined?1:Math.min(1,(performance.now()-this.transitionStart)/150);
+    if(this.previousLevel!==undefined&&progress<1){const oldSpan=64*2**this.previousLevel;
+      for(let y=Math.floor(bounds.minY/oldSpan);y<=Math.floor(bounds.maxY/oldSpan);y++)for(let x=Math.floor(bounds.minX/oldSpan);x<=Math.floor(bounds.maxX/oldSpan);x++){const c=this.terrain.get(x,y,this.previousLevel);if(c)draws.push({...this.groundDraw(c),alpha:1-progress});}
+    }else this.previousLevel=undefined;
+    const paint=this.assets.acquire('/assets/map/terrain/snow-quiet.webp');if(paint&&this.terrain.paint!==paint){this.terrain.paint=paint;this.terrain.invalidate();}
+    used.add('/assets/map/terrain/snow-quiet.webp');
+    for(let y=Math.floor(bounds.minY/span);y<=Math.floor(bounds.maxY/span);y++)for(let x=Math.floor(bounds.minX/span);x<=Math.floor(bounds.maxX/span);x++){
+      this.terrain.request(x,y,this.level);const chunk=this.terrain.get(x,y,this.level);if(chunk)draws.push({...this.groundDraw(chunk),alpha:progress});
+    }
+    // Bounded one-chunk prefetch ring; visible requests are queued first.
+    const x0=Math.floor(bounds.minX/span)-1,x1=Math.floor(bounds.maxX/span)+1,y0=Math.floor(bounds.minY/span)-1,y1=Math.floor(bounds.maxY/span)+1;
+    for(let x=x0;x<=x1;x++){this.terrain.request(x,y0,this.level);this.terrain.request(x,y1,this.level);}for(let y=y0+1;y<y1;y++){this.terrain.request(x0,y,this.level);this.terrain.request(x1,y,this.level);}
+    const selected=this.snapshot.buildings.find(b=>b.selected),target=selected?this.project(selected.point):null;
+    const buildingObjects=this.snapshot.buildings.flatMap(b=>{
+      if(!b.asset)return [];const ground=this.project(b.point),rect=spriteRect(b.asset,ground,scale),visual={minX:rect.x,minY:rect.y,maxX:rect.x+rect.width,maxY:rect.y+rect.height};
+      if(!intersects(visual,{minX:-16,minY:-16,maxX:this.size.width+16,maxY:this.size.height+16}))return [];
+      const width=b.orientation==='east'||b.orientation==='west'?b.footprint.depthM:b.footprint.widthM,depth=b.orientation==='east'||b.orientation==='west'?b.footprint.widthM:b.footprint.depthM;
+      return [{...b,rect,ground,id:b.id,depth:ground.y,bounds:visual,footprint:{widthM:b.footprint.widthM,depthM:b.footprint.depthM,minX:b.point.x-width/2,maxX:b.point.x+width/2,minY:b.point.y-depth/2,maxY:b.point.y+depth/2}}];
+    });
+    const ordered=depthOrder(buildingObjects);if(ordered.cycles.length)this.metrics.error('depth cycle: '+ordered.cycles.join(','));
+    const worldProps=this.sampler.props(bounds,1/scale).filter(p=>!this.snapshot.buildings.some(b=>Math.abs(b.point.x-p.x)<b.footprint.widthM/2+p.size&&Math.abs(b.point.y-p.y)<b.footprint.depthM/2+p.size));
+    const props=worldProps.map(p=>{const ground=this.project(p),height=p.size*scale*(p.kind==='conifer'?1.8:.6),width=height*(p.kind==='conifer'?.65:1.9);return {id:'prop:'+p.id,path:'/assets/map/terrain/'+p.kind+'-'+String(p.variant%(p.kind==='conifer'?6:p.kind==='rock'?8:8)+1).padStart(2,'0')+'.png',x:ground.x-width/2,y:ground.y-height*.9,width,height,alpha:1,depth:ground.y};});
+    // Architectural order from the partial order is preserved; props are inserted by their ground depths.
+    let propIndex=0;const sortedProps=props.sort((a,b)=>a.depth-b.depth||a.id.localeCompare(b.id));
+    const drawBuilding=(b:typeof buildingObjects[number])=>{
+      const asset=b.asset!;this.assets.register(asset);const lod=chooseLOD(2*(b.footprint.widthM+b.footprint.depthM)*scale,this.lod.get(b.id));this.lod.set(b.id,lod);
+      const occludes=Boolean(target&&!b.selected&&b.depth>this.project(selected!.point).y&&pointInPolygon(target,artPolygon(asset.occlusionRegion.upper,b.rect)));
+      if(lod==='regional'){const width=12,height=12;draws.push({id:b.id+':symbol',path:asset.layers.uiIcon!,x:b.ground.x-width/2,y:b.ground.y-height,width,height,alpha:b.draft?.55:1});return;}
+      for(const layer of composition(asset,this.snapshot.mode,occludes,b.active,b.orientation)){const exported=exportPath(asset,layer,this.quality==='low'?'district':lod),path=(this.failures.has(exported)||this.failures.has(this.assets.url(exported)))?layer.path:exported;draws.push({id:b.id+':'+layer.role,path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});}
+    };
+    for(const b of ordered.objects){while(propIndex<sortedProps.length&&sortedProps[propIndex].depth<=b.depth)draws.push(sortedProps[propIndex++]);drawBuilding(b);}while(propIndex<sortedProps.length)draws.push(sortedProps[propIndex++]);
+    for(const d of draws)if(!d.path.startsWith('chunk:')){used.add(d.path);this.assets.acquire(d.path);}
+    this.assets.retain(used);
+    if(this.app)this.renderWebGL(draws);else if(this.context)this.render2D(draws);
+    const m=this.metrics.data;m.textureBytes=this.assets.bytes+this.terrain.bytes+Math.ceil(this.size.width*this.size.height*QUALITY[this.quality].dpr**2*8);m.terrainBytes=this.terrain.bytes;m.queued=this.terrain.pending;m.visible=buildingObjects.length+props.length;m.total=this.snapshot.buildings.length+worldProps.length;
+  }
+  private groundDraw(chunk:TerrainChunk):Draw {
+    const scale=this.scale(),step=chunk.span/(chunk.canvas.width-2),ground=this.project({x:chunk.x*chunk.span-step,y:chunk.y*chunk.span-step});
+    const matrix=this.snapshot.projection==='territory'?new Matrix(2*step*scale,step*scale,2*step*scale,-step*scale,ground.x,ground.y):new Matrix(step*(this.snapshot.northExtent?this.size.width/this.snapshot.northExtent.width:scale),0,0,-step*scale,ground.x,ground.y);
+    if(!this.chunkTextures.has(chunk.key)&&this.app){const texture=Texture.from(chunk.canvas);this.chunkTextures.set(chunk.key,texture);chunk.release=()=>{texture.destroy(true);this.chunkTextures.delete(chunk.key);};}
+    return {id:'chunk:'+chunk.key,path:'chunk:'+chunk.key,x:0,y:0,width:chunk.canvas.width,height:chunk.canvas.height,alpha:1,matrix};
+  }
+  private renderWebGL(draws:Draw[]):void {
+    const active=new Set<string>();let index=0;
+    for(const d of draws){const texture=d.path.startsWith('chunk:')?this.chunkTextures.get(d.path.slice(6)):this.assets.texture(d.path);if(!texture)continue;active.add(d.id);
+      let sprite=this.drawSprites.get(d.id);if(!sprite){sprite=new Sprite(texture);sprite.eventMode='none';this.drawSprites.set(d.id,sprite);this.stage.addChild(sprite);}sprite.texture=texture;sprite.alpha=d.alpha;
+      if(d.matrix)sprite.setFromMatrix(d.matrix);else{sprite.skew.set(0,0);sprite.rotation=0;sprite.position.set(d.x,d.y);sprite.width=d.width;sprite.height=d.height;}
+      this.stage.setChildIndex(sprite,index++);
+    }
+    for(const [id,sprite] of this.drawSprites)if(!active.has(id)){sprite.destroy();this.drawSprites.delete(id);}
+    this.effectsGraphics.clear();
+    if(this.snapshot.mode!=='planning')for(const b of this.snapshot.buildings)if(b.active){const p=this.project(b.point),radius=Math.min(72,10*this.scale()),light=this.effects.light(this.reducedMotion);
+      for(let i=4;i>=1;i--)this.effectsGraphics.ellipse(p.x,p.y-2,radius*i/4,radius*i/8).fill({color:MAP_PALETTE.spill,alpha:.018*light});
+      if(!this.reducedMotion)for(const e of this.effects.particles)this.effectsGraphics.circle(p.x+e.x*.3,p.y+e.y*.4,1).fill({color:MAP_PALETTE.fire,alpha:(1-e.life)*.35});
+    }
+    this.draws=0;this.app!.render();this.metrics.data.drawCalls=this.draws;
+  }
+  private render2D(draws:Draw[]):void {
+    const ctx=this.context!,dpr=Math.min(devicePixelRatio||1,QUALITY[this.quality].dpr);ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle=MAP_PALETTE.snow;ctx.fillRect(0,0,this.size.width,this.size.height);
+    for(const d of draws){let image:CanvasImageSource|null;
+      if(d.path.startsWith('chunk:')){const [level,x,y]=d.path.slice(6).split(':').map(Number);image=this.terrain.get(x,y,level)?.canvas??null;}else image=this.assets.acquire(d.path);if(!image)continue;
+      ctx.save();ctx.globalAlpha=d.alpha;if(d.matrix){const m=d.matrix;ctx.transform(m.a,m.b,m.c,m.d,m.tx,m.ty);ctx.drawImage(image,0,0);}else{const f=this.assets.frame(d.path);if(f)ctx.drawImage(image,f.x,f.y,f.width,f.height,d.x,d.y,d.width,d.height);else ctx.drawImage(image,d.x,d.y,d.width,d.height);}ctx.restore();
+    }
+  }
+  private clearSprites():void{for(const s of this.drawSprites.values())s.destroy();this.drawSprites.clear();for(const t of this.chunkTextures.values())if(!t.destroyed)t.destroy(true);this.chunkTextures.clear();}
+  destroy():void{if(this.destroyed)return;this.destroyed=true;this.stop();this.canvas.removeEventListener('webglcontextlost',this.lost);this.clearSprites();this.terrain.destroy();this.assets.destroy();if(this.app){this.app.destroy(false,{children:true,texture:false,textureSource:false});this.app=null;}this.canvas.width=this.canvas.height=0;this.context=null;Object.assign(this.metrics.data,{textureBytes:0,terrainBytes:0,queued:0,activeLoops:0,visible:0,total:0});void this.transferred;}
+}

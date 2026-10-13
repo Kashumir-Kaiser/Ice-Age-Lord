@@ -117,10 +117,9 @@ test('painted Survival Fire stages use independent registered true-vector art an
       if (layer==='upper'&&index>0) assert.ok(markup.includes('<path'), 'Tall stages require separate upper geometry.');
     }
   }
-  const sprite=readFileSync(resolve(root,'src/territory/BuildingSprite.tsx'),'utf8');
-  assert.ok(sprite.includes('asset?.presentationScale ?? 1'));
-  assert.match(sprite,/activeEffect && vfx/);
-  assert.match(sprite,/mode === 'planning' && !missing && asset && base/);
+  // Composition/scale assertions live in mapRendering.test.mjs and execute the
+  // shared behavior. SVG/React implementation strings are not a renderer contract.
+
 });
 
 test('ink architecture exports are registered and distinct from T0 ownership', () => {

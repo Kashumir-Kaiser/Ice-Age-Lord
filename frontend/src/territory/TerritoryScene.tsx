@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { Dispatch, PointerEvent as ReactPointerEvent, SetStateAction } from 'react';
 import { AlertTriangle, Compass, Eye, EyeOff, Flame, Grid3X3, LocateFixed, Maximize2, Minus, Plus, RotateCw, Search, Snowflake, ThermometerSun, X } from 'lucide-react';
 import type { EntityRef, LayoutDraft, PlayerView, SettlementBuildingView, SettlementPlacementDefinition, SettlementView } from '../game/GameClient';
@@ -6,6 +6,11 @@ import type { AssetManifest } from '../assets/assetRegistry';
 import { findAsset, loadAssetManifest, resolveSettlementAssetId } from '../assets/assetRegistry';
 import BuildingSprite, { type ReadabilityMode } from './BuildingSprite';
 import './territory.css';
+import MapCanvas from '../rendering/MapCanvas';
+import { territorySnapshot } from '../rendering/MapSceneAdapter';
+import { spriteRect, artPolygon } from '../rendering/SpriteRegistration';
+import { pointInPolygon } from '../rendering/MapPicking';
+import { cameraOverlayTransform } from '../rendering/transientCamera';
 import { footprintHeatRelation, snapPlanningPoint, validatePlacement } from './placement';
 import { fitWorldBounds, isoToWorld, screenToWorld, worldToIso, worldToScreen, zoomAtScreenPoint } from './projection';
 import type { TerritoryCamera, WorldPoint } from './projection';
@@ -58,6 +63,8 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
   const rootRef=useRef<HTMLDivElement>(null);
   const svgRef=useRef<SVGSVGElement>(null);
   const gesture=useRef<PanGesture|null>(null);
+  const touches=useRef(new Map<number,{x:number;y:number}>());
+  const pinch=useRef<{ids:[number,number];distance:number;anchor:WorldPoint;origin:TerritoryCamera}|null>(null);
   const ignoreClick=useRef(false);
   const nextDraft=useRef(1);
   const [size,setSize]=useState({width:0,height:0});
@@ -72,12 +79,23 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
   const [calibrationAssetId,setCalibrationAssetId]=useState('fixture-tall-tower');
   const [denseQa,setDenseQa]=useState(false);
   const [message,setMessage]=useState('');
+  const [showGrid,setShowGrid]=useState(false);
   const origin=settlement.worldOrigin;
   const actualRadius=settlement.fireActive?settlement.heatRadiusM:0;
   const displayedRadius=heatPreview==='actual'?actualRadius:heatPreview==='off'?0:Number(heatPreview);
   const effectiveMode:ReadabilityMode=placingId?'planning':readability;
   const activeDefinition=placementDefinitions.find(def=>def.id===placingId)??null;
   const activeCamera=camera??{x:origin.x+10,y:origin.y+5,zoom:.7};
+  const transient=useRef(activeCamera),lastCameraCommit=useRef(0),wheelCommit=useRef<ReturnType<typeof setTimeout>|null>(null);
+  useLayoutEffect(()=>{transient.current=activeCamera;svgRef.current?.querySelector('.territory-camera-overlay')?.removeAttribute('transform');},[activeCamera.x,activeCamera.y,activeCamera.zoom,size.width,size.height]);
+  useEffect(()=>()=>{if(wheelCommit.current)clearTimeout(wheelCommit.current);},[]);
+  const presentCamera=(next:TerritoryCamera,commit=false)=>{
+    transient.current=next;
+    svgRef.current?.querySelector('.territory-camera-overlay')?.setAttribute('transform',cameraOverlayTransform(activeCamera,next,size,'territory'));
+    rootRef.current?.dispatchEvent(new CustomEvent('map-camera',{detail:next}));
+    if(commit||performance.now()-lastCameraCommit.current>=100){lastCameraCommit.current=performance.now();onCameraChange(next);}
+  };
+
 
   useEffect(()=>{
     const node=rootRef.current;if(!node)return;
@@ -140,12 +158,12 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
     if((endY-startY)/step<220)for(let y=startY;y<=endY;y+=step)result.push({key:`y${y}`,from:{x:bounds.minX-step,y},to:{x:bounds.maxX+step,y},major:y%(step*5)===0});
     return result;
   },[bounds,step]);
-  const onScreen=(point:WorldPoint,margin=140)=>{const p=worldToScreen(point,activeCamera,size,PX_PER_ISO_METRE);return p.x>=-margin&&p.y>=-margin&&p.x<=size.width+margin&&p.y<=size.height+margin;};
-  const visibleBuildings=useMemo(()=>settlement.buildings.filter(building=>onScreen({x:origin.x+building.x,y:origin.y+building.y})).slice().sort((a,b)=>{
+  const onScreen=(point:WorldPoint,margin=140,asset?:ReturnType<typeof findAsset>)=>{const p=worldToScreen(point,activeCamera,size,PX_PER_ISO_METRE);if(asset){const r=spriteRect(asset,p,3*activeCamera.zoom);return r.x+r.width>=0&&r.y+r.height>=0&&r.x<=size.width&&r.y<=size.height;}return p.x>=-margin&&p.y>=-margin&&p.x<=size.width+margin&&p.y<=size.height+margin;};
+  const visibleBuildings=useMemo(()=>settlement.buildings.filter(building=>onScreen({x:origin.x+building.x,y:origin.y+building.y},0,findAsset(manifest,resolveSettlementAssetId(manifest,building.assetId,settlement.fireLevel,building.ref.id===settlement.fireRef.id,building.visualState,building.level)))).slice().sort((a,b)=>{
     const pa=worldToScreen({x:origin.x+a.x,y:origin.y+a.y},activeCamera,size,PX_PER_ISO_METRE);
     const pb=worldToScreen({x:origin.x+b.x,y:origin.y+b.y},activeCamera,size,PX_PER_ISO_METRE);
     return pa.y-pb.y||a.id.localeCompare(b.id);
-  }),[settlement.buildings,origin.x,origin.y,activeCamera,size.width,size.height]);
+  }),[settlement.buildings,origin.x,origin.y,activeCamera,size.width,size.height,manifest,settlement.fireLevel]);
   const visibleDrafts=useMemo(()=>drafts.filter(draft=>onScreen({x:origin.x+draft.x,y:origin.y+draft.y})),[drafts,origin.x,origin.y,activeCamera,size.width,size.height]);
   const visibleQa=useMemo(()=>denseQa?denseFixture.filter(item=>onScreen({x:origin.x+item.x,y:origin.y+item.y})):[],[denseQa,denseFixture,origin.x,origin.y,activeCamera,size.width,size.height]);
   const scale=PX_PER_ISO_METRE*activeCamera.zoom;
@@ -202,21 +220,42 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
     const target=event.target;
     const playerMarker=target instanceof Element&&Boolean(target.closest('.territory-player-marker'));
     if(target instanceof Element&&target.closest('button,input,select,[role="button"]')&&!target.closest('.territory-building')&&!playerMarker)return;
-    if(target instanceof Element&&target.closest('.territory-building')&&!activeDefinition)return;
-    const point=localPointer(event);gesture.current={pointerId:event.pointerId,x:point.x,y:point.y,origin:activeCamera,moved:false,playerMarker};
+    const point=localPointer(event);
+    if(event.pointerType==='touch'){
+      touches.current.set(event.pointerId,point);
+      if(touches.current.size>=2){const [[first,a],[second,b]]=Array.from(touches.current);const center={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+        pinch.current={ids:[first,second],distance:Math.max(1,Math.hypot(a.x-b.x,a.y-b.y)),anchor:screenToWorld(center,transient.current,size),origin:transient.current};
+        gesture.current=null;ignoreClick.current=true;if(activeDefinition)cancelPlacement();
+        try{event.currentTarget.setPointerCapture(event.pointerId);}catch{}return;
+      }
+    }
+    gesture.current={pointerId:event.pointerId,x:point.x,y:point.y,origin:transient.current,moved:false,playerMarker};
     try{event.currentTarget.setPointerCapture(event.pointerId);}catch{ /* Pointer may already be released by the browser. */ }
   };
   const pointerMove=(event:ReactPointerEvent<SVGSVGElement>)=>{
     const point=localPointer(event);
-    if(activeDefinition)setGhostWorld(screenToWorld(point,activeCamera,size,PX_PER_ISO_METRE));
+    if(touches.current.has(event.pointerId))touches.current.set(event.pointerId,point);
+    if(pinch.current){const p=pinch.current,a=touches.current.get(p.ids[0]),b=touches.current.get(p.ids[1]);if(!a||!b)return;
+      const center={x:(a.x+b.x)/2,y:(a.y+b.y)/2},zoom=Math.max(.002,Math.min(3,p.origin.zoom*Math.hypot(a.x-b.x,a.y-b.y)/p.distance)),anchor=worldToIso(p.anchor);
+      if(followPlayer)onFollowPlayerChange(false);
+      presentCamera({...isoToWorld({x:anchor.x-(center.x-size.width/2)/(3*zoom),y:anchor.y-(center.y-size.height/2)/(3*zoom)}),zoom});return;
+    }
+    if(activeDefinition)setGhostWorld(screenToWorld(point,transient.current,size,PX_PER_ISO_METRE));
     const current=gesture.current;if(!current||current.pointerId!==event.pointerId)return;
     const dx=point.x-current.x,dy=point.y-current.y;
-    if(!current.moved&&Math.hypot(dx,dy)<5)return;
+    if(!current.moved&&Math.hypot(dx,dy)<6)return;
     if(!current.moved&&followPlayer)onFollowPlayerChange(false);
     current.moved=true;
-    onCameraChange(()=>({...screenToWorld({x:size.width/2-dx,y:size.height/2-dy},current.origin,size,PX_PER_ISO_METRE),zoom:current.origin.zoom}));
+    presentCamera({...screenToWorld({x:size.width/2-dx,y:size.height/2-dy},current.origin,size,PX_PER_ISO_METRE),zoom:current.origin.zoom});
   };
   const pointerUp=(event:ReactPointerEvent<SVGSVGElement>)=>{
+    touches.current.delete(event.pointerId);
+    if(pinch.current){presentCamera(transient.current,true);pinch.current=null;ignoreClick.current=true;
+      if(touches.current.size===1){const [id,p]=Array.from(touches.current)[0];gesture.current={pointerId:id,x:p.x,y:p.y,origin:transient.current,moved:true,playerMarker:false};}
+      else gesture.current=null;
+      try{if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId);}catch{}
+      setTimeout(()=>{ignoreClick.current=false;},0);return;
+    }
     const activeGesture=gesture.current;
     if(activeGesture?.pointerId===event.pointerId&&activeGesture.moved){ignoreClick.current=true;window.setTimeout(()=>{ignoreClick.current=false;},0);}
     else if(activeGesture?.pointerId===event.pointerId&&activeGesture.playerMarker){
@@ -224,6 +263,7 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
       onOpenPlayerProfile();
       window.setTimeout(()=>{ignoreClick.current=false;},0);
     }
+    if(activeGesture?.moved)presentCamera(transient.current,true);
     gesture.current=null;
     try{if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId);}catch{ /* already released */ }
   };
@@ -233,7 +273,7 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
     if(event.target instanceof Element&&event.target.closest('.territory-building')&&!activeDefinition)return;
     if(!activeDefinition)return;
     const rect=event.currentTarget.getBoundingClientRect();
-    const world=screenToWorld({x:event.clientX-rect.left,y:event.clientY-rect.top},activeCamera,size,PX_PER_ISO_METRE);
+    const world=screenToWorld({x:event.clientX-rect.left,y:event.clientY-rect.top},transient.current,size,PX_PER_ISO_METRE);
     const local=snapPlanningPoint({x:world.x-origin.x,y:world.y-origin.y});
     const item:LayoutDraft={id:`draft-${nextDraft.current++}`,definitionId:activeDefinition.id,assetId:activeDefinition.assetId,x:local.x,y:local.y,orientation:placingOrientation,footprint:activeDefinition.footprint};
     onDraftsChange(previous=>[...previous,item]);
@@ -247,6 +287,8 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
       const dx=event.key==='ArrowLeft'?-amount:event.key==='ArrowRight'?amount:0;
       const dy=event.key==='ArrowUp'?-amount:event.key==='ArrowDown'?amount:0;
       onCameraChange(previous=>{const current=previous??activeCamera;return {...screenToWorld({x:size.width/2-dx,y:size.height/2-dy},current,size,PX_PER_ISO_METRE),zoom:current.zoom};});
+    }else if(event.key.toLowerCase()==='p'){
+      event.preventDefault();onReadabilityChange(readability==='planning'?'normal':'planning');
     }else if(event.key==='+'||event.key==='='){
       event.preventDefault();onCameraChange(previous=>zoomAtScreenPoint(previous??activeCamera,{x:size.width/2,y:size.height/2},size,(previous??activeCamera).zoom*1.2,PX_PER_ISO_METRE));
     }else if(event.key==='-'){
@@ -260,8 +302,8 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
       if(!(target instanceof Element)||!target.closest('.territory-scene-svg')||target.closest('button,input,select'))return;
       const rect=svgRef.current?.getBoundingClientRect();if(!rect)return;
       const point=followPlayer?{x:size.width/2,y:size.height/2}:{x:event.clientX-rect.left,y:event.clientY-rect.top};
-      const zoom=(camera??activeCamera).zoom*Math.exp(-Math.max(-480,Math.min(480,event.deltaY))*.0014);
-      event.preventDefault();onCameraChange(previous=>zoomAtScreenPoint(previous??activeCamera,point,size,zoom,PX_PER_ISO_METRE));
+      const zoom=transient.current.zoom*Math.exp(-Math.max(-480,Math.min(480,event.deltaY))*.0014);
+      event.preventDefault();presentCamera(zoomAtScreenPoint(transient.current,point,size,zoom,PX_PER_ISO_METRE));if(wheelCommit.current)clearTimeout(wheelCommit.current);wheelCommit.current=setTimeout(()=>presentCamera(transient.current,true),120);
     };
     node.addEventListener('wheel',onWheel,{passive:false});return()=>node.removeEventListener('wheel',onWheel);
   },[camera,activeCamera,size,onCameraChange,followPlayer]);
@@ -286,10 +328,21 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
   const buildingLayer=[...visibleBuildings.map(building=>({id:building.id,name:building.name,assetId:building.assetId,level:building.level,visualState:building.visualState,point:{x:origin.x+building.x,y:origin.y+building.y},footprint:building.footprint,orientation:building.orientation,ref:building.ref,draft:false,blocked:false})),
     ...visibleDrafts.map(draft=>({id:draft.id,name:placementDefinitions.find(def=>def.id===draft.definitionId)?.name??'Bản nháp',assetId:draft.assetId,level:undefined,visualState:undefined,point:{x:origin.x+draft.x,y:origin.y+draft.y},footprint:draft.footprint,orientation:draft.orientation,ref:null,draft:true,blocked:validatePlacement({point:{x:draft.x,y:draft.y},footprint:draft.footprint,orientation:draft.orientation,heatRadiusM:actualRadius,heatActive:settlement.fireActive,existing:[...settlement.buildings,...drafts],ignoreId:draft.id}).blockers.length>0}))];
 
+  const selectedGround=settlement.buildings.find(b=>b.ref.id===selectedRef?.id);
+  const isOccluder=(point:WorldPoint,asset:ReturnType<typeof findAsset>,selected:boolean)=>{
+    if(!asset||selected||!selectedGround)return false;
+    const target=worldToScreen({x:origin.x+selectedGround.x,y:origin.y+selectedGround.y},activeCamera,size);
+    const ground=worldToScreen(point,activeCamera,size);
+    return ground.y>target.y&&pointInPolygon(target,artPolygon(asset.occlusionRegion.upper,spriteRect(asset,ground,scale)));
+  };
+  const renderDrafts=[...drafts,...(denseQa?denseFixture:[]),...(activeDefinition?[{id:'placement-ghost',definitionId:activeDefinition.id,assetId:activeDefinition.assetId,x:currentPlacementLocal.x,y:currentPlacementLocal.y,footprint:activeDefinition.footprint,orientation:placingOrientation}]:[])];
+  const renderSnapshot=useMemo(()=>territorySnapshot(settlement,manifest,activeCamera,effectiveMode,selectedRef?.id??null,renderDrafts),[settlement,manifest,activeCamera,effectiveMode,selectedRef?.id,drafts,denseQa,activeDefinition,ghostWorld,placingOrientation]);
+
   return <section className="territory-scene-shell" aria-label="Bố cục lãnh địa">
     <div className="territory-toolbar">
       <div className="territory-toolbar-title"><span className="territory-eyebrow"><Snowflake size={14}/> LÃNH ĐỊA</span><strong>{densityLabel}</strong></div>
       <div className="territory-camera-actions" role="group" aria-label="Khung nhìn lãnh địa">
+        <button onClick={()=>setShowGrid(value=>!value)} aria-pressed={showGrid}><Grid3X3 size={15}/> Lưới</button>
         {followPlayer&&<button className="territory-follow-button" aria-pressed="true" onClick={()=>onFollowPlayerChange(false)}><LocateFixed size={15}/> Theo dõi {playerName} · Mở khóa</button>}
         <button onClick={fitFire} title="Về lửa trại"><Flame size={15}/> Về lửa trại</button>
         <button onClick={fitHeat} title="Toàn bộ vùng nhiệt"><ThermometerSun size={15}/> Toàn bộ vùng nhiệt</button>
@@ -305,13 +358,12 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
       {!liveApi&&<label className="territory-heat-preview">Xem thử vùng nhiệt <select aria-label="Xem thử vùng nhiệt" value={heatPreview} onChange={event=>setHeatPreview(event.target.value as typeof heatPreview)}><option value="actual">Nguồn thực tế</option><option value="2500">2.5 km · minh họa</option><option value="25000">25 km · minh họa</option><option value="off">Tắt · minh họa</option></select></label>}
     </div>
     <div className="territory-stage" ref={rootRef}>
+      <MapCanvas snapshot={renderSnapshot} label="Địa hình và công trình lãnh địa. Dùng danh sách công trình hoặc điều khiển mặt bằng để chọn."/>
       <svg ref={svgRef} className="territory-scene-svg" viewBox={`0 0 ${size.width} ${size.height}`} role="img" aria-label="Lãnh địa theo phối cảnh isometric cố định. Kéo để di chuyển, cuộn để thu phóng, dùng phím mũi tên để điều hướng."
-        tabIndex={0} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={()=>{gesture.current=null;}} onClickCapture={event=>{if(ignoreClick.current){ignoreClick.current=false;event.preventDefault();event.stopPropagation();}}} onClick={canvasClick} onKeyDown={keyDown}>
-        <defs><linearGradient id="territory-ground" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#294855"/><stop offset=".58" stopColor="#173541"/><stop offset="1" stopColor="#102a36"/></linearGradient><radialGradient id="territory-warm"><stop stopColor="#edae65" stopOpacity=".22"/><stop offset="1" stopColor="#edae65" stopOpacity="0"/></radialGradient></defs>
-        <rect width={size.width} height={size.height} fill="url(#territory-ground)" pointerEvents="none"/>
-        <path d={`M0 ${size.height*.75} Q${size.width*.26} ${size.height*.5} ${size.width*.52} ${size.height*.74} T${size.width} ${size.height*.62}V${size.height}H0Z`} fill="#a9c1bd" opacity=".045" pointerEvents="none"/>
-        {displayedRadius>0&&<ellipse cx={firePoint.x} cy={firePoint.y} rx={heatRx} ry={heatRy} fill="url(#territory-warm)" stroke="#efbf7f" strokeOpacity=".78" strokeWidth="1.6" strokeDasharray="7 6" pointerEvents="none"/>}
-        {gridLines.map(line=>{const a=worldToScreen(line.from,activeCamera,size,PX_PER_ISO_METRE),b=worldToScreen(line.to,activeCamera,size,PX_PER_ISO_METRE);return <line key={line.key} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={line.major?'#c7d8d3':'#a6c1bd'} strokeOpacity={line.major?.13:.06} strokeWidth={line.major?1:.7} pointerEvents="none"/>;})}
+        tabIndex={0} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={()=>{presentCamera(transient.current,true);gesture.current=null;pinch.current=null;touches.current.clear();ignoreClick.current=true;setTimeout(()=>{ignoreClick.current=false;},0);}} onLostPointerCapture={event=>{if(gesture.current?.pointerId===event.pointerId){presentCamera(transient.current,true);gesture.current=null;}}} onClickCapture={event=>{if(ignoreClick.current){ignoreClick.current=false;event.preventDefault();event.stopPropagation();}}} onClick={canvasClick} onKeyDown={keyDown}>
+        <g className="territory-camera-overlay">
+        {displayedRadius>0&&<ellipse cx={firePoint.x} cy={firePoint.y} rx={heatRx} ry={heatRy} fill="none" stroke="#efbf7f" strokeOpacity=".78" strokeWidth="1.6" strokeDasharray="7 6" pointerEvents="none"/>}
+        {(showGrid||effectiveMode==='planning')&&gridLines.map(line=>{const a=worldToScreen(line.from,activeCamera,size,PX_PER_ISO_METRE),b=worldToScreen(line.to,activeCamera,size,PX_PER_ISO_METRE);return <line key={line.key} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={line.major?'#c7d8d3':'#a6c1bd'} strokeOpacity={line.major?.13:.06} strokeWidth={line.major?1:.7} pointerEvents="none"/>;})}
         {buildingLayer.map(item=>{
           const isFire=Boolean(item.ref?.id===settlement.fireRef.id);
           const resolvedArtId=resolveSettlementAssetId(manifest,item.assetId,settlement.fireLevel,isFire,item.visualState,item.level);
@@ -319,14 +371,13 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
           const inHeat=footprintHeatRelation({x:item.point.x-origin.x,y:item.point.y-origin.y},item.footprint,item.orientation,actualRadius,settlement.fireActive);
           const building=settlement.buildings.find(candidate=>candidate.id===item.id);
           return <g key={item.id}>
-            <BuildingSprite id={item.id} name={item.name} asset={findAsset(manifest,resolvedArtId)} assetId={resolvedArtId} activeEffect={isFire&&settlement.fireActive} point={item.point} footprint={item.footprint} orientation={item.orientation} camera={activeCamera} viewport={size} mode={effectiveMode} selected={selected} faded={readability==='focus'&&Boolean(selectedRef)&&!selected} draft={item.draft} blocked={item.blocked} onSelect={item.ref?()=>{onSelectEntity(item.ref!);}:undefined}/>
+            <BuildingSprite geometryOnly id={item.id} name={item.name} asset={findAsset(manifest,resolvedArtId)} assetId={resolvedArtId} activeEffect={isFire&&settlement.fireActive} point={item.point} footprint={item.footprint} orientation={item.orientation} camera={activeCamera} viewport={size} mode={effectiveMode} selected={selected} faded={readability==='focus'&&isOccluder(item.point,findAsset(manifest,resolvedArtId),selected)} draft={item.draft} blocked={item.blocked} onSelect={item.ref?()=>{onSelectEntity(item.ref!);}:undefined}/>
             {activeCamera.zoom>.28&&inHeat!=='inside'&&item.ref&&<text x={worldToScreen(item.point,activeCamera,size).x} y={worldToScreen(item.point,activeCamera,size).y+18} className="territory-heat-state" textAnchor="middle" pointerEvents="none">{inHeat==='partial'?'Nhiệt giao cắt':'Ngoài nhiệt'}</text>}
             {selected&&building&&<circle cx={worldToScreen(item.point,activeCamera,size).x} cy={worldToScreen(item.point,activeCamera,size).y} r="18" fill="none" stroke="#ffe0a4" strokeOpacity=".76" strokeDasharray="3 4" pointerEvents="none"/>}
           </g>;
         })}
-        {denseQa&&visibleQa.map(item=><BuildingSprite key={item.id} id={item.id} name="Fixture QA" asset={findAsset(manifest,item.assetId)} assetId={item.assetId} point={{x:origin.x+item.x,y:origin.y+item.y}} footprint={item.footprint} orientation={item.orientation} camera={activeCamera} viewport={size} mode={effectiveMode} selected={false} faded={false} draft/>) }
-        {activeDefinition&&<BuildingSprite id="placement-ghost" name={activeDefinition.name} asset={findAsset(manifest,activeDefinition.assetId)} assetId={activeDefinition.assetId} point={snapPlanningPoint(currentPlacementPoint)} footprint={activeDefinition.footprint} orientation={placingOrientation} camera={activeCamera} viewport={size} mode="planning" selected={false} faded={false} draft blocked={Boolean(validation?.blockers.length)}/>}
-        {displayedRadius>0&&<circle cx={firePoint.x} cy={firePoint.y} r="11" fill="#db8c56" stroke="#ffe0ac" strokeWidth="2" pointerEvents="none"/>}
+        {denseQa&&visibleQa.map(item=><BuildingSprite geometryOnly key={item.id} id={item.id} name="Fixture QA" asset={findAsset(manifest,item.assetId)} assetId={item.assetId} point={{x:origin.x+item.x,y:origin.y+item.y}} footprint={item.footprint} orientation={item.orientation} camera={activeCamera} viewport={size} mode={effectiveMode} selected={false} faded={false} draft/>) }
+        {activeDefinition&&<BuildingSprite geometryOnly id="placement-ghost" name={activeDefinition.name} asset={findAsset(manifest,activeDefinition.assetId)} assetId={activeDefinition.assetId} point={snapPlanningPoint(currentPlacementPoint)} footprint={activeDefinition.footprint} orientation={placingOrientation} camera={activeCamera} viewport={size} mode="planning" selected={false} faded={false} draft blocked={Boolean(validation?.blockers.length)}/>}
         {showPlayerMarker&&<g className="territory-player-marker" transform={`translate(${playerPoint.x} ${playerPoint.y})`} role="button" tabIndex={0} aria-label={`${playerName} — mở hồ sơ người chơi`}
           onClick={onOpenPlayerProfile}
           onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();onOpenPlayerProfile();}}}>
@@ -335,6 +386,7 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
           <circle cy="-3.5" r="3.5" fill="#f4d39b"/><path d="M-6.5 7c.7-5 3.6-7.2 6.5-7.2S5.8 2 6.5 7" fill="#7fc0bd" stroke="#e0ece1" strokeWidth="1.2" strokeLinecap="round"/>
         </g>}
         <g className="territory-north" transform={`translate(${Math.min(size.width-35,Math.max(25,fireNorth.x))} ${Math.min(size.height-30,Math.max(35,fireNorth.y))}) rotate(63.435)`} pointerEvents="none"><path d="M0 14V-13m0 0-6 8m6-8 6 8" stroke="#d5e2d9" strokeWidth="2"/><text x="0" y="-20" textAnchor="middle">N</text></g>
+        </g>
       </svg>
       <div className="territory-stage-tools"><button aria-pressed={readability==='normal'} onClick={()=>onReadabilityChange('normal')}>Bình thường</button><button aria-pressed={readability==='focus'} onClick={()=>onReadabilityChange(readability==='focus'?'normal':'focus')}><Eye size={14}/> Làm mờ phần che</button>{!liveApi&&<button aria-pressed={readability==='planning'} onClick={()=>onReadabilityChange(readability==='planning'?'normal':'planning')}><Grid3X3 size={14}/> Mặt bằng</button>}</div>
       <div className="territory-scale"><span style={{width:Math.max(12,Math.min(110,scalePixels))}}/><b>{scaleDistance>=1000?`${scaleDistance/1000} km`:`${scaleDistance} m`}</b></div>

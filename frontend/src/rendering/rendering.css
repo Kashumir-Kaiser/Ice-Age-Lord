@@ -1,0 +1,9 @@
+.map-render-host{position:absolute;inset:0;pointer-events:none;overflow:hidden;background:#A9BDC0}
+.map-render-canvas{display:block;width:100%;height:100%;pointer-events:none}
+.map-render-options{position:absolute;right:12px;bottom:10px;z-index:6;display:flex;gap:6px;align-items:center;font-size:11px;background:#18333ee6;color:#dce5de;border-radius:6px;padding:5px 8px}
+.map-render-options label{display:flex;gap:6px;align-items:center}
+.map-render-options select,.map-render-options button{background:#233d4b;color:#dce5de;border:1px solid #607d89;border-radius:4px;padding:3px;font:inherit}
+.territory-scene-svg,.terrain-svg--deep{position:relative;background:transparent!important}
+
+.live-map-overlay{position:absolute;background:transparent!important}
+.live-map-canvas{background-image:none!important}

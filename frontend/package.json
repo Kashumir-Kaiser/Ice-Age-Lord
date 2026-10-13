@@ -12,19 +12,24 @@
     "assets:sync": "node scripts/sync-assets.mjs",
     "qa:territory": "npm run build && node scripts/territory-visual-qa.mjs",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "assets:map": "node scripts/export-map-assets.mjs && npm run assets:sync",
+    "test:map-rendering": "node --experimental-strip-types --test tests/mapRendering.test.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
+    "pixi.js": "8.10.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@resvg/resvg-js": "2.6.2",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
+    "sharp": "0.34.5",
     "typescript": "~5.7.3",
-    "vite": "^6.0.5",
-    "@playwright/test": "^1.55.0"
+    "vite": "^6.0.5"
   }
 }

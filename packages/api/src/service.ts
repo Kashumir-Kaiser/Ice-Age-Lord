@@ -22,6 +22,7 @@ import { CHEST_LOOT_RULE_VERSION, lootTableForChest } from '../../content/src/ch
 import { advanceTo, coldLoadRateMicroPerMinute, DAY_MS, HOUR_MS, MINUTE_MS, nextMidnightAfter, TOMB_STANDARD_BLUEPRINT_ID, TOMB_STANDARD_DURATION_MS, TOMB_STANDARD_RECIPE_ID, type StopCondition } from '../../sim/src/time.ts';
 import { RepositoryError, SqliteRepository } from '../../storage/src/repository.ts';
 import { ApiProblem, fromRepositoryError } from './errors.ts';
+import { bindCalendarReceipts } from './calendarReceipts.ts';
 
 const ownerId = 'local-owner';
 const MAX_BACKUP_ROWS = 10_000;
@@ -206,6 +207,15 @@ function validateStage05State(candidate: GameState, world: WorldDefinition, base
   if (candidate.playerKnowledge.knownSiteIds.some(id => !knownSites.has(id))
     || candidate.playerKnowledge.knownResourceIds.some(id => !knownResources.has(id))
     || candidate.playerKnowledge.knownRouteIds.some(id => !knownRoutes.has(id))) invalid('Known map identities are not present in the compiled world.');
+  // Shared world chests can be carried by a bot without becoming player-known.
+  // Cross-check private custody against the persisted bot ownership ledger;
+  // accepting arbitrary carried chests would weaken backup conservation.
+  const botChestOwners = new Map<string, {botId:string; chest:NonNullable<GameState['botPopulation']>['chunks'][number]['cold'][number]['ownedChests'][number]}>();
+  for (const chunk of candidate.botPopulation?.chunks ?? []) for (const bot of chunk.cold) for (const chest of bot.ownedChests) {
+    if (!chest.fieldChestId) continue;
+    if (botChestOwners.has(chest.fieldChestId)) invalid('A world chest has multiple bot owners.');
+    botChestOwners.set(chest.fieldChestId, {botId:bot.botId,chest});
+  }
   const chestStates = new Map(candidate.fieldChestStates.map(chest => [chest.chestId, chest]));
   if (candidate.fieldChestStates.length !== world.fieldChests.length || chestStates.size !== world.fieldChests.length
     || candidate.fieldChestStates.some(chest => {
@@ -213,13 +223,22 @@ function validateStage05State(candidate: GameState, world: WorldDefinition, base
       if (!source || !knownChests.has(chest.chestId) || !['hidden', 'signal', 'identified'].includes(chest.discovery)) return true;
       if (chest.discovery === 'hidden' && (chest.discoveredAtElapsedMs !== null || chest.signalId !== null)) return true;
       if (chest.discovery !== 'hidden' && (!isSafeInt(chest.discoveredAtElapsedMs) || chest.discoveredAtElapsedMs > candidate.simElapsedMs)) return true;
-      if (chest.state === 'unopened') return chest.openedAtElapsedMs !== null || chest.custody !== 'world'
-        || chest.claimedById !== null || chest.lootOutcome != null;
+      const botOwner = botChestOwners.get(chest.chestId);
+      if (chest.state === 'unopened') {
+        if (chest.openedAtElapsedMs !== null || chest.lootOutcome != null) return true;
+        if (chest.custody === 'world') return chest.claimedById !== null || chest.carrierId !== null || botOwner !== undefined;
+        return chest.custody !== 'carried' || !botOwner || botOwner.chest.status !== 'owned'
+          || botOwner.botId !== chest.claimedById || botOwner.botId !== chest.carrierId
+          || botOwner.chest.acquiredAtElapsedMs > candidate.simElapsedMs;
+      }
       if (chest.state !== 'opened' || chest.custody !== 'opened' || !isSafeInt(chest.openedAtElapsedMs)
         || chest.openedAtElapsedMs > candidate.simElapsedMs || !isNonEmptyString(chest.claimedById)
         || !isRecord(chest.lootOutcome) || chest.lootOutcome.ruleVersion !== CHEST_LOOT_RULE_VERSION
         || !Array.isArray(chest.lootOutcome.rewardStacks)) return true;
       const outcome = deterministicChestOutcome(candidate.seed, source);
+      if (botOwner && (botOwner.botId !== chest.claimedById || chest.carrierId !== null
+        || botOwner.chest.status !== 'opened' || botOwner.chest.openedAtElapsedMs !== chest.openedAtElapsedMs
+        || canonicalStateHash(botOwner.chest.lootOutcome) !== canonicalStateHash(outcome.rewardStacks.map(stack => ({itemTemplateId:stack.templateId,quantity:stack.quantity}))))) return true;
       return canonicalStateHash(chest.lootOutcome) !== canonicalStateHash(outcome)
         || !outcome.rewardStacks.every(stack => stack.quantity > 0 && stack.itemId.startsWith(`CHEST-ITEM-${source.id}-`));
     })) invalid('Field chest discovery, one-time opening, or committed loot outcome is invalid.');
@@ -262,7 +281,7 @@ function validateStage05State(candidate: GameState, world: WorldDefinition, base
   const extractedByMaterial = new Map<string, number>();
   for (const job of candidate.spatial.harvestJobs) extractedByMaterial.set(job.materialId, (extractedByMaterial.get(job.materialId) ?? 0) + job.extractedQuantity);
   const lootedByTemplate = new Map<string, number>();
-  for (const chest of candidate.fieldChestStates) for (const stack of chest.lootOutcome?.rewardStacks ?? []) {
+  for (const chest of candidate.fieldChestStates) for (const stack of botChestOwners.has(chest.chestId) ? [] : chest.lootOutcome?.rewardStacks ?? []) {
     lootedByTemplate.set(stack.templateId, (lootedByTemplate.get(stack.templateId) ?? 0) + stack.quantity);
   }
   const marketPurchased = new Map<string, number>();
@@ -1199,10 +1218,8 @@ export class GameApplicationService {
       saveId,
       transition: state => {
         const result = transition(state);
-        return {
-          state: result.state,
-          events: result.events.map((event, index) => ({ ...event, sequence: state.lastEventSequence + index + 1 })),
-        };
+        const events = result.events.map((event, index) => ({ ...event, sequence: state.lastEventSequence + index + 1 }));
+        return { state: bindCalendarReceipts(result.state, events), events };
       },
       projectPlayerEvent: (event, eventId) => this.projectSystemPlayerEvent(event, eventId),
     });

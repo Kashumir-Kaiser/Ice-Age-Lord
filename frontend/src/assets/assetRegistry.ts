@@ -1,9 +1,26 @@
+export type MapExport = {
+  path: string; source: string; sourceSha256: string; sha256: string;
+  exportVersion: number; width: number; height: number;
+  role: 'body' | 'base' | 'upper' | 'shadow' | 'vfx';
+  lod: 'close' | 'district'; orientation: string;
+  alpha: 'straight'; colorSpace: 'srgb';
+  logicalCanvas: {width:number;height:number};
+  trim: {x:number;y:number;width:number;height:number};
+  atlas?: {path:string;x:number;y:number;width:number;height:number;atlasWidth:number;atlasHeight:number;sha256?:string};
+};
 export type AssetLayerPaths = { uiIcon?: string; body?: string; base?: string; upper?: string; shadow?: string; vfx?: string | null };
 export type AssetManifestEntry = {
   assetId: string;
   definitionId: string;
   variant: string;
   orientation: string;
+  /** Only true architecture splits may compose base + upper. */
+  composition?: 'single-body' | 'architectural';
+  planningFoundation?: boolean;
+  planningLayer?: string;
+  orientationViews?: Partial<Record<'north' | 'east' | 'south' | 'west', AssetLayerPaths>>;
+  equivalentOrientations?: readonly string[];
+  mapExports?: readonly MapExport[];
   revision: number;
   /** Purely visual sprite-scale multiplier. Never changes physical occupancy or heat. */
   presentationScale?: number;

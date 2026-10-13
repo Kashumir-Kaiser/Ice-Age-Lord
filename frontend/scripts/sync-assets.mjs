@@ -1,6 +1,7 @@
 import { copyFileSync, existsSync, readFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { validateMapAssets } from './validate-map-assets.mjs';
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const manifestPath = resolve(repo, 'assets/manifest.json');
@@ -78,6 +79,7 @@ for (const illustration of [...(manifest.itemArt ?? []), ...(manifest.unitArt ??
   mkdirSync(dirname(output), { recursive: true });
   copyFileSync(source, output);
 }
+validateMapAssets(manifest);
 mkdirSync(dirname(publicManifest), { recursive: true });
 copyFileSync(manifestPath, publicManifest);
 console.log(`Validated ${manifest.assets.length} structure assets, ${(manifest.itemArt ?? []).length} item illustrations, and ${(manifest.unitArt ?? []).length} unit illustrations.`);

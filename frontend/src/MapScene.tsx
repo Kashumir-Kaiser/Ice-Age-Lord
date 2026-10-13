@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useId, useMemo, useRef, useState } from 'react';
 import type { Dispatch, PointerEvent as ReactPointerEvent, SetStateAction } from 'react';
 import { Compass, Eye, EyeOff, Globe2, Layers3, LocateFixed, Maximize2, Minus, Moon, Mountain, Plus, Snowflake, Sun, ThermometerSun, TreePine } from 'lucide-react';
 import { dayOverlayOpacity, dayPhase, fireForm, formatClock, formatDistance, heatRadiusM, shouldEnterWorldMap, shouldReturnToLocalMap } from './mapModel';
@@ -8,8 +8,10 @@ import { clusterMarkers, collisionFreeLabels } from './map/clusterMarkers';
 import type { ScreenCluster } from './map/clusterMarkers';
 import { BASE_VIEW_HEIGHT_M, MAX_ZOOM, MIN_LOCAL_ZOOM, WORLD_HALF_SPAN_M, fitCircle, mapToScreen, scaleBar, screenToMap, viewBox, viewSize, worldToMap, zoomAtScreenPoint } from './map/camera';
 import type { CameraView, Rect, SharedMapCamera } from './map/camera';
-import { FogDefinitions, MapEntityGlyph, TerrainLayer } from './map/MapLayers';
+import { FogDefinitions, MapEntityGlyph } from './map/MapLayers';
 import './map-refinement.css';
+import MapCanvas from './rendering/MapCanvas';
+import { explorationSnapshot, permittedEntities } from './rendering/MapSceneAdapter';
 
 type LayerState = { buildings: boolean; resources: boolean; discoveries: boolean };
 type PointerPoint = { x: number; y: number; pointerType: string };
@@ -49,12 +51,6 @@ type Props = {
 
 const TIMES = [420, 720, 990, 1005, 1140, 60] as const;
 const LEVELS = [1, 2, 3, 4, 5, 6, 7, 10, 11, 16, 21, 26, 30] as const;
-const SNOW_PARTICLES = Array.from({ length: 44 }, (_, i) => ({
-  x: (i * 131 + 37) % 900,
-  y: (i * 179 + 13) % 650,
-  r: i % 4 === 0 ? 1.3 : .75,
-  delay: (i % 15) * -.55,
-}));
 const entityKey = (entity: EntityView) => entity.ref.type + ':' + entity.ref.id;
 const localPoint = (event: ReactPointerEvent<SVGSVGElement>): PointerPoint => {
   const rect = event.currentTarget.getBoundingClientRect();
@@ -90,6 +86,10 @@ export default function MapScene({
   const screenRect: Rect = useMemo(() => ({ x: 0, y: 0, width: size.width, height: size.height }), [size.width, size.height]);
   const currentSightOpacity = dayOverlayOpacity(minutes);
   const playerMapPoint = worldToMap(playerPosition);
+  const transientCamera=useRef(activeCamera),lastCameraCommit=useRef(0),wheelCommit=useRef<ReturnType<typeof setTimeout>|null>(null);
+  useLayoutEffect(()=>{transientCamera.current=activeCamera;const b=viewBox(activeCamera,size.width,size.height);svgRef.current?.setAttribute('viewBox',`${b.x} ${b.y} ${b.width} ${b.height}`);},[activeCamera.x,activeCamera.y,activeCamera.zoom,size.width,size.height]);
+  useEffect(()=>()=>{if(wheelCommit.current)clearTimeout(wheelCommit.current);},[]);
+
 
   useEffect(() => {
     const node = rootRef.current;
@@ -108,7 +108,7 @@ export default function MapScene({
       : { ...previous, world: { ...previous.world, x: playerMapPoint.x, y: playerMapPoint.y } });
   }, [followPlayer, playerMapPoint.x, playerMapPoint.y]);
 
-  const filteredEntities = useMemo(() => visibleMap.entities.filter(entity => {
+  const filteredEntities = useMemo(() => permittedEntities(visibleMap.entities).filter(entity => {
     if (entity.ref.type === 'site' && !layers.buildings) return false;
     if ((entity.ref.type === 'resource' || entity.ref.type === 'cache') && !layers.resources) return false;
     if (entity.knowledge === 'remembered' && !layers.discoveries) return false;
@@ -168,7 +168,12 @@ export default function MapScene({
   const scaleWidth = scaleMeasure.pixels;
   const allLayers = filteredEntities;
 
-  const withZoom = (next: CameraView, oldZoom = activeCamera.zoom) => {
+  const withZoom = (next: CameraView, oldZoom = transientCamera.current.zoom, commit=false) => {
+    transientCamera.current=next;
+    const b=viewBox(next,size.width,size.height);svgRef.current?.setAttribute('viewBox',`${b.x} ${b.y} ${b.width} ${b.height}`);
+    rootRef.current?.dispatchEvent(new CustomEvent('map-camera',{detail:next}));
+    if(!commit&&performance.now()-lastCameraCommit.current<100)return;
+    lastCameraCommit.current=performance.now();
     onCameraChange(previous => {
       const mode = previous.mode;
       if (mode === 'local' && next.zoom < oldZoom && shouldEnterWorldMap(next.zoom, radius)) {
@@ -182,8 +187,8 @@ export default function MapScene({
   };
 
   const zoomBy = (factor: number) => {
-    const nextZoom = Math.max(MIN_LOCAL_ZOOM, Math.min(MAX_ZOOM, activeCamera.zoom * factor));
-    withZoom({ ...activeCamera, zoom: nextZoom });
+    const nextZoom = Math.max(MIN_LOCAL_ZOOM, Math.min(MAX_ZOOM, transientCamera.current.zoom * factor));
+    withZoom({ ...activeCamera, zoom: nextZoom },activeCamera.zoom,true);
   };
   const enterWorldOverview = () => {
     const fitted = fitCircle(WORLD_HALF_SPAN_M, screenRect, 56);
@@ -214,12 +219,12 @@ export default function MapScene({
         kind: 'pinch',
         pointerIds: [first[0], second[0]],
         startDistance: Math.max(1, distance(first[1], second[1])),
-        anchor: screenToMap(center, activeCamera, screenRect),
-        origin: activeCamera,
+        anchor: screenToMap(center, transientCamera.current, screenRect),
+        origin: transientCamera.current,
         moved: false,
       };
     } else if (!gesture.current) {
-      gesture.current = { kind: 'pan', pointerId: event.pointerId, start: point, origin: activeCamera, moved: false };
+      gesture.current = { kind: 'pan', pointerId: event.pointerId, start: point, origin: transientCamera.current, moved: false };
       const target = event.target;
       const onMarker = target instanceof Element && Boolean(target.closest('[role="button"]'));
       if (!onMarker) {
@@ -258,7 +263,7 @@ export default function MapScene({
     }
     if (activeGesture?.kind !== 'pan' || activeGesture.pointerId !== event.pointerId) return;
     const dx = point.x - activeGesture.start.x, dy = point.y - activeGesture.start.y;
-    if (!activeGesture.moved && Math.hypot(dx, dy) <= 5) return;
+    if (!activeGesture.moved && Math.hypot(dx, dy) < 6) return;
     if (!activeGesture.moved && followPlayer) onFollowPlayerChange(false);
     activeGesture.moved = true;
     try { if (!event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.setPointerCapture(event.pointerId); } catch { /* Pointer may have left the surface. */ }
@@ -271,13 +276,14 @@ export default function MapScene({
 
   const finishPointer = (event: ReactPointerEvent<SVGSVGElement>) => {
     const activeGesture = gesture.current;
+    if(activeGesture?.moved)withZoom(transientCamera.current,activeGesture.origin.zoom,true);
     if (activeGesture?.kind === 'pan' && activeGesture.pointerId === event.pointerId && activeGesture.moved) ignoreNextClick.current = true;
     if (activeGesture?.kind === 'pinch' && activeGesture.pointerIds.includes(event.pointerId) && activeGesture.moved) ignoreNextClick.current = true;
     pointers.current.delete(event.pointerId);
     try { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* already released */ }
     if (activeGesture?.kind === 'pinch' && pointers.current.size === 1) {
       const [remainingId, remainingPoint] = [...pointers.current.entries()][0];
-      gesture.current = { kind: 'pan', pointerId: remainingId, start: remainingPoint, origin: activeCamera, moved: true };
+      gesture.current = { kind: 'pan', pointerId: remainingId, start: remainingPoint, origin: transientCamera.current, moved: true };
     } else if (pointers.current.size === 0 || activeGesture?.kind === 'pinch') {
       gesture.current = null;
     } else if (activeGesture?.kind === 'pan' && activeGesture.pointerId === event.pointerId) {
@@ -286,6 +292,7 @@ export default function MapScene({
     if (ignoreNextClick.current) window.setTimeout(() => { ignoreNextClick.current = false; }, 0);
   };
   const cancelPointer = (event: ReactPointerEvent<SVGSVGElement>) => {
+    if(gesture.current?.moved)withZoom(transientCamera.current,gesture.current.origin.zoom,true);
     pointers.current.clear();
     gesture.current = null;
     ignoreNextClick.current = false;
@@ -317,14 +324,14 @@ export default function MapScene({
       const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? rect.height : 1;
       const delta = Math.max(-480, Math.min(480, event.deltaY * unit));
       const factor = Math.exp(-delta * .00145);
-      const nextZoom = Math.max(MIN_LOCAL_ZOOM, Math.min(MAX_ZOOM, activeCamera.zoom * factor));
+      const nextZoom = Math.max(MIN_LOCAL_ZOOM, Math.min(MAX_ZOOM, transientCamera.current.zoom * factor));
       const localRect: Rect = { x: 0, y: 0, width: rect.width, height: rect.height };
       const pointer = followPlayer
         ? { x: rect.width / 2, y: rect.height / 2 }
         : { x: event.clientX - rect.left, y: event.clientY - rect.top };
-      const next = zoomAtScreenPoint(activeCamera, localRect, pointer, nextZoom);
+      const next = zoomAtScreenPoint(transientCamera.current, localRect, pointer, nextZoom);
       event.preventDefault();
-      withZoom(next);
+      withZoom(next);if(wheelCommit.current)clearTimeout(wheelCommit.current);wheelCommit.current=setTimeout(()=>withZoom(transientCamera.current,activeCamera.zoom,true),120);
     };
     node.addEventListener('wheel', onWheel, { passive: false });
     return () => node.removeEventListener('wheel', onWheel);
@@ -399,17 +406,17 @@ export default function MapScene({
     </div>}
 
     <div className="map-scene map-scene--deep" ref={rootRef}>
+      <MapCanvas snapshot={explorationSnapshot(visibleMap,activeCamera,world)} label="Địa hình băng nguyên hướng Bắc. Địa điểm đã biết được hiển thị trên lớp điều khiển."/>
       <svg ref={svgRef} className="terrain-svg terrain-svg--deep" viewBox={viewport.x + ' ' + viewport.y + ' ' + viewport.width + ' ' + viewport.height}
         aria-label="Bản đồ băng nguyên. Dùng các phím mũi tên để di chuyển, cộng trừ để thu phóng."
         tabIndex={0} onKeyDown={keyDown} onPointerDown={pointerDown} onPointerMove={pointerMove}
         onPointerUp={finishPointer} onPointerCancel={cancelPointer} onLostPointerCapture={lostPointerCapture} onClickCapture={clickCapture}>
-        <TerrainLayer id={unique} world={world} viewport={viewport} viewHeight={viewHeight} landmarks={visibleMap.terrain}/>
         <FogDefinitions id={unique} discs={visibleMap.sight} memory={visibleMap.explored} viewport={viewport}/>
         <rect {...viewport} fill="#081527" opacity={currentSightOpacity} pointerEvents="none"/>
         {visibleMap.sight.map((disc, i) => <circle key={'halo-' + i} cx={disc.x} cy={-disc.y} r={disc.fade + 27} fill={'url(#' + unique + '-halo)'} pointerEvents="none"/>)}
         <rect {...viewport} fill="#01040a" mask={'url(#' + unique + '-fog-mask)'} pointerEvents="none"/>
         {showExploration && <rect {...viewport} fill="#69828a" opacity=".38" mask={'url(#' + unique + '-known-mask)'} pointerEvents="none"/>}
-        {showHeat && radius > 0 && <circle cx="0" cy="0" r={radius} fill={'url(#' + unique + '-heat)'} opacity={phase === 'night' ? .8 : .16} pointerEvents="none"/>}
+        {showHeat && radius > 0 && <circle cx="0" cy="0" r={radius} fill="none" opacity={phase === 'night' ? .8 : .16} pointerEvents="none"/>}
         {showHeat && radius > 0 && <circle cx="0" cy="0" r={radius} fill="none" stroke="#edbc77" strokeWidth={Math.max(.8, Math.min(750, viewHeight / 245))} strokeDasharray={Math.max(4, viewHeight / 70) + ' ' + Math.max(3, viewHeight / 100)} strokeOpacity=".88" pointerEvents="none"/>}
         {showHeat && radius > 0 && <circle cx="0" cy="0" r={Math.min(radius, Math.max(3, radius * .18))} fill="none" stroke="#ffc881" strokeOpacity=".23" strokeWidth="2" pointerEvents="none"/>}
         {sourceAtlas && visibleMap.developerEntities?.map(entity => <g key={entityKey(entity)} aria-hidden="true" pointerEvents="none" opacity=".36">
@@ -445,9 +452,6 @@ export default function MapScene({
         </g>}
       </svg>
       <div className="map-vignette" aria-hidden="true"/>
-      <svg className="map-snow-overlay" viewBox={`0 0 ${size.width} ${size.height}`} preserveAspectRatio="none" aria-hidden="true" focusable="false">
-        {SNOW_PARTICLES.map((particle,index)=><circle key={index} cx={particle.x/900*size.width} cy={particle.y/650*size.height} r={particle.r} fill="#eaf5ee" opacity=".48" style={{animationDelay:particle.delay+'s'}}/>)}
-      </svg>
       <div className="map-corner-title"><span><Compass size={13}/> PHƯƠNG BẮC ↑</span><strong>{world ? 'Bản đồ thế giới' : 'Đồng bằng Cổ Chiến Trường'}</strong><small>{world ? 'Vùng đất đã biết · bán kính 96 km' : 'Địa hình băng nguyên minh họa'}</small></div>
       {followPlayer && <button type="button" className="map-follow-status" aria-pressed="true" onClick={() => onFollowPlayerChange(false)}>
         <LocateFixed size={14}/> Theo dõi {playerName}<span>Mở khóa</span>
