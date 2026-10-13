@@ -205,9 +205,22 @@
 .live-map-marker--combat>svg { color:#c3edce; }
 .live-map-marker--combat span { display:none; color:#d0ead6; }
 .live-map-marker--combat:hover span,.live-map-marker--combat.is-selected span { display:block; }
+.live-map-marker--enemy { z-index:7; width:26px; height:26px; justify-content:center; padding:1px; border-color:rgba(228,139,125,.56); background:rgba(68,31,36,.94); }
+.live-map-marker--enemy>svg { color:#f0b0a0; }
+.live-map-marker--enemy span { display:none; color:#f2c4b4; }
+.live-map-marker--enemy:hover span,.live-map-marker--enemy.is-selected span { display:block; }
+.live-map-marker--enemy.is-remembered { border-style:dashed; opacity:.68; }
+.live-map-marker--enemy-army { z-index:8; width:24px; height:24px; justify-content:center; padding:1px; border-color:rgba(222,115,103,.76); background:rgba(109,34,37,.95); }
+.live-map-marker--enemy-army>svg { color:#ffd0b0; }
+.live-map-marker--enemy-army span { display:none; color:#ffd1b4; }
+.live-map-marker--enemy-army:hover span,.live-map-marker--enemy-army:focus-visible span { display:block; }
+.live-map-marker--enemy-army.is-remembered { border-style:dashed; opacity:.62; }
 .live-map-marker.is-selected { outline:2px solid #e4c18b; outline-offset:2px; }
 .live-terrain-label { position:absolute; color:#829f9c; font-size:9px; transform:translate(-50%,-50%); }
 .live-map-empty { position:absolute; inset:45% 0 auto; text-align:center; color:#8198a1; font-size:11px; }
+.live-bot-inspection { display:grid; gap:5px; margin-top:12px; padding:12px 14px; border:1px solid rgba(217,139,125,.24); border-radius:8px; color:#9bb0af; background:rgba(41,25,31,.28); font-size:10px; }
+.live-bot-inspection strong { color:#e9b6a5; font-size:12px; }
+.live-bot-inspection ul { display:grid; gap:3px; max-height:92px; overflow:auto; margin:5px 0 2px; padding-left:16px; color:#bac7c0; }
 .live-inline-error { margin:12px 0; padding:11px 12px; border:1px solid rgba(220,127,111,.32); border-radius:7px; color:#e7b8ac; background:rgba(137,65,58,.12); font-size:11px; }
 .live-inspector { position:relative; z-index:4; display:flex; justify-content:space-between; align-items:center; gap:18px; margin-top:14px; padding:15px; border:1px solid rgba(150,184,185,.12); border-radius:8px; background:rgba(6,20,29,.37); }
 .live-inspector h3 { margin:6px 0 3px; color:#e8e9df; font:500 17px Georgia,serif; }

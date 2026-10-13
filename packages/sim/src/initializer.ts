@@ -12,6 +12,7 @@ import { initialStage08State } from './stage08.ts';
 import { initialWildlifeState } from './wildlife.ts';
 import { initialEventProgress } from './eventRuntime.ts';
 import { OPENING_FIRE_STARTER_FUEL_UNITS, OPENING_WEATHER_RECORD } from '../../content/src/openingEnvironment.ts';
+import { generateBotPopulation } from './bots/generation.ts';
 
 export type NewGameOptions = {
   saveId: string;
@@ -40,6 +41,8 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
   if (options.contentVersion !== world.contentVersion) throw new Error(`CONTENT_VERSION_MISMATCH: requested ${options.contentVersion}; package ${world.contentVersion}`);
   if (options.rulesetVersion !== RULESET_VERSION) throw new Error(`RULESET_VERSION_UNSUPPORTED: ${options.rulesetVersion}`);
   assertCompiledWorld(world);
+
+  const botPopulation = generateBotPopulation(options.seed, world);
 
   const bag = seedConvenienceBag(options.campaignId, options.soulId);
   const supplyContainerId = 'LL-CNT-SUPPLY-01';
@@ -229,6 +232,9 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
       knownRouteIds: empty,
       knownSignalIds: empty,
       knownCorpseIds: [STAGE07_OPENING_CORPSE_ID],
+      knownBotIds: empty,
+      inspectedBotId: null,
+      lastSeenBotById: {},
       knownWildlifeGroupIds: empty,
       careerCardObserved: false,
       lastSeenByEntity: { 'site:SITE-LL01-000': { observedAtElapsedMs: 0, knowledge: 'current' } },
@@ -273,7 +279,8 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
     eventProgress: initialEventProgress(world),
     eventProgressionBlocker: null,
     offers: empty,
-    stage08: initialStage08State(),
+    stage08: { ...initialStage08State(), openingRivals: empty },
+    botPopulation,
     currency: empty,
     receipts: empty,
     rngStreams: { convenienceBag: { algorithm: 'HASH-PRIMITIVE-1.0', counter: bag.totalHashDraws } },

@@ -4,6 +4,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { ACTIVE_WORLD_PACKAGE as world } from '../../content/src/index.ts';
+import { GAME_STATE_SCHEMA_VERSION } from '../../contracts/src/index.ts';
 import { EVENT_MECHANICS, EVENT_MECHANICS_RULE_VERSION } from '../../content/src/eventRules.ts';
 import { CHEST_EVENT_IDS, CHEST_LOOT_RULE_VERSION, chestLootOdds, lootTableForChest } from '../../content/src/chestLoot.ts';
 import { RULESET_VERSION } from '../../content/src/sourceLock.ts';
@@ -15,6 +16,7 @@ import { recordEventActivities } from '../src/eventRuntime.ts';
 import { initialWildlifeState, replenishWildlife, WILDLIFE_RULE_VERSION } from '../src/wildlife.ts';
 import { projectPlayerView } from '../src/view.ts';
 import { upgradeGameState } from '../src/upgrade.ts';
+import { canonicalStateHash } from '../src/hash.ts';
 import { STAGE07_OPENING_CLOAK_ID, STAGE07_OPENING_CORPSE_ID, STAGE07_OPENING_SPEAR_ID } from '../src/stage07.ts';
 import { SqliteRepository } from '../../storage/src/repository.ts';
 import { GameApplicationService } from '../../api/src/service.ts';
@@ -22,10 +24,13 @@ import { GameApplicationService } from '../../api/src/service.ts';
 let serial = 0;
 function freshState() {
   serial += 1;
-  return createNewGame({
+  const state = createNewGame({
     saveId: `stage10-save-${serial}`, campaignId: `stage10-campaign-${serial}`, soulId: 'LI_LAN',
     worldPackageId: world.id, rulesetVersion: RULESET_VERSION, contentVersion: world.contentVersion, seed: `stage10-seed-${serial}`,
   }, world);
+  // This suite isolates Stage 10 event contracts; bot progression has dedicated integration coverage.
+  state.botPopulation = null;
+  return state;
 }
 function submit(state: ReturnType<typeof freshState>, commandId: string, type: string, payload: Record<string, unknown>) {
   return reduceCommand(state, { schemaVersion: 1, saveId: state.saveId, commandId, expectedRevision: state.revision, type, payload }, world);
@@ -69,7 +74,8 @@ test('schema 10 migration resumes at the former EV02 blocker without rewinding t
   delete legacy.wildlife;
   delete legacy.playerKnowledge.knownWildlifeGroupIds;
   const migrated = upgradeGameState(legacy);
-  assert.equal(migrated.schemaVersion, 11);
+  assert.equal(migrated.schemaVersion, GAME_STATE_SCHEMA_VERSION);
+  assert.equal(migrated.botPopulation, null, 'older saves retain their legacy rivals without activating a new bot economy');
   assert.equal(migrated.simElapsedMs, row.opensAtMs);
   assert.equal(migrated.eventProgressionBlocker, null);
   assert.equal(migrated.calendar.find(event => event.id === row.id)?.status, 'scheduled');
@@ -213,8 +219,35 @@ test('event activity, objective settlement and choice receipts survive a strict 
   const repository = new SqliteRepository(resolve(directory, 'saves.sqlite'));
   const service = new GameApplicationService(repository, world, { timersEnabled: false });
   try {
-    const created = service.createSave({ creationKey: 'stage10-event-backup', slotName: 'Stage 10 event backup' });
-    const saveId = created.save.saveId;
+    // Seed an event-only save so this backup contract stays focused on Stage 10.
+    // The API creation path with the persistent bot population is covered by the bot API suite.
+    const created = repository.createSaveIdempotent({
+      ownerId: 'local-owner', creationKey: 'stage10-event-backup',
+      requestSha256: canonicalStateHash({ creationKey: 'stage10-event-backup', slotName: 'Stage 10 event backup' }),
+      slotName: 'Stage 10 event backup', makeState: freshState,
+    });
+    const saveId = created.saveId;
+    repository.commitSystemTransition({
+      ownerId: 'local-owner', saveId,
+      transition: current => {
+        const openSequence = current.lastEventSequence + 1;
+        return {
+          state: {
+            ...current,
+            territory: { ...current.territory, survivalFire: { ...current.territory.survivalFire, protectionStatus: 'active' } },
+            calendar: current.calendar.map(event => event.id === current.territory.survivalFire.protectionEventId
+              ? { ...event, status: 'active', openReceiptSequence: openSequence }
+              : event),
+          },
+          events: [{ sequence: openSequence, type: 'opening_protection_started', occurredAtElapsedMs: 0, payload: {
+            eventId: 'EV00-SAFE-FIRE', expiresAtElapsedMs: 144 * HOUR_MS,
+          } }],
+        };
+      },
+      projectPlayerEvent: (event, eventId, state) => (service as unknown as {
+        projectSystemPlayerEvent: (candidate: typeof event, id: string, finalState: typeof state) => unknown;
+      }).projectSystemPlayerEvent(event, eventId, state),
+    });
     const row = world.eventSchedule.find(event => event.id === 'EV19-ICE-SNOW-CHOICE')!;
     const advanceThrough = (target: number) => repository.commitSystemTransition({
       ownerId: 'local-owner', saveId,

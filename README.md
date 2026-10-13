@@ -4,7 +4,7 @@ Single-protagonist, fresh-start browser strategy/kingdom-building game inspired 
 
 ## Scope and status
 
-**Design/research, deterministic simulation and React frontend prototype; not yet a complete playable application.** The plan is a React/TypeScript + HTML frontend with a deterministic, persistent game simulation. No LLM or Codex is required as a runtime game master. Lí Lan is the only playable protagonist and has the fixed SSS talent **Tử Phục Linh Sư**. The game starts at **T0, 07:00 on the frozen ancient battlefield**.
+**Active runtime:** a Node 24 TypeScript simulation and HTTP API, SQLite persistence, and a live React frontend. The runtime supports a clean new game, persistent simulation, and a deterministic 1,023-rival P0 population. No LLM or Codex is required as a runtime game master. Lí Lan is the only playable protagonist and has the fixed SSS talent **Tử Phục Linh Sư**. The game starts at **T0, 07:00 on the frozen ancient battlefield**. See [the enemy-bot guide](docs/implementation/ENEMY-BOT-SYSTEM.md) for the bot contract, limits and validation evidence.
 
 This is a **new game**: do not import earlier campaign inventories, unit rosters, learned blueprints, built structures, claimed chests, XP, quests, save logs or day-one checkpoints. Do not copy saved player actions into new-game starting conditions. The fixed seed/world geography, underlying system rules and authored events may be reused as design material after being made executable.
 
@@ -25,12 +25,11 @@ This is a **new game**: do not import earlier campaign inventories, unit rosters
 5. Do not quietly combine conflicting versions of the old Lord DnD source files; consult the release manifest and use explicit versioned game conversions instead.
 6. All starting progress is generated from a **clean T0 initializer**, never from archived LL01 gameplay.
 
-## Development plan
+## Runtime development
 
-1. Normalize the authoritative initial-state/world and event registries into typed, versioned game data.
-2. Implement a pure deterministic simulation (resource conservation, construction, assignment/jobs, survival, combat, chest receipts, quest/event state, and saves).
-3. Build the React browser client (settlement map, building inspector, workers/armies, inventory, expedition map, crafting, event shop).
-4. Validate end-to-end cold-start gameplay against fixed world, talent, construction and event tests before adding advanced content.
+The runtime integrates versioned contracts, deterministic simulation rules, HTTP command validation, SQLite saves and checkpoints, and the LIVE browser client. It includes a persistent bot economy and military layer alongside the authored player systems. Some source-derived content remains research-only until its acquisition and resolution rules are executable; see the bot guide's unsupported-contract list and the stage reports for the current boundary.
+
+Run the API and frontend using `npm run local:start` from the repository root. Root-level simulation checks include `npm run test:stage02` through `npm run test:stage10`, `npm run test:opening-ranking`, and the bot suites `npm run test:bots`, `npm run test:bots-stress`, `npm run test:bots-storage`, and `npm run test:bots-api`. Build the browser bundle with `cd frontend && npm ci && npm run build`.
 
 ## Source and commercial-use notice
 
@@ -40,7 +39,7 @@ See `docs/FRESH_START.md` and `docs/CONTENT_INDEX.md` for import priorities and 
 
 ## Frontend and assets
 
-The React/Vite visual demo now lives in `frontend/` on `main`. It uses the original layered asset pipeline in `assets/` and `frontend/public/assets/`. Run `cd frontend && npm ci && npm run build` to synchronize registered assets and verify the production bundle. The ink / semi-realistic visual policy is in `assets/README.md`; the SVG Fire stage art is registered in `assets/manifest.json`. This UI still has a demo adapter and does not represent game state from the backend until integrated.
+The React/Vite live client lives in `frontend/` and uses the original layered asset pipeline in `assets/` and `frontend/public/assets/`. The asset-sync check runs during build. The ink / semi-realistic visual policy is in `assets/README.md`; the SVG Fire stage art is registered in `assets/manifest.json`. LIVE mode uses the backend game client; the isolated demo adapter remains available for UI examples. The bot view only draws server-projected current sightings, and detailed foreign-settlement inspection follows the same visibility rules.
 
 
 - `data/events/EVENT-SOURCE-ITEMS-v7.5.csv`: cumulative source-item ledger through printed Chapter 1171.

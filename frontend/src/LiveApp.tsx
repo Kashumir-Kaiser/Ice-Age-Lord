@@ -978,14 +978,51 @@ function LiveApp() {
               onClick={event => { event.stopPropagation(); setSelectedRef(null); setSelectedCombatTargetId(target.targetId); }}
               aria-label={target.label} title={target.label}><MapPin size={19} aria-hidden="true" /><span>{target.label}</span></button>;
           })}
+          {(view.visibleMap.enemyBots ?? []).map(bot => {
+            const projected = point(bot.position);
+            const left = Math.max(2, Math.min(98, projected.x));
+            const top = Math.max(2, Math.min(98, projected.y));
+            return <button key={bot.botId} className={'live-map-marker live-map-marker--enemy' + (bot.knowledge === 'remembered' ? ' is-remembered' : '')}
+              data-testid="map-enemy-settlement" data-bot-id={bot.botId} style={{ left: left + '%', top: top + '%' }}
+              onClick={event => {
+                event.stopPropagation();
+                if (bot.knowledge === 'current') void sendCommand(commandFor(view, 'inspect_entity', { entity: { type: 'bot', id: bot.botId } }));
+                else setFeedback({ kind: 'idle', text: 'Return the settlement to current sight to inspect it.' });
+              }}
+              aria-label={bot.label} title={bot.label}><MapPin size={19} aria-hidden="true" /><span>{bot.label}</span></button>;
+          })}
+          {(view.visibleMap.enemyArmies ?? []).map(army => {
+            const projected = point(army.position);
+            const left = Math.max(2, Math.min(98, projected.x));
+            const top = Math.max(2, Math.min(98, projected.y));
+            const unitLabel = army.order === 'scout' ? 'scouts' : 'troops';
+            const summary = army.knowledge === 'current' ? `${army.count} ${unitLabel} · ${army.order}` : `Last seen ${unitLabel} movement`;
+            return <button key={`${army.botId}:${army.observedAtElapsedMs}`} className={'live-map-marker live-map-marker--enemy-army' + (army.knowledge === 'remembered' ? ' is-remembered' : '')}
+              data-testid="map-enemy-army" style={{ left: left + '%', top: top + '%' }}
+              onClick={event => { event.stopPropagation(); setFeedback({ kind: 'idle', text: summary }); }}
+              aria-label={summary} title={summary}><MapPin size={17} aria-hidden="true" /><span>{army.knowledge === 'current' ? `${army.count} ${unitLabel}` : 'Last seen'}</span></button>;
+          })}
           {view.units.filter(unit => unit.position).map(unit => {
             const projected = point(unit.position!);
             return <span key={unit.id} className="live-map-unit" style={{ left: `${Math.max(2, Math.min(98, projected.x))}%`, top: `${Math.max(2, Math.min(98, projected.y))}%` }} title={unit.name}>{unit.name}</span>;
           })}
           {(() => { const projected = point(view.player.position); return <span className="live-map-player" style={{ left: `${projected.x}%`, top: `${projected.y}%` }} title="Lí Lan">LL</span>; })()}
           {destination && (() => { const projected = point(destination); return <span className="live-map-destination" style={{ left: `${projected.x}%`, top: `${projected.y}%` }} title="Selected destination" />; })()}
-          {view.visibleMap.entities.length === 0 && <p className="live-map-empty">No explored map entities are known yet.</p>}
+          {view.visibleMap.entities.length === 0 && !(view.visibleMap.enemyBots?.length) && !(view.visibleMap.enemyArmies?.length) && <p className="live-map-empty">No explored map entities are known yet.</p>}
         </div>
+        {view.botInspection && <section className="live-bot-inspection" data-testid="bot-settlement-inspection">
+          <strong>{view.botInspection.name}</strong>
+          <span>Level {view.botInspection.level} · population {view.botInspection.population} · {view.botInspection.talent?.grade} {view.botInspection.talent?.kind}</span>
+          <span>Army {(view.botInspection.army ?? []).reduce((sum, cohort) => sum + cohort.livingCount, 0)} · structures {(view.botInspection.structures ?? []).filter(item => item.status !== 'destroyed').length}</span>
+          <span>Food {view.botInspection.resourceBalances?.food ?? 0} · wood {view.botInspection.resourceBalances?.wood ?? 0} · stone {view.botInspection.resourceBalances?.stone ?? 0} · ore {view.botInspection.resourceBalances?.ore ?? 0}</span>
+          <div><strong>Structures</strong><ul>{(view.botInspection.structures ?? []).map(structure => <li key={structure.id}>
+            {structure.blueprintId} · level {structure.level} · {structure.status}{structure.status === 'under_construction' ? ` · ${Math.floor(structure.workCompleted * 100 / Math.max(1, structure.workRequired))}%`
+              : structure.status === 'damaged' && structure.repairWorkRequired > 0 ? ` · repair ${Math.floor(structure.repairWorkCompleted * 100 / structure.repairWorkRequired)}%` : ''}
+          </li>)}</ul></div>
+          <div><strong>Army cohorts</strong><ul>{(view.botInspection.army ?? []).map(cohort => <li key={cohort.id}>
+            {cohort.livingCount} · {cohort.templateId} · level {cohort.level} · {cohort.order}
+          </li>)}</ul></div>
+        </section>}
         {destination && <div className="live-destination-preview">
           <div><strong>Destination preview</strong><span>{destination.xMm}, {destination.yMm} mm · {destinationAvailability?.preview?.value ?? (destinationAvailability ? availabilityMessage(destinationAvailability) : 'Calculating…')}</span></div>
           <button className="live-button" disabled={working || Boolean(pendingCommand) || !destinationAvailability?.enabled} onClick={() => void sendCommand(commandFor(view, 'move', { actorId: view.player.id, destination }))}>Start travel</button>

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { PLAYER_VIEW_SCHEMA_VERSION } from '../../contracts/src/index.ts';
 import { ACTIVE_CONTENT, ACTIVE_WORLD_PACKAGE } from '../../content/src/index.ts';
 import { SOURCE_LOCK, SOURCE_MAIN_COMMIT, RULESET_VERSION } from '../../content/src/sourceLock.ts';
 import { assertSourceHashes } from '../../content/src/compiler.ts';
@@ -167,7 +168,7 @@ test('player projection excludes unobserved world state and sealed career data',
   const state = createNewGame(options, world);
   const view = projectPlayerView(state, world);
   const serialized = JSON.stringify(view);
-  assert.equal(view.schemaVersion, 2);
+  assert.equal(view.schemaVersion, PLAYER_VIEW_SCHEMA_VERSION);
   assert.equal(view.simElapsedMs, 0);
   assert.deepEqual(view.visibleMap.entities.map(entity => entity.ref.id), ['SITE-LL01-000', 'RES-LL01-06', 'RES-LL01-07', STAGE07_OPENING_CORPSE_ID]);
   assert.equal(view.visibleMap.heatOverlays[0].radiusMm, 10_000);

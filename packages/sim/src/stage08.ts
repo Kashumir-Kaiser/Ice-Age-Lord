@@ -10,6 +10,10 @@ import {
   rankOpeningLevelCompletions, visibleOpeningLevelRows,
 } from './openingRanking.ts';
 import { playerLevelThreshold } from './stage07.ts';
+import { BOT_SIMULATION_RULE_VERSION } from './bots/state.ts';
+import { verifyBotPopulation } from './bots/state.ts';
+import { flushBotPopulationChunks } from './bots/economy.ts';
+import { awardBotOpeningRankRewards } from './bots/rewards.ts';
 
 export const STAGE08_RULE_VERSION = 'LL01-STAGE-08-QUEST-TRADE-1.0';
 export const Q08_ID = 'QUEST-LL01-08';
@@ -508,12 +512,15 @@ function settleOpeningRivalActions(state: GameState, at: number): Omit<CommandEv
 }
 
 export function catchUpOpeningRivals(state: GameState, throughAtElapsedMs: number): void {
+  // New saves use the authoritative P0 bot population as the opening-race ledger.
+  // The forecast rivals remain available only for pre-bot saves during migration.
+  if (state.botPopulation) return;
   settleOpeningRivalActions(state, throughAtElapsedMs);
 }
 
 export function nextStage08BoundaryAt(state: GameState): number | null {
   const candidates: number[] = [];
-  for (const rival of state.stage08.openingRivals) {
+  if (!state.botPopulation) for (const rival of state.stage08.openingRivals) {
     if (rival.nextActionAtElapsedMs !== null && rival.nextActionAtElapsedMs > state.simElapsedMs) candidates.push(rival.nextActionAtElapsedMs);
   }
   if (state.stage08.enabled) {
@@ -530,7 +537,7 @@ export function nextStage08BoundaryAt(state: GameState): number | null {
 
 export function settleStage08Boundary(state: GameState, at: number): readonly Omit<CommandEvent, 'sequence'>[] {
   const events: Omit<CommandEvent, 'sequence'>[] = [];
-  events.push(...settleOpeningRivalActions(state, at));
+  if (!state.botPopulation) events.push(...settleOpeningRivalActions(state, at));
   if (!state.stage08.enabled) return events;
   let caravan = state.stage08.caravan;
   if (caravan.status === 'at_checkpoint' && caravan.departsAtElapsedMs === at) {
@@ -588,6 +595,7 @@ export function marketOfferAvailability(state: GameState, world: WorldDefinition
 }
 
 export function verifyStage08State(state: GameState): void {
+  if (state.botPopulation) verifyBotPopulation(state.botPopulation);
   const { caravan, marketOffers, auctionLots, auctionBids, rewardClaimReceipts } = state.stage08;
   if (typeof state.stage08.enabled !== 'boolean'
     || caravan.id !== Q08_CARAVAN_ID || !['at_checkpoint', 'departed', 'distressed', 'negotiated', 'escorting', 'arrived', 'withdrawn'].includes(caravan.status)
@@ -689,7 +697,7 @@ export function verifyStage08State(state: GameState): void {
     }
   }
   for (const snapshot of state.stage08.rankSnapshots) {
-    if (snapshot.sourceContract.includes(RIVAL_ACTION_RULE)) {
+    if (snapshot.boardId === OPENING_LEVEL_BOARD_ID) {
       const expectedHash = canonicalStateHash({
         boardId: snapshot.boardId,
         sourceContract: snapshot.sourceContract,
@@ -723,7 +731,11 @@ function playerOpeningCompletionAt(state: GameState): number | null {
 }
 
 function openingCompletionRecords(state: GameState) {
-  const records = state.stage08.openingRivals.flatMap(rival => {
+  const records = state.botPopulation ? state.botPopulation.chunks.flatMap(chunk => chunk.cold.flatMap((bot, offset) => {
+    const completionAtElapsedMs = chunk.completionAtElapsedMs[offset]!;
+    if (completionAtElapsedMs <= 0 || chunk.levels[offset]! < OPENING_LEVEL_QUALIFYING_LEVEL) return [];
+    return [{ playerId: bot.botId, realName: bot.name, level: chunk.levels[offset]!, progressToNextLevelPermille: 0, completionAtElapsedMs }];
+  })) : state.stage08.openingRivals.flatMap(rival => {
     if (rival.completionAtElapsedMs === null) return [];
     const profile = OPENING_LEVEL_RIVALS.find(item => item.id === rival.contenderId)!;
     return [{ playerId: rival.contenderId, realName: profile.name, level: rival.level, progressToNextLevelPermille: 0, completionAtElapsedMs: rival.completionAtElapsedMs }];
@@ -743,14 +755,15 @@ export function openingBoardView(state: GameState) {
   const frozen = state.stage08.rankSnapshots.find(snapshot => snapshot.boardId === OPENING_LEVEL_BOARD_ID);
   const closed = state.simElapsedMs >= OPENING_LEVEL_CLOSES_AT_MS || Boolean(frozen);
   const status = closed ? 'closed' as const : state.simElapsedMs >= OPENING_LEVEL_OPENS_AT_MS ? 'open' as const : 'scheduled' as const;
-  const completions = openingCompletionRecords(state);
-  const liveRows = visibleOpeningLevelRows(completions, state.simElapsedMs).map(row => ({
-    playerId: row.playerId,
-    playerName: row.realName,
-    rank: row.rank,
-    level: row.level,
-    completionAtElapsedMs: row.completionAtElapsedMs,
-  }));
+  const populationSnapshot = state.botPopulation?.boardSnapshots.find(snapshot => snapshot.boardId === OPENING_LEVEL_BOARD_ID);
+  const liveRows = state.botPopulation
+    ? (populationSnapshot?.rows ?? []).map(row => ({
+      playerId: row.botId, playerName: row.displayName, rank: row.rank,
+      level: row.score, completionAtElapsedMs: row.tieValue,
+    }))
+    : visibleOpeningLevelRows(openingCompletionRecords(state), state.simElapsedMs).map(row => ({
+      playerId: row.playerId, playerName: row.realName, rank: row.rank, level: row.level, completionAtElapsedMs: row.completionAtElapsedMs,
+    }));
   const frozenRows = frozen?.status === 'settled' ? frozen.rows.map(row => ({
     playerId: row.playerId, playerName: row.playerName, rank: row.rank, level: row.level, completionAtElapsedMs: row.completionAtElapsedMs,
   })) : [];
@@ -812,7 +825,7 @@ export function claimOpeningLevelReward(state: GameState, commandId: string, boa
 export function settleOpeningLevelRank(state: GameState, at: number): Omit<CommandEvent, 'sequence'> | null {
   if (at !== OPENING_LEVEL_CLOSES_AT_MS) throw new Error('OPENING_RANK_SETTLEMENT_BOUNDARY_INVALID');
   if (state.stage08.rankSnapshots.some(snapshot => snapshot.boardId === OPENING_LEVEL_BOARD_ID)) return null;
-  const sourceContract = `${OPENING_LEVEL_BOARD_ID}|${OPENING_LEVEL_REWARD_CONTRACT}|LORD-DND-01-2.7.0|LORD-DND-02-1.7.0|LORD-DND-07-1.3.0|${RIVAL_ACTION_RULE}`;
+  const sourceContract = `${OPENING_LEVEL_BOARD_ID}|${OPENING_LEVEL_REWARD_CONTRACT}|LORD-DND-01-2.7.0|LORD-DND-02-1.7.0|LORD-DND-07-1.3.0|${state.botPopulation?.rulesVersion ?? RIVAL_ACTION_RULE}|${state.botPopulation?.rulesetSha256 ?? 'legacy'}`;
   const ranked = rankOpeningLevelCompletions(openingCompletionRecords(state), OPENING_LEVEL_CLOSES_AT_MS);
   const rows: Stage08RuntimeState['rankSnapshots'][number]['rows'] = ranked.map(row => {
     const band = openingLevelRewardBand(row.rank);
@@ -839,6 +852,10 @@ export function settleOpeningLevelRank(state: GameState, at: number): Omit<Comma
       claimReceiptId: null,
     };
   });
+  if (state.botPopulation) {
+    const materialized = flushBotPopulationChunks(state.botPopulation)!;
+    state.botPopulation = awardBotOpeningRankRewards(materialized, rows, at);
+  }
   const snapshot = {
     boardId: OPENING_LEVEL_BOARD_ID,
     status: 'settled' as const,

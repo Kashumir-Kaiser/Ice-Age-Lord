@@ -1,6 +1,6 @@
 export const CONTRACT_SCHEMA_VERSION = 1 as const;
-export const PLAYER_VIEW_SCHEMA_VERSION = 2 as const;
-export const GAME_STATE_SCHEMA_VERSION = 11 as const;
+export const PLAYER_VIEW_SCHEMA_VERSION = 3 as const;
+export const GAME_STATE_SCHEMA_VERSION = 12 as const;
 export const MAX_HARVEST_COMMAND_UNITS = 100_000 as const;
 export const UNIT_INVENTORY_CONTAINER_PREFIX = 'LL-CNT-UNIT-';
 
@@ -15,6 +15,7 @@ export type EntityRef =
   | { type: 'corpse'; id: Id }
   | { type: 'lair'; id: Id }
   | { type: 'route'; id: Id }
+  | { type: 'bot'; id: Id }
   | { type: 'wildlife'; id: Id };
 
 export type KnowledgeStatus = 'unknown' | 'signs_only' | 'current' | 'remembered';
@@ -761,6 +762,323 @@ export type Stage08PlayerView = {
   rankSnapshots: readonly Stage08RankSnapshot[];
   openingBoard: OpeningBoardView;
 };
+
+export type BotTalentGrade = 'S' | 'A' | 'B' | 'C' | 'D';
+export type BotTalentKind = 'combat' | 'production';
+export type BotWorkKind = 'idle' | 'gather_food' | 'gather_wood' | 'gather_stone' | 'gather_ore' | 'construct' | 'recruit' | 'search' | 'scout' | 'raid' | 'recover' | 'deliver' | 'repair' | 'equip' | 'hunt';
+export type BotResourceKey = 'food' | 'wood' | 'stone' | 'ore';
+export type BotCargoKey = BotResourceKey | 'firewood';
+export type BotPlanState = {
+  goal: 'survive' | 'recover' | 'supply' | 'expand' | 'recruit' | 'discover' | 'defend' | 'contest' | 'scout';
+  action: BotWorkKind;
+  actionId: Id;
+  startedAtElapsedMs: number;
+  completesAtElapsedMs: number;
+  targetId: Id | null;
+  workersAssigned: number;
+  reserved: Record<BotResourceKey, number>;
+  startingResourcesMicro: Record<BotResourceKey, number>;
+  expectedOutcome: string;
+};
+export type BotStructureInstance = {
+  id: Id;
+  blueprintId: Id;
+  anchor: CoordinateMm;
+  orientation: 0 | 90 | 180 | 270;
+  footprintMm: { widthMm: number; depthMm: number };
+  level: number;
+  status: 'under_construction' | 'active' | 'damaged' | 'destroyed';
+  workRequired: number;
+  workCompleted: number;
+  repairWorkRequired: number;
+  repairWorkCompleted: number;
+  damagePermille: number;
+  layoutSeed: string;
+  completedAtElapsedMs: number | null;
+};
+export type BotUnitCohort = {
+  id: Id;
+  templateId: Id;
+  firstMemberOrdinal: number;
+  livingCount: number;
+  recruitedCount: number;
+  lostCount: number;
+  level: number;
+  xp: number;
+  healthPerMember: number;
+  maxHealthPerMember: number;
+  equipmentTemplateIds: readonly Id[];
+  order: 'defend' | 'gather' | 'scout' | 'raid' | 'retreat' | 'recover';
+  location: CoordinateMm;
+};
+export type BotActionReceipt = {
+  actionId: Id;
+  botId: Id;
+  action: BotWorkKind;
+  targetId: Id | null;
+  occurredAtElapsedMs: number;
+  result: 'completed' | 'depleted' | 'blocked' | 'retreated' | 'defeated' | 'discovered' | 'duplicate';
+  resourceDelta: Record<BotResourceKey, number>;
+  /** XP earned from the committed action before the bot's talent adjustment. */
+  baseXpAwarded: number;
+  /** Versioned fixed-point talent adjustment applied to baseXpAwarded. */
+  talentXpMultiplierPermille: number;
+  xpAwarded: number;
+  casualties: number;
+  ruleVersion: Id;
+  drawIndex: number;
+};
+export type BotSearchSource = {
+  id: Id;
+  kind: 'field_cache' | 'ruin' | 'wildlife_track' | 'survey_site';
+  position: CoordinateMm;
+  remainingActions: number;
+  eligibleBlueprintIds: readonly Id[];
+  discovered: boolean;
+  contactTargetId?: Id;
+  /** Fixed overlay threat rating for finite wildlife packs; only set for wildlife_track sources. */
+  wildlifeDangerPermille?: number;
+  /** Multiple settlements can hunt the same finite regional prey stock. */
+  sharedStockId?: Id;
+};
+export type BotSharedWildlifeStock = {
+  id: Id;
+  position: CoordinateMm;
+  initialActions: number;
+  remainingActions: number;
+  dangerPermille: number;
+};
+export type BotKnownTarget = { id: Id; kind: 'bot' | 'player'; position: CoordinateMm; observedAtElapsedMs: number };
+export type BotArmyMovement = {
+  orderId: Id;
+  targetId: Id;
+  unitKind: 'army' | 'scout';
+  unitCount: number;
+  from: CoordinateMm;
+  to: CoordinateMm;
+  startedAtElapsedMs: number;
+  arrivesAtElapsedMs: number;
+  status: 'outbound' | 'besieging' | 'surveying' | 'returning';
+};
+export type BotWorkforceState = {
+  gatherFood: number;
+  gatherWood: number;
+  gatherStone: number;
+  gatherOre: number;
+  farmers: number;
+  millWorkers: number;
+  quarryWorkers: number;
+  smiths: number;
+  builders: number;
+  scouts: number;
+  guards: number;
+  recruiters: number;
+};
+export type BotColdRecord = {
+  botId: Id;
+  ordinal: number;
+  name: string;
+  regionId: Id;
+  position: CoordinateMm;
+  oldAffinity: string;
+  aggressionPermille: number;
+  riskTolerancePermille: number;
+  decisionPhaseMs: number;
+  knownTargetIds: readonly Id[];
+  knownTargets: readonly BotKnownTarget[];
+  armyMovement: BotArmyMovement | null;
+  workforce: BotWorkforceState;
+  blueprintIds: readonly Id[];
+  structures: readonly BotStructureInstance[];
+  cohorts: readonly BotUnitCohort[];
+  /** Unopened event items and overflow food remain attributable to their one-time reward receipt. */
+  eventInventory: readonly BotEventInventoryItem[];
+  searchSources: readonly BotSearchSource[];
+  currentPlan: BotPlanState | null;
+  /** Recent full receipts plus compact immutable pages for every older committed action. */
+  actionReceipts: readonly BotActionReceipt[];
+  actionReceiptArchive: readonly string[];
+  carriedCargo: Record<BotCargoKey, number>;
+  starvationExposureMs: number;
+  coldExposureMs: number;
+  nextActionOrdinal: number;
+  nextMemberOrdinal: number;
+  lastSafePosition: CoordinateMm;
+};
+/** Durable structure-of-arrays row. The SQLite codec stores this as one immutable, checksummed chunk. */
+export type BotStateChunk = {
+  index: number;
+  firstOrdinal: number;
+  count: number;
+  ids: readonly number[];
+  talentGrades: readonly number[];
+  talentKinds: readonly number[];
+  regionIndices: readonly number[];
+  alive: readonly number[];
+  lastIntegratedAtElapsedMs: readonly number[];
+  nextWakeAtElapsedMs: readonly number[];
+  levels: readonly number[];
+  completionAtElapsedMs: readonly number[];
+  xp: readonly number[];
+  foodMicro: readonly number[];
+  woodMicro: readonly number[];
+  stoneMicro: readonly number[];
+  oreMicro: readonly number[];
+  reservedFoodMicro: readonly number[];
+  reservedWoodMicro: readonly number[];
+  reservedStoneMicro: readonly number[];
+  reservedOreMicro: readonly number[];
+  foodRemainder: readonly number[];
+  woodRemainder: readonly number[];
+  stoneRemainder: readonly number[];
+  oreRemainder: readonly number[];
+  population: readonly number[];
+  workers: readonly number[];
+  assignedWorkers: readonly number[];
+  workKind: readonly number[];
+  workProgress: readonly number[];
+  workRequired: readonly number[];
+  foodNodeMicro: readonly number[];
+  foodNodeRemainder: readonly number[];
+  woodNodeMicro: readonly number[];
+  woodNodeRemainder: readonly number[];
+  stoneNodeMicro: readonly number[];
+  stoneNodeRemainder: readonly number[];
+  oreNodeMicro: readonly number[];
+  oreNodeRemainder: readonly number[];
+  armySize: readonly number[];
+  armyHealthPermille: readonly number[];
+  buildingCount: readonly number[];
+  farmCount: readonly number[];
+  millCount: readonly number[];
+  quarryCount: readonly number[];
+  barracksCount: readonly number[];
+  wallCount: readonly number[];
+  firewoodMicro: readonly number[];
+  firewoodRemainder: readonly number[];
+  foodConsumptionRemainder: readonly number[];
+  firewoodConsumptionRemainder: readonly number[];
+  firewoodNodeRemainder: readonly number[];
+  actionCount: readonly number[];
+  deathCount: readonly number[];
+  knownBotCount: readonly number[];
+  cold: readonly BotColdRecord[];
+  rowSha256: readonly string[];
+  chunkSha256: string;
+};
+export type BotPopulationState = {
+  schemaVersion: 1;
+  generationProfile: 'P0_ACTIVE' | 'BENCHMARK_STRESS';
+  configuredMapRadiusKm: number;
+  talentQuotas: Readonly<Record<BotTalentGrade, number>>;
+  generationVersion: Id;
+  rulesVersion: Id;
+  plannerRuleVersion: Id;
+  blueprintRulesVersion: Id;
+  activityXpRuleVersion: Id;
+  talentXpRuleVersion: Id;
+  actionReceiptArchiveVersion: Id;
+  huntRuleVersion: Id;
+  repairRuleVersion: Id;
+  equipmentRuleVersion: Id;
+  recoveryRuleVersion: Id;
+  eventRewardRuleVersion: Id;
+  sharedWildlifeRuleVersion: Id;
+  saveSeed: string;
+  rulesetSha256: string;
+  totalParticipants: number;
+  botCount: number;
+  chunkSize: number;
+  generatedAtElapsedMs: number;
+  playerRaidProtectionEndsAtElapsedMs: number;
+  chunks: readonly BotStateChunk[];
+  chunkRootSha256: string;
+  sharedWildlifeStocks: readonly BotSharedWildlifeStock[];
+  sharedWildlifeRootSha256: string;
+  /** Min-heap of next chunk wakes. Equal timestamps are ordered by chunk then bot ordinal. */
+  schedulerHeap: readonly { atElapsedMs: number; chunkIndex: number; botOrdinal: number }[];
+  publicRevision: number;
+  lastPublicSnapshotAtElapsedMs: number;
+  pendingBoardPublicationAtElapsedMs: readonly number[];
+  /** Immutable score snapshots are built only at a board receipt or explicit refresh. */
+  boardSnapshots: readonly BotBoardSnapshot[];
+  eventReceipts: readonly BotEventReceipt[];
+  rewardReceipts: readonly BotRewardReceipt[];
+  completedActionCount: number;
+  benchmarkCounters: { plannerExpansions: number; integratedBotSegments: number; dirtyChunks: number };
+};
+export type BotEventReceipt = {
+  id: Id;
+  eventId: Id;
+  botId: Id;
+  actionReceiptId: Id;
+  scoreRule: Id;
+  scoreDelta: number;
+  occurredAtElapsedMs: number;
+};
+export type BotEventInventoryItem = {
+  instanceId: Id;
+  itemTemplateId: Id;
+  quantity: number;
+  eventId: Id;
+  rewardReceiptId: Id;
+  awardedAtElapsedMs: number;
+  ruleVersion: Id;
+};
+export type BotRewardReceipt = {
+  id: Id;
+  eventId: Id;
+  botId: Id;
+  actionReceiptId: Id;
+  rank: number;
+  rewardBandId: Id;
+  occurredAtElapsedMs: number;
+  ruleVersion: Id;
+  /** Literal eligible payload; food item quantities are converted into food stock when capacity allows. */
+  items: readonly { instanceId: Id; itemTemplateId: Id; quantity: number; foodUnitsApplied: number; inventoryQuantity: number }[];
+};
+export type BotBoardSnapshot = {
+  boardId: Id;
+  revision: number;
+  asOfSimMs: number;
+  observedThroughSimMs: number;
+  status: 'open' | 'settled';
+  rows: readonly { botId: Id; displayName: string; rank: number; score: number; tieValue: number; receiptCount: number }[];
+  snapshotSha256: string;
+};
+export type BotMapMarker = {
+  botId: Id;
+  label: string;
+  position: CoordinateMm;
+  observedAtElapsedMs: number;
+  knowledge: 'current' | 'remembered';
+  level: number | null;
+  militaryCount: number | null;
+  structureCount: number | null;
+  status: 'active' | 'under_attack' | 'destroyed' | 'unknown';
+};
+export type BotArmyMarker = {
+  botId: Id;
+  label: string;
+  position: CoordinateMm;
+  observedAtElapsedMs: number;
+  knowledge: 'current' | 'remembered';
+  count: number;
+  order: 'raid' | 'retreat' | 'scout';
+};
+export type BotInspectionView = {
+  botId: Id;
+  name: string;
+  position: CoordinateMm;
+  observedAtElapsedMs: number;
+  current: boolean;
+  talent: { grade: BotTalentGrade; kind: BotTalentKind } | null;
+  level: number | null;
+  population: number | null;
+  resourceBalances: Readonly<Partial<Record<BotResourceKey, number>>> | null;
+  structures: readonly Pick<BotStructureInstance, 'id' | 'blueprintId' | 'anchor' | 'level' | 'status' | 'workCompleted' | 'workRequired' | 'repairWorkCompleted' | 'repairWorkRequired'>[] | null;
+  army: readonly Pick<BotUnitCohort, 'id' | 'templateId' | 'livingCount' | 'level' | 'order' | 'location'>[] | null;
+};
 export type TombQueueEntry = {
   id: Id;
   recipeId: Id;
@@ -902,6 +1220,8 @@ export type VisibleMap = {
   activeOrders: readonly { id: Id; kind: string; status: string; actorIds: readonly Id[]; position: CoordinateMm; path: readonly CoordinateMm[]; totalDistanceMm: number; etaElapsedMs: number; uncertainty: 'known' | 'uncertain' }[];
   heatOverlays: readonly { center: CoordinateMm; radiusMm: number; minCelsius: number; maxCelsius: number }[];
   combatTargets?: readonly { targetId: Id; label: string; position: CoordinateMm; status: 'available' | 'reacting'; groupId?: Id; remaining?: number }[];
+  enemyBots?: readonly BotMapMarker[];
+  enemyArmies?: readonly BotArmyMarker[];
 };
 
 export type Stage07CombatView = {
@@ -926,6 +1246,8 @@ export type PlayerView = {
   quests: readonly QuestProgressState[];
   currency: readonly CurrencyBalance[];
   stage08: Stage08PlayerView;
+  botBoardSnapshots: readonly BotBoardSnapshot[];
+  botInspection: BotInspectionView | null;
   worldClock: { day: number; hour: number; minute: number; lightPhase: 'daylight' | 'twilight' | 'night' };
   survival: { coldLoad: number | null; coldStatus: ColdStatus; blocker: string | null; hungerState: 'FED' | 'unknown' };
   player: {
@@ -1174,6 +1496,10 @@ export type GameState = {
     knownRouteIds: readonly Id[];
     knownSignalIds: readonly Id[];
     knownCorpseIds?: readonly Id[];
+    knownBotIds?: readonly Id[];
+    inspectedBotId?: Id | null;
+    lastSeenBotById?: Readonly<Record<Id, { observedAtElapsedMs: number; position: CoordinateMm }>>;
+    lastSeenBotArmyById?: Readonly<Record<Id, { observedAtElapsedMs: number; position: CoordinateMm; count: number; order: 'raid' | 'retreat' | 'scout' }>>;
     knownWildlifeGroupIds?: readonly Id[];
     careerCardObserved: boolean;
     lastSeenByEntity: Readonly<Record<string, { observedAtElapsedMs: number; knowledge: KnowledgeStatus }>>;
@@ -1190,6 +1516,8 @@ export type GameState = {
   eventProgressionBlocker: EventProgressionBlocker | null;
   offers: readonly ShopOfferState[];
   stage08: Stage08RuntimeState;
+  /** Null in migrated pre-bot saves; those saves retain their frozen/legacy rival action stream. */
+  botPopulation?: BotPopulationState | null;
   currency: readonly CurrencyBalance[];
   receipts: readonly StoredCommandReceipt[];
   rngStreams: Readonly<Record<string, { algorithm: 'HASH-PRIMITIVE-1.0'; counter: number }>>;
@@ -1205,6 +1533,7 @@ export type GameState = {
 
 export type CommandType =
   | 'inspect_entity'
+  | 'inspect_bot'
   | 'inspect_starter_container'
   | 'inspect_career_card'
   | 'activate_career_card'
@@ -1253,6 +1582,7 @@ export type CommandType =
 
 export type CommandPayloadByType = {
   inspect_entity: { entity: EntityRef };
+  inspect_bot: { botId: Id };
   inspect_starter_container: { containerId: Id };
   inspect_career_card: Record<never, never>;
   activate_career_card: { cardId: Id };
@@ -1352,13 +1682,14 @@ export interface GameClient {
 }
 
 const commandTypes = new Set<CommandType>([
-  'inspect_entity', 'inspect_starter_container', 'inspect_career_card', 'activate_career_card', 'set_clock_speed',
+  'inspect_entity', 'inspect_bot', 'inspect_starter_container', 'inspect_career_card', 'activate_career_card', 'set_clock_speed',
   'advance_to_boundary', 'enqueue_tomb', 'cancel_tomb', 'refuel_fire', 'extinguish_fire', 'light_fire', 'move', 'cancel_travel', 'survey', 'search', 'harvest', 'cancel_spatial_job', 'transfer_item',
   'open_cache', 'repair', 'build', 'craft', 'revive', 'butcher_corpse', 'equip', 'attack', 'retreat', 'shop_transaction', 'accept_quest', 'negotiate_caravan', 'escort_caravan', 'claim_quest_reward', 'claim_opening_rank_reward', 'claim_event_reward', 'choose_event_path', 'buy_event_offer', 'place_auction_bid', 'cancel_auction_bid', 'assign_construction_workers', 'cancel_construction_job', 'recruit_resident', 'operate_heater', 'split_stack', 'merge_stacks', 'consume_item', 'unequip_item',
 ]);
 
 const payloadFields: Readonly<Record<CommandType, readonly string[]>> = {
   inspect_entity: ['entity'],
+  inspect_bot: ['botId'],
   inspect_starter_container: ['containerId'],
   inspect_career_card: [],
   activate_career_card: ['cardId'],
@@ -1422,7 +1753,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function validEntityRef(value: unknown): value is EntityRef {
   if (!isRecord(value) || typeof value.id !== 'string') return false;
   if (Object.keys(value).some(key => !['type', 'id'].includes(key))) return false;
-  return ['site', 'resource', 'cache', 'item', 'unit', 'building', 'corpse', 'lair', 'route', 'wildlife'].includes(String(value.type));
+  return ['site', 'resource', 'cache', 'item', 'unit', 'building', 'corpse', 'lair', 'route', 'bot', 'wildlife'].includes(String(value.type));
 }
 
 function validCoordinate(value: unknown): value is CoordinateMm {
@@ -1471,6 +1802,9 @@ export function validateCommandEnvelope(input: unknown): CommandValidationResult
   }
   if (input.type === 'inspect_entity' && !validEntityRef(payload.entity)) {
     return issue('COMMAND_PAYLOAD_INVALID', '$.payload.entity', 'Expected a registered entity reference.');
+  }
+  if (input.type === 'inspect_bot' && (typeof payload.botId !== 'string' || payload.botId.trim() === '' || payload.botId.length > 160)) {
+    return issue('COMMAND_PAYLOAD_INVALID', '$.payload.botId', 'Expected a non-empty bot ID no longer than 160 characters.');
   }
   if (input.type === 'set_clock_speed') {
     if (!['paused', '1x', '2x', '5x', 'custom'].includes(String(payload.speed))) {

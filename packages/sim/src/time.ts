@@ -7,6 +7,8 @@ import { nextStage08BoundaryAt, settleOpeningLevelRank, settleStage08Boundary } 
 import { replenishWildlife } from './wildlife.ts';
 import { expireEventItems, recordEventActivities, settleEventOutcome, settleExpiredEventClaims, updateEventShopStatus } from './eventRuntime.ts';
 import { OPENING_FIRE_EFFECTIVE_TEMPERATURE_C } from '../../content/src/openingEnvironment.ts';
+import { flushBotPopulationChunks, integrateBotPopulationSegment, nextBotBoundaryAt, settleBotBoundary } from './bots/economy.ts';
+import { beginBotPopulationAdvance, finishBotPopulationAdvance, isBotPopulationAdvanceInProgress } from './bots/state.ts';
 
 export const MINUTE_MS = 60_000;
 export const HOUR_MS = 60 * MINUTE_MS;
@@ -15,7 +17,9 @@ export const TOMB_STANDARD_BLUEPRINT_ID = 'LL-TOMB-ZOMBIE-STANDARD-01';
 export const TOMB_STANDARD_RECIPE_ID = 'NECRO-QUEUE-2.2:STANDARD-T0-COMMON';
 export const TOMB_STANDARD_DURATION_MS = 20 * MINUTE_MS;
 export const FIRE_WOOD_CONSUMPTION_MS = 15 * MINUTE_MS;
-export const MAX_BOUNDARIES_PER_BATCH = 5_000;
+// A one-batch default must cover the current 3-second NPC decision cadence over a
+// normal 10-hour player advance, in addition to world and player activity boundaries.
+export const MAX_BOUNDARIES_PER_BATCH = 10_000;
 
 export type StopCondition = 'none' | 'next_completion' | 'danger';
 export type SettledEvent = { type: string; occurredAtElapsedMs: number; payload: Record<string, unknown> };
@@ -107,6 +111,7 @@ function integrateSegment(state: GameState, target: number, coldRateMicroPerMinu
     state.survival.coldLoadMicro += Math.floor(numerator / MINUTE_MS);
     state.survival.coldLoadRemainder = numerator % MINUTE_MS;
   }
+  integrateBotPopulationSegment(state, from, target);
   state.territory.tomb.queue = state.territory.tomb.queue.map(entry => entry.status === 'active' && entry.startedAtElapsedMs !== null
     ? { ...entry, progressCarryMs: Math.min(TOMB_STANDARD_DURATION_MS, Math.max(0, target - entry.startedAtElapsedMs)) }
     : entry);
@@ -274,6 +279,7 @@ function nextEventTime(state: GameState, target: number, coldRate: number, world
     target,
     ...(combatBoundary === null ? [] : [combatBoundary]),
     nextStage08BoundaryAt(state) ?? Number.MAX_SAFE_INTEGER,
+    nextBotBoundaryAt(state.botPopulation) ?? Number.MAX_SAFE_INTEGER,
     state.wildlife.nextReplenishmentAtElapsedMs,
     state.timeBoundaries.nextHourlySettlementAtElapsedMs,
     state.timeBoundaries.nextMidnightAtElapsedMs,
@@ -383,6 +389,11 @@ function processBoundary(
     events.push(...spatialEvents);
     if (spatialEvents.some(event => event.type === 'movement_order_completed' || event.type === 'spatial_search_completed' || event.type === 'harvest_cargo_returned')) completed = true;
   }
+  const botEvents = settleBotBoundary(state, at);
+  // Bot-only economy and combat receipts stay in their population chunks. Only contact that
+  // directly affects Lí Lan enters the player-facing campaign event stream.
+  events.push(...botEvents.filter(event => event.type === 'bot_raid_player_attack'));
+  if (botEvents.some(event => event.type === 'bot_action_committed' || event.type === 'bot_structure_completed' || event.type === 'bot_unit_recruited')) completed = true;
   const combatOutcome = settleCombatBoundary(state, at);
   if (combatOutcome.events.length > 0) {
     Object.assign(state, combatOutcome.state);
@@ -496,6 +507,11 @@ export function advanceTo(
   targetSimElapsedMs: number,
   options: {
     maxBoundaries?: number;
+    maxWorkMs?: number;
+    /** Keep a private, in-memory bot batch open when this bounded slice yields before target. */
+    deferBotPopulationCommit?: boolean;
+    /** Mutate a caller-owned private state that is never visible before the final commit. */
+    mutatePrivateState?: boolean;
     stopCondition?: StopCondition;
     stopBeforeEvent?: { eventId: string; reasonCode: string; playerMessage: string };
   } = {},
@@ -504,15 +520,25 @@ export function advanceTo(
   if (!Number.isSafeInteger(targetSimElapsedMs) || targetSimElapsedMs < input.simElapsedMs) throw new Error('SIM_TIME_TARGET_INVALID');
   const maxBoundaries = options.maxBoundaries ?? MAX_BOUNDARIES_PER_BATCH;
   if (!Number.isSafeInteger(maxBoundaries) || maxBoundaries < 1 || maxBoundaries > 10_000) throw new Error('SIMULATION_BATCH_LIMIT_INVALID');
-  const state = structuredClone(input);
+  if (options.maxWorkMs !== undefined && (!Number.isFinite(options.maxWorkMs) || options.maxWorkMs <= 0 || options.maxWorkMs > 100)) throw new Error('SIMULATION_WORK_BUDGET_INVALID');
+  const workStartedAt = performance.now();
+  let state: GameState;
+  if (options.mutatePrivateState) {
+    state = input;
+  } else {
+    const { botPopulation, ...coreState } = input;
+    state = { ...structuredClone(coreState), botPopulation: botPopulation ?? null } as GameState;
+  }
   const events: SettledEvent[] = [];
   if (state.eventProgressionBlocker) {
     return { state, events, targetSimElapsedMs, caughtUp: true, stoppedBy: 'event_content_blocked' };
   }
+  state.botPopulation = beginBotPopulationAdvance(state.botPopulation);
   let processed = 0;
   let sameTimestampEvents = 0;
   let lastBoundaryAt = -1;
   let stoppedBy: AdvanceResult['stoppedBy'] = null;
+  let workBudgetExhausted = false;
 
   while (state.simElapsedMs <= targetSimElapsedMs) {
     const coldRate = currentColdLoadRate(state);
@@ -533,6 +559,7 @@ export function advanceTo(
       nextHeaterServiceCompletionAt(state),
       nextCombatBoundaryAt(state),
       nextStage08BoundaryAt(state),
+      nextBotBoundaryAt(state.botPopulation),
       state.wildlife.nextReplenishmentAtElapsedMs,
       nextColdThresholdAt(state, coldRate),
       spatialBoundary,
@@ -552,6 +579,10 @@ export function advanceTo(
       else if (options.stopCondition === 'danger' && outcome.danger) stoppedBy = 'danger';
       else if (options.stopCondition === 'next_completion' && outcome.completed) stoppedBy = 'next_completion';
       if (stoppedBy || processed >= maxBoundaries) break;
+      if (options.maxWorkMs !== undefined && performance.now() - workStartedAt >= options.maxWorkMs) {
+        workBudgetExhausted = true;
+        break;
+      }
       continue;
     }
     if (state.simElapsedMs >= targetSimElapsedMs) break;
@@ -559,7 +590,17 @@ export function advanceTo(
     break;
   }
 
-  const caughtUp = state.simElapsedMs >= targetSimElapsedMs || stoppedBy !== null;
+  const caughtUp = (state.simElapsedMs >= targetSimElapsedMs && !workBudgetExhausted) || stoppedBy !== null;
+  const botPopulationInProgress = isBotPopulationAdvanceInProgress(state.botPopulation);
+  // The API holds this state privately across revision-checked slices. Keep hot
+  // chunk workspaces alive until the final save commit instead of serializing and
+  // hashing them after every bounded yield. Public board boundaries flush
+  // explicitly before taking their immutable snapshot.
+  const keepPrivateBotBatchOpen = options.deferBotPopulationCommit && !caughtUp && botPopulationInProgress;
+  if (!keepPrivateBotBatchOpen) {
+    const flushedBotPopulation = flushBotPopulationChunks(state.botPopulation);
+    state.botPopulation = finishBotPopulationAdvance(flushedBotPopulation);
+  }
   return { state, events, targetSimElapsedMs, caughtUp, stoppedBy };
 }
 

@@ -43,6 +43,7 @@ function elapsedFromSource(value: string): number {
 
 function isolatedEventState(eventId: string, elapsed: number, status: ScheduledEventState['status'] = 'scheduled'): GameState {
   const state = freshState();
+  state.botPopulation = null;
   state.simElapsedMs = elapsed;
   state.stage08.enabled = false;
   state.calendar = state.calendar.map(event => event.id === eventId
@@ -180,6 +181,7 @@ test('all thirty calendar rows honor exact open, lock and resolution boundaries 
 
 test('the fixed caravan quest settles its recorded reward, permanent market purchase, and cancellable auction escrow atomically', () => {
   let state = freshState();
+  state.botPopulation = null;
   state = advanceWithSequence(state, 122 * HOUR_MS).state;
   assert.equal(state.stage08.caravan.status, 'distressed');
   const bridge = world.sites.find(site => site.id === 'SITE-LL01-049')!;
@@ -316,7 +318,7 @@ test('the Stage 08 source path survives a SQLite restart and strict backup impor
     const settleWithTestPosition = (target: number, position: typeof bridge.position, siteId: string) => repository.commitSystemTransition({
       ownerId: 'local-owner', saveId,
       transition: current => {
-        const advanced = advanceTo(current, target, { maxBoundaries: 10_000 });
+        const advanced = advanceTo({ ...current, botPopulation: null }, target, { maxBoundaries: 10_000 });
         const next = structuredClone(advanced.state);
         next.player.position = position;
         next.player.location = { kind: 'site', siteId };
@@ -486,6 +488,7 @@ test('a 5x clock settles through a restart and advances beyond EV02 while preser
 
 test('schema 5 migration adds pinned labels and pauses overdue rows without rewinding or duplicating the legacy EV00 receipt', () => {
   const legacy = structuredClone(freshState()) as unknown as Record<string, any>;
+  legacy.botPopulation = null;
   legacy.schemaVersion = 5;
   legacy.simElapsedMs = 144 * HOUR_MS;
   legacy.lastEventSequence = 2;
@@ -501,7 +504,7 @@ test('schema 5 migration adds pinned labels and pauses overdue rows without rewi
   });
 
   const upgraded = upgradeGameState(legacy, world);
-    assert.equal(upgraded.schemaVersion, GAME_STATE_SCHEMA_VERSION);
+  assert.equal(upgraded.schemaVersion, GAME_STATE_SCHEMA_VERSION);
   assert.equal(upgraded.simElapsedMs, 144 * HOUR_MS, 'migration never rewinds elapsed time');
   assert.equal(upgraded.clockControl.status, 'paused');
   assert.equal(upgraded.eventProgressionBlocker, null);

@@ -5,7 +5,7 @@ import { LocalSessionRegistry } from './auth.ts';
 import type { GameApplicationService } from './service.ts';
 
 const JSON_LIMIT_BYTES = 1024 * 1024;
-const BACKUP_LIMIT_BYTES = 10 * 1024 * 1024;
+const BACKUP_LIMIT_BYTES = 64 * 1024 * 1024;
 const LOOPBACK_HOSTS = new Set(['127.0.0.1', 'localhost', '[::1]', '::1']);
 const LOOPBACK_PEERS = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
 

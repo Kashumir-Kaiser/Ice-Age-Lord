@@ -14,6 +14,7 @@ import type {
 } from '../../contracts/src/index.ts';
 import { isActorInActiveCombat, STAGE07_HARE_ACTOR_ID } from './combat.ts';
 import { canonicalStateHash } from './hash.ts';
+import { botArmyMovementOrder, botArmyPosition } from './bots/movement.ts';
 import { harvestProgressionForFireLevel } from '../../content/src/resourceBalance.ts';
 import { discoverWildlifeAlongSweep } from './wildlife.ts';
 
@@ -506,6 +507,9 @@ function updateKnowledgeAt(state: GameState, world: WorldDefinition, at: number)
   let knownSiteIds = [...state.playerKnowledge.knownSiteIds];
   let knownResourceIds = [...state.playerKnowledge.knownResourceIds];
   let knownRouteIds = [...state.playerKnowledge.knownRouteIds];
+  let knownBotIds = [...(state.playerKnowledge.knownBotIds ?? [])];
+  const lastSeenBotById = { ...(state.playerKnowledge.lastSeenBotById ?? {}) };
+  const lastSeenBotArmyById = { ...(state.playerKnowledge.lastSeenBotArmyById ?? {}) };
   const lastSeenByEntity = { ...state.playerKnowledge.lastSeenByEntity };
   let signals = [...state.spatial.signals];
   let knownSignalIds = [...state.playerKnowledge.knownSignalIds];
@@ -557,6 +561,23 @@ function updateKnowledgeAt(state: GameState, world: WorldDefinition, at: number)
     }
   }
 
+  // Bot positions enter player knowledge only through actual player or unit sight.
+  for (const chunk of state.botPopulation?.chunks ?? []) for (const [offset, bot] of chunk.cold.entries()) {
+    const movement = bot.armyMovement;
+    if (movement && movement.unitCount > 0) {
+      const armyPosition = botArmyPosition(movement, at);
+      const armyObserver = actorPositions.find(actor => sameLayer(actor.position, armyPosition) && distanceMm(actor.position, armyPosition) <= sightRangeMm);
+      if (armyObserver) lastSeenBotArmyById[bot.botId] = {
+        observedAtElapsedMs: at, position: armyPosition, count: movement.unitCount, order: botArmyMovementOrder(movement),
+      };
+    }
+    const observer = actorPositions.find(actor => sameLayer(actor.position, bot.position) && distanceMm(actor.position, bot.position) <= sightRangeMm);
+    if (!observer) continue;
+    knownBotIds.push(bot.botId);
+    lastSeenBotById[bot.botId] = { observedAtElapsedMs: at, position: copyPosition(bot.position) };
+    lastSeenByEntity[`bot:${bot.botId}`] = { observedAtElapsedMs: at, knowledge: 'current' };
+  }
+
   state.fieldChestStates = state.fieldChestStates.map(chest => {
     const signal = signals.find(candidate => candidate.targetId === chest.chestId);
     return signal && chest.discovery === 'hidden'
@@ -570,6 +591,9 @@ function updateKnowledgeAt(state: GameState, world: WorldDefinition, at: number)
     knownResourceIds: [...new Set(knownResourceIds)].sort(),
     knownRouteIds: [...new Set(knownRouteIds)].sort(),
     knownSignalIds: [...new Set(knownSignalIds)].sort(),
+    knownBotIds: [...new Set(knownBotIds)].sort(),
+    lastSeenBotById,
+    lastSeenBotArmyById,
     lastSeenByEntity,
   };
   state.spatial = { ...state.spatial, signals };
@@ -946,6 +970,8 @@ export function nextSpatialBoundary(state: GameState): number | null {
 export function integrateSpatialTo(state: GameState, world: WorldDefinition, target: number): void {
   const delta = Math.max(0, target - state.simElapsedMs);
   if (delta === 0) return;
+  const playerBefore = state.player.position;
+  const ownedBefore = new Map(state.ownedUnits.map(unit => [unit.id, unit.position]));
   state.travel.orders = state.travel.orders.map(order => {
     if (order.status !== 'active') return order;
     const totalDuration = order.pathSegments.reduce((sum, segment) => sum + segment.durationMs, 0);
@@ -985,7 +1011,17 @@ export function integrateSpatialTo(state: GameState, world: WorldDefinition, tar
     return { ...job, routeProgressMm, lastSettledAtElapsedMs: target };
   });
   state.simElapsedMs = target;
-  updateKnowledgeAt(state, world, target);
+  const observersMoved = state.player.position.xMm !== playerBefore.xMm
+    || state.player.position.yMm !== playerBefore.yMm
+    || state.player.position.sourceZMetres !== playerBefore.sourceZMetres
+    || state.ownedUnits.some(unit => {
+      const before = ownedBefore.get(unit.id);
+      return unit.position !== before && (unit.position?.xMm !== before?.xMm || unit.position?.yMm !== before?.yMm
+        || unit.position?.sourceZMetres !== before?.sourceZMetres);
+    });
+  // Bot economy boundaries can be numerous. Static observer sight does not change at those
+  // boundaries, so do not rescan the full rival population unless a player-owned observer moved.
+  if (observersMoved) updateKnowledgeAt(state, world, target);
 }
 
 function polylineDistance(points: readonly CoordinateMm[]): number {

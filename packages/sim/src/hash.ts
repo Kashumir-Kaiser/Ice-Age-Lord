@@ -34,3 +34,8 @@ export function randomIntFromFields(seedFields: readonly string[], low: number, 
 export function canonicalStateHash(value: unknown): string {
   return sha256(stableStringify(value));
 }
+
+/** Hash an already canonical JSON encoding without quoting it as a JSON string. */
+export function canonicalStateHashFromStableJson(encoded: string): string {
+  return sha256(encoded);
+}

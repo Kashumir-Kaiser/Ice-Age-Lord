@@ -62,6 +62,10 @@ jobs:
       - run: npm run test:stage08
       - run: npm run test:stage09
       - run: npm run test:stage10
+      - run: npm run test:bots
+      - run: npm run test:bots-stress
+      - run: npm run test:bots-storage
+      - run: npm run test:bots-api
   frontend:
     needs: backend
     runs-on: ubuntu-latest

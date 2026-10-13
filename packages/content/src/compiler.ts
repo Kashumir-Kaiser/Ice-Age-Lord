@@ -75,10 +75,36 @@ export function sha256(value: string | Uint8Array): string {
 
 export function stableStringify(value: unknown): string {
   if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
-  const record = value as Record<string, unknown>;
-  const keys = Object.keys(record).sort();
-  return `{${keys.map(key => `${JSON.stringify(key)}:${stableStringify(record[key])}`).join(',')}}`;
+  const output: string[] = [];
+  const append = (entry: unknown, parent: 'array' | 'object'): void => {
+    if (entry === null || typeof entry !== 'object') {
+      const encoded = JSON.stringify(entry);
+      if (encoded !== undefined) output.push(encoded);
+      else if (parent === 'object') output.push('undefined');
+      return;
+    }
+    if (Array.isArray(entry)) {
+      output.push('[');
+      for (let index = 0; index < entry.length; index += 1) {
+        if (index > 0) output.push(',');
+        append(entry[index], 'array');
+      }
+      output.push(']');
+      return;
+    }
+    const record = entry as Record<string, unknown>;
+    const keys = Object.keys(record).sort();
+    output.push('{');
+    for (let index = 0; index < keys.length; index += 1) {
+      if (index > 0) output.push(',');
+      const key = keys[index]!;
+      output.push(JSON.stringify(key), ':');
+      append(record[key], 'object');
+    }
+    output.push('}');
+  };
+  append(value, 'object');
+  return output.join('');
 }
 
 export function assertSourceHashes(contents: Readonly<Record<string, string>>): void {

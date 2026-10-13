@@ -13,6 +13,7 @@ import { upgradeGameState } from '../../sim/src/upgrade.ts';
 import { previewCommand, reduceCommand } from '../../sim/src/reducer.ts';
 import { projectPlayerView } from '../../sim/src/view.ts';
 import { verifyStage08State } from '../../sim/src/stage08.ts';
+import { verifyBotPopulation } from '../../sim/src/bots/state.ts';
 import { deterministicChestOutcome } from '../../sim/src/chestLoot.ts';
 import { initialWildlifeState, isWildlifeRenewable, wildlifeSpeciesProfile, WILDLIFE_REPLENISHMENT_MS, WILDLIFE_RULE_VERSION } from '../../sim/src/wildlife.ts';
 import { EVENT_MECHANICS_RULE_VERSION, eventMechanicsFor } from '../../content/src/eventRules.ts';
@@ -25,6 +26,8 @@ import { ApiProblem, fromRepositoryError } from './errors.ts';
 const ownerId = 'local-owner';
 const MAX_BACKUP_ROWS = 10_000;
 const MAX_BACKUP_CHECKPOINTS = 50;
+const MAX_BACKUP_BYTES = 64 * 1024 * 1024;
+const CLOCK_SIMULATION_SLICE_MS = 16;
 const DEFAULT_CLOCK_LEASE_MS = 5_000;
 const DEFAULT_CLOCK_TICK_MS = 250;
 const LEGACY_README_SHA256 = '6e30d099e63a8253134d9de87d495053744ad868cde4ff468ba4bdc31d53c26b';
@@ -35,9 +38,14 @@ type ClockDriver = {
   lastHeartbeatMonoMs: number;
   lastTickMonoMs: number;
   targetSimElapsedMs: number;
+  lastProgressSimElapsedMs: number;
   fractionalSimMs: number;
   timer: ReturnType<typeof setInterval> | null;
   isTicking: boolean;
+  pendingState?: GameState;
+  pendingEvents?: Omit<CommandEvent, 'sequence'>[];
+  pendingBaseRevision?: number;
+  pendingBaseSimElapsedMs?: number;
 };
 
 export type ClockRuntimeOptions = {
@@ -401,6 +409,7 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
       || (Array.isArray(candidate.playerKnowledge.knownChestIds) && candidate.playerKnowledge.knownChestIds.includes(id));
     if (type === 'route') return Array.isArray(candidate.playerKnowledge.knownRouteIds) && candidate.playerKnowledge.knownRouteIds.includes(id);
     if (type === 'unit') return Array.isArray(candidate.ownedUnits) && candidate.ownedUnits.some(unit => unit.id === id);
+    if (type === 'bot') return Array.isArray(candidate.playerKnowledge.knownBotIds) && candidate.playerKnowledge.knownBotIds.includes(id);
     if (type === 'corpse') return (candidate.playerKnowledge.knownCorpseIds ?? []).includes(id);
     if (type === 'wildlife') return (candidate.playerKnowledge.knownWildlifeGroupIds ?? []).includes(id);
     if (type === 'item') return candidate.inventory.containers.some(container => isRecord(container) && container.observed === true
@@ -420,6 +429,17 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
     contentVersion: candidate.contentVersion,
     seed: candidate.seed,
   }, world);
+  if (candidate.botPopulation !== null && candidate.botPopulation !== undefined
+    && (!isRecord(candidate.botPopulation) || candidate.botPopulation.saveSeed !== candidate.seed)) {
+    throw new ApiProblem(400, 'BACKUP_INVALID', 'The bot population seed does not match the save seed.', 'Dữ liệu bot không khớp với seed của bản lưu.');
+  }
+  if (candidate.botPopulation) {
+    try { verifyBotPopulation(candidate.botPopulation); }
+    catch { throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup bot population failed its manifest, scheduler, or row validation.', 'Dữ liệu bot trong bản sao lưu không hợp lệ.'); }
+    if (candidate.botPopulation.chunks.some(chunk => chunk.lastIntegratedAtElapsedMs.some(at => at > candidate.simElapsedMs))) {
+      throw new ApiProblem(400, 'BACKUP_INVALID', 'The backup contains bot state from after its simulation time.', 'Dữ liệu bot trong bản sao lưu đi trước thời gian mô phỏng.');
+    }
+  }
   validateStage10State(candidate, world);
   const rawCombat: unknown = (value as Record<string, unknown>).combat;
   if (rawCombat !== undefined) {
@@ -574,6 +594,7 @@ function validateBackupState(value: unknown, world: WorldDefinition): GameState 
   normalized.eventProgress = baseline.eventProgress;
   normalized.playerKnowledge = structuredClone(candidate.playerKnowledge);
   normalized.stage08 = baseline.stage08;
+  normalized.botPopulation = baseline.botPopulation;
   normalized.quests = baseline.quests;
   normalized.currency = baseline.currency;
   baseline.inventory = {
@@ -789,7 +810,7 @@ function validateBackupEvent(value: unknown, index: number, saveId: string, rece
     'resource_daily_quotas_reset', 'career_activated', 'corpse_revived', 'corpse_butchered',
     'unit_equipment_changed', 'unit_equipment_removed', 'xp_awarded',
     'combat_encounter_started', 'combat_retreat_ordered', 'combat_turn_settled', 'combat_encounter_won',
-    'combat_encounter_retreated', 'combat_unit_defeated',
+    'combat_encounter_retreated', 'combat_unit_defeated', 'bot_raid_player_attack',
   ]);
   if (value.eventType === 'career_card_inspected') return Object.keys(value.payload).length === 0;
   if (value.eventType === 'starter_container_inspected') return (value.payload.containerId === 'LL-CNT-CARRIED-FOOD-BAG-01' && value.payload.containerKind === 'carried_bag')
@@ -803,6 +824,7 @@ function validateBackupEvent(value: unknown, index: number, saveId: string, rece
     if (entity.type === 'route') return state.playerKnowledge.knownRouteIds.includes(entity.id);
     if (entity.type === 'unit') return state.ownedUnits.some(unit => unit.id === entity.id);
     if (entity.type === 'corpse') return (state.playerKnowledge.knownCorpseIds ?? []).includes(entity.id);
+    if (entity.type === 'bot') return (state.playerKnowledge.knownBotIds ?? []).includes(entity.id);
     if (entity.type === 'item') return state.inventory.containers.some(container => container.observed && container.stacks.some(stack => stack.itemId === entity.id));
     return false;
   }
@@ -1221,41 +1243,91 @@ export class GameApplicationService {
   }
 
   private settleClockTarget(saveId: string, driver: ClockDriver): { state: GameState; caughtUp: boolean } {
-    const before = this.repository.loadSave(ownerId, saveId).state;
-    if (before.clockControl.status !== 'running' || driver.targetSimElapsedMs <= before.simElapsedMs) {
-      driver.targetSimElapsedMs = before.simElapsedMs;
-      return { state: before, caughtUp: true };
+    let persisted: GameState | null = null;
+    if (driver.pendingState) {
+      const currentRevision = this.repository.getSaveRevision(ownerId, saveId);
+      if (driver.pendingBaseRevision === undefined || driver.pendingBaseRevision !== currentRevision) {
+        driver.pendingState = undefined;
+        driver.pendingEvents = undefined;
+        driver.pendingBaseRevision = undefined;
+        driver.pendingBaseSimElapsedMs = undefined;
+      }
     }
-    let caughtUp = true;
-    const result = this.persistSystemEvents(saveId, state => {
-      const targetSimElapsedMs = Math.max(state.simElapsedMs, driver.targetSimElapsedMs);
-      const blockerEvent = state.calendar
-        .filter(event => event.status === 'scheduled' && event.opensAtMs <= targetSimElapsedMs
-          && eventRuntimeReadiness(event.id) === 'mandatory_content_blocked')
-        .sort((left, right) => left.opensAtMs - right.opensAtMs || state.calendar.indexOf(left) - state.calendar.indexOf(right))[0];
-      const blockerPolicy = blockerEvent ? mandatoryEventBlocker(blockerEvent.id) : null;
-      const advanced = advanceTo(state, targetSimElapsedMs, {
-        stopCondition: state.clockControl.stopCondition as StopCondition,
+    if (!driver.pendingState) {
+      persisted = this.repository.loadSave(ownerId, saveId).state;
+      // The immutable repository cache would otherwise pin the pre-catch-up
+      // population while this private simulation builds its new chunk set.
+      this.repository.releaseBotPopulationCache(saveId);
+    }
+    const before = driver.pendingState ?? persisted!;
+    const baseRevision = driver.pendingBaseRevision ?? persisted!.revision;
+    if (before.clockControl.status !== 'running' || driver.targetSimElapsedMs <= before.simElapsedMs) {
+      if (!driver.pendingState) {
+        driver.targetSimElapsedMs = persisted!.simElapsedMs;
+        return { state: persisted!, caughtUp: true };
+      }
+    }
+    const targetSimElapsedMs = Math.max(before.simElapsedMs, driver.targetSimElapsedMs);
+    const blockerEvent = before.calendar
+      .filter(event => event.status === 'scheduled' && event.opensAtMs <= targetSimElapsedMs
+        && eventRuntimeReadiness(event.id) === 'mandatory_content_blocked')
+      .sort((left, right) => left.opensAtMs - right.opensAtMs || before.calendar.indexOf(left) - before.calendar.indexOf(right))[0];
+    const blockerPolicy = blockerEvent ? mandatoryEventBlocker(blockerEvent.id) : null;
+    let advanced: ReturnType<typeof advanceTo>;
+    try {
+      advanced = advanceTo(before, targetSimElapsedMs, {
+        maxWorkMs: CLOCK_SIMULATION_SLICE_MS,
+        deferBotPopulationCommit: true,
+        mutatePrivateState: Boolean(driver.pendingState),
+        stopCondition: before.clockControl.stopCondition as StopCondition,
         stopBeforeEvent: blockerEvent && blockerPolicy ? {
           eventId: blockerEvent.id,
           reasonCode: blockerPolicy.reasonCode,
           playerMessage: blockerPolicy.playerMessage,
         } : undefined,
       }, this.world);
-      const events: Omit<CommandEvent, 'sequence'>[] = [...advanced.events];
-      if (advanced.stoppedBy) {
-        advanced.state.clockControl = { status: 'paused', selection: 'paused', speedPermille: 0, stopCondition: 'none' };
-        events.push({ type: 'clock_paused_on_stop_condition', occurredAtElapsedMs: advanced.state.simElapsedMs, payload: { stopCondition: advanced.stoppedBy } });
-      } else if (advanced.state.simElapsedMs > state.simElapsedMs && events.length === 0) {
-        events.push({ type: 'simulation_time_advanced', occurredAtElapsedMs: advanced.state.simElapsedMs, payload: { fromElapsedMs: state.simElapsedMs, toElapsedMs: advanced.state.simElapsedMs } });
-      }
-      caughtUp = advanced.caughtUp;
+    } catch (error) {
+      // A failed private in-place slice cannot be resumed safely. Discard it and
+      // let the next tick retry from the last committed save revision.
+      driver.pendingState = undefined;
+      driver.pendingEvents = undefined;
+      driver.pendingBaseRevision = undefined;
+      driver.pendingBaseSimElapsedMs = undefined;
+      throw error;
+    }
+    // Bot decisions stay in the population chunks. Preserve public events across bounded
+    // slices, then commit the resulting save revision and chunk set atomically once caught up.
+    const events = driver.pendingEvents ?? [];
+    events.push(...advanced.events.filter(event => (!event.type.startsWith('bot_') || event.type === 'bot_raid_player_attack')
+      && event.type !== 'simulation_time_advanced'));
+    if (advanced.stoppedBy) {
+      advanced.state.clockControl = { status: 'paused', selection: 'paused', speedPermille: 0, stopCondition: 'none' };
+      events.push({ type: 'clock_paused_on_stop_condition', occurredAtElapsedMs: advanced.state.simElapsedMs, payload: { stopCondition: advanced.stoppedBy } });
+    }
+    driver.pendingBaseRevision ??= baseRevision;
+    driver.pendingBaseSimElapsedMs ??= persisted?.simElapsedMs ?? before.simElapsedMs;
+    driver.pendingState = advanced.state;
+    driver.pendingEvents = events;
+    const caughtUp = advanced.caughtUp || advanced.stoppedBy !== null;
+    if (!caughtUp) return { state: advanced.state, caughtUp: false };
+
+    if (events.length === 0 && advanced.state.simElapsedMs > driver.pendingBaseSimElapsedMs) {
+      events.push({ type: 'simulation_time_advanced', occurredAtElapsedMs: advanced.state.simElapsedMs, payload: {
+        fromElapsedMs: driver.pendingBaseSimElapsedMs, toElapsedMs: advanced.state.simElapsedMs,
+      } });
+    }
+    const committed = this.persistSystemEvents(saveId, state => {
+      if (state.revision !== driver.pendingBaseRevision) throw new Error('CLOCK_CATCH_UP_STATE_CHANGED');
       return { state: advanced.state, events };
     });
-    driver.targetSimElapsedMs = result.state.clockControl.status === 'paused'
-      ? result.state.simElapsedMs
-      : Math.max(driver.targetSimElapsedMs, result.state.simElapsedMs);
-    return { state: result.state, caughtUp: caughtUp || result.state.clockControl.status === 'paused' };
+    driver.pendingState = undefined;
+    driver.pendingEvents = undefined;
+    driver.pendingBaseRevision = undefined;
+    driver.pendingBaseSimElapsedMs = undefined;
+    driver.targetSimElapsedMs = committed.state.clockControl.status === 'paused'
+      ? committed.state.simElapsedMs
+      : Math.max(driver.targetSimElapsedMs, committed.state.simElapsedMs);
+    return { state: committed.state, caughtUp: true };
   }
 
   private clearDriverTimer(driver: ClockDriver): void {
@@ -1296,17 +1368,22 @@ export class GameApplicationService {
     }
   }
 
-  private async tickClock(saveId: string): Promise<void> {
+  private async tickClock(saveId: string, scheduleCatchUp = true): Promise<void> {
     const driver = this.clockDrivers.get(saveId);
     if (!driver || driver.isTicking) return;
     driver.isTicking = true;
+    let settledState: GameState | undefined;
     try {
       await this.inSaveQueue(saveId, () => {
         const now = this.monotonicNow();
         const leaseExpiry = driver.lastHeartbeatMonoMs + this.clockLeaseMs;
-        const state = this.repository.loadSave(ownerId, saveId).state;
+        // Pending catch-up state is private to this process until the final atomic
+        // commit. Avoid rebuilding and hashing the persisted aggregate on every slice.
+        const state = driver.pendingState ?? this.repository.loadSave(ownerId, saveId).state;
         this.accumulateRealtime(driver, state, Math.min(now, leaseExpiry));
         const settled = this.settleClockTarget(saveId, driver);
+        settledState = settled.state;
+        driver.lastProgressSimElapsedMs = settled.state.simElapsedMs;
         const expired = now >= leaseExpiry;
         if (expired && settled.caughtUp) {
           const paused = this.pausePersistedClock(saveId, 'clock_paused_after_lease_expired');
@@ -1322,8 +1399,8 @@ export class GameApplicationService {
     } finally {
       driver.isTicking = false;
     }
-    const state = this.repository.loadSave(ownerId, saveId).state;
-    if (this.clockDrivers.get(saveId) === driver && driver.targetSimElapsedMs > state.simElapsedMs) {
+    if (scheduleCatchUp && settledState?.clockControl.status === 'running'
+      && this.clockDrivers.get(saveId) === driver && driver.targetSimElapsedMs > settledState.simElapsedMs) {
       setImmediate(() => { void this.tickClock(saveId).catch(() => undefined); });
     }
   }
@@ -1362,6 +1439,7 @@ export class GameApplicationService {
           lastHeartbeatMonoMs: now,
           lastTickMonoMs: now,
           targetSimElapsedMs: state.simElapsedMs,
+          lastProgressSimElapsedMs: state.simElapsedMs,
           fractionalSimMs: 0,
           timer: null,
           isTicking: false,
@@ -1377,16 +1455,34 @@ export class GameApplicationService {
   async settleClockBeforeCommand(saveId: string): Promise<void> {
     const driver = this.clockDrivers.get(saveId);
     if (!driver) return;
-    await this.tickClock(saveId);
+    while (this.clockDrivers.get(saveId) === driver) {
+      const progressBefore = driver.lastProgressSimElapsedMs;
+      const targetBefore = driver.targetSimElapsedMs;
+      await this.tickClock(saveId, false);
+      if (driver.isTicking) {
+        await new Promise<void>(resolve => setImmediate(resolve));
+        continue;
+      }
+      const progressAfter = driver.lastProgressSimElapsedMs;
+      if (!driver.pendingState && driver.targetSimElapsedMs <= progressAfter) return;
+      if (!driver.pendingState && progressAfter <= progressBefore && driver.targetSimElapsedMs <= targetBefore) {
+        throw new Error('CLOCK_CATCH_UP_STALLED');
+      }
+      await new Promise<void>(resolve => setImmediate(resolve));
+    }
   }
 
   async shutdownClockDrivers(): Promise<void> {
     for (const [saveId, driver] of this.clockDrivers) {
       this.clearDriverTimer(driver);
-      const state = this.repository.loadSave(ownerId, saveId).state;
+      const persisted = this.repository.loadSave(ownerId, saveId).state;
+      const state = driver.pendingState ?? persisted;
       this.accumulateRealtime(driver, state, Math.min(this.monotonicNow(), driver.lastHeartbeatMonoMs + this.clockLeaseMs));
       let settled = this.settleClockTarget(saveId, driver);
-      while (!settled.caughtUp && settled.state.clockControl.status === 'running') settled = this.settleClockTarget(saveId, driver);
+      while (!settled.caughtUp && settled.state.clockControl.status === 'running') {
+        await new Promise<void>(resolve => setImmediate(resolve));
+        settled = this.settleClockTarget(saveId, driver);
+      }
       this.pausePersistedClock(saveId, 'clock_paused_on_shutdown');
     }
     this.clockDrivers.clear();
@@ -1554,7 +1650,7 @@ export class GameApplicationService {
     try {
       const backup = this.repository.exportBackup(ownerId, saveId);
       if (backup.receipts.length > MAX_BACKUP_ROWS || backup.events.length > MAX_BACKUP_ROWS
-        || backup.checkpoints.length > MAX_BACKUP_CHECKPOINTS || Buffer.byteLength(JSON.stringify(backup), 'utf8') > 10 * 1024 * 1024) {
+        || backup.checkpoints.length > MAX_BACKUP_CHECKPOINTS || Buffer.byteLength(JSON.stringify(backup), 'utf8') > MAX_BACKUP_BYTES) {
         throw new ApiProblem(413, 'PAYLOAD_TOO_LARGE', 'This save exceeds the backup export limits.', 'Lượt lưu vượt quá giới hạn xuất bản sao lưu.');
       }
       return backup;
@@ -1618,6 +1714,7 @@ export class GameApplicationService {
         || payloadRef.type === 'route' && state.playerKnowledge.knownRouteIds.includes(payloadRef.id)
         || payloadRef.type === 'unit' && state.ownedUnits.some(unit => unit.id === payloadRef.id)
         || payloadRef.type === 'corpse' && (state.playerKnowledge.knownCorpseIds ?? []).includes(payloadRef.id)
+        || payloadRef.type === 'bot' && (state.playerKnowledge.knownBotIds ?? []).includes(payloadRef.id)
         || payloadRef.type === 'item' && state.inventory.containers.some(container => container.observed && container.stacks.some(stack => stack.itemId === payloadRef.id))
       );
       if (!known) {
@@ -1651,6 +1748,19 @@ export class GameApplicationService {
   }
 
   private projectSystemPlayerEvent(event: CommandEvent, eventId: string): PlayerEvent {
+    if (event.type === 'bot_raid_player_attack') {
+      if (typeof event.payload.attackerId !== 'string' || typeof event.payload.result !== 'string') {
+        throw new RepositoryError('PLAYER_EVENT_PROJECTION_DENIED', 'A bot attack event is missing its public summary.', 500);
+      }
+      return {
+        sequence: event.sequence,
+        eventId,
+        type: event.type,
+        category: 'combat',
+        title: 'Settlement raid reached Lí Lan',
+        text: event.payload.result === 'retreated' ? 'The settlement raiders were driven away.' : 'A settlement raid reached the territory; supplies and defenses were affected.',
+      };
+    }
     const description = this.describeTimeOrTombEvent(event);
     if (!description) throw new RepositoryError('PLAYER_EVENT_TYPE_UNSUPPORTED', 'This system event has no player-safe projection.', 500);
     return { sequence: event.sequence, eventId, type: event.type, ...description };

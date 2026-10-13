@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { ACTIVE_WORLD_PACKAGE as world } from '../../content/src/index.ts';
+import { GAME_STATE_SCHEMA_VERSION } from '../../contracts/src/index.ts';
 import { RULESET_VERSION } from '../../content/src/sourceLock.ts';
 import { createNewGame } from '../src/initializer.ts';
 import { advanceTo, HOUR_MS } from '../src/time.ts';
@@ -105,7 +106,7 @@ test('schema 9 migration backfills the open race but preserves an already blocke
   active.simElapsedMs = 48 * HOUR_MS;
   delete (active.stage08 as Partial<GameState['stage08']>).openingRivals;
   const migratedActive = upgradeGameState(active, world);
-  assert.equal(migratedActive.schemaVersion, 11);
+  assert.equal(migratedActive.schemaVersion, GAME_STATE_SCHEMA_VERSION);
   assert.equal(migratedActive.simElapsedMs, 48 * HOUR_MS);
   assert.ok(migratedActive.stage08.openingRivals.some(rival => rival.actionsTaken > 0), 'the race catches up from T0 through its versioned action schedule');
 
@@ -119,7 +120,7 @@ test('schema 9 migration backfills the open race but preserves an already blocke
   }];
   delete (historical.stage08 as Partial<GameState['stage08']>).openingRivals;
   const migratedHistorical = upgradeGameState(historical, world);
-  assert.equal(migratedHistorical.schemaVersion, 11);
+  assert.equal(migratedHistorical.schemaVersion, GAME_STATE_SCHEMA_VERSION);
   assert.deepEqual(migratedHistorical.stage08.rankSnapshots, historical.stage08.rankSnapshots, 'migration does not replace or settle a frozen legacy result');
   assert.deepEqual(migratedHistorical.stage08.rewardClaimReceipts, ['historic-reward-contract']);
   assert.equal(migratedHistorical.stage08.openingRivals.length, 0, 'a closed legacy window is never replayed to manufacture a new payout');

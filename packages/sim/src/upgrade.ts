@@ -547,6 +547,23 @@ function migrateV10ToV11(candidate: Record<string, any>, world: WorldDefinition)
   } as GameState;
 }
 
+function migrateV11ToV12(candidate: Record<string, any>): GameState {
+  const knowledge = candidate.playerKnowledge ?? {};
+  return {
+    ...candidate,
+    schemaVersion: 12,
+    // Existing rival ledgers and frozen results are preserved; only new saves generate P0 bots.
+    botPopulation: null,
+    playerKnowledge: {
+      ...knowledge,
+      knownBotIds: knowledge.knownBotIds ?? [],
+      inspectedBotId: knowledge.inspectedBotId ?? null,
+      lastSeenBotById: knowledge.lastSeenBotById ?? {},
+      lastSeenBotArmyById: knowledge.lastSeenBotArmyById ?? {},
+    },
+  } as unknown as GameState;
+}
+
 export function upgradeGameState(value: unknown, world: WorldDefinition = ACTIVE_WORLD_PACKAGE): GameState {
   let candidate = asRecord(value);
   if (candidate.schemaVersion === 1) candidate = migrateV1ToV2(candidate);
@@ -559,6 +576,7 @@ export function upgradeGameState(value: unknown, world: WorldDefinition = ACTIVE
   if (candidate.schemaVersion === 8) candidate = migrateV8ToV9(candidate, world);
   if (candidate.schemaVersion === 9) candidate = migrateV9ToV10(candidate, world);
   if (candidate.schemaVersion === 10) candidate = migrateV10ToV11(candidate, world);
+  if (candidate.schemaVersion === 11) candidate = migrateV11ToV12(candidate);
   if (candidate.schemaVersion !== GAME_STATE_SCHEMA_VERSION) throw new Error('SAVE_STATE_SCHEMA_UNSUPPORTED');
   if (candidate.construction && !Array.isArray(candidate.construction.operatingServices)) candidate.construction.operatingServices = [];
   verifyStage08State(candidate as unknown as GameState);

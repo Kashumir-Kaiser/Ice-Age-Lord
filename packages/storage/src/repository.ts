@@ -7,6 +7,8 @@ import { GAME_STATE_SCHEMA_VERSION, type CommandEnvelope, type CommandEvent, typ
 import type { BackupEnvelope, CheckpointSummary, SaveSummary } from '../../contracts/src/api.ts';
 import { canonicalStateHash } from '../../sim/src/hash.ts';
 import { upgradeGameState } from '../../sim/src/upgrade.ts';
+import { botChunkHash, botPopulationRoot, botRowHash, verifyBotPopulation } from '../../sim/src/bots/state.ts';
+import type { BotPopulationState, BotStateChunk } from '../../contracts/src/index.ts';
 
 const ownerRow = 'local-owner';
 const MAX_CHECKPOINTS_PER_SAVE = 50;
@@ -79,6 +81,16 @@ type SaveInsert = {
   parentCheckpointId?: string | null;
 };
 
+type BotChunkCacheEntry = { dataVersion: number; rootSha256: string; chunks: readonly BotStateChunk[] };
+
+function freezeTree<T>(value: T): T {
+  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+    for (const child of Object.values(value as Record<string, unknown>)) freezeTree(child);
+    Object.freeze(value);
+  }
+  return value;
+}
+
 function utcNow(): string { return new Date().toISOString(); }
 
 function aggregateForStorage(state: GameState): GameState {
@@ -88,6 +100,14 @@ function aggregateForStorage(state: GameState): GameState {
 function serializedAggregate(state: GameState): { json: string; sha256: string } {
   const aggregate = aggregateForStorage(state);
   return { json: JSON.stringify(aggregate), sha256: canonicalStateHash(aggregate) };
+}
+
+function serializedSaveRow(state: GameState): { json: string; sha256: string } {
+  const aggregate = aggregateForStorage(state);
+  const compact = aggregate.botPopulation
+    ? { ...aggregate, botPopulation: { ...aggregate.botPopulation, chunks: [] } }
+    : aggregate;
+  return { json: JSON.stringify(compact), sha256: canonicalStateHash(compact) };
 }
 
 function summaryFromRow(row: SaveRow): SaveSummary {
@@ -116,6 +136,7 @@ export class SqliteRepository {
   private readonly db: DatabaseSync;
   readonly databasePath: string;
   private readonly faultInjector?: RepositoryFaultInjector;
+  private readonly botChunkCache = new Map<string, BotChunkCacheEntry>();
 
   constructor(databasePath: string, faultInjector?: RepositoryFaultInjector) {
     this.databasePath = databasePath;
@@ -130,7 +151,33 @@ export class SqliteRepository {
     this.migratePersistedGameStates();
   }
 
-  close(): void { this.db.close(); }
+  close(): void {
+    this.botChunkCache.clear();
+    this.db.close();
+  }
+
+  /** Releases the immutable read cache before a long private clock catch-up builds its working population. */
+  releaseBotPopulationCache(saveId: string): void {
+    this.botChunkCache.delete(saveId);
+  }
+
+  private currentDataVersion(): number {
+    return Number((this.db.prepare('PRAGMA data_version').get() as { data_version: number }).data_version);
+  }
+
+  private rememberCommittedState(value: unknown): void {
+    if (!value || typeof value !== 'object' || !('state' in value)) return;
+    const state = (value as { state?: GameState }).state;
+    const population = state?.botPopulation;
+    if (!state || !population || population.chunks.length !== Math.ceil(population.botCount / population.chunkSize)) {
+      if (state?.saveId) this.botChunkCache.delete(state.saveId);
+      return;
+    }
+    for (const chunk of population.chunks) freezeTree(chunk);
+    this.botChunkCache.set(state.saveId, {
+      dataVersion: this.currentDataVersion(), rootSha256: population.chunkRootSha256, chunks: population.chunks,
+    });
+  }
 
   private applyMigrations(): void {
     this.db.exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
@@ -185,14 +232,15 @@ export class SqliteRepository {
       const update = this.db.prepare(`UPDATE saves SET content_version = ?, ruleset_version = ?, state_json = ?, state_sha256 = ?
         WHERE save_id = ? AND revision = ? AND event_sequence = ? AND state_sha256 = ?`);
       for (const row of pending) {
-        const stored = parseJson<unknown>(row.state_json, 'SAVE_STATE_CORRUPT');
-        const state = upgradeGameState(stored);
+        const storedAggregate = parseJson<unknown>(row.state_json, 'SAVE_STATE_CORRUPT');
+        const state = upgradeGameState(storedAggregate);
         if (state.saveId !== row.save_id || state.revision !== row.revision || state.lastEventSequence !== row.event_sequence
           || state.worldPackageId !== row.world_package_id) throw new RepositoryError('SAVE_INDEX_MISMATCH', 'The save index changed during schema migration.', 500);
-        const stateJson = JSON.stringify(state);
-        const result = update.run(state.contentVersion, state.rulesetVersion, stateJson, canonicalStateHash(state),
+        const storedRow = serializedSaveRow(state);
+        const result = update.run(state.contentVersion, state.rulesetVersion, storedRow.json, storedRow.sha256,
           row.save_id, row.revision, row.event_sequence, row.state_sha256);
         if (result.changes !== 1) throw new RepositoryError('SAVE_INDEX_MISMATCH', 'The save changed during schema migration.', 500);
+        this.persistBotPopulationChunks(state.saveId, state.botPopulation ?? null);
       }
     });
   }
@@ -206,6 +254,7 @@ export class SqliteRepository {
       this.db.exec('COMMIT;');
       committed = true;
       this.faultInjector?.('after_commit', name);
+      this.rememberCommittedState(result);
       return result;
     } catch (error) {
       if (!committed) {
@@ -235,12 +284,65 @@ export class SqliteRepository {
     return this.db.prepare('SELECT * FROM saves WHERE save_id = ? AND owner_id = ?').get(saveId, ownerId) as SaveRow | undefined;
   }
 
+  private persistBotPopulationChunks(saveId: string, population: BotPopulationState | null): void {
+    if (!population) {
+      this.db.prepare('DELETE FROM bot_population_chunks WHERE save_id = ?').run(saveId);
+      return;
+    }
+    const existingRows = this.db.prepare('SELECT chunk_index, chunk_sha256 FROM bot_population_chunks WHERE save_id = ?').all(saveId) as Array<{ chunk_index: number; chunk_sha256: string }>;
+    const existing = new Map(existingRows.map(row => [row.chunk_index, row.chunk_sha256]));
+    const upsert = this.db.prepare(`INSERT INTO bot_population_chunks(save_id, chunk_index, first_ordinal, bot_count, chunk_sha256, chunk_json)
+      VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(save_id, chunk_index) DO UPDATE SET
+        first_ordinal = excluded.first_ordinal, bot_count = excluded.bot_count,
+        chunk_sha256 = excluded.chunk_sha256, chunk_json = excluded.chunk_json`);
+    const kept = new Set<number>();
+    for (const chunk of population.chunks) {
+      kept.add(chunk.index);
+      if (existing.get(chunk.index) === chunk.chunkSha256) continue;
+      if (chunk.chunkSha256 !== botChunkHash(chunk)) throw new RepositoryError('BOT_CHUNK_CHECKSUM_MISMATCH', 'A bot chunk failed its checksum before persistence.', 500);
+      upsert.run(saveId, chunk.index, chunk.firstOrdinal, chunk.count, chunk.chunkSha256, JSON.stringify(chunk));
+    }
+    for (const index of existing.keys()) if (!kept.has(index)) this.db.prepare('DELETE FROM bot_population_chunks WHERE save_id = ? AND chunk_index = ?').run(saveId, index);
+  }
+
+  private materializeBotPopulation(saveId: string, state: GameState): { state: GameState; cacheHit: boolean } {
+    const population = state.botPopulation;
+    if (!population || population.chunks.length > 0) return { state, cacheHit: false };
+    const cached = this.botChunkCache.get(saveId);
+    if (cached && cached.dataVersion === this.currentDataVersion() && cached.rootSha256 === population.chunkRootSha256
+      && cached.chunks.length === Math.ceil(population.botCount / population.chunkSize)) {
+      return { state: { ...state, botPopulation: { ...population, chunks: cached.chunks.slice() } }, cacheHit: true };
+    }
+    const rows = this.db.prepare('SELECT chunk_index, first_ordinal, bot_count, chunk_sha256, chunk_json FROM bot_population_chunks WHERE save_id = ? ORDER BY chunk_index').all(saveId) as Array<{
+      chunk_index: number; first_ordinal: number; bot_count: number; chunk_sha256: string; chunk_json: string;
+    }>;
+    if (rows.length !== Math.ceil(population.botCount / population.chunkSize)) throw new RepositoryError('BOT_POPULATION_CHUNKS_MISSING', 'The durable bot population is incomplete.', 500);
+    const chunks = rows.map((row, index) => {
+      const chunk = parseJson<BotStateChunk>(row.chunk_json, 'BOT_CHUNK_CORRUPT');
+      if (row.chunk_index !== index || row.chunk_index !== chunk.index || row.first_ordinal !== chunk.firstOrdinal
+        || row.bot_count !== chunk.count || row.chunk_sha256 !== chunk.chunkSha256 || botChunkHash(chunk) !== row.chunk_sha256) {
+        throw new RepositoryError('BOT_CHUNK_CHECKSUM_MISMATCH', 'A durable bot chunk failed its checksum.', 500);
+      }
+      if (chunk.rowSha256.length !== chunk.count || chunk.rowSha256.some((hash, offset) => hash !== botRowHash(chunk, offset))) {
+        throw new RepositoryError('BOT_ROW_CHECKSUM_MISMATCH', 'A durable bot row failed its checksum.', 500);
+      }
+      return chunk;
+    });
+    return { state: { ...state, botPopulation: { ...population, chunks } }, cacheHit: false };
+  }
+
   private getStateFromRow(row: SaveRow): GameState {
     const storedAggregate = parseJson<unknown>(row.state_json, 'SAVE_STATE_CORRUPT');
     if (canonicalStateHash(storedAggregate) !== row.state_sha256) throw new RepositoryError('SAVE_CHECKSUM_MISMATCH', 'The stored save checksum does not match.', 500);
+    const materialized = this.materializeBotPopulation(row.save_id, storedAggregate as GameState);
+    const state = materialized.state;
     let aggregate: GameState;
-    try { aggregate = upgradeGameState(storedAggregate); }
+    try { aggregate = upgradeGameState(state); }
     catch { throw new RepositoryError('SAVE_STATE_SCHEMA_UNSUPPORTED', 'The stored save schema cannot be migrated safely.', 500); }
+    if (aggregate.botPopulation && !materialized.cacheHit) {
+      try { verifyBotPopulation(aggregate.botPopulation); }
+      catch { throw new RepositoryError('BOT_POPULATION_CORRUPT', 'The durable bot population failed its manifest, scheduler, or row validation.', 500); }
+    }
     if (aggregate.saveId !== row.save_id || aggregate.revision !== row.revision || aggregate.lastEventSequence !== row.event_sequence
       || aggregate.worldPackageId !== row.world_package_id || aggregate.contentVersion !== row.content_version || aggregate.rulesetVersion !== row.ruleset_version) {
       throw new RepositoryError('SAVE_INDEX_MISMATCH', 'Save index metadata does not match the aggregate.', 500);
@@ -260,7 +362,7 @@ export class SqliteRepository {
     const now = utcNow();
     const createdAtUtc = input.createdAtUtc ?? now;
     const updatedAtUtc = input.updatedAtUtc ?? createdAtUtc;
-    const stored = serializedAggregate(input.state);
+    const stored = serializedSaveRow(input.state);
     try {
       this.db.prepare(`INSERT INTO saves(
         save_id, owner_id, slot_name, revision, event_sequence, state_json, state_sha256,
@@ -289,6 +391,7 @@ export class SqliteRepository {
       if (String(error).includes('UNIQUE constraint failed: saves.save_id')) throw new RepositoryError('SAVE_ID_EXISTS', 'A save with that ID already exists.');
       throw error;
     }
+    this.persistBotPopulationChunks(input.state.saveId, input.state.botPopulation ?? null);
   }
 
   createSaveIdempotent(input: {
@@ -324,6 +427,12 @@ export class SqliteRepository {
       if (!row) throw new RepositoryError('SAVE_NOT_FOUND', 'The save was not found.', 404);
       return { state: this.getStateFromRow(row), summary: summaryFromRow(row) };
     });
+  }
+
+  getSaveRevision(ownerId: string, saveId: string): number {
+    const row = this.db.prepare('SELECT revision FROM saves WHERE save_id = ? AND owner_id = ?').get(saveId, ownerId) as { revision: number } | undefined;
+    if (!row) throw new RepositoryError('SAVE_NOT_FOUND', 'The save was not found.', 404);
+    return row.revision;
   }
 
   listSaves(ownerId: string): SaveSummary[] {
@@ -364,7 +473,7 @@ export class SqliteRepository {
           || reduction.state.lastEventSequence !== state.lastEventSequence + reduction.events.length) {
           throw new RepositoryError('REDUCER_STATE_TRANSITION_INVALID', 'The command reducer returned an invalid state transition.', 500);
         }
-        const stored = serializedAggregate(reduction.state);
+        const stored = serializedSaveRow(reduction.state);
         const updated = this.db.prepare(`UPDATE saves SET revision = ?, event_sequence = ?, state_json = ?, state_sha256 = ?, updated_at_utc = ?
           WHERE save_id = ? AND owner_id = ? AND revision = ?`).run(
           reduction.state.revision,
@@ -377,6 +486,7 @@ export class SqliteRepository {
           state.revision,
         );
         if (Number(updated.changes) !== 1) throw new RepositoryError('STALE_REVISION', 'The save changed before this command could commit.');
+        this.persistBotPopulationChunks(input.saveId, reduction.state.botPopulation ?? null);
 
         let expectedEventSequence = state.lastEventSequence + 1;
         for (const event of reduction.events) {
@@ -459,7 +569,7 @@ export class SqliteRepository {
         this.db.prepare('INSERT INTO command_receipts(save_id, command_id, request_sha256, receipt_json, created_at_utc) VALUES (?, ?, ?, ?, ?)')
           .run(input.saveId, record.commandId, record.requestSha256, JSON.stringify(record.receipt), utcNow());
       }
-      const stored = serializedAggregate(nextState);
+      const stored = serializedSaveRow(nextState);
       const updated = this.db.prepare(`UPDATE saves SET revision = ?, event_sequence = ?, state_json = ?, state_sha256 = ?, updated_at_utc = ?
         WHERE save_id = ? AND owner_id = ? AND revision = ?`).run(
         nextState.revision,
@@ -472,6 +582,7 @@ export class SqliteRepository {
         state.revision,
       );
       if (Number(updated.changes) !== 1) throw new RepositoryError('STALE_REVISION', 'The save changed before the system transition could commit.');
+      this.persistBotPopulationChunks(input.saveId, nextState.botPopulation ?? null);
 
       for (const [index, event] of transition.events.entries()) {
         const eventId = `${input.saveId}:event:${String(event.sequence).padStart(12, '0')}`;
@@ -571,11 +682,7 @@ export class SqliteRepository {
     return this.readTransaction(() => {
     const row = this.rowForSave(saveId, ownerId);
     if (!row) throw new RepositoryError('SAVE_NOT_FOUND', 'The save was not found.', 404);
-    const storedState = parseJson<unknown>(row.state_json, 'SAVE_STATE_CORRUPT');
-    if (canonicalStateHash(storedState) !== row.state_sha256) {
-      throw new RepositoryError('SAVE_CHECKSUM_MISMATCH', 'The stored save checksum or index does not match.', 500);
-    }
-    const state = upgradeGameState(storedState);
+    const state = this.getStateFromRow(row);
     if (state.saveId !== row.save_id || state.revision !== row.revision
       || state.lastEventSequence !== row.event_sequence || state.worldPackageId !== row.world_package_id
       || state.contentVersion !== row.content_version || state.rulesetVersion !== row.ruleset_version) {
@@ -593,7 +700,7 @@ export class SqliteRepository {
       version: 1,
       exportedAtUtc: utcNow(),
       save: summaryFromRow(row),
-      state,
+      state: aggregateForStorage(state),
       stateSha256: canonicalStateHash(aggregateForStorage(state)),
       receipts: receipts.map(item => ({ commandId: item.command_id, requestSha256: item.request_sha256, receipt: parseJson(item.receipt_json, 'RECEIPT_CORRUPT'), createdAtUtc: item.created_at_utc })),
       events: events.map(item => ({

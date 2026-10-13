@@ -1,4 +1,4 @@
-import type { ActionAvailability, CommandEnvelope, CommandEvent, CommandReceipt, CommandReduction, CommandType, CoordinateMm, EntityRef, GameState, WorldDefinition } from '../../contracts/src/index.ts';
+import type { ActionAvailability, CommandEnvelope, CommandReceipt, CommandReduction, CommandType, CoordinateMm, EntityRef, GameState, WorldDefinition } from '../../contracts/src/index.ts';
 import { validateCommandEnvelope } from '../../contracts/src/index.ts';
 import { canonicalStateHash } from './hash.ts';
 import { canAccessStarterContainer } from './access.ts';
@@ -13,16 +13,18 @@ import {
   cancelSpatialJob,
   cancelTravel,
   previewMovement,
+  currentSight,
   startHarvestJob,
   startMovement,
   startSearchJob,
   transferItem,
 } from './spatial.ts';
 import { acceptQ08, cancelAuctionBid, claimOpeningLevelReward, claimQ08Reward, escortQ08, negotiateQ08, placeAuctionBid, purchaseMarketOffer } from './stage08.ts';
+import { OPENING_LEVEL_CLOSES_AT_MS, OPENING_LEVEL_DISPLAY_DELAY_MS, OPENING_LEVEL_OPENS_AT_MS } from './openingRanking.ts';
 import { openFieldChest } from './chestLoot.ts';
 import { buyEventOffer, claimEventReward, chooseEventPath, recordEventActivities } from './eventRuntime.ts';
 
-const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | 'inspect_starter_container' | 'inspect_career_card'>, { code: string; message: string }>> = {
+const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | 'inspect_bot' | 'inspect_starter_container' | 'inspect_career_card'>, { code: string; message: string }>> = {
   activate_career_card: { code: 'CAREER_CARD_FLOW_NOT_IMPLEMENTED', message: 'Career activation is unavailable until its verified flow is implemented.' },
   set_clock_speed: { code: 'AUTHORITATIVE_TIME_STAGE_04', message: 'Clock control becomes available with the authoritative time system.' },
   advance_to_boundary: { code: 'AUTHORITATIVE_TIME_STAGE_04', message: 'Time boundaries are settled by the server time system.' },
@@ -69,7 +71,7 @@ const disabledReasons: Readonly<Record<Exclude<CommandType, 'inspect_entity' | '
 };
 
 function staticAvailability(type: CommandType): ActionAvailability {
-  if (type === 'inspect_entity' || type === 'inspect_starter_container' || type === 'inspect_career_card') {
+  if (type === 'inspect_entity' || type === 'inspect_bot' || type === 'inspect_starter_container' || type === 'inspect_career_card') {
     return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
   }
   const reason = disabledReasons[type];
@@ -128,8 +130,16 @@ function isKnownEntity(ref: EntityRef, state: GameState): boolean {
           : siteId === 'SITE-LL01-003';
     }));
     case 'corpse': return (state.playerKnowledge.knownCorpseIds ?? []).includes(ref.id);
+    case 'bot': return (state.playerKnowledge.knownBotIds ?? []).includes(ref.id);
     case 'wildlife': return (state.playerKnowledge.knownWildlifeGroupIds ?? []).includes(ref.id);
   }
+}
+
+function botCurrentlyVisible(state: GameState, world: WorldDefinition, botId: string): boolean {
+  const bot = state.botPopulation?.chunks.flatMap(chunk => chunk.cold).find(candidate => candidate.botId === botId);
+  if (!bot || !(state.playerKnowledge.knownBotIds ?? []).includes(botId)) return false;
+  return currentSight(state, world).some(sight => ((sight.center.sourceZMetres ?? 0) < -2) === ((bot.position.sourceZMetres ?? 0) < -2)
+    && Math.hypot(sight.center.xMm - bot.position.xMm, sight.center.yMm - bot.position.yMm) <= sight.radiusMm);
 }
 
 function resolvedDestination(state: GameState, world: WorldDefinition, payload: { destinationId?: string; destination?: { xMm: number; yMm: number; sourceZMetres?: number } }) {
@@ -186,10 +196,16 @@ export function previewCommand(
   }
   if (command.type === 'inspect_entity') {
     const ref = command.payload.entity;
+    if (ref.type === 'bot') return botCurrentlyVisible(state, world, ref.id)
+      ? actionAvailability(command.type)
+      : { actionId: command.type, enabled: false, reasonCode: 'BOT_NOT_CURRENTLY_VISIBLE', requirements: ['A settlement must be in current sight before its details can be inspected.'] };
     return isKnownEntity(ref, state)
       ? actionAvailability(command.type)
       : { actionId: command.type, enabled: false, reasonCode: 'NOT_ACCESSIBLE', requirements: ['The entity is unavailable in the current player view.'] };
   }
+  if (command.type === 'inspect_bot') return botCurrentlyVisible(state, world, command.payload.botId)
+    ? actionAvailability(command.type)
+    : { actionId: command.type, enabled: false, reasonCode: 'BOT_NOT_CURRENTLY_VISIBLE', requirements: ['A settlement must be in current sight before its details can be inspected.'] };
   if (command.type === 'inspect_starter_container') {
     const containerId = command.payload.containerId;
     return canAccessStarterContainer(containerId, state, world)
@@ -406,6 +422,18 @@ function receiptFor(commandId: string, accepted: boolean, revision: number, even
   return { commandId, accepted, revision, eventSequence, code, message };
 }
 
+function schedulePlayerBoardPublication(state: GameState): void {
+  const population = state.botPopulation;
+  if (!population) return;
+  const completionAt = (state.progression?.transactions ?? [])
+    .filter(transaction => transaction.recipientId === state.player.id && transaction.thresholdsCrossed.includes(10))
+    .map(transaction => transaction.occurredAtElapsedMs).sort((a, b) => a - b)[0];
+  if (completionAt === undefined || completionAt > OPENING_LEVEL_CLOSES_AT_MS) return;
+  const publishAt = Math.max(OPENING_LEVEL_OPENS_AT_MS, completionAt + OPENING_LEVEL_DISPLAY_DELAY_MS);
+  if (publishAt > OPENING_LEVEL_CLOSES_AT_MS || population.pendingBoardPublicationAtElapsedMs.includes(publishAt)) return;
+  state.botPopulation = { ...population, pendingBoardPublicationAtElapsedMs: [...population.pendingBoardPublicationAtElapsedMs, publishAt].sort((a, b) => a - b) };
+}
+
 function reject(state: GameState, commandId: string, code: string, message: string, requestSha256?: string): CommandReduction {
   const receipt = receiptFor(commandId, false, state.revision, null, code, message);
   const nextState = requestSha256 && commandId
@@ -440,6 +468,7 @@ function acceptMutation(state: GameState, command: CommandEnvelope, requestSha25
     revision: state.revision + 1,
     lastEventSequence: state.lastEventSequence + allEvents.length,
   };
+  schedulePlayerBoardPublication(nextState);
   const receipt = receiptFor(command.commandId, true, nextState.revision, allEvents.at(-1)!.sequence, code, message);
   nextState.receipts = [...state.receipts, { commandId: command.commandId, requestSha256, receipt }];
   return { state: nextState, events: allEvents, receipt };
@@ -456,6 +485,7 @@ function acceptMutationMany(state: GameState, command: CommandEnvelope, requestS
     revision,
     lastEventSequence: state.lastEventSequence + combinedEvents.length,
   };
+  schedulePlayerBoardPublication(finalState);
   const receipt = receiptFor(command.commandId, true, revision, sequencedEvents.at(-1)!.sequence, code, message);
   finalState.receipts = [...state.receipts, { commandId: command.commandId, requestSha256, receipt }];
   return { state: finalState, events: sequencedEvents, receipt };
@@ -492,6 +522,13 @@ export function reduceCommand(
   if (command.type === 'inspect_entity') {
     const ref = command.payload.entity;
     if (!isKnownEntity(ref, state)) return reject(state, command.commandId, 'NOT_ACCESSIBLE', 'That entity is unavailable in the current player view.', requestSha256);
+    if (ref.type === 'bot') {
+      if (!botCurrentlyVisible(state, world, ref.id)) return reject(state, command.commandId, 'BOT_NOT_CURRENTLY_VISIBLE', 'A settlement must be in current sight before its details can be inspected.', requestSha256);
+      const lastInspectedEntityIds = [...new Set([...state.playerKnowledge.lastInspectedEntityIds, entityKey(ref)])].sort();
+      return acceptMutation(state, command, requestSha256, {
+        playerKnowledge: { ...state.playerKnowledge, inspectedBotId: ref.id, lastInspectedEntityIds },
+      }, 'known_entity_inspected', { entity: ref }, 'INSPECTION_RECORDED', 'The settlement currently in sight was inspected.');
+    }
     const key = entityKey(ref);
     if (state.playerKnowledge.lastInspectedEntityIds.includes(key)) return acceptWithoutMutation(state, command, requestSha256, 'ALREADY_INSPECTED', 'This known entity has already been inspected.');
     const lastInspectedEntityIds = [...new Set([...state.playerKnowledge.lastInspectedEntityIds, key])].sort();
@@ -526,6 +563,15 @@ export function reduceCommand(
     return acceptMutation(state, command, requestSha256, {
       playerKnowledge: { ...state.playerKnowledge, lastInspectedEntityIds },
     }, 'known_entity_inspected', { entity: ref }, 'INSPECTION_RECORDED', 'Inspection of a known entity was recorded.');
+  }
+
+  if (command.type === 'inspect_bot') {
+    const ref = { type: 'bot' as const, id: command.payload.botId };
+    if (!botCurrentlyVisible(state, world, ref.id)) return reject(state, command.commandId, 'BOT_NOT_CURRENTLY_VISIBLE', 'A settlement must be in current sight before its details can be inspected.', requestSha256);
+    const lastInspectedEntityIds = [...new Set([...state.playerKnowledge.lastInspectedEntityIds, entityKey(ref)])].sort();
+    return acceptMutation(state, command, requestSha256, {
+      playerKnowledge: { ...state.playerKnowledge, inspectedBotId: ref.id, lastInspectedEntityIds },
+    }, 'known_entity_inspected', { entity: ref }, 'INSPECTION_RECORDED', 'The settlement currently in sight was inspected.');
   }
 
   if (command.type === 'inspect_starter_container') {

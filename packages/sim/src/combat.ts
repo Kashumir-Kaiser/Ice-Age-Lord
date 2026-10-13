@@ -18,6 +18,43 @@ const HARE_TERRAIN_ID = 'TERRAIN-H0-FROZEN-SHELF';
 const HARE_STREAM_PREFIX = 'stage07-combat:';
 const GROUP_STREAM_PREFIX = 'stage07-group-combat:';
 
+/** Faction-neutral deterministic squad resolution shared by authoritative bot encounters. */
+export type FactionNeutralCombatSide = { power: number; memberCount: number; defensePermille: number };
+export type FactionNeutralCombatResult = {
+  winner: 'attacker' | 'defender';
+  attackerLosses: number;
+  defenderLosses: number;
+  attackerPower: number;
+  defenderPower: number;
+  attackerLossPermille: number;
+  defenderLossPermille: number;
+  drawIndex: number;
+};
+
+export function resolveFactionNeutralSquadEncounter(seed: string, encounterId: string, attacker: FactionNeutralCombatSide, defender: FactionNeutralCombatSide): FactionNeutralCombatResult {
+  for (const side of [attacker, defender]) {
+    if (![side.power, side.memberCount, side.defensePermille].every(Number.isSafeInteger)
+      || side.power < 1 || side.memberCount < 1 || side.defensePermille < 0) throw new Error('FACTION_NEUTRAL_COMBAT_SIDE_INVALID');
+  }
+  const attackerPower = Math.max(1, Math.floor(attacker.power * 1_000 / (1_000 + defender.defensePermille)));
+  const defenderPower = Math.max(1, Math.floor(defender.power * 1_000 / (1_000 + attacker.defensePermille)));
+  const attackerSharePermille = Math.floor(attackerPower * 1_000 / (attackerPower + defenderPower));
+  const winnerDraw = randomIntFromFields([seed, encounterId, 'FACTION-NEUTRAL-COMBAT-1.0', 'winner'], 0, 999).value;
+  const attritionDraw = randomIntFromFields([seed, encounterId, 'FACTION-NEUTRAL-COMBAT-1.0', 'attrition'], 0, 999).value;
+  const attackerLossPermille = Math.min(850, 100 + Math.ceil(defenderPower * 300 / attackerPower) + attritionDraw % 31);
+  const defenderLossPermille = Math.min(850, 100 + Math.ceil(attackerPower * 300 / defenderPower) + Math.floor(attritionDraw / 31));
+  return {
+    winner: winnerDraw < attackerSharePermille ? 'attacker' : 'defender',
+    attackerLosses: Math.min(attacker.memberCount, Math.max(1, Math.ceil(attacker.memberCount * attackerLossPermille / 1_000))),
+    defenderLosses: Math.min(defender.memberCount, Math.max(1, Math.ceil(defender.memberCount * defenderLossPermille / 1_000))),
+    attackerPower,
+    defenderPower,
+    attackerLossPermille,
+    defenderLossPermille,
+    drawIndex: 1,
+  };
+}
+
 export type CombatAvailability = { code: string | null; requirements: readonly string[] };
 type WeaponProfile = { damage: number; rangeMm: number; condition: number };
 
@@ -404,7 +441,7 @@ function secondDeathCorpse(state: GameState, unitId: string, encounterId: string
   };
 }
 
-function resolveSquadCasualty(state: GameState, unitId: string, encounterId: string, at: number): { state: GameState; corpseId: string | null } {
+export function resolveSquadCasualty(state: GameState, unitId: string, encounterId: string, at: number): { state: GameState; corpseId: string | null } {
   const unit = state.ownedUnits.find(item => item.id === unitId);
   if (!unit) return { state, corpseId: null };
   state = lockDirectReviveOnSecondDeath(state, unitId, at);

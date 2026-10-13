@@ -41,6 +41,9 @@ function freshState() {
   }, world);
   return {
     ...state,
+    // Stage 04 tests isolate the legacy world clock and construction rules. Bot
+    // scheduling has its own full time-slicing and persistence suites.
+    botPopulation: null,
     revision: 1,
     lastEventSequence: 1,
     territory: {

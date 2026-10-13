@@ -58,3 +58,35 @@ test('opening ranking ties use stable player ID, retain at most 100 rows, and re
   assert.equal(openingLevelRewardBand(101), null);
   assert.deepEqual(OPENING_LEVEL_REWARD_BANDS.map(band => [band.minRank, band.maxRank]), [[1, 1], [2, 2], [3, 3], [4, 10], [11, 20], [21, 50], [51, 100]]);
 });
+
+test('top-100 selection matches a full-sort oracle as scores, eligibility and scope change', () => {
+  let seed = 0x1a2b3c4d;
+  const random = (max: number) => {
+    seed = (Math.imul(seed, 1_664_525) + 1_013_904_223) >>> 0;
+    return seed % max;
+  };
+  let candidates: OpeningLevelCompletion[] = [];
+  for (let revision = 0; revision < 8; revision += 1) {
+    const additions = Array.from({ length: revision % 3 === 0 ? 141 : 47 }, (_, index) => ({
+      playerId: `R${revision}-P${String(index).padStart(3, '0')}`,
+      realName: `Participant ${revision}-${index}`,
+      level: random(9) === 0 ? 9 : 10,
+      progressToNextLevelPermille: random(1_000),
+      completionAtElapsedMs: random(150 * HOUR_MS),
+    }));
+    candidates = [...candidates, ...additions];
+    if (revision > 0) candidates = candidates.filter((_, index) => index % 17 !== revision % 17);
+    if (revision % 2 === 1) candidates = candidates.map((candidate, index) => index % 13 === 0
+      ? { ...candidate, completionAtElapsedMs: Math.min(OPENING_LEVEL_CLOSES_AT_MS, candidate.completionAtElapsedMs + 4 * HOUR_MS) }
+      : candidate);
+    if (revision === 7) candidates.push({
+      playerId: 'DEADLINE', realName: 'Deadline', level: 10, progressToNextLevelPermille: 0,
+      completionAtElapsedMs: OPENING_LEVEL_CLOSES_AT_MS,
+    });
+    const oracle = candidates.filter(row => row.level >= 10 && row.completionAtElapsedMs <= OPENING_LEVEL_CLOSES_AT_MS)
+      .sort((a, b) => a.completionAtElapsedMs - b.completionAtElapsedMs || (a.playerId < b.playerId ? -1 : a.playerId > b.playerId ? 1 : 0))
+      .slice(0, OPENING_LEVEL_MAX_ROWS);
+    assert.deepEqual(rankOpeningLevelCompletions(candidates).map(({ playerId, completionAtElapsedMs, rank }) => [playerId, completionAtElapsedMs, rank]),
+      oracle.map((row, index) => [row.playerId, row.completionAtElapsedMs, index + 1]), `revision ${revision}`);
+  }
+});

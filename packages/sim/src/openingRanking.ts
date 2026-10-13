@@ -112,16 +112,52 @@ export type OpeningLevelCompletion = {
 
 export type OpeningLevelRow = OpeningLevelCompletion & { rank: number };
 
+function compareCompletion(a: OpeningLevelCompletion, b: OpeningLevelCompletion): number {
+  return a.completionAtElapsedMs - b.completionAtElapsedMs || (a.playerId < b.playerId ? -1 : a.playerId > b.playerId ? 1 : 0);
+}
+
+function topCompletions(completions: readonly OpeningLevelCompletion[], limit: number, closedAtElapsedMs: number): OpeningLevelCompletion[] {
+  const heap: OpeningLevelCompletion[] = [];
+  const worse = (a: OpeningLevelCompletion, b: OpeningLevelCompletion) => compareCompletion(a, b) > 0;
+  const swapDown = (start: number) => {
+    let index = start;
+    while (true) {
+      const left = index * 2 + 1;
+      const right = left + 1;
+      let worst = index;
+      if (left < heap.length && worse(heap[left]!, heap[worst]!)) worst = left;
+      if (right < heap.length && worse(heap[right]!, heap[worst]!)) worst = right;
+      if (worst === index) return;
+      [heap[index], heap[worst]] = [heap[worst]!, heap[index]!];
+      index = worst;
+    }
+  };
+  for (const row of completions) {
+    if (row.level < OPENING_LEVEL_QUALIFYING_LEVEL || !Number.isSafeInteger(row.completionAtElapsedMs)
+      || row.completionAtElapsedMs < 0 || row.completionAtElapsedMs > closedAtElapsedMs) continue;
+    if (heap.length < limit) {
+      heap.push(row);
+      let index = heap.length - 1;
+      while (index > 0) {
+        const parent = Math.floor((index - 1) / 2);
+        if (!worse(heap[index]!, heap[parent]!)) break;
+        [heap[index], heap[parent]] = [heap[parent]!, heap[index]!];
+        index = parent;
+      }
+    } else if (compareCompletion(row, heap[0]!) < 0) {
+      heap[0] = row;
+      swapDown(0);
+    }
+  }
+  return heap.sort(compareCompletion);
+}
+
 /** Selects only actual level-10 completions; forecast values are never inputs. */
 export function rankOpeningLevelCompletions(
   completions: readonly OpeningLevelCompletion[],
   closedAtElapsedMs = OPENING_LEVEL_CLOSES_AT_MS,
 ): OpeningLevelRow[] {
-  const eligible = completions.filter(row => row.level >= OPENING_LEVEL_QUALIFYING_LEVEL
-    && Number.isSafeInteger(row.completionAtElapsedMs)
-    && row.completionAtElapsedMs >= 0 && row.completionAtElapsedMs <= closedAtElapsedMs)
-    .slice().sort((a, b) => a.completionAtElapsedMs - b.completionAtElapsedMs || a.playerId.localeCompare(b.playerId))
-    .slice(0, OPENING_LEVEL_MAX_ROWS);
+  const eligible = topCompletions(completions, OPENING_LEVEL_MAX_ROWS, closedAtElapsedMs);
   return eligible.map((row, index) => ({ ...row, rank: index + 1 }));
 }
 

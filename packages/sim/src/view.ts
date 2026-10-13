@@ -8,6 +8,10 @@ import { elapsedMsToWorldClock } from './time.ts';
 import { butcherCorpse, directReviveAvailability } from './stage07.ts';
 import { attackAvailability, projectStage07Combat } from './combat.ts';
 import { openingBoardView, Q08_ID } from './stage08.ts';
+import { projectedBotResources } from './bots/economy.ts';
+import { botGradeAt, botKindAt } from './bots/generation.ts';
+import { botConstructionPermille } from './bots/state.ts';
+import { botArmyMovementOrder, botArmyPosition } from './bots/movement.ts';
 import { chestLootProjection } from './chestLoot.ts';
 import { eventMechanicsFor } from '../../content/src/eventRules.ts';
 import { EVENT_SHOP_MARK_PRICE } from './eventRuntime.ts';
@@ -273,6 +277,76 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
     items: container.stacks.map(stack => ({ itemId: stack.itemId, label: stack.templateId, quantity: stack.quantity, reservedQuantity: stack.reservedQuantity ?? 0, unit: stack.unit ?? null, quality: stack.quality ?? null, condition: stack.condition ?? null, ownerId: stack.ownerId ?? null, equipped: stack.equipped, equippedSlotId: stack.equippedSlotId ?? null, foodUnitsPerItem: stack.foodUnitsPerItem ?? null, equipmentTags: stack.equipmentTags ?? [], combatEffects: stack.combatEffects ?? {}, exclusiveEventId: stack.exclusiveEventId ?? null, expiresAtElapsedMs: stack.expiresAtElapsedMs ?? null, provenance: stack.provenance })),
   }));
   const sights = currentSight(state, world);
+  const knownBotIds = new Set(state.playerKnowledge.knownBotIds ?? []);
+  const locatedBots = (state.botPopulation?.chunks ?? []).flatMap(chunk => chunk.cold.map((bot, offset) => ({ chunk, bot, offset })))
+    .filter(({ bot }) => knownBotIds.has(bot.botId));
+  const inspectedBotId = state.playerKnowledge.inspectedBotId ?? null;
+  const enemyBots = locatedBots.flatMap(({ chunk, bot, offset }) => {
+    const lastSeen = state.playerKnowledge.lastSeenBotById?.[bot.botId];
+    if (!lastSeen) return [];
+    const current = sights.some(sight => Math.hypot(sight.center.xMm - lastSeen.position.xMm, sight.center.yMm - lastSeen.position.yMm) <= sight.radiusMm);
+    const inspected = current && inspectedBotId === bot.botId;
+    return [{
+      botId: bot.botId,
+      label: inspected ? bot.name : 'Unknown settlement',
+      position: lastSeen.position,
+      observedAtElapsedMs: lastSeen.observedAtElapsedMs,
+      knowledge: current ? 'current' as const : 'remembered' as const,
+      level: inspected ? chunk.levels[offset]! : null,
+      militaryCount: inspected ? chunk.armySize[offset]! : null,
+      structureCount: inspected ? bot.structures.filter(item => item.status !== 'destroyed').length : null,
+      status: inspected ? (chunk.alive[offset] === 0 ? 'destroyed' as const : 'active' as const) : 'unknown' as const,
+    }];
+  }).sort((a, b) => a.botId < b.botId ? -1 : a.botId > b.botId ? 1 : 0);
+  const enemyArmies = (state.botPopulation?.chunks ?? []).flatMap(chunk => chunk.cold.flatMap((bot, offset) => {
+    const movement = bot.armyMovement;
+    if (!movement || movement.unitCount <= 0) return [];
+    const actualPosition = botArmyPosition(movement, state.simElapsedMs);
+    const currentlySeen = sights.some(sight => ((sight.center.sourceZMetres ?? 0) < -2) === ((actualPosition.sourceZMetres ?? 0) < -2)
+      && Math.hypot(actualPosition.xMm - sight.center.xMm, actualPosition.yMm - sight.center.yMm) <= sight.radiusMm);
+    const remembered = state.playerKnowledge.lastSeenBotArmyById?.[bot.botId];
+    if (!currentlySeen && !remembered) return [];
+    return [{
+      botId: bot.botId,
+      label: movement.unitKind === 'scout' ? 'Rival scout party' : 'Rival troop movement',
+      position: currentlySeen ? actualPosition : remembered!.position,
+      observedAtElapsedMs: currentlySeen ? state.simElapsedMs : remembered!.observedAtElapsedMs,
+      knowledge: currentlySeen ? 'current' as const : 'remembered' as const,
+      count: currentlySeen ? movement.unitCount : remembered!.count,
+      order: currentlySeen ? botArmyMovementOrder(movement) : remembered!.order,
+    }];
+  })).sort((a, b) => a.botId < b.botId ? -1 : a.botId > b.botId ? 1 : 0);
+  const inspectedBot = inspectedBotId ? locatedBots.find(row => row.bot.botId === inspectedBotId) : undefined;
+  const projectedStructureWork = (structure: NonNullable<typeof inspectedBot>['bot']['structures'][number], field: 'workCompleted' | 'repairWorkCompleted'): number => {
+    if (!inspectedBot) return structure[field];
+    const plan = inspectedBot.bot.currentPlan;
+    const construction = field === 'workCompleted' && plan?.action === 'construct' && structure.id === `${plan.actionId}:STRUCTURE`;
+    const repair = field === 'repairWorkCompleted' && plan?.action === 'repair' && structure.id === plan.targetId;
+    if (!construction && !repair) return structure[field];
+    const elapsedMs = Math.max(0, state.simElapsedMs - inspectedBot.chunk.lastIntegratedAtElapsedMs[inspectedBot.offset]!);
+    const talentWork = botConstructionPermille(botGradeAt(inspectedBot.chunk, inspectedBot.offset), botKindAt(inspectedBot.chunk, inspectedBot.offset));
+    const integratedWork = inspectedBot.chunk.workProgress[inspectedBot.offset]!;
+    const elapsedWork = Math.floor(plan.workersAssigned * talentWork * elapsedMs / 1_000);
+    const required = field === 'workCompleted' ? structure.workRequired : structure.repairWorkRequired;
+    return Math.min(required, integratedWork + elapsedWork);
+  };
+  const botInspection = inspectedBot && enemyBots.some(row => row.botId === inspectedBotId && row.knowledge === 'current') ? {
+    botId: inspectedBot.bot.botId,
+    name: inspectedBot.bot.name,
+    position: inspectedBot.bot.position,
+    observedAtElapsedMs: state.playerKnowledge.lastSeenBotById?.[inspectedBot.bot.botId]?.observedAtElapsedMs ?? state.simElapsedMs,
+    current: true,
+    talent: { grade: botGradeAt(inspectedBot.chunk, inspectedBot.offset), kind: botKindAt(inspectedBot.chunk, inspectedBot.offset) },
+    level: inspectedBot.chunk.levels[inspectedBot.offset]!,
+    population: inspectedBot.chunk.population[inspectedBot.offset]!,
+    resourceBalances: projectedBotResources(inspectedBot.chunk, inspectedBot.offset, inspectedBot.bot, state.simElapsedMs),
+    structures: inspectedBot.bot.structures.map(structure => ({
+      id: structure.id, blueprintId: structure.blueprintId, anchor: structure.anchor, level: structure.level, status: structure.status,
+      workCompleted: projectedStructureWork(structure, 'workCompleted'), workRequired: structure.workRequired,
+      repairWorkCompleted: projectedStructureWork(structure, 'repairWorkCompleted'), repairWorkRequired: structure.repairWorkRequired,
+    })),
+    army: inspectedBot.bot.armyMovement?.unitKind === 'army' ? [] : inspectedBot.bot.cohorts.map(({ id, templateId, livingCount, level, order, location }) => ({ id, templateId, livingCount, level, order, location })),
+  } : null;
   const combat = projectStage07Combat(state, world);
   const fixedCombatTargets = combat.target && (combat.target.state === 'available' || combat.target.state === 'reacting')
     && sights.some(sight => Math.hypot(combat.target!.position.xMm - sight.center.xMm, combat.target!.position.yMm - sight.center.yMm) <= sight.radiusMm)
@@ -388,6 +462,8 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
       rankSnapshots: state.stage08.rankSnapshots,
       openingBoard: openingBoardView(state),
     },
+    botBoardSnapshots: state.botPopulation?.boardSnapshots ?? [],
+    botInspection,
     worldClock: elapsedMsToWorldClock(state.simElapsedMs),
     survival: {
       coldLoad: state.survival.coldStatus === 'weather_unresolved' ? null : state.survival.coldLoadMicro / 1_000_000,
@@ -515,6 +591,8 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
         }];
       }),
       entities,
+      enemyBots,
+      enemyArmies,
       knownRoutes: state.playerKnowledge.knownRouteIds.flatMap(id => {
         const route = world.navigationOverlay.routeEdges.find(candidate => candidate.id === id);
         return route ? [{ id, label: `${route.fromNodeId} → ${route.toNodeId}`, path: route.path }] : [];
