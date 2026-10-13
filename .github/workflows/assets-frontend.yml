@@ -1,4 +1,5 @@
 name: Asset and frontend validation
+run-name: Frontend TSX/Vite validation for ${{ github.ref_name }}
 on:
   push:
     branches: [main, work]
