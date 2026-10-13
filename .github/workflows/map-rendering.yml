@@ -1,7 +1,7 @@
 name: Map rendering validation
 on:
   push:
-    branches: [work, main]
+    branches: [work, main, 'codex/**']
     paths: ['frontend/**', 'assets/**', '.github/workflows/map-rendering.yml']
   workflow_dispatch:
 permissions:
@@ -10,6 +10,8 @@ jobs:
   baseline:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      VITE_GAME_MODE: demo
     defaults:
       run:
         working-directory: frontend
@@ -25,6 +27,7 @@ jobs:
       - name: Capture unmodified map baseline
         run: node scripts/map-baseline.mjs
       - name: Prepare pinned renderer toolchain
+        if: always()
         run: |
           npm install --save-exact pixi.js@8.10.2 --no-audit --no-fund
           npm install --save-dev --save-exact @resvg/resvg-js@2.6.2 sharp@0.34.5 --no-audit --no-fund
