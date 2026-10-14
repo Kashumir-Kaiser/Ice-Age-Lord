@@ -4,10 +4,11 @@ import type { FootprintView, LayoutDraft } from '../game/GameClient';
 import type { WorldPoint } from './projection';
 import { worldToScreen } from './projection';
 import { orientedSize } from './placement';
-import { artPolygon, composition, resolveOrientation, spriteRect } from '../rendering/SpriteRegistration';
+import { artPolygon, composition, resolveOrientation, spriteRect,orientationAsset } from '../rendering/SpriteRegistration';
 export type ReadabilityMode = 'normal' | 'focus' | 'planning';
 type Props={id:string;name:string;asset?:AssetManifestEntry;assetId:string;point:WorldPoint;footprint:FootprintView;orientation:LayoutDraft['orientation'];camera:{x:number;y:number;zoom:number};viewport:{width:number;height:number};mode:ReadabilityMode;selected:boolean;faded:boolean;activeEffect?:boolean;draft?:boolean;blocked?:boolean;geometryOnly?:boolean;qaFixture?:boolean;onSelect?:()=>void};
 export default function BuildingSprite({id,name,asset,assetId,point,footprint,orientation,camera,viewport,mode,selected,faded,activeEffect=false,draft=false,blocked=false,geometryOnly=false,qaFixture=false,onSelect}:Props){
+ if(asset)asset=orientationAsset(asset,orientation);
  const [failed,setFailed]=useState<ReadonlySet<string>>(new Set());useEffect(()=>setFailed(new Set()),[assetId,orientation]);
  const ground=worldToScreen(point,camera,viewport),size=orientedSize(footprint,orientation);
  const corners=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([x,y])=>worldToScreen({x:point.x+x*size.width/2,y:point.y+y*size.depth/2},camera,viewport));

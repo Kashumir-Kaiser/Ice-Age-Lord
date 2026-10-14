@@ -2,12 +2,19 @@ import type { AssetManifestEntry, AssetLayerPaths } from '../assets/assetRegistr
 import type { WorldPoint } from '../territory/projection.ts';
 export type Orientation = 'north' | 'east' | 'south' | 'west';
 export type SpriteRect = { x: number; y: number; width: number; height: number };
+const orientedAssets=new WeakMap<AssetManifestEntry,Map<Orientation,AssetManifestEntry>>();
+const referenceSizes=new WeakMap<AssetManifestEntry,{width:number;height:number}>();
+export function orientationAsset(asset:AssetManifestEntry,orientation:Orientation):AssetManifestEntry {
+ const region=asset.orientationRegions?.[orientation];if(!region)return asset;
+ let views=orientedAssets.get(asset);if(!views){views=new Map();orientedAssets.set(asset,views);}let view=views.get(orientation);if(!view){view={...asset,hitPolygon:region.hitPolygon,occlusionRegion:{upper:region.upper}};views.set(orientation,view);}return view;
+}
 /** Fixed reference from registered art, not the current orientation or building level. */
 export function referenceSize(asset: AssetManifestEntry): { width: number; height: number } {
+  const cached=referenceSizes.get(asset);if(cached)return cached;
   const span = Math.max(...asset.artFootprint.map(p => p[0])) - Math.min(...asset.artFootprint.map(p => p[0]));
   const physical = asset.compatiblePhysicalFootprint;
   const width = 2 * (physical.widthM + physical.depthM) / Math.max(.01, span) * (asset.presentationScale ?? 1);
-  return { width, height: width * asset.logicalCanvas.height / asset.logicalCanvas.width };
+  const size={ width, height: width * asset.logicalCanvas.height / asset.logicalCanvas.width };referenceSizes.set(asset,size);return size;
 }
 export function spriteRect(asset: AssetManifestEntry, ground: WorldPoint, pixelsPerMetre: number): SpriteRect {
   const ref = referenceSize(asset), width = ref.width * pixelsPerMetre, height = ref.height * pixelsPerMetre;

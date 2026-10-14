@@ -1,0 +1,33 @@
+# Map 2.5D handoff — 2026-10-14
+
+Paused at the user's request. Work belongs on `codex/map-25d-overhaul`; do not merge or push to main. Commit and push all work every 10 generated assets and before stopping. Reuse existing originals. Read the overhaul prompt; consult attached PDFs only when research is needed.
+
+## Current checkpoint
+
+The existing renderer, terrain, 43 terrain PNG masters, and six latest forest/ridge masters were already published. This checkpoint adds three draft damaged-house views (south, east, west), their untouched PNG masters and safe asset provenance, orientation export/registration/hit-region support, global building depth-order caching, idle-aware performance timing, real empty-space picking in dense benchmarks, precise Chromium memory reporting, and a corrected mobile idle-test setup. The initial attempted east image was inspected and registered as south because its axis matched that pose. All new views remain drafts requiring visual calibration.
+
+The new view descriptor is `assets/map-building-views.json`; masters are in `assets/source/map-buildings/`; provenance is `MAP-25D-BUILDING-ART.json` beside this log. Generated derivatives and manifests are rebuilt by `frontend/scripts/export-map-assets.mjs`. New pose regions use the alpha hull of the full body; they are not architectural wall/roof slices.
+
+## What was being worked on
+
+Authored asymmetric building orientations using preserved reference art, with shared logical registration and anchors, pose-specific picking, and atlas export. Renderer follow-up work caches global topology and avoids redundant child-order mutations. Benchmark follow-up excludes intentional idle gaps while retaining continuous slow-drag overload evidence. No further artwork is needed merely to recover previous work.
+
+## Validation and evidence
+
+Last published source head before this checkpoint: `0262ff45a9bd19379d3e64463087085d8e186ec8`. Its GitHub validation run `38509625696` passed build/unit checks and 54 browser tests, skipped 5 conditional tests, and failed the mobile idle test because its fire remained inside the tall canvas. The current change pans that fire outside the viewport before asserting idle. Desktop idle passed. All 33 captures completed. The new checkpoint must rerun browser checks through GitHub Actions. Final local export completed (626 building layers and 45 environment roles); production build passed. The local full unit run reported 17 passing files and one failing file (`mapRendering.test.mjs`); the Node test reporter emitted no assertion details. This failure remains open pending CI investigation.
+
+Full performance/memory run `38508151890` completed both quality jobs. It used Chromium SwiftShader on shared CI, not the requested target GPU. Dense scenes remain expensive. Local/world frame intervals included deliberate input idle gaps and cannot establish final frame-budget compliance; this checkpoint corrects that measurement. Resource estimates plateaued across 40 returns per quality, but old heap measurements were rounded; rerun with precise memory reporting. Dense selection previously had no eligible DOM targets; the updated benchmark exercises empty-space picking. Existing broader regression also has an unrelated bot activity archive assertion failure. No final acceptance, merge, deployment or release is claimed.
+
+## Remaining work
+
+- Review/calibrate damaged-house south/east/west against the default north pose; complete actual asymmetric orientations for farmhouses, palisade walls and timber gates, and explicitly document equivalent fixture views. Do not rotate screen sprites to manufacture poses.
+- Implement/review architectural base, lower/upper wall, long-wall and gate occlusion slices and cycle behavior; current bodies mostly remain single silhouettes.
+- Finish animated flame/smoke behavior and remove inappropriate baked smoke; review subtle foliage/ambient effects.
+- Complete before/after visual coverage across low/normal quality, DPR 1/2, populated and late-art states, tall occlusion, heat boundaries, known/remembered/unknown fog, world geography, ground contacts, crop/texture repetition and pose alignment. Existing north-up strategic relief and coarse biome shapes need artistic review.
+- Run the new checkpoint's unit/build/browser checks and inspect the corrected mobile idle result. Re-run corrected full performance, dense picking and precise-GC memory tests.
+- Measure ordinary saved-populated cold first view and the full baseline JavaScript gzip delta; existing measurements cover prepared scenes and partial named renderer bundles only. Target hardware acceptance remains outstanding.
+- Resolve or independently explain the unrelated baseline bot regression before final acceptance. Keep work off main.
+
+## Preservation constraints
+
+Automatic approval review rejected exporting the expanded recovery log because it contained chat identifiers, absolute workspace paths and prompts. That file was kept unchanged; new safe provenance contains repository-relative paths and original hashes only. Keep using the safe provenance documents. GitHub integration transfers small hash-verified base64 parts when native git network access is unavailable; the asset checkpoint Action restores original PNG bytes, rebuilds exports and commits them back to this branch. Verify restored master hashes before considering the checkpoint durable.

@@ -27,6 +27,8 @@ test('a dense scene stops its animation loop when its active fire is outside the
  test.setTimeout(90000);
  await page.emulateMedia({reducedMotion:'no-preference'});await territory(page);
  await page.locator('.territory-calibration > summary').click();await page.getByRole('button',{name:'Xem nhóm công trình minh họa',exact:true}).click();
+ const scene=page.locator('.territory-scene-svg');await scene.evaluate(node=>node.scrollIntoView({block:'center'}));const box=(await scene.boundingBox())!;
+ await page.mouse.move(box.x+box.width*.65,box.y+box.height*.65);await page.mouse.down();await page.mouse.move(box.x+box.width*.35,box.y+box.height*.65,{steps:4});await page.mouse.up();
  await expect.poll(()=>page.evaluate(()=>{const m=(window as unknown as {__mapMetrics:{queued:number;pendingTextures:number;activeLoops:number}[]}).__mapMetrics.at(-1)!;return m.queued+m.pendingTextures+m.activeLoops;}),{timeout:60000}).toBe(0);
  await expect(page.locator('.territory-building[data-building-id^="qa-dense-"] circle')).toHaveCount(0);
 });

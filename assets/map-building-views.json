@@ -1,0 +1,7 @@
+{
+  "lord-house-damaged": {
+    "south": "assets/source/map-buildings/lord-house-damaged-south.png",
+    "east": "assets/source/map-buildings/lord-house-damaged-east.png",
+    "west": "assets/source/map-buildings/lord-house-damaged-west.png"
+  }
+}

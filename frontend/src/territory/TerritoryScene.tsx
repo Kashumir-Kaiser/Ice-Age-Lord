@@ -97,7 +97,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
   const presentCamera=(next:TerritoryCamera,commit=false)=>{
     transient.current=next;
     svgRef.current?.querySelector('.territory-camera-overlay')?.setAttribute('transform',cameraOverlayTransform(activeCamera,next,size,'territory'));
-    rootRef.current?.dispatchEvent(new CustomEvent('map-camera',{detail:next}));
+    rootRef.current?.dispatchEvent(new CustomEvent('map-camera',{detail:{...next,interacting:!commit&&Boolean(gesture.current||pinch.current)}}));
     if(commit||(!gesture.current&&!pinch.current&&performance.now()-lastCameraCommit.current>=100)){lastCameraCommit.current=performance.now();onCameraChange(next);}
   };
 

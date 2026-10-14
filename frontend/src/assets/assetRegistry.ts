@@ -1,5 +1,6 @@
 export type MapExport = {
   path: string; source: string; sourceSha256: string; sha256: string;
+  layerPath?: string;
   exportVersion: number; width: number; height: number;
   sourceDependencies?:readonly {source:string;sha256:string}[];
   role: 'body' | 'base' | 'upper' | 'shadow' | 'vfx';
@@ -20,6 +21,7 @@ export type AssetManifestEntry = {
   planningFoundation?: boolean;
   planningLayer?: string;
   orientationViews?: Partial<Record<'north' | 'east' | 'south' | 'west', AssetLayerPaths>>;
+  orientationRegions?:Partial<Record<'north'|'east'|'south'|'west',{hitPolygon:readonly (readonly [number,number])[];upper:readonly (readonly [number,number])[]}>>;
   equivalentOrientations?: readonly string[];
   mapExports?: readonly MapExport[];
   revision: number;

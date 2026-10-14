@@ -33,6 +33,8 @@ export class MapRenderer {
   private size:Size={width:1,height:1};
   private raf=0;
   private inFrame=false;
+  private idleSince=0;
+  private cameraGesture=false;
   private destroyed=false;
   private dirty=true;
   private previous=0;
@@ -50,6 +52,10 @@ export class MapRenderer {
   private hidden=false;
   private transferred=false;
   private visibleEmitter=false;
+  private depthBuildings:MapSnapshot['buildings']|null=null;
+  private depthScale=0;
+  private depthProjection:MapSnapshot['projection']|null=null;
+  private depthIds:string[]=[];
   readonly metrics:MapMetrics;
   constructor(private canvas:HTMLCanvasElement,snapshot:MapSnapshot,private status:(backend:string)=>void,enabledMetrics=false){
     this.snapshot=snapshot;this.metrics=new MapMetrics(enabledMetrics);
@@ -101,6 +107,7 @@ export class MapRenderer {
     this.terrain.invalidateBounds(this.sampler.contacts.update(contacts));
   }
   configure(preference:'auto'|Quality,reduced:boolean):void{this.preference=preference;this.reducedMotion=reduced;if(preference!=='auto')this.setQuality(preference);this.invalidate();}
+  setCameraGesture(active:boolean):void{this.cameraGesture=active;}
   resize(size:Size):void{
     this.size={width:Math.max(1,size.width),height:Math.max(1,size.height)};
     const dpr=Math.min(devicePixelRatio||1,QUALITY[this.quality].dpr,Math.sqrt(QUALITY[this.quality].totalBytes*.2/(this.size.width*this.size.height*8)));this.renderDpr=dpr;
@@ -111,8 +118,8 @@ export class MapRenderer {
   }
   setHidden(hidden:boolean):void{this.hidden=hidden;if(hidden)this.stop();else{this.previous=0;this.invalidate();}}
   invalidate():void{if(this.destroyed)return;this.dirty=true;if(!this.inFrame)this.schedule();}
-  private schedule():void{if(!this.raf&&!this.hidden&&!this.destroyed){if(!this.metrics.data.activeLoops)this.lastFrame=0;this.metrics.data.activeLoops=1;this.raf=requestAnimationFrame(this.frame);}}
-  private stop():void{if(this.raf)cancelAnimationFrame(this.raf);this.raf=0;this.metrics.data.activeLoops=0;}
+  private schedule():void{if(!this.raf&&!this.hidden&&!this.destroyed){if(!this.cameraGesture&&!this.metrics.data.activeLoops&&performance.now()-this.idleSince>150){this.lastFrame=0;this.metrics.resetClock();this.adaptive.resetObservation();}this.metrics.data.activeLoops=1;this.raf=requestAnimationFrame(this.frame);}}
+  private stop():void{if(this.raf)cancelAnimationFrame(this.raf);this.raf=0;this.metrics.data.activeLoops=0;this.lastFrame=0;this.idleSince=performance.now();this.metrics.resetClock();}
   private setQuality(quality:Quality):void{if(quality===this.quality)return;this.quality=quality;this.assets.limit=QUALITY[quality].totalBytes-QUALITY[quality].terrainBytes;this.terrain.size=QUALITY[quality].textureSize;this.terrain.limit=QUALITY[quality].terrainBytes;this.terrain.invalidate();this.resize(this.size);}
   private project=(p:WorldPoint):WorldPoint=>{
     if(this.snapshot.projection==='territory')return worldToScreen(p,this.snapshot.camera,this.size);
@@ -142,7 +149,7 @@ export class MapRenderer {
       }
       this.previous=time;
     }
-    if(this.motionActive()||pending||this.terrain.pending||this.dirty||this.previousLevel!==undefined){this.inFrame=false;this.schedule();}else this.metrics.data.activeLoops=0;
+    if(this.motionActive()||pending||this.terrain.pending||this.dirty||this.previousLevel!==undefined){this.inFrame=false;this.schedule();}else {this.metrics.data.activeLoops=0;this.idleSince=performance.now();}
     }finally{this.inFrame=false;}
   };
   private render():void{
@@ -185,12 +192,17 @@ export class MapRenderer {
     const selected=this.snapshot.buildings.find(b=>b.selected),target=selected?this.project(selected.point):null;
     const buildingObjects=projectBuildings(this.snapshot.buildings,this.project,scale,this.size);
     this.visibleEmitter=buildingObjects.some(building=>building.active);
-    const ordered=depthOrder(buildingObjects);if(ordered.cycles.length)this.metrics.error('depth cycle: '+ordered.cycles.join(','));
+    if(this.depthBuildings!==this.snapshot.buildings||this.depthScale!==scale||this.depthProjection!==this.snapshot.projection){
+      const ordered=depthOrder(projectBuildings(this.snapshot.buildings,this.project,scale,this.size,false));
+      this.depthIds=ordered.objects.map(b=>b.id);this.depthBuildings=this.snapshot.buildings;this.depthScale=scale;this.depthProjection=this.snapshot.projection;
+      if(ordered.cycles.length)this.metrics.error('depth cycle: '+ordered.cycles.join(','));
+    }
+    const visibleById=new Map(buildingObjects.map(b=>[b.id,b]));
     const distinctAssets=new Set(buildingObjects.map(b=>b.assetId)).size,environmentReserve=12*1048576;
     const preferDistrict=this.quality==='low'||distinctAssets*4*1048576+environmentReserve>this.assets.limit;
     const useAtlas=this.quality!=='low'&&distinctAssets*1048576+environmentReserve<=this.assets.limit;
     const propBounds={minX:bounds.minX-20,maxX:bounds.maxX+20,minY:bounds.minY-20,maxY:bounds.maxY+20};
-    const worldProps=this.snapshot.mode==='planning'?[]:this.sampler.props(propBounds,1/scale).filter(p=>!this.snapshot.buildings.some(b=>Math.abs(b.point.x-p.x)<b.footprint.widthM/2+p.size&&Math.abs(b.point.y-p.y)<b.footprint.depthM/2+p.size));
+    const worldProps=this.snapshot.mode==='planning'?[]:this.sampler.props(propBounds,1/scale).filter(p=>!this.snapshot.buildings.some(b=>{const turned=b.orientation==='east'||b.orientation==='west',width=turned?b.footprint.depthM:b.footprint.widthM,depth=turned?b.footprint.widthM:b.footprint.depthM;return Math.abs(b.point.x-p.x)<width/2+p.size&&Math.abs(b.point.y-p.y)<depth/2+p.size;}));
     const props=worldProps.map(p=>{
       const tree=p.kind==='conifer'||p.kind==='bare',ground=this.project(p),name=p.kind==='ledge'?LEDGE_SOURCES[p.variant%4]:p.kind+'-'+String(p.variant%(p.kind==='conifer'?6:p.kind==='bare'?3:8)+1).padStart(2,'0'),path='/assets/map/terrain/'+name+'.png';
       const image=this.assets.acquire(path),height=p.size*scale*(tree?1.8:.6);
@@ -210,7 +222,7 @@ export class MapRenderer {
       if(lod==='regional'&&this.snapshot.mode!=='planning'){const width=12,height=12;draws.push({id:b.id+':symbol',path:asset.layers.uiIcon!,x:b.ground.x-width/2,y:b.ground.y-height,width,height,alpha:b.draft?.55:1});return;}
       for(const layer of composition(asset,this.snapshot.mode,occludes,b.active,b.orientation)){if(layer.role==='shadow')continue;const exported=exportPath(asset,layer,preferDistrict||lod!=='close'?'district':'close'),path=(this.failures.has(exported)||this.failures.has(this.assets.url(exported)))?layer.path:exported;draws.push({id:b.id+':'+layer.role,path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});}
     };
-    for(const b of ordered.objects){while(propIndex<sortedProps.length&&sortedProps[propIndex].depth<=b.depth)draws.push(sortedProps[propIndex++]);drawBuilding(b);}while(propIndex<sortedProps.length)draws.push(sortedProps[propIndex++]);
+    for(const id of this.depthIds){const b=visibleById.get(id);if(!b)continue;while(propIndex<sortedProps.length&&sortedProps[propIndex].depth<=b.depth)draws.push(sortedProps[propIndex++]);drawBuilding(b);}while(propIndex<sortedProps.length)draws.push(sortedProps[propIndex++]);
     for(const d of draws)if(!d.path.startsWith('chunk:')){used.add(d.path);this.assets.acquire(d.path);}
     this.assets.retain(used);
     if(this.app)this.renderWebGL(draws);else if(this.context)this.render2D(draws);
@@ -231,7 +243,7 @@ export class MapRenderer {
     for(const d of draws){const texture=d.path.startsWith('chunk:')?this.chunkTextures.get(d.path.slice(6)):this.assets.texture(d.path);if(!texture)continue;active.add(d.id);
       let sprite=this.drawSprites.get(d.id);if(!sprite){sprite=new Sprite(texture);sprite.eventMode='none';this.drawSprites.set(d.id,sprite);this.stage.addChild(sprite);}sprite.texture=texture;sprite.alpha=d.alpha;
       if(d.matrix)sprite.setFromMatrix(d.matrix);else{sprite.skew.set(0,0);sprite.rotation=0;sprite.position.set(d.x,d.y);sprite.width=d.width;sprite.height=d.height;}
-      this.stage.setChildIndex(sprite,index++);
+      if(this.stage.children[index]!==sprite)this.stage.setChildIndex(sprite,index);index++;
     }
     for(const [id,sprite] of this.drawSprites)if(!active.has(id)){sprite.destroy();this.drawSprites.delete(id);}
     this.effectsGraphics.clear();

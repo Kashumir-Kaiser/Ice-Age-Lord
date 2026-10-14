@@ -173,7 +173,7 @@ export default function MapScene({
   const withZoom = (next: CameraView, oldZoom = transientCamera.current.zoom, commit=false) => {
     transientCamera.current=next;
     const b=viewBox(next,size.width,size.height);svgRef.current?.setAttribute('viewBox',`${b.x} ${b.y} ${b.width} ${b.height}`);
-    rootRef.current?.dispatchEvent(new CustomEvent('map-camera',{detail:next}));
+    rootRef.current?.dispatchEvent(new CustomEvent('map-camera',{detail:{...next,interacting:!commit&&Boolean(gesture.current)}}));
     if(!commit&&(gesture.current||performance.now()-lastCameraCommit.current<100))return;
     lastCameraCommit.current=performance.now();
     onCameraChange(previous => {

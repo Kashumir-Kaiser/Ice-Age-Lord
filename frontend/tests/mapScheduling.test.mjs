@@ -25,3 +25,17 @@ test('framebuffers are included in admission budgets and oversized viewports red
   for(const quality of ['normal','low']){renderer.configure(quality,true);renderer.resize({width:3840,height:2160});const targets=renderer.renderTargetBytes();assert.ok(renderer.renderDpr<=QUALITY[quality].dpr);assert.ok(targets<=QUALITY[quality].totalBytes*.2+1);assert.ok(renderer.assets.limit+renderer.terrain.limit+targets<=QUALITY[quality].totalBytes);}
  }finally{renderer.destroy();for(const [key,value] of Object.entries({devicePixelRatio:previous,requestAnimationFrame:oldRaf,cancelAnimationFrame:oldCancel}))if(value===undefined)delete globalThis[key];else globalThis[key]=value;}
 });
+test('continuous slow drag frames still downgrade quality, while deliberate idle input gaps are excluded',()=>{
+ const original={performance:globalThis.performance,requestAnimationFrame:globalThis.requestAnimationFrame,cancelAnimationFrame:globalThis.cancelAnimationFrame,devicePixelRatio:globalThis.devicePixelRatio};let clock=1000,serial=0;const callbacks=new Map();
+ globalThis.performance={now:()=>clock};globalThis.devicePixelRatio=1;globalThis.requestAnimationFrame=cb=>{callbacks.set(++serial,cb);return serial;};globalThis.cancelAnimationFrame=id=>callbacks.delete(id);
+ const renderer=new MapRenderer({width:1,height:1,removeEventListener(){}},{identity:'drag-test',projection:'territory',camera:{x:0,y:0,zoom:1},buildings:[],entities:[],mode:'normal',world:false,revision:0},()=>{},true);
+ try{
+  renderer.terrain.process=()=>false;renderer.render=()=>{};
+  const tick=()=>{const [id,callback]=callbacks.entries().next().value;callbacks.delete(id);callback(clock);};
+  renderer.invalidate();tick();renderer.setCameraGesture(true);
+  for(let i=0;i<6;i++){clock+=500;renderer.invalidate();tick();}
+  assert.equal(renderer.quality,'low','slow frames during one gesture accumulate a real three-second overload');assert.ok(renderer.metrics.data.intervalMs.includes(500));
+  clock+=40;if(callbacks.size)tick();renderer.setCameraGesture(false);const intervals=renderer.metrics.data.intervalMs.length;
+  clock+=1000;renderer.invalidate();tick();assert.equal(renderer.metrics.data.intervalMs.length,intervals,'a deliberate idle gap is not a missed animation frame');
+ }finally{renderer.destroy();for(const [key,value] of Object.entries(original))if(value===undefined)delete globalThis[key];else globalThis[key]=value;}
+});

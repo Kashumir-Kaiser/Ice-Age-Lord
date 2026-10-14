@@ -7,14 +7,18 @@ import {svgMapSource} from './svg-map-source.mjs';
 import {periodicMaterial} from './periodic-material.mjs';
 import {normalizeMapAlpha} from './normalize-map-alpha.mjs';
 import {LEDGE_SOURCES} from '../src/rendering/mapStyle.ts';
+import {orientationCanvas} from './map-orientation-export.mjs';
 const repo=resolve(new URL('../..',import.meta.url).pathname),manifestPath=resolve(repo,'assets/manifest.json');
 const manifest=JSON.parse(readFileSync(manifestPath,'utf8'));
+const authoredViews=JSON.parse(readFileSync(resolve(repo,'assets/map-building-views.json'),'utf8'));
 const sha=(buffer)=>createHash('sha256').update(buffer).digest('hex');
 const output=resolve(repo,'frontend/public/assets/map');mkdirSync(output,{recursive:true});
 // Resolve the named external SVG element with its definitions and dependency hashes.
 let count=0;
 for(const asset of manifest.assets){
  asset.composition??='single-body';asset.mapExports=[];
+ for(const orientation of asset.generatedOrientationViews??[]){delete asset.orientationViews?.[orientation];delete asset.orientationRegions?.[orientation];}
+ asset.generatedOrientationViews=Object.keys(authoredViews[asset.assetId]??{});
  const destination=resolve(output,'buildings',asset.assetId);mkdirSync(destination,{recursive:true});
  for(const role of ['body','shadow',...(asset.planningLayer?['base']:[]),...(asset.layers.vfx?['vfx']:[])]){
   const source=role==='base'?asset.planningLayer:asset.layers[role],file=resolve(repo,'frontend/public'+source),graph=svgMapSource(file),svg=graph.svg;
@@ -25,6 +29,19 @@ for(const asset of manifest.assets){
    const meta=await sharp(png).metadata();
    const sourceDependencies=Array.from(graph.dependencies,([path,sha256])=>({source:path.slice(repo.length+1),sha256}));
    asset.mapExports.push({path,source,sourceSha256:sha(readFileSync(file)),sourceDependencies,sha256:sha(png),exportVersion:2,width:meta.width,height:meta.height,role,lod,orientation:asset.orientation,alpha:'straight',colorSpace:'srgb',logicalCanvas:asset.logicalCanvas,trim:{x:0,y:0,width:asset.logicalCanvas.width,height:asset.logicalCanvas.height}});count++;
+  }
+ }
+ for(const [orientation,source] of Object.entries(authoredViews[asset.assetId]??{})){
+  if(!['north','east','south','west'].includes(orientation)||!/^assets\/source\/map-buildings\/[^/]+\.png$/.test(source))throw new Error('Invalid authored orientation source');
+  const file=resolve(repo,source);if(!existsSync(file))throw new Error('Missing authored orientation master: '+source);
+  const reference=asset.mapExports.find(e=>e.role==='body'&&e.lod==='close'),painted=await orientationCanvas(file,resolve(repo,'frontend/public'+reference.path),asset);
+  const layerPath=`/assets/map/buildings/${asset.assetId}/body-${orientation}-close.png`;
+  asset.orientationViews??={};asset.orientationViews[orientation]={...asset.layers,body:layerPath};
+  asset.orientationRegions??={};asset.orientationRegions[orientation]={hitPolygon:painted.hitPolygon,upper:painted.hitPolygon};
+  for(const [lod,size] of [['close',384],['district',192]]){
+   const png=await sharp(painted.data,{raw:{width:painted.width,height:painted.height,channels:4}}).resize({width:size}).png({compressionLevel:9}).toBuffer(),meta=await sharp(png).metadata();
+   const path=`/assets/map/buildings/${asset.assetId}/body-${orientation}-${lod}.png`;writeFileSync(resolve(repo,'frontend/public'+path),png);
+   asset.mapExports.push({path,layerPath,source,sourceSha256:sha(readFileSync(file)),sourceDependencies:[{source,sha256:sha(readFileSync(file))}],sha256:sha(png),exportVersion:2,width:meta.width,height:meta.height,role:'body',lod,orientation,alpha:'straight',colorSpace:'srgb',logicalCanvas:asset.logicalCanvas,trim:{x:0,y:0,width:asset.logicalCanvas.width,height:asset.logicalCanvas.height}});count++;
   }
  }
 }

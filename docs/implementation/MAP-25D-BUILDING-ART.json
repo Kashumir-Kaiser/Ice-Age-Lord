@@ -1,0 +1,34 @@
+{
+  "assets": [
+    {
+      "assetId": "lord-house-damaged",
+      "orientation": "south",
+      "source": "assets/source/map-buildings/lord-house-damaged-south.png",
+      "sha256": "472d3ad46294630c6b4eb0833af030a85fd5d9106188cf92641d5b9c99096565",
+      "gitBlobSha": "dfe51a2fd984b091f7dae84e5a3109563e0ce022",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-14",
+      "status": "draft; rear-facing calibration; registered as south after inspecting its unchanged gable axis. East still requires the opposite roof diagonal."
+    },
+    {
+      "assetId": "lord-house-damaged",
+      "orientation": "east",
+      "source": "assets/source/map-buildings/lord-house-damaged-east.png",
+      "sha256": "df2a428f4a45b91d4d8424b090f482df78be0156186cd5bc4c6fcb9e9fa24acf",
+      "gitBlobSha": "d74b83260660663cae450dc9239ecfe17149f9df",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-14",
+      "status": "draft; authored pose inspected, scene registration and final acceptance pending"
+    },
+    {
+      "assetId": "lord-house-damaged",
+      "orientation": "west",
+      "source": "assets/source/map-buildings/lord-house-damaged-west.png",
+      "sha256": "db1d986530e6a4b91c255ff3ba84e96177dff2cb471892bc9bd541de7251a619",
+      "gitBlobSha": "333a17b963f4d4c4fc4b8b8ec47ee6bc4d8a16b8",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-14",
+      "status": "draft; authored pose inspected, scene registration and final acceptance pending"
+    }
+  ]
+}

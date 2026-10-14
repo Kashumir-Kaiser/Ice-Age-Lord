@@ -27,7 +27,7 @@ try{
   await page.waitForTimeout(warmup*1000);
   const interactions=await page.evaluate(async duration=>{
    const node=document.querySelector('.territory-scene-svg,.terrain-svg--deep'),box=node.getBoundingClientRect();
-   const start=performance.now(),x=box.left+box.width*.45,y=box.top+box.height*.65,feedback=[],counts={pan:0,zoom:0,selection:0,selectionUnavailable:0};let endedPan=false,lastZoom=0,lastSelection=0;
+   const start=performance.now(),x=box.left+box.width*.45,y=box.top+box.height*.65,feedback=[],counts={pan:0,zoom:0,selection:0,selectionUnavailable:0,emptyPicks:0};let endedPan=false,lastZoom=0,lastSelection=0;
    const send=(type,dx,dy)=>node.dispatchEvent(new PointerEvent(type,{bubbles:true,pointerId:41,pointerType:'mouse',button:0,clientX:x+dx,clientY:y+dy}));
    const metrics=window.__mapMetrics.at(-1);metrics.renderMs=[];metrics.intervalMs=[];
    send('pointerdown',0,0);
@@ -39,7 +39,7 @@ try{
      else{
       if(!endedPan){send('pointerup',Math.sin(t*.8)*170,Math.cos(t*.5)*70-70);endedPan=true;}
       if(phase==='zoom'&&now-lastZoom>=500){node.dispatchEvent(new WheelEvent('wheel',{bubbles:true,cancelable:true,clientX:x,clientY:y,deltaY:Math.sin(t)*100}));lastZoom=now;counts.zoom++;dispatched=true;}
-      if(phase==='selection'&&now-lastSelection>=500){const targets=Array.from(node.querySelectorAll('[role="button"]')).filter(target=>{const b=target.getBoundingClientRect();return b.width>0&&b.height>0&&b.left>=box.left&&b.right<=box.right&&b.top>=box.top&&b.bottom<=box.bottom;});const target=targets[Math.floor(t*2)%targets.length];if(target){const b=target.getBoundingClientRect();target.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,detail:1,clientX:b.left+b.width/2,clientY:b.top+b.height/2}));counts.selection++;dispatched=true;}else counts.selectionUnavailable++;lastSelection=now;}
+      if(phase==='selection'&&now-lastSelection>=500){const targets=Array.from(node.querySelectorAll('[role="button"]')).filter(target=>{const b=target.getBoundingClientRect();return b.width>0&&b.height>0&&b.left>=box.left&&b.right<=box.right&&b.top>=box.top&&b.bottom<=box.bottom;});const target=targets[Math.floor(t*2)%targets.length];if(target){const b=target.getBoundingClientRect();target.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,detail:1,clientX:b.left+b.width/2,clientY:b.top+b.height/2}));counts.selection++;dispatched=true;}else {counts.selectionUnavailable++;node.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,detail:1,clientX:x,clientY:y}));counts.emptyPicks++;dispatched=true;}lastSelection=now;}
      }
      const before=metrics.frames;
      if(dispatched)requestAnimationFrame(function waitForRender(){
@@ -50,7 +50,7 @@ try{
      if(now-start<duration*1000)requestAnimationFrame(step);else{if(!endedPan)send('pointerup',Math.sin(t*.8)*170,Math.cos(t*.5)*70-70);resolve();}
     };requestAnimationFrame(step);
    });
-   return {feedback,counts,segments:['pan','pointer-centered zoom','permitted entity/cluster selection']};
+   return {feedback,counts,segments:['pan','pointer-centered zoom','permitted entity/cluster selection or empty-footprint picking']};
   },seconds);
   const metrics=await page.evaluate(()=>window.__mapMetrics.at(-1));
   const gpu=await page.evaluate(()=>{const canvas=document.querySelector('.map-render-canvas');const gl=canvas.getContext('webgl2')||canvas.getContext('webgl');if(!gl)return null;const ext=gl.getExtension('WEBGL_debug_renderer_info');return ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER);});
@@ -60,6 +60,6 @@ try{
 }finally{
  const summary=['fresh','populated','dense-520','local','world-1023'].map(fixture=>{const samples=results.filter(r=>r.fixture===fixture);return {fixture,completedRuns:samples.length,medianIntervalP95:percentile(samples.map(r=>r.interval.p95).filter(Number.isFinite),.5),medianPointerP95:percentile(samples.map(r=>r.pointerFeedback.p95).filter(Number.isFinite),.5)};});
  const rendererBundles=readdirSync(resolve('dist/assets')).filter(name=>/^(MapRenderer|MapCanvas|terrain\.worker|WebGLRenderer|RenderTargetSystem|Texture)/.test(name)&&name.endsWith('.js')).map(name=>{const bytes=readFileSync(resolve('dist/assets',name));return {name,bytes:bytes.length,gzipBytes:gzipSync(bytes).length};});
- writeFileSync(resolve(output,'results.json'),JSON.stringify({environment:{node:process.version,platform:os.platform(),cpu:os.cpus()[0]?.model,cpuCount:os.cpus().length,ramBytes:os.totalmem(),browser:'Chromium headless',viewport:{width:1366,height:768},dpr:1,targetDeviceVerified:false},rendererBundles,rendererGzipBytes:rendererBundles.reduce((sum,b)=>sum+b.gzipBytes,0),summary,results},null,2));await browser.close();
+ writeFileSync(resolve(output,'results.json'),JSON.stringify({environment:{node:process.version,platform:os.platform(),cpu:os.cpus()[0]?.model,cpuCount:os.cpus().length,ramBytes:os.totalmem(),browser:'Chromium headless',viewport:{width:1366,height:768},dpr:1,targetDeviceVerified:false},rendererBundles,rendererBundleScope:'Named renderer entry and split chunks; not a complete before/after JS delta.',rendererGzipBytes:rendererBundles.reduce((sum,b)=>sum+b.gzipBytes,0),summary,results},null,2));await browser.close();
 }
 console.log('Headless measurements are diagnostics, not validation of Intel UHD 620 GPU performance.');

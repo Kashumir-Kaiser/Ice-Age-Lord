@@ -2,7 +2,7 @@ import { Texture, Rectangle } from 'pixi.js';
 import type { AssetManifestEntry } from '../assets/assetRegistry.ts';
 import type { CompositionLayer } from './SpriteRegistration.ts';
 export function exportPath(asset:AssetManifestEntry,layer:CompositionLayer,lod:'close'|'district'):string {
-  return asset.mapExports?.find(e=>e.role===layer.role&&e.lod===lod&&e.source===layer.path)?.path??layer.path;
+  return asset.mapExports?.find(e=>e.role===layer.role&&e.lod===lod&&(e.layerPath??e.source)===layer.path)?.path??layer.path;
 }
 type Entry={refs:number;image:HTMLImageElement|null;texture:Texture|null;request:Promise<HTMLImageElement>;bytes:number;reservedBytes:number;controller:AbortController;state:'pending'|'ready'|'failed'};
 /** Per-path ownership permits multiple hosts without one destroying another's texture. */

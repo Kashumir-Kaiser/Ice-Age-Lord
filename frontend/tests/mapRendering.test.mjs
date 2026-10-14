@@ -5,6 +5,7 @@ import { spriteRect, referenceSize, artPolygon, composition, resolveOrientation 
 import { pointInPolygon, pointerCSS, pickStack, cyclePick } from '../src/rendering/MapPicking.ts';
 import { TerrainSampler, noise, chunkLevel } from '../src/rendering/TerrainSampler.ts';
 import { depthOrder } from '../src/rendering/DepthOrder.ts';
+import { projectBuildings } from '../src/rendering/BuildingGeometry.ts';
 import { AdaptiveQuality, chooseLOD } from '../src/rendering/mapStyle.ts';
 import { worldToScreen, screenToWorld, zoomAtScreenPoint } from '../src/territory/projection.ts';
 import { validateMapExport } from '../scripts/validate-map-assets.mjs';
@@ -69,6 +70,13 @@ test('overlap order uses footprint relations with stable IDs and spatial neighbo
  for(const input of [[object('tower',0,0),object('house',4,0)],[object('tower',0,0),object('unit',0,-4)]]){const result=depthOrder(input.reverse());assert.equal(result.cycles.length,0);assert.equal(result.objects[0].id,'tower');}
  assert.deepEqual(depthOrder([object('z',0,0),object('a',0,0)]).objects.map(o=>o.id),['a','z']);
  const sparse=Array.from({length:520},(_,i)=>({...object(String(i),i*20,0),bounds:{minX:i*256,maxX:i*256+30,minY:0,maxY:30}}));assert.ok(depthOrder(sparse).comparisons<520);
+});
+test('global building depth remains stable under pan while the visible subset still culls correctly',()=>{
+ const buildings=[0,4,8].map((x,i)=>({id:String(i),asset,assetId:asset.assetId,point:{x,y:0},orientation:'north',footprint:{widthM:4,depthM:4},selected:false,active:false,draft:false}));
+ const project=(dx,dy)=>point=>({x:dx+point.x*6,y:dy+point.x*3});
+ const viewport={width:120,height:100},allA=projectBuildings(buildings,project(20,60),3,viewport,false),allB=projectBuildings(buildings,project(-500,120),3,viewport,false);
+ assert.deepEqual(depthOrder(allA).objects.map(b=>b.id),depthOrder(allB).objects.map(b=>b.id));
+ assert.equal(projectBuildings(buildings,project(-500,120),3,viewport).length,0);assert.equal(allB.length,3,'offscreen topology remains available without drawing it');
 });
 test('quality requires sustained overload and stable headroom, respecting locked mode',()=>{
  const quality=new AdaptiveQuality();for(let i=0;i<29;i++)assert.equal(quality.update(30,100),'normal');assert.equal(quality.update(30,100),'low');
