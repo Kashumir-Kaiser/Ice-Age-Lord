@@ -31,3 +31,7 @@ Full performance/memory run `38508151890` completed both quality jobs. It used C
 ## Preservation constraints
 
 Automatic approval review rejected exporting the expanded recovery log because it contained chat identifiers, absolute workspace paths and prompts. That file was kept unchanged; new safe provenance contains repository-relative paths and original hashes only. Keep using the safe provenance documents. GitHub integration transfers small hash-verified base64 parts when native git network access is unavailable; the asset checkpoint Action restores original PNG bytes, rebuilds exports and commits them back to this branch. Verify restored master hashes before considering the checkpoint durable.
+
+## Final saved state
+
+Source checkpoint `1a6fc908a151502a24272b1d64d80bc9099b6d5f`; restored-art commit `a0adcb42d1dfd4927d6ae9951ab3901eec53c687`. All three new original PNG Git hashes matched the remote tree, and the complete restored tree matched the local index after adopting the CI-generated manifests. Restoration run: https://github.com/Kashumir-Kaiser/Ice-Age-Lord/actions/runs/38533366684 . Build passed; unit tests reached 71 passed / 1 failed. Failure: mapRendering.test.mjs:88, raster-export rejection test, Missing expected exception. This is the immediate next investigation. Capture step also failed; browser steps were skipped after the unit failure. Separate rendering validation and full performance runs were triggered; inspect their results when resuming. No additional implementation was performed after the user requested stopping.
