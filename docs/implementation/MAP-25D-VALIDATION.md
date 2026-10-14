@@ -107,3 +107,19 @@ The next art checkpoint contains nine newly authored building views and one eigh
 ### Transparent-space optimization follow-up
 
 Ten originals restored at `2f615ce58e792a3ae8f132a40b636e77547dabdd`, with original hashes and complete tree verified. Corrected full SwiftShader performance evidence is recorded in `MAP-25D-PERFORMANCE-EVIDENCE.json`; measurement jobs completed, but frame budgets remain open. New export version 3 crops only transparent space with sampling gutters and retains original raster dimensions and logical offsets. Both render backends apply those offsets against the unchanged full logical sprite and ground point. Tests compare visible pixel values and world registration at tiny/ordinary/large zoom, preserve the faintest nonzero-alpha shadow, and reject inconsistent crop dimensions. Local nineteen-file unit suite and production build pass. New browser/visual/performance measurements remain pending.
+
+## Painted flame, regional picking, and narrow architecture checkpoint
+
+Persisted implementation: `d0128f763387509c8db19001b12569437adb0da7` (full tree `351c3967bdd8feb12a8303fef4dc89fba133d7fe`, verified against the local index). Original masters remain unchanged; all work is on `codex/map-25d-overhaul`.
+
+- Preserved eight-frame flame sheet: 10 fps, stable foot registration, shared bounded texture ownership, static frame zero for reduced motion, no tall flame in planning/inactive/regional views, original static Canvas2D indication.
+- Regional symbols: shared 12 CSS pixel geometry and 15 percent LOD hysteresis; normal clicks and repeated-click overlap cycling work outside tiny physical footprints. Occupancy is unchanged.
+- Wall/gate depth slices: all four authored poses, exact source-pixel reconstruction, extruded frame joints, one logical selectable entity, render-only sub-footprints, partial-order depth insertion, per-part focus, and single body fallback during unavailable pieces.
+- Narrow-architecture calibration: unchanged registered anchor, upright verticals, fixed ±0.5 base slope, common close/district registration, safe canvas bounds, alpha-correct resampling, corrected hit hulls. Original UI SVGs and masters are retained.
+- Wall/gate shadows: registered physical contact shapes with a restrained down-right offset, separate pose exports, no inferred height, unchanged source SVG/UI shadow files.
+
+GitHub `38586540676`: production build and 87 unit assertions passed; 61 browser journeys passed with 5 conditional skips; 60 captures and benchmark diagnostics completed. Asset persistence `38586540702` passed. Visual matrix `38586540732` passed all four quality/DPR jobs, totaling 240 captures across three viewport sizes. JavaScript comparison `38586540619` passed its complete requested-JavaScript delta gate. Local 22 test files and production build passed.
+
+Inspected final normal DPR1 north-wall/west-gate frames: contact follows the physical diagonal, the old detached oval is absent, upright parts remain continuous at their joints. Earlier low DPR2 contact calibration was also inspected. This limited review does not accept uninspected combinations or other architecture. Source `MAP-25D-CROP-PERFORMANCE-EVIDENCE.json` records the earlier thirty corrected software-rendered runs; several frame/pointer budgets remain unmet. Runner CPUs differed, so timing changes do not isolate the crop effect. Target i3/UHD620 performance and saved-populated LIVE cold transfer remain unverified.
+
+Broader regression `38586540484` failed in the existing bot archive receipt test; its dependent frontend job was skipped. Dedicated frontend map checks passed independently. Full art, architectural, performance and release gates remain open; no deployment or merge occurred.
