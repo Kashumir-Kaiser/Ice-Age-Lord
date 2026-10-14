@@ -2820,6 +2820,14 @@
         "west"
       ],
       "orientationViews": {
+        "north": {
+          "uiIcon": "/assets/buildings/lord-house-damaged/icon.svg",
+          "body": "/assets/buildings/lord-house-damaged/body.svg",
+          "base": "/assets/map/buildings/lord-house-damaged/base-north-close.png",
+          "upper": "/assets/map/buildings/lord-house-damaged/upper-north-close.png",
+          "shadow": "/assets/buildings/lord-house-damaged/shadow.svg",
+          "vfx": null
+        },
         "south": {
           "uiIcon": "/assets/buildings/lord-house-damaged/icon.svg",
           "body": "/assets/map/buildings/lord-house-damaged/body-south-close.png",
@@ -2843,17 +2851,147 @@
           "upper": "/assets/map/buildings/lord-house-damaged/upper-west-close.png",
           "shadow": "/assets/buildings/lord-house-damaged/shadow.svg",
           "vfx": null
-        },
-        "north": {
-          "uiIcon": "/assets/buildings/lord-house-damaged/icon.svg",
-          "body": "/assets/buildings/lord-house-damaged/body.svg",
-          "base": "/assets/map/buildings/lord-house-damaged/base-north-close.png",
-          "upper": "/assets/map/buildings/lord-house-damaged/upper-north-close.png",
-          "shadow": "/assets/buildings/lord-house-damaged/shadow.svg",
-          "vfx": null
         }
       },
       "orientationRegions": {
+        "north": {
+          "hitPolygon": [
+            [
+              0.16,
+              0.72
+            ],
+            [
+              0.5,
+              0.9
+            ],
+            [
+              0.84,
+              0.72
+            ],
+            [
+              0.5,
+              0.54
+            ]
+          ],
+          "upper": [
+            [
+              0.13802083333333334,
+              0.63125
+            ],
+            [
+              0.18489583333333334,
+              0.46875
+            ],
+            [
+              0.19270833333333334,
+              0.44375
+            ],
+            [
+              0.2864583333333333,
+              0.175
+            ],
+            [
+              0.2890625,
+              0.16875
+            ],
+            [
+              0.2994791666666667,
+              0.15625
+            ],
+            [
+              0.3151041666666667,
+              0.14375
+            ],
+            [
+              0.3229166666666667,
+              0.140625
+            ],
+            [
+              0.4765625,
+              0.08125
+            ],
+            [
+              0.4921875,
+              0.08125
+            ],
+            [
+              0.5130208333333334,
+              0.09375
+            ],
+            [
+              0.7421875,
+              0.25625
+            ],
+            [
+              0.7473958333333334,
+              0.2625
+            ],
+            [
+              0.7578125,
+              0.278125
+            ],
+            [
+              0.7604166666666666,
+              0.284375
+            ],
+            [
+              0.8463541666666666,
+              0.528125
+            ],
+            [
+              0.8463541666666666,
+              0.553125
+            ],
+            [
+              0.8411458333333334,
+              0.665625
+            ],
+            [
+              0.7838541666666666,
+              0.7
+            ],
+            [
+              0.6666666666666666,
+              0.75625
+            ],
+            [
+              0.6458333333333334,
+              0.765625
+            ],
+            [
+              0.59375,
+              0.7875
+            ],
+            [
+              0.5859375,
+              0.790625
+            ],
+            [
+              0.5755208333333334,
+              0.79375
+            ],
+            [
+              0.5546875,
+              0.796875
+            ],
+            [
+              0.5416666666666666,
+              0.796875
+            ],
+            [
+              0.5078125,
+              0.784375
+            ],
+            [
+              0.453125,
+              0.7625
+            ],
+            [
+              0.13802083333333334,
+              0.634375
+            ]
+          ]
+        },
         "south": {
           "hitPolygon": [
             [
@@ -3553,144 +3691,6 @@
             [
               0.5598958333333334,
               0.771875
-            ]
-          ]
-        },
-        "north": {
-          "hitPolygon": [
-            [
-              0.16,
-              0.72
-            ],
-            [
-              0.5,
-              0.9
-            ],
-            [
-              0.84,
-              0.72
-            ],
-            [
-              0.5,
-              0.54
-            ]
-          ],
-          "upper": [
-            [
-              0.13802083333333334,
-              0.63125
-            ],
-            [
-              0.18489583333333334,
-              0.46875
-            ],
-            [
-              0.19270833333333334,
-              0.44375
-            ],
-            [
-              0.2864583333333333,
-              0.175
-            ],
-            [
-              0.2890625,
-              0.16875
-            ],
-            [
-              0.2994791666666667,
-              0.15625
-            ],
-            [
-              0.3151041666666667,
-              0.14375
-            ],
-            [
-              0.3229166666666667,
-              0.140625
-            ],
-            [
-              0.4765625,
-              0.08125
-            ],
-            [
-              0.4921875,
-              0.08125
-            ],
-            [
-              0.5130208333333334,
-              0.09375
-            ],
-            [
-              0.7421875,
-              0.25625
-            ],
-            [
-              0.7473958333333334,
-              0.2625
-            ],
-            [
-              0.7578125,
-              0.278125
-            ],
-            [
-              0.7604166666666666,
-              0.284375
-            ],
-            [
-              0.8463541666666666,
-              0.528125
-            ],
-            [
-              0.8463541666666666,
-              0.553125
-            ],
-            [
-              0.8411458333333334,
-              0.665625
-            ],
-            [
-              0.7838541666666666,
-              0.7
-            ],
-            [
-              0.6666666666666666,
-              0.75625
-            ],
-            [
-              0.6458333333333334,
-              0.765625
-            ],
-            [
-              0.59375,
-              0.7875
-            ],
-            [
-              0.5859375,
-              0.790625
-            ],
-            [
-              0.5755208333333334,
-              0.79375
-            ],
-            [
-              0.5546875,
-              0.796875
-            ],
-            [
-              0.5416666666666666,
-              0.796875
-            ],
-            [
-              0.5078125,
-              0.784375
-            ],
-            [
-              0.453125,
-              0.7625
-            ],
-            [
-              0.13802083333333334,
-              0.634375
             ]
           ]
         }
@@ -52109,6 +52109,3350 @@
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/tomb-entry-b10/foundation.svg",
       "generatedOrientationViews": []
+    },
+    {
+      "assetId": "watchtower-preview",
+      "definitionId": "FIXTURE-WATCHTOWER-PREVIEW",
+      "variant": "authored-preview",
+      "orientation": "north",
+      "revision": 1,
+      "layers": {
+        "body": "/assets/map/buildings/watchtower-preview/body.svg",
+        "upper": "/assets/map/buildings/watchtower-preview/upper.svg",
+        "base": "/assets/map/buildings/watchtower-preview/base.svg",
+        "shadow": "/assets/map/buildings/watchtower-preview/shadow.svg",
+        "uiIcon": "/assets/map/buildings/watchtower-preview/icon.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 480,
+        "height": 400
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.3,
+          0.8088888888888889
+        ],
+        [
+          0.5222222222222223,
+          0.72
+        ],
+        [
+          0.7,
+          0.831111111111111
+        ],
+        [
+          0.4777777777777778,
+          0.9199999999999999
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.24166666666666667,
+        "minY": 0.0675,
+        "maxX": 0.7375,
+        "maxY": 0.9425
+      },
+      "hitPolygon": [
+        [
+          0.24166666666666667,
+          0.2425
+        ],
+        [
+          0.24583333333333332,
+          0.2375
+        ],
+        [
+          0.2520833333333333,
+          0.2325
+        ],
+        [
+          0.475,
+          0.0725
+        ],
+        [
+          0.48333333333333334,
+          0.0675
+        ],
+        [
+          0.49166666666666664,
+          0.0675
+        ],
+        [
+          0.4979166666666667,
+          0.07
+        ],
+        [
+          0.5020833333333333,
+          0.0725
+        ],
+        [
+          0.7208333333333333,
+          0.2375
+        ],
+        [
+          0.7333333333333333,
+          0.2475
+        ],
+        [
+          0.7354166666666667,
+          0.25
+        ],
+        [
+          0.7354166666666667,
+          0.285
+        ],
+        [
+          0.6958333333333333,
+          0.8225
+        ],
+        [
+          0.69375,
+          0.825
+        ],
+        [
+          0.54375,
+          0.915
+        ],
+        [
+          0.5,
+          0.94
+        ],
+        [
+          0.49375,
+          0.94
+        ],
+        [
+          0.37916666666666665,
+          0.895
+        ],
+        [
+          0.3125,
+          0.86
+        ],
+        [
+          0.3,
+          0.8525
+        ],
+        [
+          0.29791666666666666,
+          0.85
+        ],
+        [
+          0.28125,
+          0.8025
+        ],
+        [
+          0.24166666666666667,
+          0.275
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.24166666666666667,
+            0.2425
+          ],
+          [
+            0.24583333333333332,
+            0.2375
+          ],
+          [
+            0.2520833333333333,
+            0.2325
+          ],
+          [
+            0.475,
+            0.0725
+          ],
+          [
+            0.48333333333333334,
+            0.0675
+          ],
+          [
+            0.49166666666666664,
+            0.0675
+          ],
+          [
+            0.4979166666666667,
+            0.07
+          ],
+          [
+            0.5020833333333333,
+            0.0725
+          ],
+          [
+            0.7208333333333333,
+            0.2375
+          ],
+          [
+            0.7333333333333333,
+            0.2475
+          ],
+          [
+            0.7354166666666667,
+            0.25
+          ],
+          [
+            0.7354166666666667,
+            0.285
+          ],
+          [
+            0.6958333333333333,
+            0.8225
+          ],
+          [
+            0.69375,
+            0.825
+          ],
+          [
+            0.54375,
+            0.915
+          ],
+          [
+            0.5,
+            0.94
+          ],
+          [
+            0.49375,
+            0.94
+          ],
+          [
+            0.37916666666666665,
+            0.895
+          ],
+          [
+            0.3125,
+            0.86
+          ],
+          [
+            0.3,
+            0.8525
+          ],
+          [
+            0.29791666666666666,
+            0.85
+          ],
+          [
+            0.28125,
+            0.8025
+          ],
+          [
+            0.24166666666666667,
+            0.275
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "TOWER-ART-PREVIEW-V1",
+        "widthM": 5,
+        "depthM": 4,
+        "provenance": "frontend-fixture"
+      },
+      "source": "assets/source/map-buildings/watchtower-north.png",
+      "provenance": "Original OpenAI ImageGen tower art, 2026-10-15; unchanged PNG master with path-only editable SVG derivative. Preview registration remains draft.",
+      "license": "Original generated artwork created for this project.",
+      "status": "draft",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/map/buildings/watchtower-preview/body.svg",
+          "upper": "/assets/map/buildings/watchtower-preview/upper.svg",
+          "base": "/assets/map/buildings/watchtower-preview/base.svg",
+          "shadow": "/assets/map/buildings/watchtower-preview/shadow.svg",
+          "uiIcon": "/assets/map/buildings/watchtower-preview/icon.svg",
+          "vfx": null
+        },
+        "district": {
+          "body": "/assets/map/buildings/watchtower-preview/body.svg",
+          "upper": "/assets/map/buildings/watchtower-preview/upper.svg",
+          "base": "/assets/map/buildings/watchtower-preview/base.svg",
+          "shadow": "/assets/map/buildings/watchtower-preview/shadow.svg",
+          "uiIcon": "/assets/map/buildings/watchtower-preview/icon.svg",
+          "vfx": null
+        },
+        "regional": {
+          "uiIcon": "/assets/map/buildings/watchtower-preview/icon.svg"
+        }
+      },
+      "composition": "single-body",
+      "mapExports": [
+        {
+          "path": "/assets/map/buildings/watchtower-preview/body-close.png",
+          "source": "/assets/map/buildings/watchtower-preview/body.svg",
+          "sourceSha256": "70bf6906d81ea5600c784806bdc630cd2e6651c26ef22e812c277b15a0bd9633",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/map/buildings/watchtower-preview/body.svg",
+              "sha256": "70bf6906d81ea5600c784806bdc630cd2e6651c26ef22e812c277b15a0bd9633"
+            },
+            {
+              "source": "assets/source/map-buildings/watchtower-north.png",
+              "sha256": "7220e8c636abf5ab8a755245f766c8133b1b590488353e1628298b2ea1e2685a"
+            },
+            {
+              "source": "assets/map-tower-previews.json",
+              "sha256": "39708091cd8a522b6f58fc8385127da0678a0df9e5070821617d4c5985ac7829"
+            },
+            {
+              "source": "frontend/scripts/map-tower-previews.mjs",
+              "sha256": "764b3c9f039c33fa606f6b77159c58e272f2ba5ff94ac7639cc06686b1dcc1a6"
+            }
+          ],
+          "sha256": "f3ca618a55e655c814c1e61e903622c6ac34237b4674dc047bebb95021574450",
+          "exportVersion": 3,
+          "width": 194,
+          "height": 284,
+          "role": "body",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 113.75,
+            "y": 25,
+            "width": 242.50000000000003,
+            "height": 355
+          }
+        },
+        {
+          "path": "/assets/map/buildings/watchtower-preview/body-district.png",
+          "source": "/assets/map/buildings/watchtower-preview/body.svg",
+          "sourceSha256": "70bf6906d81ea5600c784806bdc630cd2e6651c26ef22e812c277b15a0bd9633",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/map/buildings/watchtower-preview/body.svg",
+              "sha256": "70bf6906d81ea5600c784806bdc630cd2e6651c26ef22e812c277b15a0bd9633"
+            },
+            {
+              "source": "assets/source/map-buildings/watchtower-north.png",
+              "sha256": "7220e8c636abf5ab8a755245f766c8133b1b590488353e1628298b2ea1e2685a"
+            },
+            {
+              "source": "assets/map-tower-previews.json",
+              "sha256": "39708091cd8a522b6f58fc8385127da0678a0df9e5070821617d4c5985ac7829"
+            },
+            {
+              "source": "frontend/scripts/map-tower-previews.mjs",
+              "sha256": "764b3c9f039c33fa606f6b77159c58e272f2ba5ff94ac7639cc06686b1dcc1a6"
+            }
+          ],
+          "sha256": "733c2a563c1e96c37e3fad4db1e02f6d5ee2882e786111e2890926dec1eb6de5",
+          "exportVersion": 3,
+          "width": 100,
+          "height": 144,
+          "role": "body",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 110,
+            "y": 22.5,
+            "width": 250.00000000000003,
+            "height": 360
+          }
+        },
+        {
+          "path": "/assets/map/buildings/watchtower-preview/shadow-close.png",
+          "source": "/assets/map/buildings/watchtower-preview/shadow.svg",
+          "sourceSha256": "af91d41f56cd4c4802a6817dbec08ac60d3f05476f87905683fad33b5fbe2d93",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/map/buildings/watchtower-preview/shadow.svg",
+              "sha256": "af91d41f56cd4c4802a6817dbec08ac60d3f05476f87905683fad33b5fbe2d93"
+            },
+            {
+              "source": "assets/source/map-buildings/watchtower-north.png",
+              "sha256": "7220e8c636abf5ab8a755245f766c8133b1b590488353e1628298b2ea1e2685a"
+            },
+            {
+              "source": "assets/map-tower-previews.json",
+              "sha256": "39708091cd8a522b6f58fc8385127da0678a0df9e5070821617d4c5985ac7829"
+            },
+            {
+              "source": "frontend/scripts/map-tower-previews.mjs",
+              "sha256": "764b3c9f039c33fa606f6b77159c58e272f2ba5ff94ac7639cc06686b1dcc1a6"
+            }
+          ],
+          "sha256": "691fadbe82e464f9ed6648e1de86e8bdcb2e5a57ee36e10a5c07fb99d1d8f643",
+          "exportVersion": 3,
+          "width": 162,
+          "height": 87,
+          "role": "shadow",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 140,
+            "y": 275,
+            "width": 202.5,
+            "height": 108.74999999999999
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/watchtower-preview/atlas-close.png",
+            "x": 4,
+            "y": 4,
+            "width": 162,
+            "height": 87,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "07722df4e5ff80cdcdb365d82c941f9a8ad4fad9d848bd86b6f64e7f3405fcfd"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/watchtower-preview/shadow-district.png",
+          "source": "/assets/map/buildings/watchtower-preview/shadow.svg",
+          "sourceSha256": "af91d41f56cd4c4802a6817dbec08ac60d3f05476f87905683fad33b5fbe2d93",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/map/buildings/watchtower-preview/shadow.svg",
+              "sha256": "af91d41f56cd4c4802a6817dbec08ac60d3f05476f87905683fad33b5fbe2d93"
+            },
+            {
+              "source": "assets/source/map-buildings/watchtower-north.png",
+              "sha256": "7220e8c636abf5ab8a755245f766c8133b1b590488353e1628298b2ea1e2685a"
+            },
+            {
+              "source": "assets/map-tower-previews.json",
+              "sha256": "39708091cd8a522b6f58fc8385127da0678a0df9e5070821617d4c5985ac7829"
+            },
+            {
+              "source": "frontend/scripts/map-tower-previews.mjs",
+              "sha256": "764b3c9f039c33fa606f6b77159c58e272f2ba5ff94ac7639cc06686b1dcc1a6"
+            }
+          ],
+          "sha256": "78642b2ec9fb82c742eaa6498dcab755a8d2fc7ddbc0c1d228ac0e91c121be3e",
+          "exportVersion": 3,
+          "width": 83,
+          "height": 46,
+          "role": "shadow",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 137.5,
+            "y": 272.5,
+            "width": 207.5,
+            "height": 114.99999999999999
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/watchtower-preview/atlas-district.png",
+            "x": 4,
+            "y": 4,
+            "width": 83,
+            "height": 46,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "fa831527db6f1484a9294bac56367f064fe6791191cdfe5656798563a0925cc1"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/watchtower-preview/base-close.png",
+          "source": "/assets/map/buildings/watchtower-preview/foundation.svg",
+          "sourceSha256": "53e73db14e3d042412fdd0e44d1fb6da73fcf46cf27050c3b3b186171ae07a42",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/map/buildings/watchtower-preview/foundation.svg",
+              "sha256": "53e73db14e3d042412fdd0e44d1fb6da73fcf46cf27050c3b3b186171ae07a42"
+            },
+            {
+              "source": "assets/source/map-buildings/watchtower-north.png",
+              "sha256": "7220e8c636abf5ab8a755245f766c8133b1b590488353e1628298b2ea1e2685a"
+            },
+            {
+              "source": "assets/map-tower-previews.json",
+              "sha256": "39708091cd8a522b6f58fc8385127da0678a0df9e5070821617d4c5985ac7829"
+            },
+            {
+              "source": "frontend/scripts/map-tower-previews.mjs",
+              "sha256": "764b3c9f039c33fa606f6b77159c58e272f2ba5ff94ac7639cc06686b1dcc1a6"
+            }
+          ],
+          "sha256": "8a7044ce453c282e04b891778ea57d277766546ec9f107615fd107c145c12b4d",
+          "exportVersion": 3,
+          "width": 162,
+          "height": 71,
+          "role": "base",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 138.75,
+            "y": 283.75,
+            "width": 202.5,
+            "height": 88.75
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/watchtower-preview/atlas-close.png",
+            "x": 396,
+            "y": 4,
+            "width": 162,
+            "height": 71,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "07722df4e5ff80cdcdb365d82c941f9a8ad4fad9d848bd86b6f64e7f3405fcfd"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/watchtower-preview/base-district.png",
+          "source": "/assets/map/buildings/watchtower-preview/foundation.svg",
+          "sourceSha256": "53e73db14e3d042412fdd0e44d1fb6da73fcf46cf27050c3b3b186171ae07a42",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/map/buildings/watchtower-preview/foundation.svg",
+              "sha256": "53e73db14e3d042412fdd0e44d1fb6da73fcf46cf27050c3b3b186171ae07a42"
+            },
+            {
+              "source": "assets/source/map-buildings/watchtower-north.png",
+              "sha256": "7220e8c636abf5ab8a755245f766c8133b1b590488353e1628298b2ea1e2685a"
+            },
+            {
+              "source": "assets/map-tower-previews.json",
+              "sha256": "39708091cd8a522b6f58fc8385127da0678a0df9e5070821617d4c5985ac7829"
+            },
+            {
+              "source": "frontend/scripts/map-tower-previews.mjs",
+              "sha256": "764b3c9f039c33fa606f6b77159c58e272f2ba5ff94ac7639cc06686b1dcc1a6"
+            }
+          ],
+          "sha256": "395cf1f49c4e9debbebabf6c992e6d7700e4ab5fa5d8ed0454abe857f9ef8e26",
+          "exportVersion": 3,
+          "width": 82,
+          "height": 38,
+          "role": "base",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 137.5,
+            "y": 280,
+            "width": 205,
+            "height": 95
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/watchtower-preview/atlas-district.png",
+            "x": 204,
+            "y": 4,
+            "width": 82,
+            "height": 38,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "fa831527db6f1484a9294bac56367f064fe6791191cdfe5656798563a0925cc1"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/watchtower-preview/body-north-close.png",
+          "layerPath": "/assets/map/buildings/watchtower-preview/body-north-close.png",
+          "source": "assets/source/map-buildings/watchtower-north.png",
+          "sourceSha256": "7220e8c636abf5ab8a755245f766c8133b1b590488353e1628298b2ea1e2685a",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/watchtower-north.png",
+              "sha256": "7220e8c636abf5ab8a755245f766c8133b1b590488353e1628298b2ea1e2685a"
+            }
+          ],
+          "sha256": "b3ec95207a0f7ba66fe2e97cce324d27c25e52022a02d03384c0b0e4e66f8fc7",
+          "exportVersion": 3,
+          "width": 200,
+          "height": 288,
+          "role": "body",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 110,
+            "y": 22.5,
+            "width": 250.00000000000003,
+            "height": 360
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/watchtower-preview/atlas-close.png",
+            "x": 4,
+            "y": 332,
+            "width": 200,
+            "height": 288,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "07722df4e5ff80cdcdb365d82c941f9a8ad4fad9d848bd86b6f64e7f3405fcfd"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/watchtower-preview/body-north-district.png",
+          "layerPath": "/assets/map/buildings/watchtower-preview/body-north-close.png",
+          "source": "assets/source/map-buildings/watchtower-north.png",
+          "sourceSha256": "7220e8c636abf5ab8a755245f766c8133b1b590488353e1628298b2ea1e2685a",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/watchtower-north.png",
+              "sha256": "7220e8c636abf5ab8a755245f766c8133b1b590488353e1628298b2ea1e2685a"
+            }
+          ],
+          "sha256": "124a2b178d73d8ba2aaadbfcf4bc3746e863f26e82c2d8fbfe82458da3b9512e",
+          "exportVersion": 3,
+          "width": 104,
+          "height": 148,
+          "role": "body",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 105,
+            "y": 17.5,
+            "width": 260,
+            "height": 370
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/watchtower-preview/atlas-district.png",
+            "x": 4,
+            "y": 172,
+            "width": 104,
+            "height": 148,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "fa831527db6f1484a9294bac56367f064fe6791191cdfe5656798563a0925cc1"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/watchtower-preview/body-west-close.png",
+          "layerPath": "/assets/map/buildings/watchtower-preview/body-west-close.png",
+          "source": "assets/source/map-buildings/watchtower-west.png",
+          "sourceSha256": "a6136b909f62a85c76c4ade62115ee33bba9124b0fd3f45bf56252039a0ad3f8",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/watchtower-west.png",
+              "sha256": "a6136b909f62a85c76c4ade62115ee33bba9124b0fd3f45bf56252039a0ad3f8"
+            }
+          ],
+          "sha256": "96080c902871082306d88d40af7bc2a7eb6dac9650b982e7d33e9fc8a403ca93",
+          "exportVersion": 3,
+          "width": 197,
+          "height": 289,
+          "role": "body",
+          "lod": "close",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 112.5,
+            "y": 22.5,
+            "width": 246.25000000000003,
+            "height": 361.25
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/watchtower-preview/atlas-close.png",
+            "x": 396,
+            "y": 332,
+            "width": 197,
+            "height": 289,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "07722df4e5ff80cdcdb365d82c941f9a8ad4fad9d848bd86b6f64e7f3405fcfd"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/watchtower-preview/body-west-district.png",
+          "layerPath": "/assets/map/buildings/watchtower-preview/body-west-close.png",
+          "source": "assets/source/map-buildings/watchtower-west.png",
+          "sourceSha256": "a6136b909f62a85c76c4ade62115ee33bba9124b0fd3f45bf56252039a0ad3f8",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/watchtower-west.png",
+              "sha256": "a6136b909f62a85c76c4ade62115ee33bba9124b0fd3f45bf56252039a0ad3f8"
+            }
+          ],
+          "sha256": "424f3ba00ff353ae89df90010f9de50b1be1945b6860aa77cdc2557475bcc2c3",
+          "exportVersion": 3,
+          "width": 103,
+          "height": 149,
+          "role": "body",
+          "lod": "district",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 107.5,
+            "y": 17.5,
+            "width": 257.5,
+            "height": 372.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/watchtower-preview/atlas-district.png",
+            "x": 204,
+            "y": 172,
+            "width": 103,
+            "height": 149,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "fa831527db6f1484a9294bac56367f064fe6791191cdfe5656798563a0925cc1"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/watchtower-preview/body-east-close.png",
+          "layerPath": "/assets/map/buildings/watchtower-preview/body-east-close.png",
+          "source": "assets/source/map-buildings/watchtower-east.png",
+          "sourceSha256": "aaa2572689b23c02926c5de447fd425be33884781c17d897a468903f23bf8bdc",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/watchtower-east.png",
+              "sha256": "aaa2572689b23c02926c5de447fd425be33884781c17d897a468903f23bf8bdc"
+            }
+          ],
+          "sha256": "1a04b780b5abea8f1e219f52a147e8976b645350aac880deb51685c42299bdcc",
+          "exportVersion": 3,
+          "width": 192,
+          "height": 289,
+          "role": "body",
+          "lod": "close",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 115,
+            "y": 22.5,
+            "width": 240,
+            "height": 361.25
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/watchtower-preview/atlas-close.png",
+            "x": 4,
+            "y": 660,
+            "width": 192,
+            "height": 289,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "07722df4e5ff80cdcdb365d82c941f9a8ad4fad9d848bd86b6f64e7f3405fcfd"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/watchtower-preview/body-east-district.png",
+          "layerPath": "/assets/map/buildings/watchtower-preview/body-east-close.png",
+          "source": "assets/source/map-buildings/watchtower-east.png",
+          "sourceSha256": "aaa2572689b23c02926c5de447fd425be33884781c17d897a468903f23bf8bdc",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/watchtower-east.png",
+              "sha256": "aaa2572689b23c02926c5de447fd425be33884781c17d897a468903f23bf8bdc"
+            }
+          ],
+          "sha256": "976336b96088fde34b564405687151eb7af5817679e4b8811794d4b70f2c06ed",
+          "exportVersion": 3,
+          "width": 102,
+          "height": 149,
+          "role": "body",
+          "lod": "district",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 107.5,
+            "y": 17.5,
+            "width": 255,
+            "height": 372.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/watchtower-preview/atlas-district.png",
+            "x": 4,
+            "y": 340,
+            "width": 102,
+            "height": 149,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "fa831527db6f1484a9294bac56367f064fe6791191cdfe5656798563a0925cc1"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/watchtower-preview/body-south-close.png",
+          "layerPath": "/assets/map/buildings/watchtower-preview/body-south-close.png",
+          "source": "assets/source/map-buildings/watchtower-south.png",
+          "sourceSha256": "064893296c07fe908a93d36bf73ca2f0f8e5fbc8867dd12da7ee7f8655a020d8",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/watchtower-south.png",
+              "sha256": "064893296c07fe908a93d36bf73ca2f0f8e5fbc8867dd12da7ee7f8655a020d8"
+            }
+          ],
+          "sha256": "f677f02cbf911da67193cb7822a97a0b8629b535d16873b7bfc9309f5dbe55a1",
+          "exportVersion": 3,
+          "width": 193,
+          "height": 289,
+          "role": "body",
+          "lod": "close",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 115,
+            "y": 22.5,
+            "width": 241.24999999999997,
+            "height": 361.25
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/watchtower-preview/atlas-close.png",
+            "x": 396,
+            "y": 660,
+            "width": 193,
+            "height": 289,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "07722df4e5ff80cdcdb365d82c941f9a8ad4fad9d848bd86b6f64e7f3405fcfd"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/watchtower-preview/body-south-district.png",
+          "layerPath": "/assets/map/buildings/watchtower-preview/body-south-close.png",
+          "source": "assets/source/map-buildings/watchtower-south.png",
+          "sourceSha256": "064893296c07fe908a93d36bf73ca2f0f8e5fbc8867dd12da7ee7f8655a020d8",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/watchtower-south.png",
+              "sha256": "064893296c07fe908a93d36bf73ca2f0f8e5fbc8867dd12da7ee7f8655a020d8"
+            }
+          ],
+          "sha256": "40a7ec8f6aab883e7b311bfb2042a44411a241656f0875c6c7f32d019ec298d6",
+          "exportVersion": 3,
+          "width": 102,
+          "height": 149,
+          "role": "body",
+          "lod": "district",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 107.5,
+            "y": 17.5,
+            "width": 255,
+            "height": 372.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/watchtower-preview/atlas-district.png",
+            "x": 204,
+            "y": 340,
+            "width": 102,
+            "height": 149,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "fa831527db6f1484a9294bac56367f064fe6791191cdfe5656798563a0925cc1"
+          }
+        }
+      ],
+      "planningFoundation": true,
+      "planningLayer": "/assets/map/buildings/watchtower-preview/foundation.svg",
+      "generatedOrientationViews": [
+        "north",
+        "west",
+        "east",
+        "south"
+      ],
+      "referenceSource": "assets/source/map-buildings/watchtower-north.png",
+      "orientationViews": {
+        "north": {
+          "body": "/assets/map/buildings/watchtower-preview/body-north-close.png",
+          "upper": "/assets/map/buildings/watchtower-preview/upper.svg",
+          "base": "/assets/map/buildings/watchtower-preview/base.svg",
+          "shadow": "/assets/map/buildings/watchtower-preview/shadow.svg",
+          "uiIcon": "/assets/map/buildings/watchtower-preview/icon.svg",
+          "vfx": null
+        },
+        "west": {
+          "body": "/assets/map/buildings/watchtower-preview/body-west-close.png",
+          "upper": "/assets/map/buildings/watchtower-preview/upper.svg",
+          "base": "/assets/map/buildings/watchtower-preview/base.svg",
+          "shadow": "/assets/map/buildings/watchtower-preview/shadow.svg",
+          "uiIcon": "/assets/map/buildings/watchtower-preview/icon.svg",
+          "vfx": null
+        },
+        "east": {
+          "body": "/assets/map/buildings/watchtower-preview/body-east-close.png",
+          "upper": "/assets/map/buildings/watchtower-preview/upper.svg",
+          "base": "/assets/map/buildings/watchtower-preview/base.svg",
+          "shadow": "/assets/map/buildings/watchtower-preview/shadow.svg",
+          "uiIcon": "/assets/map/buildings/watchtower-preview/icon.svg",
+          "vfx": null
+        },
+        "south": {
+          "body": "/assets/map/buildings/watchtower-preview/body-south-close.png",
+          "upper": "/assets/map/buildings/watchtower-preview/upper.svg",
+          "base": "/assets/map/buildings/watchtower-preview/base.svg",
+          "shadow": "/assets/map/buildings/watchtower-preview/shadow.svg",
+          "uiIcon": "/assets/map/buildings/watchtower-preview/icon.svg",
+          "vfx": null
+        }
+      },
+      "orientationRegions": {
+        "north": {
+          "hitPolygon": [
+            [
+              0.24166666666666667,
+              0.245
+            ],
+            [
+              0.24791666666666667,
+              0.2375
+            ],
+            [
+              0.47708333333333336,
+              0.0725
+            ],
+            [
+              0.48333333333333334,
+              0.07
+            ],
+            [
+              0.49375,
+              0.07
+            ],
+            [
+              0.5020833333333333,
+              0.075
+            ],
+            [
+              0.73125,
+              0.2475
+            ],
+            [
+              0.7354166666666667,
+              0.2525
+            ],
+            [
+              0.7354166666666667,
+              0.285
+            ],
+            [
+              0.6958333333333333,
+              0.8225
+            ],
+            [
+              0.69375,
+              0.825
+            ],
+            [
+              0.5020833333333333,
+              0.94
+            ],
+            [
+              0.49166666666666664,
+              0.94
+            ],
+            [
+              0.3729166666666667,
+              0.8925
+            ],
+            [
+              0.3104166666666667,
+              0.86
+            ],
+            [
+              0.3,
+              0.8525
+            ],
+            [
+              0.29791666666666666,
+              0.85
+            ],
+            [
+              0.28125,
+              0.8025
+            ],
+            [
+              0.24166666666666667,
+              0.275
+            ]
+          ],
+          "upper": [
+            [
+              0.24166666666666667,
+              0.245
+            ],
+            [
+              0.24791666666666667,
+              0.2375
+            ],
+            [
+              0.47708333333333336,
+              0.0725
+            ],
+            [
+              0.48333333333333334,
+              0.07
+            ],
+            [
+              0.49375,
+              0.07
+            ],
+            [
+              0.5020833333333333,
+              0.075
+            ],
+            [
+              0.73125,
+              0.2475
+            ],
+            [
+              0.7354166666666667,
+              0.2525
+            ],
+            [
+              0.7354166666666667,
+              0.285
+            ],
+            [
+              0.6958333333333333,
+              0.8225
+            ],
+            [
+              0.69375,
+              0.825
+            ],
+            [
+              0.5020833333333333,
+              0.94
+            ],
+            [
+              0.49166666666666664,
+              0.94
+            ],
+            [
+              0.3729166666666667,
+              0.8925
+            ],
+            [
+              0.3104166666666667,
+              0.86
+            ],
+            [
+              0.3,
+              0.8525
+            ],
+            [
+              0.29791666666666666,
+              0.85
+            ],
+            [
+              0.28125,
+              0.8025
+            ],
+            [
+              0.24166666666666667,
+              0.275
+            ]
+          ]
+        },
+        "west": {
+          "hitPolygon": [
+            [
+              0.24583333333333332,
+              0.245
+            ],
+            [
+              0.24791666666666667,
+              0.24
+            ],
+            [
+              0.25,
+              0.2375
+            ],
+            [
+              0.475,
+              0.075
+            ],
+            [
+              0.4791666666666667,
+              0.0725
+            ],
+            [
+              0.48541666666666666,
+              0.07
+            ],
+            [
+              0.49583333333333335,
+              0.07
+            ],
+            [
+              0.5020833333333333,
+              0.0725
+            ],
+            [
+              0.50625,
+              0.075
+            ],
+            [
+              0.7270833333333333,
+              0.24
+            ],
+            [
+              0.7333333333333333,
+              0.2475
+            ],
+            [
+              0.7333333333333333,
+              0.28
+            ],
+            [
+              0.7145833333333333,
+              0.8
+            ],
+            [
+              0.6854166666666667,
+              0.85
+            ],
+            [
+              0.68125,
+              0.855
+            ],
+            [
+              0.6770833333333334,
+              0.8575
+            ],
+            [
+              0.6104166666666667,
+              0.895
+            ],
+            [
+              0.4895833333333333,
+              0.9425
+            ],
+            [
+              0.48333333333333334,
+              0.9425
+            ],
+            [
+              0.4708333333333333,
+              0.935
+            ],
+            [
+              0.45625,
+              0.925
+            ],
+            [
+              0.3875,
+              0.8775
+            ],
+            [
+              0.275,
+              0.7975
+            ],
+            [
+              0.26875,
+              0.79
+            ],
+            [
+              0.24583333333333332,
+              0.275
+            ]
+          ],
+          "upper": [
+            [
+              0.24583333333333332,
+              0.245
+            ],
+            [
+              0.24791666666666667,
+              0.24
+            ],
+            [
+              0.25,
+              0.2375
+            ],
+            [
+              0.475,
+              0.075
+            ],
+            [
+              0.4791666666666667,
+              0.0725
+            ],
+            [
+              0.48541666666666666,
+              0.07
+            ],
+            [
+              0.49583333333333335,
+              0.07
+            ],
+            [
+              0.5020833333333333,
+              0.0725
+            ],
+            [
+              0.50625,
+              0.075
+            ],
+            [
+              0.7270833333333333,
+              0.24
+            ],
+            [
+              0.7333333333333333,
+              0.2475
+            ],
+            [
+              0.7333333333333333,
+              0.28
+            ],
+            [
+              0.7145833333333333,
+              0.8
+            ],
+            [
+              0.6854166666666667,
+              0.85
+            ],
+            [
+              0.68125,
+              0.855
+            ],
+            [
+              0.6770833333333334,
+              0.8575
+            ],
+            [
+              0.6104166666666667,
+              0.895
+            ],
+            [
+              0.4895833333333333,
+              0.9425
+            ],
+            [
+              0.48333333333333334,
+              0.9425
+            ],
+            [
+              0.4708333333333333,
+              0.935
+            ],
+            [
+              0.45625,
+              0.925
+            ],
+            [
+              0.3875,
+              0.8775
+            ],
+            [
+              0.275,
+              0.7975
+            ],
+            [
+              0.26875,
+              0.79
+            ],
+            [
+              0.24583333333333332,
+              0.275
+            ]
+          ]
+        },
+        "east": {
+          "hitPolygon": [
+            [
+              0.25,
+              0.2425
+            ],
+            [
+              0.2520833333333333,
+              0.24
+            ],
+            [
+              0.475,
+              0.0725
+            ],
+            [
+              0.48125,
+              0.07
+            ],
+            [
+              0.49583333333333335,
+              0.07
+            ],
+            [
+              0.5020833333333333,
+              0.0725
+            ],
+            [
+              0.7229166666666667,
+              0.2375
+            ],
+            [
+              0.7270833333333333,
+              0.2425
+            ],
+            [
+              0.7270833333333333,
+              0.28
+            ],
+            [
+              0.7,
+              0.8025
+            ],
+            [
+              0.6979166666666666,
+              0.8075
+            ],
+            [
+              0.6958333333333333,
+              0.81
+            ],
+            [
+              0.65625,
+              0.84
+            ],
+            [
+              0.6458333333333334,
+              0.8475
+            ],
+            [
+              0.6083333333333333,
+              0.8725
+            ],
+            [
+              0.50625,
+              0.9375
+            ],
+            [
+              0.4979166666666667,
+              0.9425
+            ],
+            [
+              0.4875,
+              0.9425
+            ],
+            [
+              0.4125,
+              0.8975
+            ],
+            [
+              0.3770833333333333,
+              0.875
+            ],
+            [
+              0.2833333333333333,
+              0.8125
+            ],
+            [
+              0.28125,
+              0.81
+            ],
+            [
+              0.2791666666666667,
+              0.805
+            ],
+            [
+              0.25,
+              0.28
+            ]
+          ],
+          "upper": [
+            [
+              0.25,
+              0.2425
+            ],
+            [
+              0.2520833333333333,
+              0.24
+            ],
+            [
+              0.475,
+              0.0725
+            ],
+            [
+              0.48125,
+              0.07
+            ],
+            [
+              0.49583333333333335,
+              0.07
+            ],
+            [
+              0.5020833333333333,
+              0.0725
+            ],
+            [
+              0.7229166666666667,
+              0.2375
+            ],
+            [
+              0.7270833333333333,
+              0.2425
+            ],
+            [
+              0.7270833333333333,
+              0.28
+            ],
+            [
+              0.7,
+              0.8025
+            ],
+            [
+              0.6979166666666666,
+              0.8075
+            ],
+            [
+              0.6958333333333333,
+              0.81
+            ],
+            [
+              0.65625,
+              0.84
+            ],
+            [
+              0.6458333333333334,
+              0.8475
+            ],
+            [
+              0.6083333333333333,
+              0.8725
+            ],
+            [
+              0.50625,
+              0.9375
+            ],
+            [
+              0.4979166666666667,
+              0.9425
+            ],
+            [
+              0.4875,
+              0.9425
+            ],
+            [
+              0.4125,
+              0.8975
+            ],
+            [
+              0.3770833333333333,
+              0.875
+            ],
+            [
+              0.2833333333333333,
+              0.8125
+            ],
+            [
+              0.28125,
+              0.81
+            ],
+            [
+              0.2791666666666667,
+              0.805
+            ],
+            [
+              0.25,
+              0.28
+            ]
+          ]
+        },
+        "south": {
+          "hitPolygon": [
+            [
+              0.25,
+              0.24
+            ],
+            [
+              0.25625,
+              0.2325
+            ],
+            [
+              0.475,
+              0.075
+            ],
+            [
+              0.48333333333333334,
+              0.07
+            ],
+            [
+              0.4979166666666667,
+              0.07
+            ],
+            [
+              0.50625,
+              0.075
+            ],
+            [
+              0.725,
+              0.2475
+            ],
+            [
+              0.7291666666666666,
+              0.2525
+            ],
+            [
+              0.7291666666666666,
+              0.2875
+            ],
+            [
+              0.7020833333333333,
+              0.8025
+            ],
+            [
+              0.7,
+              0.8075
+            ],
+            [
+              0.6854166666666667,
+              0.8175
+            ],
+            [
+              0.6541666666666667,
+              0.8375
+            ],
+            [
+              0.5270833333333333,
+              0.9175
+            ],
+            [
+              0.48541666666666666,
+              0.9425
+            ],
+            [
+              0.47708333333333336,
+              0.9425
+            ],
+            [
+              0.46875,
+              0.9375
+            ],
+            [
+              0.43125,
+              0.91
+            ],
+            [
+              0.41458333333333336,
+              0.8975
+            ],
+            [
+              0.32916666666666666,
+              0.8325
+            ],
+            [
+              0.3,
+              0.81
+            ],
+            [
+              0.2875,
+              0.8
+            ],
+            [
+              0.28125,
+              0.7925
+            ],
+            [
+              0.25,
+              0.2725
+            ]
+          ],
+          "upper": [
+            [
+              0.25,
+              0.24
+            ],
+            [
+              0.25625,
+              0.2325
+            ],
+            [
+              0.475,
+              0.075
+            ],
+            [
+              0.48333333333333334,
+              0.07
+            ],
+            [
+              0.4979166666666667,
+              0.07
+            ],
+            [
+              0.50625,
+              0.075
+            ],
+            [
+              0.725,
+              0.2475
+            ],
+            [
+              0.7291666666666666,
+              0.2525
+            ],
+            [
+              0.7291666666666666,
+              0.2875
+            ],
+            [
+              0.7020833333333333,
+              0.8025
+            ],
+            [
+              0.7,
+              0.8075
+            ],
+            [
+              0.6854166666666667,
+              0.8175
+            ],
+            [
+              0.6541666666666667,
+              0.8375
+            ],
+            [
+              0.5270833333333333,
+              0.9175
+            ],
+            [
+              0.48541666666666666,
+              0.9425
+            ],
+            [
+              0.47708333333333336,
+              0.9425
+            ],
+            [
+              0.46875,
+              0.9375
+            ],
+            [
+              0.43125,
+              0.91
+            ],
+            [
+              0.41458333333333336,
+              0.8975
+            ],
+            [
+              0.32916666666666666,
+              0.8325
+            ],
+            [
+              0.3,
+              0.81
+            ],
+            [
+              0.2875,
+              0.8
+            ],
+            [
+              0.28125,
+              0.7925
+            ],
+            [
+              0.25,
+              0.2725
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "assetId": "elemental-tower-preview",
+      "definitionId": "FIXTURE-ELEMENTAL-TOWER-PREVIEW",
+      "variant": "authored-preview",
+      "orientation": "north",
+      "revision": 1,
+      "layers": {
+        "body": "/assets/map/buildings/elemental-tower-preview/body.svg",
+        "upper": "/assets/map/buildings/elemental-tower-preview/upper.svg",
+        "base": "/assets/map/buildings/elemental-tower-preview/base.svg",
+        "shadow": "/assets/map/buildings/elemental-tower-preview/shadow.svg",
+        "uiIcon": "/assets/map/buildings/elemental-tower-preview/icon.svg",
+        "vfx": null
+      },
+      "logicalCanvas": {
+        "width": 480,
+        "height": 400
+      },
+      "trimOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "groundAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "artFootprint": [
+        [
+          0.28500000000000003,
+          0.8080555555555555
+        ],
+        [
+          0.5238888888888888,
+          0.7124999999999999
+        ],
+        [
+          0.715,
+          0.8319444444444444
+        ],
+        [
+          0.4761111111111111,
+          0.9275
+        ]
+      ],
+      "visualBounds": {
+        "minX": 0.26458333333333334,
+        "minY": 0.0425,
+        "maxX": 0.725,
+        "maxY": 0.9175
+      },
+      "hitPolygon": [
+        [
+          0.26458333333333334,
+          0.8275
+        ],
+        [
+          0.30625,
+          0.225
+        ],
+        [
+          0.3104166666666667,
+          0.22
+        ],
+        [
+          0.4979166666666667,
+          0.0425
+        ],
+        [
+          0.5,
+          0.0425
+        ],
+        [
+          0.66875,
+          0.2
+        ],
+        [
+          0.675,
+          0.2075
+        ],
+        [
+          0.7229166666666667,
+          0.8
+        ],
+        [
+          0.7229166666666667,
+          0.81
+        ],
+        [
+          0.7208333333333333,
+          0.8125
+        ],
+        [
+          0.7145833333333333,
+          0.8175
+        ],
+        [
+          0.6979166666666666,
+          0.8275
+        ],
+        [
+          0.5645833333333333,
+          0.895
+        ],
+        [
+          0.5395833333333333,
+          0.9075
+        ],
+        [
+          0.5229166666666667,
+          0.915
+        ],
+        [
+          0.51875,
+          0.915
+        ],
+        [
+          0.38333333333333336,
+          0.895
+        ],
+        [
+          0.2708333333333333,
+          0.85
+        ],
+        [
+          0.26875,
+          0.8475
+        ],
+        [
+          0.26458333333333334,
+          0.835
+        ]
+      ],
+      "occlusionRegion": {
+        "upper": [
+          [
+            0.26458333333333334,
+            0.8275
+          ],
+          [
+            0.30625,
+            0.225
+          ],
+          [
+            0.3104166666666667,
+            0.22
+          ],
+          [
+            0.4979166666666667,
+            0.0425
+          ],
+          [
+            0.5,
+            0.0425
+          ],
+          [
+            0.66875,
+            0.2
+          ],
+          [
+            0.675,
+            0.2075
+          ],
+          [
+            0.7229166666666667,
+            0.8
+          ],
+          [
+            0.7229166666666667,
+            0.81
+          ],
+          [
+            0.7208333333333333,
+            0.8125
+          ],
+          [
+            0.7145833333333333,
+            0.8175
+          ],
+          [
+            0.6979166666666666,
+            0.8275
+          ],
+          [
+            0.5645833333333333,
+            0.895
+          ],
+          [
+            0.5395833333333333,
+            0.9075
+          ],
+          [
+            0.5229166666666667,
+            0.915
+          ],
+          [
+            0.51875,
+            0.915
+          ],
+          [
+            0.38333333333333336,
+            0.895
+          ],
+          [
+            0.2708333333333333,
+            0.85
+          ],
+          [
+            0.26875,
+            0.8475
+          ],
+          [
+            0.26458333333333334,
+            0.835
+          ]
+        ]
+      },
+      "drawDepthAnchor": {
+        "x": 0.5,
+        "y": 0.82
+      },
+      "compatiblePhysicalFootprint": {
+        "assumptionId": "TOWER-ART-PREVIEW-V1",
+        "widthM": 5,
+        "depthM": 4,
+        "provenance": "frontend-fixture"
+      },
+      "source": "assets/source/map-buildings/elemental-tower-north.png",
+      "provenance": "Original OpenAI ImageGen tower art, 2026-10-15; unchanged PNG master with path-only editable SVG derivative. Preview registration remains draft.",
+      "license": "Original generated artwork created for this project.",
+      "status": "draft",
+      "lodVariants": {
+        "close": {
+          "body": "/assets/map/buildings/elemental-tower-preview/body.svg",
+          "upper": "/assets/map/buildings/elemental-tower-preview/upper.svg",
+          "base": "/assets/map/buildings/elemental-tower-preview/base.svg",
+          "shadow": "/assets/map/buildings/elemental-tower-preview/shadow.svg",
+          "uiIcon": "/assets/map/buildings/elemental-tower-preview/icon.svg",
+          "vfx": null
+        },
+        "district": {
+          "body": "/assets/map/buildings/elemental-tower-preview/body.svg",
+          "upper": "/assets/map/buildings/elemental-tower-preview/upper.svg",
+          "base": "/assets/map/buildings/elemental-tower-preview/base.svg",
+          "shadow": "/assets/map/buildings/elemental-tower-preview/shadow.svg",
+          "uiIcon": "/assets/map/buildings/elemental-tower-preview/icon.svg",
+          "vfx": null
+        },
+        "regional": {
+          "uiIcon": "/assets/map/buildings/elemental-tower-preview/icon.svg"
+        }
+      },
+      "composition": "single-body",
+      "mapExports": [
+        {
+          "path": "/assets/map/buildings/elemental-tower-preview/body-close.png",
+          "source": "/assets/map/buildings/elemental-tower-preview/body.svg",
+          "sourceSha256": "3bfb43f49141608aaed377679b78c38f1d687de26aeacd377adf34cc64e43b74",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/map/buildings/elemental-tower-preview/body.svg",
+              "sha256": "3bfb43f49141608aaed377679b78c38f1d687de26aeacd377adf34cc64e43b74"
+            },
+            {
+              "source": "assets/source/map-buildings/elemental-tower-north.png",
+              "sha256": "154914616227f12e7bcdcea1a6be1873f52d5b7c8da475b44a62d0f30190efce"
+            },
+            {
+              "source": "assets/map-tower-previews.json",
+              "sha256": "39708091cd8a522b6f58fc8385127da0678a0df9e5070821617d4c5985ac7829"
+            },
+            {
+              "source": "frontend/scripts/map-tower-previews.mjs",
+              "sha256": "764b3c9f039c33fa606f6b77159c58e272f2ba5ff94ac7639cc06686b1dcc1a6"
+            }
+          ],
+          "sha256": "6c3e5d053ba33070ebf1c76b9236f4ea972515eeccb8b29d32d2634b65909ab0",
+          "exportVersion": 3,
+          "width": 180,
+          "height": 284,
+          "role": "body",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 125.00000000000001,
+            "y": 15,
+            "width": 225,
+            "height": 355
+          }
+        },
+        {
+          "path": "/assets/map/buildings/elemental-tower-preview/body-district.png",
+          "source": "/assets/map/buildings/elemental-tower-preview/body.svg",
+          "sourceSha256": "3bfb43f49141608aaed377679b78c38f1d687de26aeacd377adf34cc64e43b74",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/map/buildings/elemental-tower-preview/body.svg",
+              "sha256": "3bfb43f49141608aaed377679b78c38f1d687de26aeacd377adf34cc64e43b74"
+            },
+            {
+              "source": "assets/source/map-buildings/elemental-tower-north.png",
+              "sha256": "154914616227f12e7bcdcea1a6be1873f52d5b7c8da475b44a62d0f30190efce"
+            },
+            {
+              "source": "assets/map-tower-previews.json",
+              "sha256": "39708091cd8a522b6f58fc8385127da0678a0df9e5070821617d4c5985ac7829"
+            },
+            {
+              "source": "frontend/scripts/map-tower-previews.mjs",
+              "sha256": "764b3c9f039c33fa606f6b77159c58e272f2ba5ff94ac7639cc06686b1dcc1a6"
+            }
+          ],
+          "sha256": "821e8186dab69fa2829b038424d103c7ff182e3023a63a233a59f3778521f638",
+          "exportVersion": 3,
+          "width": 92,
+          "height": 144,
+          "role": "body",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 122.49999999999999,
+            "y": 12.5,
+            "width": 230,
+            "height": 360
+          }
+        },
+        {
+          "path": "/assets/map/buildings/elemental-tower-preview/shadow-close.png",
+          "source": "/assets/map/buildings/elemental-tower-preview/shadow.svg",
+          "sourceSha256": "52215cde972c93ddce986043cf1e6d0974eee1f40c8ad0c951d3d2fb50ff7753",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/map/buildings/elemental-tower-preview/shadow.svg",
+              "sha256": "52215cde972c93ddce986043cf1e6d0974eee1f40c8ad0c951d3d2fb50ff7753"
+            },
+            {
+              "source": "assets/source/map-buildings/elemental-tower-north.png",
+              "sha256": "154914616227f12e7bcdcea1a6be1873f52d5b7c8da475b44a62d0f30190efce"
+            },
+            {
+              "source": "assets/map-tower-previews.json",
+              "sha256": "39708091cd8a522b6f58fc8385127da0678a0df9e5070821617d4c5985ac7829"
+            },
+            {
+              "source": "frontend/scripts/map-tower-previews.mjs",
+              "sha256": "764b3c9f039c33fa606f6b77159c58e272f2ba5ff94ac7639cc06686b1dcc1a6"
+            }
+          ],
+          "sha256": "7e0d46394d652c36e788e3c5bbe9c8eb00c8aa6c16b4b5af5b2196917a4e0f9f",
+          "exportVersion": 3,
+          "width": 174,
+          "height": 93,
+          "role": "shadow",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 132.5,
+            "y": 271.25,
+            "width": 217.5,
+            "height": 116.25000000000001
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/elemental-tower-preview/atlas-close.png",
+            "x": 4,
+            "y": 4,
+            "width": 174,
+            "height": 93,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "0a7473818750fa1ac342e60f1812b93ccedc86fbc61d7686ff839975c3a4ea36"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/elemental-tower-preview/shadow-district.png",
+          "source": "/assets/map/buildings/elemental-tower-preview/shadow.svg",
+          "sourceSha256": "52215cde972c93ddce986043cf1e6d0974eee1f40c8ad0c951d3d2fb50ff7753",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/map/buildings/elemental-tower-preview/shadow.svg",
+              "sha256": "52215cde972c93ddce986043cf1e6d0974eee1f40c8ad0c951d3d2fb50ff7753"
+            },
+            {
+              "source": "assets/source/map-buildings/elemental-tower-north.png",
+              "sha256": "154914616227f12e7bcdcea1a6be1873f52d5b7c8da475b44a62d0f30190efce"
+            },
+            {
+              "source": "assets/map-tower-previews.json",
+              "sha256": "39708091cd8a522b6f58fc8385127da0678a0df9e5070821617d4c5985ac7829"
+            },
+            {
+              "source": "frontend/scripts/map-tower-previews.mjs",
+              "sha256": "764b3c9f039c33fa606f6b77159c58e272f2ba5ff94ac7639cc06686b1dcc1a6"
+            }
+          ],
+          "sha256": "5ee4dc86327cf4d06615a3420fb9e1153ba42dd4b8f6d9d8f30c53b7866ed540",
+          "exportVersion": 3,
+          "width": 89,
+          "height": 49,
+          "role": "shadow",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 130,
+            "y": 267.5,
+            "width": 222.5,
+            "height": 122.50000000000001
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/elemental-tower-preview/atlas-district.png",
+            "x": 4,
+            "y": 4,
+            "width": 89,
+            "height": 49,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "51502f18409a9bbe181db8d37b5de8cd50593c626d2ed568dd65b39afa2ebd95"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/elemental-tower-preview/base-close.png",
+          "source": "/assets/map/buildings/elemental-tower-preview/foundation.svg",
+          "sourceSha256": "944dc7003716a9ceec57ba1ce26d38f3e4e82e4bbb88f6a0f15795d56286d8a7",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/map/buildings/elemental-tower-preview/foundation.svg",
+              "sha256": "944dc7003716a9ceec57ba1ce26d38f3e4e82e4bbb88f6a0f15795d56286d8a7"
+            },
+            {
+              "source": "assets/source/map-buildings/elemental-tower-north.png",
+              "sha256": "154914616227f12e7bcdcea1a6be1873f52d5b7c8da475b44a62d0f30190efce"
+            },
+            {
+              "source": "assets/map-tower-previews.json",
+              "sha256": "39708091cd8a522b6f58fc8385127da0678a0df9e5070821617d4c5985ac7829"
+            },
+            {
+              "source": "frontend/scripts/map-tower-previews.mjs",
+              "sha256": "764b3c9f039c33fa606f6b77159c58e272f2ba5ff94ac7639cc06686b1dcc1a6"
+            }
+          ],
+          "sha256": "2643c039e5834d482a72a292c04192c2537a3ad4ddb99fbe9f0d67189c267a13",
+          "exportVersion": 3,
+          "width": 174,
+          "height": 75,
+          "role": "base",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 131.25,
+            "y": 281.25,
+            "width": 217.5,
+            "height": 93.75
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/elemental-tower-preview/atlas-close.png",
+            "x": 396,
+            "y": 4,
+            "width": 174,
+            "height": 75,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "0a7473818750fa1ac342e60f1812b93ccedc86fbc61d7686ff839975c3a4ea36"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/elemental-tower-preview/base-district.png",
+          "source": "/assets/map/buildings/elemental-tower-preview/foundation.svg",
+          "sourceSha256": "944dc7003716a9ceec57ba1ce26d38f3e4e82e4bbb88f6a0f15795d56286d8a7",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/map/buildings/elemental-tower-preview/foundation.svg",
+              "sha256": "944dc7003716a9ceec57ba1ce26d38f3e4e82e4bbb88f6a0f15795d56286d8a7"
+            },
+            {
+              "source": "assets/source/map-buildings/elemental-tower-north.png",
+              "sha256": "154914616227f12e7bcdcea1a6be1873f52d5b7c8da475b44a62d0f30190efce"
+            },
+            {
+              "source": "assets/map-tower-previews.json",
+              "sha256": "39708091cd8a522b6f58fc8385127da0678a0df9e5070821617d4c5985ac7829"
+            },
+            {
+              "source": "frontend/scripts/map-tower-previews.mjs",
+              "sha256": "764b3c9f039c33fa606f6b77159c58e272f2ba5ff94ac7639cc06686b1dcc1a6"
+            }
+          ],
+          "sha256": "57e5b2f2feb996db534e5e5070d70dbe8d448a7ac3355276d68c47b32da1a927",
+          "exportVersion": 3,
+          "width": 88,
+          "height": 40,
+          "role": "base",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 130,
+            "y": 277.5,
+            "width": 220,
+            "height": 100
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/elemental-tower-preview/atlas-district.png",
+            "x": 204,
+            "y": 4,
+            "width": 88,
+            "height": 40,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "51502f18409a9bbe181db8d37b5de8cd50593c626d2ed568dd65b39afa2ebd95"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/elemental-tower-preview/body-north-close.png",
+          "layerPath": "/assets/map/buildings/elemental-tower-preview/body-north-close.png",
+          "source": "assets/source/map-buildings/elemental-tower-north.png",
+          "sourceSha256": "154914616227f12e7bcdcea1a6be1873f52d5b7c8da475b44a62d0f30190efce",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/elemental-tower-north.png",
+              "sha256": "154914616227f12e7bcdcea1a6be1873f52d5b7c8da475b44a62d0f30190efce"
+            }
+          ],
+          "sha256": "9a1edfac7e6ca338cf1da3ca252e7d57752e202512712698754b3e98e8d0866c",
+          "exportVersion": 3,
+          "width": 185,
+          "height": 287,
+          "role": "body",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 122.49999999999999,
+            "y": 13.750000000000002,
+            "width": 231.25,
+            "height": 358.75
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/elemental-tower-preview/atlas-close.png",
+            "x": 4,
+            "y": 332,
+            "width": 185,
+            "height": 287,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "0a7473818750fa1ac342e60f1812b93ccedc86fbc61d7686ff839975c3a4ea36"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/elemental-tower-preview/body-north-district.png",
+          "layerPath": "/assets/map/buildings/elemental-tower-preview/body-north-close.png",
+          "source": "assets/source/map-buildings/elemental-tower-north.png",
+          "sourceSha256": "154914616227f12e7bcdcea1a6be1873f52d5b7c8da475b44a62d0f30190efce",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/elemental-tower-north.png",
+              "sha256": "154914616227f12e7bcdcea1a6be1873f52d5b7c8da475b44a62d0f30190efce"
+            }
+          ],
+          "sha256": "2873fbf34eaef689ae94a08470cd652a855eda72a2ca696dd1d4459f2166f3a4",
+          "exportVersion": 3,
+          "width": 97,
+          "height": 148,
+          "role": "body",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 117.5,
+            "y": 7.5,
+            "width": 242.50000000000003,
+            "height": 370
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/elemental-tower-preview/atlas-district.png",
+            "x": 4,
+            "y": 172,
+            "width": 97,
+            "height": 148,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "51502f18409a9bbe181db8d37b5de8cd50593c626d2ed568dd65b39afa2ebd95"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/elemental-tower-preview/body-west-close.png",
+          "layerPath": "/assets/map/buildings/elemental-tower-preview/body-west-close.png",
+          "source": "assets/source/map-buildings/elemental-tower-west.png",
+          "sourceSha256": "6399d31a1af51648909b6c03e47a722b60e8254e465149ee1489979f3947b52f",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/elemental-tower-west.png",
+              "sha256": "6399d31a1af51648909b6c03e47a722b60e8254e465149ee1489979f3947b52f"
+            }
+          ],
+          "sha256": "94ea9650e69d5bd7ab9d14f08ef09256e6b1ae60fdd02e36524fc97370b19d75",
+          "exportVersion": 3,
+          "width": 185,
+          "height": 286,
+          "role": "body",
+          "lod": "close",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 122.49999999999999,
+            "y": 15,
+            "width": 231.25,
+            "height": 357.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/elemental-tower-preview/atlas-close.png",
+            "x": 396,
+            "y": 332,
+            "width": 185,
+            "height": 286,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "0a7473818750fa1ac342e60f1812b93ccedc86fbc61d7686ff839975c3a4ea36"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/elemental-tower-preview/body-west-district.png",
+          "layerPath": "/assets/map/buildings/elemental-tower-preview/body-west-close.png",
+          "source": "assets/source/map-buildings/elemental-tower-west.png",
+          "sourceSha256": "6399d31a1af51648909b6c03e47a722b60e8254e465149ee1489979f3947b52f",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/elemental-tower-west.png",
+              "sha256": "6399d31a1af51648909b6c03e47a722b60e8254e465149ee1489979f3947b52f"
+            }
+          ],
+          "sha256": "639f2ca9ca1fd6e792b59ec5a58db736d974aca25ebbb3331f2538ac7d6cb7b3",
+          "exportVersion": 3,
+          "width": 97,
+          "height": 147,
+          "role": "body",
+          "lod": "district",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 117.5,
+            "y": 10,
+            "width": 242.50000000000003,
+            "height": 367.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/elemental-tower-preview/atlas-district.png",
+            "x": 204,
+            "y": 172,
+            "width": 97,
+            "height": 147,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "51502f18409a9bbe181db8d37b5de8cd50593c626d2ed568dd65b39afa2ebd95"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/elemental-tower-preview/body-east-close.png",
+          "layerPath": "/assets/map/buildings/elemental-tower-preview/body-east-close.png",
+          "source": "assets/source/map-buildings/elemental-tower-east.png",
+          "sourceSha256": "d35a490ca4ef6ec16269351c3481c0767097f228936cbbc812e8c113a2aa02f4",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/elemental-tower-east.png",
+              "sha256": "d35a490ca4ef6ec16269351c3481c0767097f228936cbbc812e8c113a2aa02f4"
+            }
+          ],
+          "sha256": "2876ffe898a4fbbf10a80ed0e81a7c6f1657ec9a085d44e03e8b4478f52629f0",
+          "exportVersion": 3,
+          "width": 185,
+          "height": 277,
+          "role": "body",
+          "lod": "close",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 122.49999999999999,
+            "y": 25,
+            "width": 231.25,
+            "height": 346.25
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/elemental-tower-preview/atlas-close.png",
+            "x": 4,
+            "y": 660,
+            "width": 185,
+            "height": 277,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "0a7473818750fa1ac342e60f1812b93ccedc86fbc61d7686ff839975c3a4ea36"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/elemental-tower-preview/body-east-district.png",
+          "layerPath": "/assets/map/buildings/elemental-tower-preview/body-east-close.png",
+          "source": "assets/source/map-buildings/elemental-tower-east.png",
+          "sourceSha256": "d35a490ca4ef6ec16269351c3481c0767097f228936cbbc812e8c113a2aa02f4",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/elemental-tower-east.png",
+              "sha256": "d35a490ca4ef6ec16269351c3481c0767097f228936cbbc812e8c113a2aa02f4"
+            }
+          ],
+          "sha256": "bbe8803d0c14988095ab23cbe25d0e7fef962a59676f1270ca87192d70577789",
+          "exportVersion": 3,
+          "width": 97,
+          "height": 143,
+          "role": "body",
+          "lod": "district",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 117.5,
+            "y": 20,
+            "width": 242.50000000000003,
+            "height": 357.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/elemental-tower-preview/atlas-district.png",
+            "x": 4,
+            "y": 340,
+            "width": 97,
+            "height": 143,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "51502f18409a9bbe181db8d37b5de8cd50593c626d2ed568dd65b39afa2ebd95"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/elemental-tower-preview/body-south-close.png",
+          "layerPath": "/assets/map/buildings/elemental-tower-preview/body-south-close.png",
+          "source": "assets/source/map-buildings/elemental-tower-south.png",
+          "sourceSha256": "8956f8f1a3e97c97229b5889ba26ce195ab0dc11e797a38c86ed77dce5aafde6",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/elemental-tower-south.png",
+              "sha256": "8956f8f1a3e97c97229b5889ba26ce195ab0dc11e797a38c86ed77dce5aafde6"
+            }
+          ],
+          "sha256": "732869d7f903453448664f72c23cd5cef1fc9668bd724a0af3bf64bc49ff47be",
+          "exportVersion": 3,
+          "width": 185,
+          "height": 276,
+          "role": "body",
+          "lod": "close",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 122.49999999999999,
+            "y": 26.25,
+            "width": 231.25,
+            "height": 345
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/elemental-tower-preview/atlas-close.png",
+            "x": 396,
+            "y": 660,
+            "width": 185,
+            "height": 276,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "0a7473818750fa1ac342e60f1812b93ccedc86fbc61d7686ff839975c3a4ea36"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/elemental-tower-preview/body-south-district.png",
+          "layerPath": "/assets/map/buildings/elemental-tower-preview/body-south-close.png",
+          "source": "assets/source/map-buildings/elemental-tower-south.png",
+          "sourceSha256": "8956f8f1a3e97c97229b5889ba26ce195ab0dc11e797a38c86ed77dce5aafde6",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/elemental-tower-south.png",
+              "sha256": "8956f8f1a3e97c97229b5889ba26ce195ab0dc11e797a38c86ed77dce5aafde6"
+            }
+          ],
+          "sha256": "03869c4773bf795d5bd7e1d5e271124145345761a67ef0b33768d472ba61424b",
+          "exportVersion": 3,
+          "width": 97,
+          "height": 143,
+          "role": "body",
+          "lod": "district",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 117.5,
+            "y": 20,
+            "width": 242.50000000000003,
+            "height": 357.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/elemental-tower-preview/atlas-district.png",
+            "x": 204,
+            "y": 340,
+            "width": 97,
+            "height": 143,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "51502f18409a9bbe181db8d37b5de8cd50593c626d2ed568dd65b39afa2ebd95"
+          }
+        }
+      ],
+      "planningFoundation": true,
+      "planningLayer": "/assets/map/buildings/elemental-tower-preview/foundation.svg",
+      "generatedOrientationViews": [
+        "north",
+        "west",
+        "east",
+        "south"
+      ],
+      "referenceSource": "assets/source/map-buildings/elemental-tower-north.png",
+      "orientationViews": {
+        "north": {
+          "body": "/assets/map/buildings/elemental-tower-preview/body-north-close.png",
+          "upper": "/assets/map/buildings/elemental-tower-preview/upper.svg",
+          "base": "/assets/map/buildings/elemental-tower-preview/base.svg",
+          "shadow": "/assets/map/buildings/elemental-tower-preview/shadow.svg",
+          "uiIcon": "/assets/map/buildings/elemental-tower-preview/icon.svg",
+          "vfx": null
+        },
+        "west": {
+          "body": "/assets/map/buildings/elemental-tower-preview/body-west-close.png",
+          "upper": "/assets/map/buildings/elemental-tower-preview/upper.svg",
+          "base": "/assets/map/buildings/elemental-tower-preview/base.svg",
+          "shadow": "/assets/map/buildings/elemental-tower-preview/shadow.svg",
+          "uiIcon": "/assets/map/buildings/elemental-tower-preview/icon.svg",
+          "vfx": null
+        },
+        "east": {
+          "body": "/assets/map/buildings/elemental-tower-preview/body-east-close.png",
+          "upper": "/assets/map/buildings/elemental-tower-preview/upper.svg",
+          "base": "/assets/map/buildings/elemental-tower-preview/base.svg",
+          "shadow": "/assets/map/buildings/elemental-tower-preview/shadow.svg",
+          "uiIcon": "/assets/map/buildings/elemental-tower-preview/icon.svg",
+          "vfx": null
+        },
+        "south": {
+          "body": "/assets/map/buildings/elemental-tower-preview/body-south-close.png",
+          "upper": "/assets/map/buildings/elemental-tower-preview/upper.svg",
+          "base": "/assets/map/buildings/elemental-tower-preview/base.svg",
+          "shadow": "/assets/map/buildings/elemental-tower-preview/shadow.svg",
+          "uiIcon": "/assets/map/buildings/elemental-tower-preview/icon.svg",
+          "vfx": null
+        }
+      },
+      "orientationRegions": {
+        "north": {
+          "hitPolygon": [
+            [
+              0.26666666666666666,
+              0.8275
+            ],
+            [
+              0.30833333333333335,
+              0.2275
+            ],
+            [
+              0.3104166666666667,
+              0.225
+            ],
+            [
+              0.4979166666666667,
+              0.0475
+            ],
+            [
+              0.5020833333333333,
+              0.0475
+            ],
+            [
+              0.6729166666666667,
+              0.2075
+            ],
+            [
+              0.675,
+              0.21
+            ],
+            [
+              0.7229166666666667,
+              0.8
+            ],
+            [
+              0.7229166666666667,
+              0.8125
+            ],
+            [
+              0.7166666666666667,
+              0.8175
+            ],
+            [
+              0.7,
+              0.8275
+            ],
+            [
+              0.5416666666666666,
+              0.9075
+            ],
+            [
+              0.525,
+              0.915
+            ],
+            [
+              0.51875,
+              0.915
+            ],
+            [
+              0.38333333333333336,
+              0.895
+            ],
+            [
+              0.275,
+              0.8525
+            ],
+            [
+              0.2708333333333333,
+              0.85
+            ],
+            [
+              0.26666666666666666,
+              0.8375
+            ]
+          ],
+          "upper": [
+            [
+              0.26666666666666666,
+              0.8275
+            ],
+            [
+              0.30833333333333335,
+              0.2275
+            ],
+            [
+              0.3104166666666667,
+              0.225
+            ],
+            [
+              0.4979166666666667,
+              0.0475
+            ],
+            [
+              0.5020833333333333,
+              0.0475
+            ],
+            [
+              0.6729166666666667,
+              0.2075
+            ],
+            [
+              0.675,
+              0.21
+            ],
+            [
+              0.7229166666666667,
+              0.8
+            ],
+            [
+              0.7229166666666667,
+              0.8125
+            ],
+            [
+              0.7166666666666667,
+              0.8175
+            ],
+            [
+              0.7,
+              0.8275
+            ],
+            [
+              0.5416666666666666,
+              0.9075
+            ],
+            [
+              0.525,
+              0.915
+            ],
+            [
+              0.51875,
+              0.915
+            ],
+            [
+              0.38333333333333336,
+              0.895
+            ],
+            [
+              0.275,
+              0.8525
+            ],
+            [
+              0.2708333333333333,
+              0.85
+            ],
+            [
+              0.26666666666666666,
+              0.8375
+            ]
+          ]
+        },
+        "west": {
+          "hitPolygon": [
+            [
+              0.26666666666666666,
+              0.8
+            ],
+            [
+              0.30833333333333335,
+              0.22
+            ],
+            [
+              0.3125,
+              0.215
+            ],
+            [
+              0.49166666666666664,
+              0.0525
+            ],
+            [
+              0.49375,
+              0.0525
+            ],
+            [
+              0.6708333333333333,
+              0.215
+            ],
+            [
+              0.6729166666666667,
+              0.2175
+            ],
+            [
+              0.7208333333333333,
+              0.7825
+            ],
+            [
+              0.7229166666666667,
+              0.8275
+            ],
+            [
+              0.7229166666666667,
+              0.835
+            ],
+            [
+              0.71875,
+              0.8375
+            ],
+            [
+              0.63125,
+              0.88
+            ],
+            [
+              0.6125,
+              0.8875
+            ],
+            [
+              0.49166666666666664,
+              0.915
+            ],
+            [
+              0.48125,
+              0.915
+            ],
+            [
+              0.41458333333333336,
+              0.8825
+            ],
+            [
+              0.3125,
+              0.8325
+            ],
+            [
+              0.29791666666666666,
+              0.825
+            ],
+            [
+              0.26875,
+              0.8075
+            ],
+            [
+              0.26666666666666666,
+              0.805
+            ]
+          ],
+          "upper": [
+            [
+              0.26666666666666666,
+              0.8
+            ],
+            [
+              0.30833333333333335,
+              0.22
+            ],
+            [
+              0.3125,
+              0.215
+            ],
+            [
+              0.49166666666666664,
+              0.0525
+            ],
+            [
+              0.49375,
+              0.0525
+            ],
+            [
+              0.6708333333333333,
+              0.215
+            ],
+            [
+              0.6729166666666667,
+              0.2175
+            ],
+            [
+              0.7208333333333333,
+              0.7825
+            ],
+            [
+              0.7229166666666667,
+              0.8275
+            ],
+            [
+              0.7229166666666667,
+              0.835
+            ],
+            [
+              0.71875,
+              0.8375
+            ],
+            [
+              0.63125,
+              0.88
+            ],
+            [
+              0.6125,
+              0.8875
+            ],
+            [
+              0.49166666666666664,
+              0.915
+            ],
+            [
+              0.48125,
+              0.915
+            ],
+            [
+              0.41458333333333336,
+              0.8825
+            ],
+            [
+              0.3125,
+              0.8325
+            ],
+            [
+              0.29791666666666666,
+              0.825
+            ],
+            [
+              0.26875,
+              0.8075
+            ],
+            [
+              0.26666666666666666,
+              0.805
+            ]
+          ]
+        },
+        "east": {
+          "hitPolygon": [
+            [
+              0.26666666666666666,
+              0.8075
+            ],
+            [
+              0.3145833333333333,
+              0.245
+            ],
+            [
+              0.31666666666666665,
+              0.2425
+            ],
+            [
+              0.4979166666666667,
+              0.075
+            ],
+            [
+              0.5,
+              0.075
+            ],
+            [
+              0.6708333333333333,
+              0.23
+            ],
+            [
+              0.7229166666666667,
+              0.805
+            ],
+            [
+              0.7229166666666667,
+              0.8175
+            ],
+            [
+              0.71875,
+              0.82
+            ],
+            [
+              0.6833333333333333,
+              0.8375
+            ],
+            [
+              0.6729166666666667,
+              0.8425
+            ],
+            [
+              0.525,
+              0.91
+            ],
+            [
+              0.51875,
+              0.9125
+            ],
+            [
+              0.5104166666666666,
+              0.9125
+            ],
+            [
+              0.32708333333333334,
+              0.84
+            ],
+            [
+              0.2833333333333333,
+              0.8225
+            ],
+            [
+              0.27291666666666664,
+              0.8175
+            ],
+            [
+              0.26875,
+              0.815
+            ],
+            [
+              0.26666666666666666,
+              0.8125
+            ]
+          ],
+          "upper": [
+            [
+              0.26666666666666666,
+              0.8075
+            ],
+            [
+              0.3145833333333333,
+              0.245
+            ],
+            [
+              0.31666666666666665,
+              0.2425
+            ],
+            [
+              0.4979166666666667,
+              0.075
+            ],
+            [
+              0.5,
+              0.075
+            ],
+            [
+              0.6708333333333333,
+              0.23
+            ],
+            [
+              0.7229166666666667,
+              0.805
+            ],
+            [
+              0.7229166666666667,
+              0.8175
+            ],
+            [
+              0.71875,
+              0.82
+            ],
+            [
+              0.6833333333333333,
+              0.8375
+            ],
+            [
+              0.6729166666666667,
+              0.8425
+            ],
+            [
+              0.525,
+              0.91
+            ],
+            [
+              0.51875,
+              0.9125
+            ],
+            [
+              0.5104166666666666,
+              0.9125
+            ],
+            [
+              0.32708333333333334,
+              0.84
+            ],
+            [
+              0.2833333333333333,
+              0.8225
+            ],
+            [
+              0.27291666666666664,
+              0.8175
+            ],
+            [
+              0.26875,
+              0.815
+            ],
+            [
+              0.26666666666666666,
+              0.8125
+            ]
+          ]
+        },
+        "south": {
+          "hitPolygon": [
+            [
+              0.26666666666666666,
+              0.8075
+            ],
+            [
+              0.3145833333333333,
+              0.25
+            ],
+            [
+              0.31666666666666665,
+              0.245
+            ],
+            [
+              0.49583333333333335,
+              0.08
+            ],
+            [
+              0.4979166666666667,
+              0.08
+            ],
+            [
+              0.66875,
+              0.235
+            ],
+            [
+              0.7229166666666667,
+              0.8025
+            ],
+            [
+              0.7229166666666667,
+              0.815
+            ],
+            [
+              0.70625,
+              0.825
+            ],
+            [
+              0.6916666666666667,
+              0.8325
+            ],
+            [
+              0.525,
+              0.9125
+            ],
+            [
+              0.5145833333333333,
+              0.9125
+            ],
+            [
+              0.49375,
+              0.905
+            ],
+            [
+              0.3125,
+              0.8375
+            ],
+            [
+              0.26875,
+              0.82
+            ],
+            [
+              0.26666666666666666,
+              0.8175
+            ]
+          ],
+          "upper": [
+            [
+              0.26666666666666666,
+              0.8075
+            ],
+            [
+              0.3145833333333333,
+              0.25
+            ],
+            [
+              0.31666666666666665,
+              0.245
+            ],
+            [
+              0.49583333333333335,
+              0.08
+            ],
+            [
+              0.4979166666666667,
+              0.08
+            ],
+            [
+              0.66875,
+              0.235
+            ],
+            [
+              0.7229166666666667,
+              0.8025
+            ],
+            [
+              0.7229166666666667,
+              0.815
+            ],
+            [
+              0.70625,
+              0.825
+            ],
+            [
+              0.6916666666666667,
+              0.8325
+            ],
+            [
+              0.525,
+              0.9125
+            ],
+            [
+              0.5145833333333333,
+              0.9125
+            ],
+            [
+              0.49375,
+              0.905
+            ],
+            [
+              0.3125,
+              0.8375
+            ],
+            [
+              0.26875,
+              0.82
+            ],
+            [
+              0.26666666666666666,
+              0.8175
+            ]
+          ]
+        }
+      }
     }
   ],
   "fireProgression": [
