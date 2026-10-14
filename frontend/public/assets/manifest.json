@@ -21446,6 +21446,1200 @@
             "atlasHeight": 512,
             "sha256": "539f3a271c81bddc6f22e24fefb539b9dff8fd8cf9c8967ea6ee6d6bba057f11"
           }
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-north-0-close.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-north-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-north.png",
+          "sourceSha256": "7f94f98f2a8012ab2d42102df51dcce2672001e455b9231bf77ee047acf8af92",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-north.png",
+              "sha256": "7f94f98f2a8012ab2d42102df51dcce2672001e455b9231bf77ee047acf8af92"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "b1f4b1299de1dc8fb20959138b9ad137cbb74c37e259a2a52351d16ac007991a",
+          "exportVersion": 3,
+          "width": 102,
+          "height": 207,
+          "role": "body",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 28.75,
+            "y": 91.25,
+            "width": 127.50000000000001,
+            "height": 258.75
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-north-close.png",
+            "x": 4,
+            "y": 4,
+            "width": 102,
+            "height": 207,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "e701aef1d1f227867e28a414af91939627e70d9b7d84102c1dce42be54400d72"
+          },
+          "sliceId": "0"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-north-1-close.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-north-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-north.png",
+          "sourceSha256": "7f94f98f2a8012ab2d42102df51dcce2672001e455b9231bf77ee047acf8af92",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-north.png",
+              "sha256": "7f94f98f2a8012ab2d42102df51dcce2672001e455b9231bf77ee047acf8af92"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "0e69b575848bf8dc0fdcfae7d3abe84bb934e48fb48ba363c0ae7ab83ebdd7eb",
+          "exportVersion": 3,
+          "width": 117,
+          "height": 207,
+          "role": "body",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 156.25,
+            "y": 91.25,
+            "width": 146.25,
+            "height": 258.75
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-north-close.png",
+            "x": 114,
+            "y": 4,
+            "width": 117,
+            "height": 207,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "e701aef1d1f227867e28a414af91939627e70d9b7d84102c1dce42be54400d72"
+          },
+          "sliceId": "1"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-north-2-close.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-north-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-north.png",
+          "sourceSha256": "7f94f98f2a8012ab2d42102df51dcce2672001e455b9231bf77ee047acf8af92",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-north.png",
+              "sha256": "7f94f98f2a8012ab2d42102df51dcce2672001e455b9231bf77ee047acf8af92"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "4abf3939586191edeb276f710b63455dc2cf703acff72356a84433ac84f797be",
+          "exportVersion": 3,
+          "width": 120,
+          "height": 207,
+          "role": "body",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 302.5,
+            "y": 91.25,
+            "width": 150,
+            "height": 258.75
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-north-close.png",
+            "x": 239,
+            "y": 4,
+            "width": 120,
+            "height": 207,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "e701aef1d1f227867e28a414af91939627e70d9b7d84102c1dce42be54400d72"
+          },
+          "sliceId": "2"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-north-0-district.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-north-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-north.png",
+          "sourceSha256": "7f94f98f2a8012ab2d42102df51dcce2672001e455b9231bf77ee047acf8af92",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-north.png",
+              "sha256": "7f94f98f2a8012ab2d42102df51dcce2672001e455b9231bf77ee047acf8af92"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "b5f392ee4c0db38901747da1751ce5358ec6fb2e0f3003e1c3a5d6a65015f89f",
+          "exportVersion": 3,
+          "width": 52,
+          "height": 109,
+          "role": "body",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 22.5,
+            "y": 85,
+            "width": 130,
+            "height": 272.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-north-district.png",
+            "x": 4,
+            "y": 4,
+            "width": 52,
+            "height": 109,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "e59aaf1c260c5c9db99991527f92873621955382e799c71f62f4edde7017248b"
+          },
+          "sliceId": "0"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-north-1-district.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-north-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-north.png",
+          "sourceSha256": "7f94f98f2a8012ab2d42102df51dcce2672001e455b9231bf77ee047acf8af92",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-north.png",
+              "sha256": "7f94f98f2a8012ab2d42102df51dcce2672001e455b9231bf77ee047acf8af92"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "d5866fca8d0022aae862bb40515fa1481cf0bd9206e763c56662115c53d3a95d",
+          "exportVersion": 3,
+          "width": 60,
+          "height": 109,
+          "role": "body",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 152.5,
+            "y": 85,
+            "width": 150,
+            "height": 272.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-north-district.png",
+            "x": 64,
+            "y": 4,
+            "width": 60,
+            "height": 109,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "e59aaf1c260c5c9db99991527f92873621955382e799c71f62f4edde7017248b"
+          },
+          "sliceId": "1"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-north-2-district.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-north-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-north.png",
+          "sourceSha256": "7f94f98f2a8012ab2d42102df51dcce2672001e455b9231bf77ee047acf8af92",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-north.png",
+              "sha256": "7f94f98f2a8012ab2d42102df51dcce2672001e455b9231bf77ee047acf8af92"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "dc70d4d8aa2ee50229f589739ac5c342a8324d147d0984911f8027257ff3d42f",
+          "exportVersion": 3,
+          "width": 62,
+          "height": 109,
+          "role": "body",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 302.5,
+            "y": 85,
+            "width": 155,
+            "height": 272.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-north-district.png",
+            "x": 132,
+            "y": 4,
+            "width": 62,
+            "height": 109,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "e59aaf1c260c5c9db99991527f92873621955382e799c71f62f4edde7017248b"
+          },
+          "sliceId": "2"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-south-0-close.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-south-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-south.png",
+          "sourceSha256": "fbae8ba70578fcb47c190a4cfd0f4bb424de5f5eaf1ed6751fba43bc24578f46",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-south.png",
+              "sha256": "fbae8ba70578fcb47c190a4cfd0f4bb424de5f5eaf1ed6751fba43bc24578f46"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "9757662667ed960ba198e6e226645a5f0c43fc0f8b882530a10cbe5a992ab31f",
+          "exportVersion": 3,
+          "width": 106,
+          "height": 248,
+          "role": "body",
+          "lod": "close",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 33.75,
+            "y": 45,
+            "width": 132.5,
+            "height": 310
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-south-close.png",
+            "x": 4,
+            "y": 4,
+            "width": 106,
+            "height": 248,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "18149938be3f44896209ec45018a6609e15363f8c96d6037753aa3bc98d33d10"
+          },
+          "sliceId": "0"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-south-1-close.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-south-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-south.png",
+          "sourceSha256": "fbae8ba70578fcb47c190a4cfd0f4bb424de5f5eaf1ed6751fba43bc24578f46",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-south.png",
+              "sha256": "fbae8ba70578fcb47c190a4cfd0f4bb424de5f5eaf1ed6751fba43bc24578f46"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "e324b6c75ede26f77c36c4f630d76833f599810ba55fd363113d3c3c42a17a43",
+          "exportVersion": 3,
+          "width": 112,
+          "height": 248,
+          "role": "body",
+          "lod": "close",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 166.25,
+            "y": 45,
+            "width": 140,
+            "height": 310
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-south-close.png",
+            "x": 118,
+            "y": 4,
+            "width": 112,
+            "height": 248,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "18149938be3f44896209ec45018a6609e15363f8c96d6037753aa3bc98d33d10"
+          },
+          "sliceId": "1"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-south-2-close.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-south-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-south.png",
+          "sourceSha256": "fbae8ba70578fcb47c190a4cfd0f4bb424de5f5eaf1ed6751fba43bc24578f46",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-south.png",
+              "sha256": "fbae8ba70578fcb47c190a4cfd0f4bb424de5f5eaf1ed6751fba43bc24578f46"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "329c50d5187524bcf26115a1936c12b11faf451e6453d52f0014ab412064d3a4",
+          "exportVersion": 3,
+          "width": 112,
+          "height": 248,
+          "role": "body",
+          "lod": "close",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 306.25,
+            "y": 45,
+            "width": 140,
+            "height": 310
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-south-close.png",
+            "x": 238,
+            "y": 4,
+            "width": 112,
+            "height": 248,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "18149938be3f44896209ec45018a6609e15363f8c96d6037753aa3bc98d33d10"
+          },
+          "sliceId": "2"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-south-0-district.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-south-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-south.png",
+          "sourceSha256": "fbae8ba70578fcb47c190a4cfd0f4bb424de5f5eaf1ed6751fba43bc24578f46",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-south.png",
+              "sha256": "fbae8ba70578fcb47c190a4cfd0f4bb424de5f5eaf1ed6751fba43bc24578f46"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "be7159a3ee24132c9cde53daa08bef9e25365fc85be614c49e7ddfaadbfaecf9",
+          "exportVersion": 3,
+          "width": 54,
+          "height": 128,
+          "role": "body",
+          "lod": "district",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 27.5,
+            "y": 40,
+            "width": 135,
+            "height": 320
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-south-district.png",
+            "x": 4,
+            "y": 4,
+            "width": 54,
+            "height": 128,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "236f6215e4ba41473d492ad8014ee5c7a50385933cc9b387221bbd1221916fac"
+          },
+          "sliceId": "0"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-south-1-district.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-south-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-south.png",
+          "sourceSha256": "fbae8ba70578fcb47c190a4cfd0f4bb424de5f5eaf1ed6751fba43bc24578f46",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-south.png",
+              "sha256": "fbae8ba70578fcb47c190a4cfd0f4bb424de5f5eaf1ed6751fba43bc24578f46"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "68ebe398100fdee0bba61f104f90504a41315effa152f4c69b5575e6dad40e68",
+          "exportVersion": 3,
+          "width": 58,
+          "height": 128,
+          "role": "body",
+          "lod": "district",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 162.5,
+            "y": 40,
+            "width": 145,
+            "height": 320
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-south-district.png",
+            "x": 66,
+            "y": 4,
+            "width": 58,
+            "height": 128,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "236f6215e4ba41473d492ad8014ee5c7a50385933cc9b387221bbd1221916fac"
+          },
+          "sliceId": "1"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-south-2-district.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-south-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-south.png",
+          "sourceSha256": "fbae8ba70578fcb47c190a4cfd0f4bb424de5f5eaf1ed6751fba43bc24578f46",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-south.png",
+              "sha256": "fbae8ba70578fcb47c190a4cfd0f4bb424de5f5eaf1ed6751fba43bc24578f46"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "2cc3a7e7a2b1ea6e916b443acb9e37e7267659ec2bd24d9c22b275cbf58422a4",
+          "exportVersion": 3,
+          "width": 58,
+          "height": 128,
+          "role": "body",
+          "lod": "district",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 307.5,
+            "y": 40,
+            "width": 145,
+            "height": 320
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-south-district.png",
+            "x": 132,
+            "y": 4,
+            "width": 58,
+            "height": 128,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "236f6215e4ba41473d492ad8014ee5c7a50385933cc9b387221bbd1221916fac"
+          },
+          "sliceId": "2"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-east-0-close.png",
+          "source": "/assets/buildings/opening-palisade-wall/body.svg",
+          "sourceSha256": "ea1903daf88a8fdb1f1317aea1f80ae313cade05c4b636ac529e9fdd4b6501e5",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/buildings/opening-palisade-wall/body.svg",
+              "sha256": "ea1903daf88a8fdb1f1317aea1f80ae313cade05c4b636ac529e9fdd4b6501e5"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "13b403add2fd8dfcd4f1bbf6c1696a048dd8dc7f587e3269ffa2f8b9f0535995",
+          "exportVersion": 3,
+          "width": 107,
+          "height": 242,
+          "role": "body",
+          "lod": "close",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 31.250000000000004,
+            "y": 48.75,
+            "width": 133.75,
+            "height": 302.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-east-close.png",
+            "x": 4,
+            "y": 4,
+            "width": 107,
+            "height": 242,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "b5d4dc7135bbaa1e5452245c9ac6c3306421202255121ece6ff85e50a21d7f80"
+          },
+          "sliceId": "0"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-east-1-close.png",
+          "source": "/assets/buildings/opening-palisade-wall/body.svg",
+          "sourceSha256": "ea1903daf88a8fdb1f1317aea1f80ae313cade05c4b636ac529e9fdd4b6501e5",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/buildings/opening-palisade-wall/body.svg",
+              "sha256": "ea1903daf88a8fdb1f1317aea1f80ae313cade05c4b636ac529e9fdd4b6501e5"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "3f7026a99b6c1c5aeb660481d71e64696143f3dc0365a8d706cd5c94b7cf75f1",
+          "exportVersion": 3,
+          "width": 113,
+          "height": 242,
+          "role": "body",
+          "lod": "close",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 165,
+            "y": 48.75,
+            "width": 141.25,
+            "height": 302.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-east-close.png",
+            "x": 119,
+            "y": 4,
+            "width": 113,
+            "height": 242,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "b5d4dc7135bbaa1e5452245c9ac6c3306421202255121ece6ff85e50a21d7f80"
+          },
+          "sliceId": "1"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-east-2-close.png",
+          "source": "/assets/buildings/opening-palisade-wall/body.svg",
+          "sourceSha256": "ea1903daf88a8fdb1f1317aea1f80ae313cade05c4b636ac529e9fdd4b6501e5",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/buildings/opening-palisade-wall/body.svg",
+              "sha256": "ea1903daf88a8fdb1f1317aea1f80ae313cade05c4b636ac529e9fdd4b6501e5"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "17b6b2ce1787121e69b5897c8703654bacf56cfcb34b2339781ff666ed72d0a6",
+          "exportVersion": 3,
+          "width": 114,
+          "height": 242,
+          "role": "body",
+          "lod": "close",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 306.25,
+            "y": 48.75,
+            "width": 142.5,
+            "height": 302.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-east-close.png",
+            "x": 240,
+            "y": 4,
+            "width": 114,
+            "height": 242,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "b5d4dc7135bbaa1e5452245c9ac6c3306421202255121ece6ff85e50a21d7f80"
+          },
+          "sliceId": "2"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-east-0-district.png",
+          "source": "/assets/buildings/opening-palisade-wall/body.svg",
+          "sourceSha256": "ea1903daf88a8fdb1f1317aea1f80ae313cade05c4b636ac529e9fdd4b6501e5",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/buildings/opening-palisade-wall/body.svg",
+              "sha256": "ea1903daf88a8fdb1f1317aea1f80ae313cade05c4b636ac529e9fdd4b6501e5"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "a87ca72ceb9813b1c81e3f88f545f525595e688d835f3d262a048e21c3b4a59f",
+          "exportVersion": 3,
+          "width": 54,
+          "height": 124,
+          "role": "body",
+          "lod": "district",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 30,
+            "y": 45,
+            "width": 135,
+            "height": 310
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-east-district.png",
+            "x": 4,
+            "y": 4,
+            "width": 54,
+            "height": 124,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "1a09d2ce25deeecb0b1101b321f7ce0d07b7819ee5ff25c5bc84a03adb53f39a"
+          },
+          "sliceId": "0"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-east-1-district.png",
+          "source": "/assets/buildings/opening-palisade-wall/body.svg",
+          "sourceSha256": "ea1903daf88a8fdb1f1317aea1f80ae313cade05c4b636ac529e9fdd4b6501e5",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/buildings/opening-palisade-wall/body.svg",
+              "sha256": "ea1903daf88a8fdb1f1317aea1f80ae313cade05c4b636ac529e9fdd4b6501e5"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "3c2f12e173723f52ea10ec8a4095db634f61c5969c2a6de09d68d6dbb401db63",
+          "exportVersion": 3,
+          "width": 57,
+          "height": 124,
+          "role": "body",
+          "lod": "district",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 165,
+            "y": 45,
+            "width": 142.5,
+            "height": 310
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-east-district.png",
+            "x": 66,
+            "y": 4,
+            "width": 57,
+            "height": 124,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "1a09d2ce25deeecb0b1101b321f7ce0d07b7819ee5ff25c5bc84a03adb53f39a"
+          },
+          "sliceId": "1"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-east-2-district.png",
+          "source": "/assets/buildings/opening-palisade-wall/body.svg",
+          "sourceSha256": "ea1903daf88a8fdb1f1317aea1f80ae313cade05c4b636ac529e9fdd4b6501e5",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/buildings/opening-palisade-wall/body.svg",
+              "sha256": "ea1903daf88a8fdb1f1317aea1f80ae313cade05c4b636ac529e9fdd4b6501e5"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "0554de91915ed28cf7503bf3e9753414cf7b2b512a8b760eafd41cbf1c6a8b54",
+          "exportVersion": 3,
+          "width": 57,
+          "height": 124,
+          "role": "body",
+          "lod": "district",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 307.5,
+            "y": 45,
+            "width": 142.5,
+            "height": 310
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-east-district.png",
+            "x": 131,
+            "y": 4,
+            "width": 57,
+            "height": 124,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "1a09d2ce25deeecb0b1101b321f7ce0d07b7819ee5ff25c5bc84a03adb53f39a"
+          },
+          "sliceId": "2"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-west-0-close.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-west-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-west.png",
+          "sourceSha256": "c06277888d4f759b8f365b3164a544d0df570f01aaae6da2eb8effc6a483167d",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-west.png",
+              "sha256": "c06277888d4f759b8f365b3164a544d0df570f01aaae6da2eb8effc6a483167d"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "766f4cbcacd9dd7617add15277397c7784b31434d216c64a3928886c1163d678",
+          "exportVersion": 3,
+          "width": 112,
+          "height": 204,
+          "role": "body",
+          "lod": "close",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 28.75,
+            "y": 95,
+            "width": 140,
+            "height": 254.99999999999997
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-west-close.png",
+            "x": 4,
+            "y": 4,
+            "width": 112,
+            "height": 204,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "f49f8ed5e38e448038901747db7eca6e006e98423c94cce569a057d9a516f66a"
+          },
+          "sliceId": "0"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-west-1-close.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-west-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-west.png",
+          "sourceSha256": "c06277888d4f759b8f365b3164a544d0df570f01aaae6da2eb8effc6a483167d",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-west.png",
+              "sha256": "c06277888d4f759b8f365b3164a544d0df570f01aaae6da2eb8effc6a483167d"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "80a7dae32d00f10fade2bf6f773b78bc7533007b18a9ddcdc21f198707910091",
+          "exportVersion": 3,
+          "width": 112,
+          "height": 204,
+          "role": "body",
+          "lod": "close",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 168.75,
+            "y": 95,
+            "width": 140,
+            "height": 254.99999999999997
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-west-close.png",
+            "x": 124,
+            "y": 4,
+            "width": 112,
+            "height": 204,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "f49f8ed5e38e448038901747db7eca6e006e98423c94cce569a057d9a516f66a"
+          },
+          "sliceId": "1"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-west-2-close.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-west-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-west.png",
+          "sourceSha256": "c06277888d4f759b8f365b3164a544d0df570f01aaae6da2eb8effc6a483167d",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-west.png",
+              "sha256": "c06277888d4f759b8f365b3164a544d0df570f01aaae6da2eb8effc6a483167d"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "c15d815d752cea9aaaf568acd00831a245e52bf075780ec81828e3279e2df14c",
+          "exportVersion": 3,
+          "width": 115,
+          "height": 204,
+          "role": "body",
+          "lod": "close",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 308.75,
+            "y": 95,
+            "width": 143.75,
+            "height": 254.99999999999997
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-west-close.png",
+            "x": 244,
+            "y": 4,
+            "width": 115,
+            "height": 204,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "f49f8ed5e38e448038901747db7eca6e006e98423c94cce569a057d9a516f66a"
+          },
+          "sliceId": "2"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-west-0-district.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-west-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-west.png",
+          "sourceSha256": "c06277888d4f759b8f365b3164a544d0df570f01aaae6da2eb8effc6a483167d",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-west.png",
+              "sha256": "c06277888d4f759b8f365b3164a544d0df570f01aaae6da2eb8effc6a483167d"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "0ff0c5d15ed17a3e4538a26b392311f893215d99202def679d15436b09075dcd",
+          "exportVersion": 3,
+          "width": 57,
+          "height": 107,
+          "role": "body",
+          "lod": "district",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 22.5,
+            "y": 90,
+            "width": 142.5,
+            "height": 267.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-west-district.png",
+            "x": 4,
+            "y": 4,
+            "width": 57,
+            "height": 107,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "6c5847a61c87028b8d1b6f95c738f1da695ee88bd62b5866b3d703b845f98f44"
+          },
+          "sliceId": "0"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-west-1-district.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-west-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-west.png",
+          "sourceSha256": "c06277888d4f759b8f365b3164a544d0df570f01aaae6da2eb8effc6a483167d",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-west.png",
+              "sha256": "c06277888d4f759b8f365b3164a544d0df570f01aaae6da2eb8effc6a483167d"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "aeab7f46a1dc0af1f174a7128cb691ebbbe63aa9e76506a81cb1216ba10107af",
+          "exportVersion": 3,
+          "width": 58,
+          "height": 107,
+          "role": "body",
+          "lod": "district",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 165,
+            "y": 90,
+            "width": 145,
+            "height": 267.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-west-district.png",
+            "x": 69,
+            "y": 4,
+            "width": 58,
+            "height": 107,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "6c5847a61c87028b8d1b6f95c738f1da695ee88bd62b5866b3d703b845f98f44"
+          },
+          "sliceId": "1"
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/slice-west-2-district.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-west-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-west.png",
+          "sourceSha256": "c06277888d4f759b8f365b3164a544d0df570f01aaae6da2eb8effc6a483167d",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-west.png",
+              "sha256": "c06277888d4f759b8f365b3164a544d0df570f01aaae6da2eb8effc6a483167d"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "348a9ca419fefc499183ef4d8feb328375dc72a04b0ebe030111546940fda606",
+          "exportVersion": 3,
+          "width": 59,
+          "height": 107,
+          "role": "body",
+          "lod": "district",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 310,
+            "y": 90,
+            "width": 147.5,
+            "height": 267.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/depth-west-district.png",
+            "x": 135,
+            "y": 4,
+            "width": 59,
+            "height": 107,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "6c5847a61c87028b8d1b6f95c738f1da695ee88bd62b5866b3d703b845f98f44"
+          },
+          "sliceId": "2"
         }
       ],
       "planningFoundation": true,
@@ -22164,6 +23358,884 @@
             ]
           ]
         }
+      },
+      "mapDepthSlices": {
+        "north": [
+          {
+            "id": "0",
+            "range": [
+              -0.5,
+              -0.2
+            ],
+            "hull": [
+              [
+                0.0703125,
+                0.546875
+              ],
+              [
+                0.09114583333333333,
+                0.290625
+              ],
+              [
+                0.09375,
+                0.28125
+              ],
+              [
+                0.09635416666666667,
+                0.275
+              ],
+              [
+                0.11197916666666667,
+                0.246875
+              ],
+              [
+                0.1171875,
+                0.240625
+              ],
+              [
+                0.28125,
+                0.325
+              ],
+              [
+                0.3229166666666667,
+                0.3625
+              ],
+              [
+                0.3229166666666667,
+                0.6625
+              ],
+              [
+                0.3177083333333333,
+                0.6625
+              ],
+              [
+                0.13541666666666666,
+                0.59375
+              ],
+              [
+                0.1171875,
+                0.584375
+              ],
+              [
+                0.08854166666666667,
+                0.56875
+              ],
+              [
+                0.08333333333333333,
+                0.565625
+              ],
+              [
+                0.0703125,
+                0.553125
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-palisade-wall/slice-north-0-close.png",
+              "district": "/assets/map/buildings/opening-palisade-wall/slice-north-0-district.png"
+            }
+          },
+          {
+            "id": "1",
+            "range": [
+              -0.2,
+              0.14500000000000002
+            ],
+            "hull": [
+              [
+                0.3255208333333333,
+                0.35625
+              ],
+              [
+                0.3307291666666667,
+                0.346875
+              ],
+              [
+                0.3359375,
+                0.340625
+              ],
+              [
+                0.3411458333333333,
+                0.340625
+              ],
+              [
+                0.5729166666666666,
+                0.434375
+              ],
+              [
+                0.6276041666666666,
+                0.4625
+              ],
+              [
+                0.6276041666666666,
+                0.778125
+              ],
+              [
+                0.6015625,
+                0.771875
+              ],
+              [
+                0.5911458333333334,
+                0.76875
+              ],
+              [
+                0.4869791666666667,
+                0.73125
+              ],
+              [
+                0.3307291666666667,
+                0.66875
+              ],
+              [
+                0.3255208333333333,
+                0.665625
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-palisade-wall/slice-north-1-close.png",
+              "district": "/assets/map/buildings/opening-palisade-wall/slice-north-1-district.png"
+            }
+          },
+          {
+            "id": "2",
+            "range": [
+              0.14500000000000002,
+              0.5
+            ],
+            "hull": [
+              [
+                0.6302083333333334,
+                0.459375
+              ],
+              [
+                0.6328125,
+                0.459375
+              ],
+              [
+                0.875,
+                0.534375
+              ],
+              [
+                0.8776041666666666,
+                0.5375
+              ],
+              [
+                0.8984375,
+                0.575
+              ],
+              [
+                0.9036458333333334,
+                0.5875
+              ],
+              [
+                0.9296875,
+                0.815625
+              ],
+              [
+                0.9296875,
+                0.81875
+              ],
+              [
+                0.9270833333333334,
+                0.8375
+              ],
+              [
+                0.9140625,
+                0.853125
+              ],
+              [
+                0.9036458333333334,
+                0.859375
+              ],
+              [
+                0.8671875,
+                0.859375
+              ],
+              [
+                0.8489583333333334,
+                0.85625
+              ],
+              [
+                0.7630208333333334,
+                0.83125
+              ],
+              [
+                0.6770833333333334,
+                0.8
+              ],
+              [
+                0.6432291666666666,
+                0.7875
+              ],
+              [
+                0.6302083333333334,
+                0.778125
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-palisade-wall/slice-north-2-close.png",
+              "district": "/assets/map/buildings/opening-palisade-wall/slice-north-2-district.png"
+            }
+          }
+        ],
+        "south": [
+          {
+            "id": "0",
+            "range": [
+              -0.5,
+              -0.18
+            ],
+            "hull": [
+              [
+                0.08072916666666667,
+                0.5
+              ],
+              [
+                0.11197916666666667,
+                0.178125
+              ],
+              [
+                0.13020833333333334,
+                0.140625
+              ],
+              [
+                0.13802083333333334,
+                0.128125
+              ],
+              [
+                0.14322916666666666,
+                0.128125
+              ],
+              [
+                0.328125,
+                0.234375
+              ],
+              [
+                0.3333333333333333,
+                0.2375
+              ],
+              [
+                0.3359375,
+                0.240625
+              ],
+              [
+                0.3411458333333333,
+                0.25
+              ],
+              [
+                0.34375,
+                0.25625
+              ],
+              [
+                0.34375,
+                0.640625
+              ],
+              [
+                0.328125,
+                0.640625
+              ],
+              [
+                0.20052083333333334,
+                0.578125
+              ],
+              [
+                0.16927083333333334,
+                0.5625
+              ],
+              [
+                0.12239583333333333,
+                0.5375
+              ],
+              [
+                0.10677083333333333,
+                0.528125
+              ],
+              [
+                0.08072916666666667,
+                0.503125
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-palisade-wall/slice-south-0-close.png",
+              "district": "/assets/map/buildings/opening-palisade-wall/slice-south-0-district.png"
+            }
+          },
+          {
+            "id": "1",
+            "range": [
+              -0.18,
+              0.16000000000000003
+            ],
+            "hull": [
+              [
+                0.3463541666666667,
+                0.2625
+              ],
+              [
+                0.3958333333333333,
+                0.265625
+              ],
+              [
+                0.4557291666666667,
+                0.290625
+              ],
+              [
+                0.578125,
+                0.346875
+              ],
+              [
+                0.6354166666666666,
+                0.378125
+              ],
+              [
+                0.6354166666666666,
+                0.7875
+              ],
+              [
+                0.6145833333333334,
+                0.78125
+              ],
+              [
+                0.40625,
+                0.675
+              ],
+              [
+                0.3697916666666667,
+                0.65625
+              ],
+              [
+                0.3489583333333333,
+                0.64375
+              ],
+              [
+                0.3463541666666667,
+                0.640625
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-palisade-wall/slice-south-1-close.png",
+              "district": "/assets/map/buildings/opening-palisade-wall/slice-south-1-district.png"
+            }
+          },
+          {
+            "id": "2",
+            "range": [
+              0.16000000000000003,
+              0.5
+            ],
+            "hull": [
+              [
+                0.6380208333333334,
+                0.378125
+              ],
+              [
+                0.8385416666666666,
+                0.45
+              ],
+              [
+                0.8463541666666666,
+                0.459375
+              ],
+              [
+                0.8697916666666666,
+                0.5
+              ],
+              [
+                0.875,
+                0.5125
+              ],
+              [
+                0.9166666666666666,
+                0.825
+              ],
+              [
+                0.9114583333333334,
+                0.83125
+              ],
+              [
+                0.8932291666666666,
+                0.846875
+              ],
+              [
+                0.8776041666666666,
+                0.859375
+              ],
+              [
+                0.859375,
+                0.86875
+              ],
+              [
+                0.8333333333333334,
+                0.86875
+              ],
+              [
+                0.7682291666666666,
+                0.846875
+              ],
+              [
+                0.7369791666666666,
+                0.834375
+              ],
+              [
+                0.6380208333333334,
+                0.7875
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-palisade-wall/slice-south-2-close.png",
+              "district": "/assets/map/buildings/opening-palisade-wall/slice-south-2-district.png"
+            }
+          }
+        ],
+        "east": [
+          {
+            "id": "0",
+            "range": [
+              -0.5,
+              -0.18
+            ],
+            "hull": [
+              [
+                0.0703125,
+                0.828125
+              ],
+              [
+                0.11458333333333333,
+                0.46875
+              ],
+              [
+                0.11979166666666667,
+                0.45
+              ],
+              [
+                0.12239583333333333,
+                0.44375
+              ],
+              [
+                0.140625,
+                0.40625
+              ],
+              [
+                0.1484375,
+                0.396875
+              ],
+              [
+                0.3385416666666667,
+                0.353125
+              ],
+              [
+                0.3411458333333333,
+                0.353125
+              ],
+              [
+                0.3411458333333333,
+                0.803125
+              ],
+              [
+                0.3359375,
+                0.80625
+              ],
+              [
+                0.3177083333333333,
+                0.815625
+              ],
+              [
+                0.2265625,
+                0.853125
+              ],
+              [
+                0.17447916666666666,
+                0.865625
+              ],
+              [
+                0.1484375,
+                0.86875
+              ],
+              [
+                0.1328125,
+                0.86875
+              ],
+              [
+                0.11979166666666667,
+                0.865625
+              ],
+              [
+                0.09895833333333333,
+                0.853125
+              ],
+              [
+                0.07291666666666667,
+                0.83125
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-palisade-wall/slice-east-0-close.png",
+              "district": "/assets/map/buildings/opening-palisade-wall/slice-east-0-district.png"
+            }
+          },
+          {
+            "id": "1",
+            "range": [
+              -0.18,
+              0.16000000000000003
+            ],
+            "hull": [
+              [
+                0.34375,
+                0.35625
+              ],
+              [
+                0.4088541666666667,
+                0.321875
+              ],
+              [
+                0.5260416666666666,
+                0.28125
+              ],
+              [
+                0.5885416666666666,
+                0.2625
+              ],
+              [
+                0.6354166666666666,
+                0.25625
+              ],
+              [
+                0.6354166666666666,
+                0.68125
+              ],
+              [
+                0.5651041666666666,
+                0.715625
+              ],
+              [
+                0.5104166666666666,
+                0.740625
+              ],
+              [
+                0.40625,
+                0.78125
+              ],
+              [
+                0.3463541666666667,
+                0.803125
+              ],
+              [
+                0.34375,
+                0.803125
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-palisade-wall/slice-east-1-close.png",
+              "district": "/assets/map/buildings/opening-palisade-wall/slice-east-1-district.png"
+            }
+          },
+          {
+            "id": "2",
+            "range": [
+              0.16000000000000003,
+              0.5
+            ],
+            "hull": [
+              [
+                0.6380208333333334,
+                0.253125
+              ],
+              [
+                0.640625,
+                0.24375
+              ],
+              [
+                0.6484375,
+                0.234375
+              ],
+              [
+                0.8489583333333334,
+                0.128125
+              ],
+              [
+                0.8515625,
+                0.128125
+              ],
+              [
+                0.8567708333333334,
+                0.13125
+              ],
+              [
+                0.8671875,
+                0.15
+              ],
+              [
+                0.8776041666666666,
+                0.175
+              ],
+              [
+                0.8802083333333334,
+                0.184375
+              ],
+              [
+                0.9270833333333334,
+                0.53125
+              ],
+              [
+                0.9270833333333334,
+                0.540625
+              ],
+              [
+                0.8854166666666666,
+                0.571875
+              ],
+              [
+                0.734375,
+                0.640625
+              ],
+              [
+                0.6484375,
+                0.678125
+              ],
+              [
+                0.6380208333333334,
+                0.678125
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-palisade-wall/slice-east-2-close.png",
+              "district": "/assets/map/buildings/opening-palisade-wall/slice-east-2-district.png"
+            }
+          }
+        ],
+        "west": [
+          {
+            "id": "0",
+            "range": [
+              -0.5,
+              -0.16999999999999998
+            ],
+            "hull": [
+              [
+                0.0703125,
+                0.825
+              ],
+              [
+                0.10677083333333333,
+                0.56875
+              ],
+              [
+                0.11197916666666667,
+                0.55625
+              ],
+              [
+                0.11979166666666667,
+                0.540625
+              ],
+              [
+                0.1328125,
+                0.515625
+              ],
+              [
+                0.13541666666666666,
+                0.5125
+              ],
+              [
+                0.3411458333333333,
+                0.446875
+              ],
+              [
+                0.3489583333333333,
+                0.45625
+              ],
+              [
+                0.3489583333333333,
+                0.79375
+              ],
+              [
+                0.3463541666666667,
+                0.796875
+              ],
+              [
+                0.3046875,
+                0.8125
+              ],
+              [
+                0.20833333333333334,
+                0.846875
+              ],
+              [
+                0.1640625,
+                0.85625
+              ],
+              [
+                0.14322916666666666,
+                0.859375
+              ],
+              [
+                0.11979166666666667,
+                0.859375
+              ],
+              [
+                0.09635416666666667,
+                0.846875
+              ],
+              [
+                0.07291666666666667,
+                0.83125
+              ],
+              [
+                0.0703125,
+                0.828125
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-palisade-wall/slice-west-0-close.png",
+              "district": "/assets/map/buildings/opening-palisade-wall/slice-west-0-district.png"
+            }
+          },
+          {
+            "id": "1",
+            "range": [
+              -0.16999999999999998,
+              0.16000000000000003
+            ],
+            "hull": [
+              [
+                0.3515625,
+                0.4625
+              ],
+              [
+                0.4010416666666667,
+                0.428125
+              ],
+              [
+                0.5234375,
+                0.384375
+              ],
+              [
+                0.5859375,
+                0.365625
+              ],
+              [
+                0.6380208333333334,
+                0.35625
+              ],
+              [
+                0.640625,
+                0.35625
+              ],
+              [
+                0.640625,
+                0.690625
+              ],
+              [
+                0.6380208333333334,
+                0.69375
+              ],
+              [
+                0.6067708333333334,
+                0.70625
+              ],
+              [
+                0.4973958333333333,
+                0.746875
+              ],
+              [
+                0.4322916666666667,
+                0.76875
+              ],
+              [
+                0.3854166666666667,
+                0.784375
+              ],
+              [
+                0.3541666666666667,
+                0.79375
+              ],
+              [
+                0.3515625,
+                0.79375
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-palisade-wall/slice-west-1-close.png",
+              "district": "/assets/map/buildings/opening-palisade-wall/slice-west-1-district.png"
+            }
+          },
+          {
+            "id": "2",
+            "range": [
+              0.16000000000000003,
+              0.5
+            ],
+            "hull": [
+              [
+                0.6432291666666666,
+                0.35625
+              ],
+              [
+                0.6953125,
+                0.33125
+              ],
+              [
+                0.859375,
+                0.253125
+              ],
+              [
+                0.8671875,
+                0.253125
+              ],
+              [
+                0.8802083333333334,
+                0.275
+              ],
+              [
+                0.890625,
+                0.29375
+              ],
+              [
+                0.8932291666666666,
+                0.3
+              ],
+              [
+                0.9296875,
+                0.575
+              ],
+              [
+                0.9296875,
+                0.5812499999999999
+              ],
+              [
+                0.9192708333333334,
+                0.59375
+              ],
+              [
+                0.8984375,
+                0.60625
+              ],
+              [
+                0.8697916666666666,
+                0.6187499999999999
+              ],
+              [
+                0.7421875,
+                0.6625
+              ],
+              [
+                0.6692708333333334,
+                0.684375
+              ],
+              [
+                0.6458333333333334,
+                0.690625
+              ],
+              [
+                0.6432291666666666,
+                0.690625
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-palisade-wall/slice-west-2-close.png",
+              "district": "/assets/map/buildings/opening-palisade-wall/slice-west-2-district.png"
+            }
+          }
+        ]
       }
     },
     {
@@ -29196,6 +31268,1200 @@
             "atlasHeight": 512,
             "sha256": "ff6e58d6bacbbf3cc8d6d6a08446a126c2be2325f427cb1d010e6648b385d4cb"
           }
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-north-0-close.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-north-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-north.png",
+          "sourceSha256": "629feaeabb6b6239f5f02a1fa804e3bfced06a1fc406131011e7a872f81c7743",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-north.png",
+              "sha256": "629feaeabb6b6239f5f02a1fa804e3bfced06a1fc406131011e7a872f81c7743"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "d7896002d08a9d6fe22a99fc8c2db6adead86304242040d90c0d114d156530e8",
+          "exportVersion": 3,
+          "width": 69,
+          "height": 270,
+          "role": "body",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 45,
+            "y": 35,
+            "width": 86.25,
+            "height": 337.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-north-close.png",
+            "x": 4,
+            "y": 4,
+            "width": 69,
+            "height": 270,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "f05656f534cad207f6777768bc832a482f79a6f5ca53f768eb4ac58c91fcf000"
+          },
+          "sliceId": "0"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-north-1-close.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-north-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-north.png",
+          "sourceSha256": "629feaeabb6b6239f5f02a1fa804e3bfced06a1fc406131011e7a872f81c7743",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-north.png",
+              "sha256": "629feaeabb6b6239f5f02a1fa804e3bfced06a1fc406131011e7a872f81c7743"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "40dc23ca41d9431f21e5546e0c912c5bfa898214ded64675c4fd813c83fab3ba",
+          "exportVersion": 3,
+          "width": 177,
+          "height": 270,
+          "role": "body",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 131.25,
+            "y": 35,
+            "width": 221.25,
+            "height": 337.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-north-close.png",
+            "x": 81,
+            "y": 4,
+            "width": 177,
+            "height": 270,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "f05656f534cad207f6777768bc832a482f79a6f5ca53f768eb4ac58c91fcf000"
+          },
+          "sliceId": "1"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-north-2-close.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-north-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-north.png",
+          "sourceSha256": "629feaeabb6b6239f5f02a1fa804e3bfced06a1fc406131011e7a872f81c7743",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-north.png",
+              "sha256": "629feaeabb6b6239f5f02a1fa804e3bfced06a1fc406131011e7a872f81c7743"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "a96de44f5cabf7ee678330641c6e4761de2d3766d7c29f28000a74c03892245d",
+          "exportVersion": 3,
+          "width": 66,
+          "height": 270,
+          "role": "body",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 352.5,
+            "y": 35,
+            "width": 82.5,
+            "height": 337.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-north-close.png",
+            "x": 266,
+            "y": 4,
+            "width": 66,
+            "height": 270,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "f05656f534cad207f6777768bc832a482f79a6f5ca53f768eb4ac58c91fcf000"
+          },
+          "sliceId": "2"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-north-0-district.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-north-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-north.png",
+          "sourceSha256": "629feaeabb6b6239f5f02a1fa804e3bfced06a1fc406131011e7a872f81c7743",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-north.png",
+              "sha256": "629feaeabb6b6239f5f02a1fa804e3bfced06a1fc406131011e7a872f81c7743"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "3ada913eb0ab524ec6c94a8008b888feaaf38dc06492ee0bb83b875b45ce1a46",
+          "exportVersion": 3,
+          "width": 35,
+          "height": 140,
+          "role": "body",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 40,
+            "y": 27.500000000000004,
+            "width": 87.5,
+            "height": 350
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-north-district.png",
+            "x": 4,
+            "y": 4,
+            "width": 35,
+            "height": 140,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "11f817b770392a4bb6ac404ebf96597d0f95acd58e5fa68858a01dee42f3ba28"
+          },
+          "sliceId": "0"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-north-1-district.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-north-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-north.png",
+          "sourceSha256": "629feaeabb6b6239f5f02a1fa804e3bfced06a1fc406131011e7a872f81c7743",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-north.png",
+              "sha256": "629feaeabb6b6239f5f02a1fa804e3bfced06a1fc406131011e7a872f81c7743"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "60685d139a670d95f2380555de9f2b444cad56ec979dc3e295640525c5ab976e",
+          "exportVersion": 3,
+          "width": 91,
+          "height": 140,
+          "role": "body",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 127.5,
+            "y": 27.500000000000004,
+            "width": 227.5,
+            "height": 350
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-north-district.png",
+            "x": 47,
+            "y": 4,
+            "width": 91,
+            "height": 140,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "11f817b770392a4bb6ac404ebf96597d0f95acd58e5fa68858a01dee42f3ba28"
+          },
+          "sliceId": "1"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-north-2-district.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-north-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-north.png",
+          "sourceSha256": "629feaeabb6b6239f5f02a1fa804e3bfced06a1fc406131011e7a872f81c7743",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-north.png",
+              "sha256": "629feaeabb6b6239f5f02a1fa804e3bfced06a1fc406131011e7a872f81c7743"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "b723de8c16e8b6b5ad1198db8d0f9819b435d3930a746e9c4bc9d4eeb4eb45f5",
+          "exportVersion": 3,
+          "width": 34,
+          "height": 140,
+          "role": "body",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 355,
+            "y": 27.500000000000004,
+            "width": 85,
+            "height": 350
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-north-district.png",
+            "x": 146,
+            "y": 4,
+            "width": 34,
+            "height": 140,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "11f817b770392a4bb6ac404ebf96597d0f95acd58e5fa68858a01dee42f3ba28"
+          },
+          "sliceId": "2"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-south-0-close.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-south-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-south.png",
+          "sourceSha256": "79ba905a584860cc755eaedbd1f6ee6fb189feffb3d334d233a3002f38cfd049",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-south.png",
+              "sha256": "79ba905a584860cc755eaedbd1f6ee6fb189feffb3d334d233a3002f38cfd049"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "ed922eb0682afe04f29d7865884ea1ae82fe71cf74241cca89fd5367b2408e7a",
+          "exportVersion": 3,
+          "width": 67,
+          "height": 277,
+          "role": "body",
+          "lod": "close",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 48.75,
+            "y": 27.500000000000004,
+            "width": 83.75,
+            "height": 346.25
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-south-close.png",
+            "x": 4,
+            "y": 4,
+            "width": 67,
+            "height": 277,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "7ef0563def5eff9978189043cf41322fae3df54050b2cccb542bd3c8dc0bce02"
+          },
+          "sliceId": "0"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-south-1-close.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-south-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-south.png",
+          "sourceSha256": "79ba905a584860cc755eaedbd1f6ee6fb189feffb3d334d233a3002f38cfd049",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-south.png",
+              "sha256": "79ba905a584860cc755eaedbd1f6ee6fb189feffb3d334d233a3002f38cfd049"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "fb57179c9f7e280e5fecdb113f1075e52d81c82df675f95a31c9eb2b831d0614",
+          "exportVersion": 3,
+          "width": 174,
+          "height": 277,
+          "role": "body",
+          "lod": "close",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 132.5,
+            "y": 27.500000000000004,
+            "width": 217.5,
+            "height": 346.25
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-south-close.png",
+            "x": 79,
+            "y": 4,
+            "width": 174,
+            "height": 277,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "7ef0563def5eff9978189043cf41322fae3df54050b2cccb542bd3c8dc0bce02"
+          },
+          "sliceId": "1"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-south-2-close.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-south-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-south.png",
+          "sourceSha256": "79ba905a584860cc755eaedbd1f6ee6fb189feffb3d334d233a3002f38cfd049",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-south.png",
+              "sha256": "79ba905a584860cc755eaedbd1f6ee6fb189feffb3d334d233a3002f38cfd049"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "e4edceec2b14fd6d7dc25809204154ec9c8f2531d77ebcd6a09da268e8a8101a",
+          "exportVersion": 3,
+          "width": 64,
+          "height": 277,
+          "role": "body",
+          "lod": "close",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 350,
+            "y": 27.500000000000004,
+            "width": 80,
+            "height": 346.25
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-south-close.png",
+            "x": 261,
+            "y": 4,
+            "width": 64,
+            "height": 277,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "7ef0563def5eff9978189043cf41322fae3df54050b2cccb542bd3c8dc0bce02"
+          },
+          "sliceId": "2"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-south-0-district.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-south-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-south.png",
+          "sourceSha256": "79ba905a584860cc755eaedbd1f6ee6fb189feffb3d334d233a3002f38cfd049",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-south.png",
+              "sha256": "79ba905a584860cc755eaedbd1f6ee6fb189feffb3d334d233a3002f38cfd049"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "8363de39d321730222ed57c35ba44f007c043de3d0d964bd74fbbb3213b9bace",
+          "exportVersion": 3,
+          "width": 35,
+          "height": 143,
+          "role": "body",
+          "lod": "district",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 42.5,
+            "y": 22.5,
+            "width": 87.5,
+            "height": 357.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-south-district.png",
+            "x": 4,
+            "y": 4,
+            "width": 35,
+            "height": 143,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "88ec2b84c2138b06cdfc19e27f4e13b302eba645378a8c9e2ca6c4c61de92716"
+          },
+          "sliceId": "0"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-south-1-district.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-south-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-south.png",
+          "sourceSha256": "79ba905a584860cc755eaedbd1f6ee6fb189feffb3d334d233a3002f38cfd049",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-south.png",
+              "sha256": "79ba905a584860cc755eaedbd1f6ee6fb189feffb3d334d233a3002f38cfd049"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "e51236218de6f1abb8226b2a7896ade464017f0f538b527bcec0b6ab85b0266d",
+          "exportVersion": 3,
+          "width": 90,
+          "height": 143,
+          "role": "body",
+          "lod": "district",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 130,
+            "y": 22.5,
+            "width": 225.00000000000003,
+            "height": 357.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-south-district.png",
+            "x": 47,
+            "y": 4,
+            "width": 90,
+            "height": 143,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "88ec2b84c2138b06cdfc19e27f4e13b302eba645378a8c9e2ca6c4c61de92716"
+          },
+          "sliceId": "1"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-south-2-district.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-south-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-south.png",
+          "sourceSha256": "79ba905a584860cc755eaedbd1f6ee6fb189feffb3d334d233a3002f38cfd049",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-south.png",
+              "sha256": "79ba905a584860cc755eaedbd1f6ee6fb189feffb3d334d233a3002f38cfd049"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "8933e7583f8fb60418bd0befe9b5bdf54da3a25836b210446ee57f57c6b1c8cf",
+          "exportVersion": 3,
+          "width": 33,
+          "height": 143,
+          "role": "body",
+          "lod": "district",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 355,
+            "y": 22.5,
+            "width": 82.5,
+            "height": 357.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-south-district.png",
+            "x": 145,
+            "y": 4,
+            "width": 33,
+            "height": 143,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "88ec2b84c2138b06cdfc19e27f4e13b302eba645378a8c9e2ca6c4c61de92716"
+          },
+          "sliceId": "2"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-east-0-close.png",
+          "source": "/assets/buildings/opening-timber-gate/body.svg",
+          "sourceSha256": "41610349e201c70742eb78f87b23f43dbc77121252a7f8d3b9e1c757c21dde5b",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/buildings/opening-timber-gate/body.svg",
+              "sha256": "41610349e201c70742eb78f87b23f43dbc77121252a7f8d3b9e1c757c21dde5b"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "a8eafc4827551b5d5912d20f29f3da8d98df069d424239c21f43fdd06fa034db",
+          "exportVersion": 3,
+          "width": 68,
+          "height": 272,
+          "role": "body",
+          "lod": "close",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 47.5,
+            "y": 30,
+            "width": 85,
+            "height": 340
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-east-close.png",
+            "x": 4,
+            "y": 4,
+            "width": 68,
+            "height": 272,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "efe265153c4137e1bc3dd36cb43117147671712a06b8e6d8aa916e652a626757"
+          },
+          "sliceId": "0"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-east-1-close.png",
+          "source": "/assets/buildings/opening-timber-gate/body.svg",
+          "sourceSha256": "41610349e201c70742eb78f87b23f43dbc77121252a7f8d3b9e1c757c21dde5b",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/buildings/opening-timber-gate/body.svg",
+              "sha256": "41610349e201c70742eb78f87b23f43dbc77121252a7f8d3b9e1c757c21dde5b"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "ce2caec9e7d1130dd9131408debc37673f60f0b4154ee46df3e1f461c34aea16",
+          "exportVersion": 3,
+          "width": 175,
+          "height": 272,
+          "role": "body",
+          "lod": "close",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 132.5,
+            "y": 30,
+            "width": 218.75,
+            "height": 340
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-east-close.png",
+            "x": 80,
+            "y": 4,
+            "width": 175,
+            "height": 272,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "efe265153c4137e1bc3dd36cb43117147671712a06b8e6d8aa916e652a626757"
+          },
+          "sliceId": "1"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-east-2-close.png",
+          "source": "/assets/buildings/opening-timber-gate/body.svg",
+          "sourceSha256": "41610349e201c70742eb78f87b23f43dbc77121252a7f8d3b9e1c757c21dde5b",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/buildings/opening-timber-gate/body.svg",
+              "sha256": "41610349e201c70742eb78f87b23f43dbc77121252a7f8d3b9e1c757c21dde5b"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "94e019379f0a24552eaa3b36b5071e5d35369ecda5eca59af1a288941ee570e5",
+          "exportVersion": 3,
+          "width": 64,
+          "height": 272,
+          "role": "body",
+          "lod": "close",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 351.25,
+            "y": 30,
+            "width": 80,
+            "height": 340
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-east-close.png",
+            "x": 263,
+            "y": 4,
+            "width": 64,
+            "height": 272,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "efe265153c4137e1bc3dd36cb43117147671712a06b8e6d8aa916e652a626757"
+          },
+          "sliceId": "2"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-east-0-district.png",
+          "source": "/assets/buildings/opening-timber-gate/body.svg",
+          "sourceSha256": "41610349e201c70742eb78f87b23f43dbc77121252a7f8d3b9e1c757c21dde5b",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/buildings/opening-timber-gate/body.svg",
+              "sha256": "41610349e201c70742eb78f87b23f43dbc77121252a7f8d3b9e1c757c21dde5b"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "796373dbefe81becce564858df3351d1336bfc568bb3592b9d3ff11f42c20692",
+          "exportVersion": 3,
+          "width": 34,
+          "height": 138,
+          "role": "body",
+          "lod": "district",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 45,
+            "y": 27.500000000000004,
+            "width": 85,
+            "height": 345
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-east-district.png",
+            "x": 4,
+            "y": 4,
+            "width": 34,
+            "height": 138,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "4e41fa12c316879eef316d04439607c97979bb0b71c847d3f74a3d4ee2a8749c"
+          },
+          "sliceId": "0"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-east-1-district.png",
+          "source": "/assets/buildings/opening-timber-gate/body.svg",
+          "sourceSha256": "41610349e201c70742eb78f87b23f43dbc77121252a7f8d3b9e1c757c21dde5b",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/buildings/opening-timber-gate/body.svg",
+              "sha256": "41610349e201c70742eb78f87b23f43dbc77121252a7f8d3b9e1c757c21dde5b"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "35431fa1c3c0682745f9e156aafeee7fec852a791f3af6d54649947c4323c6f4",
+          "exportVersion": 3,
+          "width": 89,
+          "height": 138,
+          "role": "body",
+          "lod": "district",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 130,
+            "y": 27.500000000000004,
+            "width": 222.5,
+            "height": 345
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-east-district.png",
+            "x": 46,
+            "y": 4,
+            "width": 89,
+            "height": 138,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "4e41fa12c316879eef316d04439607c97979bb0b71c847d3f74a3d4ee2a8749c"
+          },
+          "sliceId": "1"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-east-2-district.png",
+          "source": "/assets/buildings/opening-timber-gate/body.svg",
+          "sourceSha256": "41610349e201c70742eb78f87b23f43dbc77121252a7f8d3b9e1c757c21dde5b",
+          "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/buildings/opening-timber-gate/body.svg",
+              "sha256": "41610349e201c70742eb78f87b23f43dbc77121252a7f8d3b9e1c757c21dde5b"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "61a3e044f07b38669c586d6381c1758185cf56d19a95589474af1c47d05864c6",
+          "exportVersion": 3,
+          "width": 33,
+          "height": 138,
+          "role": "body",
+          "lod": "district",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 352.5,
+            "y": 27.500000000000004,
+            "width": 82.5,
+            "height": 345
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-east-district.png",
+            "x": 143,
+            "y": 4,
+            "width": 33,
+            "height": 138,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "4e41fa12c316879eef316d04439607c97979bb0b71c847d3f74a3d4ee2a8749c"
+          },
+          "sliceId": "2"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-west-0-close.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-west-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-west.png",
+          "sourceSha256": "0249ea9e730a8a32ba0c1267dd2ff633472b640786d20459edd13d8990659856",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-west.png",
+              "sha256": "0249ea9e730a8a32ba0c1267dd2ff633472b640786d20459edd13d8990659856"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "a5ecfc106e1742b0c94aa86540be305ba396e3458c337587c10092dd6cdc4547",
+          "exportVersion": 3,
+          "width": 69,
+          "height": 234,
+          "role": "body",
+          "lod": "close",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 45,
+            "y": 73.75,
+            "width": 86.25,
+            "height": 292.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-west-close.png",
+            "x": 4,
+            "y": 4,
+            "width": 69,
+            "height": 234,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "caf014f3259c26d45df3fe443f8f7d4a31bfab59fb3cb4aeb054282799fd16ea"
+          },
+          "sliceId": "0"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-west-1-close.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-west-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-west.png",
+          "sourceSha256": "0249ea9e730a8a32ba0c1267dd2ff633472b640786d20459edd13d8990659856",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-west.png",
+              "sha256": "0249ea9e730a8a32ba0c1267dd2ff633472b640786d20459edd13d8990659856"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "5f96132c7065f92f4c3a2cec32f6e5fe87e64f46d4f8780971f61111ca876134",
+          "exportVersion": 3,
+          "width": 177,
+          "height": 234,
+          "role": "body",
+          "lod": "close",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 131.25,
+            "y": 73.75,
+            "width": 221.25,
+            "height": 292.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-west-close.png",
+            "x": 81,
+            "y": 4,
+            "width": 177,
+            "height": 234,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "caf014f3259c26d45df3fe443f8f7d4a31bfab59fb3cb4aeb054282799fd16ea"
+          },
+          "sliceId": "1"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-west-2-close.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-west-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-west.png",
+          "sourceSha256": "0249ea9e730a8a32ba0c1267dd2ff633472b640786d20459edd13d8990659856",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-west.png",
+              "sha256": "0249ea9e730a8a32ba0c1267dd2ff633472b640786d20459edd13d8990659856"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "875d822bd61e22879d9e4807786bdc0bcf84af580d6734046a76bddf365da833",
+          "exportVersion": 3,
+          "width": 66,
+          "height": 234,
+          "role": "body",
+          "lod": "close",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 352.5,
+            "y": 73.75,
+            "width": 82.5,
+            "height": 292.5
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-west-close.png",
+            "x": 266,
+            "y": 4,
+            "width": 66,
+            "height": 234,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "caf014f3259c26d45df3fe443f8f7d4a31bfab59fb3cb4aeb054282799fd16ea"
+          },
+          "sliceId": "2"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-west-0-district.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-west-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-west.png",
+          "sourceSha256": "0249ea9e730a8a32ba0c1267dd2ff633472b640786d20459edd13d8990659856",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-west.png",
+              "sha256": "0249ea9e730a8a32ba0c1267dd2ff633472b640786d20459edd13d8990659856"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "c57b4c428f757831618b4defb80391dbcec025477c6117e0f9e872a0abc71a42",
+          "exportVersion": 3,
+          "width": 35,
+          "height": 122,
+          "role": "body",
+          "lod": "district",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 40,
+            "y": 67.5,
+            "width": 87.5,
+            "height": 305
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-west-district.png",
+            "x": 4,
+            "y": 4,
+            "width": 35,
+            "height": 122,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "6d143096ddb999db17c0aca342e8cd71b61a932db30890fc878c7939ef5cd854"
+          },
+          "sliceId": "0"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-west-1-district.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-west-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-west.png",
+          "sourceSha256": "0249ea9e730a8a32ba0c1267dd2ff633472b640786d20459edd13d8990659856",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-west.png",
+              "sha256": "0249ea9e730a8a32ba0c1267dd2ff633472b640786d20459edd13d8990659856"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "ab2a6311cc36f535ff9834461d4a4ee36c021d9d14854f510e5a221d9f9d8feb",
+          "exportVersion": 3,
+          "width": 91,
+          "height": 122,
+          "role": "body",
+          "lod": "district",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 127.5,
+            "y": 67.5,
+            "width": 227.5,
+            "height": 305
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-west-district.png",
+            "x": 47,
+            "y": 4,
+            "width": 91,
+            "height": 122,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "6d143096ddb999db17c0aca342e8cd71b61a932db30890fc878c7939ef5cd854"
+          },
+          "sliceId": "1"
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/slice-west-2-district.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-west-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-west.png",
+          "sourceSha256": "0249ea9e730a8a32ba0c1267dd2ff633472b640786d20459edd13d8990659856",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-west.png",
+              "sha256": "0249ea9e730a8a32ba0c1267dd2ff633472b640786d20459edd13d8990659856"
+            },
+            {
+              "source": "assets/map-depth-slices.json",
+              "sha256": "3bc5b734ccf5d3ed417c969cd29519265ff864f978563ca6f49a45ceee7e069f"
+            }
+          ],
+          "sha256": "5da11d40fc158dc478f65a49098bad209f49326881b1535f53be42a4030054b7",
+          "exportVersion": 3,
+          "width": 34,
+          "height": 122,
+          "role": "body",
+          "lod": "district",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 355,
+            "y": 67.5,
+            "width": 85,
+            "height": 305
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/depth-west-district.png",
+            "x": 146,
+            "y": 4,
+            "width": 34,
+            "height": 122,
+            "atlasWidth": 256,
+            "atlasHeight": 256,
+            "sha256": "6d143096ddb999db17c0aca342e8cd71b61a932db30890fc878c7939ef5cd854"
+          },
+          "sliceId": "2"
         }
       ],
       "planningFoundation": true,
@@ -29962,6 +33228,968 @@
             ]
           ]
         }
+      },
+      "mapDepthSlices": {
+        "north": [
+          {
+            "id": "0",
+            "range": [
+              -0.5,
+              -0.28
+            ],
+            "hull": [
+              [
+                0.10416666666666667,
+                0.6375000000000001
+              ],
+              [
+                0.15104166666666666,
+                0.171875
+              ],
+              [
+                0.15364583333333334,
+                0.1625
+              ],
+              [
+                0.15885416666666666,
+                0.153125
+              ],
+              [
+                0.17447916666666666,
+                0.128125
+              ],
+              [
+                0.1875,
+                0.109375
+              ],
+              [
+                0.1953125,
+                0.1
+              ],
+              [
+                0.20572916666666666,
+                0.1
+              ],
+              [
+                0.22135416666666666,
+                0.11875
+              ],
+              [
+                0.234375,
+                0.1375
+              ],
+              [
+                0.2421875,
+                0.15
+              ],
+              [
+                0.24739583333333334,
+                0.159375
+              ],
+              [
+                0.2526041666666667,
+                0.171875
+              ],
+              [
+                0.2708333333333333,
+                0.2375
+              ],
+              [
+                0.2708333333333333,
+                0.7
+              ],
+              [
+                0.2421875,
+                0.7
+              ],
+              [
+                0.2109375,
+                0.696875
+              ],
+              [
+                0.1953125,
+                0.69375
+              ],
+              [
+                0.171875,
+                0.6875
+              ],
+              [
+                0.16145833333333334,
+                0.684375
+              ],
+              [
+                0.1328125,
+                0.671875
+              ],
+              [
+                0.1171875,
+                0.659375
+              ],
+              [
+                0.11458333333333333,
+                0.65625
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-timber-gate/slice-north-0-close.png",
+              "district": "/assets/map/buildings/opening-timber-gate/slice-north-0-district.png"
+            }
+          },
+          {
+            "id": "1",
+            "range": [
+              -0.28,
+              0.29000000000000004
+            ],
+            "hull": [
+              [
+                0.2734375,
+                0.240625
+              ],
+              [
+                0.2786458333333333,
+                0.240625
+              ],
+              [
+                0.7291666666666666,
+                0.409375
+              ],
+              [
+                0.7317708333333334,
+                0.4125
+              ],
+              [
+                0.7317708333333334,
+                0.896875
+              ],
+              [
+                0.7265625,
+                0.896875
+              ],
+              [
+                0.2734375,
+                0.7
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-timber-gate/slice-north-1-close.png",
+              "district": "/assets/map/buildings/opening-timber-gate/slice-north-1-district.png"
+            }
+          },
+          {
+            "id": "2",
+            "range": [
+              0.29000000000000004,
+              0.5
+            ],
+            "hull": [
+              [
+                0.734375,
+                0.38125
+              ],
+              [
+                0.7369791666666666,
+                0.371875
+              ],
+              [
+                0.7395833333333334,
+                0.365625
+              ],
+              [
+                0.7473958333333334,
+                0.353125
+              ],
+              [
+                0.7578125,
+                0.3375
+              ],
+              [
+                0.7708333333333334,
+                0.31875
+              ],
+              [
+                0.7786458333333334,
+                0.309375
+              ],
+              [
+                0.7838541666666666,
+                0.30625
+              ],
+              [
+                0.7890625,
+                0.30625
+              ],
+              [
+                0.7994791666666666,
+                0.315625
+              ],
+              [
+                0.8125,
+                0.334375
+              ],
+              [
+                0.8229166666666666,
+                0.35
+              ],
+              [
+                0.8307291666666666,
+                0.3625
+              ],
+              [
+                0.8359375,
+                0.371875
+              ],
+              [
+                0.8385416666666666,
+                0.378125
+              ],
+              [
+                0.890625,
+                0.878125
+              ],
+              [
+                0.890625,
+                0.884375
+              ],
+              [
+                0.8541666666666666,
+                0.90625
+              ],
+              [
+                0.8463541666666666,
+                0.909375
+              ],
+              [
+                0.8255208333333334,
+                0.915625
+              ],
+              [
+                0.796875,
+                0.915625
+              ],
+              [
+                0.7760416666666666,
+                0.9125
+              ],
+              [
+                0.7421875,
+                0.903125
+              ],
+              [
+                0.734375,
+                0.9
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-timber-gate/slice-north-2-close.png",
+              "district": "/assets/map/buildings/opening-timber-gate/slice-north-2-district.png"
+            }
+          }
+        ],
+        "south": [
+          {
+            "id": "0",
+            "range": [
+              -0.5,
+              -0.28
+            ],
+            "hull": [
+              [
+                0.11197916666666667,
+                0.64375
+              ],
+              [
+                0.13802083333333334,
+                0.26875
+              ],
+              [
+                0.1484375,
+                0.1625
+              ],
+              [
+                0.171875,
+                0.121875
+              ],
+              [
+                0.19010416666666666,
+                0.09375
+              ],
+              [
+                0.20052083333333334,
+                0.08125
+              ],
+              [
+                0.203125,
+                0.08125
+              ],
+              [
+                0.20833333333333334,
+                0.084375
+              ],
+              [
+                0.21614583333333334,
+                0.09375
+              ],
+              [
+                0.23958333333333334,
+                0.134375
+              ],
+              [
+                0.2552083333333333,
+                0.1625
+              ],
+              [
+                0.2578125,
+                0.171875
+              ],
+              [
+                0.2734375,
+                0.234375
+              ],
+              [
+                0.2734375,
+                0.7
+              ],
+              [
+                0.265625,
+                0.703125
+              ],
+              [
+                0.2526041666666667,
+                0.703125
+              ],
+              [
+                0.20833333333333334,
+                0.696875
+              ],
+              [
+                0.15364583333333334,
+                0.678125
+              ],
+              [
+                0.14583333333333334,
+                0.675
+              ],
+              [
+                0.140625,
+                0.671875
+              ],
+              [
+                0.11197916666666667,
+                0.6468750000000001
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-timber-gate/slice-south-0-close.png",
+              "district": "/assets/map/buildings/opening-timber-gate/slice-south-0-district.png"
+            }
+          },
+          {
+            "id": "1",
+            "range": [
+              -0.28,
+              0.29000000000000004
+            ],
+            "hull": [
+              [
+                0.2760416666666667,
+                0.2375
+              ],
+              [
+                0.2786458333333333,
+                0.2375
+              ],
+              [
+                0.7213541666666666,
+                0.390625
+              ],
+              [
+                0.7265625,
+                0.39375
+              ],
+              [
+                0.7265625,
+                0.89375
+              ],
+              [
+                0.7213541666666666,
+                0.89375
+              ],
+              [
+                0.2760416666666667,
+                0.7
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-timber-gate/slice-south-1-close.png",
+              "district": "/assets/map/buildings/opening-timber-gate/slice-south-1-district.png"
+            }
+          },
+          {
+            "id": "2",
+            "range": [
+              0.29000000000000004,
+              0.5
+            ],
+            "hull": [
+              [
+                0.7291666666666666,
+                0.39375
+              ],
+              [
+                0.7317708333333334,
+                0.315625
+              ],
+              [
+                0.75,
+                0.2875
+              ],
+              [
+                0.7708333333333334,
+                0.25625
+              ],
+              [
+                0.78125,
+                0.24375
+              ],
+              [
+                0.7916666666666666,
+                0.24375
+              ],
+              [
+                0.796875,
+                0.25
+              ],
+              [
+                0.8072916666666666,
+                0.265625
+              ],
+              [
+                0.828125,
+                0.30000000000000004
+              ],
+              [
+                0.8411458333333334,
+                0.325
+              ],
+              [
+                0.8515625,
+                0.4375
+              ],
+              [
+                0.8828125,
+                0.86875
+              ],
+              [
+                0.8828125,
+                0.878125
+              ],
+              [
+                0.8802083333333334,
+                0.88125
+              ],
+              [
+                0.8567708333333334,
+                0.9
+              ],
+              [
+                0.8255208333333334,
+                0.9125
+              ],
+              [
+                0.7916666666666666,
+                0.91875
+              ],
+              [
+                0.7890625,
+                0.91875
+              ],
+              [
+                0.7395833333333334,
+                0.90625
+              ],
+              [
+                0.734375,
+                0.903125
+              ],
+              [
+                0.7291666666666666,
+                0.89375
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-timber-gate/slice-south-2-close.png",
+              "district": "/assets/map/buildings/opening-timber-gate/slice-south-2-district.png"
+            }
+          }
+        ],
+        "east": [
+          {
+            "id": "0",
+            "range": [
+              -0.5,
+              -0.28
+            ],
+            "hull": [
+              [
+                0.10416666666666667,
+                0.859375
+              ],
+              [
+                0.140625,
+                0.4
+              ],
+              [
+                0.15104166666666666,
+                0.271875
+              ],
+              [
+                0.16145833333333334,
+                0.24375
+              ],
+              [
+                0.19270833333333334,
+                0.19375
+              ],
+              [
+                0.20052083333333334,
+                0.1875
+              ],
+              [
+                0.2109375,
+                0.1875
+              ],
+              [
+                0.21875,
+                0.19375
+              ],
+              [
+                0.23177083333333334,
+                0.2125
+              ],
+              [
+                0.23958333333333334,
+                0.228125
+              ],
+              [
+                0.2526041666666667,
+                0.25625
+              ],
+              [
+                0.2578125,
+                0.271875
+              ],
+              [
+                0.2734375,
+                0.353125
+              ],
+              [
+                0.2734375,
+                0.9
+              ],
+              [
+                0.265625,
+                0.903125
+              ],
+              [
+                0.23958333333333334,
+                0.909375
+              ],
+              [
+                0.21875,
+                0.9125
+              ],
+              [
+                0.1953125,
+                0.915625
+              ],
+              [
+                0.18229166666666666,
+                0.915625
+              ],
+              [
+                0.15104166666666666,
+                0.903125
+              ],
+              [
+                0.13802083333333334,
+                0.896875
+              ],
+              [
+                0.12760416666666666,
+                0.890625
+              ],
+              [
+                0.10416666666666667,
+                0.8625
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-timber-gate/slice-east-0-close.png",
+              "district": "/assets/map/buildings/opening-timber-gate/slice-east-0-district.png"
+            }
+          },
+          {
+            "id": "1",
+            "range": [
+              -0.28,
+              0.29000000000000004
+            ],
+            "hull": [
+              [
+                0.2760416666666667,
+                0.35625
+              ],
+              [
+                0.7239583333333334,
+                0.234375
+              ],
+              [
+                0.7291666666666666,
+                0.234375
+              ],
+              [
+                0.7291666666666666,
+                0.740625
+              ],
+              [
+                0.2890625,
+                0.89375
+              ],
+              [
+                0.2760416666666667,
+                0.896875
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-timber-gate/slice-east-1-close.png",
+              "district": "/assets/map/buildings/opening-timber-gate/slice-east-1-district.png"
+            }
+          },
+          {
+            "id": "2",
+            "range": [
+              0.29000000000000004,
+              0.5
+            ],
+            "hull": [
+              [
+                0.7317708333333334,
+                0.23125
+              ],
+              [
+                0.7447916666666666,
+                0.15625
+              ],
+              [
+                0.7552083333333334,
+                0.134375
+              ],
+              [
+                0.765625,
+                0.115625
+              ],
+              [
+                0.7864583333333334,
+                0.084375
+              ],
+              [
+                0.7916666666666666,
+                0.08125
+              ],
+              [
+                0.8020833333333334,
+                0.08125
+              ],
+              [
+                0.8125,
+                0.09375
+              ],
+              [
+                0.8255208333333334,
+                0.115625
+              ],
+              [
+                0.8359375,
+                0.134375
+              ],
+              [
+                0.8463541666666666,
+                0.159375
+              ],
+              [
+                0.890625,
+                0.690625
+              ],
+              [
+                0.890625,
+                0.69375
+              ],
+              [
+                0.8880208333333334,
+                0.696875
+              ],
+              [
+                0.859375,
+                0.715625
+              ],
+              [
+                0.8125,
+                0.734375
+              ],
+              [
+                0.7708333333333334,
+                0.740625
+              ],
+              [
+                0.7317708333333334,
+                0.740625
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-timber-gate/slice-east-2-close.png",
+              "district": "/assets/map/buildings/opening-timber-gate/slice-east-2-district.png"
+            }
+          }
+        ],
+        "west": [
+          {
+            "id": "0",
+            "range": [
+              -0.5,
+              -0.28
+            ],
+            "hull": [
+              [
+                0.10416666666666667,
+                0.8625
+              ],
+              [
+                0.14583333333333334,
+                0.425
+              ],
+              [
+                0.1484375,
+                0.41875
+              ],
+              [
+                0.15625,
+                0.40625
+              ],
+              [
+                0.17708333333333334,
+                0.375
+              ],
+              [
+                0.19010416666666666,
+                0.35625
+              ],
+              [
+                0.1953125,
+                0.35
+              ],
+              [
+                0.20052083333333334,
+                0.35
+              ],
+              [
+                0.2109375,
+                0.3625
+              ],
+              [
+                0.22916666666666666,
+                0.390625
+              ],
+              [
+                0.2708333333333333,
+                0.45625
+              ],
+              [
+                0.2708333333333333,
+                0.88125
+              ],
+              [
+                0.265625,
+                0.884375
+              ],
+              [
+                0.2578125,
+                0.8875
+              ],
+              [
+                0.21354166666666666,
+                0.896875
+              ],
+              [
+                0.1953125,
+                0.9
+              ],
+              [
+                0.17708333333333334,
+                0.9
+              ],
+              [
+                0.13802083333333334,
+                0.890625
+              ],
+              [
+                0.13020833333333334,
+                0.8875
+              ],
+              [
+                0.10677083333333333,
+                0.871875
+              ],
+              [
+                0.10416666666666667,
+                0.86875
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-timber-gate/slice-west-0-close.png",
+              "district": "/assets/map/buildings/opening-timber-gate/slice-west-0-district.png"
+            }
+          },
+          {
+            "id": "1",
+            "range": [
+              -0.28,
+              0.29000000000000004
+            ],
+            "hull": [
+              [
+                0.2734375,
+                0.45625
+              ],
+              [
+                0.4973958333333333,
+                0.390625
+              ],
+              [
+                0.53125,
+                0.38125
+              ],
+              [
+                0.7317708333333334,
+                0.328125
+              ],
+              [
+                0.7317708333333334,
+                0.7375
+              ],
+              [
+                0.5494791666666666,
+                0.79375
+              ],
+              [
+                0.2838541666666667,
+                0.875
+              ],
+              [
+                0.2734375,
+                0.875
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-timber-gate/slice-west-1-close.png",
+              "district": "/assets/map/buildings/opening-timber-gate/slice-west-1-district.png"
+            }
+          },
+          {
+            "id": "2",
+            "range": [
+              0.29000000000000004,
+              0.5
+            ],
+            "hull": [
+              [
+                0.734375,
+                0.328125
+              ],
+              [
+                0.7578125,
+                0.265625
+              ],
+              [
+                0.7604166666666666,
+                0.259375
+              ],
+              [
+                0.7682291666666666,
+                0.246875
+              ],
+              [
+                0.7786458333333334,
+                0.23125
+              ],
+              [
+                0.7916666666666666,
+                0.2125
+              ],
+              [
+                0.8046875,
+                0.196875
+              ],
+              [
+                0.8072916666666666,
+                0.196875
+              ],
+              [
+                0.8229166666666666,
+                0.215625
+              ],
+              [
+                0.8385416666666666,
+                0.240625
+              ],
+              [
+                0.8489583333333334,
+                0.259375
+              ],
+              [
+                0.8515625,
+                0.265625
+              ],
+              [
+                0.890625,
+                0.6875
+              ],
+              [
+                0.890625,
+                0.69375
+              ],
+              [
+                0.8880208333333334,
+                0.696875
+              ],
+              [
+                0.859375,
+                0.715625
+              ],
+              [
+                0.8541666666666666,
+                0.71875
+              ],
+              [
+                0.828125,
+                0.728125
+              ],
+              [
+                0.7760416666666666,
+                0.7375
+              ],
+              [
+                0.734375,
+                0.7375
+              ]
+            ],
+            "paths": {
+              "close": "/assets/map/buildings/opening-timber-gate/slice-west-2-close.png",
+              "district": "/assets/map/buildings/opening-timber-gate/slice-west-2-district.png"
+            }
+          }
+        ]
       }
     },
     {
