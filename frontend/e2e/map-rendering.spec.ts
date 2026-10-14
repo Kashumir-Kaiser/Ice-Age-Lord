@@ -60,18 +60,24 @@ test('preserved painted flame animates only for visible active fire; reduced mot
  await page.getByRole('button',{name:'Bình thường',exact:true}).click();await expect.poll(async()=>(await flames()).flameFrame).toBe(0);
  await page.getByLabel('Xem thử vùng nhiệt').selectOption('25000');await page.getByRole('button',{name:'Toàn bộ vùng nhiệt',exact:true}).click();await expect.poll(async()=>(await flames()).flameSprites).toBe(0);
 });
-test('distant symbol remains selectable beyond the tiny physical footprint',async({page})=>{
+test('overlapping distant symbols remain selectable and cycle beyond their tiny physical footprints',async({page})=>{
  await page.emulateMedia({reducedMotion:'reduce'});await territory(page);
  await page.getByLabel('Xem thử vùng nhiệt').selectOption('25000');await page.getByRole('button',{name:'Toàn bộ vùng nhiệt',exact:true}).click();
  const scene=page.locator('.territory-scene-svg');await scene.evaluate(node=>node.scrollIntoView({block:'center'}));
  const target=await scene.evaluate(node=>{
   const symbols=Array.from(node.querySelectorAll('.territory-building:not(.is-draft) .territory-art-hit')).map(p=>{
    const points=p.getAttribute('points')!.trim().split(/\s+/).map(v=>v.split(',').map(Number));
-   return {id:p.closest('[data-building-id]')!.getAttribute('data-building-id'),x:Math.max(...points.map(p=>p[0]))-.01,y:(Math.min(...points.map(p=>p[1]))+Math.max(...points.map(p=>p[1])))/2,width:Math.max(...points.map(p=>p[0]))-Math.min(...points.map(p=>p[0]))};
+   return {id:p.closest('[data-building-id]')!.getAttribute('data-building-id'),x:Math.max(...points.map(p=>p[0]))-3,y:(Math.min(...points.map(p=>p[1]))+Math.max(...points.map(p=>p[1])))/2,width:Math.max(...points.map(p=>p[0]))-Math.min(...points.map(p=>p[0]))};
   }).sort((a,b)=>b.x-a.x);
   const s=symbols[0],box=node.getBoundingClientRect();return {...s,x:s.x+box.left,y:s.y+box.top};
  });
- expect(target.width).toBe(12);await page.mouse.click(target.x,target.y);await expect(page.locator('.territory-building.is-selected')).toHaveAttribute('data-building-id',target.id!);
+ expect(target.width).toBe(12);
+ const visited=new Set<string>();
+ for(let i=0;i<4;i++){
+  await page.mouse.click(target.x,target.y);await expect(page.locator('.territory-building.is-selected')).toHaveCount(1);
+  visited.add((await page.locator('.territory-building.is-selected').getAttribute('data-building-id'))!);
+ }
+ expect(visited.has(target.id!)).toBe(true);expect(visited.size).toBeGreaterThan(1);
 });
 test('missing raster derivatives retain registered art and interactions',async({page})=>{
  await page.route('**/assets/map/buildings/**',route=>route.fulfill({status:404,body:'missing map export'}));
