@@ -6,6 +6,7 @@ const browser=await launchMapBrowser(),evidence=[];
 const output=resolve(process.env.MAP_QA_DIR??'map-evidence/after');mkdirSync(output,{recursive:true});
 const dpr=Number(process.env.MAP_QA_DPR??1),quality=process.env.MAP_QA_QUALITY??'normal';
 async function capture(page,name,viewport){
+ await page.locator('[data-map-renderer]').scrollIntoViewIfNeeded();
  const filename=`${name}-${viewport.width}-${quality}-dpr${dpr}.png`;
  try{await readyMap(page);}catch(error){
   const metrics=await page.evaluate(()=>window.__mapMetrics?.at(-1));
@@ -28,7 +29,8 @@ try{
   await page.locator('.territory-calibration > summary').click();await page.getByRole('button',{name:'Xem nhóm công trình minh họa',exact:true}).click();await capture(page,'dense-520',viewport);
   await navigateMap(page,'Bản đồ');await capture(page,'local',viewport);
   await page.locator('.map-developer-tools > summary').click();await page.getByLabel('Mô phỏng giờ hiển thị').selectOption('1140');await page.locator('.map-developer-tools > summary').click();await capture(page,'night',viewport);
-  await page.getByRole('button',{name:'Chuyển sang bản đồ thế giới',exact:true}).click();await capture(page,'world',viewport);
+  await page.getByRole('button',{name:'Chuyển sang bản đồ thế giới',exact:true}).click();await capture(page,'world-night',viewport);
+  await page.locator('.map-developer-tools > summary').click();await page.getByLabel('Mô phỏng giờ hiển thị').selectOption('420');await page.locator('.map-developer-tools > summary').click();await capture(page,'world',viewport);
   await page.close();
   const fallback=await openMap(browser,{viewport,dpr,quality,fallback:true});await navigateMap(fallback,'Lãnh địa');await capture(fallback,'fallback',viewport);await fallback.close();
  }

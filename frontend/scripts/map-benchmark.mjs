@@ -21,7 +21,7 @@ try{
    await page.keyboard.press('Escape');
   }
   if(fixture==='world-1023')await page.getByRole('button',{name:'Chuyển sang bản đồ thế giới',exact:true}).click();
-  await readyMap(page);await page.waitForTimeout(warmup*1000);
+  await page.locator('[data-map-renderer]').scrollIntoViewIfNeeded();await readyMap(page);await page.waitForTimeout(warmup*1000);
   const latency=await page.evaluate(async duration=>{
    const node=document.querySelector('.territory-scene-svg,.terrain-svg--deep'),box=node.getBoundingClientRect();
    const start=performance.now(),x=box.left+box.width*.45,y=box.top+box.height*.65,feedback=[];

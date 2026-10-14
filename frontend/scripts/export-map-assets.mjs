@@ -1,37 +1,27 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
+import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { Resvg } from '@resvg/resvg-js';
 import sharp from 'sharp';
+import {svgMapSource} from './svg-map-source.mjs';
 const repo=resolve(new URL('../..',import.meta.url).pathname),manifestPath=resolve(repo,'assets/manifest.json');
 const manifest=JSON.parse(readFileSync(manifestPath,'utf8'));
 const sha=(buffer)=>createHash('sha256').update(buffer).digest('hex');
 const output=resolve(repo,'frontend/public/assets/map');mkdirSync(output,{recursive:true});
-// resvg does not resolve external SVG use references. Inline the referenced element
-// inside the use wrapper, preserving clip/transform and its parent's definitions.
-function standalone(path,chain=[]){
- if(chain.includes(path))throw new Error('SVG reference cycle: '+path);
- let markup=readFileSync(path,'utf8');
- return markup.replace(/<use\b([^>]*?)href="([^"]+)"([^>]*?)\s*\/>/g,(match,before,href,after)=>{
-  if(href.startsWith('#'))return match;
-  const [file,id]=href.split('#'),child=standalone(resolve(dirname(path),file),[...chain,path]);
-  if(id&&!child.includes(`id="${id}"`))throw new Error('Missing SVG reference '+href);
-  const content=child.replace(/^[\s\S]*?<svg\b[^>]*>/,'').replace(/<\/svg>\s*$/,'');
-  return `<g ${before} ${after}>${content}</g>`;
- });
-}
+// Resolve the named external SVG element with its definitions and dependency hashes.
 let count=0;
 for(const asset of manifest.assets){
  asset.composition??='single-body';asset.mapExports=[];
  const destination=resolve(output,'buildings',asset.assetId);mkdirSync(destination,{recursive:true});
  for(const role of ['body','shadow',...(asset.planningLayer?['base']:[]),...(asset.layers.vfx?['vfx']:[])]){
-  const source=role==='base'?asset.planningLayer:asset.layers[role],file=resolve(repo,'frontend/public'+source),svg=standalone(file);
+  const source=role==='base'?asset.planningLayer:asset.layers[role],file=resolve(repo,'frontend/public'+source),graph=svgMapSource(file),svg=graph.svg;
   for(const [lod,size] of [['close',384],['district',192]]){
    const result=new Resvg(svg,{fitTo:{mode:'width',value:size},font:{loadSystemFonts:false}}).render();
    const png=await sharp(result.asPng()).png({compressionLevel:9,palette:false}).toBuffer();
    const path=`/assets/map/buildings/${asset.assetId}/${role}-${lod}.png`;writeFileSync(resolve(repo,'frontend/public'+path),png);
    const meta=await sharp(png).metadata();
-   asset.mapExports.push({path,source,sourceSha256:sha(readFileSync(file)),sha256:sha(png),exportVersion:1,width:meta.width,height:meta.height,role,lod,orientation:asset.orientation,alpha:'straight',colorSpace:'srgb',logicalCanvas:asset.logicalCanvas,trim:{x:0,y:0,width:asset.logicalCanvas.width,height:asset.logicalCanvas.height}});count++;
+   const sourceDependencies=Array.from(graph.dependencies,([path,sha256])=>({source:path.slice(repo.length+1),sha256}));
+   asset.mapExports.push({path,source,sourceSha256:sha(readFileSync(file)),sourceDependencies,sha256:sha(png),exportVersion:1,width:meta.width,height:meta.height,role,lod,orientation:asset.orientation,alpha:'straight',colorSpace:'srgb',logicalCanvas:asset.logicalCanvas,trim:{x:0,y:0,width:asset.logicalCanvas.width,height:asset.logicalCanvas.height}});count++;
   }
  }
 }

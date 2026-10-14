@@ -30,6 +30,7 @@ export function validateMapExport(entry,asset,read=path=>readFileSync(resolve(ro
  if(!entry.sha256||hash(buffer)!==entry.sha256)throw new Error('Map export hash mismatch: '+entry.path);
  checkDimensions(buffer,entry.width,entry.height);
  if(!entry.sourceSha256||hash(read(entry.source.startsWith('/')?'frontend/public'+entry.source:entry.source))!==entry.sourceSha256)throw new Error('Map source hash mismatch: '+entry.source);
+ for(const dependency of entry.sourceDependencies??[])if(hash(read(dependency.source))!==dependency.sha256)throw new Error('Map source dependency hash mismatch: '+dependency.source);
 }
 export function validateMapAssets(manifest){
  for(const asset of manifest.assets){
