@@ -20,6 +20,10 @@ export function rasterDimensions(buffer){
 }
 function checkDimensions(buffer,width,height){const actual=rasterDimensions(buffer);if(actual.width!==width||actual.height!==height)throw new Error('Raster dimensions differ from manifest');}
 export function validateMapExport(entry,asset,read=path=>readFileSync(resolve(root,path))){
+ if(entry.groundCalibration){
+  const c=entry.groundCalibration,target=entry.orientation==='east'||entry.orientation==='west'?-.5:.5;
+  if(!c.contact||![c.contact.x,c.contact.y].every(v=>Number.isFinite(v)&&v>=0&&v<=1)||!Number.isFinite(c.scale)||c.scale<=0||c.scale>4||!Number.isFinite(c.shear)||Math.abs(c.shear)>2||!Number.isFinite(c.sourceSlope)||c.targetSlope!==target||Math.abs(c.sourceSlope+c.shear-target)>1e-8)throw new Error('Invalid architectural ground calibration');
+ }
  if(!['.png','.webp'].includes(extname(entry.path)))throw new Error('Unsupported map export format: '+entry.path);
  if(!Number.isInteger(entry.width)||entry.width<1||entry.width>2048||!Number.isInteger(entry.height)||entry.height<1||entry.height>2048)throw new Error('Invalid map export dimensions');
  if(entry.logicalCanvas&&(entry.logicalCanvas.width!==asset.logicalCanvas.width||entry.logicalCanvas.height!==asset.logicalCanvas.height))throw new Error('Incompatible logical canvas');

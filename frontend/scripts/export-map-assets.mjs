@@ -11,6 +11,7 @@ import {orientationCanvas} from './map-orientation-export.mjs';
 import {trimMapRaster} from './trim-map-raster.mjs';
 import {exportMapFlame} from './export-map-flame.mjs';
 import {exportDepthSlices} from './export-depth-slices.mjs';
+import {calibrateMapGround} from './calibrate-map-ground.mjs';
 const repo=resolve(new URL('../..',import.meta.url).pathname),manifestPath=resolve(repo,'assets/manifest.json');
 const manifest=JSON.parse(readFileSync(manifestPath,'utf8'));
 const authoredViews=JSON.parse(readFileSync(resolve(repo,'assets/map-building-views.json'),'utf8'));
@@ -34,19 +35,24 @@ for(const asset of manifest.assets){
  delete asset.mapDepthSlices;
  for(const orientation of asset.generatedOrientationViews??[]){delete asset.orientationViews?.[orientation];delete asset.orientationRegions?.[orientation];}
  asset.generatedOrientationViews=Object.keys(authoredViews[asset.assetId]??{});
- let bodyReference;
+ let bodyReference,defaultCalibration;
  const destination=resolve(output,'buildings',asset.assetId);mkdirSync(destination,{recursive:true});
  for(const role of ['body','shadow',...(asset.planningLayer?['base']:[]),...(asset.layers.vfx?['vfx']:[])]){
   const source=role==='base'?asset.planningLayer:asset.layers[role],file=resolve(repo,'frontend/public'+source),graph=svgMapSource(file),svg=graph.svg;
   for(const [lod,size] of [['close',384],['district',192]]){
    const result=new Resvg(svg,{fitTo:{mode:'width',value:size},font:{loadSystemFonts:false}}).render();
-   const full=await sharp(result.asPng()).png({compressionLevel:9,palette:false}).toBuffer();
+   let full=await sharp(result.asPng()).png({compressionLevel:9,palette:false}).toBuffer();
    if(role==='body'&&lod==='close')bodyReference=full;
+   if(role==='body'&&depthJoints[asset.assetId]){
+    const calibrated=await calibrateMapGround(full,asset,asset.orientation,defaultCalibration);full=calibrated.png;defaultCalibration=calibrated.registration;
+    if(lod==='close'){asset.orientationRegions??={};asset.orientationRegions[asset.orientation]={hitPolygon:calibrated.hitPolygon,upper:calibrated.hitPolygon};}
+   }
    const cropped=await trimMapRaster(full,asset.logicalCanvas),png=cropped.png;
    const path=`/assets/map/buildings/${asset.assetId}/${role}-${lod}.png`;writeFileSync(resolve(repo,'frontend/public'+path),png);
    const meta=await sharp(png).metadata();
    const sourceDependencies=Array.from(graph.dependencies,([path,sha256])=>({source:path.slice(repo.length+1),sha256}));
-   asset.mapExports.push({path,source,sourceSha256:sha(readFileSync(file)),sourceDependencies,sha256:sha(png),exportVersion:3,width:meta.width,height:meta.height,role,lod,orientation:asset.orientation,alpha:'straight',colorSpace:'srgb',logicalCanvas:asset.logicalCanvas,rasterCanvas:cropped.rasterCanvas,trim:cropped.trim});count++;
+   if(role==='body'&&defaultCalibration)sourceDependencies.push({source:'frontend/scripts/calibrate-map-ground.mjs',sha256:sha(readFileSync(resolve(repo,'frontend/scripts/calibrate-map-ground.mjs')))});
+   asset.mapExports.push({path,source,sourceSha256:sha(readFileSync(file)),sourceDependencies,sha256:sha(png),exportVersion:role==='body'&&defaultCalibration?4:3,...(role==='body'&&defaultCalibration?{groundCalibration:defaultCalibration}:{}),width:meta.width,height:meta.height,role,lod,orientation:asset.orientation,alpha:'straight',colorSpace:'srgb',logicalCanvas:asset.logicalCanvas,rasterCanvas:cropped.rasterCanvas,trim:cropped.trim});count++;
   }
  }
  for(const [orientation,source] of Object.entries(authoredViews[asset.assetId]??{})){
@@ -56,11 +62,16 @@ for(const asset of manifest.assets){
   const layerPath=`/assets/map/buildings/${asset.assetId}/body-${orientation}-close.png`;
   asset.orientationViews??={};asset.orientationViews[orientation]={...asset.layers,body:layerPath};
   asset.orientationRegions??={};asset.orientationRegions[orientation]={hitPolygon:painted.hitPolygon,upper:painted.hitPolygon};
+  let viewCalibration;
   for(const [lod,size] of [['close',384],['district',192]]){
-   const full=await sharp(painted.data,{raw:{width:painted.width,height:painted.height,channels:4}}).resize({width:size}).png({compressionLevel:9}).toBuffer();
+   let full=await sharp(painted.data,{raw:{width:painted.width,height:painted.height,channels:4}}).resize({width:size}).png({compressionLevel:9}).toBuffer();
+   if(depthJoints[asset.assetId]){
+    const calibrated=await calibrateMapGround(full,asset,orientation,viewCalibration);full=calibrated.png;viewCalibration=calibrated.registration;
+    if(lod==='close')asset.orientationRegions[orientation]={hitPolygon:calibrated.hitPolygon,upper:calibrated.hitPolygon};
+   }
    const cropped=await trimMapRaster(full,asset.logicalCanvas),png=cropped.png,meta=await sharp(png).metadata();
    const path=`/assets/map/buildings/${asset.assetId}/body-${orientation}-${lod}.png`;writeFileSync(resolve(repo,'frontend/public'+path),png);
-   asset.mapExports.push({path,layerPath,source,sourceSha256:sha(readFileSync(file)),sourceDependencies:[{source,sha256:sha(readFileSync(file))}],sha256:sha(png),exportVersion:3,width:meta.width,height:meta.height,role:'body',lod,orientation,alpha:'straight',colorSpace:'srgb',logicalCanvas:asset.logicalCanvas,rasterCanvas:cropped.rasterCanvas,trim:cropped.trim});count++;
+   asset.mapExports.push({path,layerPath,source,sourceSha256:sha(readFileSync(file)),sourceDependencies:[{source,sha256:sha(readFileSync(file))},...(viewCalibration?[{source:'frontend/scripts/calibrate-map-ground.mjs',sha256:sha(readFileSync(resolve(repo,'frontend/scripts/calibrate-map-ground.mjs')))}]:[])],sha256:sha(png),exportVersion:viewCalibration?4:3,...(viewCalibration?{groundCalibration:viewCalibration}:{}),width:meta.width,height:meta.height,role:'body',lod,orientation,alpha:'straight',colorSpace:'srgb',logicalCanvas:asset.logicalCanvas,rasterCanvas:cropped.rasterCanvas,trim:cropped.trim});count++;
   }
  }
 }

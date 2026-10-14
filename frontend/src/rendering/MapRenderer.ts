@@ -248,7 +248,8 @@ export class MapRenderer {
           // One whole-body fallback per entity if an individual slice is unavailable.
           if(draws.some(d=>d.id===b.entityId+':body-fallback'))continue;
           for(let i=draws.length-1;i>=0;i--)if(draws[i].id.startsWith(b.entityId+':slice:'))draws.splice(i,1);
-          draws.push({id:b.entityId+':body-fallback',path:asset.layers.body!,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});continue;
+          const body=exportPath(asset,layer,preferDistrict||lod!=='close'?'district':'close'),fallback=this.failures.has(body)||this.failures.has(this.assets.url(body))?asset.layers.body!:body;
+          draws.push({id:b.entityId+':body-fallback',path:fallback,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});continue;
         }
         const exported=exportPath(asset,layer,preferDistrict||lod!=='close'?'district':'close'),path=(this.failures.has(exported)||this.failures.has(this.assets.url(exported)))?(asset.layers[layer.role]??layer.path):exported;draws.push({id:b.id+':'+layer.role,path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});
       }
