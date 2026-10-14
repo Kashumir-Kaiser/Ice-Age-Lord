@@ -19,6 +19,66 @@
       "provider": "OpenAI ImageGen",
       "created": "2026-10-15",
       "status": "draft; original preserved immediately; preview-only, registration and scene acceptance pending"
+    },
+    {
+      "assetId": "watchtower-preview",
+      "orientation": "west",
+      "source": "assets/source/map-buildings/watchtower-west.png",
+      "sha256": "a6136b909f62a85c76c4ade62115ee33bba9124b0fd3f45bf56252039a0ad3f8",
+      "gitBlobSha": "512dc34b608b9a176d903685129df5e77b6f182b",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-15",
+      "status": "draft; original preserved immediately; authored different camera view, pose/scene acceptance pending"
+    },
+    {
+      "assetId": "elemental-tower-preview",
+      "orientation": "west",
+      "source": "assets/source/map-buildings/elemental-tower-west.png",
+      "sha256": "6399d31a1af51648909b6c03e47a722b60e8254e465149ee1489979f3947b52f",
+      "gitBlobSha": "ec6cb2e8d12cf8f1d7700c4605110c7fde5ca936",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-15",
+      "status": "draft; original preserved immediately; authored different camera view, pose/scene acceptance pending"
+    },
+    {
+      "assetId": "watchtower-preview",
+      "orientation": "east",
+      "source": "assets/source/map-buildings/watchtower-east.png",
+      "sha256": "aaa2572689b23c02926c5de447fd425be33884781c17d897a468903f23bf8bdc",
+      "gitBlobSha": "d595e3e2608bedd73eef1de616e5368bb4e8a691",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-15",
+      "status": "draft; original saved immediately; authored rear-facing view, registration/scene acceptance pending"
+    },
+    {
+      "assetId": "elemental-tower-preview",
+      "orientation": "east",
+      "source": "assets/source/map-buildings/elemental-tower-east.png",
+      "sha256": "d35a490ca4ef6ec16269351c3481c0767097f228936cbbc812e8c113a2aa02f4",
+      "gitBlobSha": "29dad8929c8da60d5360ea2de029a643abffe306",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-15",
+      "status": "draft; original saved immediately; authored rear-facing view, registration/scene acceptance pending"
+    },
+    {
+      "assetId": "watchtower-preview",
+      "orientation": "south",
+      "source": "assets/source/map-buildings/watchtower-south.png",
+      "sha256": "064893296c07fe908a93d36bf73ca2f0f8e5fbc8867dd12da7ee7f8655a020d8",
+      "gitBlobSha": "9540c83002a99ef890742a990b3862718b077f1e",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-15",
+      "status": "draft; original preserved; visual review found rear maintenance window on same side as east; correct the authored south view before pose acceptance"
+    },
+    {
+      "assetId": "elemental-tower-preview",
+      "orientation": "south",
+      "source": "assets/source/map-buildings/elemental-tower-south.png",
+      "sha256": "8956f8f1a3e97c97229b5889ba26ce195ab0dc11e797a38c86ed77dce5aafde6",
+      "gitBlobSha": "fa792c604646812e153d03fb7d4591c5508dad45",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-15",
+      "status": "draft; original preserved; visual review found rear maintenance window on same side as east; correct the authored south view before pose acceptance"
     }
   ]
 }

@@ -63,7 +63,7 @@ test('one clean player snapshot links four exact opening instances and starts wi
   assert.ok(view.settlement.buildings.every(building=>building.settlementId===view.settlement.id&&building.footprint.provenance==='frontend-fixture'));
   assert.deepEqual(view.placementDefinitions.map(definition=>definition.assetId),[
     'polar-farmhouse-l01','opening-palisade-wall','opening-timber-gate',
-    'lord-house-damaged','fixture-tall-tower','fixture-fire-max',
+    'lord-house-damaged','fixture-tall-tower','watchtower-preview','elemental-tower-preview','fixture-fire-max',
   ]);
 });
 

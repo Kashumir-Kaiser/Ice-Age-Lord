@@ -4,6 +4,18 @@
     "east": "assets/source/map-buildings/lord-house-damaged-east.png",
     "west": "assets/source/map-buildings/lord-house-damaged-west.png"
   },
+  "watchtower-preview": {
+    "north": "assets/source/map-buildings/watchtower-north.png",
+    "west": "assets/source/map-buildings/watchtower-west.png",
+    "east": "assets/source/map-buildings/watchtower-east.png",
+    "south": "assets/source/map-buildings/watchtower-south.png"
+  },
+  "elemental-tower-preview": {
+    "north": "assets/source/map-buildings/elemental-tower-north.png",
+    "west": "assets/source/map-buildings/elemental-tower-west.png",
+    "east": "assets/source/map-buildings/elemental-tower-east.png",
+    "south": "assets/source/map-buildings/elemental-tower-south.png"
+  },
   "polar-farmhouse-l01": {
     "east": "assets/source/map-buildings/polar-farmhouse-l01-east.png",
     "south": "assets/source/map-buildings/polar-farmhouse-l01-south.png",

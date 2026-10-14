@@ -16,6 +16,18 @@ For the current map task, use codex/map-25d-overhaul and GitHub integration/Acti
 Reuse prior generated art. Do not regenerate missing originals merely because a
 new chat cannot access the previous chat's workspace.
 
+User update, 2026-10-15: GitHub Actions minutes are exhausted. Do not trigger,
+dispatch or rerun Actions for this task. Use [skip ci] on every subsequent map
+branch commit/push, perform available checks locally, and upload original and
+generated derivative Git blobs directly through the integration. Do not rely on
+the asset persistence Action while this instruction is active. Leave main and
+its workflow settings alone.
+
+Later user update, 2026-10-15: the repository is now public. Retry GitHub Actions
+for the current map checkpoint; if GitHub still blocks execution, return to
+local checks. This supersedes the temporary quota instruction above. Use normal
+map-branch commits for this retry; do not dispatch redundant old runs.
+
 If native git cannot reach GitHub and a large connector image upload stalls,
 transfer small base64 parts through the integration under assets/source/uploads.
 The map-asset-upload workflow verifies the original Git blob hashes, restores

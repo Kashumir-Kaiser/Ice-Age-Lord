@@ -262,7 +262,8 @@ export class MapRenderer {
           draws.push({id:b.entityId+':body-fallback',path:fallback,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});continue;
         }
         const exported=exportPath(asset,layer,preferDistrict||lod!=='close'?'district':'close'),failed=this.failures.has(exported)||this.failures.has(this.assets.url(exported));
-        const path=failed?(this.snapshot.mode==='planning'&&layer.role==='base'?asset.planningLayer??layer.path:layer.path):exported;
+        const sourceFailed=this.failures.has(layer.path)||this.failures.has(this.assets.url(layer.path));
+        const path=failed?(this.snapshot.mode==='planning'&&layer.role==='base'?asset.planningLayer??layer.path:sourceFailed?asset.layers[layer.role]??layer.path:layer.path):exported;
         draws.push({id:b.id+':'+layer.role,path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});
       }
       if(loadedFlame&&key){const rect=flameRect(asset,b.rect)!;draws.push({id:b.id+':flame',path:key,...rect,alpha:(occludes&&this.snapshot.mode==='focus'?.22:1)*(b.draft?.55:1)});}

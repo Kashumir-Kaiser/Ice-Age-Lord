@@ -14,6 +14,7 @@ import {exportDepthSlices} from './export-depth-slices.mjs';
 import {calibrateMapGround} from './calibrate-map-ground.mjs';
 import {mapGroundShadow} from './map-ground-shadow.mjs';
 import {splitMapArchitecture} from './split-map-architecture.mjs';
+import {prepareTowerPreviews} from './map-tower-previews.mjs';
 const repo=resolve(new URL('../..',import.meta.url).pathname),manifestPath=resolve(repo,'assets/manifest.json');
 const manifest=JSON.parse(readFileSync(manifestPath,'utf8'));
 const authoredViews=JSON.parse(readFileSync(resolve(repo,'assets/map-building-views.json'),'utf8'));
@@ -22,6 +23,7 @@ const architecture=JSON.parse(readFileSync(resolve(repo,'assets/map-architecture
 // This tower's authored SVG groups separate the complete footing from the shaft/roof.
 // Other legacy base/upper files contain arbitrary horizontal clips and remain unaccepted.
 const architecturalAssets=new Set(['fixture-tall-tower']);
+const previewDependencies=await prepareTowerPreviews(manifest,repo);
 const sha=(buffer)=>createHash('sha256').update(buffer).digest('hex');
 const output=resolve(repo,'frontend/public/assets/map');mkdirSync(output,{recursive:true});
 // Resolve the named external SVG element with its definitions and dependency hashes.
@@ -61,6 +63,7 @@ for(const asset of manifest.assets){
    const path=`/assets/map/buildings/${asset.assetId}/${role}-${lod}.png`;writeFileSync(resolve(repo,'frontend/public'+path),png);
    const meta=await sharp(png).metadata();
    const sourceDependencies=Array.from(graph.dependencies,([path,sha256])=>({source:path.slice(repo.length+1),sha256}));
+   sourceDependencies.push(...(previewDependencies.get(asset.assetId)??[]));
    if(shadow)sourceDependencies.push({source:'frontend/scripts/map-ground-shadow.mjs',sha256:sha(readFileSync(resolve(repo,'frontend/scripts/map-ground-shadow.mjs')))});
    if(role==='body'&&defaultCalibration)sourceDependencies.push({source:'frontend/scripts/calibrate-map-ground.mjs',sha256:sha(readFileSync(resolve(repo,'frontend/scripts/calibrate-map-ground.mjs')))});
    const shadowLayer=`/assets/map/buildings/${asset.assetId}/shadow-close.png`;
@@ -101,12 +104,13 @@ for(const asset of manifest.assets){
 }
 // Stable per-asset/LOD atlases: 4 px extrusion, same logical registration.
 for (const asset of manifest.assets) for (const lod of ['close','district']) {
- const entries=asset.mapExports.filter(e=>e.lod===lod&&!(e.groundShadow&&e.orientation!==asset.orientation));
+ const entries=asset.mapExports.filter(e=>e.lod===lod&&!(e.groundShadow&&e.orientation!==asset.orientation)&&!(e.role==='body'&&!e.layerPath&&asset.orientationViews?.[asset.orientation]?.body&&asset.orientationViews[asset.orientation].body!==asset.layers.body));
  const side=lod==='close'?1024:512,pad=4,cell=lod==='close'?392:200,cellY=lod==='close'?328:168;
  const pixels=Buffer.alloc(side*side*4);
  for (let i=0;i<entries.length;i++) {
   const e=entries[i],x=(i%2)*cell+pad,y=Math.floor(i/2)*cellY+pad;
   const {data,info}=await sharp(resolve(repo,'frontend/public'+e.path)).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+  if(x+info.width+pad>side||y+info.height+pad>side)throw new Error('Registered building layers exceed atlas: '+asset.assetId);
   for(let gy=-pad;gy<info.height+pad;gy++)for(let gx=-pad;gx<info.width+pad;gx++){
    const sx=Math.max(0,Math.min(info.width-1,gx)),sy=Math.max(0,Math.min(info.height-1,gy));
    const src=(sy*info.width+sx)*4,dest=((y+gy)*side+x+gx)*4;data.copy(pixels,dest,src,src+4);
