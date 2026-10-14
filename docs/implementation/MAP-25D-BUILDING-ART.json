@@ -29,6 +29,96 @@
       "provider": "OpenAI ImageGen",
       "created": "2026-10-14",
       "status": "draft; authored pose inspected, scene registration and final acceptance pending"
+    },
+    {
+      "assetId": "polar-farmhouse-l01",
+      "orientation": "east",
+      "source": "assets/source/map-buildings/polar-farmhouse-l01-east.png",
+      "sha256": "6ef78778f2693b39272fcb823a74e6f0950d0c2a0b85bfc386f1ca1181350618",
+      "gitBlobSha": "a12f66d553869edb68b82c00f09b7a47f2549471",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-14",
+      "status": "draft; authored pose inspected, scene registration and final acceptance pending"
+    },
+    {
+      "assetId": "polar-farmhouse-l01",
+      "orientation": "south",
+      "source": "assets/source/map-buildings/polar-farmhouse-l01-south.png",
+      "sha256": "22ca8d3aa24e343f2c95b077e8f2a09277b37b63f2fd98a189d058aedf61b010",
+      "gitBlobSha": "01f20bafa318ae9f8dfae3f3c3b64f5d97c74f8c",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-14",
+      "status": "draft; authored pose inspected, scene registration and final acceptance pending"
+    },
+    {
+      "assetId": "polar-farmhouse-l01",
+      "orientation": "west",
+      "source": "assets/source/map-buildings/polar-farmhouse-l01-west.png",
+      "sha256": "54bc64306a4b57173c41e27e3561a436d7a5822a95e26b87581e49be22103753",
+      "gitBlobSha": "ffcc299fad1bd868577533b4cdb5ef0a75bc9136",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-14",
+      "status": "draft; authored pose inspected, scene registration and final acceptance pending"
+    },
+    {
+      "assetId": "opening-palisade-wall",
+      "orientation": "west",
+      "source": "assets/source/map-buildings/opening-palisade-wall-west.png",
+      "sha256": "c06277888d4f759b8f365b3164a544d0df570f01aaae6da2eb8effc6a483167d",
+      "gitBlobSha": "89944b10fc3d45aeff5473b8e92123526e4a19d8",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-14",
+      "status": "draft; authored pose inspected, scene registration and final acceptance pending"
+    },
+    {
+      "assetId": "opening-palisade-wall",
+      "orientation": "south",
+      "source": "assets/source/map-buildings/opening-palisade-wall-south.png",
+      "sha256": "fbae8ba70578fcb47c190a4cfd0f4bb424de5f5eaf1ed6751fba43bc24578f46",
+      "gitBlobSha": "5be5f461d321f5da68a83340b66ceec8693c9267",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-14",
+      "status": "draft; authored pose inspected, scene registration and final acceptance pending"
+    },
+    {
+      "assetId": "opening-timber-gate",
+      "orientation": "north",
+      "source": "assets/source/map-buildings/opening-timber-gate-north.png",
+      "sha256": "629feaeabb6b6239f5f02a1fa804e3bfced06a1fc406131011e7a872f81c7743",
+      "gitBlobSha": "1600fb5b405b56ae15b515ad48cf931c9e10c3dd",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-14",
+      "status": "draft; authored pose inspected, scene registration and final acceptance pending"
+    },
+    {
+      "assetId": "opening-palisade-wall",
+      "orientation": "north",
+      "source": "assets/source/map-buildings/opening-palisade-wall-north.png",
+      "sha256": "7f94f98f2a8012ab2d42102df51dcce2672001e455b9231bf77ee047acf8af92",
+      "gitBlobSha": "7eefc36e449ddf839274a42e907d9a89bc92f83d",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-14",
+      "status": "draft; authored pose inspected, scene registration and final acceptance pending"
+    },
+    {
+      "assetId": "opening-timber-gate",
+      "orientation": "south",
+      "source": "assets/source/map-buildings/opening-timber-gate-south.png",
+      "sha256": "79ba905a584860cc755eaedbd1f6ee6fb189feffb3d334d233a3002f38cfd049",
+      "gitBlobSha": "f25e9af1e69a7fb3c673d72f1196418f4d6873c8",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-14",
+      "status": "draft; authored pose inspected, scene registration and final acceptance pending"
+    },
+    {
+      "assetId": "opening-timber-gate",
+      "orientation": "west",
+      "source": "assets/source/map-buildings/opening-timber-gate-west.png",
+      "sha256": "0249ea9e730a8a32ba0c1267dd2ff633472b640786d20459edd13d8990659856",
+      "gitBlobSha": "305af10767cd1f280515a3998491e222fc581351",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-14",
+      "status": "draft; authored pose inspected, scene registration and final acceptance pending"
     }
   ]
 }

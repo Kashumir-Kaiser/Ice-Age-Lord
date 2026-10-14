@@ -11,7 +11,7 @@ manifest = upload / 'manifest.json'
 if manifest.exists():
     for entry in json.loads(manifest.read_text()):
         target = (root / entry['path']).resolve()
-        if target.parent not in [root / 'assets/source/terrain',root / 'assets/source/map-buildings'] or target.suffix != '.png':
+        if target.parent not in [root / 'assets/source/terrain',root / 'assets/source/map-buildings',root / 'assets/source/map-effects'] or target.suffix != '.png':
             raise ValueError('Artwork target outside terrain source directory')
         encoded = []
         for part in entry['parts']:

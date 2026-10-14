@@ -16,6 +16,16 @@ const output=resolve(repo,'frontend/public/assets/map');mkdirSync(output,{recurs
 // Resolve the named external SVG element with its definitions and dependency hashes.
 let count=0;
 for(const asset of manifest.assets){
+ const defaultOrientation=authoredViews._defaultOrientations?.[asset.assetId];
+ if(defaultOrientation){
+  if(!['north','east','south','west'].includes(defaultOrientation))throw new Error('Invalid default map orientation');
+  asset.orientation=defaultOrientation;
+ }
+ const equivalents=authoredViews._equivalentOrientations?.[asset.assetId];
+ if(equivalents){
+  if(!Array.isArray(equivalents)||equivalents.some(o=>!['north','east','south','west'].includes(o)))throw new Error('Invalid equivalent map orientations');
+  asset.equivalentOrientations=equivalents;
+ }
  asset.composition??='single-body';asset.mapExports=[];
  for(const orientation of asset.generatedOrientationViews??[]){delete asset.orientationViews?.[orientation];delete asset.orientationRegions?.[orientation];}
  asset.generatedOrientationViews=Object.keys(authoredViews[asset.assetId]??{});

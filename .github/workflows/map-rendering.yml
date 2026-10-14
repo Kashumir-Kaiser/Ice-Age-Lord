@@ -72,6 +72,7 @@ jobs:
         run: |
           paths=(assets/source/terrain frontend/public/assets/map assets/manifest.json frontend/public/assets/manifest.json)
           if test -d assets/source/map-buildings; then paths+=(assets/source/map-buildings); fi
+          if test -d assets/source/map-effects; then paths+=(assets/source/map-effects); fi
           tar -czf /tmp/map-originals.tar.gz "${paths[@]}"
           split -b 20M -d /tmp/map-originals.tar.gz /tmp/map-originals.part
       - uses: actions/upload-artifact@v4

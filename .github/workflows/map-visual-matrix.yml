@@ -1,0 +1,43 @@
+name: Map quality and DPR visual evidence
+on:
+  push:
+    branches: ['codex/map-25d-overhaul']
+    paths: ['frontend/**', 'assets/**', '.github/workflows/map-visual-matrix.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        quality: [low, normal]
+        dpr: [1, 2]
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - run: python scripts/restore-map-upload.py
+        working-directory: .
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run assets:map && npm run build
+        env:
+          VITE_GAME_MODE: demo
+      - run: npx playwright install --with-deps chromium
+      - name: Capture all three viewports with fixed reduced-motion state
+        run: node scripts/map-qa.mjs
+        env:
+          MAP_QA_QUALITY: '${{ matrix.quality }}'
+          MAP_QA_DPR: '${{ matrix.dpr }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-visual-${{ matrix.quality }}-dpr${{ matrix.dpr }}
+          path: frontend/map-evidence/after/
+          retention-days: 14

@@ -88,3 +88,16 @@ test('raster export validation rejects bad formats, anchors/trim/atlas/orientati
  const west=asset.mapExports.find(e=>e.orientation==='west'&&e.role==='body');assert.ok(west);validateMapExport(west,asset);
  for(const change of [{path:'/bad.svg'},{width:4096},{width:entry.width-1,atlas:undefined},{height:entry.height-1,atlas:undefined},{sha256:'bad'},{sourceSha256:'bad'},{orientation:'west'},{trim:{x:-1,y:0,width:1,height:1}},{atlas:{path:'/a.png',x:2040,y:0,width:64,height:64,atlasWidth:2048,atlasHeight:2048}}])assert.throws(()=>validateMapExport({...entry,...change},asset));
 });
+
+test('selectable asymmetric structures have registered raster coverage for every compass orientation',()=>{
+ for(const id of ['lord-house-damaged','polar-farmhouse-l01','opening-palisade-wall','opening-timber-gate']){
+  const item=manifest.assets.find(a=>a.assetId===id);assert.ok(item,id);
+  for(const orientation of ['north','east','south','west']){
+   const resolved=resolveOrientation(item,orientation);assert.equal(resolved.missing,false,id+':'+orientation);
+   for(const lod of ['close','district']){
+    const exported=item.mapExports.find(e=>e.role==='body'&&e.lod===lod&&e.orientation===orientation&&(e.layerPath??e.source)===resolved.layers.body);
+    assert.ok(exported,id+':'+orientation+':'+lod);validateMapExport(exported,item);
+   }
+  }
+ }
+});
