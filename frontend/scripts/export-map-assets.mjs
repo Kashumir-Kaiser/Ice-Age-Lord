@@ -7,7 +7,7 @@ import {svgMapSource} from './svg-map-source.mjs';
 import {periodicMaterial} from './periodic-material.mjs';
 import {normalizeMapAlpha} from './normalize-map-alpha.mjs';
 import {LEDGE_SOURCES} from '../src/rendering/mapStyle.ts';
-import {orientationCanvas} from './map-orientation-export.mjs';
+import {orientationCanvas,alphaHull} from './map-orientation-export.mjs';
 import {trimMapRaster} from './trim-map-raster.mjs';
 import {exportMapFlame} from './export-map-flame.mjs';
 import {exportDepthSlices} from './export-depth-slices.mjs';
@@ -17,6 +17,9 @@ const repo=resolve(new URL('../..',import.meta.url).pathname),manifestPath=resol
 const manifest=JSON.parse(readFileSync(manifestPath,'utf8'));
 const authoredViews=JSON.parse(readFileSync(resolve(repo,'assets/map-building-views.json'),'utf8'));
 const depthJoints=JSON.parse(readFileSync(resolve(repo,'assets/map-depth-slices.json'),'utf8'));
+// This tower's authored SVG groups separate the complete footing from the shaft/roof.
+// Other legacy base/upper files contain arbitrary horizontal clips and remain unaccepted.
+const architecturalAssets=new Set(['fixture-tall-tower']);
 const sha=(buffer)=>createHash('sha256').update(buffer).digest('hex');
 const output=resolve(repo,'frontend/public/assets/map');mkdirSync(output,{recursive:true});
 // Resolve the named external SVG element with its definitions and dependency hashes.
@@ -32,18 +35,22 @@ for(const asset of manifest.assets){
   if(!Array.isArray(equivalents)||equivalents.some(o=>!['north','east','south','west'].includes(o)))throw new Error('Invalid equivalent map orientations');
   asset.equivalentOrientations=equivalents;
  }
- asset.composition??='single-body';asset.mapExports=[];
+ asset.composition=architecturalAssets.has(asset.assetId)?'architectural':'single-body';asset.mapExports=[];
  delete asset.mapDepthSlices;
  for(const orientation of asset.generatedOrientationViews??[]){delete asset.orientationViews?.[orientation];delete asset.orientationRegions?.[orientation];}
  asset.generatedOrientationViews=Object.keys(authoredViews[asset.assetId]??{});
  let bodyReference,defaultCalibration;
  const destination=resolve(output,'buildings',asset.assetId);mkdirSync(destination,{recursive:true});
- for(const role of ['body','shadow',...(asset.planningLayer?['base']:[]),...(asset.layers.vfx?['vfx']:[])]){
-  const source=role==='base'?asset.planningLayer:asset.layers[role],file=resolve(repo,'frontend/public'+source),graph=svgMapSource(file),shadow=role==='shadow'&&depthJoints[asset.assetId],svg=shadow?mapGroundShadow(asset,asset.orientation):graph.svg;
+ for(const role of ['body','shadow',...(asset.composition==='architectural'?['base','upper']:asset.planningLayer?['base']:[]),...(asset.layers.vfx?['vfx']:[])]){
+  const source=role==='base'&&asset.composition!=='architectural'?asset.planningLayer:asset.layers[role],file=resolve(repo,'frontend/public'+source),graph=svgMapSource(file),shadow=role==='shadow'&&depthJoints[asset.assetId],svg=shadow?mapGroundShadow(asset,asset.orientation):graph.svg;
   for(const [lod,size] of [['close',384],['district',192]]){
    const result=new Resvg(svg,{fitTo:{mode:'width',value:size},font:{loadSystemFonts:false}}).render();
    let full=await sharp(result.asPng()).png({compressionLevel:9,palette:false}).toBuffer();
    if(role==='body'&&lod==='close')bodyReference=full;
+   if(role==='upper'&&lod==='close'){
+    const {data,info}=await sharp(full).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+    asset.occlusionRegion.upper=alphaHull(data,info.width,info.height);
+   }
    if(role==='body'&&depthJoints[asset.assetId]){
     const calibrated=await calibrateMapGround(full,asset,asset.orientation,defaultCalibration);full=calibrated.png;defaultCalibration=calibrated.registration;
     if(lod==='close'){asset.orientationRegions??={};asset.orientationRegions[asset.orientation]={hitPolygon:calibrated.hitPolygon,upper:calibrated.hitPolygon};}

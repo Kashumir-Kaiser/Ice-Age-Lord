@@ -104,6 +104,21 @@ test('wall and gate preview exits planning and loads registered depth slices for
  }
 });
 
+test('architectural tower loads separate footing and upper art when its atlas is unavailable',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.route('**/assets/map/buildings/fixture-tall-tower/atlas-*.png*',route=>route.fulfill({status:404,body:'missing atlas'}));
+ const requested=new Set<string>();page.on('request',r=>requested.add(new URL(r.url()).pathname));
+ await territory(page);await page.getByLabel('Chất lượng bản đồ').selectOption('normal');
+ await page.getByRole('button',{name:'Về lửa trại',exact:true}).click();await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();
+ await page.getByRole('button',{name:'Thử bố trí Tháp cao · minh họa',exact:true}).click();
+ const scene=page.locator('.territory-scene-svg');await scene.scrollIntoViewIfNeeded();const box=(await scene.boundingBox())!;
+ await scene.click({position:{x:box.width*.55,y:box.height*.65}});await scene.focus();await page.keyboard.press('Escape');
+ for(const role of ['base','upper'])await expect.poll(()=>Array.from(requested).some(p=>new RegExp(`/fixture-tall-tower/${role}-(close|district)\\.png$`).test(p)),{timeout:20000}).toBe(true);
+ const draft=page.locator('.territory-building.is-draft[data-asset-id="fixture-tall-tower"]');await expect(draft).toHaveCount(1);
+ await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();await expect(page.getByRole('button',{name:'Mặt bằng',exact:true})).toHaveAttribute('aria-pressed','true');
+ await page.getByRole('button',{name:'Xóa Tháp cao · minh họa',exact:true}).click();await expect(draft).toHaveCount(0);
+});
+
 test('twenty map switches dispose departed renderers and preserve territory selection',async({page})=>{
  test.setTimeout(90000);
  await page.emulateMedia({reducedMotion:'reduce'});await territory(page);
