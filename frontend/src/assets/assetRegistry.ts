@@ -3,6 +3,7 @@ export type MapExport = {
   layerPath?: string;
   sliceId?: string;
   groundCalibration?: {contact:{x:number;y:number};scale:number;shear:number;sourceSlope:number;targetSlope:number};
+  groundShadow?: {widthM:number;depthM:number;orientation:string};
   exportVersion: number; width: number; height: number;
   sourceDependencies?:readonly {source:string;sha256:string}[];
   role: 'body' | 'base' | 'upper' | 'shadow' | 'vfx';

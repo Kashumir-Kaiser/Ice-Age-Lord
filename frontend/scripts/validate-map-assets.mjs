@@ -20,6 +20,7 @@ export function rasterDimensions(buffer){
 }
 function checkDimensions(buffer,width,height){const actual=rasterDimensions(buffer);if(actual.width!==width||actual.height!==height)throw new Error('Raster dimensions differ from manifest');}
 export function validateMapExport(entry,asset,read=path=>readFileSync(resolve(root,path))){
+ if(entry.groundShadow){const s=entry.groundShadow,p=asset.compatiblePhysicalFootprint;if(entry.role!=='shadow'||s.orientation!==entry.orientation||s.widthM!==p?.widthM||s.depthM!==p?.depthM)throw new Error('Ground shadow differs from physical registration');}
  if(entry.groundCalibration){
   const c=entry.groundCalibration,target=entry.orientation==='east'||entry.orientation==='west'?-.5:.5;
   if(!c.contact||![c.contact.x,c.contact.y].every(v=>Number.isFinite(v)&&v>=0&&v<=1)||!Number.isFinite(c.scale)||c.scale<=0||c.scale>4||!Number.isFinite(c.shear)||Math.abs(c.shear)>2||!Number.isFinite(c.sourceSlope)||c.targetSlope!==target||Math.abs(c.sourceSlope+c.shear-target)>1e-8)throw new Error('Invalid architectural ground calibration');

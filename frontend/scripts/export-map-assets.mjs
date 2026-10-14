@@ -12,6 +12,7 @@ import {trimMapRaster} from './trim-map-raster.mjs';
 import {exportMapFlame} from './export-map-flame.mjs';
 import {exportDepthSlices} from './export-depth-slices.mjs';
 import {calibrateMapGround} from './calibrate-map-ground.mjs';
+import {mapGroundShadow} from './map-ground-shadow.mjs';
 const repo=resolve(new URL('../..',import.meta.url).pathname),manifestPath=resolve(repo,'assets/manifest.json');
 const manifest=JSON.parse(readFileSync(manifestPath,'utf8'));
 const authoredViews=JSON.parse(readFileSync(resolve(repo,'assets/map-building-views.json'),'utf8'));
@@ -38,7 +39,7 @@ for(const asset of manifest.assets){
  let bodyReference,defaultCalibration;
  const destination=resolve(output,'buildings',asset.assetId);mkdirSync(destination,{recursive:true});
  for(const role of ['body','shadow',...(asset.planningLayer?['base']:[]),...(asset.layers.vfx?['vfx']:[])]){
-  const source=role==='base'?asset.planningLayer:asset.layers[role],file=resolve(repo,'frontend/public'+source),graph=svgMapSource(file),svg=graph.svg;
+  const source=role==='base'?asset.planningLayer:asset.layers[role],file=resolve(repo,'frontend/public'+source),graph=svgMapSource(file),shadow=role==='shadow'&&depthJoints[asset.assetId],svg=shadow?mapGroundShadow(asset,asset.orientation):graph.svg;
   for(const [lod,size] of [['close',384],['district',192]]){
    const result=new Resvg(svg,{fitTo:{mode:'width',value:size},font:{loadSystemFonts:false}}).render();
    let full=await sharp(result.asPng()).png({compressionLevel:9,palette:false}).toBuffer();
@@ -51,8 +52,12 @@ for(const asset of manifest.assets){
    const path=`/assets/map/buildings/${asset.assetId}/${role}-${lod}.png`;writeFileSync(resolve(repo,'frontend/public'+path),png);
    const meta=await sharp(png).metadata();
    const sourceDependencies=Array.from(graph.dependencies,([path,sha256])=>({source:path.slice(repo.length+1),sha256}));
+   if(shadow)sourceDependencies.push({source:'frontend/scripts/map-ground-shadow.mjs',sha256:sha(readFileSync(resolve(repo,'frontend/scripts/map-ground-shadow.mjs')))});
    if(role==='body'&&defaultCalibration)sourceDependencies.push({source:'frontend/scripts/calibrate-map-ground.mjs',sha256:sha(readFileSync(resolve(repo,'frontend/scripts/calibrate-map-ground.mjs')))});
-   asset.mapExports.push({path,source,sourceSha256:sha(readFileSync(file)),sourceDependencies,sha256:sha(png),exportVersion:role==='body'&&defaultCalibration?4:3,...(role==='body'&&defaultCalibration?{groundCalibration:defaultCalibration}:{}),width:meta.width,height:meta.height,role,lod,orientation:asset.orientation,alpha:'straight',colorSpace:'srgb',logicalCanvas:asset.logicalCanvas,rasterCanvas:cropped.rasterCanvas,trim:cropped.trim});count++;
+   const shadowLayer=`/assets/map/buildings/${asset.assetId}/shadow-close.png`;
+   if(shadow&&lod==='close'){asset.orientationViews??={};asset.orientationViews[asset.orientation]={...asset.layers,shadow:shadowLayer};}
+   const primarySource=shadow?'frontend/scripts/map-ground-shadow.mjs':source,primaryFile=shadow?resolve(repo,primarySource):file;
+   asset.mapExports.push({path,source:primarySource,sourceSha256:sha(readFileSync(primaryFile)),sourceDependencies,sha256:sha(png),exportVersion:shadow||role==='body'&&defaultCalibration?4:3,...(shadow?{layerPath:shadowLayer,groundShadow:{...asset.compatiblePhysicalFootprint,orientation:asset.orientation}}:{}),...(role==='body'&&defaultCalibration?{groundCalibration:defaultCalibration}:{}),width:meta.width,height:meta.height,role,lod,orientation:asset.orientation,alpha:'straight',colorSpace:'srgb',logicalCanvas:asset.logicalCanvas,rasterCanvas:cropped.rasterCanvas,trim:cropped.trim});count++;
   }
  }
  for(const [orientation,source] of Object.entries(authoredViews[asset.assetId]??{})){
@@ -61,6 +66,16 @@ for(const asset of manifest.assets){
   const painted=await orientationCanvas(file,bodyReference,asset);
   const layerPath=`/assets/map/buildings/${asset.assetId}/body-${orientation}-close.png`;
   asset.orientationViews??={};asset.orientationViews[orientation]={...asset.layers,body:layerPath};
+  if(depthJoints[asset.assetId]){
+   const layerPath=`/assets/map/buildings/${asset.assetId}/shadow-${orientation}-close.png`;
+   asset.orientationViews[orientation].shadow=layerPath;
+   for(const [lod,size] of [['close',384],['district',192]]){
+    const result=new Resvg(mapGroundShadow(asset,orientation),{fitTo:{mode:'width',value:size},font:{loadSystemFonts:false}}).render(),cropped=await trimMapRaster(result.asPng(),asset.logicalCanvas),png=cropped.png,meta=await sharp(png).metadata();
+    const path=`/assets/map/buildings/${asset.assetId}/shadow-${orientation}-${lod}.png`;writeFileSync(resolve(repo,'frontend/public'+path),png);
+    const helper='frontend/scripts/map-ground-shadow.mjs',helperHash=sha(readFileSync(resolve(repo,helper)));
+    asset.mapExports.push({path,layerPath,source:helper,sourceSha256:helperHash,sourceDependencies:[{source:helper,sha256:helperHash}],sha256:sha(png),exportVersion:4,width:meta.width,height:meta.height,role:'shadow',lod,orientation,groundShadow:{...asset.compatiblePhysicalFootprint,orientation},alpha:'straight',colorSpace:'srgb',logicalCanvas:asset.logicalCanvas,rasterCanvas:cropped.rasterCanvas,trim:cropped.trim});count++;
+   }
+  }
   asset.orientationRegions??={};asset.orientationRegions[orientation]={hitPolygon:painted.hitPolygon,upper:painted.hitPolygon};
   let viewCalibration;
   for(const [lod,size] of [['close',384],['district',192]]){
@@ -77,7 +92,7 @@ for(const asset of manifest.assets){
 }
 // Stable per-asset/LOD atlases: 4 px extrusion, same logical registration.
 for (const asset of manifest.assets) for (const lod of ['close','district']) {
- const entries=asset.mapExports.filter(e=>e.lod===lod);
+ const entries=asset.mapExports.filter(e=>e.lod===lod&&!(e.groundShadow&&e.orientation!==asset.orientation));
  const side=lod==='close'?1024:512,pad=4,cell=lod==='close'?392:200,cellY=lod==='close'?328:168;
  const pixels=Buffer.alloc(side*side*4);
  for (let i=0;i<entries.length;i++) {
