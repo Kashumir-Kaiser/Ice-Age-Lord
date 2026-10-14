@@ -10,7 +10,8 @@ import MapCanvas from '../rendering/MapCanvas';
 import { territorySnapshot, type MapSnapshot } from '../rendering/MapSceneAdapter';
 import { spriteRect, artPolygon } from '../rendering/SpriteRegistration';
 import { pointInPolygon, pickStack, cyclePick, pointerCSS } from '../rendering/MapPicking';
-import { projectBuildings } from '../rendering/BuildingGeometry';
+import { projectBuildings, rectPolygon } from '../rendering/BuildingGeometry';
+import type {SceneLOD} from '../rendering/mapStyle';
 import { depthOrder } from '../rendering/DepthOrder';
 import { cameraOverlayTransform } from '../rendering/transientCamera';
 import { footprintHeatRelation, snapPlanningPoint, validatePlacement } from './placement';
@@ -71,6 +72,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
   const pinch=useRef<{ids:[number,number];distance:number;anchor:WorldPoint;origin:TerritoryCamera}|null>(null);
   const ignoreClick=useRef(false);
   const lastPick=useRef<{point:WorldPoint;ids:string[]}|null>(null);
+  const buildingLODs=useRef(new Map<string,SceneLOD>());
   const nextDraft=useRef(1);
   const [size,setSize]=useState({width:0,height:0});
   const [manifest,setManifest]=useState<AssetManifest|null>(null);
@@ -341,18 +343,19 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
     return ground.y>target.y&&pointInPolygon(target,artPolygon(asset.occlusionRegion.upper,spriteRect(asset,ground,scale)));
   };
   const renderDrafts=[...drafts,...(denseQa?denseFixture:[]),...(activeDefinition?[{id:'placement-ghost',definitionId:activeDefinition.id,assetId:activeDefinition.assetId,x:currentPlacementLocal.x,y:currentPlacementLocal.y,footprint:activeDefinition.footprint,orientation:placingOrientation}]:[])];
-  const renderSnapshot=useMemo(()=>territorySnapshot(settlement,manifest,activeCamera,effectiveMode,selectedRef?.id??null,renderDrafts,{visualIdentity,modeledInfill:!liveApi,regions:terrainRegions}),[settlement,manifest,activeCamera,effectiveMode,selectedRef?.id,drafts,denseQa,activeDefinition,ghostWorld,placingOrientation,visualIdentity,terrainRegions,liveApi]);
+  const renderSnapshot=useMemo(()=>({...territorySnapshot(settlement,manifest,activeCamera,effectiveMode,selectedRef?.id??null,renderDrafts,{visualIdentity,modeledInfill:!liveApi,regions:terrainRegions}),buildingLODs:buildingLODs.current}),[settlement,manifest,activeCamera,effectiveMode,selectedRef?.id,drafts,denseQa,activeDefinition,ghostWorld,placingOrientation,visualIdentity,terrainRegions,liveApi]);
   const captureSelection=(event:React.MouseEvent<SVGSVGElement>)=>{
     if(ignoreClick.current){ignoreClick.current=false;event.preventDefault();event.stopPropagation();return;}
     if(activeDefinition||event.detail===0||event.target instanceof Element&&event.target.closest('.territory-player-marker'))return;
     const point=pointerCSS({x:event.clientX,y:event.clientY},event.currentTarget.getBoundingClientRect(),size);
-    const order=depthOrder(projectBuildings(renderSnapshot.buildings,p=>worldToScreen(p,transient.current,size),3*transient.current.zoom,size)).objects;
+    const order=depthOrder(projectBuildings(renderSnapshot.buildings,p=>worldToScreen(p,transient.current,size),3*transient.current.zoom,size,true,buildingLODs.current)).objects;
     const focused=order.find(b=>b.selected);
     const stack=pickStack(point,order.map(b=>{
       const f=b.footprint;
       const ground=[{x:f.minX,y:f.minY},{x:f.maxX,y:f.minY},{x:f.maxX,y:f.maxY},{x:f.minX,y:f.maxY}].map(p=>worldToScreen(p,transient.current,size));
       const faded=effectiveMode==='focus'&&focused&&!b.selected&&b.depth>focused.depth&&pointInPolygon(focused.ground,artPolygon(b.asset!.occlusionRegion.upper,b.rect));
-      return {id:b.id,ground,silhouette:faded?[]:artPolygon(b.asset!.hitPolygon??b.asset!.artFootprint,b.rect),silhouettes:faded?[]:[artPolygon(b.asset!.occlusionRegion.upper,b.rect)],selectable:!b.draft&&!b.fixture};
+      const regional=b.lod==='regional'&&effectiveMode!=='planning';
+      return {id:b.id,ground,silhouette:regional?rectPolygon(b.symbol):faded?[]:artPolygon(b.asset!.hitPolygon??b.asset!.artFootprint,b.rect),silhouettes:regional||faded?[]:[artPolygon(b.asset!.occlusionRegion.upper,b.rect)],selectable:!b.draft&&!b.fixture};
     }),effectiveMode==='planning');
     if(!stack.length)return;
     const previous=lastPick.current,repeated=previous&&Math.hypot(previous.point.x-point.x,previous.point.y-point.y)<6&&previous.ids.join('|')===stack.join('|');
@@ -395,7 +398,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
           const inHeat=footprintHeatRelation({x:item.point.x-origin.x,y:item.point.y-origin.y},item.footprint,item.orientation,actualRadius,settlement.fireActive);
           const building=settlement.buildings.find(candidate=>candidate.id===item.id);
           return <g key={item.id}>
-            <BuildingSprite geometryOnly id={item.id} name={item.name} asset={findAsset(manifest,resolvedArtId)} assetId={resolvedArtId} activeEffect={isFire&&settlement.fireActive} point={item.point} footprint={item.footprint} orientation={item.orientation} camera={activeCamera} viewport={size} mode={effectiveMode} selected={selected} faded={readability==='focus'&&isOccluder(item.point,findAsset(manifest,resolvedArtId),selected)} draft={item.draft} blocked={item.blocked} onSelect={item.ref?()=>{onSelectEntity(item.ref!);}:undefined}/>
+            <BuildingSprite geometryOnly lods={buildingLODs.current} id={item.id} name={item.name} asset={findAsset(manifest,resolvedArtId)} assetId={resolvedArtId} activeEffect={isFire&&settlement.fireActive} point={item.point} footprint={item.footprint} orientation={item.orientation} camera={activeCamera} viewport={size} mode={effectiveMode} selected={selected} faded={readability==='focus'&&isOccluder(item.point,findAsset(manifest,resolvedArtId),selected)} draft={item.draft} blocked={item.blocked} onSelect={item.ref?()=>{onSelectEntity(item.ref!);}:undefined}/>
             {activeCamera.zoom>.28&&inHeat!=='inside'&&item.ref&&<text x={worldToScreen(item.point,activeCamera,size).x} y={worldToScreen(item.point,activeCamera,size).y+18} className="territory-heat-state" textAnchor="middle" pointerEvents="none">{inHeat==='partial'?'Nhiệt giao cắt':'Ngoài nhiệt'}</text>}
             {selected&&building&&<circle cx={worldToScreen(item.point,activeCamera,size).x} cy={worldToScreen(item.point,activeCamera,size).y} r="18" fill="none" stroke="#ffe0a4" strokeOpacity=".76" strokeDasharray="3 4" pointerEvents="none"/>}
           </g>;

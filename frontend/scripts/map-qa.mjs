@@ -7,7 +7,8 @@ const output=resolve(process.env.MAP_QA_DIR??'map-evidence/after');mkdirSync(out
 const dpr=Number(process.env.MAP_QA_DPR??1),quality=process.env.MAP_QA_QUALITY??'normal';
 async function capture(page,name,viewport){
  await page.locator('[data-map-renderer]').evaluate(node=>node.scrollIntoView({block:'center',inline:'nearest'}));
- const filename=`${name}-${viewport.width}-${quality}-dpr${dpr}.png`;
+ const directory=resolve(output,String(viewport.width));mkdirSync(directory,{recursive:true});
+ const filename=`${viewport.width}/${name}-${viewport.width}-${quality}-dpr${dpr}.png`;
  try{await readyMap(page);}catch(error){
   const metrics=await page.evaluate(()=>window.__mapMetrics?.at(-1));
   writeFileSync(resolve(output,filename+'.failure.json'),JSON.stringify({name,viewport,dpr,quality,metrics,error:String(error)},null,2));

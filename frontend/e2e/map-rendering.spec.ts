@@ -43,6 +43,32 @@ test('reduced motion and locked low quality remain selectable and do not start e
  await expect.poll(()=>page.evaluate(()=>{const metrics=(window as unknown as {__mapMetrics:{activeLoops:number;queued:number}[]}).__mapMetrics;return metrics?.at(-1)?.queued;}),{timeout:15000}).toBe(0);
  await expect.poll(()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{activeLoops:number}[]}).__mapMetrics.at(-1)?.activeLoops)).toBe(0);
 });
+test('preserved painted flame animates only for visible active fire; reduced motion freezes it and planning removes it',async({page})=>{
+ await page.emulateMedia({reducedMotion:'no-preference'});await territory(page);
+ const backend=await page.locator('[data-map-renderer]').getAttribute('data-map-renderer');test.skip(backend!=='webgl','Canvas2D retains static fire indication with effects disabled.');
+ const flames=()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{flameFrame:number|null;flameSprites:number}[]}).__mapMetrics.at(-1)!);
+ await expect.poll(async()=>(await flames()).flameSprites,{timeout:30000}).toBe(1);
+ const first=(await flames()).flameFrame;
+ await expect.poll(async()=>(await flames()).flameFrame).not.toBe(first);
+ await page.emulateMedia({reducedMotion:'reduce'});await expect.poll(async()=>(await flames()).flameFrame).toBe(0);
+ await page.waitForTimeout(350);expect((await flames()).flameFrame).toBe(0);
+ await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();await expect.poll(async()=>(await flames()).flameSprites).toBe(0);
+ await page.getByRole('button',{name:'Bình thường',exact:true}).click();await expect.poll(async()=>(await flames()).flameFrame).toBe(0);
+ await page.getByLabel('Xem thử vùng nhiệt').selectOption('25000');await page.getByRole('button',{name:'Toàn bộ vùng nhiệt',exact:true}).click();await expect.poll(async()=>(await flames()).flameSprites).toBe(0);
+});
+test('distant symbol remains selectable beyond the tiny physical footprint',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});await territory(page);
+ await page.getByLabel('Xem thử vùng nhiệt').selectOption('25000');await page.getByRole('button',{name:'Toàn bộ vùng nhiệt',exact:true}).click();
+ const scene=page.locator('.territory-scene-svg');await scene.evaluate(node=>node.scrollIntoView({block:'center'}));
+ const target=await scene.evaluate(node=>{
+  const symbols=Array.from(node.querySelectorAll('.territory-building:not(.is-draft) .territory-art-hit')).map(p=>{
+   const points=p.getAttribute('points')!.trim().split(/\s+/).map(v=>v.split(',').map(Number));
+   return {id:p.closest('[data-building-id]')!.getAttribute('data-building-id'),x:Math.max(...points.map(p=>p[0]))-1,y:(Math.min(...points.map(p=>p[1]))+Math.max(...points.map(p=>p[1])))/2,width:Math.max(...points.map(p=>p[0]))-Math.min(...points.map(p=>p[0]))};
+  }).sort((a,b)=>b.x-a.x);
+  const s=symbols[0],box=node.getBoundingClientRect();return {...s,x:s.x+box.left,y:s.y+box.top};
+ });
+ expect(target.width).toBe(12);await page.mouse.click(target.x,target.y);await expect(page.locator('.territory-building.is-selected')).toHaveAttribute('data-building-id',target.id!);
+});
 test('missing raster derivatives retain registered art and interactions',async({page})=>{
  await page.route('**/assets/map/buildings/**',route=>route.fulfill({status:404,body:'missing map export'}));
  await territory(page);await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();

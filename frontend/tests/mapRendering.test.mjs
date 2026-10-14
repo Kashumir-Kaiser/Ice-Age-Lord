@@ -5,7 +5,7 @@ import { spriteRect, referenceSize, artPolygon, composition, resolveOrientation 
 import { pointInPolygon, pointerCSS, pickStack, cyclePick } from '../src/rendering/MapPicking.ts';
 import { TerrainSampler, noise, chunkLevel } from '../src/rendering/TerrainSampler.ts';
 import { depthOrder } from '../src/rendering/DepthOrder.ts';
-import { projectBuildings } from '../src/rendering/BuildingGeometry.ts';
+import { projectBuildings, rectPolygon } from '../src/rendering/BuildingGeometry.ts';
 import { AdaptiveQuality, chooseLOD } from '../src/rendering/mapStyle.ts';
 import { worldToScreen, screenToWorld, zoomAtScreenPoint } from '../src/territory/projection.ts';
 import { validateMapExport } from '../scripts/validate-map-assets.mjs';
@@ -64,6 +64,14 @@ test('terrain/decor determinism, negative chunks, shared edges and varying viewp
 test('LOD and chunk hysteresis hold near boundaries; world chunk spans remain bounded',()=>{
  assert.equal(chooseLOD(34,'close'),'close');assert.equal(chooseLOD(11,'district'),'district');assert.equal(chooseLOD(13,'regional'),'regional');assert.equal(chooseLOD(40,'regional'),'close');
  const level=chunkLevel(4);assert.equal(chunkLevel(4.1,level),level);assert.ok(chunkLevel(.001)>level);
+});
+test('distant symbols and picking share their 12 CSS pixel bounds and hysteresis without enlarging occupancy',()=>{
+ const states=new Map(),building={id:'house',asset,assetId:asset.assetId,point:{x:0,y:0},orientation:'north',footprint:{widthM:4,depthM:4},selected:false,active:false,draft:false};
+ const project=()=>({x:60,y:60}),size={width:120,height:100};
+ const tiny=projectBuildings([building],project,.001,size,true,states)[0];assert.equal(tiny.lod,'regional');assert.equal(tiny.symbol.width,12);assert.equal(tiny.footprint.maxX-tiny.footprint.minX,4);
+ const item={id:tiny.id,ground:[],silhouette:rectPolygon(tiny.symbol),selectable:true};assert.deepEqual(pickStack({x:65,y:49},[item],false),['house']);assert.deepEqual(pickStack({x:67,y:49},[item],false),[]);assert.deepEqual(pickStack({x:65,y:49},[item],true),[]);
+ const edge=13/16;assert.equal(projectBuildings([building],project,edge,size,true,states)[0].lod,'regional');assert.equal(projectBuildings([building],project,edge,size,true,states)[0].lod,'regional','a second caller observes the same hysteresis');
+ assert.equal(projectBuildings([building],project,15/16,size,true,states)[0].lod,'district');
 });
 test('overlap order uses footprint relations with stable IDs and spatial neighbor work',()=>{
  const object=(id,x,y,w=2,d=2,depth=0)=>({id,depth,bounds:{minX:0,maxX:100,minY:0,maxY:100},footprint:{minX:x-w/2,maxX:x+w/2,minY:y-d/2,maxY:y+d/2}});

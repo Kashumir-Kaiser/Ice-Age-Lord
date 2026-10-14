@@ -6,11 +6,12 @@ import type { TerrainChunk } from './TerrainChunkCache.ts';
 import { AssetTextureCache, exportPath } from './AssetTextureCache.ts';
 import { MapMetrics } from './MapMetrics.ts';
 import { MapEffects } from './MapEffects.ts';
+import { flameFrame, flameRect, flameKey } from './FlamePresentation.ts';
 import { artPolygon, composition } from './SpriteRegistration.ts';
 import { pointInPolygon } from './MapPicking.ts';
 import { depthOrder } from './DepthOrder.ts';
 import { projectBuildings } from './BuildingGeometry.ts';
-import { MAP_PALETTE, QUALITY, LEDGE_SOURCES, AdaptiveQuality, chooseLOD } from './mapStyle.ts';
+import { MAP_PALETTE, QUALITY, LEDGE_SOURCES, AdaptiveQuality } from './mapStyle.ts';
 import type { Quality, SceneLOD } from './mapStyle.ts';
 import { screenToWorld, worldToScreen } from '../territory/projection.ts';
 import { BASE_VIEW_HEIGHT_M } from '../map/camera.ts';
@@ -53,6 +54,7 @@ export class MapRenderer {
   private hidden=false;
   private transferred=false;
   private visibleEmitter=false;
+  private visibleEmitters:{point:WorldPoint;selected:boolean}[]=[];
   private depthBuildings:MapSnapshot['buildings']|null=null;
   private depthScale=0;
   private depthProjection:MapSnapshot['projection']|null=null;
@@ -100,7 +102,7 @@ export class MapRenderer {
       this.terrain.destroy();this.sampler=new TerrainSampler(snapshot.visualIdentity??snapshot.identity,snapshot.geography,snapshot.regions,snapshot.modeledInfill);this.terrain=new TerrainChunkCache(this.sampler,QUALITY[this.quality].terrainBytes,QUALITY[this.quality].textureSize,()=>this.invalidate());this.level=undefined;
       rebuilt=true;
     }
-    if(rebuilt||snapshot.buildings!==this.snapshot.buildings)this.updateContacts(snapshot);
+    if(rebuilt||snapshot.buildings!==this.snapshot.buildings){this.updateContacts(snapshot);const ids=new Set(snapshot.buildings.map(b=>b.id)),lods=snapshot.buildingLODs??this.lod;for(const id of lods.keys())if(!ids.has(id))lods.delete(id);}
     this.snapshot=snapshot;this.invalidate();
   }
   private updateContacts(snapshot:MapSnapshot):void {
@@ -191,8 +193,8 @@ export class MapRenderer {
       draws.push({id:'relief:'+patch.id,path:'/assets/map/terrain/'+patch.kind+'-'+String(patch.variant+1).padStart(2,'0')+'.png',x:center.x-width/2,y:center.y-height/2,width,height,alpha:.75});
     }
     const selected=this.snapshot.buildings.find(b=>b.selected),target=selected?this.project(selected.point):null;
-    const buildingObjects=projectBuildings(this.snapshot.buildings,this.project,scale,this.size);
-    this.visibleEmitter=buildingObjects.some(building=>building.active);
+    const buildingObjects=projectBuildings(this.snapshot.buildings,this.project,scale,this.size,true,this.snapshot.buildingLODs??this.lod);
+    this.visibleEmitter=false;this.visibleEmitters=[];
     if(this.depthBuildings!==this.snapshot.buildings||this.depthScale!==scale||this.depthProjection!==this.snapshot.projection){
       const ordered=depthOrder(projectBuildings(this.snapshot.buildings,this.project,scale,this.size,false));
       this.depthIds=ordered.objects.map(b=>b.id);this.depthBuildings=this.snapshot.buildings;this.depthScale=scale;this.depthProjection=this.snapshot.projection;
@@ -218,16 +220,28 @@ export class MapRenderer {
     // Architectural order from the partial order is preserved; props are inserted by their ground depths.
     let propIndex=0;const sortedProps=props.sort((a,b)=>a.depth-b.depth||a.id.localeCompare(b.id));
     const drawBuilding=(b:typeof buildingObjects[number])=>{
-      const asset=b.asset!;this.assets.register(asset,useAtlas);const lod=chooseLOD(2*(b.footprint.widthM+b.footprint.depthM)*scale,this.lod.get(b.id));this.lod.set(b.id,lod);
+      const asset=b.asset!;this.assets.register(asset,useAtlas);const lod=b.lod;
       const occludes=Boolean(target&&!b.selected&&b.depth>this.project(selected!.point).y&&pointInPolygon(target,artPolygon(asset.occlusionRegion.upper,b.rect)));
-      if(lod==='regional'&&this.snapshot.mode!=='planning'){const width=12,height=12;draws.push({id:b.id+':symbol',path:asset.layers.uiIcon!,x:b.ground.x-width/2,y:b.ground.y-height,width,height,alpha:b.draft?.55:1});return;}
-      for(const layer of composition(asset,this.snapshot.mode,occludes,b.active,b.orientation)){if(layer.role==='shadow')continue;const exported=exportPath(asset,layer,preferDistrict||lod!=='close'?'district':'close'),path=(this.failures.has(exported)||this.failures.has(this.assets.url(exported)))?(asset.layers[layer.role]??layer.path):exported;draws.push({id:b.id+':'+layer.role,path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});}
+      if(lod==='regional'&&this.snapshot.mode!=='planning'){draws.push({id:b.id+':symbol',path:asset.layers.uiIcon!,...b.symbol,alpha:b.draft?.55:1});return;}
+      const flame=asset.mapFlame,frame=flame?flameFrame(this.effects.time,flame.frames.length,flame.fps,this.reducedMotion):0;
+      const key=flame?flameKey(flame.path,frame):null;
+      const showFlame=Boolean(this.app&&b.active&&this.snapshot.mode!=='planning'&&key&&this.assets.frame(key));
+      if(showFlame&&key)used.add(key);
+      const loadedFlame=showFlame&&key&&this.assets.acquire(key);
+      if(b.active&&this.snapshot.mode!=='planning'){
+        this.visibleEmitter=true;
+        const rect=flameRect(asset,b.rect),emitter=rect&&flame?{x:rect.x+rect.width*flame.anchor.x,y:rect.y+rect.height*flame.anchor.y}:b.ground;
+        this.visibleEmitters.push({point:emitter,selected:b.selected});
+      }
+      for(const layer of composition(asset,this.snapshot.mode,occludes,b.active,b.orientation)){if(layer.role==='shadow'||layer.role==='vfx'&&loadedFlame)continue;const exported=exportPath(asset,layer,preferDistrict||lod!=='close'?'district':'close'),path=(this.failures.has(exported)||this.failures.has(this.assets.url(exported)))?(asset.layers[layer.role]??layer.path):exported;draws.push({id:b.id+':'+layer.role,path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});}
+      if(loadedFlame&&key){const rect=flameRect(asset,b.rect)!;draws.push({id:b.id+':flame',path:key,...rect,alpha:(occludes&&this.snapshot.mode==='focus'?.22:1)*(b.draft?.55:1)});}
     };
     for(const id of this.depthIds){const b=visibleById.get(id);if(!b)continue;while(propIndex<sortedProps.length&&sortedProps[propIndex].depth<=b.depth)draws.push(sortedProps[propIndex++]);drawBuilding(b);}while(propIndex<sortedProps.length)draws.push(sortedProps[propIndex++]);
     for(const d of draws)if(!d.path.startsWith('chunk:')){Object.assign(d,this.assets.rect(d.path,d));used.add(d.path);this.assets.acquire(d.path);}
     this.assets.retain(used);
     if(this.app)this.renderWebGL(draws);else if(this.context)this.render2D(draws);
     const m=this.metrics.data;
+    const flames=draws.filter(d=>d.id.endsWith(':flame'));m.flameSprites=flames.length;m.flameFrame=flames.length?Number(flames[0].path.split('#flame-')[1]):null;
     let terrainGPUBytes=0;for(const texture of this.chunkTextures.values())terrainGPUBytes+=texture.source.width*texture.source.height*4;
     m.textureBytes=this.app?this.assets.gpuBytes+terrainGPUBytes+this.renderTargetBytes():0;
     m.decodedBytes=this.assets.bytes+this.terrain.bytes+this.terrain.scratchBytes;m.terrainBytes=terrainGPUBytes;m.queued=this.terrain.pending;m.pendingTextures=this.assets.pending+this.assets.deferred;m.visible=buildingObjects.length+props.length;m.total=this.snapshot.buildings.length+worldProps.length;
@@ -248,9 +262,9 @@ export class MapRenderer {
     }
     for(const [id,sprite] of this.drawSprites)if(!active.has(id)){sprite.destroy();this.drawSprites.delete(id);}
     this.effectsGraphics.clear();
-    if(this.snapshot.mode!=='planning')for(const b of this.snapshot.buildings)if(b.active){const p=this.project(b.point),radius=Math.min(72,10*this.scale()),light=this.effects.light(this.reducedMotion);
+    for(const b of this.visibleEmitters){const p=b.point,radius=Math.min(72,10*this.scale()),light=this.effects.light(this.reducedMotion);
       for(let i=4;i>=1;i--)this.effectsGraphics.ellipse(p.x,p.y-2,radius*i/4,radius*i/8).fill({color:MAP_PALETTE.spill,alpha:.018*light});
-      if(!this.reducedMotion&&this.quality!=='low')for(const e of this.effects.particles)this.effectsGraphics.circle(p.x+e.x*.3,p.y+e.y*.4,1).fill({color:MAP_PALETTE.fire,alpha:(1-e.life)*.35});
+      if(!this.reducedMotion&&this.quality!=='low')for(let i=0;i<Math.min(this.effects.particles.length,Math.floor(QUALITY[this.quality].particles/Math.max(1,this.visibleEmitters.length)));i++){const e=this.effects.particles[i];this.effectsGraphics.circle(p.x+e.x*.3,p.y+e.y*.4,1).fill({color:MAP_PALETTE.fire,alpha:(1-e.life)*.35});}
     }
     this.draws=0;this.app!.render();this.metrics.data.drawCalls=this.draws;
   }

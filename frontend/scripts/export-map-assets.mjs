@@ -9,6 +9,7 @@ import {normalizeMapAlpha} from './normalize-map-alpha.mjs';
 import {LEDGE_SOURCES} from '../src/rendering/mapStyle.ts';
 import {orientationCanvas} from './map-orientation-export.mjs';
 import {trimMapRaster} from './trim-map-raster.mjs';
+import {exportMapFlame} from './export-map-flame.mjs';
 const repo=resolve(new URL('../..',import.meta.url).pathname),manifestPath=resolve(repo,'assets/manifest.json');
 const manifest=JSON.parse(readFileSync(manifestPath,'utf8'));
 const authoredViews=JSON.parse(readFileSync(resolve(repo,'assets/map-building-views.json'),'utf8'));
@@ -92,6 +93,17 @@ for(const name of [...terrainNames,...propNames]){
  else {const {data,info}=await pipeline.ensureAlpha().raw().toBuffer({resolveWithObject:true}),normalized=normalizeMapAlpha(data,info.width,info.height);buffer=await sharp(normalized.data,{raw:info}).png({compressionLevel:9}).toBuffer();}
  writeFileSync(resolve(repo,'frontend/public'+path),buffer);const meta=await sharp(buffer).metadata();
  manifest.environmentArt.push({assetId:name,source,...(sourceName!==name?{reusedFrom:sourceName}:{}),path,sourceSha256:sha(readFileSync(file)),sha256:sha(buffer),width:meta.width,height:meta.height,exportVersion:2,projection:material?'ground':name.startsWith('forest-')||name.startsWith('ridge-')?'north-up':'dimetric',alpha:material?'opaque':'straight',colorSpace:'srgb',provenance:'Original OpenAI ImageGen environmental art, 2026-10-13/14; matched to existing project source references. '+(sourceName!==name?'Suitable relief module reused from '+sourceName+'.':''),license:'Original generated art created for this project.',status:'draft'});
+}
+const flameSource='assets/source/map-effects/flame-loop-sheet.png',flameFile=resolve(repo,flameSource);
+const flame=await exportMapFlame(flameFile),flamePath='/assets/map/effects/flame-loop.png';
+mkdirSync(resolve(output,'effects'),{recursive:true});writeFileSync(resolve(repo,'frontend/public'+flamePath),flame.png);
+for(const asset of manifest.assets){
+ delete asset.mapFlame;
+ if(!['campfire-start','survival-fire-l01','survival-fire-l06','survival-fire-l11','survival-fire-l16','survival-fire-l21','survival-fire-l26'].includes(asset.assetId))continue;
+ const svg=readFileSync(resolve(repo,'frontend/public'+asset.layers.vfx),'utf8');
+ const ellipse=svg.match(/<ellipse\b[^>]*cx="([\d.]+)"[^>]*cy="([\d.]+)"[^>]*rx="([\d.]+)"/);
+ if(!ellipse)throw new Error('Missing registered Fire emitter: '+asset.assetId);
+ asset.mapFlame={path:flamePath,source:flameSource,sourceSha256:sha(readFileSync(flameFile)),sha256:sha(flame.png),width:flame.width,height:flame.height,frames:flame.frames,fps:flame.fps,anchor:flame.anchor,emitter:{x:Number(ellipse[1])/asset.logicalCanvas.width,y:Number(ellipse[2])/asset.logicalCanvas.height},relativeWidth:asset.assetId==='campfire-start'||asset.assetId==='survival-fire-l01'?.12:.16};
 }
 writeFileSync(manifestPath,JSON.stringify(manifest,null,2)+'\n');
 console.log(`Exported ${count} registered map layers and ${manifest.environmentArt.length} environment assets. No UI SVG replaced.`);

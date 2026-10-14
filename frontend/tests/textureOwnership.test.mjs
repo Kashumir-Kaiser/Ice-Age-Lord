@@ -1,6 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { AssetTextureCache, exportPath } from '../src/rendering/AssetTextureCache.ts';
+import {flameKey} from '../src/rendering/FlamePresentation.ts';
+
+test('all flame frames share one bounded image and survive another host leaving',async()=>{
+ const OriginalImage=globalThis.Image,images=[];globalThis.Image=class {naturalWidth=512;naturalHeight=384;constructor(){images.push(this);}};
+ const a=new AssetTextureCache(()=>{},()=>{},1048576),b=new AssetTextureCache(()=>{},()=>{},1048576),path='/test-flame-sheet.png';
+ const asset={layers:{},logicalCanvas:{width:480,height:400},mapFlame:{path,sha256:'same',width:512,height:384,frames:Array.from({length:8},(_,i)=>({x:i%4*128,y:Math.floor(i/4)*192,width:128,height:192}))}};
+ try{
+  a.register(asset);b.register(asset);for(let i=0;i<8;i++)a.acquire(flameKey(path,i));b.acquire(flameKey(path,0));assert.equal(images.length,1);assert.equal(a.reservedBytes,512*384*4);
+  images[0].onload();await new Promise(setImmediate);a.retain(new Set([flameKey(path,7)]));assert.ok(a.acquire(flameKey(path,7)));b.destroy();assert.ok(a.acquire(flameKey(path,0)));a.destroy();assert.equal(images[0].src,'');
+ }finally{a.destroy();b.destroy();if(OriginalImage===undefined)delete globalThis.Image;else globalThis.Image=OriginalImage;}
+});
 
 test('a failed atlas falls back to the matching individual pose raster and can recover on a new content revision',async()=>{
  const OriginalImage=globalThis.Image,images=[];globalThis.Image=class {naturalWidth=8;naturalHeight=8;constructor(){images.push(this);}};

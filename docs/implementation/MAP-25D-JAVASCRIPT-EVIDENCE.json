@@ -1,0 +1,91 @@
+{
+  "baselineCommit": "2de4ece02b5c00dea647b98bac0ffdb787690616",
+  "before": {
+    "scope": "Unique JavaScript files actually requested while opening demo territory, local and world maps, including shared UI and worker scripts. Gzip each response independently; compare the same journey against the pinned pre-overhaul build.",
+    "scripts": [
+      {
+        "path": "assets/App-CCNe7WLm.js",
+        "bytes": 111073,
+        "gzipBytes": 33415
+      },
+      {
+        "path": "assets/index-CCAGSjgV.js",
+        "bytes": 147396,
+        "gzipBytes": 47791
+      },
+      {
+        "path": "assets/InspectorFrame-BbiOvqsa.js",
+        "bytes": 77523,
+        "gzipBytes": 24229
+      }
+    ],
+    "gzipBytes": 105435
+  },
+  "after": {
+    "scope": "Unique JavaScript files actually requested while opening demo territory, local and world maps, including shared UI and worker scripts. Gzip each response independently; compare the same journey against the pinned pre-overhaul build.",
+    "scripts": [
+      {
+        "path": "assets/App-DFUf6KKp.js",
+        "bytes": 112336,
+        "gzipBytes": 33834
+      },
+      {
+        "path": "assets/browserAll-8bq0qL8y.js",
+        "bytes": 41313,
+        "gzipBytes": 10935
+      },
+      {
+        "path": "assets/CanvasPool-CE3GHTIR.js",
+        "bytes": 735,
+        "gzipBytes": 409
+      },
+      {
+        "path": "assets/colorToUniform-DmtBy-2V.js",
+        "bytes": 3274,
+        "gzipBytes": 1150
+      },
+      {
+        "path": "assets/index-BY2zPH8H.js",
+        "bytes": 147412,
+        "gzipBytes": 47802
+      },
+      {
+        "path": "assets/InspectorFrame-5AGpo-Lu.js",
+        "bytes": 89372,
+        "gzipBytes": 28809
+      },
+      {
+        "path": "assets/MapRenderer-BfFxRliX.js",
+        "bytes": 249730,
+        "gzipBytes": 78717
+      },
+      {
+        "path": "assets/SharedSystems-4hVagIFJ.js",
+        "bytes": 50912,
+        "gzipBytes": 13831
+      },
+      {
+        "path": "assets/terrain.worker-CUz9uxme.js",
+        "bytes": 6188,
+        "gzipBytes": 2640
+      },
+      {
+        "path": "assets/WebGLRenderer-DEUPFFTs.js",
+        "bytes": 63077,
+        "gzipBytes": 17359
+      },
+      {
+        "path": "assets/webworkerAll-DSWdmMaa.js",
+        "bytes": 83524,
+        "gzipBytes": 24756
+      }
+    ],
+    "gzipBytes": 260242
+  },
+  "addedGzipBytes": 154807,
+  "budgetBytes": 307200,
+  "withinBudget": true,
+  "scope": "Complete requested frontend JavaScript delta for identical map-opening journeys; includes any other UI changes since the baseline. Not a named-renderer-chunk estimate.",
+  "runId": 38554261182,
+  "sourceCommit": "43471fb9581a2bd0f8f05594186f906c35ebec44"
+}

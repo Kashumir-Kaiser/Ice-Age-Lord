@@ -38,6 +38,24 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: map-visual-${{ matrix.quality }}-dpr${{ matrix.dpr }}
-          path: frontend/map-evidence/after/
+          name: map-visual-${{ matrix.quality }}-dpr${{ matrix.dpr }}-1366
+          path: frontend/map-evidence/after/1366/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-visual-${{ matrix.quality }}-dpr${{ matrix.dpr }}-1920
+          path: frontend/map-evidence/after/1920/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-visual-${{ matrix.quality }}-dpr${{ matrix.dpr }}-390
+          path: frontend/map-evidence/after/390/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-visual-${{ matrix.quality }}-dpr${{ matrix.dpr }}-metadata
+          path: frontend/map-evidence/after/scenarios.json
           retention-days: 14

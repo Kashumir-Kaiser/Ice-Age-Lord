@@ -1,6 +1,6 @@
-export type MapMetricSnapshot = { frames:number;renderMs:number[];intervalMs:number[];textureBytes:number;decodedBytes:number;terrainBytes:number;queued:number;pendingTextures:number;drawCalls:number;activeLoops:number;backend:string;errors:string[];visible:number;total:number;quality:'low'|'normal';terrainLevel:number;visibleTerrainChunks:number;prefetchChunks:number };
+export type MapMetricSnapshot = { frames:number;renderMs:number[];intervalMs:number[];textureBytes:number;decodedBytes:number;terrainBytes:number;queued:number;pendingTextures:number;drawCalls:number;activeLoops:number;backend:string;errors:string[];visible:number;total:number;quality:'low'|'normal';terrainLevel:number;visibleTerrainChunks:number;prefetchChunks:number;flameFrame:number|null;flameSprites:number };
 export class MapMetrics {
-  readonly data:MapMetricSnapshot={frames:0,renderMs:[],intervalMs:[],textureBytes:0,decodedBytes:0,terrainBytes:0,queued:0,pendingTextures:0,drawCalls:0,activeLoops:0,backend:'initializing',errors:[],visible:0,total:0,quality:'normal',terrainLevel:0,visibleTerrainChunks:0,prefetchChunks:0};
+  readonly data:MapMetricSnapshot={frames:0,renderMs:[],intervalMs:[],textureBytes:0,decodedBytes:0,terrainBytes:0,queued:0,pendingTextures:0,drawCalls:0,activeLoops:0,backend:'initializing',errors:[],visible:0,total:0,quality:'normal',terrainLevel:0,visibleTerrainChunks:0,prefetchChunks:0,flameFrame:null,flameSprites:0};
   private previous=0;
   constructor(readonly enabled:boolean){}
   resetClock():void{this.previous=0;}

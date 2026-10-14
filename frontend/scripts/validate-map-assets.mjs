@@ -49,6 +49,21 @@ export function validateMapAssets(manifest){
  for(const asset of manifest.assets){
   if(!Number.isFinite(asset.groundAnchor.x)||!Number.isFinite(asset.groundAnchor.y)||asset.groundAnchor.x<0||asset.groundAnchor.x>1||asset.groundAnchor.y<0||asset.groundAnchor.y>1)throw new Error('Invalid map anchor');
   for(const entry of asset.mapExports??[])validateMapExport(entry,asset);
+  if(asset.mapFlame)validateMapFlame(asset.mapFlame);
  }
  for(const entry of manifest.environmentArt??[])validateMapExport(entry,{logicalCanvas:{width:entry.width,height:entry.height},orientation:entry.orientation});
+}
+export function validateMapFlame(flame,read=path=>readFileSync(resolve(root,path))){
+ if(flame.path!=='/assets/map/effects/flame-loop.png'||flame.source!=='assets/source/map-effects/flame-loop-sheet.png')throw new Error('Invalid map flame path');
+ if(!Number.isInteger(flame.width)||!Number.isInteger(flame.height)||flame.width<1||flame.height<1||flame.width>2048||flame.height>2048||flame.fps<8||flame.fps>12||!Array.isArray(flame.frames)||flame.frames.length!==8)throw new Error('Invalid map flame sheet');
+ for(const point of [flame.anchor,flame.emitter])if(!point||![point.x,point.y].every(v=>Number.isFinite(v)&&v>=0&&v<=1))throw new Error('Invalid map flame anchor');
+ if(!Number.isFinite(flame.relativeWidth)||flame.relativeWidth<=0||flame.relativeWidth>1)throw new Error('Invalid map flame scale');
+ const rectangles=[];
+ for(const frame of flame.frames){
+  if(![frame.x,frame.y,frame.width,frame.height].every(Number.isInteger)||frame.x<0||frame.y<0||frame.width<1||frame.height<1||frame.x+frame.width>flame.width||frame.y+frame.height>flame.height)throw new Error('Map flame frame outside bounds');
+  if(rectangles.some(r=>frame.x<r.x+r.width&&frame.x+frame.width>r.x&&frame.y<r.y+r.height&&frame.y+frame.height>r.y))throw new Error('Overlapping map flame frames');
+  rectangles.push(frame);
+ }
+ const buffer=read('frontend/public'+flame.path);checkDimensions(buffer,flame.width,flame.height);
+ if(hash(buffer)!==flame.sha256||hash(read(flame.source))!==flame.sourceSha256)throw new Error('Map flame hash mismatch');
 }

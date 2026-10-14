@@ -6,8 +6,9 @@ import type { CameraView } from '../map/camera.ts';
 import type { Geography, TerrainRegion } from './TerrainSampler.ts';
 import type { PlayerView as ApiPlayerView } from '../../../packages/contracts/src/index.ts';
 import type { Orientation } from './SpriteRegistration.ts';
+import type {SceneLOD} from './mapStyle.ts';
 export type RenderBuilding = {id:string;name:string;point:WorldPoint;asset?:AssetManifestEntry;assetId:string;orientation:Orientation;footprint:{widthM:number;depthM:number};selected:boolean;active:boolean;draft:boolean;fixture?:boolean};
-export type MapSnapshot = {identity:string;visualIdentity?:string;modeledInfill?:boolean;projection:'territory'|'north-up';camera:TerritoryCamera|CameraView;northExtent?:{width:number;height:number};regions?:readonly TerrainRegion[];buildings:readonly RenderBuilding[];mode:'normal'|'focus'|'planning';geography?:Geography;entities:readonly EntityView[];world:boolean;revision:number};
+export type MapSnapshot = {identity:string;visualIdentity?:string;modeledInfill?:boolean;projection:'territory'|'north-up';camera:TerritoryCamera|CameraView;northExtent?:{width:number;height:number};regions?:readonly TerrainRegion[];buildings:readonly RenderBuilding[];buildingLODs?:Map<string,SceneLOD>;mode:'normal'|'focus'|'planning';geography?:Geography;entities:readonly EntityView[];world:boolean;revision:number};
 export function territorySnapshot(settlement:SettlementView,manifest:AssetManifest|null,camera:TerritoryCamera,mode:MapSnapshot['mode'],selectedId:string|null,drafts:readonly LayoutDraft[]=[],terrain:{visualIdentity?:string;modeledInfill?:boolean;regions?:readonly TerrainRegion[]}={}):MapSnapshot {
   const buildings:RenderBuilding[]=settlement.buildings.map(b=>{
     const isFire=b.ref.id===settlement.fireRef.id,assetId=resolveSettlementAssetId(manifest,b.assetId,settlement.fireLevel,isFire,b.visualState,b.level);

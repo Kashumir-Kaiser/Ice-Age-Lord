@@ -2,6 +2,7 @@ import { Texture, Rectangle } from 'pixi.js';
 import type { AssetManifestEntry } from '../assets/assetRegistry.ts';
 import type { CompositionLayer } from './SpriteRegistration.ts';
 import {trimmedRect,type SpriteRect} from './SpriteRegistration.ts';
+import {flameKey} from './FlamePresentation.ts';
 export function exportPath(asset:AssetManifestEntry,layer:CompositionLayer,lod:'close'|'district'):string {
   return asset.mapExports?.find(e=>e.role===layer.role&&e.lod===lod&&(e.layerPath??e.source)===layer.path)?.path??layer.path;
 }
@@ -15,6 +16,7 @@ export class AssetTextureCache {
   private trims=new Map<string,SpriteRect>();
   private revisions=new Map<string,string>();
   private failed=new Set<string>();
+  private registered=new WeakMap<AssetManifestEntry,{useAtlas:boolean;maxTextureSize:number}>();
   private revision(path:string,hash:string|undefined):void{
     if(!hash)return;
     const previous=this.revisions.get(path);
@@ -25,6 +27,14 @@ export class AssetTextureCache {
   private rejected=new Set<string>();
   maxTextureSize=2048;
   register(asset:AssetManifestEntry,useAtlas=true):void{
+    const cached=this.registered.get(asset);
+    if(cached?.useAtlas===useAtlas&&cached.maxTextureSize===this.maxTextureSize)return;
+    this.registered.set(asset,{useAtlas,maxTextureSize:this.maxTextureSize});
+    const flame=asset.mapFlame;
+    if(flame&&flame.width<=this.maxTextureSize&&flame.height<=this.maxTextureSize){
+      this.revision(flame.path,flame.sha256);this.estimates.set(flame.path,flame.width*flame.height*4);
+      for(let i=0;i<flame.frames.length;i++)this.registrations.set(flameKey(flame.path,i),{path:flame.path,...flame.frames[i]});
+    }
     for(const path of Object.values(asset.layers))if(typeof path==='string')this.estimates.set(path,asset.logicalCanvas.width*asset.logicalCanvas.height*4);
     for(const entry of asset.mapExports??[]){
       this.revision(entry.path,entry.sha256);
@@ -77,7 +87,7 @@ export class AssetTextureCache {
       // Another host can finish a shared load without this host owning its callback.
       const ownerEntry=e;
       const stillOwned=()=>!this.destroyed&&this.owned.has(path)&&shared.get(path)===ownerEntry;
-      void e.request.then(()=>{if(stillOwned()){this.enforceBudget();this.invalidate();}}).catch(()=>{if(stillOwned()){this.failed.add(path);this.onError(path);}});
+      void e.request.then(()=>{if(stillOwned()){this.enforceBudget();this.invalidate();}}).catch(()=>{if(stillOwned()){this.failed.add(path);this.registered=new WeakMap();this.onError(path);}});
     }
     return e?.image??null;
   }

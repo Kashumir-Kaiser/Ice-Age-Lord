@@ -25,6 +25,7 @@ export type AssetManifestEntry = {
   orientationRegions?:Partial<Record<'north'|'east'|'south'|'west',{hitPolygon:readonly (readonly [number,number])[];upper:readonly (readonly [number,number])[]}>>;
   equivalentOrientations?: readonly string[];
   mapExports?: readonly MapExport[];
+  mapFlame?: {path:string;sha256:string;source:string;sourceSha256:string;width:number;height:number;fps:number;frames:readonly {x:number;y:number;width:number;height:number}[];anchor:{x:number;y:number};emitter:{x:number;y:number};relativeWidth:number};
   revision: number;
   /** Purely visual sprite-scale multiplier. Never changes physical occupancy or heat. */
   presentationScale?: number;
