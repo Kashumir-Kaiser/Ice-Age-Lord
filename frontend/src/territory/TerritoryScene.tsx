@@ -7,7 +7,7 @@ import { findAsset, loadAssetManifest, resolveSettlementAssetId } from '../asset
 import BuildingSprite, { type ReadabilityMode } from './BuildingSprite';
 import './territory.css';
 import MapCanvas from '../rendering/MapCanvas';
-import { territorySnapshot } from '../rendering/MapSceneAdapter';
+import { territorySnapshot, type MapSnapshot } from '../rendering/MapSceneAdapter';
 import { spriteRect, artPolygon } from '../rendering/SpriteRegistration';
 import { pointInPolygon, pickStack, cyclePick, pointerCSS } from '../rendering/MapPicking';
 import { projectBuildings } from '../rendering/BuildingGeometry';
@@ -23,6 +23,8 @@ const fixtureFootprint = { kind:'rectangle' as const, widthM:2, depthM:2, proven
 type PanGesture = { pointerId:number; x:number; y:number; origin:TerritoryCamera; moved:boolean; playerMarker:boolean };
 type Props = {
   mode?: 'demo' | 'live';
+  visualIdentity?:string;
+  terrainRegions?:MapSnapshot['regions'];
   playerMarkerVisible?: boolean;
   settlement: SettlementView;
   placementDefinitions: PlayerView['placementDefinitions'];
@@ -59,7 +61,7 @@ function worldBounds(camera:TerritoryCamera,width:number,height:number):{minX:nu
   return {minX:Math.min(...points.map(p=>p.x)),maxX:Math.max(...points.map(p=>p.x)),minY:Math.min(...points.map(p=>p.y)),maxY:Math.max(...points.map(p=>p.y))};
 }
 
-export default function TerritoryScene({ mode='demo', playerMarkerVisible=false, settlement, placementDefinitions, camera, onCameraChange, drafts, onDraftsChange, selectedRef, onSelectEntity, focusedBuildingId, onFocusHandled, readability, onReadabilityChange, playerName, playerPosition, followPlayer, onFollowPlayerChange, onOpenPlayerProfile }:Props) {
+export default function TerritoryScene({ mode='demo', visualIdentity, terrainRegions, playerMarkerVisible=false, settlement, placementDefinitions, camera, onCameraChange, drafts, onDraftsChange, selectedRef, onSelectEntity, focusedBuildingId, onFocusHandled, readability, onReadabilityChange, playerName, playerPosition, followPlayer, onFollowPlayerChange, onOpenPlayerProfile }:Props) {
   const liveApi = mode === 'live';
   const showPlayerMarker = playerMarkerVisible || followPlayer;
   const rootRef=useRef<HTMLDivElement>(null);
@@ -339,7 +341,7 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
     return ground.y>target.y&&pointInPolygon(target,artPolygon(asset.occlusionRegion.upper,spriteRect(asset,ground,scale)));
   };
   const renderDrafts=[...drafts,...(denseQa?denseFixture:[]),...(activeDefinition?[{id:'placement-ghost',definitionId:activeDefinition.id,assetId:activeDefinition.assetId,x:currentPlacementLocal.x,y:currentPlacementLocal.y,footprint:activeDefinition.footprint,orientation:placingOrientation}]:[])];
-  const renderSnapshot=useMemo(()=>territorySnapshot(settlement,manifest,activeCamera,effectiveMode,selectedRef?.id??null,renderDrafts),[settlement,manifest,activeCamera,effectiveMode,selectedRef?.id,drafts,denseQa,activeDefinition,ghostWorld,placingOrientation]);
+  const renderSnapshot=useMemo(()=>territorySnapshot(settlement,manifest,activeCamera,effectiveMode,selectedRef?.id??null,renderDrafts,{visualIdentity,modeledInfill:!liveApi,regions:terrainRegions}),[settlement,manifest,activeCamera,effectiveMode,selectedRef?.id,drafts,denseQa,activeDefinition,ghostWorld,placingOrientation,visualIdentity,terrainRegions,liveApi]);
   const captureSelection=(event:React.MouseEvent<SVGSVGElement>)=>{
     if(ignoreClick.current){ignoreClick.current=false;event.preventDefault();event.stopPropagation();return;}
     if(activeDefinition||event.detail===0||event.target instanceof Element&&event.target.closest('.territory-player-marker'))return;

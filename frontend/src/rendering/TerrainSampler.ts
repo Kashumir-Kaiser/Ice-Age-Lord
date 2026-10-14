@@ -2,7 +2,7 @@ import { MAP_PALETTE, VISUAL_STYLE_VERSION } from './mapStyle.ts';
 export type Material = 'snow' | 'earth' | 'ice' | 'rock' | 'forest';
 export type Geography = { forest: {x:number;y:number}; stone: {x:number;y:number}; water: {x:number;y:number} };
 export type TerrainRegion={x:number;y:number;width:number;depth:number;kind:'forest'|'rock'|'ice';ratio:number};
-export type TerrainProp = {id:string;x:number;y:number;size:number;kind:'conifer'|'rock'|'bank';variant:number};
+export type TerrainProp = {id:string;x:number;y:number;size:number;kind:'conifer'|'bare'|'rock'|'bank';variant:number};
 export function visualHash(x:number,y:number,seed:number):number {
   let n=Math.imul(x|0,374761393)^Math.imul(y|0,668265263)^seed;
   n=Math.imul(n^(n>>>13),1274126177);return ((n^(n>>>16))>>>0)/4294967296;
@@ -38,18 +38,21 @@ export class TerrainSampler {
   readonly identity:string;
   readonly geography?:Geography;
   readonly regions:readonly TerrainRegion[];
-  constructor(identity:string,geography?:Geography,regions:readonly TerrainRegion[]=[]){this.identity=identity;this.geography=geography;this.regions=regions;this.seed=visualSeed('LL01');}
+  readonly modeledInfill:boolean;
+  constructor(identity:string,geography?:Geography,regions:readonly TerrainRegion[]=[],modeledInfill=true){this.identity=identity;this.geography=geography;this.regions=regions;this.modeledInfill=modeledInfill;this.seed=visualSeed(identity);}
   forestAt(x:number,y:number):number {
-    let w=0;for(const g of MODELED_FOREST)w=Math.max(w,regionWeight(x,y,g,g.rx,g.ry));
+    let w=0;if(this.modeledInfill)for(const g of MODELED_FOREST)w=Math.max(w,regionWeight(x,y,g,g.rx,g.ry));
     if(this.geography)w=Math.max(w,regionWeight(x,y,this.geography.forest,3500,3600));
     for(const r of this.regions)if(r.kind==='forest')w=Math.max(w,regionWeight(x,y,r,r.width/2,r.depth/2)*r.ratio);return w;
   }
   sample(x:number,y:number,sampleSpan=0):{material:Material;color:readonly number[];forest:number} {
-    const broad=noise(x/4000,y/4000,this.seed)*.4+noise(x/800,y/800,this.seed+7)*.2+noise(x/110,y/110,this.seed+13)*.4;
+    const broad=.5+(noise(x/4000,y/4000,this.seed)-.5)*.4*Math.max(0,1-sampleSpan/4000)
+      +(noise(x/800,y/800,this.seed+7)-.5)*.2*Math.max(0,1-sampleSpan/800)
+      +(noise(x/110,y/110,this.seed+13)-.5)*.4*Math.max(0,1-sampleSpan/110);
     const medium=.5+(noise(x/24,y/24,this.seed+19)-.5)*Math.max(0,1-sampleSpan/24);
     const forest=this.forestAt(x,y);
     let stone=this.geography?regionWeight(x,y,this.geography.stone,1300,1100):0;
-    for(const ridge of MODELED_RELIEF)stone=Math.max(stone,regionWeight(x,y,ridge,ridge.rx,ridge.ry)*.55);
+    if(this.modeledInfill)for(const ridge of MODELED_RELIEF)stone=Math.max(stone,regionWeight(x,y,ridge,ridge.rx,ridge.ry)*.55);
     let ice=this.geography?regionWeight(x,y,this.geography.water,2100,1200):0;
     for(const r of this.regions){const w=regionWeight(x,y,r,r.width/2,r.depth/2)*r.ratio;if(r.kind==='rock')stone=Math.max(stone,w);if(r.kind==='ice')ice=Math.max(ice,w);}
     const material:Material=ice>.45?'ice':stone>.45?'rock':forest>.35?'forest':'snow';
@@ -62,8 +65,9 @@ export class TerrainSampler {
     const cell=24,result:TerrainProp[]=[];
     for(let cy=Math.floor(bounds.minY/cell);cy<=Math.floor(bounds.maxY/cell);cy++)for(let cx=Math.floor(bounds.minX/cell);cx<=Math.floor(bounds.maxX/cell);cx++){
       const n=visualHash(cx,cy,this.seed+101),x=(cx+.15+visualHash(cx,cy,this.seed+102)*.7)*cell,y=(cy+.15+visualHash(cx,cy,this.seed+103)*.7)*cell;
-      const forest=this.forestAt(x,y),kind=n<forest*.8?'conifer':n>.96?'rock':n>.9?'bank':null;
-      if(kind)result.push({id:cx+':'+cy,x,y,kind,variant:Math.floor(n*1000)%8,size:kind==='conifer'?5+n*5:kind==='rock'?.8+n*1.2:4+n*5});
+      if(visualHash(cx,cy,this.seed+105)>Math.min(1,(1.5-metresPerPixel)/.6))continue;
+      const forest=this.forestAt(x,y),kind=n<forest*.8?(visualHash(cx,cy,this.seed+104)<.16?'bare':'conifer'):n>.96?'rock':n>.9?'bank':null;
+      if(kind)result.push({id:cx+':'+cy,x,y,kind,variant:Math.floor(n*1000)%8,size:kind==='conifer'||kind==='bare'?5+n*5:kind==='rock'?.8+n*1.2:4+n*5});
     }
     return result.sort((a,b)=>a.id.localeCompare(b.id));
   }
@@ -72,4 +76,13 @@ export function chunkLevel(pixelsPerMetre:number,previous?:number):number {
   const desired=Math.max(0,Math.round(Math.log2(384/Math.max(.000001,64*pixelsPerMetre))));
   if(previous!==undefined){const span=64*2**previous*pixelsPerMetre;if(span>=256*.85&&span<=512*1.15)return previous;}
   return Math.min(18,desired);
+}
+export function chunkCoverage(bounds:{minX:number;maxX:number;minY:number;maxY:number},level:number):number {
+  const span=64*2**level;
+  return (Math.floor(bounds.maxX/span)-Math.floor(bounds.minX/span)+1)*(Math.floor(bounds.maxY/span)-Math.floor(bounds.minY/span)+1);
+}
+/** A wide/rotated viewport must fit its visible set before reserving any prefetch. */
+export function boundedChunkLevel(level:number,bounds:{minX:number;maxX:number;minY:number;maxY:number},slots:number):number {
+  while(level<18&&chunkCoverage(bounds,level)>slots)level++;
+  return level;
 }

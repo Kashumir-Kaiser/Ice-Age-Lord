@@ -15,7 +15,7 @@ import { SaveResponseScopeGate } from './live/saveScope';
 import { LIVE_SCREENS, type LiveScreen } from './live/screens';
 import TerritoryScene from './territory/TerritoryScene';
 import MapCanvas from './rendering/MapCanvas';
-import { liveExplorationSnapshot } from './rendering/MapSceneAdapter';
+import { liveExplorationSnapshot, liveTerrainRegions } from './rendering/MapSceneAdapter';
 import { territorySceneFromApi } from './live/territoryAdapter';
 import type { EntityRef as DemoEntityRef, LayoutDraft } from './game/GameClient';
 import type { TerritoryCamera } from './territory/projection';
@@ -1303,6 +1303,8 @@ function LiveApp() {
           <p className="live-muted">Bố cục isometric và artwork dùng chung với bản xem thử. Vị trí, trạng thái, cấp và lựa chọn đều đọc từ PlayerView của lượt lưu đang mở.</p>
           <TerritoryScene
             mode="live"
+            visualIdentity={view.saveId}
+            terrainRegions={liveTerrainRegions(view)}
             playerMarkerVisible
             settlement={settlement}
             placementDefinitions={[]}

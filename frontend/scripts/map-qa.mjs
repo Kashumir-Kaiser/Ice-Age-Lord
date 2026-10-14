@@ -6,7 +6,12 @@ const browser=await launchMapBrowser(),evidence=[];
 const output=resolve(process.env.MAP_QA_DIR??'map-evidence/after');mkdirSync(output,{recursive:true});
 const dpr=Number(process.env.MAP_QA_DPR??1),quality=process.env.MAP_QA_QUALITY??'normal';
 async function capture(page,name,viewport){
- await readyMap(page);const filename=`${name}-${viewport.width}-${quality}-dpr${dpr}.png`;
+ const filename=`${name}-${viewport.width}-${quality}-dpr${dpr}.png`;
+ try{await readyMap(page);}catch(error){
+  const metrics=await page.evaluate(()=>window.__mapMetrics?.at(-1));
+  writeFileSync(resolve(output,filename+'.failure.json'),JSON.stringify({name,viewport,dpr,quality,metrics,error:String(error)},null,2));
+  await page.screenshot({path:resolve(output,filename+'.failure.png'),animations:'disabled'});throw error;
+ }
  await page.screenshot({path:resolve(output,filename),animations:'disabled'});
  evidence.push({filename,viewport,dpr,quality,metrics:await page.evaluate(()=>window.__mapMetrics.at(-1))});
 }

@@ -43,7 +43,7 @@ export class TerrainChunkCache {
   process(budget=2):boolean {
     if(this.disposed)return false;const start=performance.now();let generated=false;
     while(this.finished.length&&performance.now()-start<budget){const job=this.finished.shift()!;if(job.revision===this.revision){this.install(job);generated=true;}}
-    if(this.worker){if(!this.active&&this.queue.size){const [key,job]=this.queue.entries().next().value!;this.queue.delete(key);this.active=job;this.worker.postMessage({...job,identity:this.sampler.identity,geography:this.sampler.geography,regions:this.sampler.regions});}return generated;}
+    if(this.worker){if(!this.active&&this.queue.size){const [key,job]=this.queue.entries().next().value!;this.queue.delete(key);this.active=job;this.worker.postMessage({...job,identity:this.sampler.identity,geography:this.sampler.geography,regions:this.sampler.regions,modeledInfill:this.sampler.modeledInfill});}return generated;}
     if(!this.working&&this.queue.size){const [key,job]=this.queue.entries().next().value!;this.queue.delete(key);this.working={...job,buffer:new Uint8ClampedArray(job.size*job.size*4),row:0};}
     const work=this.working;if(!work)return generated;const span=64*2**work.level,step=span/(work.size-2);
     // Incremental fallback checks the budget once per scanline and resumes the same buffer next frame.
@@ -75,6 +75,9 @@ export class TerrainChunkCache {
     while(this.bytes>this.limit&&this.cache.size){const [key,chunk]=this.cache.entries().next().value!;chunk.release?.();chunk.canvas.width=0;this.bytes-=chunk.bytes;this.cache.delete(key);}
   }
   invalidate():void{this.clearQueued();for(const chunk of this.cache.values()){chunk.release?.();chunk.canvas.width=0;}this.cache.clear();this.bytes=0;}
+  retainLevels(levels:ReadonlySet<number>):void {
+    for(const [key,chunk] of this.cache)if(!levels.has(chunk.level)){chunk.release?.();chunk.canvas.width=0;this.bytes-=chunk.bytes;this.cache.delete(key);}
+  }
   clearQueued():void {this.revision++;this.queue.clear();this.finished=[];this.working=null;}
   destroy():void {if(this.disposed)return;this.disposed=true;this.worker?.terminate();this.worker=null;this.active=null;this.invalidate();this.paint=null;}
 }

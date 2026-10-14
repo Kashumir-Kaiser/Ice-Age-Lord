@@ -56,7 +56,9 @@ test('terrain/decor determinism, negative chunks, shared edges and varying viewp
  for(const boundary of [-64,0,64]){near(noise(boundary/110,17/110,a.seed),noise(boundary/110,17/110,b.seed));}
  const small=a.props({minX:0,maxX:300,minY:-300,maxY:0},.3),large=b.props({minX:-300,maxX:600,minY:-600,maxY:300},.3);
  for(const prop of small)assert.deepEqual(prop,large.find(p=>p.id===prop.id));
- assert.deepEqual(a.sample(10,10),new TerrainSampler('world-B').sample(10,10));
+ assert.notEqual(a.seed,new TerrainSampler('world-B').seed,'visual seed derives from the world/save identity');
+ const live=new TerrainSampler('save-A',undefined,[],false);assert.equal(live.forestAt(305,-75),0,'demo modeled infill cannot invent LIVE terrain');
+ const projected=new TerrainSampler('save-A',undefined,[{x:305,y:-75,width:40,depth:40,kind:'forest',ratio:.7}],false);near(projected.forestAt(305,-75),.7);
 });
 test('LOD and chunk hysteresis hold near boundaries; world chunk spans remain bounded',()=>{
  assert.equal(chooseLOD(34,'close'),'close');assert.equal(chooseLOD(11,'district'),'district');assert.equal(chooseLOD(13,'regional'),'regional');assert.equal(chooseLOD(40,'regional'),'close');
@@ -71,6 +73,7 @@ test('overlap order uses footprint relations with stable IDs and spatial neighbo
 test('quality requires sustained overload and stable headroom, respecting locked mode',()=>{
  const quality=new AdaptiveQuality();for(let i=0;i<29;i++)assert.equal(quality.update(30,100),'normal');assert.equal(quality.update(30,100),'low');
  for(let i=0;i<149;i++)assert.equal(quality.update(10,100),'low');assert.equal(quality.update(10,100),'normal');assert.equal(quality.update(100,10000,'normal'),'normal');
+ const intermittent=new AdaptiveQuality();for(let i=0;i<29;i++)intermittent.update(30,100);intermittent.resetObservation();assert.equal(intermittent.update(30,100),'normal','separate short gestures do not count as sustained overload');
 });
 test('raster export validation rejects bad formats, anchors/trim/atlas/orientation and stale hashes',()=>{
  const entry=asset.mapExports?.[0];assert.ok(entry,'production raster exports must exist');validateMapExport(entry,asset);

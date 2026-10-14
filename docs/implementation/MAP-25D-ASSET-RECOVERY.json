@@ -226,6 +226,76 @@
       "generationId": "exec-96fea87f-cddc-4519-a252-70aa9a0e308b",
       "sourcePath": "assets/source/terrain/bank-01.png",
       "status": "Missing snow-bank family, first master; alpha/ground-contact review pending."
+    },
+    {
+      "generationId": "exec-e15a57a2-2aeb-4f8d-8625-5023d744fd53",
+      "originalPath": "/workspace/generated_images/exec-e15a57a2-2aeb-4f8d-8625-5023d744fd53.png",
+      "sourcePath": "assets/source/terrain/bank-02.png",
+      "sourceSha256": "64be03cee0c605539bc350b0c95156baeeecdf3c5b9da35d8b16b24dbc7e8cdf",
+      "status": "Draft short right-shouldered snow wedge; cyan edge pixels inspected: all below alpha 8/255, with no opaque cyan fringe. Ground registration and scene review pending."
+    },
+    {
+      "generationId": "exec-3ba0afbb-55eb-418d-abb7-6df9c1dc31ea",
+      "originalPath": "/workspace/generated_images/exec-3ba0afbb-55eb-418d-abb7-6df9c1dc31ea.png",
+      "sourcePath": "assets/source/terrain/bank-03.png",
+      "sourceSha256": "2ce4e8b8e28cf97472f64025e4b064cd1167019605dc1a4d3f14e0451ba75b4e",
+      "status": "Draft missing snow-bank variation: Low broad trough with rounded snow shoulders. Scene registration/review pending."
+    },
+    {
+      "generationId": "exec-9785d0a9-fd1a-4090-928a-fd909e22bfa7",
+      "originalPath": "/workspace/generated_images/exec-9785d0a9-fd1a-4090-928a-fd909e22bfa7.png",
+      "sourcePath": "assets/source/terrain/bank-04.png",
+      "sourceSha256": "6e04b230cc6ce4ec4c4403523b7d6a73c5b12c0b5996ea9105827f0e6db41420",
+      "status": "Draft missing snow-bank variation: Compact three-lobed snow mound. Scene registration/review pending."
+    },
+    {
+      "generationId": "exec-6032744b-1712-48a2-824d-3da12e283c64",
+      "originalPath": "/workspace/generated_images/exec-6032744b-1712-48a2-824d-3da12e283c64.png",
+      "sourcePath": "assets/source/terrain/bank-05.png",
+      "sourceSha256": "cc217e8facbc6411676f4bb03ffc653d0805f23f23d97489b91abc2ca65c0ff0",
+      "status": "Draft low scalloped snow lip; scene registration/review pending."
+    },
+    {
+      "generationId": "exec-f3fdda85-702c-4848-9568-95783a40204b",
+      "originalPath": "/workspace/generated_images/exec-f3fdda85-702c-4848-9568-95783a40204b.png",
+      "sourcePath": "assets/source/terrain/bank-06.png",
+      "sourceSha256": "b99e14777df562cca9ab9b299dd98aad2fa98d1fb4709816291f00c4c9e054d7",
+      "status": "Draft: Asymmetric fan-shaped snow drift. Scene registration/review pending."
+    },
+    {
+      "generationId": "exec-c5b3aed4-17d4-4cc8-bc1d-892011b55801",
+      "originalPath": "/workspace/generated_images/exec-c5b3aed4-17d4-4cc8-bc1d-892011b55801.png",
+      "sourcePath": "assets/source/terrain/bank-07.png",
+      "sourceSha256": "5bc515a807c94ce90ee95ff78f7e4701b02f95ebc7694978b3d775d59e202dd2",
+      "status": "Draft: Unequal double snow pillow with shallow saddle. Scene registration/review pending."
+    },
+    {
+      "generationId": "exec-66a88ac7-4f7c-4e86-99b6-154b54248aa7",
+      "originalPath": "/workspace/generated_images/exec-66a88ac7-4f7c-4e86-99b6-154b54248aa7.png",
+      "sourcePath": "assets/source/terrain/bank-08.png",
+      "sourceSha256": "bdf7221c3564ffbfe3a615d427b13e9247907c6cf641835299b6ce75470f410f",
+      "status": "Draft: Low sinuous snow curl with broken end. Scene registration/review pending."
+    },
+    {
+      "generationId": "exec-6821f5df-10d8-4361-b612-1ca2f953f2dc",
+      "originalPath": "/workspace/generated_images/exec-6821f5df-10d8-4361-b612-1ca2f953f2dc.png",
+      "sourcePath": "assets/source/terrain/dirty-snow-02.png",
+      "sourceSha256": "9805308c8824a350d5d0737b567260ed180ca8527e05b9eef869ca1bffa93d04",
+      "status": "Draft: Quiet compacted snow with sparse frost-stained earth patches. Scene registration/review pending."
+    },
+    {
+      "generationId": "exec-460baf9f-7137-4bbe-860e-8a735e92d2ba",
+      "originalPath": "/workspace/generated_images/exec-460baf9f-7137-4bbe-860e-8a735e92d2ba.png",
+      "sourcePath": "assets/source/terrain/earth-02.png",
+      "sourceSha256": "976e8a4490d0bd314f2993b3b644897f88fd5b7c237c9a87902da99b1bcb2ed5",
+      "status": "Draft: Frozen clay with broad frost-edged fissures. Scene registration/review pending."
+    },
+    {
+      "generationId": "exec-80160ad9-0f56-4bcc-b141-da55e8f37ac6",
+      "originalPath": "/workspace/generated_images/exec-80160ad9-0f56-4bcc-b141-da55e8f37ac6.png",
+      "sourcePath": "assets/source/terrain/ice-02.png",
+      "sourceSha256": "b15b029ad572a1746f11221a622ecad48076df97c6f5e992a782958382ac58a7",
+      "status": "Draft: Cloudy slate-blue ice with sparse pale fractures. Scene registration/review pending."
     }
   ]
 }

@@ -1,6 +1,6 @@
 import { Application, Container, Graphics, Matrix, Sprite, Texture } from 'pixi.js';
 import type { MapSnapshot } from './MapSceneAdapter.ts';
-import { TerrainSampler, chunkLevel } from './TerrainSampler.ts';
+import { TerrainSampler, chunkLevel, chunkCoverage, boundedChunkLevel } from './TerrainSampler.ts';
 import { TerrainChunkCache } from './TerrainChunkCache.ts';
 import type { TerrainChunk } from './TerrainChunkCache.ts';
 import { AssetTextureCache, exportPath } from './AssetTextureCache.ts';
@@ -50,7 +50,7 @@ export class MapRenderer {
   readonly metrics:MapMetrics;
   constructor(private canvas:HTMLCanvasElement,snapshot:MapSnapshot,private status:(backend:string)=>void,enabledMetrics=false){
     this.snapshot=snapshot;this.metrics=new MapMetrics(enabledMetrics);
-    this.sampler=new TerrainSampler(snapshot.identity,snapshot.geography,snapshot.regions);
+    this.sampler=new TerrainSampler(snapshot.visualIdentity??snapshot.identity,snapshot.geography,snapshot.regions,snapshot.modeledInfill);
     this.terrain=new TerrainChunkCache(this.sampler,QUALITY.normal.terrainBytes,QUALITY.normal.textureSize,()=>this.invalidate());
     this.assets=new AssetTextureCache(()=>this.invalidate(),path=>{this.failures.add(path);this.metrics.error('asset: '+path);this.invalidate();},QUALITY.normal.totalBytes-QUALITY.normal.terrainBytes);
   }
@@ -84,8 +84,8 @@ export class MapRenderer {
   };
   update(snapshot:MapSnapshot):void{
     if(this.destroyed)return;
-    if(snapshot.identity!==this.snapshot.identity||JSON.stringify([snapshot.geography,snapshot.regions])!==JSON.stringify([this.snapshot.geography,this.snapshot.regions])){
-      this.terrain.destroy();this.sampler=new TerrainSampler(snapshot.identity,snapshot.geography,snapshot.regions);this.terrain=new TerrainChunkCache(this.sampler,QUALITY[this.quality].terrainBytes,QUALITY[this.quality].textureSize,()=>this.invalidate());this.level=undefined;
+    if(snapshot.identity!==this.snapshot.identity||JSON.stringify([snapshot.visualIdentity,snapshot.modeledInfill,snapshot.geography,snapshot.regions])!==JSON.stringify([this.snapshot.visualIdentity,this.snapshot.modeledInfill,this.snapshot.geography,this.snapshot.regions])){
+      this.terrain.destroy();this.sampler=new TerrainSampler(snapshot.visualIdentity??snapshot.identity,snapshot.geography,snapshot.regions,snapshot.modeledInfill);this.terrain=new TerrainChunkCache(this.sampler,QUALITY[this.quality].terrainBytes,QUALITY[this.quality].textureSize,()=>this.invalidate());this.level=undefined;
     }
     this.snapshot=snapshot;this.invalidate();
   }
@@ -117,8 +117,12 @@ export class MapRenderer {
     const pending=this.terrain.pending>0||this.previousLevel!==undefined;
     if(time-this.lastFrame>=1000/QUALITY[this.quality].fps-1){
       const start=performance.now(),generated=this.terrain.process();
-      if(this.dirty||generated||active||this.previousLevel!==undefined){this.effects.update((time-this.previous)/1000,this.reducedMotion);this.render();this.dirty=false;this.metrics.frame(start);this.lastFrame=time;}
-      if(active&&this.previous){const next=this.adaptive.update(time-this.previous,time-this.previous,this.preference==='auto'?undefined:this.preference);this.setQuality(next);}
+      if(this.dirty||generated||active||this.previousLevel!==undefined){
+        const interval=this.lastFrame?time-this.lastFrame:0;
+        this.effects.update((time-this.previous)/1000,this.reducedMotion);this.render();this.dirty=false;this.metrics.frame(start);this.lastFrame=time;
+        if(interval>0&&interval<250)this.setQuality(this.adaptive.update(interval,interval,this.preference==='auto'?undefined:this.preference));
+        else this.adaptive.resetObservation();
+      }
       this.previous=time;
     }
     if(active||pending||this.terrain.pending||this.dirty||this.previousLevel!==undefined){this.metrics.data.activeLoops=1;this.raf=requestAnimationFrame(this.frame);}else this.metrics.data.activeLoops=0;
@@ -126,21 +130,23 @@ export class MapRenderer {
   private render():void{
     const scale=this.scale(),corners=[this.inverse({x:0,y:0}),this.inverse({x:this.size.width,y:0}),this.inverse({x:0,y:this.size.height}),this.inverse({x:this.size.width,y:this.size.height})];
     const bounds={minX:Math.min(...corners.map(p=>p.x)),maxX:Math.max(...corners.map(p=>p.x)),minY:Math.min(...corners.map(p=>p.y)),maxY:Math.max(...corners.map(p=>p.y))};
-    const wanted=chunkLevel(scale*(this.snapshot.projection==='territory'?3:1),this.level);
+    const slots=Math.max(1,Math.floor(this.terrain.limit/(this.terrain.size*this.terrain.size*4)));
+    const wanted=boundedChunkLevel(chunkLevel(scale*(this.snapshot.projection==='territory'?3:1),this.level),bounds,slots);
     this.level??=wanted;
     // A fit/world jump can span thousands of close-up chunks. Switch its request
     // scale immediately rather than traversing that grid while coarse chunks load.
-    if(Math.abs(wanted-this.level)>1){this.terrain.clearQueued();this.level=wanted;this.previousLevel=undefined;}
+    if(wanted!==this.level&&(Math.abs(wanted-this.level)>1||chunkCoverage(bounds,this.level)+chunkCoverage(bounds,wanted)>slots)){this.terrain.clearQueued();this.level=wanted;this.previousLevel=undefined;}
     if(wanted!==this.level){
       const nextSpan=64*2**wanted;let ready=true;
       for(let y=Math.floor(bounds.minY/nextSpan);y<=Math.floor(bounds.maxY/nextSpan);y++)for(let x=Math.floor(bounds.minX/nextSpan);x<=Math.floor(bounds.maxX/nextSpan);x++){this.terrain.request(x,y,wanted);if(!this.terrain.get(x,y,wanted))ready=false;}
       if(ready){this.previousLevel=this.reducedMotion?undefined:this.level;this.level=wanted;this.transitionStart=performance.now();}
     }
-    const span=64*2**this.level,draws:Draw[]=[],used=new Set<string>();
+    const currentLevel=this.level,span=64*2**currentLevel,draws:Draw[]=[],used=new Set<string>();
     const progress=this.previousLevel===undefined?1:Math.min(1,(performance.now()-this.transitionStart)/150);
     if(this.previousLevel!==undefined&&progress<1){const oldSpan=64*2**this.previousLevel;
       for(let y=Math.floor(bounds.minY/oldSpan);y<=Math.floor(bounds.maxY/oldSpan);y++)for(let x=Math.floor(bounds.minX/oldSpan);x<=Math.floor(bounds.maxX/oldSpan);x++){const c=this.terrain.get(x,y,this.previousLevel);if(c)draws.push({...this.groundDraw(c),alpha:1-progress});}
     }else this.previousLevel=undefined;
+    this.terrain.retainLevels(new Set(this.previousLevel===undefined?[currentLevel,wanted]:[currentLevel,wanted,this.previousLevel]));
     const paint=this.assets.acquire('/assets/map/terrain/snow-quiet.webp');if(paint&&this.terrain.paint!==paint){this.terrain.paint=paint;this.terrain.invalidate();}
     used.add('/assets/map/terrain/snow-quiet.webp');
     for(let y=Math.floor(bounds.minY/span);y<=Math.floor(bounds.maxY/span);y++)for(let x=Math.floor(bounds.minX/span);x<=Math.floor(bounds.maxX/span);x++){
@@ -148,16 +154,20 @@ export class MapRenderer {
     }
     // Bounded one-chunk prefetch ring; visible requests are queued first.
     const x0=Math.floor(bounds.minX/span)-1,x1=Math.floor(bounds.maxX/span)+1,y0=Math.floor(bounds.minY/span)-1,y1=Math.floor(bounds.maxY/span)+1;
-    for(let x=x0;x<=x1;x++){this.terrain.request(x,y0,this.level);this.terrain.request(x,y1,this.level);}for(let y=y0+1;y<y1;y++){this.terrain.request(x0,y,this.level);this.terrain.request(x1,y,this.level);}
+    let prefetched=0;
+    const prefetchLimit=wanted===this.level&&this.previousLevel===undefined?Math.max(0,slots-chunkCoverage(bounds,this.level)):0;
+    const prefetch=(x:number,y:number)=>{if(prefetched<prefetchLimit){this.terrain.request(x,y,currentLevel);prefetched++;}};
+    for(let x=x0;x<=x1;x++){prefetch(x,y0);prefetch(x,y1);}for(let y=y0+1;y<y1;y++){prefetch(x0,y);prefetch(x1,y);}
     const selected=this.snapshot.buildings.find(b=>b.selected),target=selected?this.project(selected.point):null;
     const buildingObjects=projectBuildings(this.snapshot.buildings,this.project,scale,this.size);
     const ordered=depthOrder(buildingObjects);if(ordered.cycles.length)this.metrics.error('depth cycle: '+ordered.cycles.join(','));
     const preferDistrict=this.quality==='low'||new Set(buildingObjects.map(b=>b.assetId)).size*4*1048576>this.assets.limit;
-    const worldProps=this.sampler.props(bounds,1/scale).filter(p=>!this.snapshot.buildings.some(b=>Math.abs(b.point.x-p.x)<b.footprint.widthM/2+p.size&&Math.abs(b.point.y-p.y)<b.footprint.depthM/2+p.size));
+    const propBounds={minX:bounds.minX-20,maxX:bounds.maxX+20,minY:bounds.minY-20,maxY:bounds.maxY+20};
+    const worldProps=this.snapshot.mode==='planning'?[]:this.sampler.props(propBounds,1/scale).filter(p=>!this.snapshot.buildings.some(b=>Math.abs(b.point.x-p.x)<b.footprint.widthM/2+p.size&&Math.abs(b.point.y-p.y)<b.footprint.depthM/2+p.size));
     const props=worldProps.map(p=>{
-      const ground=this.project(p),path='/assets/map/terrain/'+p.kind+'-'+String(p.variant%(p.kind==='conifer'?6:8)+1).padStart(2,'0')+'.png';
-      const image=this.assets.acquire(path),height=p.size*scale*(p.kind==='conifer'?1.8:.6);
-      const width=height*(image?image.naturalWidth/image.naturalHeight:p.kind==='conifer'?.65:1.9);
+      const tree=p.kind==='conifer'||p.kind==='bare',ground=this.project(p),path='/assets/map/terrain/'+p.kind+'-'+String(p.variant%(p.kind==='conifer'?6:p.kind==='bare'?3:8)+1).padStart(2,'0')+'.png';
+      const image=this.assets.acquire(path),height=p.size*scale*(tree?1.8:.6);
+      const width=height*(image?image.naturalWidth/image.naturalHeight:tree?.65:1.9);
       return {id:'prop:'+p.id,path,x:ground.x-width/2,y:ground.y-height*.94,width,height,alpha:1,depth:ground.y};
     });
     // Contact/cast shadows lie on the ground below every upright object.
@@ -181,6 +191,7 @@ export class MapRenderer {
     let terrainGPUBytes=0;for(const texture of this.chunkTextures.values())terrainGPUBytes+=texture.source.width*texture.source.height*4;
     m.textureBytes=this.app?this.assets.gpuBytes+terrainGPUBytes+Math.ceil(this.size.width*this.size.height*QUALITY[this.quality].dpr**2*8):0;
     m.decodedBytes=this.assets.bytes+this.terrain.bytes;m.terrainBytes=terrainGPUBytes;m.queued=this.terrain.pending;m.pendingTextures=this.assets.pending;m.visible=buildingObjects.length+props.length;m.total=this.snapshot.buildings.length+worldProps.length;
+    m.quality=this.quality;m.terrainLevel=this.level;m.visibleTerrainChunks=chunkCoverage(bounds,this.level);m.prefetchChunks=prefetched;
   }
   private groundDraw(chunk:TerrainChunk):Draw {
     const scale=this.scale(),step=chunk.span/(chunk.canvas.width-2),ground=this.project({x:chunk.x*chunk.span-step,y:chunk.y*chunk.span-step});
@@ -199,7 +210,7 @@ export class MapRenderer {
     this.effectsGraphics.clear();
     if(this.snapshot.mode!=='planning')for(const b of this.snapshot.buildings)if(b.active){const p=this.project(b.point),radius=Math.min(72,10*this.scale()),light=this.effects.light(this.reducedMotion);
       for(let i=4;i>=1;i--)this.effectsGraphics.ellipse(p.x,p.y-2,radius*i/4,radius*i/8).fill({color:MAP_PALETTE.spill,alpha:.018*light});
-      if(!this.reducedMotion)for(const e of this.effects.particles)this.effectsGraphics.circle(p.x+e.x*.3,p.y+e.y*.4,1).fill({color:MAP_PALETTE.fire,alpha:(1-e.life)*.35});
+      if(!this.reducedMotion&&this.quality!=='low')for(const e of this.effects.particles)this.effectsGraphics.circle(p.x+e.x*.3,p.y+e.y*.4,1).fill({color:MAP_PALETTE.fire,alpha:(1-e.life)*.35});
     }
     this.draws=0;this.app!.render();this.metrics.data.drawCalls=this.draws;
   }

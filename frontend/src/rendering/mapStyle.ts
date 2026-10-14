@@ -22,6 +22,7 @@ export class AdaptiveQuality {
   quality: Quality = 'normal';
   private overload = 0;
   private headroom = 0;
+  resetObservation():void {this.overload=this.headroom=0;}
   update(interval: number, elapsed: number, locked?: Quality): Quality {
     if (locked) { this.quality = locked; this.overload = this.headroom = 0; return locked; }
     if (interval > (this.quality === 'normal' ? 20 : 40)) { this.overload += elapsed; this.headroom = 0; }
