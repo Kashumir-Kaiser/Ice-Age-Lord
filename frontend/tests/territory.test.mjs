@@ -15,6 +15,16 @@ const placement = await loadTypeScript('src/territory/placement.ts');
 const unitGroups = await loadTypeScript('src/game/unitGroups.ts');
 const assetRegistry = await loadTypeScript('src/assets/assetRegistry.ts');
 
+test('25 km heat fit shows the entire exact projected boundary on desktop and mobile',()=>{
+ const radius=25000,points=Array.from({length:32},(_,i)=>({x:Math.cos(i*Math.PI/16)*radius,y:Math.sin(i*Math.PI/16)*radius}));
+ for(const viewport of [{width:706,height:468},{width:342,height:430}]){
+  const padding=Math.min(110,viewport.width*.15,viewport.height*.15),camera=projection.fitWorldBounds(points,viewport,padding);
+  assert.ok(camera.zoom<.012,'heat fit can pass the obsolete close-up clamp');
+  for(const point of points){const p=projection.worldToScreen(point,camera,viewport);assert.ok(p.x>=padding-.01&&p.x<=viewport.width-padding+.01);assert.ok(p.y>=padding-.01&&p.y<=viewport.height-padding+.01);}
+  const center={x:viewport.width/2,y:viewport.height/2},next=projection.zoomAtScreenPoint(camera,center,viewport,camera.zoom*.9),picked=projection.screenToWorld(center,next,viewport);assert.ok(Math.abs(picked.x)<1e-6&&Math.abs(picked.y)<1e-6);
+ }
+});
+
 test('2:1 dimetric ground transform has an exact inverse at source anchors and distant coordinates', () => {
   for (const point of [{x:0,y:0},{x:40,y:20},{x:30,y:-10},{x:-20,y:30},{x:25000,y:-25000}]) {
     const result = projection.isoToWorld(projection.worldToIso(point));

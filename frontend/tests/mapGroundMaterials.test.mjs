@@ -18,3 +18,11 @@ test('continuous material transitions stay normalized and projected water is the
  }
  assert.equal(empty.materialWeights(0,0).slice(8).reduce((a,b)=>a+b,0),0);assert.equal(water.materialWeights(0,0).slice(8).reduce((a,b)=>a+b,0),1);
 });
+test('world relief uses projected region extent, culls small features, and does not enlarge individual trees',()=>{
+ const bounds={minX:-5000,maxX:5000,minY:-5000,maxY:5000};
+ const live=new TerrainSampler('save',undefined,[],false);assert.deepEqual(live.relief(bounds,10),[]);
+ const projected=new TerrainSampler('save',undefined,[{x:120,y:310,width:1000,depth:800,kind:'forest',ratio:1},{x:0,y:0,width:10,depth:10,kind:'rock',ratio:1}],false);
+ assert.deepEqual(projected.props(bounds,10),[]);
+ const patches=projected.relief(bounds,10);assert.equal(patches.length,1);assert.equal(patches[0].kind,'forest');assert.equal(patches[0].width,1000);assert.equal(patches[0].depth,800);
+ assert.deepEqual(projected.relief({minX:5000,maxX:6000,minY:5000,maxY:6000},10),[]);
+});

@@ -5,6 +5,8 @@ import { Resvg } from '@resvg/resvg-js';
 import sharp from 'sharp';
 import {svgMapSource} from './svg-map-source.mjs';
 import {periodicMaterial} from './periodic-material.mjs';
+import {normalizeMapAlpha} from './normalize-map-alpha.mjs';
+import {LEDGE_SOURCES} from '../src/rendering/mapStyle.ts';
 const repo=resolve(new URL('../..',import.meta.url).pathname),manifestPath=resolve(repo,'assets/manifest.json');
 const manifest=JSON.parse(readFileSync(manifestPath,'utf8'));
 const sha=(buffer)=>createHash('sha256').update(buffer).digest('hex');
@@ -22,7 +24,7 @@ for(const asset of manifest.assets){
    const path=`/assets/map/buildings/${asset.assetId}/${role}-${lod}.png`;writeFileSync(resolve(repo,'frontend/public'+path),png);
    const meta=await sharp(png).metadata();
    const sourceDependencies=Array.from(graph.dependencies,([path,sha256])=>({source:path.slice(repo.length+1),sha256}));
-   asset.mapExports.push({path,source,sourceSha256:sha(readFileSync(file)),sourceDependencies,sha256:sha(png),exportVersion:1,width:meta.width,height:meta.height,role,lod,orientation:asset.orientation,alpha:'straight',colorSpace:'srgb',logicalCanvas:asset.logicalCanvas,trim:{x:0,y:0,width:asset.logicalCanvas.width,height:asset.logicalCanvas.height}});count++;
+   asset.mapExports.push({path,source,sourceSha256:sha(readFileSync(file)),sourceDependencies,sha256:sha(png),exportVersion:2,width:meta.width,height:meta.height,role,lod,orientation:asset.orientation,alpha:'straight',colorSpace:'srgb',logicalCanvas:asset.logicalCanvas,trim:{x:0,y:0,width:asset.logicalCanvas.width,height:asset.logicalCanvas.height}});count++;
   }
  }
 }
@@ -46,17 +48,18 @@ for (const asset of manifest.assets) for (const lod of ['close','district']) {
 }
 manifest.environmentArt=[];
 const terrainNames=['snow-quiet','snow-02','snow-03','snow-04','dirty-snow-01','dirty-snow-02','earth-01','earth-02','ice-01','ice-02'];
-const propNames=[...Array.from({length:6},(_,i)=>'conifer-'+String(i+1).padStart(2,'0')),...Array.from({length:3},(_,i)=>'bare-'+String(i+1).padStart(2,'0')),...Array.from({length:8},(_,i)=>'rock-'+String(i+1).padStart(2,'0')),...Array.from({length:8},(_,i)=>'bank-'+String(i+1).padStart(2,'0')),...Array.from({length:4},(_,i)=>'ledge-'+String(i+1).padStart(2,'0')),...Array.from({length:4},(_,i)=>'forest-'+String(i+1).padStart(2,'0'))];
+const propNames=[...Array.from({length:6},(_,i)=>'conifer-'+String(i+1).padStart(2,'0')),...Array.from({length:3},(_,i)=>'bare-'+String(i+1).padStart(2,'0')),...Array.from({length:8},(_,i)=>'rock-'+String(i+1).padStart(2,'0')),...Array.from({length:8},(_,i)=>'bank-'+String(i+1).padStart(2,'0')),...Array.from({length:4},(_,i)=>'ledge-'+String(i+1).padStart(2,'0')),...Array.from({length:4},(_,i)=>'forest-'+String(i+1).padStart(2,'0')),...Array.from({length:2},(_,i)=>'ridge-'+String(i+1).padStart(2,'0'))];
 mkdirSync(resolve(output,'terrain'),{recursive:true});
 for(const name of [...terrainNames,...propNames]){
- const source=`assets/source/terrain/${name}.png`,file=resolve(repo,source);if(!existsSync(file))continue;
- const material=terrainNames.includes(name),path=`/assets/map/terrain/${name}.${material?'webp':'png'}`;
+ const reusedLedges=Object.fromEntries(LEDGE_SOURCES.map((source,i)=>['ledge-'+String(i+1).padStart(2,'0'),source]));
+ const sourceName=reusedLedges[name]??name,source=`assets/source/terrain/${sourceName}.png`,file=resolve(repo,source);if(!existsSync(file))continue;
+ const material=terrainNames.includes(name),path=`/assets/map/terrain/${sourceName}.${material?'webp':'png'}`;
  let pipeline=(material?sharp(file):sharp(file).trim({threshold:8})).resize({width:material?256:384,height:material?256:384,fit:material?'fill':'inside'});
  let buffer;
  if(material){const {data,info}=await pipeline.removeAlpha().raw().toBuffer({resolveWithObject:true});buffer=await sharp(periodicMaterial(data,info.width,info.height,info.channels),{raw:info}).webp({lossless:true,effort:6}).toBuffer();}
- else buffer=await pipeline.png({compressionLevel:9}).toBuffer();
+ else {const {data,info}=await pipeline.ensureAlpha().raw().toBuffer({resolveWithObject:true}),normalized=normalizeMapAlpha(data,info.width,info.height);buffer=await sharp(normalized.data,{raw:info}).png({compressionLevel:9}).toBuffer();}
  writeFileSync(resolve(repo,'frontend/public'+path),buffer);const meta=await sharp(buffer).metadata();
- manifest.environmentArt.push({assetId:name,source,path,sourceSha256:sha(readFileSync(file)),sha256:sha(buffer),width:meta.width,height:meta.height,exportVersion:1,projection:material?'ground':'dimetric',alpha:material?'opaque':'straight',colorSpace:'srgb',provenance:'Original OpenAI ImageGen environmental art, 2026-10-13; matched to existing project source references.',license:'Original generated art created for this project.',status:'draft'});
+ manifest.environmentArt.push({assetId:name,source,...(sourceName!==name?{reusedFrom:sourceName}:{}),path,sourceSha256:sha(readFileSync(file)),sha256:sha(buffer),width:meta.width,height:meta.height,exportVersion:2,projection:material?'ground':name.startsWith('forest-')||name.startsWith('ridge-')?'north-up':'dimetric',alpha:material?'opaque':'straight',colorSpace:'srgb',provenance:'Original OpenAI ImageGen environmental art, 2026-10-13/14; matched to existing project source references. '+(sourceName!==name?'Suitable relief module reused from '+sourceName+'.':''),license:'Original generated art created for this project.',status:'draft'});
 }
 writeFileSync(manifestPath,JSON.stringify(manifest,null,2)+'\n');
 console.log(`Exported ${count} registered map layers and ${manifest.environmentArt.length} environment assets. No UI SVG replaced.`);

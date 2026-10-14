@@ -1,5 +1,6 @@
 /** Presentation-only constants; never read by the simulation. */
 export const VISUAL_STYLE_VERSION = 'winter-ink-25d-v1';
+export const LEDGE_SOURCES=['rock-01','rock-03','rock-05','rock-07'] as const;
 export const MAP_PALETTE = Object.freeze({
   snowHighlight: '#DCE5DE', snow: '#A9BDC0', snowShadow: '#607D89',
   shade: '#233D4B', rock: '#53636D', earth: '#62625C', timber: '#665348',

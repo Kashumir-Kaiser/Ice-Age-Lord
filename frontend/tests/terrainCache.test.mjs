@@ -47,6 +47,11 @@ test('chunk cache cancels stale worker output, bounds queued work and releases e
     representation.retainLevels(new Set([0,1]));assert.ok(representation.get(0,0,0));assert.ok(representation.get(0,0,1),'warming representation remains available');
     const old=representation.get(0,0,0);let retired=0;old.release=()=>retired++;
     representation.retainLevels(new Set([1]));assert.equal(retired,1);assert.equal(old.canvas.width,0);assert.equal(representation.bytes,8*8*4);representation.destroy();
+    const local=new TerrainChunkCache(new TerrainSampler('contacts'),8*8*4*4,8,()=>{}),localWorker=workers.at(-1);
+    for(const x of [-1,0,10]){local.request(x,0,0);local.process();localWorker.finish();local.process();}
+    const distant=local.get(10,0,0);local.invalidateBounds([{minX:-1,maxX:1,minY:0,maxY:2}]);
+    assert.equal(local.get(-1,0,0),undefined);assert.equal(local.get(0,0,0),undefined,'both sides of a changed contact/gutter are repainted');
+    assert.equal(local.get(10,0,0),distant,'distant ground keeps its canvas and ownership');assert.equal(local.bytes,8*8*4);local.destroy();
     cache.request(1,0,0);cache.process();const departed=workers[0].job;cache.destroy();workers[0].finish(departed);
     assert.equal(cache.pending,0);assert.equal(cache.bytes,0);assert.equal(workers[0].terminated,true);
   } finally {

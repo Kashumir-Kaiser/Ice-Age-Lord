@@ -16,6 +16,19 @@ test('real renderer opens normal gameplay with exact opening IDs, grid toggle an
  await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();await expect(page.locator('.territory-building image')).toHaveCount(0);
  await page.locator('.territory-scene-svg').focus();await page.keyboard.press('p');await expect(page.getByRole('button',{name:'Bình thường',exact:true})).toHaveAttribute('aria-pressed','true');
 });
+test('25 km preview fits the complete heat boundary without changing the real heat radius',async({page})=>{
+ await territory(page);await page.getByLabel('Xem thử vùng nhiệt').selectOption('25000');await page.getByRole('button',{name:'Toàn bộ vùng nhiệt',exact:true}).click();
+ const scene=page.locator('.territory-scene-svg'),ellipse=scene.locator('.territory-camera-overlay > ellipse').first();
+ await expect.poll(async()=>{const box=await scene.boundingBox(),rx=Number(await ellipse.getAttribute('rx'));return rx*2<=box!.width+1;}).toBe(true);
+ const box=await scene.boundingBox(),rx=Number(await ellipse.getAttribute('rx')),ry=Number(await ellipse.getAttribute('ry'));expect(rx*2).toBeGreaterThan(box!.width*.45);expect(ry*2).toBeLessThanOrEqual(box!.height+1);
+ await expect(page.locator('.territory-status-row')).toContainText('Nhiệt thật: 10 m');await expect(page.getByLabel('Xem thử vùng nhiệt')).toHaveValue('25000');
+});
+test('a dense scene stops its animation loop when its active fire is outside the viewport',async({page})=>{
+ await page.emulateMedia({reducedMotion:'no-preference'});await territory(page);
+ await page.locator('.territory-calibration > summary').click();await page.getByRole('button',{name:'Xem nhóm công trình minh họa',exact:true}).click();
+ await expect.poll(()=>page.evaluate(()=>{const m=(window as unknown as {__mapMetrics:{queued:number;pendingTextures:number;activeLoops:number}[]}).__mapMetrics.at(-1)!;return m.queued+m.pendingTextures+m.activeLoops;}),{timeout:60000}).toBe(0);
+ await expect(page.locator('.territory-building[data-building-id^="qa-dense-"] circle')).toHaveCount(0);
+});
 test('Canvas2D fallback uses the same geometry, selection list and camera controls',async({page})=>{
  await territory(page,'&mapFallback=1');await expect(page.locator('[data-map-renderer]')).toHaveAttribute('data-map-renderer','canvas2d');
  const house=page.locator('.territory-instance').filter({hasText:'Nhà Lãnh Chúa'}).first();await house.locator('.territory-instance-main').click();

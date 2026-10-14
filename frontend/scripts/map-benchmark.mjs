@@ -25,29 +25,36 @@ try{
   await page.locator('[data-map-renderer]').scrollIntoViewIfNeeded();await readyMap(page);
   const coldTransfer={bytes:page.mapAssetTransfers.reduce((sum,item)=>sum+item.bytes,0),requests:page.mapAssetTransfers.slice(),scope:'Map raster assets requested through first scene readiness; source UI assets excluded.'};
   await page.waitForTimeout(warmup*1000);
-  const latency=await page.evaluate(async duration=>{
+  const interactions=await page.evaluate(async duration=>{
    const node=document.querySelector('.territory-scene-svg,.terrain-svg--deep'),box=node.getBoundingClientRect();
-   const start=performance.now(),x=box.left+box.width*.45,y=box.top+box.height*.65,feedback=[];
+   const start=performance.now(),x=box.left+box.width*.45,y=box.top+box.height*.65,feedback=[],counts={pan:0,zoom:0,selection:0,selectionUnavailable:0};let endedPan=false,lastZoom=0,lastSelection=0;
    const send=(type,dx,dy)=>node.dispatchEvent(new PointerEvent(type,{bubbles:true,pointerId:41,pointerType:'mouse',button:0,clientX:x+dx,clientY:y+dy}));
    const metrics=window.__mapMetrics.at(-1);metrics.renderMs=[];metrics.intervalMs=[];
    send('pointerdown',0,0);
    await new Promise(resolve=>{
     const step=()=>{
      const now=performance.now(),t=(now-start)/1000,stamp=performance.now();
-     send('pointermove',Math.sin(t*.8)*170,Math.cos(t*.5)*70-70);
+     const phase=t<duration/3?'pan':t<duration*2/3?'zoom':'selection';let dispatched=false;
+     if(phase==='pan'){send('pointermove',Math.sin(t*.8)*170,Math.cos(t*.5)*70-70);counts.pan++;dispatched=true;}
+     else{
+      if(!endedPan){send('pointerup',Math.sin(t*.8)*170,Math.cos(t*.5)*70-70);endedPan=true;}
+      if(phase==='zoom'&&now-lastZoom>=500){node.dispatchEvent(new WheelEvent('wheel',{bubbles:true,cancelable:true,clientX:x,clientY:y,deltaY:Math.sin(t)*100}));lastZoom=now;counts.zoom++;dispatched=true;}
+      if(phase==='selection'&&now-lastSelection>=500){const targets=Array.from(node.querySelectorAll('[role="button"]')).filter(target=>{const b=target.getBoundingClientRect();return b.width>0&&b.height>0&&b.left>=box.left&&b.right<=box.right&&b.top>=box.top&&b.bottom<=box.bottom;});const target=targets[Math.floor(t*2)%targets.length];if(target){const b=target.getBoundingClientRect();target.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,detail:1,clientX:b.left+b.width/2,clientY:b.top+b.height/2}));counts.selection++;dispatched=true;}else counts.selectionUnavailable++;lastSelection=now;}
+     }
      const before=metrics.frames;
-     requestAnimationFrame(function waitForRender(){
-      if(metrics.frames>before)feedback.push(performance.now()-stamp);
+     if(dispatched)requestAnimationFrame(function waitForRender(){
+      if(phase==='selection')requestAnimationFrame(()=>feedback.push(performance.now()-stamp));
+      else if(metrics.frames>before)feedback.push(performance.now()-stamp);
       else if(performance.now()-stamp<2000)requestAnimationFrame(waitForRender);
      });
-     if(now-start<duration*1000)requestAnimationFrame(step);else{send('pointerup',Math.sin(t*.8)*170,Math.cos(t*.5)*70-70);resolve();}
+     if(now-start<duration*1000)requestAnimationFrame(step);else{if(!endedPan)send('pointerup',Math.sin(t*.8)*170,Math.cos(t*.5)*70-70);resolve();}
     };requestAnimationFrame(step);
    });
-   return feedback;
+   return {feedback,counts,segments:['pan','pointer-centered zoom','permitted entity/cluster selection']};
   },seconds);
   const metrics=await page.evaluate(()=>window.__mapMetrics.at(-1));
   const gpu=await page.evaluate(()=>{const canvas=document.querySelector('.map-render-canvas');const gl=canvas.getContext('webgl2')||canvas.getContext('webgl');if(!gl)return null;const ext=gl.getExtension('WEBGL_debug_renderer_info');return ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER);});
-  results.push({fixture,run,quality,seconds,warmup,gpu,metrics,coldTransfer,longTasks,pointerFeedback:{p50:percentile(latency,.5),p95:percentile(latency,.95)},interval:{p50:percentile(metrics.intervalMs,.5),p95:percentile(metrics.intervalMs,.95),p99:percentile(metrics.intervalMs,.99),worst:metrics.intervalMs.length?Math.max(...metrics.intervalMs):null},visibleMarkers:await page.locator('.map-entity-marker,.map-cluster').count()});
+  results.push({fixture,run,quality,seconds,warmup,gpu,metrics,coldTransfer,longTasks,interactionCounts:interactions.counts,segments:interactions.segments,pointerFeedback:{p50:percentile(interactions.feedback,.5),p95:percentile(interactions.feedback,.95)},interval:{p50:percentile(metrics.intervalMs,.5),p95:percentile(metrics.intervalMs,.95),p99:percentile(metrics.intervalMs,.99),worst:metrics.intervalMs.length?Math.max(...metrics.intervalMs):null},visibleMarkers:await page.locator('.map-entity-marker,.map-cluster').count()});
   await page.close();console.log(`Measured ${fixture} run ${run+1}/${runs}`);
  }
 }finally{

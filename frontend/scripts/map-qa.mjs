@@ -6,7 +6,7 @@ const browser=await launchMapBrowser(),evidence=[];
 const output=resolve(process.env.MAP_QA_DIR??'map-evidence/after');mkdirSync(output,{recursive:true});
 const dpr=Number(process.env.MAP_QA_DPR??1),quality=process.env.MAP_QA_QUALITY??'normal';
 async function capture(page,name,viewport){
- await page.locator('[data-map-renderer]').scrollIntoViewIfNeeded();
+ await page.locator('[data-map-renderer]').evaluate(node=>node.scrollIntoView({block:'center',inline:'nearest'}));
  const filename=`${name}-${viewport.width}-${quality}-dpr${dpr}.png`;
  try{await readyMap(page);}catch(error){
   const metrics=await page.evaluate(()=>window.__mapMetrics?.at(-1));

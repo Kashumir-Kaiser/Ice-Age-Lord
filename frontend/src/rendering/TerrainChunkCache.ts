@@ -1,4 +1,5 @@
 import { GROUND_MATERIALS, type TerrainSampler } from './TerrainSampler.ts';
+import type { ContactBounds } from './GroundContacts.ts';
 export type TerrainChunk = {key:string;level:number;x:number;y:number;span:number;canvas:HTMLCanvasElement;bytes:number;release?:()=>void};
 type Job={key:string;x:number;y:number;level:number;revision:number;size:number};
 type Working=Job&{buffer:Uint8ClampedArray;row:number};
@@ -99,6 +100,11 @@ export class TerrainChunkCache {
     while(this.bytes>this.limit&&this.cache.size){const [key,chunk]=this.cache.entries().next().value!;chunk.release?.();chunk.canvas.width=0;this.bytes-=chunk.bytes;this.cache.delete(key);}
   }
   invalidate():void{this.clearQueued();for(const chunk of this.cache.values()){chunk.release?.();chunk.canvas.width=0;}this.cache.clear();this.bytes=0;}
+  invalidateBounds(bounds:readonly ContactBounds[]):void {
+    for(const [key,chunk] of this.cache){const gutter=chunk.span/(chunk.canvas.width-2),x=chunk.x*chunk.span,y=chunk.y*chunk.span;
+      if(bounds.some(b=>b.maxX>=x-gutter&&b.minX<=x+chunk.span+gutter&&b.maxY>=y-gutter&&b.minY<=y+chunk.span+gutter)){chunk.release?.();chunk.canvas.width=0;this.bytes-=chunk.bytes;this.cache.delete(key);}
+    }
+  }
   retainLevels(levels:ReadonlySet<number>):void {
     for(const [key,chunk] of this.cache)if(!levels.has(chunk.level)){chunk.release?.();chunk.canvas.width=0;this.bytes-=chunk.bytes;this.cache.delete(key);}
   }

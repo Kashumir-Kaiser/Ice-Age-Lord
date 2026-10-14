@@ -2,7 +2,7 @@ import { Texture, Rectangle } from 'pixi.js';
 import type { AssetManifestEntry } from '../assets/assetRegistry.ts';
 import type { CompositionLayer } from './SpriteRegistration.ts';
 export function exportPath(asset:AssetManifestEntry,layer:CompositionLayer,lod:'close'|'district'):string {
-  return asset.mapExports?.find(e=>e.role===layer.role&&e.lod===lod&&e.orientation===asset.orientation)?.path??layer.path;
+  return asset.mapExports?.find(e=>e.role===layer.role&&e.lod===lod&&e.source===layer.path)?.path??layer.path;
 }
 type Entry={refs:number;image:HTMLImageElement|null;texture:Texture|null;request:Promise<HTMLImageElement>;bytes:number;reservedBytes:number;controller:AbortController;state:'pending'|'ready'|'failed'};
 /** Per-path ownership permits multiple hosts without one destroying another's texture. */
@@ -29,15 +29,23 @@ export class AssetTextureCache {
   private destroyed=false;
   readonly invalidate:()=>void;
   readonly onError:(path:string)=>void;
-  limit:number;
-  constructor(invalidate:()=>void,onError:(path:string)=>void,limit:number){this.invalidate=invalidate;this.onError=onError;this.limit=limit;}
+  private readonly onBudget:(path:string)=>void;
+  private byteLimit:number;
+  get limit():number{return this.byteLimit;}
+  set limit(value:number){this.byteLimit=Math.max(0,value);this.enforceBudget();}
+  private enforceBudget():void {
+    let released=false;
+    while(this.reservedBytes>this.byteLimit&&this.owned.size){const path=this.owned.values().next().value!;for(const [key,texture] of this.frames)if(this.url(key)===path){texture.destroy(false);this.frames.delete(key);}this.release(path);released=true;}
+    if(released)this.invalidate();
+  }
+  constructor(invalidate:()=>void,onError:(path:string)=>void,limit:number,onBudget:(path:string)=>void=()=>{}){this.invalidate=invalidate;this.onError=onError;this.byteLimit=limit;this.onBudget=onBudget;}
   acquire(path:string):HTMLImageElement|null {
     if(this.destroyed)return null;
     path=this.url(path);
     let e=shared.get(path);
     if(!this.owned.has(path)){
       const estimated=e?.reservedBytes??this.estimates.get(path)??384*384*4;
-      if(this.reservedBytes+estimated>this.limit){if(!this.rejected.has(path)){this.rejected.add(path);this.onError(path);}return null;}
+      if(this.reservedBytes+estimated>this.limit){if(!this.rejected.has(path)){this.rejected.add(path);this.onBudget(path);}return null;}
       this.rejected.delete(path);
       if(!e){
         const image=new Image(),controller=new AbortController();image.decoding='async';
@@ -53,7 +61,7 @@ export class AssetTextureCache {
       // Another host can finish a shared load without this host owning its callback.
       const ownerEntry=e;
       const stillOwned=()=>!this.destroyed&&this.owned.has(path)&&shared.get(path)===ownerEntry;
-      void e.request.then(()=>{if(stillOwned())this.invalidate();}).catch(()=>{if(stillOwned())this.onError(path);});
+      void e.request.then(()=>{if(stillOwned()){this.enforceBudget();this.invalidate();}}).catch(()=>{if(stillOwned())this.onError(path);});
     }
     return e?.image??null;
   }
@@ -67,9 +75,13 @@ export class AssetTextureCache {
   get reservedBytes():number {let n=0;for(const path of this.owned)n+=shared.get(path)?.reservedBytes??0;return n;}
   get gpuBytes():number {let n=0;for(const path of this.owned){const entry=shared.get(path);if(entry?.texture)n+=entry.bytes;}return n;}
   get pending():number {let n=0;for(const path of this.owned)if(shared.get(path)?.state==='pending')n++;return n;}
+  get deferred():number{return this.rejected.size;}
   retain(paths:ReadonlySet<string>):void {
     const resolved=new Set(Array.from(paths).map(path=>this.url(path)));
-    for(const path of this.owned)if(!resolved.has(path)){for(const [key,texture] of this.frames)if(this.url(key)===path){texture.destroy(false);this.frames.delete(key);}this.release(path);}
+    for(const path of this.rejected)if(!resolved.has(path))this.rejected.delete(path);
+    let released=false;
+    for(const path of this.owned)if(!resolved.has(path)){for(const [key,texture] of this.frames)if(this.url(key)===path){texture.destroy(false);this.frames.delete(key);}this.release(path);released=true;}
+    if(released&&this.rejected.size)this.invalidate();
   }
   private release(path:string):void {
     const e=shared.get(path);this.owned.delete(path);if(!e||--e.refs>0)return;

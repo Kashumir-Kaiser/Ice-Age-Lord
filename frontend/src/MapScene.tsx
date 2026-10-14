@@ -174,7 +174,7 @@ export default function MapScene({
     transientCamera.current=next;
     const b=viewBox(next,size.width,size.height);svgRef.current?.setAttribute('viewBox',`${b.x} ${b.y} ${b.width} ${b.height}`);
     rootRef.current?.dispatchEvent(new CustomEvent('map-camera',{detail:next}));
-    if(!commit&&performance.now()-lastCameraCommit.current<100)return;
+    if(!commit&&(gesture.current||performance.now()-lastCameraCommit.current<100))return;
     lastCameraCommit.current=performance.now();
     onCameraChange(previous => {
       const mode = previous.mode;

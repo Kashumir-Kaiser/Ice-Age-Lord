@@ -1,0 +1,65 @@
+{
+  "scope": "Six original map relief assets created for this project; original bytes preserved.",
+  "assets": [
+    {
+      "source": "assets/source/terrain/forest-01.png",
+      "sha256": "68898cc6a23ce27ab01236da66a8719dd8df1da36252fe257bf5af3533a00b5f",
+      "gitBlobSha": "fa3f5554738ad164c7fb11fbba9772f1e8be3d8f",
+      "bytes": 2840576,
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-14",
+      "projection": "north-up",
+      "status": "draft; scene and coverage review pending"
+    },
+    {
+      "source": "assets/source/terrain/forest-02.png",
+      "sha256": "bf9356f047ace15c146711f13bbfc9e7a97abcae9c5bb822d9377cb6759d5b69",
+      "gitBlobSha": "a1152dd71f10e90f7c803016acd1179b8d1917bd",
+      "bytes": 2167909,
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-14",
+      "projection": "north-up",
+      "status": "draft; scene and coverage review pending"
+    },
+    {
+      "source": "assets/source/terrain/forest-03.png",
+      "sha256": "b67967e0b158d43b447bd7beae4fbf73c548f719d071acc9bb209ac97903feb6",
+      "gitBlobSha": "8d5a03ff2d1461733c4d010dd20ddbdb2c5c705a",
+      "bytes": 2724249,
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-14",
+      "projection": "north-up",
+      "status": "draft; scene and coverage review pending"
+    },
+    {
+      "source": "assets/source/terrain/forest-04.png",
+      "sha256": "60602946e3062b53714682b5ef3c463a5e715e0c77ddd3cc391c1b6326400a48",
+      "gitBlobSha": "37f33232a978f039a7ba901b2dc6f9a594c20c28",
+      "bytes": 1257643,
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-14",
+      "projection": "north-up",
+      "status": "draft; scene and coverage review pending"
+    },
+    {
+      "source": "assets/source/terrain/ridge-01.png",
+      "sha256": "b7cc64a2992bf42d26bf0215dc3bb8b3239b3c29326337691b0a68a62aa9ea6a",
+      "gitBlobSha": "f28491b9c1d3f6f6d1d19df683f4768d7b7ed9df",
+      "bytes": 1603945,
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-14",
+      "projection": "north-up",
+      "status": "draft; scene and coverage review pending"
+    },
+    {
+      "source": "assets/source/terrain/ridge-02.png",
+      "sha256": "a3bd5a017f6fa0e7ff0215372bc4df0f86cfd6ce7b3dbbcf0274f9b534b6e0dc",
+      "gitBlobSha": "58973d04807dbdbb30fbdd8c410edf7a4eedf02b",
+      "bytes": 1711467,
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-14",
+      "projection": "north-up",
+      "status": "draft; scene and coverage review pending"
+    }
+  ]
+}
