@@ -52532,7 +52532,7 @@
             "height": 87,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "07722df4e5ff80cdcdb365d82c941f9a8ad4fad9d848bd86b6f64e7f3405fcfd"
+            "sha256": "05abfaa7755c9a22fe8b6c95e36773ebcc24ccece043a88fe7473922c295774f"
           }
         },
         {
@@ -52588,7 +52588,7 @@
             "height": 46,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "fa831527db6f1484a9294bac56367f064fe6791191cdfe5656798563a0925cc1"
+            "sha256": "0e6f8b9546552ca078cb87713752fe22608eceb07efed1918f0b6c392023e970"
           }
         },
         {
@@ -52644,7 +52644,7 @@
             "height": 71,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "07722df4e5ff80cdcdb365d82c941f9a8ad4fad9d848bd86b6f64e7f3405fcfd"
+            "sha256": "05abfaa7755c9a22fe8b6c95e36773ebcc24ccece043a88fe7473922c295774f"
           }
         },
         {
@@ -52700,7 +52700,7 @@
             "height": 38,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "fa831527db6f1484a9294bac56367f064fe6791191cdfe5656798563a0925cc1"
+            "sha256": "0e6f8b9546552ca078cb87713752fe22608eceb07efed1918f0b6c392023e970"
           }
         },
         {
@@ -52745,7 +52745,7 @@
             "height": 288,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "07722df4e5ff80cdcdb365d82c941f9a8ad4fad9d848bd86b6f64e7f3405fcfd"
+            "sha256": "05abfaa7755c9a22fe8b6c95e36773ebcc24ccece043a88fe7473922c295774f"
           }
         },
         {
@@ -52790,7 +52790,7 @@
             "height": 148,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "fa831527db6f1484a9294bac56367f064fe6791191cdfe5656798563a0925cc1"
+            "sha256": "0e6f8b9546552ca078cb87713752fe22608eceb07efed1918f0b6c392023e970"
           }
         },
         {
@@ -52835,7 +52835,7 @@
             "height": 289,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "07722df4e5ff80cdcdb365d82c941f9a8ad4fad9d848bd86b6f64e7f3405fcfd"
+            "sha256": "05abfaa7755c9a22fe8b6c95e36773ebcc24ccece043a88fe7473922c295774f"
           }
         },
         {
@@ -52880,7 +52880,7 @@
             "height": 149,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "fa831527db6f1484a9294bac56367f064fe6791191cdfe5656798563a0925cc1"
+            "sha256": "0e6f8b9546552ca078cb87713752fe22608eceb07efed1918f0b6c392023e970"
           }
         },
         {
@@ -52925,7 +52925,7 @@
             "height": 289,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "07722df4e5ff80cdcdb365d82c941f9a8ad4fad9d848bd86b6f64e7f3405fcfd"
+            "sha256": "05abfaa7755c9a22fe8b6c95e36773ebcc24ccece043a88fe7473922c295774f"
           }
         },
         {
@@ -52970,23 +52970,23 @@
             "height": 149,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "fa831527db6f1484a9294bac56367f064fe6791191cdfe5656798563a0925cc1"
+            "sha256": "0e6f8b9546552ca078cb87713752fe22608eceb07efed1918f0b6c392023e970"
           }
         },
         {
           "path": "/assets/map/buildings/watchtower-preview/body-south-close.png",
           "layerPath": "/assets/map/buildings/watchtower-preview/body-south-close.png",
-          "source": "assets/source/map-buildings/watchtower-south.png",
-          "sourceSha256": "064893296c07fe908a93d36bf73ca2f0f8e5fbc8867dd12da7ee7f8655a020d8",
+          "source": "assets/source/map-buildings/watchtower-south-corrected.png",
+          "sourceSha256": "3f7e1326129434042ce743b4f5d66d2b0cbcbcc1148b200068e4f70353196210",
           "sourceDependencies": [
             {
-              "source": "assets/source/map-buildings/watchtower-south.png",
-              "sha256": "064893296c07fe908a93d36bf73ca2f0f8e5fbc8867dd12da7ee7f8655a020d8"
+              "source": "assets/source/map-buildings/watchtower-south-corrected.png",
+              "sha256": "3f7e1326129434042ce743b4f5d66d2b0cbcbcc1148b200068e4f70353196210"
             }
           ],
-          "sha256": "f677f02cbf911da67193cb7822a97a0b8629b535d16873b7bfc9309f5dbe55a1",
+          "sha256": "ab9a537dc553573caec0de8193a7cae7ed52666dec51908b67b0485af6cfdae5",
           "exportVersion": 3,
-          "width": 193,
+          "width": 194,
           "height": 289,
           "role": "body",
           "lod": "close",
@@ -53002,34 +53002,34 @@
             "height": 320
           },
           "trim": {
-            "x": 115,
+            "x": 113.75,
             "y": 22.5,
-            "width": 241.24999999999997,
+            "width": 242.50000000000003,
             "height": 361.25
           },
           "atlas": {
             "path": "/assets/map/buildings/watchtower-preview/atlas-close.png",
             "x": 396,
             "y": 660,
-            "width": 193,
+            "width": 194,
             "height": 289,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "07722df4e5ff80cdcdb365d82c941f9a8ad4fad9d848bd86b6f64e7f3405fcfd"
+            "sha256": "05abfaa7755c9a22fe8b6c95e36773ebcc24ccece043a88fe7473922c295774f"
           }
         },
         {
           "path": "/assets/map/buildings/watchtower-preview/body-south-district.png",
           "layerPath": "/assets/map/buildings/watchtower-preview/body-south-close.png",
-          "source": "assets/source/map-buildings/watchtower-south.png",
-          "sourceSha256": "064893296c07fe908a93d36bf73ca2f0f8e5fbc8867dd12da7ee7f8655a020d8",
+          "source": "assets/source/map-buildings/watchtower-south-corrected.png",
+          "sourceSha256": "3f7e1326129434042ce743b4f5d66d2b0cbcbcc1148b200068e4f70353196210",
           "sourceDependencies": [
             {
-              "source": "assets/source/map-buildings/watchtower-south.png",
-              "sha256": "064893296c07fe908a93d36bf73ca2f0f8e5fbc8867dd12da7ee7f8655a020d8"
+              "source": "assets/source/map-buildings/watchtower-south-corrected.png",
+              "sha256": "3f7e1326129434042ce743b4f5d66d2b0cbcbcc1148b200068e4f70353196210"
             }
           ],
-          "sha256": "40a7ec8f6aab883e7b311bfb2042a44411a241656f0875c6c7f32d019ec298d6",
+          "sha256": "1c7dc540e94aac8a23268081ed71adfd4c4e3a27cc39ce38ee06a350bbda58f8",
           "exportVersion": 3,
           "width": 102,
           "height": 149,
@@ -53060,7 +53060,7 @@
             "height": 149,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "fa831527db6f1484a9294bac56367f064fe6791191cdfe5656798563a0925cc1"
+            "sha256": "0e6f8b9546552ca078cb87713752fe22608eceb07efed1918f0b6c392023e970"
           }
         }
       ],
@@ -53673,27 +53673,31 @@
         "south": {
           "hitPolygon": [
             [
-              0.25,
+              0.24791666666666667,
               0.24
             ],
             [
-              0.25625,
-              0.2325
+              0.2520833333333333,
+              0.235
             ],
             [
-              0.475,
+              0.47291666666666665,
               0.075
+            ],
+            [
+              0.47708333333333336,
+              0.0725
             ],
             [
               0.48333333333333334,
               0.07
             ],
             [
-              0.4979166666666667,
+              0.49583333333333335,
               0.07
             ],
             [
-              0.50625,
+              0.5041666666666667,
               0.075
             ],
             [
@@ -53717,81 +53721,93 @@
               0.8075
             ],
             [
-              0.6854166666666667,
-              0.8175
+              0.69375,
+              0.8125
             ],
             [
-              0.6541666666666667,
-              0.8375
+              0.675,
+              0.825
             ],
             [
-              0.5270833333333333,
-              0.9175
+              0.6354166666666666,
+              0.85
+            ],
+            [
+              0.51875,
+              0.9225
             ],
             [
               0.48541666666666666,
               0.9425
             ],
             [
-              0.47708333333333336,
+              0.475,
               0.9425
             ],
             [
-              0.46875,
-              0.9375
+              0.4708333333333333,
+              0.94
             ],
             [
-              0.43125,
-              0.91
+              0.46041666666666664,
+              0.9325
             ],
             [
-              0.41458333333333336,
-              0.8975
+              0.4166666666666667,
+              0.9
             ],
             [
-              0.32916666666666666,
+              0.36666666666666664,
+              0.8625
+            ],
+            [
+              0.32708333333333334,
               0.8325
             ],
             [
-              0.3,
+              0.29791666666666666,
               0.81
             ],
             [
-              0.2875,
-              0.8
+              0.2791666666666667,
+              0.795
             ],
             [
-              0.28125,
-              0.7925
+              0.27708333333333335,
+              0.79
             ],
             [
-              0.25,
-              0.2725
+              0.24791666666666667,
+              0.275
             ]
           ],
           "upper": [
             [
-              0.25,
+              0.24791666666666667,
               0.24
             ],
             [
-              0.25625,
-              0.2325
+              0.2520833333333333,
+              0.235
             ],
             [
-              0.475,
+              0.47291666666666665,
               0.075
+            ],
+            [
+              0.47708333333333336,
+              0.0725
             ],
             [
               0.48333333333333334,
               0.07
             ],
             [
-              0.4979166666666667,
+              0.49583333333333335,
               0.07
             ],
             [
-              0.50625,
+              0.5041666666666667,
               0.075
             ],
             [
@@ -53815,56 +53831,64 @@
               0.8075
             ],
             [
-              0.6854166666666667,
-              0.8175
+              0.69375,
+              0.8125
             ],
             [
-              0.6541666666666667,
-              0.8375
+              0.675,
+              0.825
             ],
             [
-              0.5270833333333333,
-              0.9175
+              0.6354166666666666,
+              0.85
+            ],
+            [
+              0.51875,
+              0.9225
             ],
             [
               0.48541666666666666,
               0.9425
             ],
             [
-              0.47708333333333336,
+              0.475,
               0.9425
             ],
             [
-              0.46875,
-              0.9375
+              0.4708333333333333,
+              0.94
             ],
             [
-              0.43125,
-              0.91
+              0.46041666666666664,
+              0.9325
             ],
             [
-              0.41458333333333336,
-              0.8975
+              0.4166666666666667,
+              0.9
             ],
             [
-              0.32916666666666666,
+              0.36666666666666664,
+              0.8625
+            ],
+            [
+              0.32708333333333334,
               0.8325
             ],
             [
-              0.3,
+              0.29791666666666666,
               0.81
             ],
             [
-              0.2875,
-              0.8
+              0.2791666666666667,
+              0.795
             ],
             [
-              0.28125,
-              0.7925
+              0.27708333333333335,
+              0.79
             ],
             [
-              0.25,
-              0.2725
+              0.24791666666666667,
+              0.275
             ]
           ]
         }
@@ -54268,7 +54292,7 @@
             "height": 93,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "0a7473818750fa1ac342e60f1812b93ccedc86fbc61d7686ff839975c3a4ea36"
+            "sha256": "f237b6c1faf898c415f9da62885a0a8d9890eeab5fb3243407281f2bcbfafe08"
           }
         },
         {
@@ -54324,7 +54348,7 @@
             "height": 49,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "51502f18409a9bbe181db8d37b5de8cd50593c626d2ed568dd65b39afa2ebd95"
+            "sha256": "296dbc6ba35337717ccf90365ffb3a47d314ae26762ce2339b8ab1d56fea8e0f"
           }
         },
         {
@@ -54380,7 +54404,7 @@
             "height": 75,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "0a7473818750fa1ac342e60f1812b93ccedc86fbc61d7686ff839975c3a4ea36"
+            "sha256": "f237b6c1faf898c415f9da62885a0a8d9890eeab5fb3243407281f2bcbfafe08"
           }
         },
         {
@@ -54436,7 +54460,7 @@
             "height": 40,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "51502f18409a9bbe181db8d37b5de8cd50593c626d2ed568dd65b39afa2ebd95"
+            "sha256": "296dbc6ba35337717ccf90365ffb3a47d314ae26762ce2339b8ab1d56fea8e0f"
           }
         },
         {
@@ -54481,7 +54505,7 @@
             "height": 287,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "0a7473818750fa1ac342e60f1812b93ccedc86fbc61d7686ff839975c3a4ea36"
+            "sha256": "f237b6c1faf898c415f9da62885a0a8d9890eeab5fb3243407281f2bcbfafe08"
           }
         },
         {
@@ -54526,7 +54550,7 @@
             "height": 148,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "51502f18409a9bbe181db8d37b5de8cd50593c626d2ed568dd65b39afa2ebd95"
+            "sha256": "296dbc6ba35337717ccf90365ffb3a47d314ae26762ce2339b8ab1d56fea8e0f"
           }
         },
         {
@@ -54571,7 +54595,7 @@
             "height": 286,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "0a7473818750fa1ac342e60f1812b93ccedc86fbc61d7686ff839975c3a4ea36"
+            "sha256": "f237b6c1faf898c415f9da62885a0a8d9890eeab5fb3243407281f2bcbfafe08"
           }
         },
         {
@@ -54616,7 +54640,7 @@
             "height": 147,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "51502f18409a9bbe181db8d37b5de8cd50593c626d2ed568dd65b39afa2ebd95"
+            "sha256": "296dbc6ba35337717ccf90365ffb3a47d314ae26762ce2339b8ab1d56fea8e0f"
           }
         },
         {
@@ -54661,7 +54685,7 @@
             "height": 277,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "0a7473818750fa1ac342e60f1812b93ccedc86fbc61d7686ff839975c3a4ea36"
+            "sha256": "f237b6c1faf898c415f9da62885a0a8d9890eeab5fb3243407281f2bcbfafe08"
           }
         },
         {
@@ -54706,24 +54730,24 @@
             "height": 143,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "51502f18409a9bbe181db8d37b5de8cd50593c626d2ed568dd65b39afa2ebd95"
+            "sha256": "296dbc6ba35337717ccf90365ffb3a47d314ae26762ce2339b8ab1d56fea8e0f"
           }
         },
         {
           "path": "/assets/map/buildings/elemental-tower-preview/body-south-close.png",
           "layerPath": "/assets/map/buildings/elemental-tower-preview/body-south-close.png",
-          "source": "assets/source/map-buildings/elemental-tower-south.png",
-          "sourceSha256": "8956f8f1a3e97c97229b5889ba26ce195ab0dc11e797a38c86ed77dce5aafde6",
+          "source": "assets/source/map-buildings/elemental-tower-south-corrected.png",
+          "sourceSha256": "10aaaf6eff74e23705352c2efcb7fd5024cd4963528b8deb4ae4ee25f2f63122",
           "sourceDependencies": [
             {
-              "source": "assets/source/map-buildings/elemental-tower-south.png",
-              "sha256": "8956f8f1a3e97c97229b5889ba26ce195ab0dc11e797a38c86ed77dce5aafde6"
+              "source": "assets/source/map-buildings/elemental-tower-south-corrected.png",
+              "sha256": "10aaaf6eff74e23705352c2efcb7fd5024cd4963528b8deb4ae4ee25f2f63122"
             }
           ],
-          "sha256": "732869d7f903453448664f72c23cd5cef1fc9668bd724a0af3bf64bc49ff47be",
+          "sha256": "2664d7807626cb73d8ab03d315a0adfaff48e7bdf130e5f857679414d9a99551",
           "exportVersion": 3,
           "width": 185,
-          "height": 276,
+          "height": 275,
           "role": "body",
           "lod": "close",
           "orientation": "south",
@@ -54739,36 +54763,36 @@
           },
           "trim": {
             "x": 122.49999999999999,
-            "y": 26.25,
+            "y": 27.500000000000004,
             "width": 231.25,
-            "height": 345
+            "height": 343.75
           },
           "atlas": {
             "path": "/assets/map/buildings/elemental-tower-preview/atlas-close.png",
             "x": 396,
             "y": 660,
             "width": 185,
-            "height": 276,
+            "height": 275,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "0a7473818750fa1ac342e60f1812b93ccedc86fbc61d7686ff839975c3a4ea36"
+            "sha256": "f237b6c1faf898c415f9da62885a0a8d9890eeab5fb3243407281f2bcbfafe08"
           }
         },
         {
           "path": "/assets/map/buildings/elemental-tower-preview/body-south-district.png",
           "layerPath": "/assets/map/buildings/elemental-tower-preview/body-south-close.png",
-          "source": "assets/source/map-buildings/elemental-tower-south.png",
-          "sourceSha256": "8956f8f1a3e97c97229b5889ba26ce195ab0dc11e797a38c86ed77dce5aafde6",
+          "source": "assets/source/map-buildings/elemental-tower-south-corrected.png",
+          "sourceSha256": "10aaaf6eff74e23705352c2efcb7fd5024cd4963528b8deb4ae4ee25f2f63122",
           "sourceDependencies": [
             {
-              "source": "assets/source/map-buildings/elemental-tower-south.png",
-              "sha256": "8956f8f1a3e97c97229b5889ba26ce195ab0dc11e797a38c86ed77dce5aafde6"
+              "source": "assets/source/map-buildings/elemental-tower-south-corrected.png",
+              "sha256": "10aaaf6eff74e23705352c2efcb7fd5024cd4963528b8deb4ae4ee25f2f63122"
             }
           ],
-          "sha256": "03869c4773bf795d5bd7e1d5e271124145345761a67ef0b33768d472ba61424b",
+          "sha256": "7abc9ea0905dafe2ab39af2e3b3253c6a2054eb55577a386549cdfb4e4aeeb3a",
           "exportVersion": 3,
           "width": 97,
-          "height": 143,
+          "height": 142,
           "role": "body",
           "lod": "district",
           "orientation": "south",
@@ -54784,19 +54808,19 @@
           },
           "trim": {
             "x": 117.5,
-            "y": 20,
+            "y": 22.5,
             "width": 242.50000000000003,
-            "height": 357.5
+            "height": 355
           },
           "atlas": {
             "path": "/assets/map/buildings/elemental-tower-preview/atlas-district.png",
             "x": 204,
             "y": 340,
             "width": 97,
-            "height": 143,
+            "height": 142,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "51502f18409a9bbe181db8d37b5de8cd50593c626d2ed568dd65b39afa2ebd95"
+            "sha256": "296dbc6ba35337717ccf90365ffb3a47d314ae26762ce2339b8ab1d56fea8e0f"
           }
         }
       ],
@@ -55325,28 +55349,24 @@
               0.8075
             ],
             [
-              0.3145833333333333,
-              0.25
-            ],
-            [
               0.31666666666666665,
-              0.245
+              0.2475
             ],
             [
               0.49583333333333335,
-              0.08
+              0.0825
             ],
             [
-              0.4979166666666667,
-              0.08
+              0.5020833333333333,
+              0.0875
             ],
             [
               0.66875,
-              0.235
+              0.2375
             ],
             [
               0.7229166666666667,
-              0.8025
+              0.805
             ],
             [
               0.7229166666666667,
@@ -55361,7 +55381,15 @@
               0.8325
             ],
             [
-              0.525,
+              0.6708333333333333,
+              0.8425
+            ],
+            [
+              0.5291666666666667,
+              0.91
+            ],
+            [
+              0.5229166666666667,
               0.9125
             ],
             [
@@ -55373,8 +55401,8 @@
               0.905
             ],
             [
-              0.3125,
-              0.8375
+              0.31875,
+              0.84
             ],
             [
               0.26875,
@@ -55391,28 +55419,24 @@
               0.8075
             ],
             [
-              0.3145833333333333,
-              0.25
-            ],
-            [
               0.31666666666666665,
-              0.245
+              0.2475
             ],
             [
               0.49583333333333335,
-              0.08
+              0.0825
             ],
             [
-              0.4979166666666667,
-              0.08
+              0.5020833333333333,
+              0.0875
             ],
             [
               0.66875,
-              0.235
+              0.2375
             ],
             [
               0.7229166666666667,
-              0.8025
+              0.805
             ],
             [
               0.7229166666666667,
@@ -55427,7 +55451,15 @@
               0.8325
             ],
             [
-              0.525,
+              0.6708333333333333,
+              0.8425
+            ],
+            [
+              0.5291666666666667,
+              0.91
+            ],
+            [
+              0.5229166666666667,
               0.9125
             ],
             [
@@ -55439,8 +55471,8 @@
               0.905
             ],
             [
-              0.3125,
-              0.8375
+              0.31875,
+              0.84
             ],
             [
               0.26875,
