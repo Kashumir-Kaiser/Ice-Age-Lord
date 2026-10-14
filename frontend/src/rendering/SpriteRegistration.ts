@@ -2,6 +2,10 @@ import type { AssetManifestEntry, AssetLayerPaths } from '../assets/assetRegistr
 import type { WorldPoint } from '../territory/projection.ts';
 export type Orientation = 'north' | 'east' | 'south' | 'west';
 export type SpriteRect = { x: number; y: number; width: number; height: number };
+/** Crop offset is relative to the unchanged logical sprite, never to its world footprint. */
+export function trimmedRect(rect:SpriteRect,trim:SpriteRect):SpriteRect {
+ return {x:rect.x+rect.width*trim.x,y:rect.y+rect.height*trim.y,width:rect.width*trim.width,height:rect.height*trim.height};
+}
 const orientedAssets=new WeakMap<AssetManifestEntry,Map<Orientation,AssetManifestEntry>>();
 const referenceSizes=new WeakMap<AssetManifestEntry,{width:number;height:number}>();
 export function orientationAsset(asset:AssetManifestEntry,orientation:Orientation):AssetManifestEntry {

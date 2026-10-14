@@ -24,6 +24,12 @@ export function validateMapExport(entry,asset,read=path=>readFileSync(resolve(ro
  if(!Number.isInteger(entry.width)||entry.width<1||entry.width>2048||!Number.isInteger(entry.height)||entry.height<1||entry.height>2048)throw new Error('Invalid map export dimensions');
  if(entry.logicalCanvas&&(entry.logicalCanvas.width!==asset.logicalCanvas.width||entry.logicalCanvas.height!==asset.logicalCanvas.height))throw new Error('Incompatible logical canvas');
  if(entry.trim&&(entry.trim.x<0||entry.trim.y<0||entry.trim.width<=0||entry.trim.height<=0||entry.trim.x+entry.trim.width>asset.logicalCanvas.width||entry.trim.y+entry.trim.height>asset.logicalCanvas.height))throw new Error('Invalid map trim');
+ if(entry.exportVersion>=3){
+  const size=entry.rasterCanvas,trim=entry.trim,canvas=asset.logicalCanvas;
+  if(!size||!trim||!Number.isInteger(size.width)||!Number.isInteger(size.height)||size.width<entry.width||size.height<entry.height)throw new Error('Invalid original map raster canvas');
+  const values=[trim.x/canvas.width*size.width,trim.y/canvas.height*size.height,trim.width/canvas.width*size.width,trim.height/canvas.height*size.height];
+  if(values.some(v=>Math.abs(v-Math.round(v))>1e-7)||Math.abs(values[2]-entry.width)>1e-7||Math.abs(values[3]-entry.height)>1e-7)throw new Error('Map trim does not match raster pixel bounds');
+ }
  if(entry.orientation&&entry.orientation!==asset.orientation&&!asset.orientationViews?.[entry.orientation]&&!asset.equivalentOrientations?.includes(entry.orientation))throw new Error('Incompatible map orientation');
  if(entry.role&&asset.layers){
   const layers=asset.orientationViews?.[entry.orientation]??asset.layers;

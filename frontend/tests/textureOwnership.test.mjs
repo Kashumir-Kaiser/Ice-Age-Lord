@@ -2,6 +2,31 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { AssetTextureCache, exportPath } from '../src/rendering/AssetTextureCache.ts';
 
+test('a failed atlas falls back to the matching individual pose raster and can recover on a new content revision',async()=>{
+ const OriginalImage=globalThis.Image,images=[];globalThis.Image=class {naturalWidth=8;naturalHeight=8;constructor(){images.push(this);}};
+ const errors=[],cache=new AssetTextureCache(()=>{},path=>errors.push(path),1024);
+ const asset=hash=>({layers:{body:'/north.svg'},logicalCanvas:{width:8,height:8},mapExports:[{path:'/east.png',width:8,height:8,sha256:'pose',atlas:{path:'/atlas.png',sha256:hash,x:0,y:0,width:8,height:8,atlasWidth:8,atlasHeight:8}}]});
+ try{
+  cache.register(asset('old'));cache.acquire('/east.png');assert.equal(images[0].src,'/atlas.png?mapHash=old');images[0].onerror();await new Promise(setImmediate);
+  cache.register(asset('old'));assert.equal(cache.url('/east.png'),'/east.png?mapHash=pose');assert.equal(cache.frame('/east.png'),undefined);
+  cache.acquire('/east.png');assert.equal(images[1].src,'/east.png?mapHash=pose');cache.retain(new Set(['/east.png']));images[1].onload();await new Promise(setImmediate);assert.ok(cache.acquire('/east.png'));assert.equal(errors.length,1);
+  cache.register(asset('new'));assert.equal(cache.url('/east.png'),'/atlas.png?mapHash=new');
+ }finally{cache.destroy();if(OriginalImage===undefined)delete globalThis.Image;else globalThis.Image=OriginalImage;}
+});
+
+test('content revisions load new bytes without destroying another host retaining the old revision',async()=>{
+ const OriginalImage=globalThis.Image,images=[];globalThis.Image=class {naturalWidth=8;naturalHeight=8;constructor(){images.push(this);}};
+ const a=new AssetTextureCache(()=>{},()=>{},1024),b=new AssetTextureCache(()=>{},()=>{},1024);
+ const asset=hash=>({layers:{body:'/same.svg'},logicalCanvas:{width:8,height:8},mapExports:[{path:'/same.png',width:8,height:8,sha256:hash}]});
+ try{
+  a.register(asset('old'),false);b.register(asset('old'),false);a.acquire('/same.png');b.acquire('/same.png');assert.equal(images.length,1);assert.equal(images[0].src,'/same.png?mapHash=old');
+  images[0].onload();await new Promise(setImmediate);
+  a.register(asset('new'),false);a.acquire('/same.png');assert.equal(images.length,2);assert.equal(images[1].src,'/same.png?mapHash=new');
+  a.retain(new Set(['/same.png']));assert.equal(images[0].src,'/same.png?mapHash=old','other host still owns its old content');
+  b.destroy();assert.equal(images[0].src,'');images[1].onload();await new Promise(setImmediate);assert.equal(a.bytes,256);a.destroy();assert.equal(images[1].src,'');
+ }finally{a.destroy();b.destroy();if(OriginalImage===undefined)delete globalThis.Image;else globalThis.Image=OriginalImage;}
+});
+
 test('authored east-view art cannot silently resolve to a north-view raster',()=>{
  const asset={orientation:'north',mapExports:[{role:'body',lod:'close',orientation:'north',source:'/north.svg',path:'/north.png'},{role:'body',lod:'close',orientation:'east',source:'/east.svg',path:'/east.png'}]};
  assert.equal(exportPath(asset,{role:'body',path:'/east.svg'},'close'),'/east.png');

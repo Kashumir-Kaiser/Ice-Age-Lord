@@ -1,6 +1,7 @@
 import { Texture, Rectangle } from 'pixi.js';
 import type { AssetManifestEntry } from '../assets/assetRegistry.ts';
 import type { CompositionLayer } from './SpriteRegistration.ts';
+import {trimmedRect,type SpriteRect} from './SpriteRegistration.ts';
 export function exportPath(asset:AssetManifestEntry,layer:CompositionLayer,lod:'close'|'district'):string {
   return asset.mapExports?.find(e=>e.role===layer.role&&e.lod===lod&&(e.layerPath??e.source)===layer.path)?.path??layer.path;
 }
@@ -11,21 +12,36 @@ export class AssetTextureCache {
   private owned=new Set<string>();
   private registrations=new Map<string,{path:string;x:number;y:number;width:number;height:number}>();
   private frames=new Map<string,Texture>();
+  private trims=new Map<string,SpriteRect>();
+  private revisions=new Map<string,string>();
+  private failed=new Set<string>();
+  private revision(path:string,hash:string|undefined):void{
+    if(!hash)return;
+    const previous=this.revisions.get(path);
+    if(previous&&previous!==hash)for(const [key,texture] of this.frames)if((this.registrations.get(key)?.path??key)===path){texture.destroy(false);this.frames.delete(key);}
+    this.revisions.set(path,hash);
+  }
   private estimates=new Map<string,number>();
   private rejected=new Set<string>();
   maxTextureSize=2048;
   register(asset:AssetManifestEntry,useAtlas=true):void{
     for(const path of Object.values(asset.layers))if(typeof path==='string')this.estimates.set(path,asset.logicalCanvas.width*asset.logicalCanvas.height*4);
     for(const entry of asset.mapExports??[]){
+      this.revision(entry.path,entry.sha256);
+      if(entry.atlas)this.revision(entry.atlas.path,entry.atlas.sha256);
+      const canvas=entry.logicalCanvas??asset.logicalCanvas,trim=entry.trim;
+      if(trim)this.trims.set(entry.path,{x:trim.x/canvas.width,y:trim.y/canvas.height,width:trim.width/canvas.width,height:trim.height/canvas.height});
+      else this.trims.delete(entry.path);
       this.estimates.set(entry.path,entry.width*entry.height*4);
-      const previous=this.registrations.get(entry.path),next=useAtlas&&entry.atlas&&entry.atlas.atlasWidth<=this.maxTextureSize&&entry.atlas.atlasHeight<=this.maxTextureSize?entry.atlas:undefined;
+      const previous=this.registrations.get(entry.path),next=useAtlas&&entry.atlas&&!this.failed.has(this.url(entry.atlas.path))&&entry.atlas.atlasWidth<=this.maxTextureSize&&entry.atlas.atlasHeight<=this.maxTextureSize?entry.atlas:undefined;
       if(previous?.path!==next?.path){this.frames.get(entry.path)?.destroy(false);this.frames.delete(entry.path);}
       if(next){this.registrations.set(entry.path,next);this.estimates.set(next.path,next.atlasWidth*next.atlasHeight*4);}
       else this.registrations.delete(entry.path);
     }
   }
-  url(path:string):string{return this.registrations.get(path)?.path??path;}
+  url(path:string):string{const file=this.registrations.get(path)?.path??path,hash=this.revisions.get(file);return hash?file+'?mapHash='+hash:file;}
   frame(path:string):{x:number;y:number;width:number;height:number}|undefined{return this.registrations.get(path);}
+  rect(path:string,logical:SpriteRect):SpriteRect{const trim=this.trims.get(path);return trim?trimmedRect(logical,trim):logical;}
   private destroyed=false;
   readonly invalidate:()=>void;
   readonly onError:(path:string)=>void;
@@ -44,7 +60,7 @@ export class AssetTextureCache {
     path=this.url(path);
     let e=shared.get(path);
     if(!this.owned.has(path)){
-      const estimated=e?.reservedBytes??this.estimates.get(path)??384*384*4;
+      const estimated=e?.reservedBytes??this.estimates.get(path.split('?')[0])??384*384*4;
       if(this.reservedBytes+estimated>this.limit){if(!this.rejected.has(path)){this.rejected.add(path);this.onBudget(path);}return null;}
       this.rejected.delete(path);
       if(!e){
@@ -61,7 +77,7 @@ export class AssetTextureCache {
       // Another host can finish a shared load without this host owning its callback.
       const ownerEntry=e;
       const stillOwned=()=>!this.destroyed&&this.owned.has(path)&&shared.get(path)===ownerEntry;
-      void e.request.then(()=>{if(stillOwned()){this.enforceBudget();this.invalidate();}}).catch(()=>{if(stillOwned())this.onError(path);});
+      void e.request.then(()=>{if(stillOwned()){this.enforceBudget();this.invalidate();}}).catch(()=>{if(stillOwned()){this.failed.add(path);this.onError(path);}});
     }
     return e?.image??null;
   }
@@ -87,5 +103,5 @@ export class AssetTextureCache {
     const e=shared.get(path);this.owned.delete(path);if(!e||--e.refs>0)return;
     e.controller.abort();e.texture?.destroy(true);if(e.image){e.image.onload=e.image.onerror=null;e.image.src='';}shared.delete(path);
   }
-  destroy():void {if(this.destroyed)return;this.destroyed=true;for(const texture of this.frames.values())texture.destroy(false);this.frames.clear();this.registrations.clear();for(const path of Array.from(this.owned))this.release(path);}
+  destroy():void {if(this.destroyed)return;this.destroyed=true;for(const texture of this.frames.values())texture.destroy(false);this.frames.clear();this.registrations.clear();this.trims.clear();this.revisions.clear();this.failed.clear();for(const path of Array.from(this.owned))this.release(path);}
 }

@@ -7,6 +7,7 @@ export type MapExport = {
   lod: 'close' | 'district'; orientation: string;
   alpha: 'straight'; colorSpace: 'srgb';
   logicalCanvas: {width:number;height:number};
+  rasterCanvas?: {width:number;height:number};
   trim: {x:number;y:number;width:number;height:number};
   atlas?: {path:string;x:number;y:number;width:number;height:number;atlasWidth:number;atlasHeight:number;sha256?:string};
 };

@@ -2,7 +2,7 @@ name: Persist map asset checkpoint
 on:
   push:
     branches: ['codex/map-25d-overhaul']
-    paths: ['assets/source/uploads/manifest.json']
+    paths: ['assets/source/uploads/manifest.json', 'assets/map-building-views.json', 'frontend/scripts/export-map-assets.mjs', 'frontend/scripts/trim-map-raster.mjs', 'frontend/scripts/map-orientation-export.mjs', 'frontend/scripts/normalize-map-alpha.mjs']
   workflow_dispatch:
 permissions:
   contents: write
