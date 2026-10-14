@@ -814,7 +814,12 @@
       ],
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/fixture-fire-max/foundation.svg",
-      "generatedOrientationViews": []
+      "generatedOrientationViews": [],
+      "equivalentOrientations": [
+        "east",
+        "south",
+        "west"
+      ]
     },
     {
       "assetId": "fixture-tall-tower",
@@ -1180,7 +1185,12 @@
       ],
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/fixture-tall-tower/foundation.svg",
-      "generatedOrientationViews": []
+      "generatedOrientationViews": [],
+      "equivalentOrientations": [
+        "east",
+        "south",
+        "west"
+      ]
     },
     {
       "assetId": "lord-house-damaged",
@@ -19502,7 +19512,7 @@
       "assetId": "opening-palisade-wall",
       "definitionId": "ART-REFERENCE:OPENING-FENCE-L1",
       "variant": "winter-ink-canonical-progression-v4",
-      "orientation": "north",
+      "orientation": "east",
       "revision": 5,
       "presentationScale": 1.24,
       "layers": {
@@ -19643,7 +19653,7 @@
           "height": 320,
           "role": "body",
           "lod": "close",
-          "orientation": "north",
+          "orientation": "east",
           "alpha": "straight",
           "colorSpace": "srgb",
           "logicalCanvas": {
@@ -19664,7 +19674,7 @@
             "height": 320,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "0bf9510785957f93200603a262bc49582704dd82121f99802161d1ccf5e49e6d"
+            "sha256": "487340349978d341fea0f3bdfadd3471c47a81c97c53aab5ec7cdf87536e7de8"
           }
         },
         {
@@ -19683,7 +19693,7 @@
           "height": 160,
           "role": "body",
           "lod": "district",
-          "orientation": "north",
+          "orientation": "east",
           "alpha": "straight",
           "colorSpace": "srgb",
           "logicalCanvas": {
@@ -19704,7 +19714,7 @@
             "height": 160,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "e197817eb1cb8ca345f8ed7b46010811d443206418791118fa3315fe8bc42532"
+            "sha256": "207556bc44eae8291fad5f91a9112c1064c117002dea438742d45626a63377e6"
           }
         },
         {
@@ -19723,7 +19733,7 @@
           "height": 320,
           "role": "shadow",
           "lod": "close",
-          "orientation": "north",
+          "orientation": "east",
           "alpha": "straight",
           "colorSpace": "srgb",
           "logicalCanvas": {
@@ -19744,7 +19754,7 @@
             "height": 320,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "0bf9510785957f93200603a262bc49582704dd82121f99802161d1ccf5e49e6d"
+            "sha256": "487340349978d341fea0f3bdfadd3471c47a81c97c53aab5ec7cdf87536e7de8"
           }
         },
         {
@@ -19763,7 +19773,7 @@
           "height": 160,
           "role": "shadow",
           "lod": "district",
-          "orientation": "north",
+          "orientation": "east",
           "alpha": "straight",
           "colorSpace": "srgb",
           "logicalCanvas": {
@@ -19784,7 +19794,7 @@
             "height": 160,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "e197817eb1cb8ca345f8ed7b46010811d443206418791118fa3315fe8bc42532"
+            "sha256": "207556bc44eae8291fad5f91a9112c1064c117002dea438742d45626a63377e6"
           }
         },
         {
@@ -19803,7 +19813,7 @@
           "height": 320,
           "role": "base",
           "lod": "close",
-          "orientation": "north",
+          "orientation": "east",
           "alpha": "straight",
           "colorSpace": "srgb",
           "logicalCanvas": {
@@ -19824,7 +19834,7 @@
             "height": 320,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "0bf9510785957f93200603a262bc49582704dd82121f99802161d1ccf5e49e6d"
+            "sha256": "487340349978d341fea0f3bdfadd3471c47a81c97c53aab5ec7cdf87536e7de8"
           }
         },
         {
@@ -19843,7 +19853,7 @@
           "height": 160,
           "role": "base",
           "lod": "district",
-          "orientation": "north",
+          "orientation": "east",
           "alpha": "straight",
           "colorSpace": "srgb",
           "logicalCanvas": {
@@ -19864,13 +19874,973 @@
             "height": 160,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "e197817eb1cb8ca345f8ed7b46010811d443206418791118fa3315fe8bc42532"
+            "sha256": "207556bc44eae8291fad5f91a9112c1064c117002dea438742d45626a63377e6"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/body-west-close.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-west-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-west.png",
+          "sourceSha256": "c06277888d4f759b8f365b3164a544d0df570f01aaae6da2eb8effc6a483167d",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-west.png",
+              "sha256": "c06277888d4f759b8f365b3164a544d0df570f01aaae6da2eb8effc6a483167d"
+            }
+          ],
+          "sha256": "22968fe99ab8c426decb6e7ef31ded6bd3ec8e487ecf62c5d0c0395af171d44a",
+          "exportVersion": 2,
+          "width": 384,
+          "height": 320,
+          "role": "body",
+          "lod": "close",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/atlas-close.png",
+            "x": 396,
+            "y": 332,
+            "width": 384,
+            "height": 320,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "487340349978d341fea0f3bdfadd3471c47a81c97c53aab5ec7cdf87536e7de8"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/body-west-district.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-west-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-west.png",
+          "sourceSha256": "c06277888d4f759b8f365b3164a544d0df570f01aaae6da2eb8effc6a483167d",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-west.png",
+              "sha256": "c06277888d4f759b8f365b3164a544d0df570f01aaae6da2eb8effc6a483167d"
+            }
+          ],
+          "sha256": "176abc283e1ecd6f17633b6dde70485a6cb9ba0930d8708f93e234588e62f1b8",
+          "exportVersion": 2,
+          "width": 192,
+          "height": 160,
+          "role": "body",
+          "lod": "district",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/atlas-district.png",
+            "x": 204,
+            "y": 172,
+            "width": 192,
+            "height": 160,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "207556bc44eae8291fad5f91a9112c1064c117002dea438742d45626a63377e6"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/body-south-close.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-south-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-south.png",
+          "sourceSha256": "fbae8ba70578fcb47c190a4cfd0f4bb424de5f5eaf1ed6751fba43bc24578f46",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-south.png",
+              "sha256": "fbae8ba70578fcb47c190a4cfd0f4bb424de5f5eaf1ed6751fba43bc24578f46"
+            }
+          ],
+          "sha256": "8c5cfd7ea6c986d1c84a6e39545ba1fdd8517b46ef693313452cce74bf947df2",
+          "exportVersion": 2,
+          "width": 384,
+          "height": 320,
+          "role": "body",
+          "lod": "close",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/atlas-close.png",
+            "x": 4,
+            "y": 660,
+            "width": 384,
+            "height": 320,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "487340349978d341fea0f3bdfadd3471c47a81c97c53aab5ec7cdf87536e7de8"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/body-south-district.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-south-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-south.png",
+          "sourceSha256": "fbae8ba70578fcb47c190a4cfd0f4bb424de5f5eaf1ed6751fba43bc24578f46",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-south.png",
+              "sha256": "fbae8ba70578fcb47c190a4cfd0f4bb424de5f5eaf1ed6751fba43bc24578f46"
+            }
+          ],
+          "sha256": "7265e30e6c01b5f2e82f911ffb83c8219e8f8e27f3941311973d3a3c8e340958",
+          "exportVersion": 2,
+          "width": 192,
+          "height": 160,
+          "role": "body",
+          "lod": "district",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/atlas-district.png",
+            "x": 4,
+            "y": 340,
+            "width": 192,
+            "height": 160,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "207556bc44eae8291fad5f91a9112c1064c117002dea438742d45626a63377e6"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/body-north-close.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-north-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-north.png",
+          "sourceSha256": "7f94f98f2a8012ab2d42102df51dcce2672001e455b9231bf77ee047acf8af92",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-north.png",
+              "sha256": "7f94f98f2a8012ab2d42102df51dcce2672001e455b9231bf77ee047acf8af92"
+            }
+          ],
+          "sha256": "1f569b16e53c262c909c87253a838c3c227993bb33ad8d70ccbafb0cfa2e0330",
+          "exportVersion": 2,
+          "width": 384,
+          "height": 320,
+          "role": "body",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/atlas-close.png",
+            "x": 396,
+            "y": 660,
+            "width": 384,
+            "height": 320,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "487340349978d341fea0f3bdfadd3471c47a81c97c53aab5ec7cdf87536e7de8"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/body-north-district.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/body-north-close.png",
+          "source": "assets/source/map-buildings/opening-palisade-wall-north.png",
+          "sourceSha256": "7f94f98f2a8012ab2d42102df51dcce2672001e455b9231bf77ee047acf8af92",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-palisade-wall-north.png",
+              "sha256": "7f94f98f2a8012ab2d42102df51dcce2672001e455b9231bf77ee047acf8af92"
+            }
+          ],
+          "sha256": "8968154c9e260bda304e7e8fe9266ea738946301d22968195e4b73738ee76c48",
+          "exportVersion": 2,
+          "width": 192,
+          "height": 160,
+          "role": "body",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-palisade-wall/atlas-district.png",
+            "x": 204,
+            "y": 340,
+            "width": 192,
+            "height": 160,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "207556bc44eae8291fad5f91a9112c1064c117002dea438742d45626a63377e6"
           }
         }
       ],
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/opening-palisade-wall/foundation.svg",
-      "generatedOrientationViews": []
+      "generatedOrientationViews": [
+        "west",
+        "south",
+        "north"
+      ],
+      "orientationViews": {
+        "west": {
+          "uiIcon": "/assets/buildings/opening-palisade-wall/icon.svg",
+          "body": "/assets/map/buildings/opening-palisade-wall/body-west-close.png",
+          "base": "/assets/buildings/opening-palisade-wall/base.svg",
+          "upper": "/assets/buildings/opening-palisade-wall/upper.svg",
+          "shadow": "/assets/buildings/opening-palisade-wall/shadow.svg",
+          "vfx": null
+        },
+        "south": {
+          "uiIcon": "/assets/buildings/opening-palisade-wall/icon.svg",
+          "body": "/assets/map/buildings/opening-palisade-wall/body-south-close.png",
+          "base": "/assets/buildings/opening-palisade-wall/base.svg",
+          "upper": "/assets/buildings/opening-palisade-wall/upper.svg",
+          "shadow": "/assets/buildings/opening-palisade-wall/shadow.svg",
+          "vfx": null
+        },
+        "north": {
+          "uiIcon": "/assets/buildings/opening-palisade-wall/icon.svg",
+          "body": "/assets/map/buildings/opening-palisade-wall/body-north-close.png",
+          "base": "/assets/buildings/opening-palisade-wall/base.svg",
+          "upper": "/assets/buildings/opening-palisade-wall/upper.svg",
+          "shadow": "/assets/buildings/opening-palisade-wall/shadow.svg",
+          "vfx": null
+        }
+      },
+      "orientationRegions": {
+        "west": {
+          "hitPolygon": [
+            [
+              0.07083333333333333,
+              0.825
+            ],
+            [
+              0.10833333333333334,
+              0.565
+            ],
+            [
+              0.12083333333333333,
+              0.54
+            ],
+            [
+              0.13125,
+              0.52
+            ],
+            [
+              0.13958333333333334,
+              0.51
+            ],
+            [
+              0.8604166666666667,
+              0.2525
+            ],
+            [
+              0.8645833333333334,
+              0.2525
+            ],
+            [
+              0.86875,
+              0.255
+            ],
+            [
+              0.8791666666666667,
+              0.2725
+            ],
+            [
+              0.8895833333333333,
+              0.2925
+            ],
+            [
+              0.89375,
+              0.3025
+            ],
+            [
+              0.9291666666666667,
+              0.575
+            ],
+            [
+              0.9291666666666667,
+              0.5825
+            ],
+            [
+              0.9208333333333333,
+              0.5925
+            ],
+            [
+              0.9145833333333333,
+              0.5975
+            ],
+            [
+              0.8958333333333334,
+              0.6075
+            ],
+            [
+              0.8708333333333333,
+              0.6175
+            ],
+            [
+              0.7416666666666667,
+              0.6625
+            ],
+            [
+              0.20833333333333334,
+              0.8475
+            ],
+            [
+              0.17291666666666666,
+              0.855
+            ],
+            [
+              0.15833333333333333,
+              0.8575
+            ],
+            [
+              0.14166666666666666,
+              0.86
+            ],
+            [
+              0.12291666666666666,
+              0.86
+            ],
+            [
+              0.11666666666666667,
+              0.8575
+            ],
+            [
+              0.09791666666666667,
+              0.8475
+            ],
+            [
+              0.075,
+              0.8325
+            ],
+            [
+              0.07083333333333333,
+              0.8275
+            ]
+          ],
+          "upper": [
+            [
+              0.07083333333333333,
+              0.825
+            ],
+            [
+              0.10833333333333334,
+              0.565
+            ],
+            [
+              0.12083333333333333,
+              0.54
+            ],
+            [
+              0.13125,
+              0.52
+            ],
+            [
+              0.13958333333333334,
+              0.51
+            ],
+            [
+              0.8604166666666667,
+              0.2525
+            ],
+            [
+              0.8645833333333334,
+              0.2525
+            ],
+            [
+              0.86875,
+              0.255
+            ],
+            [
+              0.8791666666666667,
+              0.2725
+            ],
+            [
+              0.8895833333333333,
+              0.2925
+            ],
+            [
+              0.89375,
+              0.3025
+            ],
+            [
+              0.9291666666666667,
+              0.575
+            ],
+            [
+              0.9291666666666667,
+              0.5825
+            ],
+            [
+              0.9208333333333333,
+              0.5925
+            ],
+            [
+              0.9145833333333333,
+              0.5975
+            ],
+            [
+              0.8958333333333334,
+              0.6075
+            ],
+            [
+              0.8708333333333333,
+              0.6175
+            ],
+            [
+              0.7416666666666667,
+              0.6625
+            ],
+            [
+              0.20833333333333334,
+              0.8475
+            ],
+            [
+              0.17291666666666666,
+              0.855
+            ],
+            [
+              0.15833333333333333,
+              0.8575
+            ],
+            [
+              0.14166666666666666,
+              0.86
+            ],
+            [
+              0.12291666666666666,
+              0.86
+            ],
+            [
+              0.11666666666666667,
+              0.8575
+            ],
+            [
+              0.09791666666666667,
+              0.8475
+            ],
+            [
+              0.075,
+              0.8325
+            ],
+            [
+              0.07083333333333333,
+              0.8275
+            ]
+          ]
+        },
+        "south": {
+          "hitPolygon": [
+            [
+              0.08125,
+              0.5
+            ],
+            [
+              0.1125,
+              0.1775
+            ],
+            [
+              0.12708333333333333,
+              0.1475
+            ],
+            [
+              0.13125,
+              0.14
+            ],
+            [
+              0.1375,
+              0.13
+            ],
+            [
+              0.13958333333333334,
+              0.1275
+            ],
+            [
+              0.14375,
+              0.1275
+            ],
+            [
+              0.8375,
+              0.45
+            ],
+            [
+              0.8479166666666667,
+              0.4625
+            ],
+            [
+              0.8625,
+              0.4875
+            ],
+            [
+              0.8708333333333333,
+              0.5025
+            ],
+            [
+              0.875,
+              0.5125
+            ],
+            [
+              0.9166666666666666,
+              0.825
+            ],
+            [
+              0.9166666666666666,
+              0.8275
+            ],
+            [
+              0.9083333333333333,
+              0.835
+            ],
+            [
+              0.89375,
+              0.8475
+            ],
+            [
+              0.88125,
+              0.8575
+            ],
+            [
+              0.8770833333333333,
+              0.86
+            ],
+            [
+              0.8583333333333333,
+              0.87
+            ],
+            [
+              0.8395833333333333,
+              0.87
+            ],
+            [
+              0.83125,
+              0.8675
+            ],
+            [
+              0.7625,
+              0.845
+            ],
+            [
+              0.7333333333333333,
+              0.8325
+            ],
+            [
+              0.6125,
+              0.78
+            ],
+            [
+              0.19375,
+              0.575
+            ],
+            [
+              0.16875,
+              0.5625
+            ],
+            [
+              0.1125,
+              0.5325
+            ],
+            [
+              0.10625,
+              0.5275
+            ],
+            [
+              0.08125,
+              0.5025
+            ]
+          ],
+          "upper": [
+            [
+              0.08125,
+              0.5
+            ],
+            [
+              0.1125,
+              0.1775
+            ],
+            [
+              0.12708333333333333,
+              0.1475
+            ],
+            [
+              0.13125,
+              0.14
+            ],
+            [
+              0.1375,
+              0.13
+            ],
+            [
+              0.13958333333333334,
+              0.1275
+            ],
+            [
+              0.14375,
+              0.1275
+            ],
+            [
+              0.8375,
+              0.45
+            ],
+            [
+              0.8479166666666667,
+              0.4625
+            ],
+            [
+              0.8625,
+              0.4875
+            ],
+            [
+              0.8708333333333333,
+              0.5025
+            ],
+            [
+              0.875,
+              0.5125
+            ],
+            [
+              0.9166666666666666,
+              0.825
+            ],
+            [
+              0.9166666666666666,
+              0.8275
+            ],
+            [
+              0.9083333333333333,
+              0.835
+            ],
+            [
+              0.89375,
+              0.8475
+            ],
+            [
+              0.88125,
+              0.8575
+            ],
+            [
+              0.8770833333333333,
+              0.86
+            ],
+            [
+              0.8583333333333333,
+              0.87
+            ],
+            [
+              0.8395833333333333,
+              0.87
+            ],
+            [
+              0.83125,
+              0.8675
+            ],
+            [
+              0.7625,
+              0.845
+            ],
+            [
+              0.7333333333333333,
+              0.8325
+            ],
+            [
+              0.6125,
+              0.78
+            ],
+            [
+              0.19375,
+              0.575
+            ],
+            [
+              0.16875,
+              0.5625
+            ],
+            [
+              0.1125,
+              0.5325
+            ],
+            [
+              0.10625,
+              0.5275
+            ],
+            [
+              0.08125,
+              0.5025
+            ]
+          ]
+        },
+        "north": {
+          "hitPolygon": [
+            [
+              0.07083333333333333,
+              0.5475
+            ],
+            [
+              0.09166666666666666,
+              0.29
+            ],
+            [
+              0.09375,
+              0.2825
+            ],
+            [
+              0.10625,
+              0.2575
+            ],
+            [
+              0.11041666666666666,
+              0.25
+            ],
+            [
+              0.11666666666666667,
+              0.2425
+            ],
+            [
+              0.11875,
+              0.2425
+            ],
+            [
+              0.875,
+              0.535
+            ],
+            [
+              0.8791666666666667,
+              0.54
+            ],
+            [
+              0.8875,
+              0.555
+            ],
+            [
+              0.9020833333333333,
+              0.5825
+            ],
+            [
+              0.9041666666666667,
+              0.59
+            ],
+            [
+              0.9291666666666667,
+              0.8175
+            ],
+            [
+              0.9291666666666667,
+              0.82
+            ],
+            [
+              0.9270833333333334,
+              0.8375
+            ],
+            [
+              0.9145833333333333,
+              0.8525
+            ],
+            [
+              0.9020833333333333,
+              0.86
+            ],
+            [
+              0.86875,
+              0.86
+            ],
+            [
+              0.84375,
+              0.855
+            ],
+            [
+              0.7604166666666666,
+              0.83
+            ],
+            [
+              0.59375,
+              0.77
+            ],
+            [
+              0.48333333333333334,
+              0.73
+            ],
+            [
+              0.13958333333333334,
+              0.595
+            ],
+            [
+              0.1125,
+              0.5825
+            ],
+            [
+              0.08333333333333333,
+              0.565
+            ],
+            [
+              0.07291666666666667,
+              0.555
+            ],
+            [
+              0.07083333333333333,
+              0.5525
+            ]
+          ],
+          "upper": [
+            [
+              0.07083333333333333,
+              0.5475
+            ],
+            [
+              0.09166666666666666,
+              0.29
+            ],
+            [
+              0.09375,
+              0.2825
+            ],
+            [
+              0.10625,
+              0.2575
+            ],
+            [
+              0.11041666666666666,
+              0.25
+            ],
+            [
+              0.11666666666666667,
+              0.2425
+            ],
+            [
+              0.11875,
+              0.2425
+            ],
+            [
+              0.875,
+              0.535
+            ],
+            [
+              0.8791666666666667,
+              0.54
+            ],
+            [
+              0.8875,
+              0.555
+            ],
+            [
+              0.9020833333333333,
+              0.5825
+            ],
+            [
+              0.9041666666666667,
+              0.59
+            ],
+            [
+              0.9291666666666667,
+              0.8175
+            ],
+            [
+              0.9291666666666667,
+              0.82
+            ],
+            [
+              0.9270833333333334,
+              0.8375
+            ],
+            [
+              0.9145833333333333,
+              0.8525
+            ],
+            [
+              0.9020833333333333,
+              0.86
+            ],
+            [
+              0.86875,
+              0.86
+            ],
+            [
+              0.84375,
+              0.855
+            ],
+            [
+              0.7604166666666666,
+              0.83
+            ],
+            [
+              0.59375,
+              0.77
+            ],
+            [
+              0.48333333333333334,
+              0.73
+            ],
+            [
+              0.13958333333333334,
+              0.595
+            ],
+            [
+              0.1125,
+              0.5825
+            ],
+            [
+              0.08333333333333333,
+              0.565
+            ],
+            [
+              0.07291666666666667,
+              0.555
+            ],
+            [
+              0.07083333333333333,
+              0.5525
+            ]
+          ]
+        }
+      }
     },
     {
       "assetId": "opening-palisade-wall-l02",
@@ -25860,7 +26830,7 @@
       "assetId": "opening-timber-gate",
       "definitionId": "ART-REFERENCE:OPENING-GATE-L1",
       "variant": "winter-ink-canonical-progression-v4",
-      "orientation": "north",
+      "orientation": "east",
       "revision": 5,
       "presentationScale": 1.22,
       "layers": {
@@ -26001,7 +26971,7 @@
           "height": 320,
           "role": "body",
           "lod": "close",
-          "orientation": "north",
+          "orientation": "east",
           "alpha": "straight",
           "colorSpace": "srgb",
           "logicalCanvas": {
@@ -26022,7 +26992,7 @@
             "height": 320,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "a6ffbfa3f70c99e41ee2bf754958fbacb27cf7da444b6d9be0d5e7a08507b5b5"
+            "sha256": "e87e5bf8ea24cad776ac443c9c639b28381a2e0ddc523810cc88a64dcbee4658"
           }
         },
         {
@@ -26041,7 +27011,7 @@
           "height": 160,
           "role": "body",
           "lod": "district",
-          "orientation": "north",
+          "orientation": "east",
           "alpha": "straight",
           "colorSpace": "srgb",
           "logicalCanvas": {
@@ -26062,7 +27032,7 @@
             "height": 160,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "474502b7060f149d9d903bf7a65d220ff7dca1a544cd50fbeb8c34a67ee4eda6"
+            "sha256": "0e2b6b7fc6b9ecfbc5e0088a32f3cd3e3385193d64b194c7d2fb9d7e09341250"
           }
         },
         {
@@ -26081,7 +27051,7 @@
           "height": 320,
           "role": "shadow",
           "lod": "close",
-          "orientation": "north",
+          "orientation": "east",
           "alpha": "straight",
           "colorSpace": "srgb",
           "logicalCanvas": {
@@ -26102,7 +27072,7 @@
             "height": 320,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "a6ffbfa3f70c99e41ee2bf754958fbacb27cf7da444b6d9be0d5e7a08507b5b5"
+            "sha256": "e87e5bf8ea24cad776ac443c9c639b28381a2e0ddc523810cc88a64dcbee4658"
           }
         },
         {
@@ -26121,7 +27091,7 @@
           "height": 160,
           "role": "shadow",
           "lod": "district",
-          "orientation": "north",
+          "orientation": "east",
           "alpha": "straight",
           "colorSpace": "srgb",
           "logicalCanvas": {
@@ -26142,7 +27112,7 @@
             "height": 160,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "474502b7060f149d9d903bf7a65d220ff7dca1a544cd50fbeb8c34a67ee4eda6"
+            "sha256": "0e2b6b7fc6b9ecfbc5e0088a32f3cd3e3385193d64b194c7d2fb9d7e09341250"
           }
         },
         {
@@ -26161,7 +27131,7 @@
           "height": 320,
           "role": "base",
           "lod": "close",
-          "orientation": "north",
+          "orientation": "east",
           "alpha": "straight",
           "colorSpace": "srgb",
           "logicalCanvas": {
@@ -26182,7 +27152,7 @@
             "height": 320,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "a6ffbfa3f70c99e41ee2bf754958fbacb27cf7da444b6d9be0d5e7a08507b5b5"
+            "sha256": "e87e5bf8ea24cad776ac443c9c639b28381a2e0ddc523810cc88a64dcbee4658"
           }
         },
         {
@@ -26201,7 +27171,7 @@
           "height": 160,
           "role": "base",
           "lod": "district",
-          "orientation": "north",
+          "orientation": "east",
           "alpha": "straight",
           "colorSpace": "srgb",
           "logicalCanvas": {
@@ -26222,13 +27192,1021 @@
             "height": 160,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "474502b7060f149d9d903bf7a65d220ff7dca1a544cd50fbeb8c34a67ee4eda6"
+            "sha256": "0e2b6b7fc6b9ecfbc5e0088a32f3cd3e3385193d64b194c7d2fb9d7e09341250"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/body-north-close.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-north-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-north.png",
+          "sourceSha256": "629feaeabb6b6239f5f02a1fa804e3bfced06a1fc406131011e7a872f81c7743",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-north.png",
+              "sha256": "629feaeabb6b6239f5f02a1fa804e3bfced06a1fc406131011e7a872f81c7743"
+            }
+          ],
+          "sha256": "d480585d15518ef799ee8e4890a77ea69e9637b5c40fe6a696e1a7aa61332579",
+          "exportVersion": 2,
+          "width": 384,
+          "height": 320,
+          "role": "body",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/atlas-close.png",
+            "x": 396,
+            "y": 332,
+            "width": 384,
+            "height": 320,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "e87e5bf8ea24cad776ac443c9c639b28381a2e0ddc523810cc88a64dcbee4658"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/body-north-district.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-north-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-north.png",
+          "sourceSha256": "629feaeabb6b6239f5f02a1fa804e3bfced06a1fc406131011e7a872f81c7743",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-north.png",
+              "sha256": "629feaeabb6b6239f5f02a1fa804e3bfced06a1fc406131011e7a872f81c7743"
+            }
+          ],
+          "sha256": "9e59babfe22c47ebf93ce864b7fb1af10c59e89d55b855a26d796425dbe76c39",
+          "exportVersion": 2,
+          "width": 192,
+          "height": 160,
+          "role": "body",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/atlas-district.png",
+            "x": 204,
+            "y": 172,
+            "width": 192,
+            "height": 160,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "0e2b6b7fc6b9ecfbc5e0088a32f3cd3e3385193d64b194c7d2fb9d7e09341250"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/body-south-close.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-south-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-south.png",
+          "sourceSha256": "79ba905a584860cc755eaedbd1f6ee6fb189feffb3d334d233a3002f38cfd049",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-south.png",
+              "sha256": "79ba905a584860cc755eaedbd1f6ee6fb189feffb3d334d233a3002f38cfd049"
+            }
+          ],
+          "sha256": "ad3723ef970777e73fb7452c4994df754a93213d8b718867f18190606a7ec9a1",
+          "exportVersion": 2,
+          "width": 384,
+          "height": 320,
+          "role": "body",
+          "lod": "close",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/atlas-close.png",
+            "x": 4,
+            "y": 660,
+            "width": 384,
+            "height": 320,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "e87e5bf8ea24cad776ac443c9c639b28381a2e0ddc523810cc88a64dcbee4658"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/body-south-district.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-south-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-south.png",
+          "sourceSha256": "79ba905a584860cc755eaedbd1f6ee6fb189feffb3d334d233a3002f38cfd049",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-south.png",
+              "sha256": "79ba905a584860cc755eaedbd1f6ee6fb189feffb3d334d233a3002f38cfd049"
+            }
+          ],
+          "sha256": "26511399c2fe771fd641cd8febdc66b7ba02d34220662aca5af1d7604bcf0de8",
+          "exportVersion": 2,
+          "width": 192,
+          "height": 160,
+          "role": "body",
+          "lod": "district",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/atlas-district.png",
+            "x": 4,
+            "y": 340,
+            "width": 192,
+            "height": 160,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "0e2b6b7fc6b9ecfbc5e0088a32f3cd3e3385193d64b194c7d2fb9d7e09341250"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/body-west-close.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-west-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-west.png",
+          "sourceSha256": "0249ea9e730a8a32ba0c1267dd2ff633472b640786d20459edd13d8990659856",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-west.png",
+              "sha256": "0249ea9e730a8a32ba0c1267dd2ff633472b640786d20459edd13d8990659856"
+            }
+          ],
+          "sha256": "ac78f62e4c061493951a706e0065f21b67c9260629b21c1eece23936e8030443",
+          "exportVersion": 2,
+          "width": 384,
+          "height": 320,
+          "role": "body",
+          "lod": "close",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/atlas-close.png",
+            "x": 396,
+            "y": 660,
+            "width": 384,
+            "height": 320,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "e87e5bf8ea24cad776ac443c9c639b28381a2e0ddc523810cc88a64dcbee4658"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/body-west-district.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/body-west-close.png",
+          "source": "assets/source/map-buildings/opening-timber-gate-west.png",
+          "sourceSha256": "0249ea9e730a8a32ba0c1267dd2ff633472b640786d20459edd13d8990659856",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/opening-timber-gate-west.png",
+              "sha256": "0249ea9e730a8a32ba0c1267dd2ff633472b640786d20459edd13d8990659856"
+            }
+          ],
+          "sha256": "7f51ff2df059519d8f154fec15060efe6121f2725ab99945cdb400bc0c47bcf8",
+          "exportVersion": 2,
+          "width": 192,
+          "height": 160,
+          "role": "body",
+          "lod": "district",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/opening-timber-gate/atlas-district.png",
+            "x": 204,
+            "y": 340,
+            "width": 192,
+            "height": 160,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "0e2b6b7fc6b9ecfbc5e0088a32f3cd3e3385193d64b194c7d2fb9d7e09341250"
           }
         }
       ],
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/opening-timber-gate/foundation.svg",
-      "generatedOrientationViews": []
+      "generatedOrientationViews": [
+        "north",
+        "south",
+        "west"
+      ],
+      "orientationViews": {
+        "north": {
+          "uiIcon": "/assets/buildings/opening-timber-gate/icon.svg",
+          "body": "/assets/map/buildings/opening-timber-gate/body-north-close.png",
+          "base": "/assets/buildings/opening-timber-gate/base.svg",
+          "upper": "/assets/buildings/opening-timber-gate/upper.svg",
+          "shadow": "/assets/buildings/opening-timber-gate/shadow.svg",
+          "vfx": null
+        },
+        "south": {
+          "uiIcon": "/assets/buildings/opening-timber-gate/icon.svg",
+          "body": "/assets/map/buildings/opening-timber-gate/body-south-close.png",
+          "base": "/assets/buildings/opening-timber-gate/base.svg",
+          "upper": "/assets/buildings/opening-timber-gate/upper.svg",
+          "shadow": "/assets/buildings/opening-timber-gate/shadow.svg",
+          "vfx": null
+        },
+        "west": {
+          "uiIcon": "/assets/buildings/opening-timber-gate/icon.svg",
+          "body": "/assets/map/buildings/opening-timber-gate/body-west-close.png",
+          "base": "/assets/buildings/opening-timber-gate/base.svg",
+          "upper": "/assets/buildings/opening-timber-gate/upper.svg",
+          "shadow": "/assets/buildings/opening-timber-gate/shadow.svg",
+          "vfx": null
+        }
+      },
+      "orientationRegions": {
+        "north": {
+          "hitPolygon": [
+            [
+              0.10416666666666667,
+              0.6375
+            ],
+            [
+              0.15208333333333332,
+              0.1675
+            ],
+            [
+              0.15833333333333333,
+              0.155
+            ],
+            [
+              0.1625,
+              0.1475
+            ],
+            [
+              0.16875,
+              0.1375
+            ],
+            [
+              0.17708333333333334,
+              0.125
+            ],
+            [
+              0.18958333333333333,
+              0.1075
+            ],
+            [
+              0.19583333333333333,
+              0.1
+            ],
+            [
+              0.20625,
+              0.1
+            ],
+            [
+              0.7895833333333333,
+              0.3075
+            ],
+            [
+              0.79375,
+              0.31
+            ],
+            [
+              0.8020833333333334,
+              0.32
+            ],
+            [
+              0.8125,
+              0.335
+            ],
+            [
+              0.8208333333333333,
+              0.3475
+            ],
+            [
+              0.8333333333333334,
+              0.3675
+            ],
+            [
+              0.8375,
+              0.375
+            ],
+            [
+              0.8916666666666667,
+              0.88
+            ],
+            [
+              0.8916666666666667,
+              0.8825
+            ],
+            [
+              0.8895833333333333,
+              0.885
+            ],
+            [
+              0.8708333333333333,
+              0.8975
+            ],
+            [
+              0.8520833333333333,
+              0.9075
+            ],
+            [
+              0.8458333333333333,
+              0.91
+            ],
+            [
+              0.8291666666666667,
+              0.915
+            ],
+            [
+              0.7854166666666667,
+              0.915
+            ],
+            [
+              0.775,
+              0.9125
+            ],
+            [
+              0.7416666666666667,
+              0.9025
+            ],
+            [
+              0.7270833333333333,
+              0.8975
+            ],
+            [
+              0.16458333333333333,
+              0.685
+            ],
+            [
+              0.14583333333333334,
+              0.6775
+            ],
+            [
+              0.13541666666666666,
+              0.6725
+            ],
+            [
+              0.12708333333333333,
+              0.6675
+            ],
+            [
+              0.11666666666666667,
+              0.66
+            ],
+            [
+              0.11458333333333333,
+              0.6575
+            ],
+            [
+              0.10625,
+              0.6425
+            ]
+          ],
+          "upper": [
+            [
+              0.10416666666666667,
+              0.6375
+            ],
+            [
+              0.15208333333333332,
+              0.1675
+            ],
+            [
+              0.15833333333333333,
+              0.155
+            ],
+            [
+              0.1625,
+              0.1475
+            ],
+            [
+              0.16875,
+              0.1375
+            ],
+            [
+              0.17708333333333334,
+              0.125
+            ],
+            [
+              0.18958333333333333,
+              0.1075
+            ],
+            [
+              0.19583333333333333,
+              0.1
+            ],
+            [
+              0.20625,
+              0.1
+            ],
+            [
+              0.7895833333333333,
+              0.3075
+            ],
+            [
+              0.79375,
+              0.31
+            ],
+            [
+              0.8020833333333334,
+              0.32
+            ],
+            [
+              0.8125,
+              0.335
+            ],
+            [
+              0.8208333333333333,
+              0.3475
+            ],
+            [
+              0.8333333333333334,
+              0.3675
+            ],
+            [
+              0.8375,
+              0.375
+            ],
+            [
+              0.8916666666666667,
+              0.88
+            ],
+            [
+              0.8916666666666667,
+              0.8825
+            ],
+            [
+              0.8895833333333333,
+              0.885
+            ],
+            [
+              0.8708333333333333,
+              0.8975
+            ],
+            [
+              0.8520833333333333,
+              0.9075
+            ],
+            [
+              0.8458333333333333,
+              0.91
+            ],
+            [
+              0.8291666666666667,
+              0.915
+            ],
+            [
+              0.7854166666666667,
+              0.915
+            ],
+            [
+              0.775,
+              0.9125
+            ],
+            [
+              0.7416666666666667,
+              0.9025
+            ],
+            [
+              0.7270833333333333,
+              0.8975
+            ],
+            [
+              0.16458333333333333,
+              0.685
+            ],
+            [
+              0.14583333333333334,
+              0.6775
+            ],
+            [
+              0.13541666666666666,
+              0.6725
+            ],
+            [
+              0.12708333333333333,
+              0.6675
+            ],
+            [
+              0.11666666666666667,
+              0.66
+            ],
+            [
+              0.11458333333333333,
+              0.6575
+            ],
+            [
+              0.10625,
+              0.6425
+            ]
+          ]
+        },
+        "south": {
+          "hitPolygon": [
+            [
+              0.1125,
+              0.6425
+            ],
+            [
+              0.1375,
+              0.275
+            ],
+            [
+              0.14791666666666667,
+              0.1675
+            ],
+            [
+              0.15208333333333332,
+              0.1575
+            ],
+            [
+              0.17083333333333334,
+              0.125
+            ],
+            [
+              0.19166666666666668,
+              0.0925
+            ],
+            [
+              0.2,
+              0.0825
+            ],
+            [
+              0.20416666666666666,
+              0.0825
+            ],
+            [
+              0.7875,
+              0.2425
+            ],
+            [
+              0.7916666666666666,
+              0.245
+            ],
+            [
+              0.8020833333333334,
+              0.2575
+            ],
+            [
+              0.8083333333333333,
+              0.2675
+            ],
+            [
+              0.8291666666666667,
+              0.3025
+            ],
+            [
+              0.8395833333333333,
+              0.3225
+            ],
+            [
+              0.8416666666666667,
+              0.3275
+            ],
+            [
+              0.8520833333333333,
+              0.4375
+            ],
+            [
+              0.8833333333333333,
+              0.87
+            ],
+            [
+              0.8833333333333333,
+              0.8775
+            ],
+            [
+              0.8791666666666667,
+              0.8825
+            ],
+            [
+              0.85625,
+              0.9
+            ],
+            [
+              0.825,
+              0.9125
+            ],
+            [
+              0.7958333333333333,
+              0.9175
+            ],
+            [
+              0.7854166666666667,
+              0.9175
+            ],
+            [
+              0.7416666666666667,
+              0.9075
+            ],
+            [
+              0.15625,
+              0.68
+            ],
+            [
+              0.14375,
+              0.675
+            ],
+            [
+              0.11666666666666667,
+              0.65
+            ],
+            [
+              0.1125,
+              0.645
+            ]
+          ],
+          "upper": [
+            [
+              0.1125,
+              0.6425
+            ],
+            [
+              0.1375,
+              0.275
+            ],
+            [
+              0.14791666666666667,
+              0.1675
+            ],
+            [
+              0.15208333333333332,
+              0.1575
+            ],
+            [
+              0.17083333333333334,
+              0.125
+            ],
+            [
+              0.19166666666666668,
+              0.0925
+            ],
+            [
+              0.2,
+              0.0825
+            ],
+            [
+              0.20416666666666666,
+              0.0825
+            ],
+            [
+              0.7875,
+              0.2425
+            ],
+            [
+              0.7916666666666666,
+              0.245
+            ],
+            [
+              0.8020833333333334,
+              0.2575
+            ],
+            [
+              0.8083333333333333,
+              0.2675
+            ],
+            [
+              0.8291666666666667,
+              0.3025
+            ],
+            [
+              0.8395833333333333,
+              0.3225
+            ],
+            [
+              0.8416666666666667,
+              0.3275
+            ],
+            [
+              0.8520833333333333,
+              0.4375
+            ],
+            [
+              0.8833333333333333,
+              0.87
+            ],
+            [
+              0.8833333333333333,
+              0.8775
+            ],
+            [
+              0.8791666666666667,
+              0.8825
+            ],
+            [
+              0.85625,
+              0.9
+            ],
+            [
+              0.825,
+              0.9125
+            ],
+            [
+              0.7958333333333333,
+              0.9175
+            ],
+            [
+              0.7854166666666667,
+              0.9175
+            ],
+            [
+              0.7416666666666667,
+              0.9075
+            ],
+            [
+              0.15625,
+              0.68
+            ],
+            [
+              0.14375,
+              0.675
+            ],
+            [
+              0.11666666666666667,
+              0.65
+            ],
+            [
+              0.1125,
+              0.645
+            ]
+          ]
+        },
+        "west": {
+          "hitPolygon": [
+            [
+              0.10416666666666667,
+              0.865
+            ],
+            [
+              0.14583333333333334,
+              0.425
+            ],
+            [
+              0.15,
+              0.4175
+            ],
+            [
+              0.15625,
+              0.4075
+            ],
+            [
+              0.18125,
+              0.37
+            ],
+            [
+              0.19375,
+              0.3525
+            ],
+            [
+              0.19791666666666666,
+              0.35
+            ],
+            [
+              0.8041666666666667,
+              0.1975
+            ],
+            [
+              0.8083333333333333,
+              0.1975
+            ],
+            [
+              0.8208333333333333,
+              0.2125
+            ],
+            [
+              0.8395833333333333,
+              0.2425
+            ],
+            [
+              0.8520833333333333,
+              0.265
+            ],
+            [
+              0.8916666666666667,
+              0.69
+            ],
+            [
+              0.8916666666666667,
+              0.6925
+            ],
+            [
+              0.8875,
+              0.6975
+            ],
+            [
+              0.88125,
+              0.7025
+            ],
+            [
+              0.8520833333333333,
+              0.72
+            ],
+            [
+              0.8291666666666667,
+              0.7275
+            ],
+            [
+              0.25833333333333336,
+              0.8875
+            ],
+            [
+              0.24791666666666667,
+              0.89
+            ],
+            [
+              0.19791666666666666,
+              0.9
+            ],
+            [
+              0.17708333333333334,
+              0.9
+            ],
+            [
+              0.14583333333333334,
+              0.8925
+            ],
+            [
+              0.1375,
+              0.89
+            ],
+            [
+              0.13125,
+              0.8875
+            ],
+            [
+              0.10833333333333334,
+              0.8725
+            ],
+            [
+              0.10416666666666667,
+              0.8675
+            ]
+          ],
+          "upper": [
+            [
+              0.10416666666666667,
+              0.865
+            ],
+            [
+              0.14583333333333334,
+              0.425
+            ],
+            [
+              0.15,
+              0.4175
+            ],
+            [
+              0.15625,
+              0.4075
+            ],
+            [
+              0.18125,
+              0.37
+            ],
+            [
+              0.19375,
+              0.3525
+            ],
+            [
+              0.19791666666666666,
+              0.35
+            ],
+            [
+              0.8041666666666667,
+              0.1975
+            ],
+            [
+              0.8083333333333333,
+              0.1975
+            ],
+            [
+              0.8208333333333333,
+              0.2125
+            ],
+            [
+              0.8395833333333333,
+              0.2425
+            ],
+            [
+              0.8520833333333333,
+              0.265
+            ],
+            [
+              0.8916666666666667,
+              0.69
+            ],
+            [
+              0.8916666666666667,
+              0.6925
+            ],
+            [
+              0.8875,
+              0.6975
+            ],
+            [
+              0.88125,
+              0.7025
+            ],
+            [
+              0.8520833333333333,
+              0.72
+            ],
+            [
+              0.8291666666666667,
+              0.7275
+            ],
+            [
+              0.25833333333333336,
+              0.8875
+            ],
+            [
+              0.24791666666666667,
+              0.89
+            ],
+            [
+              0.19791666666666666,
+              0.9
+            ],
+            [
+              0.17708333333333334,
+              0.9
+            ],
+            [
+              0.14583333333333334,
+              0.8925
+            ],
+            [
+              0.1375,
+              0.89
+            ],
+            [
+              0.13125,
+              0.8875
+            ],
+            [
+              0.10833333333333334,
+              0.8725
+            ],
+            [
+              0.10416666666666667,
+              0.8675
+            ]
+          ]
+        }
+      }
     },
     {
       "assetId": "opening-timber-gate-l02",
@@ -29014,7 +30992,7 @@
             "height": 320,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "7d1577de35ada74b60239776782bcdca19cf3269de22fcf7ff9fa65d413fefc0"
+            "sha256": "c58b90990d3a995ff7994db95146930c21ed7cbca158fdd99cd47a0009a9c202"
           }
         },
         {
@@ -29054,7 +31032,7 @@
             "height": 160,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "6d5a20c8f757b7050be07f3acaadc98a408c417d615066b8910c98c7c4466acf"
+            "sha256": "72a5117862ae5cb8c13db6a0df44132219bd3838e6efb73f6e1fa61ae71404f6"
           }
         },
         {
@@ -29094,7 +31072,7 @@
             "height": 320,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "7d1577de35ada74b60239776782bcdca19cf3269de22fcf7ff9fa65d413fefc0"
+            "sha256": "c58b90990d3a995ff7994db95146930c21ed7cbca158fdd99cd47a0009a9c202"
           }
         },
         {
@@ -29134,7 +31112,7 @@
             "height": 160,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "6d5a20c8f757b7050be07f3acaadc98a408c417d615066b8910c98c7c4466acf"
+            "sha256": "72a5117862ae5cb8c13db6a0df44132219bd3838e6efb73f6e1fa61ae71404f6"
           }
         },
         {
@@ -29174,7 +31152,7 @@
             "height": 320,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "7d1577de35ada74b60239776782bcdca19cf3269de22fcf7ff9fa65d413fefc0"
+            "sha256": "c58b90990d3a995ff7994db95146930c21ed7cbca158fdd99cd47a0009a9c202"
           }
         },
         {
@@ -29214,13 +31192,1101 @@
             "height": 160,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "6d5a20c8f757b7050be07f3acaadc98a408c417d615066b8910c98c7c4466acf"
+            "sha256": "72a5117862ae5cb8c13db6a0df44132219bd3838e6efb73f6e1fa61ae71404f6"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/polar-farmhouse-l01/body-east-close.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-east-close.png",
+          "source": "assets/source/map-buildings/polar-farmhouse-l01-east.png",
+          "sourceSha256": "6ef78778f2693b39272fcb823a74e6f0950d0c2a0b85bfc386f1ca1181350618",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-east.png",
+              "sha256": "6ef78778f2693b39272fcb823a74e6f0950d0c2a0b85bfc386f1ca1181350618"
+            }
+          ],
+          "sha256": "67a1c55daf474fc3bdd2e83d46c4562968d467bdb67eed86d44fe6e0d6daadd7",
+          "exportVersion": 2,
+          "width": 384,
+          "height": 320,
+          "role": "body",
+          "lod": "close",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/polar-farmhouse-l01/atlas-close.png",
+            "x": 396,
+            "y": 332,
+            "width": 384,
+            "height": 320,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "c58b90990d3a995ff7994db95146930c21ed7cbca158fdd99cd47a0009a9c202"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/polar-farmhouse-l01/body-east-district.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-east-close.png",
+          "source": "assets/source/map-buildings/polar-farmhouse-l01-east.png",
+          "sourceSha256": "6ef78778f2693b39272fcb823a74e6f0950d0c2a0b85bfc386f1ca1181350618",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-east.png",
+              "sha256": "6ef78778f2693b39272fcb823a74e6f0950d0c2a0b85bfc386f1ca1181350618"
+            }
+          ],
+          "sha256": "b1bfa65554b103753e71b0b584054b509fe05c5f12d374d9aa8b03ec510f0c3a",
+          "exportVersion": 2,
+          "width": 192,
+          "height": 160,
+          "role": "body",
+          "lod": "district",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/polar-farmhouse-l01/atlas-district.png",
+            "x": 204,
+            "y": 172,
+            "width": 192,
+            "height": 160,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "72a5117862ae5cb8c13db6a0df44132219bd3838e6efb73f6e1fa61ae71404f6"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/polar-farmhouse-l01/body-south-close.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-south-close.png",
+          "source": "assets/source/map-buildings/polar-farmhouse-l01-south.png",
+          "sourceSha256": "22ca8d3aa24e343f2c95b077e8f2a09277b37b63f2fd98a189d058aedf61b010",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-south.png",
+              "sha256": "22ca8d3aa24e343f2c95b077e8f2a09277b37b63f2fd98a189d058aedf61b010"
+            }
+          ],
+          "sha256": "2a55f2c3f7a3ff86c5b0192bd1b405ce1f5c3d8f5d9bdf24b6ed1fc607789601",
+          "exportVersion": 2,
+          "width": 384,
+          "height": 320,
+          "role": "body",
+          "lod": "close",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/polar-farmhouse-l01/atlas-close.png",
+            "x": 4,
+            "y": 660,
+            "width": 384,
+            "height": 320,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "c58b90990d3a995ff7994db95146930c21ed7cbca158fdd99cd47a0009a9c202"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/polar-farmhouse-l01/body-south-district.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-south-close.png",
+          "source": "assets/source/map-buildings/polar-farmhouse-l01-south.png",
+          "sourceSha256": "22ca8d3aa24e343f2c95b077e8f2a09277b37b63f2fd98a189d058aedf61b010",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-south.png",
+              "sha256": "22ca8d3aa24e343f2c95b077e8f2a09277b37b63f2fd98a189d058aedf61b010"
+            }
+          ],
+          "sha256": "234aaa9aa5ea82398e93c6db252708bdc59f6edaa32ecc6ac952ef1d3f0a23a2",
+          "exportVersion": 2,
+          "width": 192,
+          "height": 160,
+          "role": "body",
+          "lod": "district",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/polar-farmhouse-l01/atlas-district.png",
+            "x": 4,
+            "y": 340,
+            "width": 192,
+            "height": 160,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "72a5117862ae5cb8c13db6a0df44132219bd3838e6efb73f6e1fa61ae71404f6"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/polar-farmhouse-l01/body-west-close.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-west-close.png",
+          "source": "assets/source/map-buildings/polar-farmhouse-l01-west.png",
+          "sourceSha256": "54bc64306a4b57173c41e27e3561a436d7a5822a95e26b87581e49be22103753",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-west.png",
+              "sha256": "54bc64306a4b57173c41e27e3561a436d7a5822a95e26b87581e49be22103753"
+            }
+          ],
+          "sha256": "925cefd02e2ece53b89dc6dbb0d930fa8a70a7b799b88c5adb848dfe04f9e2ab",
+          "exportVersion": 2,
+          "width": 384,
+          "height": 320,
+          "role": "body",
+          "lod": "close",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/polar-farmhouse-l01/atlas-close.png",
+            "x": 396,
+            "y": 660,
+            "width": 384,
+            "height": 320,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "c58b90990d3a995ff7994db95146930c21ed7cbca158fdd99cd47a0009a9c202"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/polar-farmhouse-l01/body-west-district.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-west-close.png",
+          "source": "assets/source/map-buildings/polar-farmhouse-l01-west.png",
+          "sourceSha256": "54bc64306a4b57173c41e27e3561a436d7a5822a95e26b87581e49be22103753",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-west.png",
+              "sha256": "54bc64306a4b57173c41e27e3561a436d7a5822a95e26b87581e49be22103753"
+            }
+          ],
+          "sha256": "fb3e3f956955aace587642e0a01dc47b60e30fc05bd6e71ac9e8211c2bf53c79",
+          "exportVersion": 2,
+          "width": 192,
+          "height": 160,
+          "role": "body",
+          "lod": "district",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/polar-farmhouse-l01/atlas-district.png",
+            "x": 204,
+            "y": 340,
+            "width": 192,
+            "height": 160,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "72a5117862ae5cb8c13db6a0df44132219bd3838e6efb73f6e1fa61ae71404f6"
           }
         }
       ],
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/polar-farmhouse-l01/foundation.svg",
-      "generatedOrientationViews": []
+      "generatedOrientationViews": [
+        "east",
+        "south",
+        "west"
+      ],
+      "orientationViews": {
+        "east": {
+          "uiIcon": "/assets/buildings/polar-farmhouse-l01/icon.svg",
+          "body": "/assets/map/buildings/polar-farmhouse-l01/body-east-close.png",
+          "base": "/assets/buildings/polar-farmhouse-l01/base.svg",
+          "upper": "/assets/buildings/polar-farmhouse-l01/upper.svg",
+          "shadow": "/assets/buildings/polar-farmhouse-l01/shadow.svg",
+          "vfx": null
+        },
+        "south": {
+          "uiIcon": "/assets/buildings/polar-farmhouse-l01/icon.svg",
+          "body": "/assets/map/buildings/polar-farmhouse-l01/body-south-close.png",
+          "base": "/assets/buildings/polar-farmhouse-l01/base.svg",
+          "upper": "/assets/buildings/polar-farmhouse-l01/upper.svg",
+          "shadow": "/assets/buildings/polar-farmhouse-l01/shadow.svg",
+          "vfx": null
+        },
+        "west": {
+          "uiIcon": "/assets/buildings/polar-farmhouse-l01/icon.svg",
+          "body": "/assets/map/buildings/polar-farmhouse-l01/body-west-close.png",
+          "base": "/assets/buildings/polar-farmhouse-l01/base.svg",
+          "upper": "/assets/buildings/polar-farmhouse-l01/upper.svg",
+          "shadow": "/assets/buildings/polar-farmhouse-l01/shadow.svg",
+          "vfx": null
+        }
+      },
+      "orientationRegions": {
+        "east": {
+          "hitPolygon": [
+            [
+              0.07916666666666666,
+              0.7475
+            ],
+            [
+              0.08125,
+              0.7425
+            ],
+            [
+              0.0875,
+              0.73
+            ],
+            [
+              0.42291666666666666,
+              0.18
+            ],
+            [
+              0.43333333333333335,
+              0.1675
+            ],
+            [
+              0.48125,
+              0.1375
+            ],
+            [
+              0.4875,
+              0.135
+            ],
+            [
+              0.4979166666666667,
+              0.135
+            ],
+            [
+              0.5041666666666667,
+              0.1375
+            ],
+            [
+              0.55625,
+              0.17
+            ],
+            [
+              0.5625,
+              0.1775
+            ],
+            [
+              0.9083333333333333,
+              0.675
+            ],
+            [
+              0.9208333333333333,
+              0.7475
+            ],
+            [
+              0.9208333333333333,
+              0.7575
+            ],
+            [
+              0.9125,
+              0.7725
+            ],
+            [
+              0.90625,
+              0.7775
+            ],
+            [
+              0.8270833333333333,
+              0.84
+            ],
+            [
+              0.7833333333333333,
+              0.8575
+            ],
+            [
+              0.75625,
+              0.865
+            ],
+            [
+              0.6416666666666667,
+              0.895
+            ],
+            [
+              0.5541666666666667,
+              0.9075
+            ],
+            [
+              0.5145833333333333,
+              0.9075
+            ],
+            [
+              0.38125,
+              0.905
+            ],
+            [
+              0.35,
+              0.9025
+            ],
+            [
+              0.26458333333333334,
+              0.885
+            ],
+            [
+              0.22291666666666668,
+              0.8625
+            ],
+            [
+              0.19166666666666668,
+              0.845
+            ],
+            [
+              0.11875,
+              0.79
+            ],
+            [
+              0.08333333333333333,
+              0.7575
+            ],
+            [
+              0.07916666666666666,
+              0.7525
+            ]
+          ],
+          "upper": [
+            [
+              0.07916666666666666,
+              0.7475
+            ],
+            [
+              0.08125,
+              0.7425
+            ],
+            [
+              0.0875,
+              0.73
+            ],
+            [
+              0.42291666666666666,
+              0.18
+            ],
+            [
+              0.43333333333333335,
+              0.1675
+            ],
+            [
+              0.48125,
+              0.1375
+            ],
+            [
+              0.4875,
+              0.135
+            ],
+            [
+              0.4979166666666667,
+              0.135
+            ],
+            [
+              0.5041666666666667,
+              0.1375
+            ],
+            [
+              0.55625,
+              0.17
+            ],
+            [
+              0.5625,
+              0.1775
+            ],
+            [
+              0.9083333333333333,
+              0.675
+            ],
+            [
+              0.9208333333333333,
+              0.7475
+            ],
+            [
+              0.9208333333333333,
+              0.7575
+            ],
+            [
+              0.9125,
+              0.7725
+            ],
+            [
+              0.90625,
+              0.7775
+            ],
+            [
+              0.8270833333333333,
+              0.84
+            ],
+            [
+              0.7833333333333333,
+              0.8575
+            ],
+            [
+              0.75625,
+              0.865
+            ],
+            [
+              0.6416666666666667,
+              0.895
+            ],
+            [
+              0.5541666666666667,
+              0.9075
+            ],
+            [
+              0.5145833333333333,
+              0.9075
+            ],
+            [
+              0.38125,
+              0.905
+            ],
+            [
+              0.35,
+              0.9025
+            ],
+            [
+              0.26458333333333334,
+              0.885
+            ],
+            [
+              0.22291666666666668,
+              0.8625
+            ],
+            [
+              0.19166666666666668,
+              0.845
+            ],
+            [
+              0.11875,
+              0.79
+            ],
+            [
+              0.08333333333333333,
+              0.7575
+            ],
+            [
+              0.07916666666666666,
+              0.7525
+            ]
+          ]
+        },
+        "south": {
+          "hitPolygon": [
+            [
+              0.07916666666666666,
+              0.7375
+            ],
+            [
+              0.10625,
+              0.6575
+            ],
+            [
+              0.45208333333333334,
+              0.18
+            ],
+            [
+              0.4625,
+              0.1675
+            ],
+            [
+              0.5145833333333333,
+              0.13
+            ],
+            [
+              0.5208333333333334,
+              0.1275
+            ],
+            [
+              0.525,
+              0.1275
+            ],
+            [
+              0.53125,
+              0.13
+            ],
+            [
+              0.5854166666666667,
+              0.1625
+            ],
+            [
+              0.5916666666666667,
+              0.1675
+            ],
+            [
+              0.5958333333333333,
+              0.1725
+            ],
+            [
+              0.8791666666666667,
+              0.6225
+            ],
+            [
+              0.88125,
+              0.6275
+            ],
+            [
+              0.9208333333333333,
+              0.745
+            ],
+            [
+              0.9208333333333333,
+              0.7525
+            ],
+            [
+              0.91875,
+              0.7575
+            ],
+            [
+              0.8958333333333334,
+              0.785
+            ],
+            [
+              0.875,
+              0.8025
+            ],
+            [
+              0.86875,
+              0.8075
+            ],
+            [
+              0.83125,
+              0.835
+            ],
+            [
+              0.8270833333333333,
+              0.8375
+            ],
+            [
+              0.8,
+              0.85
+            ],
+            [
+              0.7458333333333333,
+              0.8725
+            ],
+            [
+              0.7333333333333333,
+              0.8775
+            ],
+            [
+              0.7229166666666667,
+              0.88
+            ],
+            [
+              0.45,
+              0.9075
+            ],
+            [
+              0.44375,
+              0.9075
+            ],
+            [
+              0.3770833333333333,
+              0.905
+            ],
+            [
+              0.35833333333333334,
+              0.9
+            ],
+            [
+              0.33125,
+              0.8925
+            ],
+            [
+              0.25,
+              0.855
+            ],
+            [
+              0.23541666666666666,
+              0.8475
+            ],
+            [
+              0.22708333333333333,
+              0.8425
+            ],
+            [
+              0.08333333333333333,
+              0.755
+            ],
+            [
+              0.08125,
+              0.7525
+            ],
+            [
+              0.07916666666666666,
+              0.745
+            ]
+          ],
+          "upper": [
+            [
+              0.07916666666666666,
+              0.7375
+            ],
+            [
+              0.10625,
+              0.6575
+            ],
+            [
+              0.45208333333333334,
+              0.18
+            ],
+            [
+              0.4625,
+              0.1675
+            ],
+            [
+              0.5145833333333333,
+              0.13
+            ],
+            [
+              0.5208333333333334,
+              0.1275
+            ],
+            [
+              0.525,
+              0.1275
+            ],
+            [
+              0.53125,
+              0.13
+            ],
+            [
+              0.5854166666666667,
+              0.1625
+            ],
+            [
+              0.5916666666666667,
+              0.1675
+            ],
+            [
+              0.5958333333333333,
+              0.1725
+            ],
+            [
+              0.8791666666666667,
+              0.6225
+            ],
+            [
+              0.88125,
+              0.6275
+            ],
+            [
+              0.9208333333333333,
+              0.745
+            ],
+            [
+              0.9208333333333333,
+              0.7525
+            ],
+            [
+              0.91875,
+              0.7575
+            ],
+            [
+              0.8958333333333334,
+              0.785
+            ],
+            [
+              0.875,
+              0.8025
+            ],
+            [
+              0.86875,
+              0.8075
+            ],
+            [
+              0.83125,
+              0.835
+            ],
+            [
+              0.8270833333333333,
+              0.8375
+            ],
+            [
+              0.8,
+              0.85
+            ],
+            [
+              0.7458333333333333,
+              0.8725
+            ],
+            [
+              0.7333333333333333,
+              0.8775
+            ],
+            [
+              0.7229166666666667,
+              0.88
+            ],
+            [
+              0.45,
+              0.9075
+            ],
+            [
+              0.44375,
+              0.9075
+            ],
+            [
+              0.3770833333333333,
+              0.905
+            ],
+            [
+              0.35833333333333334,
+              0.9
+            ],
+            [
+              0.33125,
+              0.8925
+            ],
+            [
+              0.25,
+              0.855
+            ],
+            [
+              0.23541666666666666,
+              0.8475
+            ],
+            [
+              0.22708333333333333,
+              0.8425
+            ],
+            [
+              0.08333333333333333,
+              0.755
+            ],
+            [
+              0.08125,
+              0.7525
+            ],
+            [
+              0.07916666666666666,
+              0.745
+            ]
+          ]
+        },
+        "west": {
+          "hitPolygon": [
+            [
+              0.07916666666666666,
+              0.7125
+            ],
+            [
+              0.09375,
+              0.6675
+            ],
+            [
+              0.1625,
+              0.535
+            ],
+            [
+              0.2125,
+              0.445
+            ],
+            [
+              0.4395833333333333,
+              0.1675
+            ],
+            [
+              0.4479166666666667,
+              0.1575
+            ],
+            [
+              0.49583333333333335,
+              0.1225
+            ],
+            [
+              0.5020833333333333,
+              0.12
+            ],
+            [
+              0.5104166666666666,
+              0.12
+            ],
+            [
+              0.5166666666666667,
+              0.1225
+            ],
+            [
+              0.5666666666666667,
+              0.165
+            ],
+            [
+              0.56875,
+              0.1675
+            ],
+            [
+              0.875,
+              0.5925
+            ],
+            [
+              0.9208333333333333,
+              0.705
+            ],
+            [
+              0.9208333333333333,
+              0.71
+            ],
+            [
+              0.9041666666666667,
+              0.765
+            ],
+            [
+              0.875,
+              0.8025
+            ],
+            [
+              0.86875,
+              0.81
+            ],
+            [
+              0.8583333333333333,
+              0.82
+            ],
+            [
+              0.8145833333333333,
+              0.8475
+            ],
+            [
+              0.7895833333333333,
+              0.86
+            ],
+            [
+              0.7833333333333333,
+              0.8625
+            ],
+            [
+              0.7333333333333333,
+              0.88
+            ],
+            [
+              0.6875,
+              0.89
+            ],
+            [
+              0.5729166666666666,
+              0.91
+            ],
+            [
+              0.50625,
+              0.91
+            ],
+            [
+              0.37083333333333335,
+              0.89
+            ],
+            [
+              0.36041666666666666,
+              0.8875
+            ],
+            [
+              0.23333333333333334,
+              0.8425
+            ],
+            [
+              0.22083333333333333,
+              0.835
+            ],
+            [
+              0.14166666666666666,
+              0.7825
+            ],
+            [
+              0.09375,
+              0.74
+            ],
+            [
+              0.07916666666666666,
+              0.72
+            ]
+          ],
+          "upper": [
+            [
+              0.07916666666666666,
+              0.7125
+            ],
+            [
+              0.09375,
+              0.6675
+            ],
+            [
+              0.1625,
+              0.535
+            ],
+            [
+              0.2125,
+              0.445
+            ],
+            [
+              0.4395833333333333,
+              0.1675
+            ],
+            [
+              0.4479166666666667,
+              0.1575
+            ],
+            [
+              0.49583333333333335,
+              0.1225
+            ],
+            [
+              0.5020833333333333,
+              0.12
+            ],
+            [
+              0.5104166666666666,
+              0.12
+            ],
+            [
+              0.5166666666666667,
+              0.1225
+            ],
+            [
+              0.5666666666666667,
+              0.165
+            ],
+            [
+              0.56875,
+              0.1675
+            ],
+            [
+              0.875,
+              0.5925
+            ],
+            [
+              0.9208333333333333,
+              0.705
+            ],
+            [
+              0.9208333333333333,
+              0.71
+            ],
+            [
+              0.9041666666666667,
+              0.765
+            ],
+            [
+              0.875,
+              0.8025
+            ],
+            [
+              0.86875,
+              0.81
+            ],
+            [
+              0.8583333333333333,
+              0.82
+            ],
+            [
+              0.8145833333333333,
+              0.8475
+            ],
+            [
+              0.7895833333333333,
+              0.86
+            ],
+            [
+              0.7833333333333333,
+              0.8625
+            ],
+            [
+              0.7333333333333333,
+              0.88
+            ],
+            [
+              0.6875,
+              0.89
+            ],
+            [
+              0.5729166666666666,
+              0.91
+            ],
+            [
+              0.50625,
+              0.91
+            ],
+            [
+              0.37083333333333335,
+              0.89
+            ],
+            [
+              0.36041666666666666,
+              0.8875
+            ],
+            [
+              0.23333333333333334,
+              0.8425
+            ],
+            [
+              0.22083333333333333,
+              0.835
+            ],
+            [
+              0.14166666666666666,
+              0.7825
+            ],
+            [
+              0.09375,
+              0.74
+            ],
+            [
+              0.07916666666666666,
+              0.72
+            ]
+          ]
+        }
+      }
     },
     {
       "assetId": "polar-farmhouse-l02",
