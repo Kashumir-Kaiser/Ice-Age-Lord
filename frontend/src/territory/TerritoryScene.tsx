@@ -10,7 +10,8 @@ import MapCanvas from '../rendering/MapCanvas';
 import { territorySnapshot, type MapSnapshot } from '../rendering/MapSceneAdapter';
 import { spriteRect, artPolygon } from '../rendering/SpriteRegistration';
 import { pointInPolygon, pickStack, cyclePick, pointerCSS } from '../rendering/MapPicking';
-import { projectBuildings, rectPolygon } from '../rendering/BuildingGeometry';
+import { rectPolygon } from '../rendering/BuildingGeometry';
+import {projectDepthNodes} from '../rendering/DepthSlices';
 import type {SceneLOD} from '../rendering/mapStyle';
 import { depthOrder } from '../rendering/DepthOrder';
 import { cameraOverlayTransform } from '../rendering/transientCamera';
@@ -348,14 +349,14 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
     if(ignoreClick.current){ignoreClick.current=false;event.preventDefault();event.stopPropagation();return;}
     if(activeDefinition||event.detail===0||event.target instanceof Element&&event.target.closest('.territory-player-marker'))return;
     const point=pointerCSS({x:event.clientX,y:event.clientY},event.currentTarget.getBoundingClientRect(),size);
-    const order=depthOrder(projectBuildings(renderSnapshot.buildings,p=>worldToScreen(p,transient.current,size),3*transient.current.zoom,size,true,buildingLODs.current)).objects;
+    const order=depthOrder(projectDepthNodes(renderSnapshot.buildings,p=>worldToScreen(p,transient.current,size),3*transient.current.zoom,size,true,buildingLODs.current,effectiveMode==='planning')).objects;
     const focused=order.find(b=>b.selected);
     const stack=pickStack(point,order.map(b=>{
       const f=b.footprint;
       const ground=[{x:f.minX,y:f.minY},{x:f.maxX,y:f.minY},{x:f.maxX,y:f.maxY},{x:f.minX,y:f.maxY}].map(p=>worldToScreen(p,transient.current,size));
-      const faded=effectiveMode==='focus'&&focused&&!b.selected&&b.depth>focused.depth&&pointInPolygon(focused.ground,artPolygon(b.asset!.occlusionRegion.upper,b.rect));
+      const faded=effectiveMode==='focus'&&focused&&!b.selected&&b.depth>focused.ground.y&&pointInPolygon(focused.ground,artPolygon(b.slice?.hull??b.asset!.occlusionRegion.upper,b.rect));
       const regional=b.lod==='regional'&&effectiveMode!=='planning';
-      return {id:b.id,ground,silhouette:regional?rectPolygon(b.symbol):faded?[]:artPolygon(b.asset!.hitPolygon??b.asset!.artFootprint,b.rect),silhouettes:regional||faded?[]:[artPolygon(b.asset!.occlusionRegion.upper,b.rect)],selectable:!b.draft&&!b.fixture};
+      return {id:b.entityId,ground,silhouette:regional?rectPolygon(b.symbol):faded?[]:artPolygon(b.slice?.hull??b.asset!.hitPolygon??b.asset!.artFootprint,b.rect),silhouettes:regional||faded||b.slice?[]:[artPolygon(b.asset!.occlusionRegion.upper,b.rect)],selectable:!b.draft&&!b.fixture};
     }),effectiveMode==='planning');
     if(!stack.length)return;
     const previous=lastPick.current,repeated=previous&&Math.hypot(previous.point.x-point.x,previous.point.y-point.y)<6&&previous.ids.join('|')===stack.join('|');

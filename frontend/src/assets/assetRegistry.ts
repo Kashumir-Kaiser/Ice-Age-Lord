@@ -1,6 +1,7 @@
 export type MapExport = {
   path: string; source: string; sourceSha256: string; sha256: string;
   layerPath?: string;
+  sliceId?: string;
   exportVersion: number; width: number; height: number;
   sourceDependencies?:readonly {source:string;sha256:string}[];
   role: 'body' | 'base' | 'upper' | 'shadow' | 'vfx';
@@ -25,6 +26,7 @@ export type AssetManifestEntry = {
   orientationRegions?:Partial<Record<'north'|'east'|'south'|'west',{hitPolygon:readonly (readonly [number,number])[];upper:readonly (readonly [number,number])[]}>>;
   equivalentOrientations?: readonly string[];
   mapExports?: readonly MapExport[];
+  mapDepthSlices?: Partial<Record<'north'|'east'|'south'|'west',readonly {id:string;range:readonly [number,number];hull:readonly (readonly [number,number])[];paths:{close:string;district:string}}[]>>;
   mapFlame?: {path:string;sha256:string;source:string;sourceSha256:string;width:number;height:number;fps:number;frames:readonly {x:number;y:number;width:number;height:number}[];anchor:{x:number;y:number};emitter:{x:number;y:number};relativeWidth:number};
   revision: number;
   /** Purely visual sprite-scale multiplier. Never changes physical occupancy or heat. */

@@ -19,7 +19,7 @@ export function pickStack(point: WorldPoint, objects: readonly Pickable[], plann
     if(!planning&&(pointInPolygon(point,o.silhouette)||o.silhouettes?.some(shape=>pointInPolygon(point,shape))))art.push(o.id);
     else if(pointInPolygon(point,o.ground))ground.push(o.id);
   }
-  return [...art,...ground];
+  return [...new Set([...art,...ground])];
 }
 export function cyclePick(ids: readonly string[], selected: string|null): string|null {
   if(!ids.length)return null;return ids[(ids.indexOf(selected??'')+1)%ids.length];

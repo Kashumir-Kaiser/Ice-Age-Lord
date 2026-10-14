@@ -50,6 +50,15 @@ export function validateMapAssets(manifest){
   if(!Number.isFinite(asset.groundAnchor.x)||!Number.isFinite(asset.groundAnchor.y)||asset.groundAnchor.x<0||asset.groundAnchor.x>1||asset.groundAnchor.y<0||asset.groundAnchor.y>1)throw new Error('Invalid map anchor');
   for(const entry of asset.mapExports??[])validateMapExport(entry,asset);
   if(asset.mapFlame)validateMapFlame(asset.mapFlame);
+  for(const [orientation,slices] of Object.entries(asset.mapDepthSlices??{})){
+   const ids=new Set();let boundary=-.5;
+   for(const slice of slices){
+    if(ids.has(slice.id)||!Array.isArray(slice.range)||slice.range.length!==2||!slice.range.every(Number.isFinite)||Math.abs(slice.range[0]-boundary)>1e-8||slice.range[1]<=slice.range[0]||slice.range[1]>.5||!Array.isArray(slice.hull)||slice.hull.length<3||slice.hull.some(p=>p.length!==2||p.some(v=>!Number.isFinite(v)||v<0||v>1)))throw new Error('Invalid architectural depth partition');
+    ids.add(slice.id);boundary=slice.range[1];
+    for(const lod of ['close','district'])if(!asset.mapExports?.some(e=>e.sliceId===slice.id&&e.path===slice.paths[lod]&&e.lod===lod&&e.orientation===orientation))throw new Error('Missing registered architectural slice');
+   }
+   if(Math.abs(boundary-.5)>1e-8)throw new Error('Incomplete architectural depth partition');
+  }
  }
  for(const entry of manifest.environmentArt??[])validateMapExport(entry,{logicalCanvas:{width:entry.width,height:entry.height},orientation:entry.orientation});
 }

@@ -10,6 +10,7 @@ import { flameFrame, flameRect, flameKey } from './FlamePresentation.ts';
 import { artPolygon, composition } from './SpriteRegistration.ts';
 import { pointInPolygon } from './MapPicking.ts';
 import { depthOrder } from './DepthOrder.ts';
+import {projectDepthNodes} from './DepthSlices.ts';
 import { projectBuildings } from './BuildingGeometry.ts';
 import { MAP_PALETTE, QUALITY, LEDGE_SOURCES, AdaptiveQuality } from './mapStyle.ts';
 import type { Quality, SceneLOD } from './mapStyle.ts';
@@ -58,6 +59,7 @@ export class MapRenderer {
   private depthBuildings:MapSnapshot['buildings']|null=null;
   private depthScale=0;
   private depthProjection:MapSnapshot['projection']|null=null;
+  private depthPlanning=false;
   private depthIds:string[]=[];
   readonly metrics:MapMetrics;
   constructor(private canvas:HTMLCanvasElement,snapshot:MapSnapshot,private status:(backend:string)=>void,enabledMetrics=false){
@@ -195,12 +197,14 @@ export class MapRenderer {
     const selected=this.snapshot.buildings.find(b=>b.selected),target=selected?this.project(selected.point):null;
     const buildingObjects=projectBuildings(this.snapshot.buildings,this.project,scale,this.size,true,this.snapshot.buildingLODs??this.lod);
     this.visibleEmitter=false;this.visibleEmitters=[];
-    if(this.depthBuildings!==this.snapshot.buildings||this.depthScale!==scale||this.depthProjection!==this.snapshot.projection){
-      const ordered=depthOrder(projectBuildings(this.snapshot.buildings,this.project,scale,this.size,false));
+    const planning=this.snapshot.mode==='planning',nodes=projectDepthNodes(this.snapshot.buildings,this.project,scale,this.size,true,this.snapshot.buildingLODs??this.lod,planning,buildingObjects);
+    if(this.depthBuildings!==this.snapshot.buildings||this.depthScale!==scale||this.depthProjection!==this.snapshot.projection||this.depthPlanning!==planning){
+      const ordered=depthOrder(projectDepthNodes(this.snapshot.buildings,this.project,scale,this.size,false,this.snapshot.buildingLODs??this.lod,planning));
       this.depthIds=ordered.objects.map(b=>b.id);this.depthBuildings=this.snapshot.buildings;this.depthScale=scale;this.depthProjection=this.snapshot.projection;
+      this.depthPlanning=planning;
       if(ordered.cycles.length)this.metrics.error('depth cycle: '+ordered.cycles.join(','));
     }
-    const visibleById=new Map(buildingObjects.map(b=>[b.id,b]));
+    const visibleById=new Map(nodes.map(b=>[b.id,b]));
     const distinctAssets=new Set(buildingObjects.map(b=>b.assetId)).size,environmentReserve=12*1048576;
     const preferDistrict=this.quality==='low'||distinctAssets*4*1048576+environmentReserve>this.assets.limit;
     const useAtlas=this.quality!=='low'&&distinctAssets*1048576+environmentReserve<=this.assets.limit;
@@ -219,9 +223,10 @@ export class MapRenderer {
     }}
     // Architectural order from the partial order is preserved; props are inserted by their ground depths.
     let propIndex=0;const sortedProps=props.sort((a,b)=>a.depth-b.depth||a.id.localeCompare(b.id));
-    const drawBuilding=(b:typeof buildingObjects[number])=>{
+    const drawBuilding=(b:typeof nodes[number])=>{
       const asset=b.asset!;this.assets.register(asset,useAtlas);const lod=b.lod;
-      const occludes=Boolean(target&&!b.selected&&b.depth>this.project(selected!.point).y&&pointInPolygon(target,artPolygon(asset.occlusionRegion.upper,b.rect)));
+      if(b.slice&&draws.some(d=>d.id===b.entityId+':body-fallback'))return;
+      const occludes=Boolean(target&&!b.selected&&b.depth>this.project(selected!.point).y&&pointInPolygon(target,artPolygon(b.slice?.hull??asset.occlusionRegion.upper,b.rect)));
       if(lod==='regional'&&this.snapshot.mode!=='planning'){draws.push({id:b.id+':symbol',path:asset.layers.uiIcon!,...b.symbol,alpha:b.draft?.55:1});return;}
       const flame=asset.mapFlame,frame=flame?flameFrame(this.effects.time,flame.frames.length,flame.fps,this.reducedMotion):0;
       const key=flame?flameKey(flame.path,frame):null;
@@ -233,7 +238,20 @@ export class MapRenderer {
         const rect=flameRect(asset,b.rect),emitter=rect&&flame?{x:rect.x+rect.width*flame.anchor.x,y:rect.y+rect.height*flame.anchor.y}:b.ground;
         this.visibleEmitters.push({point:emitter,selected:b.selected});
       }
-      for(const layer of composition(asset,this.snapshot.mode,occludes,b.active,b.orientation)){if(layer.role==='shadow'||layer.role==='vfx'&&loadedFlame)continue;const exported=exportPath(asset,layer,preferDistrict||lod!=='close'?'district':'close'),path=(this.failures.has(exported)||this.failures.has(this.assets.url(exported)))?(asset.layers[layer.role]??layer.path):exported;draws.push({id:b.id+':'+layer.role,path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});}
+      for(const layer of composition(asset,this.snapshot.mode,occludes,b.active,b.orientation)){
+        if(layer.role==='shadow'||layer.role==='vfx'&&loadedFlame)continue;
+        if(b.slice&&layer.role==='body'){
+          const path=b.slice.paths[preferDistrict||lod!=='close'?'district':'close'];
+          const parts=asset.mapDepthSlices![b.orientation]!,paths=parts.map(p=>p.paths[preferDistrict||lod!=='close'?'district':'close']);
+          let ready=true;for(const part of paths){used.add(part);if(!this.assets.acquire(part)||this.failures.has(part)||this.failures.has(this.assets.url(part)))ready=false;}
+          if(ready){draws.push({id:b.id+':body',path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});continue;}
+          // One whole-body fallback per entity if an individual slice is unavailable.
+          if(draws.some(d=>d.id===b.entityId+':body-fallback'))continue;
+          for(let i=draws.length-1;i>=0;i--)if(draws[i].id.startsWith(b.entityId+':slice:'))draws.splice(i,1);
+          draws.push({id:b.entityId+':body-fallback',path:asset.layers.body!,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});continue;
+        }
+        const exported=exportPath(asset,layer,preferDistrict||lod!=='close'?'district':'close'),path=(this.failures.has(exported)||this.failures.has(this.assets.url(exported)))?(asset.layers[layer.role]??layer.path):exported;draws.push({id:b.id+':'+layer.role,path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});
+      }
       if(loadedFlame&&key){const rect=flameRect(asset,b.rect)!;draws.push({id:b.id+':flame',path:key,...rect,alpha:(occludes&&this.snapshot.mode==='focus'?.22:1)*(b.draft?.55:1)});}
     };
     for(const id of this.depthIds){const b=visibleById.get(id);if(!b)continue;while(propIndex<sortedProps.length&&sortedProps[propIndex].depth<=b.depth)draws.push(sortedProps[propIndex++]);drawBuilding(b);}while(propIndex<sortedProps.length)draws.push(sortedProps[propIndex++]);

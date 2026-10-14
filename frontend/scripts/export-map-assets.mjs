@@ -10,9 +10,11 @@ import {LEDGE_SOURCES} from '../src/rendering/mapStyle.ts';
 import {orientationCanvas} from './map-orientation-export.mjs';
 import {trimMapRaster} from './trim-map-raster.mjs';
 import {exportMapFlame} from './export-map-flame.mjs';
+import {exportDepthSlices} from './export-depth-slices.mjs';
 const repo=resolve(new URL('../..',import.meta.url).pathname),manifestPath=resolve(repo,'assets/manifest.json');
 const manifest=JSON.parse(readFileSync(manifestPath,'utf8'));
 const authoredViews=JSON.parse(readFileSync(resolve(repo,'assets/map-building-views.json'),'utf8'));
+const depthJoints=JSON.parse(readFileSync(resolve(repo,'assets/map-depth-slices.json'),'utf8'));
 const sha=(buffer)=>createHash('sha256').update(buffer).digest('hex');
 const output=resolve(repo,'frontend/public/assets/map');mkdirSync(output,{recursive:true});
 // Resolve the named external SVG element with its definitions and dependency hashes.
@@ -29,6 +31,7 @@ for(const asset of manifest.assets){
   asset.equivalentOrientations=equivalents;
  }
  asset.composition??='single-body';asset.mapExports=[];
+ delete asset.mapDepthSlices;
  for(const orientation of asset.generatedOrientationViews??[]){delete asset.orientationViews?.[orientation];delete asset.orientationRegions?.[orientation];}
  asset.generatedOrientationViews=Object.keys(authoredViews[asset.assetId]??{});
  let bodyReference;
@@ -80,6 +83,22 @@ for (const asset of manifest.assets) for (const lod of ['close','district']) {
  for(const e of entries)e.atlas.sha256=sha(png);
 }
 manifest.environmentArt=[];
+for(const asset of manifest.assets)for(const [orientation,cuts] of Object.entries(depthJoints[asset.assetId]??{})){
+ asset.mapDepthSlices??={};asset.mapDepthSlices[orientation]=[];
+ for(const lod of ['close','district']){
+  const body=asset.mapExports.find(e=>e.role==='body'&&e.orientation===orientation&&e.lod===lod);
+  if(!body)throw new Error('Missing body for authored depth slices: '+asset.assetId+':'+orientation);
+  const result=await exportDepthSlices(readFileSync(resolve(repo,'frontend/public'+body.path)),body,cuts);
+  const atlasPath=`/assets/map/buildings/${asset.assetId}/depth-${orientation}-${lod}.png`,atlasHash=sha(result.atlas);
+  writeFileSync(resolve(repo,'frontend/public'+atlasPath),result.atlas);
+  for(const part of result.slices){
+   const path=`/assets/map/buildings/${asset.assetId}/slice-${orientation}-${part.id}-${lod}.png`;writeFileSync(resolve(repo,'frontend/public'+path),part.png);
+   asset.mapExports.push({...body,path,sliceId:part.id,sourceDependencies:[...(body.sourceDependencies??[]),{source:'assets/map-depth-slices.json',sha256:sha(readFileSync(resolve(repo,'assets/map-depth-slices.json')))}],width:part.width,height:part.height,trim:part.trim,sha256:sha(part.png),atlas:{path:atlasPath,...part.frame,atlasWidth:result.side,atlasHeight:result.side,sha256:atlasHash}});
+   if(lod==='close')asset.mapDepthSlices[orientation].push({id:part.id,range:part.range,hull:part.hull,paths:{close:path,district:''}});
+   else asset.mapDepthSlices[orientation].find(p=>p.id===part.id).paths.district=path;
+  }
+ }
+}
 const terrainNames=['snow-quiet','snow-02','snow-03','snow-04','dirty-snow-01','dirty-snow-02','earth-01','earth-02','ice-01','ice-02'];
 const propNames=[...Array.from({length:6},(_,i)=>'conifer-'+String(i+1).padStart(2,'0')),...Array.from({length:3},(_,i)=>'bare-'+String(i+1).padStart(2,'0')),...Array.from({length:8},(_,i)=>'rock-'+String(i+1).padStart(2,'0')),...Array.from({length:8},(_,i)=>'bank-'+String(i+1).padStart(2,'0')),...Array.from({length:4},(_,i)=>'ledge-'+String(i+1).padStart(2,'0')),...Array.from({length:4},(_,i)=>'forest-'+String(i+1).padStart(2,'0')),...Array.from({length:2},(_,i)=>'ridge-'+String(i+1).padStart(2,'0'))];
 mkdirSync(resolve(output,'terrain'),{recursive:true});

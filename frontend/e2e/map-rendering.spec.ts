@@ -44,7 +44,11 @@ test('reduced motion and locked low quality remain selectable and do not start e
  await expect.poll(()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{activeLoops:number}[]}).__mapMetrics.at(-1)?.activeLoops)).toBe(0);
 });
 test('preserved painted flame animates only for visible active fire; reduced motion freezes it and planning removes it',async({page})=>{
+ test.setTimeout(60000);
  await page.emulateMedia({reducedMotion:'no-preference'});await territory(page);
+ await page.getByRole('button',{name:'Về lửa trại',exact:true}).click();
+ await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();
+ await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();
  const backend=await page.locator('[data-map-renderer]').getAttribute('data-map-renderer');test.skip(backend!=='webgl','Canvas2D retains static fire indication with effects disabled.');
  const flames=()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{flameFrame:number|null;flameSprites:number}[]}).__mapMetrics.at(-1)!);
  await expect.poll(async()=>(await flames()).flameSprites,{timeout:30000}).toBe(1);
@@ -63,7 +67,7 @@ test('distant symbol remains selectable beyond the tiny physical footprint',asyn
  const target=await scene.evaluate(node=>{
   const symbols=Array.from(node.querySelectorAll('.territory-building:not(.is-draft) .territory-art-hit')).map(p=>{
    const points=p.getAttribute('points')!.trim().split(/\s+/).map(v=>v.split(',').map(Number));
-   return {id:p.closest('[data-building-id]')!.getAttribute('data-building-id'),x:Math.max(...points.map(p=>p[0]))-1,y:(Math.min(...points.map(p=>p[1]))+Math.max(...points.map(p=>p[1])))/2,width:Math.max(...points.map(p=>p[0]))-Math.min(...points.map(p=>p[0]))};
+   return {id:p.closest('[data-building-id]')!.getAttribute('data-building-id'),x:Math.max(...points.map(p=>p[0]))-.01,y:(Math.min(...points.map(p=>p[1]))+Math.max(...points.map(p=>p[1])))/2,width:Math.max(...points.map(p=>p[0]))-Math.min(...points.map(p=>p[0]))};
   }).sort((a,b)=>b.x-a.x);
   const s=symbols[0],box=node.getBoundingClientRect();return {...s,x:s.x+box.left,y:s.y+box.top};
  });

@@ -7,8 +7,9 @@ const output=resolve(process.env.MAP_QA_DIR??'map-evidence/after');mkdirSync(out
 const dpr=Number(process.env.MAP_QA_DPR??1),quality=process.env.MAP_QA_QUALITY??'normal';
 async function capture(page,name,viewport){
  await page.locator('[data-map-renderer]').evaluate(node=>node.scrollIntoView({block:'center',inline:'nearest'}));
- const directory=resolve(output,String(viewport.width));mkdirSync(directory,{recursive:true});
- const filename=`${viewport.width}/${name}-${viewport.width}-${quality}-dpr${dpr}.png`;
+ const group=/^(wall|gate)-/.test(name)?'architecture/':'';
+ const directory=resolve(output,String(viewport.width),group);mkdirSync(directory,{recursive:true});
+ const filename=`${viewport.width}/${group}${name}-${viewport.width}-${quality}-dpr${dpr}.png`;
  try{await readyMap(page);}catch(error){
   const metrics=await page.evaluate(()=>window.__mapMetrics?.at(-1));
   writeFileSync(resolve(output,filename+'.failure.json'),JSON.stringify({name,viewport,dpr,quality,metrics,error:String(error)},null,2));
@@ -21,6 +22,21 @@ try{
  for(const viewport of [{width:1366,height:768},{width:1920,height:1080},{width:390,height:844}]){
   const page=await openMap(browser,{viewport,dpr,quality});await navigateMap(page,'Lãnh địa');
   await capture(page,'opening',viewport);
+  const calibration=await openMap(browser,{viewport,dpr,quality});await navigateMap(calibration,'Lãnh địa');
+  await calibration.getByRole('button',{name:'Về lửa trại',exact:true}).click();
+  await calibration.getByRole('button',{name:'Phóng to lãnh địa'}).click();await calibration.getByRole('button',{name:'Phóng to lãnh địa'}).click();
+  await capture(calibration,'fire-close',viewport);
+  for(const [family,label] of [['wall','Thử bố trí Tường Rào'],['gate','Thử bố trí Cổng Gỗ · mẫu ảnh']]){
+   await calibration.getByRole('button',{name:label,exact:true}).click();
+   const scene=calibration.locator('.territory-scene-svg');await scene.scrollIntoViewIfNeeded();
+   const box=await scene.boundingBox();await calibration.mouse.move(box.x+box.width*.55,box.y+box.height*.65);
+   for(const orientation of ['north','east','south','west']){
+    await capture(calibration,`${family}-${orientation}`,viewport);
+    await scene.focus();await calibration.keyboard.press('r');
+   }
+   await scene.focus();await calibration.keyboard.press('Escape');
+  }
+  await calibration.close();
   await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();await capture(page,'planning',viewport);
   await page.getByRole('button',{name:'Bình thường',exact:true}).click();
   await page.getByLabel('Xem thử vùng nhiệt').selectOption('off');await capture(page,'heat-off',viewport);
