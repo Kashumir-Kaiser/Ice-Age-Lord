@@ -1,0 +1,24 @@
+{
+  "assets": [
+    {
+      "assetId": "watchtower-preview",
+      "orientation": "north",
+      "source": "assets/source/map-buildings/watchtower-north.png",
+      "sha256": "7220e8c636abf5ab8a755245f766c8133b1b590488353e1628298b2ea1e2685a",
+      "gitBlobSha": "c27f653bafc17823c46f5947a5cc5bc48a37c7e0",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-15",
+      "status": "draft; original preserved immediately; preview-only, registration and scene acceptance pending"
+    },
+    {
+      "assetId": "elemental-tower-preview",
+      "orientation": "north",
+      "source": "assets/source/map-buildings/elemental-tower-north.png",
+      "sha256": "154914616227f12e7bcdcea1a6be1873f52d5b7c8da475b44a62d0f30190efce",
+      "gitBlobSha": "d08109047393aba2168de96dc4211bfe5d04120b",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-15",
+      "status": "draft; original preserved immediately; preview-only, registration and scene acceptance pending"
+    }
+  ]
+}

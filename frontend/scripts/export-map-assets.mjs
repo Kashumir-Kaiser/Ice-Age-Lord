@@ -13,10 +13,12 @@ import {exportMapFlame} from './export-map-flame.mjs';
 import {exportDepthSlices} from './export-depth-slices.mjs';
 import {calibrateMapGround} from './calibrate-map-ground.mjs';
 import {mapGroundShadow} from './map-ground-shadow.mjs';
+import {splitMapArchitecture} from './split-map-architecture.mjs';
 const repo=resolve(new URL('../..',import.meta.url).pathname),manifestPath=resolve(repo,'assets/manifest.json');
 const manifest=JSON.parse(readFileSync(manifestPath,'utf8'));
 const authoredViews=JSON.parse(readFileSync(resolve(repo,'assets/map-building-views.json'),'utf8'));
 const depthJoints=JSON.parse(readFileSync(resolve(repo,'assets/map-depth-slices.json'),'utf8'));
+const architecture=JSON.parse(readFileSync(resolve(repo,'assets/map-architecture.json'),'utf8'));
 // This tower's authored SVG groups separate the complete footing from the shaft/roof.
 // Other legacy base/upper files contain arbitrary horizontal clips and remain unaccepted.
 const architecturalAssets=new Set(['fixture-tall-tower']);
@@ -116,6 +118,29 @@ for (const asset of manifest.assets) for (const lod of ['close','district']) {
  for(const e of entries)e.atlas.sha256=sha(png);
 }
 manifest.environmentArt=[];
+// Generated painted poses are partitioned at individually inspected plinth joints.
+for(const asset of manifest.assets){
+ const definition=architecture[asset.assetId];if(!definition)continue;
+ asset.composition='architectural';
+ for(const orientation of ['north','east','south','west'])for(const lod of ['close','district']){
+  const body=asset.mapExports.find(e=>e.role==='body'&&!e.sliceId&&e.orientation===orientation&&e.lod===lod);
+  if(!body||!definition[orientation])throw new Error('Missing architectural pose: '+asset.assetId+':'+orientation);
+  const parts=await splitMapArchitecture(readFileSync(resolve(repo,'frontend/public'+body.path)),body,definition[orientation]);
+  for(const part of parts){
+   const layerPath=`/assets/map/buildings/${asset.assetId}/${part.role}-${orientation}-close.png`,path=`/assets/map/buildings/${asset.assetId}/${part.role}-${orientation}-${lod}.png`;
+   writeFileSync(resolve(repo,'frontend/public'+path),part.png);
+   if(lod==='close'){
+    asset.orientationViews??={};asset.orientationViews[orientation]??={...asset.layers};asset.orientationViews[orientation][part.role]=layerPath;
+    if(part.role==='upper'){
+     asset.orientationRegions??={};asset.orientationRegions[orientation]??={hitPolygon:asset.hitPolygon,upper:part.hull};asset.orientationRegions[orientation].upper=part.hull;
+    }
+   }
+   const {atlas,...registration}=body;
+   asset.mapExports.push({...registration,path,layerPath,role:part.role,width:part.width,height:part.height,trim:part.trim,sha256:sha(part.png),sourceDependencies:[...(body.sourceDependencies??[]),...['assets/map-architecture.json','frontend/scripts/split-map-architecture.mjs'].map(source=>({source,sha256:sha(readFileSync(resolve(repo,source)))}))]});count++;
+  }
+ }
+ // Original body export binding remains intact for the atomic whole-body fallback.
+}
 for(const asset of manifest.assets)for(const [orientation,cuts] of Object.entries(depthJoints[asset.assetId]??{})){
  asset.mapDepthSlices??={};asset.mapDepthSlices[orientation]=[];
  for(const lod of ['close','district']){

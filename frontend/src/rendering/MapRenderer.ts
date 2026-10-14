@@ -238,7 +238,17 @@ export class MapRenderer {
         const rect=flameRect(asset,b.rect),emitter=rect&&flame?{x:rect.x+rect.width*flame.anchor.x,y:rect.y+rect.height*flame.anchor.y}:b.ground;
         this.visibleEmitters.push({point:emitter,selected:b.selected});
       }
-      for(const layer of composition(asset,this.snapshot.mode,occludes,b.active,b.orientation)){
+      let layers=composition(asset,this.snapshot.mode,occludes,b.active,b.orientation);
+      if(asset.composition==='architectural'&&this.snapshot.mode!=='planning'){
+        let ready=true;
+        for(const layer of layers.filter(l=>l.role==='base'||l.role==='upper')){
+          const path=exportPath(asset,layer,preferDistrict||lod!=='close'?'district':'close');used.add(path);
+          if(!this.assets.acquire(path)||this.failures.has(path)||this.failures.has(this.assets.url(path)))ready=false;
+        }
+        // Missing architecture must retain one complete authored body, never a floating half.
+        if(!ready)layers=composition({...asset,composition:'single-body'},this.snapshot.mode,occludes,b.active,b.orientation);
+      }
+      for(const layer of layers){
         if(layer.role==='shadow'||layer.role==='vfx'&&loadedFlame)continue;
         if(b.slice&&layer.role==='body'){
           const path=b.slice.paths[preferDistrict||lod!=='close'?'district':'close'];
@@ -251,7 +261,9 @@ export class MapRenderer {
           const body=exportPath(asset,layer,preferDistrict||lod!=='close'?'district':'close'),fallback=this.failures.has(body)||this.failures.has(this.assets.url(body))?asset.layers.body!:body;
           draws.push({id:b.entityId+':body-fallback',path:fallback,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});continue;
         }
-        const exported=exportPath(asset,layer,preferDistrict||lod!=='close'?'district':'close'),path=(this.failures.has(exported)||this.failures.has(this.assets.url(exported)))?(asset.layers[layer.role]??layer.path):exported;draws.push({id:b.id+':'+layer.role,path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});
+        const exported=exportPath(asset,layer,preferDistrict||lod!=='close'?'district':'close'),failed=this.failures.has(exported)||this.failures.has(this.assets.url(exported));
+        const path=failed?(this.snapshot.mode==='planning'&&layer.role==='base'?asset.planningLayer??layer.path:layer.path):exported;
+        draws.push({id:b.id+':'+layer.role,path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});
       }
       if(loadedFlame&&key){const rect=flameRect(asset,b.rect)!;draws.push({id:b.id+':flame',path:key,...rect,alpha:(occludes&&this.snapshot.mode==='focus'?.22:1)*(b.draft?.55:1)});}
     };

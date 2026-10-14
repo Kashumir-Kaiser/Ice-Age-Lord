@@ -7,7 +7,7 @@ const output=resolve(process.env.MAP_QA_DIR??'map-evidence/after');mkdirSync(out
 const dpr=Number(process.env.MAP_QA_DPR??1),quality=process.env.MAP_QA_QUALITY??'normal';
 async function capture(page,name,viewport){
  await page.locator('[data-map-renderer]').evaluate(node=>node.scrollIntoView({block:'center',inline:'nearest'}));
- const group=/^(wall|gate|tower)-/.test(name)?'architecture/':'';
+ const group=/^(house|tower)-/.test(name)?'architecture/extended/':/^(wall|gate)-/.test(name)?'architecture/':'';
  const directory=resolve(output,String(viewport.width),group);mkdirSync(directory,{recursive:true});
  const filename=`${viewport.width}/${group}${name}-${viewport.width}-${quality}-dpr${dpr}.png`;
  try{await readyMap(page);}catch(error){
@@ -26,7 +26,7 @@ try{
   await calibration.getByRole('button',{name:'Về lửa trại',exact:true}).click();
   await calibration.getByRole('button',{name:'Phóng to lãnh địa'}).click();await calibration.getByRole('button',{name:'Phóng to lãnh địa'}).click();
   await capture(calibration,'fire-close',viewport);
-  for(const [family,label] of [['wall','Thử bố trí Tường Rào'],['gate','Thử bố trí Cổng Gỗ · mẫu ảnh'],['tower','Thử bố trí Tháp cao · minh họa']]){
+  for(const [family,label] of [['wall','Thử bố trí Tường Rào'],['gate','Thử bố trí Cổng Gỗ · mẫu ảnh'],['tower','Thử bố trí Tháp cao · minh họa'],['house','Thử bố trí Nhà thấp · minh họa']]){
    await calibration.getByRole('button',{name:label,exact:true}).click();
    const scene=calibration.locator('.territory-scene-svg');await scene.scrollIntoViewIfNeeded();
    const box=await scene.boundingBox();await scene.click({position:{x:box.width*.55,y:box.height*.65}});
@@ -36,8 +36,8 @@ try{
     await capture(calibration,`${family}-${orientation}`,viewport);
     await calibration.getByRole('button',{name:`Xoay ${name}`,exact:true}).click();
    }
-   if(family==='tower'){
-    await calibration.getByRole('button',{name:'Mặt bằng',exact:true}).click();await capture(calibration,'tower-planning',viewport);
+   if(family==='tower'||family==='house'){
+    await calibration.getByRole('button',{name:'Mặt bằng',exact:true}).click();await capture(calibration,`${family}-planning`,viewport);
     await calibration.getByRole('button',{name:'Bình thường',exact:true}).click();
    }
    await calibration.getByRole('button',{name:`Xóa ${name}`,exact:true}).click();

@@ -63,19 +63,43 @@ jobs:
         if: always()
         with:
           name: map-architecture-${{ matrix.quality }}-dpr${{ matrix.dpr }}-1366
-          path: frontend/map-evidence/after/1366/architecture/
+          path: |
+            frontend/map-evidence/after/1366/architecture/
+            !frontend/map-evidence/after/1366/architecture/extended/**
           retention-days: 14
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: map-architecture-${{ matrix.quality }}-dpr${{ matrix.dpr }}-1920
-          path: frontend/map-evidence/after/1920/architecture/
+          path: |
+            frontend/map-evidence/after/1920/architecture/
+            !frontend/map-evidence/after/1920/architecture/extended/**
           retention-days: 14
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: map-architecture-${{ matrix.quality }}-dpr${{ matrix.dpr }}-390
-          path: frontend/map-evidence/after/390/architecture/
+          path: |
+            frontend/map-evidence/after/390/architecture/
+            !frontend/map-evidence/after/390/architecture/extended/**
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-architecture-extra-${{ matrix.quality }}-dpr${{ matrix.dpr }}-1366
+          path: frontend/map-evidence/after/1366/architecture/extended/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-architecture-extra-${{ matrix.quality }}-dpr${{ matrix.dpr }}-1920
+          path: frontend/map-evidence/after/1920/architecture/extended/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-architecture-extra-${{ matrix.quality }}-dpr${{ matrix.dpr }}-390
+          path: frontend/map-evidence/after/390/architecture/extended/
           retention-days: 14
       - uses: actions/upload-artifact@v4
         if: always()
