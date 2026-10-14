@@ -447,7 +447,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/campfire-start/foundation.svg"
+      "planningLayer": "/assets/map/buildings/campfire-start/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "fixture-fire-max",
@@ -812,7 +813,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/fixture-fire-max/foundation.svg"
+      "planningLayer": "/assets/map/buildings/fixture-fire-max/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "fixture-tall-tower",
@@ -1177,7 +1179,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/fixture-tall-tower/foundation.svg"
+      "planningLayer": "/assets/map/buildings/fixture-tall-tower/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-damaged",
@@ -1345,7 +1348,7 @@
             "height": 320,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "44fc59acb6f8eccf5386690d41c7b544bce51485e4e7743390e8042387336df9"
+            "sha256": "bb21b7aa4d8de163b016fd1d7defddf624067d73d5761802183393d4ac308d8a"
           }
         },
         {
@@ -1385,7 +1388,7 @@
             "height": 160,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "63d5b690dc4f4f0f0382676daa2530a7e9a0f3e9afb9eb3e01873d246d57210b"
+            "sha256": "a7af9b550698c5ec3c0475d1988d72528141fb2c759594c721e6f3db6a54d880"
           }
         },
         {
@@ -1425,7 +1428,7 @@
             "height": 320,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "44fc59acb6f8eccf5386690d41c7b544bce51485e4e7743390e8042387336df9"
+            "sha256": "bb21b7aa4d8de163b016fd1d7defddf624067d73d5761802183393d4ac308d8a"
           }
         },
         {
@@ -1465,7 +1468,7 @@
             "height": 160,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "63d5b690dc4f4f0f0382676daa2530a7e9a0f3e9afb9eb3e01873d246d57210b"
+            "sha256": "a7af9b550698c5ec3c0475d1988d72528141fb2c759594c721e6f3db6a54d880"
           }
         },
         {
@@ -1505,7 +1508,7 @@
             "height": 320,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "44fc59acb6f8eccf5386690d41c7b544bce51485e4e7743390e8042387336df9"
+            "sha256": "bb21b7aa4d8de163b016fd1d7defddf624067d73d5761802183393d4ac308d8a"
           }
         },
         {
@@ -1545,12 +1548,1125 @@
             "height": 160,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "63d5b690dc4f4f0f0382676daa2530a7e9a0f3e9afb9eb3e01873d246d57210b"
+            "sha256": "a7af9b550698c5ec3c0475d1988d72528141fb2c759594c721e6f3db6a54d880"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/lord-house-damaged/body-south-close.png",
+          "layerPath": "/assets/map/buildings/lord-house-damaged/body-south-close.png",
+          "source": "assets/source/map-buildings/lord-house-damaged-south.png",
+          "sourceSha256": "472d3ad46294630c6b4eb0833af030a85fd5d9106188cf92641d5b9c99096565",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/lord-house-damaged-south.png",
+              "sha256": "472d3ad46294630c6b4eb0833af030a85fd5d9106188cf92641d5b9c99096565"
+            }
+          ],
+          "sha256": "72695067bdff0fac64647dfa37214866541464d27a2ca8a4f9ee8d101e3c409a",
+          "exportVersion": 2,
+          "width": 384,
+          "height": 320,
+          "role": "body",
+          "lod": "close",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/lord-house-damaged/atlas-close.png",
+            "x": 396,
+            "y": 332,
+            "width": 384,
+            "height": 320,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "bb21b7aa4d8de163b016fd1d7defddf624067d73d5761802183393d4ac308d8a"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/lord-house-damaged/body-south-district.png",
+          "layerPath": "/assets/map/buildings/lord-house-damaged/body-south-close.png",
+          "source": "assets/source/map-buildings/lord-house-damaged-south.png",
+          "sourceSha256": "472d3ad46294630c6b4eb0833af030a85fd5d9106188cf92641d5b9c99096565",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/lord-house-damaged-south.png",
+              "sha256": "472d3ad46294630c6b4eb0833af030a85fd5d9106188cf92641d5b9c99096565"
+            }
+          ],
+          "sha256": "408f292d7869f794d9b67c2d89d06e19ba1c54808e723823e82c96875a8434dd",
+          "exportVersion": 2,
+          "width": 192,
+          "height": 160,
+          "role": "body",
+          "lod": "district",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/lord-house-damaged/atlas-district.png",
+            "x": 204,
+            "y": 172,
+            "width": 192,
+            "height": 160,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "a7af9b550698c5ec3c0475d1988d72528141fb2c759594c721e6f3db6a54d880"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/lord-house-damaged/body-east-close.png",
+          "layerPath": "/assets/map/buildings/lord-house-damaged/body-east-close.png",
+          "source": "assets/source/map-buildings/lord-house-damaged-east.png",
+          "sourceSha256": "df2a428f4a45b91d4d8424b090f482df78be0156186cd5bc4c6fcb9e9fa24acf",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/lord-house-damaged-east.png",
+              "sha256": "df2a428f4a45b91d4d8424b090f482df78be0156186cd5bc4c6fcb9e9fa24acf"
+            }
+          ],
+          "sha256": "da02cf550093cdb5ebdb630de76def80f61e8de854ba3e6c4c8a1db63295de08",
+          "exportVersion": 2,
+          "width": 384,
+          "height": 320,
+          "role": "body",
+          "lod": "close",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/lord-house-damaged/atlas-close.png",
+            "x": 4,
+            "y": 660,
+            "width": 384,
+            "height": 320,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "bb21b7aa4d8de163b016fd1d7defddf624067d73d5761802183393d4ac308d8a"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/lord-house-damaged/body-east-district.png",
+          "layerPath": "/assets/map/buildings/lord-house-damaged/body-east-close.png",
+          "source": "assets/source/map-buildings/lord-house-damaged-east.png",
+          "sourceSha256": "df2a428f4a45b91d4d8424b090f482df78be0156186cd5bc4c6fcb9e9fa24acf",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/lord-house-damaged-east.png",
+              "sha256": "df2a428f4a45b91d4d8424b090f482df78be0156186cd5bc4c6fcb9e9fa24acf"
+            }
+          ],
+          "sha256": "2550f4d920063f5982131433a9c4221e04cb3889b6817a20be705e00c5ba4066",
+          "exportVersion": 2,
+          "width": 192,
+          "height": 160,
+          "role": "body",
+          "lod": "district",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/lord-house-damaged/atlas-district.png",
+            "x": 4,
+            "y": 340,
+            "width": 192,
+            "height": 160,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "a7af9b550698c5ec3c0475d1988d72528141fb2c759594c721e6f3db6a54d880"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/lord-house-damaged/body-west-close.png",
+          "layerPath": "/assets/map/buildings/lord-house-damaged/body-west-close.png",
+          "source": "assets/source/map-buildings/lord-house-damaged-west.png",
+          "sourceSha256": "db1d986530e6a4b91c255ff3ba84e96177dff2cb471892bc9bd541de7251a619",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/lord-house-damaged-west.png",
+              "sha256": "db1d986530e6a4b91c255ff3ba84e96177dff2cb471892bc9bd541de7251a619"
+            }
+          ],
+          "sha256": "b73d8e3f266027f25ad90e786716ebec626370a0384d615d5706c7dcc7f53dec",
+          "exportVersion": 2,
+          "width": 384,
+          "height": 320,
+          "role": "body",
+          "lod": "close",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/lord-house-damaged/atlas-close.png",
+            "x": 396,
+            "y": 660,
+            "width": 384,
+            "height": 320,
+            "atlasWidth": 1024,
+            "atlasHeight": 1024,
+            "sha256": "bb21b7aa4d8de163b016fd1d7defddf624067d73d5761802183393d4ac308d8a"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/lord-house-damaged/body-west-district.png",
+          "layerPath": "/assets/map/buildings/lord-house-damaged/body-west-close.png",
+          "source": "assets/source/map-buildings/lord-house-damaged-west.png",
+          "sourceSha256": "db1d986530e6a4b91c255ff3ba84e96177dff2cb471892bc9bd541de7251a619",
+          "sourceDependencies": [
+            {
+              "source": "assets/source/map-buildings/lord-house-damaged-west.png",
+              "sha256": "db1d986530e6a4b91c255ff3ba84e96177dff2cb471892bc9bd541de7251a619"
+            }
+          ],
+          "sha256": "55e4a5835cc1478242944ca181212a8b06b8183aae38744c97dd5379804e7706",
+          "exportVersion": 2,
+          "width": 192,
+          "height": 160,
+          "role": "body",
+          "lod": "district",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "trim": {
+            "x": 0,
+            "y": 0,
+            "width": 480,
+            "height": 400
+          },
+          "atlas": {
+            "path": "/assets/map/buildings/lord-house-damaged/atlas-district.png",
+            "x": 204,
+            "y": 340,
+            "width": 192,
+            "height": 160,
+            "atlasWidth": 512,
+            "atlasHeight": 512,
+            "sha256": "a7af9b550698c5ec3c0475d1988d72528141fb2c759594c721e6f3db6a54d880"
           }
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-damaged/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-damaged/foundation.svg",
+      "generatedOrientationViews": [
+        "south",
+        "east",
+        "west"
+      ],
+      "orientationViews": {
+        "south": {
+          "uiIcon": "/assets/buildings/lord-house-damaged/icon.svg",
+          "body": "/assets/map/buildings/lord-house-damaged/body-south-close.png",
+          "base": "/assets/buildings/lord-house-damaged/base.svg",
+          "upper": "/assets/buildings/lord-house-damaged/upper.svg",
+          "shadow": "/assets/buildings/lord-house-damaged/shadow.svg",
+          "vfx": null
+        },
+        "east": {
+          "uiIcon": "/assets/buildings/lord-house-damaged/icon.svg",
+          "body": "/assets/map/buildings/lord-house-damaged/body-east-close.png",
+          "base": "/assets/buildings/lord-house-damaged/base.svg",
+          "upper": "/assets/buildings/lord-house-damaged/upper.svg",
+          "shadow": "/assets/buildings/lord-house-damaged/shadow.svg",
+          "vfx": null
+        },
+        "west": {
+          "uiIcon": "/assets/buildings/lord-house-damaged/icon.svg",
+          "body": "/assets/map/buildings/lord-house-damaged/body-west-close.png",
+          "base": "/assets/buildings/lord-house-damaged/base.svg",
+          "upper": "/assets/buildings/lord-house-damaged/upper.svg",
+          "shadow": "/assets/buildings/lord-house-damaged/shadow.svg",
+          "vfx": null
+        }
+      },
+      "orientationRegions": {
+        "south": {
+          "hitPolygon": [
+            [
+              0.1125,
+              0.7325
+            ],
+            [
+              0.18125,
+              0.5325
+            ],
+            [
+              0.18333333333333332,
+              0.5275
+            ],
+            [
+              0.2916666666666667,
+              0.2925
+            ],
+            [
+              0.3020833333333333,
+              0.2775
+            ],
+            [
+              0.30833333333333335,
+              0.27
+            ],
+            [
+              0.5458333333333333,
+              0.1075
+            ],
+            [
+              0.55,
+              0.105
+            ],
+            [
+              0.5729166666666666,
+              0.0925
+            ],
+            [
+              0.575,
+              0.0925
+            ],
+            [
+              0.5833333333333334,
+              0.095
+            ],
+            [
+              0.5958333333333333,
+              0.1
+            ],
+            [
+              0.6708333333333333,
+              0.145
+            ],
+            [
+              0.6791666666666667,
+              0.1525
+            ],
+            [
+              0.6958333333333333,
+              0.1725
+            ],
+            [
+              0.6979166666666666,
+              0.1775
+            ],
+            [
+              0.8166666666666667,
+              0.465
+            ],
+            [
+              0.8791666666666667,
+              0.675
+            ],
+            [
+              0.8791666666666667,
+              0.68
+            ],
+            [
+              0.86875,
+              0.6975
+            ],
+            [
+              0.8625,
+              0.705
+            ],
+            [
+              0.675,
+              0.855
+            ],
+            [
+              0.6208333333333333,
+              0.88
+            ],
+            [
+              0.5416666666666666,
+              0.91
+            ],
+            [
+              0.5083333333333333,
+              0.915
+            ],
+            [
+              0.5,
+              0.915
+            ],
+            [
+              0.46458333333333335,
+              0.91
+            ],
+            [
+              0.42083333333333334,
+              0.8975
+            ],
+            [
+              0.34375,
+              0.8725
+            ],
+            [
+              0.3145833333333333,
+              0.8625
+            ],
+            [
+              0.22083333333333333,
+              0.8125
+            ],
+            [
+              0.2125,
+              0.8075
+            ],
+            [
+              0.13958333333333334,
+              0.76
+            ],
+            [
+              0.11458333333333333,
+              0.74
+            ],
+            [
+              0.1125,
+              0.7375
+            ]
+          ],
+          "upper": [
+            [
+              0.1125,
+              0.7325
+            ],
+            [
+              0.18125,
+              0.5325
+            ],
+            [
+              0.18333333333333332,
+              0.5275
+            ],
+            [
+              0.2916666666666667,
+              0.2925
+            ],
+            [
+              0.3020833333333333,
+              0.2775
+            ],
+            [
+              0.30833333333333335,
+              0.27
+            ],
+            [
+              0.5458333333333333,
+              0.1075
+            ],
+            [
+              0.55,
+              0.105
+            ],
+            [
+              0.5729166666666666,
+              0.0925
+            ],
+            [
+              0.575,
+              0.0925
+            ],
+            [
+              0.5833333333333334,
+              0.095
+            ],
+            [
+              0.5958333333333333,
+              0.1
+            ],
+            [
+              0.6708333333333333,
+              0.145
+            ],
+            [
+              0.6791666666666667,
+              0.1525
+            ],
+            [
+              0.6958333333333333,
+              0.1725
+            ],
+            [
+              0.6979166666666666,
+              0.1775
+            ],
+            [
+              0.8166666666666667,
+              0.465
+            ],
+            [
+              0.8791666666666667,
+              0.675
+            ],
+            [
+              0.8791666666666667,
+              0.68
+            ],
+            [
+              0.86875,
+              0.6975
+            ],
+            [
+              0.8625,
+              0.705
+            ],
+            [
+              0.675,
+              0.855
+            ],
+            [
+              0.6208333333333333,
+              0.88
+            ],
+            [
+              0.5416666666666666,
+              0.91
+            ],
+            [
+              0.5083333333333333,
+              0.915
+            ],
+            [
+              0.5,
+              0.915
+            ],
+            [
+              0.46458333333333335,
+              0.91
+            ],
+            [
+              0.42083333333333334,
+              0.8975
+            ],
+            [
+              0.34375,
+              0.8725
+            ],
+            [
+              0.3145833333333333,
+              0.8625
+            ],
+            [
+              0.22083333333333333,
+              0.8125
+            ],
+            [
+              0.2125,
+              0.8075
+            ],
+            [
+              0.13958333333333334,
+              0.76
+            ],
+            [
+              0.11458333333333333,
+              0.74
+            ],
+            [
+              0.1125,
+              0.7375
+            ]
+          ]
+        },
+        "east": {
+          "hitPolygon": [
+            [
+              0.11875,
+              0.6525
+            ],
+            [
+              0.16875,
+              0.4275
+            ],
+            [
+              0.2916666666666667,
+              0.1175
+            ],
+            [
+              0.29583333333333334,
+              0.1075
+            ],
+            [
+              0.3,
+              0.1
+            ],
+            [
+              0.3145833333333333,
+              0.0825
+            ],
+            [
+              0.32083333333333336,
+              0.0825
+            ],
+            [
+              0.55625,
+              0.12
+            ],
+            [
+              0.5645833333333333,
+              0.125
+            ],
+            [
+              0.5708333333333333,
+              0.13
+            ],
+            [
+              0.5854166666666667,
+              0.145
+            ],
+            [
+              0.73125,
+              0.305
+            ],
+            [
+              0.7375,
+              0.3125
+            ],
+            [
+              0.74375,
+              0.3275
+            ],
+            [
+              0.8333333333333334,
+              0.5625
+            ],
+            [
+              0.8729166666666667,
+              0.745
+            ],
+            [
+              0.8729166666666667,
+              0.7475
+            ],
+            [
+              0.8708333333333333,
+              0.7875
+            ],
+            [
+              0.8645833333333334,
+              0.795
+            ],
+            [
+              0.8125,
+              0.835
+            ],
+            [
+              0.8083333333333333,
+              0.8375
+            ],
+            [
+              0.7020833333333333,
+              0.8825
+            ],
+            [
+              0.64375,
+              0.9025
+            ],
+            [
+              0.58125,
+              0.9175
+            ],
+            [
+              0.5229166666666667,
+              0.9175
+            ],
+            [
+              0.5145833333333333,
+              0.915
+            ],
+            [
+              0.4666666666666667,
+              0.9
+            ],
+            [
+              0.32916666666666666,
+              0.8175
+            ],
+            [
+              0.21666666666666667,
+              0.735
+            ],
+            [
+              0.125,
+              0.6625
+            ],
+            [
+              0.11875,
+              0.655
+            ]
+          ],
+          "upper": [
+            [
+              0.11875,
+              0.6525
+            ],
+            [
+              0.16875,
+              0.4275
+            ],
+            [
+              0.2916666666666667,
+              0.1175
+            ],
+            [
+              0.29583333333333334,
+              0.1075
+            ],
+            [
+              0.3,
+              0.1
+            ],
+            [
+              0.3145833333333333,
+              0.0825
+            ],
+            [
+              0.32083333333333336,
+              0.0825
+            ],
+            [
+              0.55625,
+              0.12
+            ],
+            [
+              0.5645833333333333,
+              0.125
+            ],
+            [
+              0.5708333333333333,
+              0.13
+            ],
+            [
+              0.5854166666666667,
+              0.145
+            ],
+            [
+              0.73125,
+              0.305
+            ],
+            [
+              0.7375,
+              0.3125
+            ],
+            [
+              0.74375,
+              0.3275
+            ],
+            [
+              0.8333333333333334,
+              0.5625
+            ],
+            [
+              0.8729166666666667,
+              0.745
+            ],
+            [
+              0.8729166666666667,
+              0.7475
+            ],
+            [
+              0.8708333333333333,
+              0.7875
+            ],
+            [
+              0.8645833333333334,
+              0.795
+            ],
+            [
+              0.8125,
+              0.835
+            ],
+            [
+              0.8083333333333333,
+              0.8375
+            ],
+            [
+              0.7020833333333333,
+              0.8825
+            ],
+            [
+              0.64375,
+              0.9025
+            ],
+            [
+              0.58125,
+              0.9175
+            ],
+            [
+              0.5229166666666667,
+              0.9175
+            ],
+            [
+              0.5145833333333333,
+              0.915
+            ],
+            [
+              0.4666666666666667,
+              0.9
+            ],
+            [
+              0.32916666666666666,
+              0.8175
+            ],
+            [
+              0.21666666666666667,
+              0.735
+            ],
+            [
+              0.125,
+              0.6625
+            ],
+            [
+              0.11875,
+              0.655
+            ]
+          ]
+        },
+        "west": {
+          "hitPolygon": [
+            [
+              0.125,
+              0.62
+            ],
+            [
+              0.18125,
+              0.4275
+            ],
+            [
+              0.18541666666666667,
+              0.415
+            ],
+            [
+              0.28958333333333336,
+              0.1375
+            ],
+            [
+              0.2916666666666667,
+              0.1325
+            ],
+            [
+              0.30625,
+              0.115
+            ],
+            [
+              0.31875,
+              0.1075
+            ],
+            [
+              0.5645833333333333,
+              0.0825
+            ],
+            [
+              0.5708333333333333,
+              0.0825
+            ],
+            [
+              0.5916666666666667,
+              0.095
+            ],
+            [
+              0.6145833333333334,
+              0.1125
+            ],
+            [
+              0.6166666666666667,
+              0.115
+            ],
+            [
+              0.7583333333333333,
+              0.3275
+            ],
+            [
+              0.83125,
+              0.5375
+            ],
+            [
+              0.8333333333333334,
+              0.5475
+            ],
+            [
+              0.8666666666666667,
+              0.73
+            ],
+            [
+              0.8666666666666667,
+              0.735
+            ],
+            [
+              0.85625,
+              0.79
+            ],
+            [
+              0.8520833333333333,
+              0.7975
+            ],
+            [
+              0.85,
+              0.8
+            ],
+            [
+              0.8083333333333333,
+              0.835
+            ],
+            [
+              0.7791666666666667,
+              0.8525
+            ],
+            [
+              0.69375,
+              0.8925
+            ],
+            [
+              0.6604166666666667,
+              0.9025
+            ],
+            [
+              0.5854166666666667,
+              0.9175
+            ],
+            [
+              0.56875,
+              0.9175
+            ],
+            [
+              0.5291666666666667,
+              0.9125
+            ],
+            [
+              0.5125,
+              0.9075
+            ],
+            [
+              0.43125,
+              0.865
+            ],
+            [
+              0.39791666666666664,
+              0.8475
+            ],
+            [
+              0.39375,
+              0.845
+            ],
+            [
+              0.3458333333333333,
+              0.8125
+            ],
+            [
+              0.1875,
+              0.705
+            ],
+            [
+              0.1375,
+              0.6575
+            ],
+            [
+              0.13125,
+              0.65
+            ],
+            [
+              0.125,
+              0.625
+            ]
+          ],
+          "upper": [
+            [
+              0.125,
+              0.62
+            ],
+            [
+              0.18125,
+              0.4275
+            ],
+            [
+              0.18541666666666667,
+              0.415
+            ],
+            [
+              0.28958333333333336,
+              0.1375
+            ],
+            [
+              0.2916666666666667,
+              0.1325
+            ],
+            [
+              0.30625,
+              0.115
+            ],
+            [
+              0.31875,
+              0.1075
+            ],
+            [
+              0.5645833333333333,
+              0.0825
+            ],
+            [
+              0.5708333333333333,
+              0.0825
+            ],
+            [
+              0.5916666666666667,
+              0.095
+            ],
+            [
+              0.6145833333333334,
+              0.1125
+            ],
+            [
+              0.6166666666666667,
+              0.115
+            ],
+            [
+              0.7583333333333333,
+              0.3275
+            ],
+            [
+              0.83125,
+              0.5375
+            ],
+            [
+              0.8333333333333334,
+              0.5475
+            ],
+            [
+              0.8666666666666667,
+              0.73
+            ],
+            [
+              0.8666666666666667,
+              0.735
+            ],
+            [
+              0.85625,
+              0.79
+            ],
+            [
+              0.8520833333333333,
+              0.7975
+            ],
+            [
+              0.85,
+              0.8
+            ],
+            [
+              0.8083333333333333,
+              0.835
+            ],
+            [
+              0.7791666666666667,
+              0.8525
+            ],
+            [
+              0.69375,
+              0.8925
+            ],
+            [
+              0.6604166666666667,
+              0.9025
+            ],
+            [
+              0.5854166666666667,
+              0.9175
+            ],
+            [
+              0.56875,
+              0.9175
+            ],
+            [
+              0.5291666666666667,
+              0.9125
+            ],
+            [
+              0.5125,
+              0.9075
+            ],
+            [
+              0.43125,
+              0.865
+            ],
+            [
+              0.39791666666666664,
+              0.8475
+            ],
+            [
+              0.39375,
+              0.845
+            ],
+            [
+              0.3458333333333333,
+              0.8125
+            ],
+            [
+              0.1875,
+              0.705
+            ],
+            [
+              0.1375,
+              0.6575
+            ],
+            [
+              0.13125,
+              0.65
+            ],
+            [
+              0.125,
+              0.625
+            ]
+          ]
+        }
+      }
     },
     {
       "assetId": "lord-house-l02",
@@ -1923,7 +3039,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l02/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l02/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l03",
@@ -2296,7 +3413,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l03/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l03/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l04",
@@ -2669,7 +3787,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l04/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l04/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l05",
@@ -3042,7 +4161,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l05/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l05/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l06",
@@ -3415,7 +4535,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l06/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l06/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l07",
@@ -3788,7 +4909,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l07/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l07/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l08",
@@ -4161,7 +5283,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l08/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l08/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l09",
@@ -4534,7 +5657,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l09/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l09/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l10",
@@ -4907,7 +6031,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l10/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l10/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l11",
@@ -5280,7 +6405,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l11/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l11/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l12",
@@ -5653,7 +6779,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l12/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l12/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l13",
@@ -6026,7 +7153,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l13/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l13/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l14",
@@ -6399,7 +7527,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l14/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l14/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l15",
@@ -6772,7 +7901,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l15/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l15/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l16",
@@ -7145,7 +8275,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l16/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l16/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l17",
@@ -7518,7 +8649,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l17/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l17/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l18",
@@ -7891,7 +9023,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l18/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l18/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l19",
@@ -8264,7 +9397,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l19/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l19/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l20",
@@ -8637,7 +9771,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l20/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l20/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l21",
@@ -9010,7 +10145,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l21/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l21/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l22",
@@ -9383,7 +10519,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l22/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l22/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l23",
@@ -9756,7 +10893,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l23/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l23/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l24",
@@ -10129,7 +11267,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l24/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l24/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l25",
@@ -10502,7 +11641,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l25/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l25/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l26",
@@ -10875,7 +12015,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l26/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l26/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l27",
@@ -11248,7 +12389,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l27/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l27/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l28",
@@ -11621,7 +12763,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l28/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l28/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l29",
@@ -11994,7 +13137,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l29/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l29/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-l30",
@@ -12367,7 +13511,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-l30/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-l30/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-repaired",
@@ -12740,7 +13885,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/lord-house-repaired/foundation.svg"
+      "planningLayer": "/assets/map/buildings/lord-house-repaired/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-forge",
@@ -13113,7 +14259,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-forge/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-forge/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-forge-l02",
@@ -13486,7 +14633,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-forge-l02/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-forge-l02/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-forge-l03",
@@ -13859,7 +15007,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-forge-l03/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-forge-l03/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-forge-l04",
@@ -14232,7 +15381,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-forge-l04/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-forge-l04/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-forge-l05",
@@ -14605,7 +15755,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-forge-l05/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-forge-l05/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-medical-station",
@@ -14978,7 +16129,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-medical-station/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-medical-station/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-medical-station-l02",
@@ -15351,7 +16503,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-medical-station-l02/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-medical-station-l02/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-medical-station-l03",
@@ -15724,7 +16877,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-medical-station-l03/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-medical-station-l03/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-medical-station-l04",
@@ -16097,7 +17251,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-medical-station-l04/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-medical-station-l04/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-medical-station-l05",
@@ -16470,7 +17625,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-medical-station-l05/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-medical-station-l05/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-oreworks",
@@ -16843,7 +17999,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-oreworks/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-oreworks/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-oreworks-l02",
@@ -17216,7 +18373,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-oreworks-l02/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-oreworks-l02/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-oreworks-l03",
@@ -17589,7 +18747,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-oreworks-l03/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-oreworks-l03/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-oreworks-l04",
@@ -17962,7 +19121,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-oreworks-l04/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-oreworks-l04/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-oreworks-l05",
@@ -18335,7 +19495,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-oreworks-l05/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-oreworks-l05/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-palisade-wall",
@@ -18708,7 +19869,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-palisade-wall/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-palisade-wall/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-palisade-wall-l02",
@@ -19081,7 +20243,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-palisade-wall-l02/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-palisade-wall-l02/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-palisade-wall-l03",
@@ -19454,7 +20617,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-palisade-wall-l03/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-palisade-wall-l03/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-simple-heater",
@@ -19827,7 +20991,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-simple-heater/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-simple-heater/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-simple-heater-l02",
@@ -20200,7 +21365,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-simple-heater-l02/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-simple-heater-l02/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-simple-heater-l03",
@@ -20573,7 +21739,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-simple-heater-l03/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-simple-heater-l03/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-simple-kitchen",
@@ -20946,7 +22113,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-simple-kitchen/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-simple-kitchen/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-simple-kitchen-l02",
@@ -21319,7 +22487,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-simple-kitchen-l02/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-simple-kitchen-l02/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-simple-kitchen-l03",
@@ -21692,7 +22861,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-simple-kitchen-l03/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-simple-kitchen-l03/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-small-shelter",
@@ -22065,7 +23235,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-small-shelter/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-small-shelter/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-small-shelter-l02",
@@ -22438,7 +23609,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-small-shelter-l02/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-small-shelter-l02/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-small-shelter-l03",
@@ -22811,7 +23983,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-small-shelter-l03/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-small-shelter-l03/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-tailor",
@@ -23184,7 +24357,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-tailor/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-tailor/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-tailor-l02",
@@ -23557,7 +24731,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-tailor-l02/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-tailor-l02/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-tailor-l03",
@@ -23930,7 +25105,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-tailor-l03/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-tailor-l03/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-tailor-l04",
@@ -24303,7 +25479,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-tailor-l04/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-tailor-l04/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-tailor-l05",
@@ -24676,7 +25853,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-tailor-l05/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-tailor-l05/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-timber-gate",
@@ -25049,7 +26227,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-timber-gate/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-timber-gate/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-timber-gate-l02",
@@ -25422,7 +26601,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-timber-gate-l02/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-timber-gate-l02/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-timber-gate-l03",
@@ -25795,7 +26975,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-timber-gate-l03/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-timber-gate-l03/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-woodshop",
@@ -26168,7 +27349,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-woodshop/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-woodshop/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-woodshop-l02",
@@ -26541,7 +27723,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-woodshop-l02/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-woodshop-l02/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-woodshop-l03",
@@ -26914,7 +28097,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-woodshop-l03/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-woodshop-l03/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-woodshop-l04",
@@ -27287,7 +28471,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-woodshop-l04/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-woodshop-l04/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "opening-woodshop-l05",
@@ -27660,7 +28845,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/opening-woodshop-l05/foundation.svg"
+      "planningLayer": "/assets/map/buildings/opening-woodshop-l05/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "polar-farmhouse-l01",
@@ -28033,7 +29219,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/polar-farmhouse-l01/foundation.svg"
+      "planningLayer": "/assets/map/buildings/polar-farmhouse-l01/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "polar-farmhouse-l02",
@@ -28406,7 +29593,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/polar-farmhouse-l02/foundation.svg"
+      "planningLayer": "/assets/map/buildings/polar-farmhouse-l02/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "polar-farmhouse-l03",
@@ -28779,7 +29967,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/polar-farmhouse-l03/foundation.svg"
+      "planningLayer": "/assets/map/buildings/polar-farmhouse-l03/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "polar-farmhouse-l04",
@@ -29152,7 +30341,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/polar-farmhouse-l04/foundation.svg"
+      "planningLayer": "/assets/map/buildings/polar-farmhouse-l04/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "polar-farmhouse-l05",
@@ -29525,7 +30715,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/polar-farmhouse-l05/foundation.svg"
+      "planningLayer": "/assets/map/buildings/polar-farmhouse-l05/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "polar-farmhouse-l06",
@@ -29898,7 +31089,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/polar-farmhouse-l06/foundation.svg"
+      "planningLayer": "/assets/map/buildings/polar-farmhouse-l06/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "polar-farmhouse-l07",
@@ -30271,7 +31463,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/polar-farmhouse-l07/foundation.svg"
+      "planningLayer": "/assets/map/buildings/polar-farmhouse-l07/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "polar-farmhouse-l08",
@@ -30644,7 +31837,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/polar-farmhouse-l08/foundation.svg"
+      "planningLayer": "/assets/map/buildings/polar-farmhouse-l08/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "polar-farmhouse-l09",
@@ -31017,7 +32211,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/polar-farmhouse-l09/foundation.svg"
+      "planningLayer": "/assets/map/buildings/polar-farmhouse-l09/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "polar-farmhouse-l10",
@@ -31390,7 +32585,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/polar-farmhouse-l10/foundation.svg"
+      "planningLayer": "/assets/map/buildings/polar-farmhouse-l10/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "supply-crate",
@@ -31763,7 +32959,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/supply-crate/foundation.svg"
+      "planningLayer": "/assets/map/buildings/supply-crate/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "survival-fire-l01",
@@ -32210,7 +33407,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/survival-fire-l01/foundation.svg"
+      "planningLayer": "/assets/map/buildings/survival-fire-l01/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "survival-fire-l06",
@@ -32657,7 +33855,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/survival-fire-l06/foundation.svg"
+      "planningLayer": "/assets/map/buildings/survival-fire-l06/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "survival-fire-l11",
@@ -33104,7 +34303,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/survival-fire-l11/foundation.svg"
+      "planningLayer": "/assets/map/buildings/survival-fire-l11/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "survival-fire-l16",
@@ -33551,7 +34751,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/survival-fire-l16/foundation.svg"
+      "planningLayer": "/assets/map/buildings/survival-fire-l16/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "survival-fire-l21",
@@ -33998,7 +35199,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/survival-fire-l21/foundation.svg"
+      "planningLayer": "/assets/map/buildings/survival-fire-l21/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "survival-fire-l26",
@@ -34445,7 +35647,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/survival-fire-l26/foundation.svg"
+      "planningLayer": "/assets/map/buildings/survival-fire-l26/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "tomb-entry",
@@ -34818,7 +36021,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/tomb-entry/foundation.svg"
+      "planningLayer": "/assets/map/buildings/tomb-entry/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "tomb-entry-b02",
@@ -35191,7 +36395,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/tomb-entry-b02/foundation.svg"
+      "planningLayer": "/assets/map/buildings/tomb-entry-b02/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "tomb-entry-b03",
@@ -35564,7 +36769,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/tomb-entry-b03/foundation.svg"
+      "planningLayer": "/assets/map/buildings/tomb-entry-b03/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "tomb-entry-b04",
@@ -35937,7 +37143,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/tomb-entry-b04/foundation.svg"
+      "planningLayer": "/assets/map/buildings/tomb-entry-b04/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "tomb-entry-b05",
@@ -36310,7 +37517,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/tomb-entry-b05/foundation.svg"
+      "planningLayer": "/assets/map/buildings/tomb-entry-b05/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "tomb-entry-b06",
@@ -36683,7 +37891,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/tomb-entry-b06/foundation.svg"
+      "planningLayer": "/assets/map/buildings/tomb-entry-b06/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "tomb-entry-b07",
@@ -37056,7 +38265,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/tomb-entry-b07/foundation.svg"
+      "planningLayer": "/assets/map/buildings/tomb-entry-b07/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "tomb-entry-b08",
@@ -37429,7 +38639,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/tomb-entry-b08/foundation.svg"
+      "planningLayer": "/assets/map/buildings/tomb-entry-b08/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "tomb-entry-b09",
@@ -37802,7 +39013,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/tomb-entry-b09/foundation.svg"
+      "planningLayer": "/assets/map/buildings/tomb-entry-b09/foundation.svg",
+      "generatedOrientationViews": []
     },
     {
       "assetId": "tomb-entry-b10",
@@ -38175,7 +39387,8 @@
         }
       ],
       "planningFoundation": true,
-      "planningLayer": "/assets/map/buildings/tomb-entry-b10/foundation.svg"
+      "planningLayer": "/assets/map/buildings/tomb-entry-b10/foundation.svg",
+      "generatedOrientationViews": []
     }
   ],
   "fireProgression": [
