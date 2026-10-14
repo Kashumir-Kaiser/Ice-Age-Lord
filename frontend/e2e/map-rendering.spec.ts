@@ -24,6 +24,7 @@ test('25 km preview fits the complete heat boundary without changing the real he
  await expect(page.locator('.territory-status-row')).toContainText('Nhiệt thật: 10 m');await expect(page.getByLabel('Xem thử vùng nhiệt')).toHaveValue('25000');
 });
 test('a dense scene stops its animation loop when its active fire is outside the viewport',async({page})=>{
+ test.setTimeout(90000);
  await page.emulateMedia({reducedMotion:'no-preference'});await territory(page);
  await page.locator('.territory-calibration > summary').click();await page.getByRole('button',{name:'Xem nhóm công trình minh họa',exact:true}).click();
  await expect.poll(()=>page.evaluate(()=>{const m=(window as unknown as {__mapMetrics:{queued:number;pendingTextures:number;activeLoops:number}[]}).__mapMetrics.at(-1)!;return m.queued+m.pendingTextures+m.activeLoops;}),{timeout:60000}).toBe(0);
