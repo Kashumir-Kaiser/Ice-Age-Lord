@@ -78,6 +78,25 @@ test('missing raster derivatives retain registered art and interactions',async({
  await territory(page);await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();
  await page.locator('.territory-building[data-building-id="SITE-LL01-003"]').press('Enter');await expect(page.locator('.territory-building.is-selected')).toHaveAttribute('data-building-id','SITE-LL01-003');
 });
+test('wall and gate preview exits planning and loads registered depth slices for every upright pose',async({page})=>{
+ test.setTimeout(90000);await page.emulateMedia({reducedMotion:'reduce'});
+ const requested=new Set<string>();page.on('request',r=>requested.add(new URL(r.url()).pathname));
+ await territory(page);await page.getByLabel('Chất lượng bản đồ').selectOption('normal');
+ await page.getByRole('button',{name:'Về lửa trại',exact:true}).click();await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();
+ for(const [asset,name] of [['opening-palisade-wall','Tường Rào'],['opening-timber-gate','Cổng Gỗ · mẫu ảnh']]){
+  await page.getByRole('button',{name:`Thử bố trí ${name}`,exact:true}).click();
+  const scene=page.locator('.territory-scene-svg');await scene.scrollIntoViewIfNeeded();const box=(await scene.boundingBox())!;
+  await scene.click({position:{x:box.width*.55,y:box.height*.65}});await scene.focus();await page.keyboard.press('Escape');
+  await expect(page.getByRole('button',{name:'Bình thường',exact:true})).toHaveAttribute('aria-pressed','true');
+  const draft=page.locator(`.territory-building.is-draft[data-asset-id="${asset}"]`);
+  for(const orientation of ['north','east','south','west']){
+   await expect(draft).toHaveAttribute('data-orientation',orientation);await expect(draft).not.toHaveAttribute('data-missing-orientation','true');
+   await expect.poll(()=>Array.from(requested).some(p=>p.includes(`/assets/map/buildings/${asset}/depth-${orientation}-`)||p.includes(`/assets/map/buildings/${asset}/slice-${orientation}-`)),{timeout:20000}).toBe(true);
+   await page.getByRole('button',{name:`Xoay ${name}`,exact:true}).click();
+  }
+  await page.getByRole('button',{name:`Xóa ${name}`,exact:true}).click();await expect(draft).toHaveCount(0);
+ }
+});
 
 test('twenty map switches dispose departed renderers and preserve territory selection',async({page})=>{
  test.setTimeout(90000);

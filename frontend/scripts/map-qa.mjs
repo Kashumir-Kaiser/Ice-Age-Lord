@@ -29,12 +29,14 @@ try{
   for(const [family,label] of [['wall','Thử bố trí Tường Rào'],['gate','Thử bố trí Cổng Gỗ · mẫu ảnh']]){
    await calibration.getByRole('button',{name:label,exact:true}).click();
    const scene=calibration.locator('.territory-scene-svg');await scene.scrollIntoViewIfNeeded();
-   const box=await scene.boundingBox();await calibration.mouse.move(box.x+box.width*.55,box.y+box.height*.65);
+   const box=await scene.boundingBox();await scene.click({position:{x:box.width*.55,y:box.height*.65}});
+   await scene.focus();await calibration.keyboard.press('Escape');
+   const name=label.replace('Thử bố trí ','');
    for(const orientation of ['north','east','south','west']){
     await capture(calibration,`${family}-${orientation}`,viewport);
-    await scene.focus();await calibration.keyboard.press('r');
+    await calibration.getByRole('button',{name:`Xoay ${name}`,exact:true}).click();
    }
-   await scene.focus();await calibration.keyboard.press('Escape');
+   await calibration.getByRole('button',{name:`Xóa ${name}`,exact:true}).click();
   }
   await calibration.close();
   await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();await capture(page,'planning',viewport);
