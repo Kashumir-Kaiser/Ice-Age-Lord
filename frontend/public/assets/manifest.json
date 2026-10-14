@@ -480,7 +480,75 @@
       ],
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/campfire-start/foundation.svg",
-      "generatedOrientationViews": []
+      "generatedOrientationViews": [],
+      "mapFlame": {
+        "path": "/assets/map/effects/flame-loop.png",
+        "source": "assets/source/map-effects/flame-loop-sheet.png",
+        "sourceSha256": "89c2e56cdfa8e2649011dd4c58ca7036ff54f2d0f2599c56a5a0079efd408e18",
+        "sha256": "8038b84053d623659eec3b1478ce5a16ff1e11d20df0826365b871ba10dfc1ef",
+        "width": 512,
+        "height": 384,
+        "frames": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 128,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 256,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 384,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 0,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 128,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 256,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 384,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          }
+        ],
+        "fps": 10,
+        "anchor": {
+          "x": 0.5,
+          "y": 0.9791666666666666
+        },
+        "emitter": {
+          "x": 0.5020833333333333,
+          "y": 0.7225
+        },
+        "relativeWidth": 0.12
+      }
     },
     {
       "assetId": "fixture-fire-max",
@@ -38650,7 +38718,75 @@
       ],
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/survival-fire-l01/foundation.svg",
-      "generatedOrientationViews": []
+      "generatedOrientationViews": [],
+      "mapFlame": {
+        "path": "/assets/map/effects/flame-loop.png",
+        "source": "assets/source/map-effects/flame-loop-sheet.png",
+        "sourceSha256": "89c2e56cdfa8e2649011dd4c58ca7036ff54f2d0f2599c56a5a0079efd408e18",
+        "sha256": "8038b84053d623659eec3b1478ce5a16ff1e11d20df0826365b871ba10dfc1ef",
+        "width": 512,
+        "height": 384,
+        "frames": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 128,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 256,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 384,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 0,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 128,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 256,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 384,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          }
+        ],
+        "fps": 10,
+        "anchor": {
+          "x": 0.5,
+          "y": 0.9791666666666666
+        },
+        "emitter": {
+          "x": 0.5020833333333333,
+          "y": 0.7225
+        },
+        "relativeWidth": 0.12
+      }
     },
     {
       "assetId": "survival-fire-l06",
@@ -39130,7 +39266,75 @@
       ],
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/survival-fire-l06/foundation.svg",
-      "generatedOrientationViews": []
+      "generatedOrientationViews": [],
+      "mapFlame": {
+        "path": "/assets/map/effects/flame-loop.png",
+        "source": "assets/source/map-effects/flame-loop-sheet.png",
+        "sourceSha256": "89c2e56cdfa8e2649011dd4c58ca7036ff54f2d0f2599c56a5a0079efd408e18",
+        "sha256": "8038b84053d623659eec3b1478ce5a16ff1e11d20df0826365b871ba10dfc1ef",
+        "width": 512,
+        "height": 384,
+        "frames": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 128,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 256,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 384,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 0,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 128,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 256,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 384,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          }
+        ],
+        "fps": 10,
+        "anchor": {
+          "x": 0.5,
+          "y": 0.9791666666666666
+        },
+        "emitter": {
+          "x": 0.5020833333333333,
+          "y": 0.6575
+        },
+        "relativeWidth": 0.16
+      }
     },
     {
       "assetId": "survival-fire-l11",
@@ -39610,7 +39814,75 @@
       ],
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/survival-fire-l11/foundation.svg",
-      "generatedOrientationViews": []
+      "generatedOrientationViews": [],
+      "mapFlame": {
+        "path": "/assets/map/effects/flame-loop.png",
+        "source": "assets/source/map-effects/flame-loop-sheet.png",
+        "sourceSha256": "89c2e56cdfa8e2649011dd4c58ca7036ff54f2d0f2599c56a5a0079efd408e18",
+        "sha256": "8038b84053d623659eec3b1478ce5a16ff1e11d20df0826365b871ba10dfc1ef",
+        "width": 512,
+        "height": 384,
+        "frames": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 128,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 256,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 384,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 0,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 128,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 256,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 384,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          }
+        ],
+        "fps": 10,
+        "anchor": {
+          "x": 0.5,
+          "y": 0.9791666666666666
+        },
+        "emitter": {
+          "x": 0.5020833333333333,
+          "y": 0.655
+        },
+        "relativeWidth": 0.16
+      }
     },
     {
       "assetId": "survival-fire-l16",
@@ -40090,7 +40362,75 @@
       ],
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/survival-fire-l16/foundation.svg",
-      "generatedOrientationViews": []
+      "generatedOrientationViews": [],
+      "mapFlame": {
+        "path": "/assets/map/effects/flame-loop.png",
+        "source": "assets/source/map-effects/flame-loop-sheet.png",
+        "sourceSha256": "89c2e56cdfa8e2649011dd4c58ca7036ff54f2d0f2599c56a5a0079efd408e18",
+        "sha256": "8038b84053d623659eec3b1478ce5a16ff1e11d20df0826365b871ba10dfc1ef",
+        "width": 512,
+        "height": 384,
+        "frames": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 128,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 256,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 384,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 0,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 128,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 256,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 384,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          }
+        ],
+        "fps": 10,
+        "anchor": {
+          "x": 0.5,
+          "y": 0.9791666666666666
+        },
+        "emitter": {
+          "x": 0.5020833333333333,
+          "y": 0.595
+        },
+        "relativeWidth": 0.16
+      }
     },
     {
       "assetId": "survival-fire-l21",
@@ -40570,7 +40910,75 @@
       ],
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/survival-fire-l21/foundation.svg",
-      "generatedOrientationViews": []
+      "generatedOrientationViews": [],
+      "mapFlame": {
+        "path": "/assets/map/effects/flame-loop.png",
+        "source": "assets/source/map-effects/flame-loop-sheet.png",
+        "sourceSha256": "89c2e56cdfa8e2649011dd4c58ca7036ff54f2d0f2599c56a5a0079efd408e18",
+        "sha256": "8038b84053d623659eec3b1478ce5a16ff1e11d20df0826365b871ba10dfc1ef",
+        "width": 512,
+        "height": 384,
+        "frames": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 128,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 256,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 384,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 0,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 128,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 256,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 384,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          }
+        ],
+        "fps": 10,
+        "anchor": {
+          "x": 0.5,
+          "y": 0.9791666666666666
+        },
+        "emitter": {
+          "x": 0.5020833333333333,
+          "y": 0.5125
+        },
+        "relativeWidth": 0.16
+      }
     },
     {
       "assetId": "survival-fire-l26",
@@ -41050,7 +41458,75 @@
       ],
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/survival-fire-l26/foundation.svg",
-      "generatedOrientationViews": []
+      "generatedOrientationViews": [],
+      "mapFlame": {
+        "path": "/assets/map/effects/flame-loop.png",
+        "source": "assets/source/map-effects/flame-loop-sheet.png",
+        "sourceSha256": "89c2e56cdfa8e2649011dd4c58ca7036ff54f2d0f2599c56a5a0079efd408e18",
+        "sha256": "8038b84053d623659eec3b1478ce5a16ff1e11d20df0826365b871ba10dfc1ef",
+        "width": 512,
+        "height": 384,
+        "frames": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 128,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 256,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 384,
+            "y": 0,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 0,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 128,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 256,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          },
+          {
+            "x": 384,
+            "y": 192,
+            "width": 128,
+            "height": 192
+          }
+        ],
+        "fps": 10,
+        "anchor": {
+          "x": 0.5,
+          "y": 0.9791666666666666
+        },
+        "emitter": {
+          "x": 0.5020833333333333,
+          "y": 0.5375
+        },
+        "relativeWidth": 0.16
+      }
     },
     {
       "assetId": "tomb-entry",
