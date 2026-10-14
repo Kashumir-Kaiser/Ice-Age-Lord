@@ -8,8 +8,11 @@ let page;
 try{
  page=await openMap(browser,{quality:process.env.MAP_BENCH_QUALITY??'normal'});
  await navigateMap(page,'Lãnh địa');await page.getByRole('button',{name:'Về lửa trại',exact:true}).click();await readyMap(page);
+ const session=await page.context().newCDPSession(page);
  const measure=async cycle=>{
-  await page.evaluate(()=>window.gc?.());await page.waitForTimeout(250);
+  await readyMap(page);await page.waitForTimeout(250);
+  await session.send('HeapProfiler.collectGarbage');
+  await page.waitForTimeout(250);await session.send('HeapProfiler.collectGarbage');
   const state=await page.evaluate(()=>{const all=window.__mapMetrics??[],active=all.filter(m=>m.backend!=='initializing'&&(m.decodedBytes||m.activeLoops));return {heapBytes:performance.memory?.usedJSHeapSize??null,gcAvailable:typeof window.gc==='function',activeMaps:active.length,activeLoops:all.reduce((sum,m)=>sum+m.activeLoops,0),decodedBytes:all.reduce((sum,m)=>sum+m.decodedBytes,0),gpuBytes:all.reduce((sum,m)=>sum+m.textureBytes,0),pending:all.reduce((sum,m)=>sum+m.queued+m.pendingTextures,0),retainedMetricRecords:all.length,canvasCount:document.querySelectorAll('.map-render-canvas').length};});
   samples.push({cycle,...state});console.log('Equal warm endpoint:',cycle,state);
  };

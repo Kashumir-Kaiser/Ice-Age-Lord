@@ -2,7 +2,7 @@ name: Map performance evidence
 on:
   push:
     branches: ['codex/map-25d-overhaul']
-    paths: ['frontend/src/rendering/**', 'frontend/scripts/map-benchmark.mjs', '.github/workflows/map-performance.yml']
+    paths: ['frontend/src/rendering/**', 'frontend/scripts/map-benchmark.mjs', 'frontend/scripts/map-memory.mjs', 'frontend/scripts/map-browser.mjs', '.github/workflows/map-performance.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -37,10 +37,6 @@ jobs:
           MAP_BENCH_RUNS: '3'
           MAP_BENCH_WARMUP: '10'
           MAP_BENCH_QUALITY: '${{ matrix.quality }}'
-      - name: Two identical twenty-return memory cycles
-        run: node scripts/map-memory.mjs
-        env:
-          MAP_BENCH_QUALITY: '${{ matrix.quality }}'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -48,4 +44,37 @@ jobs:
           path: |
             frontend/map-evidence/benchmark/
             frontend/map-evidence/memory/
+          retention-days: 14
+
+  memory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        quality: [low, normal]
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - run: python scripts/restore-map-upload.py
+        working-directory: .
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run assets:map && npm run build
+        env:
+          VITE_GAME_MODE: demo
+      - run: npx playwright install --with-deps chromium
+      - name: Two identical twenty-return memory cycles
+        run: node scripts/map-memory.mjs
+        env:
+          MAP_BENCH_QUALITY: '${{ matrix.quality }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-memory-${{ matrix.quality }}
+          path: frontend/map-evidence/memory/
           retention-days: 14

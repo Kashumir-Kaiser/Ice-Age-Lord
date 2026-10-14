@@ -25,6 +25,13 @@ export function validateMapExport(entry,asset,read=path=>readFileSync(resolve(ro
  if(entry.logicalCanvas&&(entry.logicalCanvas.width!==asset.logicalCanvas.width||entry.logicalCanvas.height!==asset.logicalCanvas.height))throw new Error('Incompatible logical canvas');
  if(entry.trim&&(entry.trim.x<0||entry.trim.y<0||entry.trim.width<=0||entry.trim.height<=0||entry.trim.x+entry.trim.width>asset.logicalCanvas.width||entry.trim.y+entry.trim.height>asset.logicalCanvas.height))throw new Error('Invalid map trim');
  if(entry.orientation&&entry.orientation!==asset.orientation&&!asset.orientationViews?.[entry.orientation]&&!asset.equivalentOrientations?.includes(entry.orientation))throw new Error('Incompatible map orientation');
+ if(entry.role&&asset.layers){
+  const layers=asset.orientationViews?.[entry.orientation]??asset.layers;
+  const registered=layers[entry.role];
+  const source=entry.layerPath??entry.source;
+  const planning=entry.role==='base'&&source===asset.planningLayer;
+  if(registered&&source!==registered&&!planning)throw new Error('Map export does not match its registered orientation layer');
+ }
  if(entry.atlas){const f=entry.atlas;if(f.x<0||f.y<0||f.width!==entry.width||f.height!==entry.height||f.x+f.width>f.atlasWidth||f.y+f.height>f.atlasHeight||f.atlasWidth>2048||f.atlasHeight>2048)throw new Error('Atlas frame outside bounds');const buffer=read('frontend/public'+f.path);if(!f.sha256||hash(buffer)!==f.sha256)throw new Error('Atlas hash mismatch');checkDimensions(buffer,f.atlasWidth,f.atlasHeight);}
  const buffer=read('frontend/public'+entry.path);
  if(!entry.sha256||hash(buffer)!==entry.sha256)throw new Error('Map export hash mismatch: '+entry.path);

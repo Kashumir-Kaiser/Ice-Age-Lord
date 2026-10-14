@@ -21,6 +21,7 @@ export class MapRenderer {
   private app:Application|null=null;
   private failures=new Set<string>();
   private draws=0;
+  private restoreDrawCounters:(()=>void)|null=null;
   private context:CanvasRenderingContext2D|null=null;
   private stage=new Container();
   private effectsGraphics=new Graphics();
@@ -73,7 +74,7 @@ export class MapRenderer {
       if(this.destroyed){app.destroy(false,{children:true,texture:false,textureSource:false});return;}
       this.app=app;
       const gl=(app.renderer as unknown as {gl?:WebGLRenderingContext}).gl;
-      if(gl){this.assets.maxTextureSize=gl.getParameter(gl.MAX_TEXTURE_SIZE);const elements=gl.drawElements.bind(gl),arrays=gl.drawArrays.bind(gl);gl.drawElements=(...args)=>{this.draws++;elements(...args);};gl.drawArrays=(...args)=>{this.draws++;arrays(...args);};}
+      if(gl){this.assets.maxTextureSize=gl.getParameter(gl.MAX_TEXTURE_SIZE);if(this.metrics.enabled){const elements=gl.drawElements,arrays=gl.drawArrays;gl.drawElements=(...args)=>{this.draws++;elements.apply(gl,args);};gl.drawArrays=(...args)=>{this.draws++;arrays.apply(gl,args);};this.restoreDrawCounters=()=>{gl.drawElements=elements;gl.drawArrays=arrays;};}}
       app.stop();this.transferred=true;app.stage.addChild(this.stage,this.effectsGraphics);this.canvas.addEventListener('webglcontextlost',this.lost);
       this.metrics.data.backend='webgl';this.status('webgl');
     }catch(error){
@@ -88,7 +89,7 @@ export class MapRenderer {
     }
     this.resize(this.size);this.invalidate();
   }
-  private lost=(event:Event)=>{event.preventDefault();this.metrics.error('WebGL context lost');this.stop();this.canvas.removeEventListener('webglcontextlost',this.lost);
+  private lost=(event:Event)=>{event.preventDefault();this.metrics.error('WebGL context lost');this.stop();this.restoreDrawCounters?.();this.restoreDrawCounters=null;this.canvas.removeEventListener('webglcontextlost',this.lost);
     this.clearSprites();this.effectsGraphics.destroy();this.stage.destroy({children:true,texture:false,textureSource:false});
     this.app?.destroy(false,{children:false,texture:false,textureSource:false});this.app=null;this.effectsGraphics=new Graphics();this.stage=new Container();void this.init(true);
   };
@@ -261,5 +262,5 @@ export class MapRenderer {
     }
   }
   private clearSprites():void{for(const s of this.drawSprites.values())s.destroy();this.drawSprites.clear();for(const t of this.chunkTextures.values())if(!t.destroyed)t.destroy(true);this.chunkTextures.clear();}
-  destroy():void{if(this.destroyed)return;this.destroyed=true;this.stop();this.canvas.removeEventListener('webglcontextlost',this.lost);this.clearSprites();this.terrain.destroy();this.assets.destroy();if(this.app){this.app.destroy(false,{children:true,texture:false,textureSource:false});this.app=null;}this.canvas.width=this.canvas.height=0;this.context=null;Object.assign(this.metrics.data,{renderMs:[],intervalMs:[],textureBytes:0,decodedBytes:0,terrainBytes:0,queued:0,pendingTextures:0,activeLoops:0,visible:0,total:0});void this.transferred;}
+  destroy():void{if(this.destroyed)return;this.destroyed=true;this.stop();this.restoreDrawCounters?.();this.restoreDrawCounters=null;this.canvas.removeEventListener('webglcontextlost',this.lost);this.clearSprites();this.terrain.destroy();this.assets.destroy();if(this.app){this.app.destroy(false,{children:true,texture:false,textureSource:false});this.app=null;}this.canvas.width=this.canvas.height=0;this.context=null;Object.assign(this.metrics.data,{renderMs:[],intervalMs:[],textureBytes:0,decodedBytes:0,terrainBytes:0,queued:0,pendingTextures:0,activeLoops:0,visible:0,total:0});void this.transferred;}
 }
