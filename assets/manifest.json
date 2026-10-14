@@ -20968,7 +20968,7 @@
             "height": 219,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "4c4a21dbcf98290f525a1251a0d47aefb368455bb5eb3fe838e80e64bc10d147"
+            "sha256": "5691cd858dbcc3b43af635bc9df1e53b09520fdeddd0dc9a7c08e05daab9c19a"
           }
         },
         {
@@ -21026,23 +21026,34 @@
             "height": 112,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "3b718a848beffc884f8669adb4d4c09389768d0f5a9fc36fe37c1a5a1922038a"
+            "sha256": "0c9e76d726358c6509c3daebc18b7f98f634118f143f12885185f9363303e65a"
           }
         },
         {
           "path": "/assets/map/buildings/opening-palisade-wall/shadow-close.png",
-          "source": "/assets/buildings/opening-palisade-wall/shadow.svg",
-          "sourceSha256": "8303bce9cf369344868ba5ae44db99878668981ebc4b4641296f93107ea1b47c",
+          "source": "frontend/scripts/map-ground-shadow.mjs",
+          "sourceSha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399",
           "sourceDependencies": [
             {
               "source": "frontend/public/assets/buildings/opening-palisade-wall/shadow.svg",
               "sha256": "8303bce9cf369344868ba5ae44db99878668981ebc4b4641296f93107ea1b47c"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
-          "sha256": "71de6cc6ee0fe343be6a41ec1805cb2302308e302d70356d2dc9d1b27ba29962",
-          "exportVersion": 3,
-          "width": 304,
-          "height": 58,
+          "sha256": "819d1cec6be47b6e0dcc8d8707e5d4d4def87a9b47fe85bc343d817874da2a60",
+          "exportVersion": 4,
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/shadow-close.png",
+          "groundShadow": {
+            "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+            "widthM": 10,
+            "depthM": 1,
+            "orientation": "east"
+          },
+          "width": 219,
+          "height": 114,
           "role": "shadow",
           "lod": "close",
           "orientation": "east",
@@ -21057,36 +21068,47 @@
             "height": 320
           },
           "trim": {
-            "x": 50,
-            "y": 313.75,
-            "width": 380,
-            "height": 72.5
+            "x": 103.75,
+            "y": 257.5,
+            "width": 273.75,
+            "height": 142.5
           },
           "atlas": {
             "path": "/assets/map/buildings/opening-palisade-wall/atlas-close.png",
             "x": 396,
             "y": 4,
-            "width": 304,
-            "height": 58,
+            "width": 219,
+            "height": 114,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "4c4a21dbcf98290f525a1251a0d47aefb368455bb5eb3fe838e80e64bc10d147"
+            "sha256": "5691cd858dbcc3b43af635bc9df1e53b09520fdeddd0dc9a7c08e05daab9c19a"
           }
         },
         {
           "path": "/assets/map/buildings/opening-palisade-wall/shadow-district.png",
-          "source": "/assets/buildings/opening-palisade-wall/shadow.svg",
-          "sourceSha256": "8303bce9cf369344868ba5ae44db99878668981ebc4b4641296f93107ea1b47c",
+          "source": "frontend/scripts/map-ground-shadow.mjs",
+          "sourceSha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399",
           "sourceDependencies": [
             {
               "source": "frontend/public/assets/buildings/opening-palisade-wall/shadow.svg",
               "sha256": "8303bce9cf369344868ba5ae44db99878668981ebc4b4641296f93107ea1b47c"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
-          "sha256": "d007a4ef3cc03ad3340e272e2b01509bfca68c09671427c2afb3446984e6418f",
-          "exportVersion": 3,
-          "width": 154,
-          "height": 32,
+          "sha256": "06b8ce02b7ce1c21f8b317bf8a06ce99f24e5629b37d080b77fe7bfd646b5947",
+          "exportVersion": 4,
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/shadow-close.png",
+          "groundShadow": {
+            "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+            "widthM": 10,
+            "depthM": 1,
+            "orientation": "east"
+          },
+          "width": 111,
+          "height": 58,
           "role": "shadow",
           "lod": "district",
           "orientation": "east",
@@ -21101,20 +21123,20 @@
             "height": 160
           },
           "trim": {
-            "x": 47.5,
-            "y": 310,
-            "width": 385,
-            "height": 80
+            "x": 102.5,
+            "y": 254.99999999999997,
+            "width": 277.5,
+            "height": 145
           },
           "atlas": {
             "path": "/assets/map/buildings/opening-palisade-wall/atlas-district.png",
             "x": 204,
             "y": 4,
-            "width": 154,
-            "height": 32,
+            "width": 111,
+            "height": 58,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "3b718a848beffc884f8669adb4d4c09389768d0f5a9fc36fe37c1a5a1922038a"
+            "sha256": "0c9e76d726358c6509c3daebc18b7f98f634118f143f12885185f9363303e65a"
           }
         },
         {
@@ -21158,7 +21180,7 @@
             "height": 123,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "4c4a21dbcf98290f525a1251a0d47aefb368455bb5eb3fe838e80e64bc10d147"
+            "sha256": "5691cd858dbcc3b43af635bc9df1e53b09520fdeddd0dc9a7c08e05daab9c19a"
           }
         },
         {
@@ -21202,7 +21224,89 @@
             "height": 64,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "3b718a848beffc884f8669adb4d4c09389768d0f5a9fc36fe37c1a5a1922038a"
+            "sha256": "0c9e76d726358c6509c3daebc18b7f98f634118f143f12885185f9363303e65a"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/shadow-west-close.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/shadow-west-close.png",
+          "source": "frontend/scripts/map-ground-shadow.mjs",
+          "sourceSha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399",
+          "sourceDependencies": [
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
+            }
+          ],
+          "sha256": "819d1cec6be47b6e0dcc8d8707e5d4d4def87a9b47fe85bc343d817874da2a60",
+          "exportVersion": 4,
+          "width": 219,
+          "height": 114,
+          "role": "shadow",
+          "lod": "close",
+          "orientation": "west",
+          "groundShadow": {
+            "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+            "widthM": 10,
+            "depthM": 1,
+            "orientation": "west"
+          },
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 103.75,
+            "y": 257.5,
+            "width": 273.75,
+            "height": 142.5
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/shadow-west-district.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/shadow-west-close.png",
+          "source": "frontend/scripts/map-ground-shadow.mjs",
+          "sourceSha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399",
+          "sourceDependencies": [
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
+            }
+          ],
+          "sha256": "06b8ce02b7ce1c21f8b317bf8a06ce99f24e5629b37d080b77fe7bfd646b5947",
+          "exportVersion": 4,
+          "width": 111,
+          "height": 58,
+          "role": "shadow",
+          "lod": "district",
+          "orientation": "west",
+          "groundShadow": {
+            "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+            "widthM": 10,
+            "depthM": 1,
+            "orientation": "west"
+          },
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 102.5,
+            "y": 254.99999999999997,
+            "width": 277.5,
+            "height": 145
           }
         },
         {
@@ -21261,7 +21365,7 @@
             "height": 196,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "4c4a21dbcf98290f525a1251a0d47aefb368455bb5eb3fe838e80e64bc10d147"
+            "sha256": "5691cd858dbcc3b43af635bc9df1e53b09520fdeddd0dc9a7c08e05daab9c19a"
           }
         },
         {
@@ -21320,7 +21424,89 @@
             "height": 101,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "3b718a848beffc884f8669adb4d4c09389768d0f5a9fc36fe37c1a5a1922038a"
+            "sha256": "0c9e76d726358c6509c3daebc18b7f98f634118f143f12885185f9363303e65a"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/shadow-south-close.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/shadow-south-close.png",
+          "source": "frontend/scripts/map-ground-shadow.mjs",
+          "sourceSha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399",
+          "sourceDependencies": [
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
+            }
+          ],
+          "sha256": "9fddabb77e8ad0e52e1135cadcd3028c11973bbc31d3ae41bc391ee6d7073070",
+          "exportVersion": 4,
+          "width": 220,
+          "height": 114,
+          "role": "shadow",
+          "lod": "close",
+          "orientation": "south",
+          "groundShadow": {
+            "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+            "widthM": 10,
+            "depthM": 1,
+            "orientation": "south"
+          },
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 103.75,
+            "y": 257.5,
+            "width": 275,
+            "height": 142.5
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/shadow-south-district.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/shadow-south-close.png",
+          "source": "frontend/scripts/map-ground-shadow.mjs",
+          "sourceSha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399",
+          "sourceDependencies": [
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
+            }
+          ],
+          "sha256": "6fbcc7f6c33269ded3da575ebeec5088f4b54aada3d2e9a397df4e355110d235",
+          "exportVersion": 4,
+          "width": 111,
+          "height": 58,
+          "role": "shadow",
+          "lod": "district",
+          "orientation": "south",
+          "groundShadow": {
+            "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+            "widthM": 10,
+            "depthM": 1,
+            "orientation": "south"
+          },
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 102.5,
+            "y": 254.99999999999997,
+            "width": 277.5,
+            "height": 145
           }
         },
         {
@@ -21379,7 +21565,7 @@
             "height": 218,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "4c4a21dbcf98290f525a1251a0d47aefb368455bb5eb3fe838e80e64bc10d147"
+            "sha256": "5691cd858dbcc3b43af635bc9df1e53b09520fdeddd0dc9a7c08e05daab9c19a"
           }
         },
         {
@@ -21438,7 +21624,89 @@
             "height": 111,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "3b718a848beffc884f8669adb4d4c09389768d0f5a9fc36fe37c1a5a1922038a"
+            "sha256": "0c9e76d726358c6509c3daebc18b7f98f634118f143f12885185f9363303e65a"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/shadow-north-close.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/shadow-north-close.png",
+          "source": "frontend/scripts/map-ground-shadow.mjs",
+          "sourceSha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399",
+          "sourceDependencies": [
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
+            }
+          ],
+          "sha256": "9fddabb77e8ad0e52e1135cadcd3028c11973bbc31d3ae41bc391ee6d7073070",
+          "exportVersion": 4,
+          "width": 220,
+          "height": 114,
+          "role": "shadow",
+          "lod": "close",
+          "orientation": "north",
+          "groundShadow": {
+            "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+            "widthM": 10,
+            "depthM": 1,
+            "orientation": "north"
+          },
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 103.75,
+            "y": 257.5,
+            "width": 275,
+            "height": 142.5
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-palisade-wall/shadow-north-district.png",
+          "layerPath": "/assets/map/buildings/opening-palisade-wall/shadow-north-close.png",
+          "source": "frontend/scripts/map-ground-shadow.mjs",
+          "sourceSha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399",
+          "sourceDependencies": [
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
+            }
+          ],
+          "sha256": "6fbcc7f6c33269ded3da575ebeec5088f4b54aada3d2e9a397df4e355110d235",
+          "exportVersion": 4,
+          "width": 111,
+          "height": 58,
+          "role": "shadow",
+          "lod": "district",
+          "orientation": "north",
+          "groundShadow": {
+            "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+            "widthM": 10,
+            "depthM": 1,
+            "orientation": "north"
+          },
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 102.5,
+            "y": 254.99999999999997,
+            "width": 277.5,
+            "height": 145
           }
         },
         {
@@ -21497,7 +21765,7 @@
             "height": 192,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "4c4a21dbcf98290f525a1251a0d47aefb368455bb5eb3fe838e80e64bc10d147"
+            "sha256": "5691cd858dbcc3b43af635bc9df1e53b09520fdeddd0dc9a7c08e05daab9c19a"
           }
         },
         {
@@ -21556,7 +21824,7 @@
             "height": 98,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "3b718a848beffc884f8669adb4d4c09389768d0f5a9fc36fe37c1a5a1922038a"
+            "sha256": "0c9e76d726358c6509c3daebc18b7f98f634118f143f12885185f9363303e65a"
           }
         },
         {
@@ -23098,12 +23366,20 @@
         "north"
       ],
       "orientationViews": {
+        "east": {
+          "uiIcon": "/assets/buildings/opening-palisade-wall/icon.svg",
+          "body": "/assets/buildings/opening-palisade-wall/body.svg",
+          "base": "/assets/buildings/opening-palisade-wall/base.svg",
+          "upper": "/assets/buildings/opening-palisade-wall/upper.svg",
+          "shadow": "/assets/map/buildings/opening-palisade-wall/shadow-close.png",
+          "vfx": null
+        },
         "west": {
           "uiIcon": "/assets/buildings/opening-palisade-wall/icon.svg",
           "body": "/assets/map/buildings/opening-palisade-wall/body-west-close.png",
           "base": "/assets/buildings/opening-palisade-wall/base.svg",
           "upper": "/assets/buildings/opening-palisade-wall/upper.svg",
-          "shadow": "/assets/buildings/opening-palisade-wall/shadow.svg",
+          "shadow": "/assets/map/buildings/opening-palisade-wall/shadow-west-close.png",
           "vfx": null
         },
         "south": {
@@ -23111,7 +23387,7 @@
           "body": "/assets/map/buildings/opening-palisade-wall/body-south-close.png",
           "base": "/assets/buildings/opening-palisade-wall/base.svg",
           "upper": "/assets/buildings/opening-palisade-wall/upper.svg",
-          "shadow": "/assets/buildings/opening-palisade-wall/shadow.svg",
+          "shadow": "/assets/map/buildings/opening-palisade-wall/shadow-south-close.png",
           "vfx": null
         },
         "north": {
@@ -23119,7 +23395,7 @@
           "body": "/assets/map/buildings/opening-palisade-wall/body-north-close.png",
           "base": "/assets/buildings/opening-palisade-wall/base.svg",
           "upper": "/assets/buildings/opening-palisade-wall/upper.svg",
-          "shadow": "/assets/buildings/opening-palisade-wall/shadow.svg",
+          "shadow": "/assets/map/buildings/opening-palisade-wall/shadow-north-close.png",
           "vfx": null
         }
       },
@@ -31300,7 +31576,7 @@
             "height": 268,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "e51783181429d36e20e7645e72b3f9b7950a555b25cbc4892ecbd96d8dbfe748"
+            "sha256": "7b0f7dc0b416d50ee755e74aec18624257610202691abb50f104a8a320a19e05"
           }
         },
         {
@@ -31358,23 +31634,34 @@
             "height": 136,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "10f35a5045f9cddc8025cdd8a39db968fdbe3712cee2443a1ffc153aec7ec857"
+            "sha256": "14dcb739d335e104822ff5d0c71b391aabb2d22e0cc1be47739fd3c3813da48b"
           }
         },
         {
           "path": "/assets/map/buildings/opening-timber-gate/shadow-close.png",
-          "source": "/assets/buildings/opening-timber-gate/shadow.svg",
-          "sourceSha256": "440580ff673216477cb3772c0f1c0f6846a60a316af0f6185f42bf100b53f454",
+          "source": "frontend/scripts/map-ground-shadow.mjs",
+          "sourceSha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399",
           "sourceDependencies": [
             {
               "source": "frontend/public/assets/buildings/opening-timber-gate/shadow.svg",
               "sha256": "440580ff673216477cb3772c0f1c0f6846a60a316af0f6185f42bf100b53f454"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
-          "sha256": "71de6cc6ee0fe343be6a41ec1805cb2302308e302d70356d2dc9d1b27ba29962",
-          "exportVersion": 3,
-          "width": 304,
-          "height": 58,
+          "sha256": "781bb19a89f0e353010b2fcb9ef0b57221716fb4d0268e04b29b95ba54085470",
+          "exportVersion": 4,
+          "layerPath": "/assets/map/buildings/opening-timber-gate/shadow-close.png",
+          "groundShadow": {
+            "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+            "widthM": 3,
+            "depthM": 2,
+            "orientation": "east"
+          },
+          "width": 229,
+          "height": 118,
           "role": "shadow",
           "lod": "close",
           "orientation": "east",
@@ -31389,36 +31676,47 @@
             "height": 320
           },
           "trim": {
-            "x": 50,
-            "y": 313.75,
-            "width": 380,
-            "height": 72.5
+            "x": 98.75,
+            "y": 252.5,
+            "width": 286.25,
+            "height": 147.5
           },
           "atlas": {
             "path": "/assets/map/buildings/opening-timber-gate/atlas-close.png",
             "x": 396,
             "y": 4,
-            "width": 304,
-            "height": 58,
+            "width": 229,
+            "height": 118,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "e51783181429d36e20e7645e72b3f9b7950a555b25cbc4892ecbd96d8dbfe748"
+            "sha256": "7b0f7dc0b416d50ee755e74aec18624257610202691abb50f104a8a320a19e05"
           }
         },
         {
           "path": "/assets/map/buildings/opening-timber-gate/shadow-district.png",
-          "source": "/assets/buildings/opening-timber-gate/shadow.svg",
-          "sourceSha256": "440580ff673216477cb3772c0f1c0f6846a60a316af0f6185f42bf100b53f454",
+          "source": "frontend/scripts/map-ground-shadow.mjs",
+          "sourceSha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399",
           "sourceDependencies": [
             {
               "source": "frontend/public/assets/buildings/opening-timber-gate/shadow.svg",
               "sha256": "440580ff673216477cb3772c0f1c0f6846a60a316af0f6185f42bf100b53f454"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
-          "sha256": "d007a4ef3cc03ad3340e272e2b01509bfca68c09671427c2afb3446984e6418f",
-          "exportVersion": 3,
-          "width": 154,
-          "height": 32,
+          "sha256": "61b7110cb6f73419dec5901dadb9acc533a1793f841b3dbbfb12596a465225ca",
+          "exportVersion": 4,
+          "layerPath": "/assets/map/buildings/opening-timber-gate/shadow-close.png",
+          "groundShadow": {
+            "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+            "widthM": 3,
+            "depthM": 2,
+            "orientation": "east"
+          },
+          "width": 116,
+          "height": 60,
           "role": "shadow",
           "lod": "district",
           "orientation": "east",
@@ -31433,20 +31731,20 @@
             "height": 160
           },
           "trim": {
-            "x": 47.5,
-            "y": 310,
-            "width": 385,
-            "height": 80
+            "x": 97.5,
+            "y": 250,
+            "width": 290,
+            "height": 150
           },
           "atlas": {
             "path": "/assets/map/buildings/opening-timber-gate/atlas-district.png",
             "x": 204,
             "y": 4,
-            "width": 154,
-            "height": 32,
+            "width": 116,
+            "height": 60,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "10f35a5045f9cddc8025cdd8a39db968fdbe3712cee2443a1ffc153aec7ec857"
+            "sha256": "14dcb739d335e104822ff5d0c71b391aabb2d22e0cc1be47739fd3c3813da48b"
           }
         },
         {
@@ -31490,7 +31788,7 @@
             "height": 123,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "e51783181429d36e20e7645e72b3f9b7950a555b25cbc4892ecbd96d8dbfe748"
+            "sha256": "7b0f7dc0b416d50ee755e74aec18624257610202691abb50f104a8a320a19e05"
           }
         },
         {
@@ -31534,7 +31832,89 @@
             "height": 64,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "10f35a5045f9cddc8025cdd8a39db968fdbe3712cee2443a1ffc153aec7ec857"
+            "sha256": "14dcb739d335e104822ff5d0c71b391aabb2d22e0cc1be47739fd3c3813da48b"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/shadow-north-close.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/shadow-north-close.png",
+          "source": "frontend/scripts/map-ground-shadow.mjs",
+          "sourceSha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399",
+          "sourceDependencies": [
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
+            }
+          ],
+          "sha256": "db19da60bf2f174b14379ef0c3ec2d03f5cf80a3032e8d7bde686f5a64e415a8",
+          "exportVersion": 4,
+          "width": 229,
+          "height": 118,
+          "role": "shadow",
+          "lod": "close",
+          "orientation": "north",
+          "groundShadow": {
+            "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+            "widthM": 3,
+            "depthM": 2,
+            "orientation": "north"
+          },
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 98.75,
+            "y": 252.5,
+            "width": 286.25,
+            "height": 147.5
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/shadow-north-district.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/shadow-north-close.png",
+          "source": "frontend/scripts/map-ground-shadow.mjs",
+          "sourceSha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399",
+          "sourceDependencies": [
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
+            }
+          ],
+          "sha256": "8fb37463fc1b39768ea759c96549af01077feb41d1588961abbf9bfdeabea8bd",
+          "exportVersion": 4,
+          "width": 116,
+          "height": 60,
+          "role": "shadow",
+          "lod": "district",
+          "orientation": "north",
+          "groundShadow": {
+            "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+            "widthM": 3,
+            "depthM": 2,
+            "orientation": "north"
+          },
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 97.5,
+            "y": 250,
+            "width": 290,
+            "height": 150
           }
         },
         {
@@ -31593,7 +31973,7 @@
             "height": 267,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "e51783181429d36e20e7645e72b3f9b7950a555b25cbc4892ecbd96d8dbfe748"
+            "sha256": "7b0f7dc0b416d50ee755e74aec18624257610202691abb50f104a8a320a19e05"
           }
         },
         {
@@ -31652,7 +32032,89 @@
             "height": 137,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "10f35a5045f9cddc8025cdd8a39db968fdbe3712cee2443a1ffc153aec7ec857"
+            "sha256": "14dcb739d335e104822ff5d0c71b391aabb2d22e0cc1be47739fd3c3813da48b"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/shadow-south-close.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/shadow-south-close.png",
+          "source": "frontend/scripts/map-ground-shadow.mjs",
+          "sourceSha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399",
+          "sourceDependencies": [
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
+            }
+          ],
+          "sha256": "db19da60bf2f174b14379ef0c3ec2d03f5cf80a3032e8d7bde686f5a64e415a8",
+          "exportVersion": 4,
+          "width": 229,
+          "height": 118,
+          "role": "shadow",
+          "lod": "close",
+          "orientation": "south",
+          "groundShadow": {
+            "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+            "widthM": 3,
+            "depthM": 2,
+            "orientation": "south"
+          },
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 98.75,
+            "y": 252.5,
+            "width": 286.25,
+            "height": 147.5
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/shadow-south-district.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/shadow-south-close.png",
+          "source": "frontend/scripts/map-ground-shadow.mjs",
+          "sourceSha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399",
+          "sourceDependencies": [
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
+            }
+          ],
+          "sha256": "8fb37463fc1b39768ea759c96549af01077feb41d1588961abbf9bfdeabea8bd",
+          "exportVersion": 4,
+          "width": 116,
+          "height": 60,
+          "role": "shadow",
+          "lod": "district",
+          "orientation": "south",
+          "groundShadow": {
+            "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+            "widthM": 3,
+            "depthM": 2,
+            "orientation": "south"
+          },
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 97.5,
+            "y": 250,
+            "width": 290,
+            "height": 150
           }
         },
         {
@@ -31711,7 +32173,7 @@
             "height": 268,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "e51783181429d36e20e7645e72b3f9b7950a555b25cbc4892ecbd96d8dbfe748"
+            "sha256": "7b0f7dc0b416d50ee755e74aec18624257610202691abb50f104a8a320a19e05"
           }
         },
         {
@@ -31770,7 +32232,89 @@
             "height": 138,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "10f35a5045f9cddc8025cdd8a39db968fdbe3712cee2443a1ffc153aec7ec857"
+            "sha256": "14dcb739d335e104822ff5d0c71b391aabb2d22e0cc1be47739fd3c3813da48b"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/shadow-west-close.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/shadow-west-close.png",
+          "source": "frontend/scripts/map-ground-shadow.mjs",
+          "sourceSha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399",
+          "sourceDependencies": [
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
+            }
+          ],
+          "sha256": "781bb19a89f0e353010b2fcb9ef0b57221716fb4d0268e04b29b95ba54085470",
+          "exportVersion": 4,
+          "width": 229,
+          "height": 118,
+          "role": "shadow",
+          "lod": "close",
+          "orientation": "west",
+          "groundShadow": {
+            "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+            "widthM": 3,
+            "depthM": 2,
+            "orientation": "west"
+          },
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 98.75,
+            "y": 252.5,
+            "width": 286.25,
+            "height": 147.5
+          }
+        },
+        {
+          "path": "/assets/map/buildings/opening-timber-gate/shadow-west-district.png",
+          "layerPath": "/assets/map/buildings/opening-timber-gate/shadow-west-close.png",
+          "source": "frontend/scripts/map-ground-shadow.mjs",
+          "sourceSha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399",
+          "sourceDependencies": [
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
+            }
+          ],
+          "sha256": "61b7110cb6f73419dec5901dadb9acc533a1793f841b3dbbfb12596a465225ca",
+          "exportVersion": 4,
+          "width": 116,
+          "height": 60,
+          "role": "shadow",
+          "lod": "district",
+          "orientation": "west",
+          "groundShadow": {
+            "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+            "widthM": 3,
+            "depthM": 2,
+            "orientation": "west"
+          },
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 97.5,
+            "y": 250,
+            "width": 290,
+            "height": 150
           }
         },
         {
@@ -31829,7 +32373,7 @@
             "height": 238,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "e51783181429d36e20e7645e72b3f9b7950a555b25cbc4892ecbd96d8dbfe748"
+            "sha256": "7b0f7dc0b416d50ee755e74aec18624257610202691abb50f104a8a320a19e05"
           }
         },
         {
@@ -31888,7 +32432,7 @@
             "height": 123,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "10f35a5045f9cddc8025cdd8a39db968fdbe3712cee2443a1ffc153aec7ec857"
+            "sha256": "14dcb739d335e104822ff5d0c71b391aabb2d22e0cc1be47739fd3c3813da48b"
           }
         },
         {
@@ -33430,12 +33974,20 @@
         "west"
       ],
       "orientationViews": {
+        "east": {
+          "uiIcon": "/assets/buildings/opening-timber-gate/icon.svg",
+          "body": "/assets/buildings/opening-timber-gate/body.svg",
+          "base": "/assets/buildings/opening-timber-gate/base.svg",
+          "upper": "/assets/buildings/opening-timber-gate/upper.svg",
+          "shadow": "/assets/map/buildings/opening-timber-gate/shadow-close.png",
+          "vfx": null
+        },
         "north": {
           "uiIcon": "/assets/buildings/opening-timber-gate/icon.svg",
           "body": "/assets/map/buildings/opening-timber-gate/body-north-close.png",
           "base": "/assets/buildings/opening-timber-gate/base.svg",
           "upper": "/assets/buildings/opening-timber-gate/upper.svg",
-          "shadow": "/assets/buildings/opening-timber-gate/shadow.svg",
+          "shadow": "/assets/map/buildings/opening-timber-gate/shadow-north-close.png",
           "vfx": null
         },
         "south": {
@@ -33443,7 +33995,7 @@
           "body": "/assets/map/buildings/opening-timber-gate/body-south-close.png",
           "base": "/assets/buildings/opening-timber-gate/base.svg",
           "upper": "/assets/buildings/opening-timber-gate/upper.svg",
-          "shadow": "/assets/buildings/opening-timber-gate/shadow.svg",
+          "shadow": "/assets/map/buildings/opening-timber-gate/shadow-south-close.png",
           "vfx": null
         },
         "west": {
@@ -33451,7 +34003,7 @@
           "body": "/assets/map/buildings/opening-timber-gate/body-west-close.png",
           "base": "/assets/buildings/opening-timber-gate/base.svg",
           "upper": "/assets/buildings/opening-timber-gate/upper.svg",
-          "shadow": "/assets/buildings/opening-timber-gate/shadow.svg",
+          "shadow": "/assets/map/buildings/opening-timber-gate/shadow-west-close.png",
           "vfx": null
         }
       },
