@@ -124,7 +124,7 @@ test('watchtower and elemental art previews load every authored pose without cha
  await page.route('**/assets/map/buildings/*tower-preview/atlas-*.png*',route=>route.fulfill({status:404,body:'pose frame fallback'}));
  const requested=new Set<string>();page.on('request',r=>requested.add(new URL(r.url()).pathname));
  await territory(page);await page.getByLabel('Chất lượng bản đồ').selectOption('normal');
- const existing=await page.locator('.territory-building:not(.is-draft)').count();
+ const existing=await page.locator('.territory-instance-main').allTextContents();
  await page.getByRole('button',{name:'Về lửa trại',exact:true}).click();await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();
  for(const [asset,name]of [['watchtower-preview','Tháp Canh · mẫu ảnh'],['elemental-tower-preview','Tháp Nguyên Tố · mẫu ảnh']]){
   await page.getByRole('button',{name:`Thử bố trí ${name}`,exact:true}).click();const scene=page.locator('.territory-scene-svg');await scene.scrollIntoViewIfNeeded();const box=(await scene.boundingBox())!;
@@ -137,7 +137,7 @@ test('watchtower and elemental art previews load every authored pose without cha
   }
   await page.getByRole('button',{name:`Xóa ${name}`,exact:true}).click();await expect(draft).toHaveCount(0);
  }
- await expect(page.locator('.territory-building:not(.is-draft)')).toHaveCount(existing);
+ await expect(page.locator('.territory-instance-main')).toHaveText(existing);
 });
 
 test('twenty map switches dispose departed renderers and preserve territory selection',async({page})=>{

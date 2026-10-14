@@ -63,6 +63,28 @@
     {
       "assetId": "watchtower-preview",
       "orientation": "south",
+      "source": "assets/source/map-buildings/watchtower-south-corrected.png",
+      "sha256": "3f7e1326129434042ce743b4f5d66d2b0cbcbcc1148b200068e4f70353196210",
+      "gitBlobSha": "4960a15eff9a4e3f36cb55a88bef34733667a6d4",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-15",
+      "status": "draft; corrected window facade, original preserved immediately; inspection and scene acceptance pending"
+    },
+    {
+      "assetId": "elemental-tower-preview",
+      "orientation": "south",
+      "source": "assets/source/map-buildings/elemental-tower-south-corrected.png",
+      "sha256": "10aaaf6eff74e23705352c2efcb7fd5024cd4963528b8deb4ae4ee25f2f63122",
+      "gitBlobSha": "2449d6c1ca63b857accb531a68c84c34f5544100",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-15",
+      "status": "draft; corrected window facade, original preserved immediately; inspection and scene acceptance pending"
+    }
+  ],
+  "rejectedDrafts": [
+    {
+      "assetId": "watchtower-preview",
+      "orientation": "south",
       "source": "assets/source/map-buildings/watchtower-south.png",
       "sha256": "064893296c07fe908a93d36bf73ca2f0f8e5fbc8867dd12da7ee7f8655a020d8",
       "gitBlobSha": "9540c83002a99ef890742a990b3862718b077f1e",

@@ -27,9 +27,10 @@ export async function openMap(browser,{viewport={width:1366,height:768},dpr=1,qu
  await page.route('**/*',async route=>{
   const relative=new URL(route.request().url()).pathname.replace(/^\//,'')||'index.html',path=resolve(dist,relative);
   if(!path.startsWith(dist+sep)||!existsSync(path)){await route.fulfill({status:404,body:'Not found'});return;}
-  const body=readFileSync(path);if(relative.startsWith('assets/map/'))page.mapAssetTransfers.push({path:relative,bytes:body.length});
+  const body=readFileSync(path),textual=['.html','.js','.css','.json','.svg'].includes(extname(path)),served=textual?gzipSync(body):body;
+  if(relative.startsWith('assets/map/')||relative==='assets/manifest.json')page.mapAssetTransfers.push({path:relative,bytes:served.length,decodedBytes:body.length,encoding:textual?'gzip':'identity'});
   if(relative.endsWith('.js'))page.mapScriptTransfers.set(relative,{path:relative,bytes:body.length,gzipBytes:gzipSync(body).length});
-  await route.fulfill({status:200,contentType:mime[extname(path)]??'application/octet-stream',body});
+  await route.fulfill({status:200,contentType:mime[extname(path)]??'application/octet-stream',headers:textual?{'content-encoding':'gzip'}:{},body:served});
  });
  await page.addInitScript(value=>localStorage.setItem('ice-age-map-quality',value),quality);
  await page.goto(`http://map.preview.local/?mode=demo&mapQA=1${fallback?'&mapFallback=1':''}${fixture?'&mapFixture='+fixture:''}`);

@@ -7,6 +7,10 @@ import {validateMapExport} from '../scripts/validate-map-assets.mjs';
 const manifest=JSON.parse(readFileSync(new URL('../../assets/manifest.json',import.meta.url)));
 const provenance=JSON.parse(readFileSync(new URL('../../docs/implementation/MAP-25D-TOWER-ART.json',import.meta.url)));
 test('tower originals remain unchanged and every compass pose is separately authored',()=>{
+ for(const record of provenance.rejectedDrafts??[]){
+  const bytes=readFileSync(new URL('../../'+record.source,import.meta.url));
+  assert.equal(createHash('sha256').update(bytes).digest('hex'),record.sha256,'rejected original must remain intact');
+ }
  for(const id of ['watchtower-preview','elemental-tower-preview']){
   const asset=manifest.assets.find(a=>a.assetId===id);assert.ok(asset);assert.equal(asset.status,'draft');assert.match(asset.definitionId,/^FIXTURE-/);
   const records=provenance.assets.filter(a=>a.assetId===id);assert.equal(records.length,4);assert.equal(new Set(records.map(a=>a.gitBlobSha)).size,4);

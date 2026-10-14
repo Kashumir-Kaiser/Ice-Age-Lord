@@ -23,7 +23,7 @@ try{
   }
   if(fixture==='world-1023')await page.getByRole('button',{name:'Chuyển sang bản đồ thế giới',exact:true}).click();
   await page.locator('[data-map-renderer]').scrollIntoViewIfNeeded();await readyMap(page);
-  const coldTransfer={bytes:page.mapAssetTransfers.reduce((sum,item)=>sum+item.bytes,0),requests:page.mapAssetTransfers.slice(),scope:'Map raster assets requested through first scene readiness; source UI assets excluded.'};
+  const coldTransfer={schemaVersion:2,bytes:page.mapAssetTransfers.reduce((sum,item)=>sum+item.bytes,0),decodedBytes:page.mapAssetTransfers.reduce((sum,item)=>sum+item.decodedBytes,0),requests:page.mapAssetTransfers.slice(),scope:'All map-directory assets plus the runtime manifest through first scene readiness. Textual responses are actually gzip-encoded by the fixture server; existing UI/splash assets excluded. Added JS gzip reported separately.',fixtureState:fixture==='populated'?'Demo drafts prepared after initial navigation; NOT a saved-populated LIVE cold load.':fixture==='dense-520'?'Dense test fixture activated after initial navigation.':'Initial visibility-filtered demo scene.'};
   await page.waitForTimeout(warmup*1000);
   const interactions=await page.evaluate(async duration=>{
    const node=document.querySelector('.territory-scene-svg,.terrain-svg--deep'),box=node.getBoundingClientRect();

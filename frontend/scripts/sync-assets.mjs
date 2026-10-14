@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, readFileSync, mkdirSync } from 'node:fs';
+import { copyFileSync, existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateMapAssets } from './validate-map-assets.mjs';
@@ -81,5 +81,6 @@ for (const illustration of [...(manifest.itemArt ?? []), ...(manifest.unitArt ??
 }
 validateMapAssets(manifest);
 mkdirSync(dirname(publicManifest), { recursive: true });
-copyFileSync(manifestPath, publicManifest);
+// Preserve every field; serving pretty authoring whitespace wastes cold-transfer bytes.
+writeFileSync(publicManifest, JSON.stringify(manifest)+'\n');
 console.log(`Validated ${manifest.assets.length} structure assets, ${(manifest.itemArt ?? []).length} item illustrations, and ${(manifest.unitArt ?? []).length} unit illustrations.`);
