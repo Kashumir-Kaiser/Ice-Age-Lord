@@ -21,10 +21,12 @@ export async function readyMap(page){
 }
 export async function openMap(browser,{viewport={width:1366,height:768},dpr=1,quality='normal',motion='reduce',fallback=false,fixture=''}={}){
  const page=await browser.newPage({viewport,deviceScaleFactor:dpr,reducedMotion:motion,hasTouch:viewport.width<500,isMobile:viewport.width<500});
+ page.mapAssetTransfers=[];
  await page.route('**/*',async route=>{
   const relative=new URL(route.request().url()).pathname.replace(/^\//,'')||'index.html',path=resolve(dist,relative);
   if(!path.startsWith(dist+sep)||!existsSync(path)){await route.fulfill({status:404,body:'Not found'});return;}
-  await route.fulfill({status:200,contentType:mime[extname(path)]??'application/octet-stream',body:readFileSync(path)});
+  const body=readFileSync(path);if(relative.startsWith('assets/map/'))page.mapAssetTransfers.push({path:relative,bytes:body.length});
+  await route.fulfill({status:200,contentType:mime[extname(path)]??'application/octet-stream',body});
  });
  await page.addInitScript(value=>localStorage.setItem('ice-age-map-quality',value),quality);
  await page.goto(`http://map.preview.local/?mode=demo&mapQA=1${fallback?'&mapFallback=1':''}${fixture?'&mapFixture='+fixture:''}`);

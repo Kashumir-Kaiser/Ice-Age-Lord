@@ -1,6 +1,6 @@
 import { Application, Container, Graphics, Matrix, Sprite, Texture } from 'pixi.js';
 import type { MapSnapshot } from './MapSceneAdapter.ts';
-import { TerrainSampler, chunkLevel, chunkCoverage, boundedChunkLevel } from './TerrainSampler.ts';
+import { TerrainSampler, GROUND_MATERIALS, chunkLevel, chunkCoverage, boundedChunkLevel } from './TerrainSampler.ts';
 import { TerrainChunkCache } from './TerrainChunkCache.ts';
 import type { TerrainChunk } from './TerrainChunkCache.ts';
 import { AssetTextureCache, exportPath } from './AssetTextureCache.ts';
@@ -98,7 +98,7 @@ export class MapRenderer {
     this.invalidate();
   }
   setHidden(hidden:boolean):void{this.hidden=hidden;if(hidden)this.stop();else{this.previous=0;this.invalidate();}}
-  invalidate():void{if(this.destroyed)return;this.dirty=true;if(!this.raf&&!this.hidden){this.metrics.data.activeLoops=1;this.raf=requestAnimationFrame(this.frame);}}
+  invalidate():void{if(this.destroyed)return;this.dirty=true;if(!this.raf&&!this.hidden){if(!this.metrics.data.activeLoops)this.lastFrame=0;this.metrics.data.activeLoops=1;this.raf=requestAnimationFrame(this.frame);}}
   private stop():void{if(this.raf)cancelAnimationFrame(this.raf);this.raf=0;this.metrics.data.activeLoops=0;}
   private setQuality(quality:Quality):void{if(quality===this.quality)return;this.quality=quality;this.assets.limit=QUALITY[quality].totalBytes-QUALITY[quality].terrainBytes;this.terrain.size=QUALITY[quality].textureSize;this.terrain.limit=QUALITY[quality].terrainBytes;this.terrain.invalidate();this.resize(this.size);}
   private project=(p:WorldPoint):WorldPoint=>{
@@ -120,7 +120,7 @@ export class MapRenderer {
       if(this.dirty||generated||active||this.previousLevel!==undefined){
         const interval=this.lastFrame?time-this.lastFrame:0;
         this.effects.update((time-this.previous)/1000,this.reducedMotion);this.render();this.dirty=false;this.metrics.frame(start);this.lastFrame=time;
-        if(interval>0&&interval<250)this.setQuality(this.adaptive.update(interval,interval,this.preference==='auto'?undefined:this.preference));
+        if(interval>0)this.setQuality(this.adaptive.update(interval,Math.min(interval,1000),this.preference==='auto'?undefined:this.preference));
         else this.adaptive.resetObservation();
       }
       this.previous=time;
@@ -147,8 +147,10 @@ export class MapRenderer {
       for(let y=Math.floor(bounds.minY/oldSpan);y<=Math.floor(bounds.maxY/oldSpan);y++)for(let x=Math.floor(bounds.minX/oldSpan);x<=Math.floor(bounds.maxX/oldSpan);x++){const c=this.terrain.get(x,y,this.previousLevel);if(c)draws.push({...this.groundDraw(c),alpha:1-progress});}
     }else this.previousLevel=undefined;
     this.terrain.retainLevels(new Set(this.previousLevel===undefined?[currentLevel,wanted]:[currentLevel,wanted,this.previousLevel]));
-    const paint=this.assets.acquire('/assets/map/terrain/snow-quiet.webp');if(paint&&this.terrain.paint!==paint){this.terrain.paint=paint;this.terrain.invalidate();}
-    used.add('/assets/map/terrain/snow-quiet.webp');
+    let paintChanged=false;
+    if(currentLevel<=2)for(const name of GROUND_MATERIALS){const path='/assets/map/terrain/'+name+'.webp',paint=this.assets.acquire(path);used.add(path);if(paint&&this.terrain.paints.get(name)!==paint){this.terrain.paints.set(name,paint);paintChanged=true;}}
+    else this.terrain.paints.clear();
+    if(paintChanged)this.terrain.invalidate();
     for(let y=Math.floor(bounds.minY/span);y<=Math.floor(bounds.maxY/span);y++)for(let x=Math.floor(bounds.minX/span);x<=Math.floor(bounds.maxX/span);x++){
       this.terrain.request(x,y,this.level);const chunk=this.terrain.get(x,y,this.level);if(chunk)draws.push({...this.groundDraw(chunk),alpha:progress});
     }
@@ -190,7 +192,7 @@ export class MapRenderer {
     const m=this.metrics.data;
     let terrainGPUBytes=0;for(const texture of this.chunkTextures.values())terrainGPUBytes+=texture.source.width*texture.source.height*4;
     m.textureBytes=this.app?this.assets.gpuBytes+terrainGPUBytes+Math.ceil(this.size.width*this.size.height*QUALITY[this.quality].dpr**2*8):0;
-    m.decodedBytes=this.assets.bytes+this.terrain.bytes;m.terrainBytes=terrainGPUBytes;m.queued=this.terrain.pending;m.pendingTextures=this.assets.pending;m.visible=buildingObjects.length+props.length;m.total=this.snapshot.buildings.length+worldProps.length;
+    m.decodedBytes=this.assets.bytes+this.terrain.bytes+this.terrain.scratchBytes;m.terrainBytes=terrainGPUBytes;m.queued=this.terrain.pending;m.pendingTextures=this.assets.pending;m.visible=buildingObjects.length+props.length;m.total=this.snapshot.buildings.length+worldProps.length;
     m.quality=this.quality;m.terrainLevel=this.level;m.visibleTerrainChunks=chunkCoverage(bounds,this.level);m.prefetchChunks=prefetched;
   }
   private groundDraw(chunk:TerrainChunk):Draw {

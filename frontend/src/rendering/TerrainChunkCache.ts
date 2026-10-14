@@ -1,4 +1,4 @@
-import type { TerrainSampler } from './TerrainSampler.ts';
+import { GROUND_MATERIALS, type TerrainSampler } from './TerrainSampler.ts';
 export type TerrainChunk = {key:string;level:number;x:number;y:number;span:number;canvas:HTMLCanvasElement;bytes:number;release?:()=>void};
 type Job={key:string;x:number;y:number;level:number;revision:number;size:number};
 type Working=Job&{buffer:Uint8ClampedArray;row:number};
@@ -13,6 +13,10 @@ export class TerrainChunkCache {
   private disposed=false;
   bytes=0;
   paint:HTMLImageElement|null=null;
+  readonly paints=new Map<string,HTMLImageElement>();
+  private mask:HTMLCanvasElement|null=null;
+  private painted:HTMLCanvasElement|null=null;
+  get scratchBytes():number{return (this.mask?this.mask.width*this.mask.height*4:0)+(this.painted?this.painted.width*this.painted.height*4:0);}
   readonly sampler:TerrainSampler;
   limit:number;
   size:number;
@@ -58,7 +62,27 @@ export class TerrainChunkCache {
   private install(job:Job&{buffer:Uint8ClampedArray}):void {
     const canvas=document.createElement('canvas');canvas.width=canvas.height=job.size;const ctx=canvas.getContext('2d')!;
     ctx.putImageData(new ImageData(new Uint8ClampedArray(job.buffer),job.size,job.size),0,0);
-    if(this.paint&&job.level<=2){
+    if(this.paints.size&&job.level<=2){
+      const span=64*2**job.level,scale=(job.size-2)/span,maskSize=32;
+      this.mask??=document.createElement('canvas');this.mask.width=this.mask.height=maskSize;
+      this.painted??=document.createElement('canvas');this.painted.width=this.painted.height=job.size;
+      const maskContext=this.mask.getContext('2d')!,paintContext=this.painted.getContext('2d')!;
+      const samples=Array.from({length:maskSize*maskSize},(_,i)=>this.sampler.materialWeights(job.x*span+(i%maskSize/(maskSize-1)*job.size-1)/scale,job.y*span+(Math.floor(i/maskSize)/(maskSize-1)*job.size-1)/scale));
+      const maskPixels=new Uint8ClampedArray(maskSize*maskSize*4);
+      ctx.save();ctx.globalCompositeOperation='soft-light';ctx.globalAlpha=.35;
+      for(let material=0;material<GROUND_MATERIALS.length;material++){
+        const image=this.paints.get(GROUND_MATERIALS[material]);if(!image||!samples.some(s=>s[material]>.002))continue;
+        for(let i=0;i<samples.length;i++){maskPixels[i*4]=maskPixels[i*4+1]=maskPixels[i*4+2]=255;maskPixels[i*4+3]=Math.round(samples[i][material]*255);}
+        maskContext.putImageData(new ImageData(maskPixels,maskSize,maskSize),0,0);
+        paintContext.globalCompositeOperation='source-over';paintContext.clearRect(0,0,job.size,job.size);
+        const pattern=paintContext.createPattern(image,'repeat');if(!pattern)continue;
+        pattern.setTransform(new DOMMatrix([32*scale/image.width,0,0,32*scale/image.height,1-job.x*span*scale,1-job.y*span*scale]));
+        paintContext.fillStyle=pattern;paintContext.fillRect(0,0,job.size,job.size);
+        paintContext.globalCompositeOperation='destination-in';paintContext.drawImage(this.mask,0,0,job.size,job.size);
+        ctx.drawImage(this.painted,0,0);
+      }
+      ctx.restore();
+    }else if(this.paint&&job.level<=2){
       const span=64*2**job.level,worldTile=32,scale=(job.size-2)/span;
       ctx.save();ctx.globalAlpha=.35;ctx.globalCompositeOperation='soft-light';
       // World-anchored UV, shared across chunks and projections, including the one-pixel gutter.
@@ -79,5 +103,5 @@ export class TerrainChunkCache {
     for(const [key,chunk] of this.cache)if(!levels.has(chunk.level)){chunk.release?.();chunk.canvas.width=0;this.bytes-=chunk.bytes;this.cache.delete(key);}
   }
   clearQueued():void {this.revision++;this.queue.clear();this.finished=[];this.working=null;}
-  destroy():void {if(this.disposed)return;this.disposed=true;this.worker?.terminate();this.worker=null;this.active=null;this.invalidate();this.paint=null;}
+  destroy():void {if(this.disposed)return;this.disposed=true;this.worker?.terminate();this.worker=null;this.active=null;this.invalidate();this.paint=null;this.paints.clear();if(this.mask)this.mask.width=0;if(this.painted)this.painted.width=0;this.mask=this.painted=null;}
 }

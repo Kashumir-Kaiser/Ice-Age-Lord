@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { Resvg } from '@resvg/resvg-js';
 import sharp from 'sharp';
 import {svgMapSource} from './svg-map-source.mjs';
+import {periodicMaterial} from './periodic-material.mjs';
 const repo=resolve(new URL('../..',import.meta.url).pathname),manifestPath=resolve(repo,'assets/manifest.json');
 const manifest=JSON.parse(readFileSync(manifestPath,'utf8'));
 const sha=(buffer)=>createHash('sha256').update(buffer).digest('hex');
@@ -51,7 +52,9 @@ for(const name of [...terrainNames,...propNames]){
  const source=`assets/source/terrain/${name}.png`,file=resolve(repo,source);if(!existsSync(file))continue;
  const material=terrainNames.includes(name),path=`/assets/map/terrain/${name}.${material?'webp':'png'}`;
  let pipeline=(material?sharp(file):sharp(file).trim({threshold:8})).resize({width:material?256:384,height:material?256:384,fit:material?'fill':'inside'});
- const buffer=await (material?pipeline.removeAlpha().webp({quality:82}):pipeline.png({compressionLevel:9})).toBuffer();
+ let buffer;
+ if(material){const {data,info}=await pipeline.removeAlpha().raw().toBuffer({resolveWithObject:true});buffer=await sharp(periodicMaterial(data,info.width,info.height,info.channels),{raw:info}).webp({lossless:true,effort:6}).toBuffer();}
+ else buffer=await pipeline.png({compressionLevel:9}).toBuffer();
  writeFileSync(resolve(repo,'frontend/public'+path),buffer);const meta=await sharp(buffer).metadata();
  manifest.environmentArt.push({assetId:name,source,path,sourceSha256:sha(readFileSync(file)),sha256:sha(buffer),width:meta.width,height:meta.height,exportVersion:1,projection:material?'ground':'dimetric',alpha:material?'opaque':'straight',colorSpace:'srgb',provenance:'Original OpenAI ImageGen environmental art, 2026-10-13; matched to existing project source references.',license:'Original generated art created for this project.',status:'draft'});
 }

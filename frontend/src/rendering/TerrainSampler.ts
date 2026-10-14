@@ -3,6 +3,7 @@ export type Material = 'snow' | 'earth' | 'ice' | 'rock' | 'forest';
 export type Geography = { forest: {x:number;y:number}; stone: {x:number;y:number}; water: {x:number;y:number} };
 export type TerrainRegion={x:number;y:number;width:number;depth:number;kind:'forest'|'rock'|'ice';ratio:number};
 export type TerrainProp = {id:string;x:number;y:number;size:number;kind:'conifer'|'bare'|'rock'|'bank';variant:number};
+export const GROUND_MATERIALS=['snow-quiet','snow-02','snow-03','snow-04','dirty-snow-01','dirty-snow-02','earth-01','earth-02','ice-01','ice-02'] as const;
 export function visualHash(x:number,y:number,seed:number):number {
   let n=Math.imul(x|0,374761393)^Math.imul(y|0,668265263)^seed;
   n=Math.imul(n^(n>>>13),1274126177);return ((n^(n>>>16))>>>0)/4294967296;
@@ -44,6 +45,17 @@ export class TerrainSampler {
     let w=0;if(this.modeledInfill)for(const g of MODELED_FOREST)w=Math.max(w,regionWeight(x,y,g,g.rx,g.ry));
     if(this.geography)w=Math.max(w,regionWeight(x,y,this.geography.forest,3500,3600));
     for(const r of this.regions)if(r.kind==='forest')w=Math.max(w,regionWeight(x,y,r,r.width/2,r.depth/2)*r.ratio);return w;
+  }
+  /** Continuous presentation weights; resource locations come only from the scene projection. */
+  materialWeights(x:number,y:number):number[] {
+    let earth=0,ice=0;
+    if(this.geography){earth=regionWeight(x,y,this.geography.stone,1300,1100)*.7;ice=regionWeight(x,y,this.geography.water,2100,1200);}
+    if(this.modeledInfill)for(const ridge of MODELED_RELIEF)earth=Math.max(earth,regionWeight(x,y,ridge,ridge.rx,ridge.ry)*.35);
+    for(const r of this.regions){const w=regionWeight(x,y,r,r.width/2,r.depth/2)*r.ratio;if(r.kind==='rock')earth=Math.max(earth,w*.7);if(r.kind==='ice')ice=Math.max(ice,w);}
+    const dirty=this.forestAt(x,y)*.28,variant=noise(x/180,y/180,this.seed+311),split=noise(x/95,y/95,this.seed+313);
+    const snowWeights=[0,.33,.67,1].map(center=>Math.max(0,1-Math.abs(variant-center)*3));
+    const total=snowWeights.reduce((a,b)=>a+b,0),remaining=1-ice;
+    return [...snowWeights.map(w=>w/total*remaining*(1-earth)*(1-dirty)),remaining*(1-earth)*dirty*(1-split),remaining*(1-earth)*dirty*split,remaining*earth*(1-split),remaining*earth*split,ice*(1-split),ice*split];
   }
   sample(x:number,y:number,sampleSpan=0):{material:Material;color:readonly number[];forest:number} {
     const broad=.5+(noise(x/4000,y/4000,this.seed)-.5)*.4*Math.max(0,1-sampleSpan/4000)

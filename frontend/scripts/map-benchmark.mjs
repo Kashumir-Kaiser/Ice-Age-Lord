@@ -1,4 +1,5 @@
-import {mkdirSync,writeFileSync} from 'node:fs';
+import {mkdirSync,writeFileSync,readdirSync,readFileSync} from 'node:fs';
+import {gzipSync} from 'node:zlib';
 import {resolve} from 'node:path';
 import os from 'node:os';
 import {launchMapBrowser,openMap,navigateMap,readyMap} from './map-browser.mjs';
@@ -21,7 +22,9 @@ try{
    await page.keyboard.press('Escape');
   }
   if(fixture==='world-1023')await page.getByRole('button',{name:'Chuyển sang bản đồ thế giới',exact:true}).click();
-  await page.locator('[data-map-renderer]').scrollIntoViewIfNeeded();await readyMap(page);await page.waitForTimeout(warmup*1000);
+  await page.locator('[data-map-renderer]').scrollIntoViewIfNeeded();await readyMap(page);
+  const coldTransfer={bytes:page.mapAssetTransfers.reduce((sum,item)=>sum+item.bytes,0),requests:page.mapAssetTransfers.slice(),scope:'Map raster assets requested through first scene readiness; source UI assets excluded.'};
+  await page.waitForTimeout(warmup*1000);
   const latency=await page.evaluate(async duration=>{
    const node=document.querySelector('.territory-scene-svg,.terrain-svg--deep'),box=node.getBoundingClientRect();
    const start=performance.now(),x=box.left+box.width*.45,y=box.top+box.height*.65,feedback=[];
@@ -44,10 +47,12 @@ try{
   },seconds);
   const metrics=await page.evaluate(()=>window.__mapMetrics.at(-1));
   const gpu=await page.evaluate(()=>{const canvas=document.querySelector('.map-render-canvas');const gl=canvas.getContext('webgl2')||canvas.getContext('webgl');if(!gl)return null;const ext=gl.getExtension('WEBGL_debug_renderer_info');return ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER);});
-  results.push({fixture,run,quality,seconds,warmup,gpu,metrics,longTasks,pointerFeedback:{p50:percentile(latency,.5),p95:percentile(latency,.95)},interval:{p50:percentile(metrics.intervalMs,.5),p95:percentile(metrics.intervalMs,.95),p99:percentile(metrics.intervalMs,.99),worst:metrics.intervalMs.length?Math.max(...metrics.intervalMs):null},visibleMarkers:await page.locator('.map-entity-marker,.map-cluster').count()});
+  results.push({fixture,run,quality,seconds,warmup,gpu,metrics,coldTransfer,longTasks,pointerFeedback:{p50:percentile(latency,.5),p95:percentile(latency,.95)},interval:{p50:percentile(metrics.intervalMs,.5),p95:percentile(metrics.intervalMs,.95),p99:percentile(metrics.intervalMs,.99),worst:metrics.intervalMs.length?Math.max(...metrics.intervalMs):null},visibleMarkers:await page.locator('.map-entity-marker,.map-cluster').count()});
   await page.close();console.log(`Measured ${fixture} run ${run+1}/${runs}`);
  }
 }finally{
- writeFileSync(resolve(output,'results.json'),JSON.stringify({environment:{node:process.version,platform:os.platform(),cpu:os.cpus()[0]?.model,cpuCount:os.cpus().length,ramBytes:os.totalmem(),browser:'Chromium headless',viewport:{width:1366,height:768},dpr:1,targetDeviceVerified:false},results},null,2));await browser.close();
+ const summary=['fresh','populated','dense-520','local','world-1023'].map(fixture=>{const samples=results.filter(r=>r.fixture===fixture);return {fixture,completedRuns:samples.length,medianIntervalP95:percentile(samples.map(r=>r.interval.p95).filter(Number.isFinite),.5),medianPointerP95:percentile(samples.map(r=>r.pointerFeedback.p95).filter(Number.isFinite),.5)};});
+ const rendererBundles=readdirSync(resolve('dist/assets')).filter(name=>/^(MapRenderer|MapCanvas|terrain\.worker|WebGLRenderer|RenderTargetSystem|Texture)/.test(name)&&name.endsWith('.js')).map(name=>{const bytes=readFileSync(resolve('dist/assets',name));return {name,bytes:bytes.length,gzipBytes:gzipSync(bytes).length};});
+ writeFileSync(resolve(output,'results.json'),JSON.stringify({environment:{node:process.version,platform:os.platform(),cpu:os.cpus()[0]?.model,cpuCount:os.cpus().length,ramBytes:os.totalmem(),browser:'Chromium headless',viewport:{width:1366,height:768},dpr:1,targetDeviceVerified:false},rendererBundles,rendererGzipBytes:rendererBundles.reduce((sum,b)=>sum+b.gzipBytes,0),summary,results},null,2));await browser.close();
 }
 console.log('Headless measurements are diagnostics, not validation of Intel UHD 620 GPU performance.');
