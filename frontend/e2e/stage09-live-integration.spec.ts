@@ -37,6 +37,16 @@ test('all nine live screens remain on one server-owned save projection at releas
       await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: new RegExp(`^${screen}`) }).click();
       await expect(page.getByRole('heading', { level: 1, name: screen })).toBeVisible();
       await expect(page.locator('.live-footer')).toContainText(`revision ${initialRevision}`);
+      if (screen === 'Tổng quan') {
+        const overview = page.getByTestId('live-overview-parity');
+        await expect(overview).toBeVisible();
+        await expect(overview.locator('.hero-banner')).toBeVisible();
+        await expect(overview.locator('.stats-grid .stat-card')).toHaveCount(4);
+        await expect(page.getByTestId('live-overview-map')).toBeVisible();
+        await expect(overview.locator('.hero-art img')).toHaveAttribute('src', /li-lan-t0-portrait/);
+        await expect(overview.getByRole('button', { name: 'Khám phá bản đồ' })).toBeVisible();
+        await page.screenshot({ path: testInfo.outputPath(`stage09-overview-${viewport.width}x${viewport.height}.png`), fullPage: true });
+      }
       if (screen === 'Nhân vật') {
         const portrait = page.getByRole('img', { name: 'Toàn thân Lí Lan' });
         await expect(portrait).toBeVisible();
