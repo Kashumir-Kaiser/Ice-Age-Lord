@@ -1668,15 +1668,15 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       <section className="live-panel">
         <div className="live-panel-heading"><div><span className="live-eyebrow">XÂY DỰNG</span><h2>Công trình và sửa chữa</h2></div><Hammer size={22} /></div>
         {focusedConstructionBuildingId && <p className="live-preview-success">Map selection: {view.territory.buildings.find(building => building.id === focusedConstructionBuildingId)?.name ?? focusedConstructionBuildingId}. Current construction state is shown below.</p>}
-        <p className="live-muted">Vị trí, vật liệu, quyền truy cập và lao động được kiểm tra lại trên API. Bản xem trước không giữ vật liệu; công việc bắt đầu mới đặt chỗ.</p>
+        <p className="live-muted">Kiểm tra vật liệu và nhân công trước khi bắt đầu. Vật liệu chỉ được giữ lại khi công việc bắt đầu.</p>
         {repairHouse && repairHouse.status === 'damaged' && <article className="live-construction-card">
           <div className="live-panel-heading"><div><span className="live-eyebrow">SỬA CHỮA</span><h3>{repairHouse.name}</h3></div><span className="live-data-chip">{repairHouse.status}</span></div>
-          <p>20 WOOD + 10 STONE · STONE-HAMMER per assigned worker · 17/60 WU · tối đa 2 worker. Hoàn tất mở đúng 11 blueprint tầng 1.</p>
+          <p>Cần 20 gỗ, 10 đá và búa đá cho mỗi người làm. Tối đa 2 nhân công. Hoàn thành sửa chữa sẽ mở thêm 11 bản vẽ cấp 1.</p>
           {repairHouse.position && <p>Tọa độ: {(repairHouse.position.xMm / 1000).toFixed(1)}, {(repairHouse.position.yMm / 1000).toFixed(1)} m · người chơi: {(view.player.position.xMm / 1000).toFixed(1)}, {(view.player.position.yMm / 1000).toFixed(1)} m</p>}
           <div className="live-building-form">
-            <label className="live-inline-field">Container chi phí <select value={constructionContainer?.id ?? ''} onChange={event => { setConstructionContainerId(event.target.value); setConstructionPreview(null); }}>
-              <option value="" disabled>Chọn container đã quan sát</option>
-              {view.inventory.containers.map(container => <option key={container.id} value={container.id}>{container.label} · {container.accessible ? 'accessible' : 'out of reach'}</option>)}
+            <label className="live-inline-field">Túi dùng nguyên liệu <select value={constructionContainer?.id ?? ''} onChange={event => { setConstructionContainerId(event.target.value); setConstructionPreview(null); }}>
+              <option value="" disabled>Chọn túi đồ đã kiểm tra</option>
+              {view.inventory.containers.map(container => <option key={container.id} value={container.id}>{playerContainerName(container.label)} · {container.accessible ? 'trong tầm với' : 'ngoài tầm với'}</option>)}
             </select></label>
             <div className="live-button-row">
               {repairHouse.position && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'move', { actorId: view.player.id, destination: repairHouse.position! }))}>Move to Lord House</button>}
@@ -1686,25 +1686,25 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           </div>
           {constructionContainer && <p className="live-muted">{materialLine('WOOD', 20)} · {materialLine('STONE', 10)} · {materialLine('STONE-HAMMER', 1)} tool available</p>}
           {repairCommand && selectedCommandIsPreviewed(repairCommand) && <p className={constructionPreview?.availability.enabled ? 'live-preview-success' : 'live-inline-error'}>{constructionPreview?.availability.enabled ? constructionPreview.availability.preview?.value : availabilityMessage(constructionPreview!.availability)}</p>}
-          <p className="live-muted">Để dùng hòm tiếp tế, Lí Lan phải đứng trong 5 m tại SITE-LL01-002; container mang theo có thể dùng khi đang ở trong tầm công trình.</p>
+          <p className="live-muted">Đứng trong phạm vi 5 m quanh hòm tiếp tế để lấy nguyên liệu. Túi đang mang chỉ sử dụng được khi đứng gần công trình.</p>
         </article>}
-        {repairHouse?.status === 'active' && <p className="live-preview-success">Nhà Lãnh Chúa đã sửa. {view.construction.unlockedBlueprintIds.length} blueprint được mở.</p>}
+        {repairHouse?.status === 'active' && <p className="live-preview-success">Nhà Lãnh Chúa đã sửa. {view.construction.unlockedBlueprintIds.length} bản vẽ đã được mở.</p>}
 
         <section className="live-panel">
           <div className="live-panel-heading"><div><span className="live-eyebrow">SƯỞI ẤM</span><h3>Lò Sưởi Đơn Giản</h3></div><Flame size={20} /></div>
           {view.territory.buildings.filter(building => building.kind === 'heater' && building.status === 'active').length === 0
-            ? <p className="live-empty-state">No active heater is built. Its fixed opening recipe is 6 STONE.</p>
+            ? <p className="live-empty-state">Chưa có lò sưởi đang hoạt động. Xây lò sưởi cần 6 đá.</p>
             : view.territory.buildings.filter(building => building.kind === 'heater' && building.status === 'active').map(building => {
               const service = view.construction.operatingServices.find(item => item.buildingId === building.id && item.status === 'active');
               const operationCommand = constructionContainer ? commandFor(view, 'operate_heater', { actorId: view.player.id, buildingId: building.id, containerId: constructionContainer.id }) : null;
               const operationPreviewed = selectedCommandIsPreviewed(operationCommand);
               return <article className="live-construction-card" key={building.id}>
-                <strong>{building.name} · {service ? 'operating' : 'idle'}</strong>
-                <p>Service: reserve 1 WOOD for 20 minutes; +15–20°C in a room up to 30 m². This local output does not change the unresolved territory-wide cold-load model.</p>
-                {service && <p className="live-preview-success">Active · {elapsedLabel(service.completesAtElapsedMs)} · {Math.ceil(service.remainingMs / 60_000)} min remaining · 1 WOOD reserved.</p>}
+                <strong>{building.name} · {service ? 'đang sưởi ấm' : 'chưa hoạt động'}</strong>
+                <p>Đốt 1 gỗ trong 20 phút để tăng nhiệt độ 15–20°C cho phòng tối đa 30 m². Chỉ có hiệu lực trong phòng này.</p>
+                {service && <p className="live-preview-success">Đang sưởi ấm · còn {Math.ceil(service.remainingMs / 60_000)} phút · đã giữ 1 gỗ.</p>}
                 {operationCommand && <div className="live-button-row">
-                  <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !constructionContainer?.accessible} onClick={() => void previewConstructionCommand(operationCommand)}>Preview heater operation</button>
-                  <button className="live-button" disabled={working || Boolean(pendingCommand) || !operationPreviewed || !constructionPreview?.availability.enabled} onClick={() => void sendCommand(operationCommand)}>Operate for 20 minutes</button>
+                  <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !constructionContainer?.accessible} onClick={() => void previewConstructionCommand(operationCommand)}>Kiểm tra đốt lò</button>
+                  <button className="live-button" disabled={working || Boolean(pendingCommand) || !operationPreviewed || !constructionPreview?.availability.enabled} onClick={() => void sendCommand(operationCommand)}>Sưởi trong 20 phút</button>
                 </div>}
                 {operationCommand && operationPreviewed && <p className={constructionPreview?.availability.enabled ? 'live-preview-success' : 'live-inline-error'}>{constructionPreview?.availability.enabled ? constructionPreview.availability.preview?.value : availabilityMessage(constructionPreview!.availability)}</p>}
               </article>;
@@ -1714,26 +1714,26 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         <article className="live-construction-card">
           <div className="live-panel-heading"><div><span className="live-eyebrow">QUY HOẠCH LÃNH ĐỊA</span><h3>Đặt công trình</h3></div></div>
           <div className="live-building-form">
-            <label className="live-inline-field">Blueprint <select value={constructionBlueprintId} onChange={event => { setConstructionBlueprintId(event.target.value); setConstructionPreview(null); }}>
-              <option value="" disabled>Chọn blueprint đã mở</option>
-              {view.construction.blueprints.map(blueprint => <option key={blueprint.id} value={blueprint.id} disabled={!view.construction.unlockedBlueprintIds.includes(blueprint.id)}>{blueprint.name} · {view.construction.unlockedBlueprintIds.includes(blueprint.id) ? 'unlocked' : 'locked'}</option>)}
+            <label className="live-inline-field">Bản vẽ <select value={constructionBlueprintId} onChange={event => { setConstructionBlueprintId(event.target.value); setConstructionPreview(null); }}>
+              <option value="" disabled>Chọn bản vẽ đã mở</option>
+              {view.construction.blueprints.map(blueprint => <option key={blueprint.id} value={blueprint.id} disabled={!view.construction.unlockedBlueprintIds.includes(blueprint.id)}>{blueprint.name} · {view.construction.unlockedBlueprintIds.includes(blueprint.id) ? 'đã mở' : 'bị khóa'}</option>)}
             </select></label>
             <label className="live-inline-field">X (m) <input inputMode="decimal" value={constructionXMetres} onChange={event => { setConstructionXMetres(event.target.value); setConstructionPreview(null); }} /></label>
             <label className="live-inline-field">Y (m) <input inputMode="decimal" value={constructionYMetres} onChange={event => { setConstructionYMetres(event.target.value); setConstructionPreview(null); }} /></label>
             <div className="live-button-row">
-              <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !constructionPosition} onClick={() => constructionPosition && void sendCommand(commandFor(view, 'move', { actorId: view.player.id, destination: constructionPosition }))}>Move to placement</button>
-              <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !buildCommand} onClick={() => buildCommand && void previewConstructionCommand(buildCommand)}>Preview placement</button>
-              <button className="live-button" disabled={working || Boolean(pendingCommand) || !buildCommand || !selectedCommandIsPreviewed(buildCommand) || !constructionPreview?.availability.enabled} onClick={() => buildCommand && void sendCommand(buildCommand)}>Start build</button>
+              <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !constructionPosition} onClick={() => constructionPosition && void sendCommand(commandFor(view, 'move', { actorId: view.player.id, destination: constructionPosition }))}>Đến vị trí xây dựng</button>
+              <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !buildCommand} onClick={() => buildCommand && void previewConstructionCommand(buildCommand)}>Kiểm tra vị trí xây</button>
+              <button className="live-button" disabled={working || Boolean(pendingCommand) || !buildCommand || !selectedCommandIsPreviewed(buildCommand) || !constructionPreview?.availability.enabled} onClick={() => buildCommand && void sendCommand(buildCommand)}>Bắt đầu xây</button>
             </div>
           </div>
           {selectedBlueprint && <>
-            <p>Cost: {selectedBlueprint.buildCost.map(item => `${item.quantity} ${item.materialId}${item.unit === 'segment' ? ' / segment' : ''}`).join(' + ')} · {selectedBlueprint.workUnits} WU · max {selectedBlueprint.maxWorkers} workers · footprint {selectedBlueprint.footprint.areaM2 ?? `${selectedBlueprint.footprint.lengthM} m linear`}.</p>
+            <p>Nguyên liệu: {selectedBlueprint.buildCost.map(item => `${item.quantity} ${playerItemName(item.materialId)}`).join(' + ')} · tối đa {selectedBlueprint.maxWorkers} nhân công · diện tích {selectedBlueprint.footprint.areaM2 !== null ? `${selectedBlueprint.footprint.areaM2} m²` : `${selectedBlueprint.footprint.lengthM} m chiều dài`}.</p>
             {constructionContainer && <p className="live-muted">{selectedBlueprint.buildCost.map(item => materialLine(item.materialId, item.quantity)).join(' · ')}</p>}
-            <p>Output: {selectedBlueprint.outputs.join(' · ')}. Operation: {selectedBlueprint.operatingNeeds.join(' · ')}</p>
-            {!selectedBlueprint.upgrade && <p className="live-muted">Upgrade contract is unavailable.</p>}
+            <p>Công dụng: {selectedBlueprint.outputs.map(playerItemName).join(' · ') || 'Chưa rõ'}.</p>
+            {!selectedBlueprint.upgrade && <p className="live-muted">Chưa thể nâng cấp công trình này.</p>}
           </>}
           {buildCommand && selectedCommandIsPreviewed(buildCommand) && <p className={constructionPreview?.availability.enabled ? 'live-preview-success' : 'live-inline-error'}>{constructionPreview?.availability.enabled ? constructionPreview.availability.preview?.value : availabilityMessage(constructionPreview!.availability)}</p>}
-          <p className="live-muted">LL01 placement policy: H0 development radius 100 m, player within 5 m, surface elevation, and no overlapping square-overlay footprint. This geometry is a versioned design overlay.</p>
+          <p className="live-muted">Có thể xây trong phạm vi 100 m quanh trại. Hãy đứng cách điểm xây tối đa 5 m và tránh chồng lấn với các công trình khác.</p>
         </article>
 
         <div className="live-two-column">
@@ -1745,34 +1745,34 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
               const maxWorkers = job.kind === 'repair' ? 2 : view.construction.blueprints.find(blueprint => blueprint.id === job.blueprintId)?.maxWorkers ?? 0;
               const combinedWorkers = [...new Set([...job.workerIds, ...nearbyUnits.map(unit => unit.id)])].slice(0, maxWorkers);
               return <li key={job.id} className="live-construction-job">
-                <strong>{job.kind === 'repair' ? 'Lord House repair' : view.construction.blueprints.find(blueprint => blueprint.id === job.blueprintId)?.name ?? job.blueprintId} · {job.status}</strong>
-                <span>{percent.toFixed(1)}% · {job.progressTicks}/{Math.round(job.workUnitsRequired * 300)} work ticks · {job.workUnitsPerHour.toFixed(2)} WU/h · ETA {elapsedLabel(job.estimatedCompletionAtElapsedMs)}</span>
-                <small>Workers: {job.workerIds.length ? job.workerIds.join(', ') : 'none'} · reserved: {job.costReservations.map(item => `${item.quantity} ${item.templateId}`).join(', ') || 'none'}</small>
+                <strong>{job.kind === 'repair' ? 'Sửa Nhà Lãnh Chúa' : playerBlueprintName(view, job.blueprintId)} · {playerStatus(job.status)}</strong>
+                <span>Đã hoàn thành {percent.toFixed(1)}% · dự kiến xong {elapsedLabel(job.estimatedCompletionAtElapsedMs)}</span>
+                <small>Nhân công: {job.workerIds.length ? job.workerIds.map(id => playerOwnerName(view, id)).join(', ') : 'Chưa có'} · vật liệu đã giữ: {job.costReservations.map(item => `${item.quantity} ${playerItemName(item.templateId)}`).join(', ') || 'Không có'}</small>
                 {(job.status === 'active' || job.status === 'paused' || job.status === 'blocked') && <div className="live-button-row">
-                  <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || combinedWorkers.length === job.workerIds.length} onClick={() => void sendCommand(commandFor(view, 'assign_construction_workers', { jobId: job.id, workerIds: combinedWorkers }))}>Add nearby workers</button>
-                  <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || job.workerIds.length === 0} onClick={() => void sendCommand(commandFor(view, 'assign_construction_workers', { jobId: job.id, workerIds: [] }))}>Pause</button>
-                  <button className="live-text-button" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'cancel_construction_job', { jobId: job.id }))}>Cancel · release reserved materials</button>
+                  <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || combinedWorkers.length === job.workerIds.length} onClick={() => void sendCommand(commandFor(view, 'assign_construction_workers', { jobId: job.id, workerIds: combinedWorkers }))}>Thêm nhân công ở gần</button>
+                  <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || job.workerIds.length === 0} onClick={() => void sendCommand(commandFor(view, 'assign_construction_workers', { jobId: job.id, workerIds: [] }))}>Tạm dừng</button>
+                  <button className="live-text-button" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'cancel_construction_job', { jobId: job.id }))}>Hủy và hoàn trả nguyên liệu đã giữ</button>
                 </div>}
               </li>;
-            })}</ul> : <p className="live-empty-state">No construction work has started.</p>}
+            })}</ul> : <p className="live-empty-state">Chưa bắt đầu công trình nào.</p>}
           </section>
           <section className="live-panel">
             <div className="live-panel-heading"><div><span className="live-eyebrow">NHÀ Ở VÀ LƯƠNG THỰC</span><h3>Nhà nông phu cực địa</h3></div><Users size={20} /></div>
-            <p>{view.construction.occupiedHousing}/{view.construction.farmerHouseCapacity} resident capacity · {view.construction.residents.length} residents.</p>
-            <p className="live-muted">Recruitment input: exactly 5 FOOD units per resident from food stacks in the selected accessible container. Daily upkeep is not compiled by the source.</p>
+            <p>Chỗ ở: {view.construction.occupiedHousing}/{view.construction.farmerHouseCapacity} · {view.construction.residents.length} cư dân.</p>
+            <p className="live-muted">Chiêu mộ một cư dân cần 5 phần lương thực từ túi đồ đang trong tầm với.</p>
             {view.territory.buildings.filter(building => building.kind === 'polar_farmhouse' && building.status === 'active').map(building => <div className="live-button-row" key={building.id}>
-              <button className="live-button" disabled={working || Boolean(pendingCommand) || !constructionContainer} onClick={() => constructionContainer && void sendCommand(commandFor(view, 'recruit_resident', { buildingId: building.id, containerId: constructionContainer.id, quantity: 1 }))}>Recruit 1 resident · 5 FOOD units</button>
+              <button className="live-button" disabled={working || Boolean(pendingCommand) || !constructionContainer} onClick={() => constructionContainer && void sendCommand(commandFor(view, 'recruit_resident', { buildingId: building.id, containerId: constructionContainer.id, quantity: 1 }))}>Chiêu mộ 1 cư dân · 5 phần lương thực</button>
             </div>)}
-            {view.construction.residents.length ? <ul className="live-plain-list">{view.construction.residents.map(resident => <li key={resident.id}><strong>{resident.name}</strong><span>{resident.foodUnitsPaid} food units paid · upkeep {resident.upkeepStatus}</span></li>)}</ul> : <p className="live-empty-state">No residents have been recruited.</p>}
-            {view.construction.rewardEntitlements.map(reward => <p className="live-inline-error" key={reward.id}>Reward pending: {reward.blocker}; {reward.reward.map(item => `${item.quantity} ${item.templateId}`).join(', ')} not minted.</p>)}
+            {view.construction.residents.length ? <ul className="live-plain-list">{view.construction.residents.map(resident => <li key={resident.id}><strong>{resident.name}</strong><span>Đã dùng {resident.foodUnitsPaid} phần lương thực · {playerStatus(resident.upkeepStatus)}</span></li>)}</ul> : <p className="live-empty-state">Chưa có cư dân được chiêu mộ.</p>}
+            {view.construction.rewardEntitlements.map(reward => <p className="live-inline-error" key={reward.id}>Phần thưởng đang chờ: {playerMessage(reward.blocker)}</p>)}
           </section>
         </div>
 
         <section className="live-panel">
           <div className="live-panel-heading"><div><span className="live-eyebrow">BẢN VẼ</span><h3>Blueprints mở và bị khóa</h3></div><Shield size={20} /></div>
           <ul className="live-plain-list">{view.construction.blueprints.map(blueprint => <li key={blueprint.id}>
-            <strong>{blueprint.name} · {view.construction.unlockedBlueprintIds.includes(blueprint.id) ? 'available' : 'locked until Lord House repair'}</strong>
-            <span>{`${blueprint.buildCost.map(item => `${item.quantity} ${item.materialId}`).join(' + ')} · ${blueprint.workUnits} WU · ${blueprint.footprint.areaM2 ?? `${blueprint.footprint.lengthM} m`} · ${blueprint.outputs.join('; ')}`}</span>
+            <strong>{blueprint.name} · {view.construction.unlockedBlueprintIds.includes(blueprint.id) ? 'đã mở' : 'mở sau khi sửa Nhà Lãnh Chúa'}</strong>
+            <span>{blueprint.buildCost.map(item => `${item.quantity} ${playerItemName(item.materialId)}`).join(' + ')} · {blueprint.footprint.areaM2 ?? `${blueprint.footprint.lengthM} m chiều dài`} m²</span>
           </li>)}</ul>
         </section>
         {view.territory.buildings.length > 0 && <section className="live-panel">
@@ -1782,7 +1782,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       </section>
       <section className="live-panel">
         <div className="live-panel-heading"><div><span className="live-eyebrow">LĂNG MỘ</span><h2>Hàng đợi Mộ Bậc {view.territory.tomb.level}</h2></div><Shield size={22} /></div>
-        <p>Đầu ra: Bậc {view.territory.tomb.output.formTier} · {view.territory.tomb.output.grade} · cấp {view.territory.tomb.output.level} · {view.territory.tomb.output.baseLaborRateWuPerHour} WU/giờ.</p>
+        <p>Cương thi được tạo: Bậc {view.territory.tomb.output.formTier} · phẩm {view.territory.tomb.output.grade} · cấp {view.territory.tomb.output.level}.</p>
         <p>{view.territory.tomb.deathQi.current}/{view.territory.tomb.deathQi.capacity} Tử Khí · {view.territory.tomb.activeCount}/{view.territory.tomb.productionSlots} ô đang chạy · hồi lúc T+{elapsedLabel(view.territory.tomb.deathQi.nextRefillAtElapsedMs)}</p>
         <div className="live-button-row"><button className="live-button" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'enqueue_tomb', { blueprintId: 'LL-TOMB-ZOMBIE-STANDARD-01' }))}>Xếp một Cương Thi tiêu chuẩn</button></div>
         <TombQueueList view={view} working={working} blocked={Boolean(pendingCommand)} onCancel={cancelTombJob} />
