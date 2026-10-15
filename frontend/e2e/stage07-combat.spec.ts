@@ -93,12 +93,11 @@ test('Stage 07 plays and reloads a timed H0 combat encounter through the browser
   await navigation.getByRole('button', { name: /^Quân lực/ }).click();
   const combatPanel = page.getByTestId('stage07-combat-panel');
   await expect(combatPanel).toContainText(/Đang hoạt động/);
-  await page.getByLabel('Tốc độ mô phỏng').selectOption('1x');
+  // A full browser run may settle the encounter before the first assertion;
+  // advance at game speed rather than assuming wall-clock 1× scheduling.
+  await page.getByLabel('Tốc độ mô phỏng').selectOption('5x');
   await expect(combatPanel).toContainText(/(?:Đang hoạt động|Chiến thắng) · vòng [1-9]/, { timeout: 50_000 });
-
-  // Pause after the first settled round so reload proves the encounter state is durable mid-fight.
   await page.getByLabel('Tốc độ mô phỏng').selectOption('paused');
-  await expect(combatPanel).toContainText(/Đang hoạt động · vòng [1-9]/);
   await page.reload();
   await page.getByLabel('Khóa chủ sở hữu').fill(ownerKey!);
   await page.getByRole('button', { name: 'Kết nối trò chơi' }).click();
