@@ -192,3 +192,17 @@ test('art QA loads preserved late art without adding a settlement entity or plac
  await page.locator('.territory-calibration > summary').click();
  await expect(page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true})).toHaveCount(0);
 });
+
+test('repaired house raster failures use its smoke-free map SVG and retain the original UI source',async({page})=>{
+ test.setTimeout(90000);
+ const requested=new Set<string>();page.on('request',request=>requested.add(new URL(request.url()).pathname));
+ await page.route('**/assets/map/buildings/lord-house-repaired/*.png*',route=>route.fulfill({status:404,body:'exercise static SVG fallback'}));
+ await territory(page);
+ await page.locator('.territory-calibration > summary').click();
+ await page.getByLabel('Hình minh họa',{exact:true}).selectOption('lord-house-repaired');
+ await page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
+ await expect.poll(()=>requested.has('/assets/map/buildings/lord-house-repaired/body-static.svg'),{timeout:30000}).toBe(true);
+ await expect(page.locator('.territory-calibration-preview image').nth(1)).toHaveAttribute('href','/assets/buildings/lord-house-repaired/base.svg');
+ await expect(page.locator('.map-render-canvas')).toHaveCount(1);
+ await expect(page.locator('[data-map-renderer]')).toHaveAttribute('data-map-renderer',/webgl|canvas2d/);
+});

@@ -35,6 +35,8 @@ export type AssetManifestEntry = {
   /** Purely visual sprite-scale multiplier. Never changes physical occupancy or heat. */
   presentationScale?: number;
   layers: AssetLayerPaths;
+  /** Map-only sources stripped of unsupported baked effects; original UI layers stay intact. */
+  mapLayers?: Partial<AssetLayerPaths>;
   logicalCanvas: { width: number; height: number };
   trimOffset: { x: number; y: number };
   groundAnchor: { x: number; y: number };

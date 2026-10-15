@@ -31,8 +31,9 @@ export function artPolygon(polygon: readonly (readonly [number,number])[], rect:
 export function resolveOrientation(asset: AssetManifestEntry, orientation: Orientation): { layers: AssetLayerPaths; missing: boolean } {
   const authored = asset.orientationViews?.[orientation];
   if (authored) return { layers: authored, missing: false };
-  if (asset.orientation === orientation || asset.equivalentOrientations?.includes(orientation)) return { layers: asset.layers, missing: false };
-  return { layers: asset.layers, missing: true };
+  const layers={...asset.layers,...asset.mapLayers};
+  if (asset.orientation === orientation || asset.equivalentOrientations?.includes(orientation)) return { layers, missing: false };
+  return { layers, missing: true };
 }
 export type CompositionLayer = { role: 'shadow' | 'base' | 'upper' | 'body' | 'vfx'; path: string; alpha: number };
 export function composition(asset: AssetManifestEntry, mode: 'normal' | 'focus' | 'planning', occludes: boolean, active: boolean, orientation: Orientation): CompositionLayer[] {

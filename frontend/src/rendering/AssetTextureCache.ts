@@ -35,8 +35,9 @@ export class AssetTextureCache {
       this.revision(flame.path,flame.sha256);this.estimates.set(flame.path,flame.width*flame.height*4);
       for(let i=0;i<flame.frames.length;i++)this.registrations.set(flameKey(flame.path,i),{path:flame.path,...flame.frames[i]});
     }
-    for(const path of Object.values(asset.layers))if(typeof path==='string')this.estimates.set(path,asset.logicalCanvas.width*asset.logicalCanvas.height*4);
+    for(const path of Object.values({...asset.layers,...asset.mapLayers}))if(typeof path==='string')this.estimates.set(path,asset.logicalCanvas.width*asset.logicalCanvas.height*4);
     for(const entry of asset.mapExports??[]){
+      if(asset.mapLayers&&Object.values(asset.mapLayers).includes(entry.source))this.revision(entry.source,entry.sourceSha256);
       this.revision(entry.path,entry.sha256);
       if(entry.atlas)this.revision(entry.atlas.path,entry.atlas.sha256);
       const canvas=entry.logicalCanvas??asset.logicalCanvas,trim=entry.trim;

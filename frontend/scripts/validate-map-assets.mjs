@@ -38,7 +38,7 @@ export function validateMapExport(entry,asset,read=path=>readFileSync(resolve(ro
  }
  if(entry.orientation&&entry.orientation!==asset.orientation&&!asset.orientationViews?.[entry.orientation]&&!asset.equivalentOrientations?.includes(entry.orientation))throw new Error('Incompatible map orientation');
  if(entry.role&&asset.layers){
-  const layers=asset.orientationViews?.[entry.orientation]??asset.layers;
+  const layers=asset.orientationViews?.[entry.orientation]??{...asset.layers,...asset.mapLayers};
   const registered=layers[entry.role];
   const source=entry.layerPath??entry.source;
   const planning=entry.role==='base'&&source===asset.planningLayer;

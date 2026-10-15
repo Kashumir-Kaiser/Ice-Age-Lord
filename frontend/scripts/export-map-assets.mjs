@@ -15,11 +15,13 @@ import {calibrateMapGround} from './calibrate-map-ground.mjs';
 import {mapGroundShadow} from './map-ground-shadow.mjs';
 import {applyMapArchitecture} from './apply-map-architecture.mjs';
 import {prepareTowerPreviews} from './map-tower-previews.mjs';
+import {staticMapBody} from './map-static-body.mjs';
 const repo=resolve(new URL('../..',import.meta.url).pathname),manifestPath=resolve(repo,'assets/manifest.json');
 const manifest=JSON.parse(readFileSync(manifestPath,'utf8'));
 const authoredViews=JSON.parse(readFileSync(resolve(repo,'assets/map-building-views.json'),'utf8'));
 const depthJoints=JSON.parse(readFileSync(resolve(repo,'assets/map-depth-slices.json'),'utf8'));
 const architecture=JSON.parse(readFileSync(resolve(repo,'assets/map-architecture.json'),'utf8'));
+const staticBodies=JSON.parse(readFileSync(resolve(repo,'assets/map-static-bodies.json'),'utf8'));
 // This tower's authored SVG groups separate the complete footing from the shaft/roof.
 // Other legacy base/upper files contain arbitrary horizontal clips and remain unaccepted.
 const architecturalAssets=new Set(['fixture-tall-tower']);
@@ -45,8 +47,17 @@ for(const asset of manifest.assets){
  asset.generatedOrientationViews=Object.keys(authoredViews[asset.assetId]??{});
  let bodyReference,defaultCalibration;
  const destination=resolve(output,'buildings',asset.assetId);mkdirSync(destination,{recursive:true});
+ delete asset.mapLayers;
+ let staticDependencies=[];
+ if(staticBodies[asset.assetId]){
+  const graph=svgMapSource(resolve(repo,'frontend/public'+asset.layers.body));
+  const bodyPath=`/assets/map/buildings/${asset.assetId}/body-static.svg`;
+  writeFileSync(resolve(repo,'frontend/public'+bodyPath),staticMapBody(graph.svg,asset.logicalCanvas,staticBodies[asset.assetId].removePolygons));
+  asset.mapLayers={body:bodyPath};
+  staticDependencies=[...Array.from(graph.dependencies,([path,sha256])=>({source:path.slice(repo.length+1),sha256})),...['assets/map-static-bodies.json','frontend/scripts/map-static-body.mjs'].map(source=>({source,sha256:sha(readFileSync(resolve(repo,source)))}))];
+ }
  for(const role of ['body','shadow',...(asset.composition==='architectural'?['base','upper']:asset.planningLayer?['base']:[]),...(asset.layers.vfx?['vfx']:[])]){
-  const source=role==='base'&&asset.composition!=='architectural'?asset.planningLayer:asset.layers[role],file=resolve(repo,'frontend/public'+source),graph=svgMapSource(file),shadow=role==='shadow'&&depthJoints[asset.assetId],svg=shadow?mapGroundShadow(asset,asset.orientation):graph.svg;
+  const source=role==='base'&&asset.composition!=='architectural'?asset.planningLayer:asset.mapLayers?.[role]??asset.layers[role],file=resolve(repo,'frontend/public'+source),graph=svgMapSource(file),shadow=role==='shadow'&&depthJoints[asset.assetId],svg=shadow?mapGroundShadow(asset,asset.orientation):graph.svg;
   for(const [lod,size] of [['close',384],['district',192]]){
    const result=new Resvg(svg,{fitTo:{mode:'width',value:size},font:{loadSystemFonts:false}}).render();
    let full=await sharp(result.asPng()).png({compressionLevel:9,palette:false}).toBuffer();
@@ -64,6 +75,7 @@ for(const asset of manifest.assets){
    const meta=await sharp(png).metadata();
    const sourceDependencies=Array.from(graph.dependencies,([path,sha256])=>({source:path.slice(repo.length+1),sha256}));
    sourceDependencies.push(...(previewDependencies.get(asset.assetId)??[]));
+   if(role==='body')sourceDependencies.push(...staticDependencies);
    if(shadow)sourceDependencies.push({source:'frontend/scripts/map-ground-shadow.mjs',sha256:sha(readFileSync(resolve(repo,'frontend/scripts/map-ground-shadow.mjs')))});
    if(role==='body'&&defaultCalibration)sourceDependencies.push({source:'frontend/scripts/calibrate-map-ground.mjs',sha256:sha(readFileSync(resolve(repo,'frontend/scripts/calibrate-map-ground.mjs')))});
    const shadowLayer=`/assets/map/buildings/${asset.assetId}/shadow-close.png`;

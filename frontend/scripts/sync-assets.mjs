@@ -30,7 +30,7 @@ for (const asset of manifest.assets) {
   if (asset.referenceSource && !existsSync(resolve(repo, referenceFile(asset.referenceSource)))) {
     throw new Error(`Missing concept reference for ${asset.assetId}: ${asset.referenceSource}`);
   }
-  const registeredPaths = [...Object.values(asset.layers), ...Object.values(asset.lodVariants).flatMap(lod => Object.values(lod))];
+  const registeredPaths = [...Object.values(asset.layers), ...Object.values(asset.mapLayers??{}), ...Object.values(asset.lodVariants).flatMap(lod => Object.values(lod))];
   for (const layer of new Set(registeredPaths)) {
     if (typeof layer !== 'string') continue;
     const output = resolve(repo, `frontend/public${layer}`);
