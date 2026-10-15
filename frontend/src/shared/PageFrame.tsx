@@ -41,9 +41,9 @@ export function CharacterSummary({ mode, name, title, grade, level, xp, mana }: 
   xp: number;
   mana: { current: number; max: number };
 }) {
-  return <section className={`shared-character-summary shared-character-summary--${mode}`} aria-label="Character summary">
+  return <section className={`shared-character-summary shared-character-summary--${mode}`} aria-label="Tóm tắt nhân vật">
     <div><span>Nhân vật</span><strong>{name}</strong><small>{title} · {grade}</small></div>
     <div><span>Cấp độ</span><strong>{level}</strong><small>{xp.toLocaleString('vi-VN')} XP</small></div>
-    <div><span>Mana</span><strong>{mana.current} / {mana.max}</strong><small>Trạng thái máy chủ</small></div>
+    <div><span>Mana</span><strong>{mana.current} / {mana.max}</strong><small>Năng lượng hiện có</small></div>
   </section>;
 }
