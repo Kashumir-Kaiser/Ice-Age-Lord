@@ -49,7 +49,7 @@
     "focus": {"base": 1, "upper": 0.22, "body": null}
   },
   "fallbackVisual": {
-    "decision": "accepted at 1366x768, DPR1, normal quality only",
+    "decision": "accepted at 1366x768, DPR1, default auto quality; effective quality was not captured",
     "capture": "frontend/map-evidence/after/1366/architecture/tomb-entry/tomb-entry-png-failure-fallback-scene-1366.png",
     "observations": [
       "The opaque black quad is gone and terrain remains transparent around the Tomb.",
@@ -58,7 +58,7 @@
     ],
     "implementation": "The filtered SVG ground shadow is decoded through a transparent Canvas2D surface and retained as Pixi CanvasSource. This retains one RGBA source reservation; the PNG pipeline is unchanged.",
     "regression": "The filtered-SVG cache test verifies the retained alpha canvas, expected byte reservation and canvas disposal when ownership is released.",
-    "limits": ["No mobile fallback screenshot review, other DPR, or other quality setting is included in this fallback acceptance."]
+    "limits": ["The mobile fallback screenshot and other DPR or quality settings are not included in this fallback acceptance; effective quality for the reviewed default-auto capture was not captured."]
   },
   "captures": {
     "1366x768": {
@@ -83,6 +83,6 @@
     "productionBuild": "passed",
     "typecheck": "passed",
     "debugGlobals": "removed and verified",
-    "fallbackPngVisualReview": "accepted at 1366x768 DPR1 normal quality only"
+    "fallbackPngVisualReview": "accepted at 1366x768 DPR1 default auto quality; effective quality was not captured"
   }
 }
