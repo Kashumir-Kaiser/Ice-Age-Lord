@@ -9,7 +9,7 @@ test('Chromium runs the server-owned clock, completes a Tomb job once, and recov
   await expect(page.getByRole('heading', { name: 'Kết nối trò chơi' })).toBeVisible();
   await expect(page.getByText('Trò chơi đã sẵn sàng')).toBeVisible();
   await page.getByLabel('Khóa chủ sở hữu').fill(ownerKey!);
-  await page.getByRole('button', { name: 'Kết nối API' }).click();
+  await page.getByRole('button', { name: 'Kết nối trò chơi' }).click();
   await expect(page.getByRole('heading', { name: 'Chọn hoặc tạo lượt lưu' })).toBeVisible();
 
   const slotName = 'Chromium ' + crypto.randomUUID();
@@ -58,7 +58,7 @@ test('Chromium runs the server-owned clock, completes a Tomb job once, and recov
 
   await page.reload();
   await page.getByLabel('Khóa chủ sở hữu').fill(ownerKey!);
-  await page.getByRole('button', { name: 'Kết nối API' }).click();
+  await page.getByRole('button', { name: 'Kết nối trò chơi' }).click();
   await expect(page.getByText('Đã mở lượt lưu trước đó.')).toBeVisible();
   await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Quân lực/ }).click();
   await expect(page.getByRole('heading', { name: 'Cương Thi 1', exact: true })).toHaveCount(1);
