@@ -115,6 +115,11 @@ test('all nine live screens remain on one server-owned save projection at releas
         await expect(page.locator('.territory-stage .map-render-canvas')).toBeVisible();
         await expect(page.locator('.territory-stage [data-map-renderer]')).toHaveAttribute('data-map-renderer',/webgl|canvas2d/);
       }
+      // Guard against surfacing internal narrative, source, and registry identifiers on every player screen.
+      const playerVisibleText = await page.locator('.live-content').innerText();
+      expect(playerVisibleText, `GM-only text leaked on ${screen}`).not.toMatch(
+        /\b(?:H0|P0\d{1,2}|WU(?:\/h)?|LL01|TOMB-UNIT|STAGE07-|SOURCE-LOCKED|OWNED STRUCTURES|Blueprints mở và bị khóa|Harvest worker|Engage target)\b/i,
+      );
       const horizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
       expect(horizontalOverflow, `unexpected horizontal page overflow at ${viewport.width}×${viewport.height} on ${screen}`).toBe(false);
     }
