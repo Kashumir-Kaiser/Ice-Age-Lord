@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "assetId": "polar-farmhouse-l01-foundation",
+  "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+  "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91",
+  "gitBlobSha1": "027587347323d1cb463caa2c43891eb5a22e85f5",
+  "width": 1374,
+  "height": 1145,
+  "alphaBoundsAtThreshold8": {
+    "x": 104,
+    "y": 557,
+    "width": 1166,
+    "height": 478
+  },
+  "provenance": {
+    "method": "Created as original painted isometric artwork of a timber floor with a snow-covered perimeter, intended as the static foundation layer for the level 1 polar farmhouse.",
+    "license": "Original art generated for this project; permitted for this project."
+  },
+  "status": "draft"
+}
