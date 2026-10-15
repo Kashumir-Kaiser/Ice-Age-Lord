@@ -34,7 +34,7 @@ test('Chromium runs the server-owned clock, completes a Tomb job once, and recov
     }));
     throw error;
   }
-  await expect(page.getByText('Ngày 1 · 07:00')).toBeVisible();
+  await expect(page.getByTestId('live-overview-parity').getByText('Ngày 1 · 07:00', { exact: true })).toBeVisible();
 
   await page.getByRole('navigation', { name: 'Màn hình game' })
     .getByRole('button', { name: /^Công trình(?: Trạng thái API)?$/ }).click();
