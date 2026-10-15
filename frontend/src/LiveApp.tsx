@@ -133,15 +133,15 @@ function availabilityMessage(availability: ActionAvailability): string {
     ACTOR_IN_COMBAT: 'Đơn vị phải rút khỏi giao chiến trước khi di chuyển.',
     TARGET_OUT_OF_RANGE: 'Đơn vị chưa vào tầm vũ khí của mục tiêu.',
     TARGET_NOT_PERCEIVED: 'Đơn vị chưa nhận ra mục tiêu giữa tuyết.',
-    COMBAT_TARGET_UNAVAILABLE: 'Cá thể này đã rời khỏi encounter.',
+    COMBAT_TARGET_UNAVAILABLE: 'Mục tiêu không còn trong tầm giao chiến.',
     COMBAT_TARGET_DEAD: 'Cá thể này đã chết; hãy kiểm tra thi thể thật trên bản đồ.',
-    COMBAT_ENCOUNTER_NOT_ACTIVE: 'Không có encounter đang diễn ra để rút lui.',
+    COMBAT_ENCOUNTER_NOT_ACTIVE: 'Không có trận chiến đang diễn ra để rút lui.',
     COMBAT_WEAPON_REQUIRED: 'Trang bị vũ khí tương thích vào ô tay chính trước khi giao chiến.',
   };
   const reasonCode = availability.reasonCode;
   if (reasonCode && messages[reasonCode]) return messages[reasonCode];
   const reason = availability.requirements.join(' ');
-  return reason ? playerMessage(reason) : 'Hành động hiện không khả dụng.';
+  return reason ? 'Chưa đủ điều kiện thực hiện hành động này.' : 'Hành động hiện không khả dụng.';
 }
 
 function territoryRef(ref: EntityRef | null): DemoEntityRef | null {
@@ -169,7 +169,7 @@ function harvestBlockerMessage(availability: ActionAvailability): string {
     WATER_PREPARATION_CONTRACT_NOT_COMPILED: 'Cần xử lý nước trước khi sử dụng.',
     WORKFORCE_AND_FUEL_REQUIREMENTS_NOT_MET: 'Cần đủ nhân công và nhiên liệu để bắt đầu.',
   };
-  return messages[availability.reasonCode ?? ''] ?? availability.requirements[0] ?? availability.reasonCode?.replaceAll('_', ' ').toLocaleLowerCase() ?? 'Hiện chưa thể thu thập.';
+  return messages[availability.reasonCode ?? ''] ?? 'Hiện chưa thể thu thập, hãy kiểm tra điều kiện của khu vực và đơn vị.';
 }
 
 function sameRef(a: EntityRef | null, b: EntityRef | null): boolean {
@@ -1116,7 +1116,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
               const blocked = localBlock || Boolean(serverAvailability && !serverAvailability.enabled);
               return <li key={material.resourceId}>
                 <div><strong>{material.materialName}</strong><span>{remaining} / {material.capacity.toLocaleString()} {material.dailyQuota === null ? 'capacity' : 'daily quota'}{material.reserved ? ` · ${material.reserved.toLocaleString()} reserved` : ''}</span></div>
-                <small>{material.harvestRateUnitsPerHour.toLocaleString()} {material.unit}/worker-hour{material.dailyQuota !== null ? ` · ${material.dailyRemaining?.toLocaleString() ?? 'Unknown'} / ${material.dailyQuota.toLocaleString()} available today` : ''} · {renewal}</small>
+                <small>{material.harvestRateUnitsPerHour.toLocaleString()} {material.unit}/giờ trên mỗi đơn vị{material.dailyQuota !== null ? ` · Hôm nay còn ${material.dailyRemaining?.toLocaleString() ?? 'chưa rõ'}/${material.dailyQuota.toLocaleString()}` : ''} · {renewal}</small>
                 {material.access !== 'open_surface' && <small className="live-resource-access">{material.accessReason ? playerMessage(material.accessReason) : 'Chưa đủ điều kiện tiếp cận tài nguyên này.'}</small>}
                 {material.requiredToolTemplateId && <small className="live-resource-access">{workerHasTool ? `Đã có ${playerItemName(material.requiredToolTemplateId)}.` : `Cần trang bị ${playerItemName(material.requiredToolTemplateId)}.`}</small>}
                 {material.status === 'depleted' && <small className="live-resource-access">{material.dailyQuota === null ? 'Nguồn tài nguyên đã cạn.' : 'Hôm nay không còn tài nguyên để thu thập.'}</small>}
@@ -1264,7 +1264,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       const stack = constructionContainer?.items.filter(item => item.label === templateId) ?? [];
       const quantity = stack.reduce((sum, item) => sum + item.quantity, 0);
       const reserved = stack.reduce((sum, item) => sum + item.reservedQuantity, 0);
-      return `${templateId}: ${required} needed · ${Math.max(0, quantity - reserved)} available · ${reserved} reserved`;
+      return `${playerItemName(templateId)}: cần ${required} · có ${Math.max(0, quantity - reserved)} · đã dành ${reserved}`;
     };
     const accessibleEventContainers = view.inventory.containers.filter(container => container.accessible)
       .map(container => ({ id: container.id, label: playerContainerName(container.label) }));
@@ -1687,7 +1687,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
             </div>
           </div>
           {constructionContainer && <p className="live-muted">{materialLine('WOOD', 20)} · {materialLine('STONE', 10)} · {materialLine('STONE-HAMMER', 1)} dụng cụ sẵn có</p>}
-          {repairCommand && selectedCommandIsPreviewed(repairCommand) && <p className={constructionPreview?.availability.enabled ? 'live-preview-success' : 'live-inline-error'}>{constructionPreview?.availability.enabled ? constructionPreview.availability.preview?.value : availabilityMessage(constructionPreview!.availability)}</p>}
+          {repairCommand && selectedCommandIsPreviewed(repairCommand) && <p className={constructionPreview?.availability.enabled ? 'live-preview-success' : 'live-inline-error'}>{constructionPreview?.availability.enabled ? 'Đã kiểm tra điều kiện, có thể bắt đầu.' : availabilityMessage(constructionPreview!.availability)}</p>}
           <p className="live-muted">Đứng trong phạm vi 5 m quanh hòm tiếp tế để lấy nguyên liệu. Túi đang mang chỉ sử dụng được khi đứng gần công trình.</p>
         </article>}
         {repairHouse?.status === 'active' && <p className="live-preview-success">Nhà Lãnh Chúa đã sửa. {view.construction.unlockedBlueprintIds.length} bản vẽ đã được mở.</p>}
@@ -1708,7 +1708,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
                   <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !constructionContainer?.accessible} onClick={() => void previewConstructionCommand(operationCommand)}>Kiểm tra đốt lò</button>
                   <button className="live-button" disabled={working || Boolean(pendingCommand) || !operationPreviewed || !constructionPreview?.availability.enabled} onClick={() => void sendCommand(operationCommand)}>Sưởi trong 20 phút</button>
                 </div>}
-                {operationCommand && operationPreviewed && <p className={constructionPreview?.availability.enabled ? 'live-preview-success' : 'live-inline-error'}>{constructionPreview?.availability.enabled ? constructionPreview.availability.preview?.value : availabilityMessage(constructionPreview!.availability)}</p>}
+                {operationCommand && operationPreviewed && <p className={constructionPreview?.availability.enabled ? 'live-preview-success' : 'live-inline-error'}>{constructionPreview?.availability.enabled ? 'Đã kiểm tra điều kiện, có thể bắt đầu.' : availabilityMessage(constructionPreview!.availability)}</p>}
               </article>;
             })}
         </section>}
@@ -1734,7 +1734,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
             <p>Công dụng: {selectedBlueprint.outputs.map(playerItemName).join(' · ') || 'Chưa rõ'}.</p>
             {!selectedBlueprint.upgrade && <p className="live-muted">Chưa thể nâng cấp công trình này.</p>}
           </>}
-          {buildCommand && selectedCommandIsPreviewed(buildCommand) && <p className={constructionPreview?.availability.enabled ? 'live-preview-success' : 'live-inline-error'}>{constructionPreview?.availability.enabled ? constructionPreview.availability.preview?.value : availabilityMessage(constructionPreview!.availability)}</p>}
+          {buildCommand && selectedCommandIsPreviewed(buildCommand) && <p className={constructionPreview?.availability.enabled ? 'live-preview-success' : 'live-inline-error'}>{constructionPreview?.availability.enabled ? 'Đã kiểm tra điều kiện, có thể bắt đầu.' : availabilityMessage(constructionPreview!.availability)}</p>}
           <p className="live-muted">Có thể xây trong phạm vi 100 m quanh trại. Hãy đứng cách điểm xây tối đa 5 m và tránh chồng lấn với các công trình khác.</p>
         </article>}
 
@@ -1859,7 +1859,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           <input id="owner-key" aria-label="Khóa chủ sở hữu" type="password" autoComplete="off" value={ownerKey} onChange={event => setOwnerKey(event.target.value)} required disabled={apiState !== 'ready' || working} />
           <small>Lấy khóa từ tệp cục bộ <code>.local/owner-key</code>.</small>
           <button className="live-button" type="submit" disabled={apiState !== 'ready' || working || !ownerKey}>
-            {working ? 'Đang kết nối…' : 'Kết nối API'} <ArrowRight size={16} />
+            {working ? 'Đang kết nối…' : 'Kết nối trò chơi'} <ArrowRight size={16} />
           </button>
         </form>
         <StatusBanner feedback={feedback} />
