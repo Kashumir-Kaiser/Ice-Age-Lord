@@ -1485,7 +1485,7 @@
       },
       "groundAnchor": {
         "x": 0.5,
-        "y": 0.82
+        "y": 0.72
       },
       "artFootprint": [
         [
@@ -1597,6 +1597,14 @@
             {
               "source": "frontend/public/assets/buildings/lord-house-damaged/body.svg",
               "sha256": "a5714e0eff939f59cda691e28f8135b2bd4c0093e253ead73455a6199fea693b"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
           "sha256": "bb462d72fb689c8fef6c88743e63d4a6755d7560eccab8960692ad7f3ebc0e83",
@@ -1630,7 +1638,7 @@
             "height": 272,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "cea22994fcff054afd83ac58b8b6d044c4347135136a6b97607c587e209e1f9e"
+            "sha256": "322dad36223de24aa2a0bd650c29356033412805c0ddc968099654c297455ac9"
           }
         },
         {
@@ -1641,6 +1649,14 @@
             {
               "source": "frontend/public/assets/buildings/lord-house-damaged/body.svg",
               "sha256": "a5714e0eff939f59cda691e28f8135b2bd4c0093e253ead73455a6199fea693b"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
           "sha256": "03dcd605a747ae8446f1a894f57bbd3ec51e194fe2894760f22dbe37a94904e9",
@@ -1674,23 +1690,31 @@
             "height": 138,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "deab94865200f71c33ef2f1b2e4812270c625eb820491156d34a21450a0a4cba"
+            "sha256": "935ce42615f4cea883ca569926e9ef4fc47613b6cf10db695ad6b05c58392af5"
           }
         },
         {
           "path": "/assets/map/buildings/lord-house-damaged/shadow-close.png",
-          "source": "/assets/buildings/lord-house-damaged/shadow.svg",
-          "sourceSha256": "d26fc04d2c73c735bcfaa3bcd7fa4ab51a9f3aad536c311a143d79b7dec08278",
+          "source": "/assets/map/buildings/lord-house-damaged/shadow-ground.svg",
+          "sourceSha256": "870df8a4a612a4ce155a0dac777f857e07f8aff5b798f4ad2d6612bb370dd8fc",
           "sourceDependencies": [
             {
-              "source": "frontend/public/assets/buildings/lord-house-damaged/shadow.svg",
-              "sha256": "d26fc04d2c73c735bcfaa3bcd7fa4ab51a9f3aad536c311a143d79b7dec08278"
+              "source": "frontend/public/assets/map/buildings/lord-house-damaged/shadow-ground.svg",
+              "sha256": "870df8a4a612a4ce155a0dac777f857e07f8aff5b798f4ad2d6612bb370dd8fc"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
-          "sha256": "563814346a32dc7d684ae03fbed9b77a0f7010c6986e1221656f0ddf1e96617d",
+          "sha256": "3795a838672fdfaacd309627ea67439f1143c8407b6b977fbc135e2a3ab24d32",
           "exportVersion": 3,
-          "width": 308,
-          "height": 61,
+          "width": 224,
+          "height": 120,
           "role": "shadow",
           "lod": "close",
           "orientation": "north",
@@ -1705,36 +1729,44 @@
             "height": 320
           },
           "trim": {
-            "x": 47.5,
-            "y": 303.75,
-            "width": 385,
-            "height": 76.25
+            "x": 101.25,
+            "y": 215,
+            "width": 280,
+            "height": 150
           },
           "atlas": {
             "path": "/assets/map/buildings/lord-house-damaged/atlas-close.png",
             "x": 396,
             "y": 4,
-            "width": 308,
-            "height": 61,
+            "width": 224,
+            "height": 120,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "cea22994fcff054afd83ac58b8b6d044c4347135136a6b97607c587e209e1f9e"
+            "sha256": "322dad36223de24aa2a0bd650c29356033412805c0ddc968099654c297455ac9"
           }
         },
         {
           "path": "/assets/map/buildings/lord-house-damaged/shadow-district.png",
-          "source": "/assets/buildings/lord-house-damaged/shadow.svg",
-          "sourceSha256": "d26fc04d2c73c735bcfaa3bcd7fa4ab51a9f3aad536c311a143d79b7dec08278",
+          "source": "/assets/map/buildings/lord-house-damaged/shadow-ground.svg",
+          "sourceSha256": "870df8a4a612a4ce155a0dac777f857e07f8aff5b798f4ad2d6612bb370dd8fc",
           "sourceDependencies": [
             {
-              "source": "frontend/public/assets/buildings/lord-house-damaged/shadow.svg",
-              "sha256": "d26fc04d2c73c735bcfaa3bcd7fa4ab51a9f3aad536c311a143d79b7dec08278"
+              "source": "frontend/public/assets/map/buildings/lord-house-damaged/shadow-ground.svg",
+              "sha256": "870df8a4a612a4ce155a0dac777f857e07f8aff5b798f4ad2d6612bb370dd8fc"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
-          "sha256": "e2ae99fccff1478cc5a2fbbf9f541e519fb791778b3e6f047419c3ca317eefa3",
+          "sha256": "67ae9706b25df6cce1e011c47220b08df8a6a2bc494e2eaf108c5f92762c1fc6",
           "exportVersion": 3,
-          "width": 156,
-          "height": 33,
+          "width": 115,
+          "height": 62,
           "role": "shadow",
           "lod": "district",
           "orientation": "north",
@@ -1749,20 +1781,20 @@
             "height": 160
           },
           "trim": {
-            "x": 45,
-            "y": 300,
-            "width": 390,
-            "height": 82.5
+            "x": 97.5,
+            "y": 212.5,
+            "width": 287.5,
+            "height": 155
           },
           "atlas": {
             "path": "/assets/map/buildings/lord-house-damaged/atlas-district.png",
             "x": 204,
             "y": 4,
-            "width": 156,
-            "height": 33,
+            "width": 115,
+            "height": 62,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "deab94865200f71c33ef2f1b2e4812270c625eb820491156d34a21450a0a4cba"
+            "sha256": "935ce42615f4cea883ca569926e9ef4fc47613b6cf10db695ad6b05c58392af5"
           }
         },
         {
@@ -1773,6 +1805,14 @@
             {
               "source": "frontend/public/assets/map/buildings/lord-house-damaged/foundation.svg",
               "sha256": "5521b1f648c7dd8bd2ac86f81c253dce692d03ab133a458c3887c6a3d35d9a24"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
           "sha256": "4662839fae09a04e94c99aad5f315dfddc1d2987e061aa2da69f093205334148",
@@ -1806,7 +1846,7 @@
             "height": 123,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "cea22994fcff054afd83ac58b8b6d044c4347135136a6b97607c587e209e1f9e"
+            "sha256": "322dad36223de24aa2a0bd650c29356033412805c0ddc968099654c297455ac9"
           }
         },
         {
@@ -1817,6 +1857,14 @@
             {
               "source": "frontend/public/assets/map/buildings/lord-house-damaged/foundation.svg",
               "sha256": "5521b1f648c7dd8bd2ac86f81c253dce692d03ab133a458c3887c6a3d35d9a24"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
           "sha256": "1dcaab4bdcb4d215e362e445ce6b78fd64415d66da1ddda1313e2d096f357ffd",
@@ -1850,7 +1898,7 @@
             "height": 64,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "deab94865200f71c33ef2f1b2e4812270c625eb820491156d34a21450a0a4cba"
+            "sha256": "935ce42615f4cea883ca569926e9ef4fc47613b6cf10db695ad6b05c58392af5"
           }
         },
         {
@@ -1864,7 +1912,7 @@
               "sha256": "472d3ad46294630c6b4eb0833af030a85fd5d9106188cf92641d5b9c99096565"
             }
           ],
-          "sha256": "506675866173c3f3af1e113eb822a7e439b1d9cc554b3883ccfbe673bde42a75",
+          "sha256": "9a80fd2fafca893cb93ba07c1feaf24194d7a42595480d09b7a2bace9088c0d6",
           "exportVersion": 3,
           "width": 304,
           "height": 273,
@@ -1883,7 +1931,7 @@
           },
           "trim": {
             "x": 48.75,
-            "y": 31.25,
+            "y": 30,
             "width": 380,
             "height": 341.25
           },
@@ -1895,7 +1943,7 @@
             "height": 273,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "cea22994fcff054afd83ac58b8b6d044c4347135136a6b97607c587e209e1f9e"
+            "sha256": "322dad36223de24aa2a0bd650c29356033412805c0ddc968099654c297455ac9"
           }
         },
         {
@@ -1909,7 +1957,7 @@
               "sha256": "472d3ad46294630c6b4eb0833af030a85fd5d9106188cf92641d5b9c99096565"
             }
           ],
-          "sha256": "0b582d9aef89b3c65adc3406b321f6b3ca272452e5cbfa62e94c9fa905097485",
+          "sha256": "9774e9a17518e889f62499c62496013b49550961ecc0bb81533d384a4412d6b3",
           "exportVersion": 3,
           "width": 157,
           "height": 141,
@@ -1940,7 +1988,7 @@
             "height": 141,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "deab94865200f71c33ef2f1b2e4812270c625eb820491156d34a21450a0a4cba"
+            "sha256": "935ce42615f4cea883ca569926e9ef4fc47613b6cf10db695ad6b05c58392af5"
           }
         },
         {
@@ -1985,7 +2033,7 @@
             "height": 277,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "cea22994fcff054afd83ac58b8b6d044c4347135136a6b97607c587e209e1f9e"
+            "sha256": "322dad36223de24aa2a0bd650c29356033412805c0ddc968099654c297455ac9"
           }
         },
         {
@@ -2030,7 +2078,7 @@
             "height": 143,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "deab94865200f71c33ef2f1b2e4812270c625eb820491156d34a21450a0a4cba"
+            "sha256": "935ce42615f4cea883ca569926e9ef4fc47613b6cf10db695ad6b05c58392af5"
           }
         },
         {
@@ -2075,7 +2123,7 @@
             "height": 277,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "cea22994fcff054afd83ac58b8b6d044c4347135136a6b97607c587e209e1f9e"
+            "sha256": "322dad36223de24aa2a0bd650c29356033412805c0ddc968099654c297455ac9"
           }
         },
         {
@@ -2120,7 +2168,7 @@
             "height": 143,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "deab94865200f71c33ef2f1b2e4812270c625eb820491156d34a21450a0a4cba"
+            "sha256": "935ce42615f4cea883ca569926e9ef4fc47613b6cf10db695ad6b05c58392af5"
           }
         },
         {
@@ -2131,6 +2179,14 @@
             {
               "source": "frontend/public/assets/buildings/lord-house-damaged/body.svg",
               "sha256": "a5714e0eff939f59cda691e28f8135b2bd4c0093e253ead73455a6199fea693b"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             },
             {
               "source": "assets/map-architecture.json",
@@ -2181,6 +2237,14 @@
               "sha256": "a5714e0eff939f59cda691e28f8135b2bd4c0093e253ead73455a6199fea693b"
             },
             {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
+            },
+            {
               "source": "assets/map-architecture.json",
               "sha256": "4b04b987a826a07c69f8cf0b100ae98f287ca2b2e6e129aae1286a6d14884753"
             },
@@ -2229,6 +2293,14 @@
               "sha256": "a5714e0eff939f59cda691e28f8135b2bd4c0093e253ead73455a6199fea693b"
             },
             {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
+            },
+            {
               "source": "assets/map-architecture.json",
               "sha256": "4b04b987a826a07c69f8cf0b100ae98f287ca2b2e6e129aae1286a6d14884753"
             },
@@ -2275,6 +2347,14 @@
             {
               "source": "frontend/public/assets/buildings/lord-house-damaged/body.svg",
               "sha256": "a5714e0eff939f59cda691e28f8135b2bd4c0093e253ead73455a6199fea693b"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             },
             {
               "source": "assets/map-architecture.json",
@@ -2530,10 +2610,10 @@
               "sha256": "70b18e23d604ca3880b363bbd4df379a38c8766e0302111bf941ceee772a9eb6"
             }
           ],
-          "sha256": "12454d9aa1b2cb764c3175824745855835f228e5997c73925638a9e259a83981",
+          "sha256": "f4026b9109d5cda412cff6c9c7008f0863f8614ad3bef07ce25847f27faccc78",
           "exportVersion": 3,
           "width": 304,
-          "height": 100,
+          "height": 99,
           "role": "base",
           "lod": "close",
           "orientation": "south",
@@ -2551,7 +2631,7 @@
             "x": 48.75,
             "y": 247.5,
             "width": 380,
-            "height": 125
+            "height": 123.75
           },
           "architecturePart": true
         },
@@ -2578,10 +2658,10 @@
               "sha256": "70b18e23d604ca3880b363bbd4df379a38c8766e0302111bf941ceee772a9eb6"
             }
           ],
-          "sha256": "9488c5f9c9f828634e7be3941205a1b8da7411761c0d699c65fad2c624908482",
+          "sha256": "9da9f830cc3a88fc9a1ba26f1039d55b25b81e60c15027d1a7b79b2a0f4bd759",
           "exportVersion": 3,
-          "width": 263,
-          "height": 223,
+          "width": 264,
+          "height": 224,
           "role": "upper",
           "lod": "close",
           "orientation": "south",
@@ -2597,9 +2677,9 @@
           },
           "trim": {
             "x": 81.25,
-            "y": 31.25,
-            "width": 328.75,
-            "height": 278.75
+            "y": 30,
+            "width": 330,
+            "height": 280
           },
           "architecturePart": true
         },
@@ -2626,7 +2706,7 @@
               "sha256": "70b18e23d604ca3880b363bbd4df379a38c8766e0302111bf941ceee772a9eb6"
             }
           ],
-          "sha256": "b8148683755d2429418dc21466a2204a2821d86e6e5172a97ac11c5653104fd6",
+          "sha256": "2a4880759516d9de6fefbbeed485fd6847dc70eb822f7fb359ca0059aeea29e4",
           "exportVersion": 3,
           "width": 157,
           "height": 53,
@@ -2674,7 +2754,7 @@
               "sha256": "70b18e23d604ca3880b363bbd4df379a38c8766e0302111bf941ceee772a9eb6"
             }
           ],
-          "sha256": "de8d245b7fb1d1dfe7fe4ba5a6011b346ce3e7ce84b8c3b9558b6fff712baf1b",
+          "sha256": "9dedfb99c7cbce815221abfc97ee4abb97d04e314db59d6828b9dcf669db7fe9",
           "exportVersion": 3,
           "width": 136,
           "height": 115,
@@ -2905,7 +2985,7 @@
           "body": "/assets/buildings/lord-house-damaged/body.svg",
           "base": "/assets/map/buildings/lord-house-damaged/base-north-close.png",
           "upper": "/assets/map/buildings/lord-house-damaged/upper-north-close.png",
-          "shadow": "/assets/buildings/lord-house-damaged/shadow.svg",
+          "shadow": "/assets/map/buildings/lord-house-damaged/shadow-ground.svg",
           "vfx": null
         },
         "south": {
@@ -2913,7 +2993,7 @@
           "body": "/assets/map/buildings/lord-house-damaged/body-south-close.png",
           "base": "/assets/map/buildings/lord-house-damaged/base-south-close.png",
           "upper": "/assets/map/buildings/lord-house-damaged/upper-south-close.png",
-          "shadow": "/assets/buildings/lord-house-damaged/shadow.svg",
+          "shadow": "/assets/map/buildings/lord-house-damaged/shadow-ground.svg",
           "vfx": null
         },
         "east": {
@@ -2921,7 +3001,7 @@
           "body": "/assets/map/buildings/lord-house-damaged/body-east-close.png",
           "base": "/assets/map/buildings/lord-house-damaged/base-east-close.png",
           "upper": "/assets/map/buildings/lord-house-damaged/upper-east-close.png",
-          "shadow": "/assets/buildings/lord-house-damaged/shadow.svg",
+          "shadow": "/assets/map/buildings/lord-house-damaged/shadow-ground.svg",
           "vfx": null
         },
         "west": {
@@ -2929,7 +3009,7 @@
           "body": "/assets/map/buildings/lord-house-damaged/body-west-close.png",
           "base": "/assets/map/buildings/lord-house-damaged/base-west-close.png",
           "upper": "/assets/map/buildings/lord-house-damaged/upper-west-close.png",
-          "shadow": "/assets/buildings/lord-house-damaged/shadow.svg",
+          "shadow": "/assets/map/buildings/lord-house-damaged/shadow-ground.svg",
           "vfx": null
         }
       },
@@ -3076,193 +3156,205 @@
           "hitPolygon": [
             [
               0.1125,
-              0.7325
+              0.73
             ],
             [
               0.18125,
-              0.5325
+              0.53
             ],
             [
               0.18333333333333332,
-              0.5275
+              0.525
             ],
             [
               0.2916666666666667,
-              0.2925
+              0.29
             ],
             [
               0.3020833333333333,
-              0.2775
+              0.275
             ],
             [
               0.30833333333333335,
-              0.27
+              0.2675
             ],
             [
               0.5458333333333333,
-              0.1075
-            ],
-            [
-              0.55,
               0.105
             ],
             [
+              0.55,
+              0.1025
+            ],
+            [
               0.5729166666666666,
-              0.0925
+              0.09
             ],
             [
               0.575,
-              0.0925
+              0.09
             ],
             [
               0.5833333333333334,
-              0.095
+              0.0925
             ],
             [
               0.5958333333333333,
-              0.1
+              0.0975
             ],
             [
               0.6708333333333333,
-              0.145
+              0.1425
             ],
             [
               0.6791666666666667,
-              0.1525
+              0.15
             ],
             [
               0.6958333333333333,
-              0.1725
+              0.17
             ],
             [
               0.6979166666666666,
-              0.1775
+              0.175
             ],
             [
               0.8166666666666667,
-              0.465
+              0.4625
             ],
             [
               0.8791666666666667,
-              0.675
+              0.6725
             ],
             [
               0.8791666666666667,
-              0.68
+              0.6775
             ],
             [
               0.86875,
-              0.6975
+              0.695
             ],
             [
               0.8625,
-              0.705
+              0.7025
             ],
             [
               0.675,
-              0.855
+              0.8525
             ],
             [
               0.6208333333333333,
-              0.88
+              0.8775
             ],
             [
               0.5416666666666666,
-              0.91
+              0.9075
             ],
             [
               0.5083333333333333,
-              0.915
+              0.9125
             ],
             [
               0.5,
-              0.915
+              0.9125
             ],
             [
               0.46458333333333335,
-              0.91
+              0.9075
             ],
             [
               0.42083333333333334,
-              0.8975
+              0.895
             ],
             [
               0.34375,
-              0.8725
+              0.87
             ],
             [
               0.3145833333333333,
-              0.8625
+              0.86
             ],
             [
               0.22083333333333333,
-              0.8125
+              0.81
             ],
             [
               0.2125,
-              0.8075
+              0.805
             ],
             [
               0.13958333333333334,
-              0.76
+              0.7575
             ],
             [
               0.11458333333333333,
-              0.74
+              0.7375
             ],
             [
               0.1125,
-              0.7375
+              0.735
             ]
           ],
           "upper": [
             [
               0.18229166666666666,
-              0.528125
+              0.525
             ],
             [
               0.2890625,
-              0.296875
+              0.29375
             ],
             [
-              0.3046875,
-              0.271875
+              0.2994791666666667,
+              0.278125
+            ],
+            [
+              0.3098958333333333,
+              0.265625
             ],
             [
               0.546875,
-              0.10625
+              0.103125
             ],
             [
               0.5703125,
+              0.090625
+            ],
+            [
+              0.5755208333333334,
+              0.090625
+            ],
+            [
+              0.5859375,
               0.09375
             ],
             [
-              0.578125,
-              0.09375
-            ],
-            [
-              0.5963541666666666,
-              0.1
+              0.59375,
+              0.096875
             ],
             [
               0.6692708333333334,
-              0.14375
+              0.140625
             ],
             [
               0.6796875,
-              0.153125
+              0.15
             ],
             [
-              0.6953125,
-              0.171875
+              0.6901041666666666,
+              0.1625
+            ],
+            [
+              0.6979166666666666,
+              0.175
             ],
             [
               0.8177083333333334,
-              0.465625
+              0.4625
             ],
             [
               0.8411458333333334,
-              0.61875
+              0.615625
             ],
             [
               0.8411458333333334,
@@ -3297,7 +3389,7 @@
               0.725
             ],
             [
-              0.20572916666666666,
+              0.203125,
               0.640625
             ],
             [
@@ -3774,6 +3866,9 @@
             ]
           ]
         }
+      },
+      "mapLayers": {
+        "shadow": "/assets/map/buildings/lord-house-damaged/shadow-ground.svg"
       }
     },
     {
@@ -15458,7 +15553,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15512,7 +15607,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15566,7 +15661,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15618,7 +15713,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15670,7 +15765,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15722,7 +15817,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -49032,7 +49127,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -49084,7 +49179,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -49136,7 +49231,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -49188,7 +49283,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -49240,7 +49335,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -49292,7 +49387,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
+              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
