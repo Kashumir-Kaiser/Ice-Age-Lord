@@ -122,7 +122,7 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
   await page.goto('/?mode=live');
   await expect(page.getByRole('heading', { name: 'Kết nối trò chơi' })).toBeVisible();
   await page.getByLabel('Khóa chủ sở hữu').fill('local-owner-key');
-  await page.getByRole('button', { name: 'Kết nối API' }).click();
+  await page.getByRole('button', { name: 'Kết nối trò chơi' }).click();
   await expect(page.getByRole('heading', { name: 'Chọn hoặc tạo lượt lưu' })).toBeVisible();
   await page.getByRole('button', { name: 'Bắt đầu lượt chơi' }).click();
   await expect(page.locator('.live-footer')).toHaveAttribute('data-revision', '1');
@@ -175,7 +175,7 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
 
   await page.reload();
   await page.getByLabel('Khóa chủ sở hữu').fill('local-owner-key');
-  await page.getByRole('button', { name: 'Kết nối API' }).click();
+  await page.getByRole('button', { name: 'Kết nối trò chơi' }).click();
   await expect(page.getByText('Đã mở lượt lưu trước đó.')).toBeVisible();
   await expect(page.locator('.live-footer')).toHaveAttribute('data-revision', '2');
   await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Bản đồ/ }).click();
