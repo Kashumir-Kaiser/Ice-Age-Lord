@@ -1898,17 +1898,67 @@
     "warmupMs": 10000,
     "profileDurationMs": 16050,
     "samples": 8942,
-    "renderMs": {"count": 59, "p50": 35.1, "p95": 78, "p99": 182, "max": 182},
-    "frameIntervalMs": {"p50": 261, "p95": 319.5, "p99": 11516.6, "max": 11516.6},
-    "pointerFeedbackMs": {"count": 62, "p50": 253.8, "p95": 313.7, "p99": 398.4, "max": 398.4},
-    "scene": {"visible": 599, "total": 603, "drawCalls": 2, "terrainBytes": 5242880, "decodedBytes": 23257064, "queued": 0, "pendingTextures": 0, "errors": []},
+    "renderMs": {
+      "count": 59,
+      "p50": 35.1,
+      "p95": 78,
+      "p99": 182,
+      "max": 182
+    },
+    "frameIntervalMs": {
+      "p50": 261,
+      "p95": 319.5,
+      "p99": 11516.6,
+      "max": 11516.6
+    },
+    "pointerFeedbackMs": {
+      "count": 62,
+      "p50": 253.8,
+      "p95": 313.7,
+      "p99": 398.4,
+      "max": 398.4
+    },
+    "scene": {
+      "visible": 599,
+      "total": 603,
+      "drawCalls": 2,
+      "terrainBytes": 5242880,
+      "decodedBytes": 23257064,
+      "queued": 0,
+      "pendingTextures": 0,
+      "errors": []
+    },
     "topProjectAndRendererCpuMs": [
-      {"function": "MapRenderer.render", "self": 246.1, "total": 2011.3},
-      {"function": "MapRenderer.renderWebGL", "self": 197.8, "total": 685.0},
-      {"function": "TerrainChunkCache.process", "self": 5.7, "total": 127.6},
-      {"function": "Pixi.Container.addChildAt", "self": 171.2, "total": 174.8},
-      {"function": "AssetTextureCache.acquire", "self": 141.5, "total": 157.7},
-      {"function": "Pixi.Container.setChildIndex", "self": 0, "total": 5.0}
+      {
+        "function": "MapRenderer.render",
+        "self": 246.1,
+        "total": 2011.3
+      },
+      {
+        "function": "MapRenderer.renderWebGL",
+        "self": 197.8,
+        "total": 685
+      },
+      {
+        "function": "TerrainChunkCache.process",
+        "self": 5.7,
+        "total": 127.6
+      },
+      {
+        "function": "Pixi.Container.addChildAt",
+        "self": 171.2,
+        "total": 174.8
+      },
+      {
+        "function": "AssetTextureCache.acquire",
+        "self": 141.5,
+        "total": 157.7
+      },
+      {
+        "function": "Pixi.Container.setChildIndex",
+        "self": 0,
+        "total": 5
+      }
     ],
     "limitations": [
       "The diagnostic build included uncommitted QA-control source at profile time; the Git head identifies only the checkout baseline. The dist entry hash identifies the exact profiled renderer bundle captured before the crate rebuild.",
@@ -1964,5 +2014,28 @@
     ],
     "interpretation": "The grid cuts exact predicate calls, but its query is slower on 4- and 16-building scenes. At 520 buildings the query alone is faster, yet rebuilding the index plus one query costs about 146.88 us versus 78.05 us for brute force. TerritoryScene creates a new buildings array when camera changes, so the renderer snapshot-reference invalidation contract rebuilds on camera updates; repeated-frame amortization cannot be assumed across those updates. The measured dense filtering work is small relative to the roughly 35 ms render p50 profile and does not justify the added index/runtime complexity.",
     "decision": "Rejected; the broad-phase optimization and its tests were removed. The original renderer scan and strict predicate remain at HEAD."
+  },
+  "l30FreshDemoColdTransfer": {
+    "status": "both existing cold budgets met after L30 manifest/export update; fresh demo only",
+    "buildIndexSha256": "02458bf3921be56a3ad5aa4cbada0a6785a658aaa19086cb28685e276fb1e2a3",
+    "command": "CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium MAP_COLD_DIR=/tmp/l30-cold-transfer node scripts/map-cold-transfer.mjs",
+    "scope": "Two new browser contexts, gzip HTTP responses, overview to first territory readiness; includes runtime manifest and map assets, excludes pre-existing UI/splash; not saved-populated LIVE or target-device evidence.",
+    "results": [
+      {
+        "quality": "low",
+        "coldMapBytes": 3470677,
+        "budgetBytes": 4194304,
+        "withinBudget": true,
+        "requests": 41
+      },
+      {
+        "quality": "normal",
+        "coldMapBytes": 4285444,
+        "budgetBytes": 8388608,
+        "withinBudget": true,
+        "requests": 38
+      }
+    ],
+    "rawResults": "/tmp/l30-cold-transfer/results.json"
   }
 }

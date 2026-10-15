@@ -8,6 +8,22 @@ import {alphaHull} from './map-orientation-export.mjs';
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const transparent=(width,height)=>sharp({create:{width,height,channels:4,background:{r:0,g:0,b:0,alpha:0}}});
 
+/**
+ * Return the source rectangle that fits the logical canvas. Overflow is safe only
+ * when every cropped pixel is transparent; visible authored pixels are never cut.
+ */
+export function transparentOverflowCrop(data,width,height,canvas,left,top){
+ const x0=Math.max(0,-left),y0=Math.max(0,-top),x1=Math.min(width,canvas.width-left),y1=Math.min(height,canvas.height-top);
+ if(x1<=x0||y1<=y0)throw new Error('Authored layer exceeds the logical canvas');
+ let visible=false;
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(data[(y*width+x)*4+3]){
+  visible=true;
+  if(x<x0||x>=x1||y<y0||y>=y1)throw new Error('Authored layer exceeds the logical canvas');
+ }
+ if(!visible)throw new Error('Empty map raster');
+ return {left:x0,top:y0,width:x1-x0,height:y1-y0};
+}
+
 /** Register genuinely authored layers; no guessed horizontal cuts of flattened props. */
 export async function applyAuthoredArchitecture(manifest,definitions,repo){
  let count=0;
@@ -23,10 +39,17 @@ export async function applyAuthoredArchitecture(manifest,definitions,repo){
    if(!spec||!/^assets\/source\/map-buildings\/[^/]+\.png$/.test(spec.source)||!Number.isFinite(spec.scale)||spec.scale<=0||spec.scale>1||spec.contact?.length!==2||spec.contact.some(v=>!Number.isFinite(v)||v<0||v>1)||spec.target?.length!==2||!spec.target.every(Number.isFinite))throw new Error('Invalid authored architectural registration');
    const original=readFileSync(resolve(repo,spec.source)),width=Math.round(canvas.width*spec.scale),height=Math.round(canvas.height*spec.scale);
    const left=Math.round(spec.target[0]-spec.contact[0]*width),top=Math.round(spec.target[1]-spec.contact[1]*height);
-   if(left<0||top<0||left+width>canvas.width||top+height>canvas.height)throw new Error('Authored layer exceeds the logical canvas');
    const {data,info}=await sharp(original).resize(width,height,{fit:'fill'}).ensureAlpha().raw().toBuffer({resolveWithObject:true});
-   const input=await sharp(normalizeMapAlpha(data,width,height).data,{raw:info}).png().toBuffer();
-   full[role]=await transparent(canvas.width,canvas.height).composite([{input,left,top}]).png().toBuffer();
+   const normalized=normalizeMapAlpha(data,width,height).data;
+   const input=await sharp(normalized,{raw:info}).png().toBuffer();
+   if(left>=0&&top>=0&&left+width<=canvas.width&&top+height<=canvas.height){
+    // Keep the established contained path byte-identical.
+    full[role]=await transparent(canvas.width,canvas.height).composite([{input,left,top}]).png().toBuffer();
+   }else{
+    const crop=transparentOverflowCrop(normalized,width,height,canvas,left,top);
+    const clipped=await sharp(input).extract(crop).png().toBuffer();
+    full[role]=await transparent(canvas.width,canvas.height).composite([{input:clipped,left:left+crop.left,top:top+crop.top}]).png().toBuffer();
+   }
    dependencies.push({source:spec.source,sha256:hash(original)});
   }
   const bodyLayer=`${prefix}body-layered-${orientation}-close.png`;

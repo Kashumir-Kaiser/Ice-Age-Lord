@@ -11,11 +11,13 @@ const viewports=viewportChoices.filter(v=>!requestedWidths||requestedWidths.incl
 const progressionOnly=process.env.MAP_QA_PROGRESSION_ONLY==='1';
 // Target the real four-pose damaged-house QA fixture only; use MAP_QA_VIEWPORTS/DPR/QUALITY as usual.
 const damagedHouseOnly=process.env.MAP_QA_DAMAGED_HOUSE_ONLY==='1';
-const architectureOnly=progressionOnly||damagedHouseOnly||process.env.MAP_QA_ARCHITECTURE_ONLY==='1';
+const l30Only=process.env.MAP_QA_L30_ONLY==='1';
+const architectureOnly=progressionOnly||damagedHouseOnly||l30Only||process.env.MAP_QA_ARCHITECTURE_ONLY==='1';
 const families=[['wall','Thử bố trí Tường Rào'],['gate','Thử bố trí Cổng Gỗ · mẫu ảnh'],['tower','Thử bố trí Tháp cao · minh họa'],['house','Thử bố trí Nhà thấp · minh họa'],['farmhouse','Thử bố trí Nhà Nông Phu Cực Địa'],['watchtower','Thử bố trí Tháp Canh · mẫu ảnh'],['elemental','Thử bố trí Tháp Nguyên Tố · mẫu ảnh']];
 const requestedFamilies=process.env.MAP_QA_FAMILIES?.split(',');
 if(requestedFamilies?.some(name=>!families.some(([family])=>family===name)))throw new Error('Unknown MAP_QA_FAMILIES entry');
 if(damagedHouseOnly&&(progressionOnly||process.env.MAP_QA_ARCHITECTURE_ONLY==='1'||requestedFamilies))throw new Error('MAP_QA_DAMAGED_HOUSE_ONLY cannot be combined with other scenario filters');
+if(l30Only&&(progressionOnly||damagedHouseOnly||process.env.MAP_QA_ARCHITECTURE_ONLY==='1'||requestedFamilies))throw new Error('MAP_QA_L30_ONLY cannot be combined with other scenario filters');
 const browser=await launchMapBrowser(),evidence=[];
 const output=resolve(process.env.MAP_QA_DIR??'map-evidence/after');mkdirSync(output,{recursive:true});
 const dpr=Number(process.env.MAP_QA_DPR??1),quality=process.env.MAP_QA_QUALITY??'normal';
@@ -96,6 +98,28 @@ async function captureDamagedHouse(calibration,viewport){
  await saveDamagedHouseSheets(crops,viewport);
  writeFileSync(resolve(output,String(viewport.width),'architecture/damaged-house/damaged-house-qa.json'),JSON.stringify({assetId:'lord-house-damaged',viewport,dpr,quality,sourceHashes:damagedSources,captures:crops.map(({image,...item})=>item)},null,2));
 }
+async function captureL30Modes(calibration,viewport){
+ await calibration.locator('.territory-calibration > summary').click();
+ await calibration.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
+ await calibration.getByLabel('Hình minh họa',{exact:true}).selectOption('lord-house-l30');
+ const cases=[
+  ['normal',{base:1,upper:1,body:null}],
+  ['planning',{base:1,upper:null,body:null}],
+  ['focus',{base:1,upper:.22,body:null}]
+ ];
+ for(const [mode,expected] of cases){
+  if(mode==='planning')await calibration.getByRole('button',{name:'Mặt bằng',exact:true}).click();
+  if(mode==='focus')await calibration.getByRole('button',{name:'Làm mờ phần che',exact:true}).click();
+  await readyMap(calibration);
+  const layers=await calibration.evaluate(()=>window.__mapMetrics?.at(-1)?.qaArtLayers);
+  if(JSON.stringify(layers)!==JSON.stringify(expected))throw new Error(`L30 ${mode} alpha metrics differ: ${JSON.stringify(layers)}`);
+  const row=await capture(calibration,`late-lord-house-l30-${mode}`,viewport);
+  row.l30={assetId:'lord-house-l30',mode,qaArtLayers:layers,orientation:'north',footprintAssumption:'ART-ONLY-PREVIEW-FOOTPRINT-V1'};
+  if(mode==='planning')await calibration.getByRole('button',{name:'Bình thường',exact:true}).click();
+ }
+ await calibration.getByRole('button',{name:'Bình thường',exact:true}).click();
+ await calibration.getByRole('button',{name:'Ẩn hình kiểm tra trên bản đồ',exact:true}).click();
+}
 try{
  for(const viewport of viewports){
   const page=architectureOnly?null:await openMap(browser,{viewport,dpr,quality});
@@ -104,6 +128,7 @@ try{
   await calibration.getByRole('button',{name:'Về lửa trại',exact:true}).click();
   await calibration.getByRole('button',{name:'Phóng to lãnh địa'}).click();await calibration.getByRole('button',{name:'Phóng to lãnh địa'}).click();
   if(damagedHouseOnly){await captureDamagedHouse(calibration,viewport);await calibration.close();continue;}
+  if(l30Only){await captureL30Modes(calibration,viewport);await calibration.close();continue;}
   if(!progressionOnly)await capture(calibration,'fire-close',viewport);
   for(const [family,label] of families.filter(([family])=>!progressionOnly&&(!requestedFamilies||requestedFamilies.includes(family)))){
    await calibration.getByRole('button',{name:label,exact:true}).click();

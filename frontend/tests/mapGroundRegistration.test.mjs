@@ -42,6 +42,25 @@ test('repaired house contact shadow has a map-only grounded SVG fallback and reg
  }
 });
 
+test('L30 map ground registration derives a shadow without changing its original body or UI shadow',()=>{
+ const a=manifest().assets.find(a=>a.assetId==='lord-house-l30');
+ assert.deepEqual(a.groundAnchor,{x:.5,y:.72});
+ assert.deepEqual(a.compatiblePhysicalFootprint,{assumptionId:'ART-ONLY-PREVIEW-FOOTPRINT-V1',widthM:4,depthM:4});
+ assert.equal(sha(readFileSync(new URL('frontend/public'+a.layers.body,root))),'0fd805a84171288abf4730aca4c1e3663d1cbd479fcf6dd7a143ead650f3aac5');
+ assert.equal(a.layers.shadow,'/assets/buildings/lord-house-repaired/shadow.svg');
+ assert.equal(sha(readFileSync(new URL('frontend/public'+a.layers.shadow,root))),'d6b5f7ac47d1ba061d3bdad12ee25da5e701d35488d905274599e0bc4b44a17c');
+ assert.equal(a.mapLayers.shadow,'/assets/map/buildings/lord-house-l30/shadow-ground.svg');
+ const svg=readFileSync(new URL('frontend/public'+a.mapLayers.shadow,root),'utf8');
+ const polygons=Array.from(svg.matchAll(/<polygon points="([^"]+)"/g));assert.equal(polygons.length,2);
+ const contact=polygons[1][1].split(' ').map(p=>p.split(',').map(Number));
+ const center=contact.reduce((v,p)=>[v[0]+p[0]/4,v[1]+p[1]/4],[0,0]);
+ assert.ok(Math.abs(center[0]-240)<1e-8);assert.ok(Math.abs(center[1]-288)<1e-8);
+ for(const lod of ['close','district']){
+  const e=a.mapExports.find(e=>e.role==='shadow'&&e.lod===lod);assert.equal(e.source,a.mapLayers.shadow);validateMapExport(e,a);
+  assert.ok(e.sourceDependencies.some(d=>d.source==='assets/map-ground-registration.json'));
+ }
+});
+
 test('Tomb ground registration centers its 6 by 5 metre footprint and derives a map-only contact shadow',async()=>{
  const a=manifest().assets.find(a=>a.assetId==='tomb-entry');
  assert.deepEqual(a.groundAnchor,{x:.5,y:.72});

@@ -4,5 +4,11 @@
     "note": "Map-only authored layer variants. Contacts use normalized original image coordinates and logical-canvas target pixels; physical footprint and world anchor stay unchanged.",
     "base": {"source":"assets/source/map-buildings/lord-house-repaired-foundation.png","scale":0.9,"contact":[0.509,0.764],"target":[240,301]},
     "upper": {"source":"assets/source/map-buildings/lord-house-repaired-upper.png","scale":0.8,"contact":[0.509,0.826],"target":[240,300]}
+  },
+  "lord-house-l30": {
+    "orientation": "north",
+    "note": "Map-only ART-ONLY draft layers. Preserve the original north body/UI composition and 4 by 4 metre preview footprint; no unsupported poses or canonical progression claims are introduced.",
+    "base": {"source":"assets/source/map-buildings/lord-house-l30-foundation.png","scale":0.78,"contact":[0.516,0.56],"target":[240,288]},
+    "upper": {"source":"assets/source/map-buildings/lord-house-l30-upper.png","scale":0.86,"contact":[0.517,0.905],"target":[240,339]}
   }
 }
