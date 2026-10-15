@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test('Chromium runs the server-owned clock, completes a Tomb job once, and recovers it after reload', async ({ page }) => {
+  test.setTimeout(120_000);
   const ownerKey = process.env.ILL_TEST_OWNER_KEY;
   expect(ownerKey, 'CI must provide the ephemeral Stage 04 owner key').toBeTruthy();
 

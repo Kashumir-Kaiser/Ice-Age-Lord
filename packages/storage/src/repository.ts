@@ -433,6 +433,13 @@ export class SqliteRepository {
     });
   }
 
+  getSaveMetadata(ownerId: string, saveId: string): { revision: number; lastEventSequence: number } {
+    const row = this.db.prepare('SELECT revision, event_sequence FROM saves WHERE save_id = ? AND owner_id = ?')
+      .get(saveId, ownerId) as { revision: number; event_sequence: number } | undefined;
+    if (!row) throw new RepositoryError('SAVE_NOT_FOUND', 'The save was not found.', 404);
+    return { revision: row.revision, lastEventSequence: row.event_sequence };
+  }
+
   getSaveRevision(ownerId: string, saveId: string): number {
     const row = this.db.prepare('SELECT revision FROM saves WHERE save_id = ? AND owner_id = ?').get(saveId, ownerId) as { revision: number } | undefined;
     if (!row) throw new RepositoryError('SAVE_NOT_FOUND', 'The save was not found.', 404);

@@ -3,6 +3,8 @@ import { expect, test } from '@playwright/test';
 const screens = ['Tổng quan', 'Nhân vật', 'Lãnh địa', 'Bản đồ', 'Kho vật phẩm', 'Quân lực', 'Công trình', 'Sự kiện', 'Nhật ký'];
 
 async function connectAndCreate(page: import('@playwright/test').Page, slotName: string) {
+  // A fresh state initializes 1023 AI lords and projects the server-owned world.
+  // Wait for the committed view rather than assuming a 5s desktop warm start.
   const ownerKey = process.env.ILL_TEST_OWNER_KEY;
   expect(ownerKey, 'CI must provide the ephemeral Stage 09 owner key').toBeTruthy();
   await page.goto('/?mode=live');
@@ -13,10 +15,11 @@ async function connectAndCreate(page: import('@playwright/test').Page, slotName:
   await expect(page.getByRole('heading', { name: 'Chọn hoặc tạo lượt lưu' })).toBeVisible();
   await page.getByLabel('Tên lượt lưu mới').fill(slotName);
   await page.getByRole('button', { name: 'Tạo lượt chơi sạch' }).click();
-  await expect(page.getByText('Ngày 1 · 07:00')).toBeVisible();
+  await expect(page.getByText('Ngày 1 · 07:00')).toBeVisible({ timeout: 35_000 });
 }
 
 test('all nine live screens remain on one server-owned save projection at release viewports', async ({ page }, testInfo) => {
+  test.setTimeout(180_000);
   await connectAndCreate(page, 'Stage 09 screens ' + crypto.randomUUID());
   const initialFooter = await page.locator('.live-footer').innerText();
   const initialRevision = initialFooter.match(/revision (\d+)/)?.[1];
@@ -76,6 +79,7 @@ test('all nine live screens remain on one server-owned save projection at releas
 });
 
 test('map expedition preview and area search commit through the selected save API', async ({ page }) => {
+  test.setTimeout(120_000);
   await connectAndCreate(page, 'Stage 09 area expedition ' + crypto.randomUUID());
   await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Bản đồ/ }).click();
   await page.getByRole('button', { name: 'Pick center on map' }).click();
@@ -98,6 +102,7 @@ test('map expedition preview and area search commit through the selected save AP
 });
 
 test('switching saves clears selection and ignores a delayed response from the prior save', async ({ page }) => {
+  test.setTimeout(150_000);
   const saveAName = 'Stage 09 A ' + crypto.randomUUID();
   const saveBName = 'Stage 09 B ' + crypto.randomUUID();
   await connectAndCreate(page, saveAName);

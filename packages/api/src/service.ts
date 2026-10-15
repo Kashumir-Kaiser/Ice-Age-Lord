@@ -1554,6 +1554,12 @@ export class GameApplicationService {
     catch (error) { throw fromRepositoryError(error); }
   }
 
+  /** Select/renew a save without deserializing the entire bot population or projecting the player view. */
+  saveMetadata(saveId: string): { revision: number; lastEventSequence: number } {
+    try { return this.repository.getSaveMetadata(ownerId, saveId); }
+    catch (error) { throw fromRepositoryError(error); }
+  }
+
   loadSave(saveId: string, sessionToken?: string, driverId?: string): { state: GameState; summary: SaveSummary; view: PlayerView } {
     try {
       const result = this.repository.loadSave(ownerId, saveId);

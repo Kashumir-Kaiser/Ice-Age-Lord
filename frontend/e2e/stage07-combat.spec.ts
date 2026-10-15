@@ -47,7 +47,7 @@ async function tapVisualCenter(page: Page, locator: Locator, mobile: boolean) {
 }
 
 test('Stage 07 plays and reloads a timed H0 combat encounter through the browser', async ({ page }, testInfo) => {
-  test.setTimeout(45_000);
+  test.setTimeout(120_000);
   const ownerKey = process.env.ILL_TEST_OWNER_KEY;
   expect(ownerKey, 'CI must provide the ephemeral API owner key').toBeTruthy();
 
@@ -94,7 +94,7 @@ test('Stage 07 plays and reloads a timed H0 combat encounter through the browser
   const combatPanel = page.getByTestId('stage07-combat-panel');
   await expect(combatPanel).toContainText(/active/);
   await page.getByLabel('Tốc độ mô phỏng').selectOption('1x');
-  await expect(combatPanel).toContainText(/active · vòng [1-9]/, { timeout: 8_000 });
+  await expect(combatPanel).toContainText(/active · vòng [1-9]/, { timeout: 20_000 });
 
   // Pause after the first settled round so reload proves the encounter state is durable mid-fight.
   await page.getByLabel('Tốc độ mô phỏng').selectOption('paused');

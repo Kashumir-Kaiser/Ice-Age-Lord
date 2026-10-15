@@ -60,9 +60,10 @@ test('settlement map follows the player and dragging the player unlocks and pans
   await expect(scene).toBeVisible();
   await expect(lock).toBeVisible();
   await expect(marker).toHaveCount(1);
-  // The 2.5D renderer no longer promises a legacy SVG fire circle.
-  // Follow/pan is a camera contract; compare the registered scene viewBox instead.
-  const before = await scene.getAttribute('viewBox');
+  // The scene viewBox is viewport-sized and remains constant as the camera pans.
+  // Track the heat-boundary ellipse's projected position instead of old raster internals.
+  const heatBoundary = scene.locator('.territory-camera-overlay > ellipse').first();
+  const before = await heatBoundary.getAttribute('cx');
   const bounds = await marker.boundingBox();
   expect(bounds).not.toBeNull();
   await page.mouse.move(bounds!.x + bounds!.width / 2, bounds!.y + bounds!.height / 2);
@@ -72,5 +73,5 @@ test('settlement map follows the player and dragging the player unlocks and pans
 
   await expect(lock).toHaveCount(0);
   await expect(marker).toHaveCount(0);
-  await expect.poll(async () => scene.getAttribute('viewBox')).not.toBe(before);
+  await expect.poll(() => heatBoundary.getAttribute('cx')).not.toBe(before);
 });
