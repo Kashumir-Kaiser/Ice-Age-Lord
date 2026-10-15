@@ -86,3 +86,17 @@ test('a tighter budget retires old ownership and a deferred replacement can retr
   images.at(-1).onload();await new Promise(setImmediate);assert.equal(cache.bytes,1024);assert.deepEqual(errors,[]);
  }finally{cache.destroy();if(OriginalImage===undefined)delete globalThis.Image;else globalThis.Image=OriginalImage;}
 });
+
+test('environment revisions reserve actual decoded dimensions and share only identical content versions',async()=>{
+ const OriginalImage=globalThis.Image,images=[];globalThis.Image=class {naturalWidth=8;naturalHeight=4;constructor(){images.push(this);}};
+ const a=new AssetTextureCache(()=>{},()=>{},1024),b=new AssetTextureCache(()=>{},()=>{},1024);
+ try{
+  const environment=hash=>[{path:'/terrain.png',sha256:hash,width:8,height:4}];
+  a.registerEnvironment(environment('old'));b.registerEnvironment(environment('old'));
+  a.acquire('/terrain.png');b.acquire('/terrain.png');assert.equal(images.length,1);assert.equal(a.reservedBytes,128);assert.equal(images[0].src,'/terrain.png?mapHash=old');
+  images[0].onload();await new Promise(setImmediate);
+  a.registerEnvironment(environment('new'));a.acquire('/terrain.png');assert.equal(images.length,2);assert.equal(images[1].src,'/terrain.png?mapHash=new');
+  a.retain(new Set(['/terrain.png']));assert.equal(images[0].src,'/terrain.png?mapHash=old');b.destroy();assert.equal(images[0].src,'');
+  images[1].onload();await new Promise(setImmediate);assert.equal(a.bytes,128);
+ }finally{a.destroy();b.destroy();if(OriginalImage===undefined)delete globalThis.Image;else globalThis.Image=OriginalImage;}
+});

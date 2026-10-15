@@ -93,6 +93,7 @@ export type AssetManifest = {
   buildingProgressions?: readonly BuildingArtProgression[];
   itemArt?: readonly StandaloneArtEntry[];
   unitArt?: readonly StandaloneArtEntry[];
+  environmentArt?: readonly {path:string;sha256:string;width:number;height:number}[];
 };
 
 const isFinitePoint = (value: unknown): value is { x: number; y: number } => Boolean(value && typeof value === 'object'

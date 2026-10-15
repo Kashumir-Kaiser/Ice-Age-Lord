@@ -62,12 +62,13 @@ export class MapRenderer {
   private depthPlanning=false;
   private depthIds:string[]=[];
   readonly metrics:MapMetrics;
-  constructor(private canvas:HTMLCanvasElement,snapshot:MapSnapshot,private status:(backend:string)=>void,enabledMetrics=false){
+  constructor(private canvas:HTMLCanvasElement,snapshot:MapSnapshot,private status:(backend:string)=>void,enabledMetrics=false,environment:readonly {path:string;sha256:string;width:number;height:number}[]=[]){
     this.snapshot=snapshot;this.metrics=new MapMetrics(enabledMetrics);
     this.sampler=new TerrainSampler(snapshot.visualIdentity??snapshot.identity,snapshot.geography,snapshot.regions,snapshot.modeledInfill);
     this.terrain=new TerrainChunkCache(this.sampler,QUALITY.normal.terrainBytes,QUALITY.normal.textureSize,()=>this.invalidate());
     this.updateContacts(snapshot);
     this.assets=new AssetTextureCache(()=>this.invalidate(),path=>{this.failures.add(path);this.metrics.error('asset: '+path);this.invalidate();},QUALITY.normal.totalBytes-QUALITY.normal.terrainBytes);
+    this.assets.registerEnvironment(environment);
   }
   async init(forceFallback=false):Promise<void>{
     if(this.destroyed)return;
@@ -100,7 +101,7 @@ export class MapRenderer {
   update(snapshot:MapSnapshot):void{
     if(this.destroyed)return;
     let rebuilt=false;
-    if(snapshot.identity!==this.snapshot.identity||JSON.stringify([snapshot.visualIdentity,snapshot.modeledInfill,snapshot.geography,snapshot.regions])!==JSON.stringify([this.snapshot.visualIdentity,this.snapshot.modeledInfill,this.snapshot.geography,this.snapshot.regions])){
+    if(snapshot.identity!==this.snapshot.identity||JSON.stringify([snapshot.visualIdentity,snapshot.modeledInfill,snapshot.compact,snapshot.geography,snapshot.regions])!==JSON.stringify([this.snapshot.visualIdentity,this.snapshot.modeledInfill,this.snapshot.compact,this.snapshot.geography,this.snapshot.regions])){
       this.terrain.destroy();this.sampler=new TerrainSampler(snapshot.visualIdentity??snapshot.identity,snapshot.geography,snapshot.regions,snapshot.modeledInfill);this.terrain=new TerrainChunkCache(this.sampler,QUALITY[this.quality].terrainBytes,QUALITY[this.quality].textureSize,()=>this.invalidate());this.level=undefined;
       rebuilt=true;
     }
@@ -178,7 +179,7 @@ export class MapRenderer {
     }else this.previousLevel=undefined;
     this.terrain.retainLevels(new Set(this.previousLevel===undefined?[currentLevel,wanted]:[currentLevel,wanted,this.previousLevel]));
     let paintChanged=false;
-    if(currentLevel<=2)for(const name of GROUND_MATERIALS){const path='/assets/map/terrain/'+name+'.webp',paint=this.assets.acquire(path);used.add(path);if(paint&&this.terrain.paints.get(name)!==paint){this.terrain.paints.set(name,paint);paintChanged=true;}}
+    if(currentLevel<=2&&!this.snapshot.compact)for(const name of GROUND_MATERIALS){const path='/assets/map/terrain/'+name+'.webp',paint=this.assets.acquire(path);used.add(path);if(paint&&this.terrain.paints.get(name)!==paint){this.terrain.paints.set(name,paint);paintChanged=true;}}
     else this.terrain.paints.clear();
     if(paintChanged)this.terrain.invalidate();
     for(let y=Math.floor(bounds.minY/span);y<=Math.floor(bounds.maxY/span);y++)for(let x=Math.floor(bounds.minX/span);x<=Math.floor(bounds.maxX/span);x++){
@@ -190,7 +191,7 @@ export class MapRenderer {
     const prefetchLimit=wanted===this.level&&this.previousLevel===undefined?Math.max(0,slots-chunkCoverage(bounds,this.level)):0;
     const prefetch=(x:number,y:number)=>{if(prefetched<prefetchLimit){this.terrain.request(x,y,currentLevel);prefetched++;}};
     for(let x=x0;x<=x1;x++){prefetch(x,y0);prefetch(x,y1);}for(let y=y0+1;y<y1;y++){prefetch(x0,y);prefetch(x1,y);}
-    if(this.snapshot.projection==='north-up')for(const patch of this.sampler.relief(bounds,1/scale)){
+    if(this.snapshot.projection==='north-up'&&!this.snapshot.compact)for(const patch of this.sampler.relief(bounds,1/scale)){
       const center=this.project(patch),width=patch.width*(this.snapshot.northExtent?this.size.width/this.snapshot.northExtent.width:scale),height=patch.depth*scale;
       draws.push({id:'relief:'+patch.id,path:'/assets/map/terrain/'+patch.kind+'-'+String(patch.variant+1).padStart(2,'0')+'.png',x:center.x-width/2,y:center.y-height/2,width,height,alpha:.75});
     }
@@ -209,7 +210,7 @@ export class MapRenderer {
     const preferDistrict=this.quality==='low'||distinctAssets*4*1048576+environmentReserve>this.assets.limit;
     const useAtlas=this.quality!=='low'&&distinctAssets*1048576+environmentReserve<=this.assets.limit;
     const propBounds={minX:bounds.minX-20,maxX:bounds.maxX+20,minY:bounds.minY-20,maxY:bounds.maxY+20};
-    const worldProps=this.snapshot.mode==='planning'?[]:this.sampler.props(propBounds,1/scale).filter(p=>!this.snapshot.buildings.some(b=>{const turned=b.orientation==='east'||b.orientation==='west',width=turned?b.footprint.depthM:b.footprint.widthM,depth=turned?b.footprint.widthM:b.footprint.depthM;return Math.abs(b.point.x-p.x)<width/2+p.size&&Math.abs(b.point.y-p.y)<depth/2+p.size;}));
+    const worldProps=this.snapshot.mode==='planning'||this.snapshot.compact?[]:this.sampler.props(propBounds,1/scale).filter(p=>!this.snapshot.buildings.some(b=>{const turned=b.orientation==='east'||b.orientation==='west',width=turned?b.footprint.depthM:b.footprint.widthM,depth=turned?b.footprint.widthM:b.footprint.depthM;return Math.abs(b.point.x-p.x)<width/2+p.size&&Math.abs(b.point.y-p.y)<depth/2+p.size;}));
     const props=worldProps.map(p=>{
       const tree=p.kind==='conifer'||p.kind==='bare',ground=this.project(p),name=p.kind==='ledge'?LEDGE_SOURCES[p.variant%4]:p.kind+'-'+String(p.variant%(p.kind==='conifer'?6:p.kind==='bare'?3:8)+1).padStart(2,'0'),path='/assets/map/terrain/'+name+'.png';
       const image=this.assets.acquire(path),height=p.size*scale*(tree?1.8:.6);

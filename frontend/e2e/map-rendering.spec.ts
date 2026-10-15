@@ -209,3 +209,27 @@ test('repaired house raster failures use its smoke-free map SVG and retain the o
  await expect(page.locator('.map-render-canvas')).toHaveCount(1);
  await expect(page.locator('[data-map-renderer]')).toHaveAttribute('data-map-renderer',/webgl|canvas2d/);
 });
+
+test('compact overview keeps permitted map controls without downloading full scenery, and territory loads versioned art',async({page})=>{
+ test.setTimeout(90000);await page.emulateMedia({reducedMotion:'reduce'});
+ const requested=new Set<string>();page.on('request',request=>requested.add(request.url()));
+ await page.goto('/?mode=demo&mapQA=1');await expect(page.locator('.app-shell')).toBeVisible();
+ await expect(page.locator('.map-experience--compact .map-render-canvas')).toHaveCount(1);
+ await expect.poll(()=>page.evaluate(()=>{
+  const m=(window as unknown as {__mapMetrics?:{frames:number;queued:number;pendingTextures:number}[]}).__mapMetrics?.at(-1);
+  return Boolean(m&&m.frames>0&&m.queued===0&&m.pendingTextures===0);
+ }),{timeout:60000}).toBe(true);
+ expect(Array.from(requested).some(url=>url.includes('/assets/map/terrain/'))).toBe(false);
+ const compact=page.locator('.map-experience--compact');
+ const qualityBox=(await compact.locator('.map-render-options').boundingBox())!,cameraBox=(await compact.locator('.map-corner-controls').boundingBox())!;
+ expect(qualityBox.y+qualityBox.height<=cameraBox.y||qualityBox.y>=cameraBox.y+cameraBox.height).toBe(true);
+ const openBox=(await compact.locator('.map-open-full').boundingBox())!,fogBox=(await compact.locator('.map-compact-label').boundingBox())!;
+ expect(fogBox.y>=openBox.y+openBox.height||fogBox.x+fogBox.width<=openBox.x).toBe(true);
+
+ const menu=page.getByRole('button',{name:'Mở điều hướng'});if(await menu.isVisible())await menu.click();
+ await page.getByRole('navigation',{name:'Các mục giao diện'}).getByRole('button',{name:'Lãnh địa',exact:true}).click();
+ await expect.poll(()=>Array.from(requested).some(url=>/\/assets\/map\/terrain\/[^?]+\?mapHash=[a-f0-9]{64}/.test(url)),{timeout:30000}).toBe(true);
+ const watchCard=page.locator('.territory-definition').filter({has:page.getByRole('button',{name:'Thử bố trí Tháp Canh · mẫu ảnh',exact:true})});
+ await expect(watchCard.locator('img')).toHaveAttribute('src','/assets/map/buildings/watchtower-preview/icon.svg');
+ expect(Array.from(requested).some(url=>/\/assets\/map\/buildings\/(watchtower|elemental-tower)-preview\/body\.svg/.test(url))).toBe(false);
+});

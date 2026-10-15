@@ -26,6 +26,9 @@ export class AssetTextureCache {
   private estimates=new Map<string,number>();
   private rejected=new Set<string>();
   maxTextureSize=2048;
+  registerEnvironment(entries:readonly {path:string;sha256:string;width:number;height:number}[]):void{
+    for(const entry of entries){this.revision(entry.path,entry.sha256);this.estimates.set(entry.path,entry.width*entry.height*4);}
+  }
   register(asset:AssetManifestEntry,useAtlas=true):void{
     const cached=this.registered.get(asset);
     if(cached?.useAtlas===useAtlas&&cached.maxTextureSize===this.maxTextureSize)return;

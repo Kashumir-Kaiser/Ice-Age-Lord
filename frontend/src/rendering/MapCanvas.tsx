@@ -3,6 +3,7 @@ import type { MapSnapshot } from './MapSceneAdapter';
 import type { MapRenderer } from './MapRenderer';
 import type { Quality } from './mapStyle';
 import './rendering.css';
+import {loadAssetManifest} from '../assets/assetRegistry';
 type Props={snapshot:MapSnapshot;label:string};
 export default function MapCanvas({snapshot,label}:Props){
   const host=useRef<HTMLDivElement>(null),renderer=useRef<MapRenderer|null>(null),latest=useRef(snapshot);
@@ -21,9 +22,9 @@ export default function MapCanvas({snapshot,label}:Props){
     const parent=node.parentElement;parent?.addEventListener('map-camera',cameraChange);
     const observer=new ResizeObserver(entries=>{const b=entries[0]?.contentRect;if(b?.width&&b.height)current?.resize({width:b.width,height:b.height});});observer.observe(node);
     reduced.addEventListener('change',configure);document.addEventListener('visibilitychange',visibility);
-    import('./MapRenderer').then(async({MapRenderer:Renderer})=>{
+    Promise.all([import('./MapRenderer'),loadAssetManifest().catch(()=>null)]).then(async([{MapRenderer:Renderer},manifest])=>{
       if(disposed)return;
-      current=new Renderer(canvas,latest.current,value=>{if(!disposed)setBackend(value);},qa);renderer.current=current;
+      current=new Renderer(canvas,latest.current,value=>{if(!disposed)setBackend(value);},qa,manifest?.environmentArt);renderer.current=current;
       const b=node.getBoundingClientRect();current.resize({width:b.width,height:b.height});configure();visibility();
       if(qa){const target=window as unknown as {__mapMetrics?:Record<string,unknown>[]};target.__mapMetrics??=[];target.__mapMetrics.push(current.metrics.data);}
       await current.init(new URLSearchParams(location.search).get('mapFallback')==='1');

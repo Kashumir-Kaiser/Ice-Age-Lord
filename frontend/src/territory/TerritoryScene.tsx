@@ -455,7 +455,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
         <div className="territory-definition-grid">{placementDefinitions.map(definition=>{
           const artwork=findAsset(manifest,definition.assetId);
           return <article className={`territory-definition${placingId===definition.id?' is-active':''}`} key={definition.id}>
-            <img src={artwork?.layers.body??artwork?.layers.uiIcon??'/assets/buildings/lord-house-damaged/icon.svg'} alt=""/>
+            <img src={artwork?.layers.uiIcon??artwork?.layers.body??'/assets/buildings/lord-house-damaged/icon.svg'} alt=""/>
             <div><strong>{definition.name}</strong><small>{definition.footprint.widthM} × {definition.footprint.depthM} m · kích thước minh họa</small><small>Chi phí: chưa xác định</small></div>
             <button onClick={()=>startPlacement(definition)} aria-label={`Thử bố trí ${definition.name}`}>Đặt thử</button>
           </article>;

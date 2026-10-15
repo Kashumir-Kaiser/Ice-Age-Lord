@@ -408,7 +408,7 @@ export default function MapScene({
     </div>}
 
     <div className="map-scene map-scene--deep" ref={rootRef}>
-      <MapCanvas snapshot={explorationSnapshot(visibleMap,activeCamera,world)} label="Địa hình băng nguyên hướng Bắc. Địa điểm đã biết được hiển thị trên lớp điều khiển."/>
+      <MapCanvas snapshot={explorationSnapshot(visibleMap,activeCamera,world,compact)} label="Địa hình băng nguyên hướng Bắc. Địa điểm đã biết được hiển thị trên lớp điều khiển."/>
       <svg ref={svgRef} className="terrain-svg terrain-svg--deep" viewBox={viewport.x + ' ' + viewport.y + ' ' + viewport.width + ' ' + viewport.height}
         aria-label="Bản đồ băng nguyên. Dùng các phím mũi tên để di chuyển, cộng trừ để thu phóng."
         tabIndex={0} onKeyDown={keyDown} onPointerDown={pointerDown} onPointerMove={pointerMove}
