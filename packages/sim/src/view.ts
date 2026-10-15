@@ -474,7 +474,13 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
       auctionLots: atKronaGate ? state.stage08.auctionLots.filter(lot => lot.status !== 'closed') : [],
       auctionBids: atKronaGate ? state.stage08.auctionBids.filter(bid => bid.bidderId === state.player.id) : [],
       rankSnapshots: state.stage08.rankSnapshots,
-      openingBoard: openingBoardView(state),
+      // The opening leaderboard belongs to EV01. Do not disclose its date,
+      // participants, ranks or identity until its event-opening receipt exists.
+      openingBoard: state.calendar.some(event => event.id === 'EV01-OPENING-LEVEL'
+        && event.status !== 'scheduled' && event.openReceiptSequence !== null && event.opensAtMs <= state.simElapsedMs)
+        ? openingBoardView(state)
+        : { boardId: '', status: 'scheduled' as const, opensAtElapsedMs: 0,
+            closesAtElapsedMs: 0, displayDelayMs: 0, rows: [], rewardClaimStatus: 'unavailable' as const },
     },
     botBoardSnapshots: state.botPopulation?.boardSnapshots ?? [],
     botInspection,
