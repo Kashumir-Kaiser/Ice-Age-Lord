@@ -71,6 +71,20 @@ test('all nine live screens remain on one server-owned save projection at releas
         if (await items.count()) {
           await expect(items.first().locator('.live-item-art,.live-item-placeholder-art')).toBeVisible();
           await expect(items.first().locator('.live-item-details summary')).toBeVisible();
+          const overflow = await items.evaluateAll(cards => cards.flatMap((card, i) => {
+            const bounds = card.getBoundingClientRect();
+            const candidates = [card, ...card.querySelectorAll('.live-item-art,.live-item-placeholder-art,.live-item-card-copy,.live-item-name,.live-item-quantity,.live-item-details,.live-item-details summary')];
+            return candidates.flatMap(element => {
+              const node = element as HTMLElement;
+              if (!node.getClientRects().length) return [];
+              const rect = node.getBoundingClientRect();
+              const outside = rect.left < bounds.left - 2 || rect.right > bounds.right + 2;
+              const scrolling = node.scrollWidth > node.clientWidth + 2;
+              return outside || scrolling ? [`card ${i}: ${node.className || node.tagName} outside=${outside} scroll=${node.scrollWidth}/${node.clientWidth}`] : [];
+            });
+          }));
+          expect(overflow, `inventory tile overflow at ${viewport.width}×${viewport.height}`).toEqual([]);
+
         }
       }
       if (screen === 'Quân lực') {
