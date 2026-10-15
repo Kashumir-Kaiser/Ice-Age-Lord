@@ -223,7 +223,7 @@ function TombQueueList({ view, working, blocked, onCancel }: {
   return <ul className="live-plain-list">{view.territory.tomb.queue.map(job => {
     const progress = view.jobs.find(item => item.id === job.id)?.progressPercent;
     return <li key={job.id}>
-      <strong>{job.status === 'active' ? 'Đang sản xuất' : job.status === 'blocked' ? 'Đang chặn' : job.status === 'queued' ? 'Đang chờ ô' : job.status} · Cương thi</strong>
+      <strong>{job.status === 'active' ? 'Đang sản xuất' : job.status === 'blocked' ? 'Tạm gián đoạn' : job.status === 'queued' ? 'Đang chờ ô' : playerStatus(job.status)} · Cương thi</strong>
       <span>{job.status === 'active' ? `${Math.floor(progress ?? 0)}% · xong ${elapsedLabel(job.completesAtElapsedMs)}` : `Tử Khí giữ ${job.reservedDeathQi}`}</span>
       {(job.status === 'queued' || job.status === 'blocked') && <button className="live-text-button" disabled={working || blocked} onClick={() => onCancel(job.id)}>Hủy</button>}
     </li>;
@@ -1533,11 +1533,11 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
               {bidId
                 ? <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'cancel_auction_bid', { bidId }))}>Hủy đặt giá · nhận lại tiền</button>
                 : <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || lot.status !== 'open' || lot.quantity <= lot.reservedQuantity || balance < lot.minimumUnitBid}
-                  onClick={() => void sendCommand(commandFor(view, 'place_auction_bid', { lotId: lot.id, quantity: 1, unitBid: lot.minimumUnitBid }))}>Bid 1 {lot.itemTemplateId} · escrow {lot.minimumUnitBid} {lot.currencyId}</button>}
+                  onClick={() => void sendCommand(commandFor(view, 'place_auction_bid', { lotId: lot.id, quantity: 1, unitBid: lot.minimumUnitBid }))}>Đặt giá 1 {playerItemName(lot.itemTemplateId)} · giữ {lot.minimumUnitBid} {lot.currencyId}</button>}
             </article>;
           })}
           {view.stage08.auctionBids.length > 0 && <ul className="live-plain-list">{view.stage08.auctionBids.map(bid => <li key={bid.id}>
-            <strong>{bid.id} · {bid.status}</strong><span>{bid.quantity} unit(s) at {bid.unitBid} {view.stage08.auctionLots.find(lot => lot.id === bid.lotId)?.currencyId ?? ''} · escrow {bid.escrowAmount}</span>
+            <strong>Đặt giá · {playerStatus(bid.status)}</strong><span>{bid.quantity} món · giá {bid.unitBid} {view.stage08.auctionLots.find(lot => lot.id === bid.lotId)?.currencyId ?? ''} · đã giữ {bid.escrowAmount}</span>
           </li>)}</ul>}
         </section>}
         <section className="live-panel">
@@ -1546,8 +1546,8 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
             <strong>{resource.materialName}</strong><span>{resource.remaining === null ? 'Chưa rõ trữ lượng' : `${resource.remaining} ${resource.unit}`} · {resource.reserved ?? 0} đã giữ · {playerStatus(resource.status)}</span>
           </li>)}</ul> : <p className="live-empty-state">Chưa khám phá địa điểm có tài nguyên.</p>}
           {view.spatial.harvestJobs.length > 0 && <div className="live-job-list">{view.spatial.harvestJobs.map(job => <article key={job.id} className="live-container-row">
-            <div><strong>{job.materialId} · {job.stage} · {job.status}</strong><small>{job.extractedQuantity}/{job.requestedQuantity} gathered · {Math.floor(view.jobs.find(item => item.id === job.id)?.progressPercent ?? 0)}%</small></div>
-            {job.status === 'active' && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'cancel_spatial_job', { jobId: job.id }))}>Cancel trip</button>}
+            <div><strong>{playerItemName(job.materialId)} · {playerStatus(job.stage)} · {playerStatus(job.status)}</strong><small>Đã thu {job.extractedQuantity}/{job.requestedQuantity} · {Math.floor(view.jobs.find(item => item.id === job.id)?.progressPercent ?? 0)}%</small></div>
+            {job.status === 'active' && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'cancel_spatial_job', { jobId: job.id }))}>Hủy chuyến đi</button>}
           </article>)}</div>}
         </section>
       </div>;
@@ -1569,7 +1569,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         <div className="live-panel-heading"><div><span className="live-eyebrow">QUÂN LỰC</span><h2>Quân lực</h2></div><Users size={22} /></div>
         {view.combat?.target && <article className="live-container-card" data-testid="stage07-combat-panel">
           <div className="live-panel-heading"><div><span className="live-eyebrow">TRẬN CHIẾN ĐẦU TIÊN</span><h3>{view.combat.target.label}</h3></div>
-            <span className="live-data-chip">{view.combat.target.state}</span></div>
+            <span className="live-data-chip">{playerStatus(view.combat.target.state)}</span></div>
           <p>Con mồi đang ở gần lãnh địa. Hãy chọn chiến binh đủ sức và trang bị vũ khí trước khi tấn công.</p>
           {view.combat.target.state === 'available' && <div className="live-button-row">
             <label className="live-inline-field">Chiến binh<select aria-label="Chiến binh giao chiến" value={combatActorId || view.units.find(unit => unit.health && unit.health.current > 0)?.id || ''}
@@ -1584,17 +1584,17 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
               }}>Tấn công theo thời gian mô phỏng</button>
           </div>}
           {view.combat.encounter && <div>
-            <p>Encounter {view.combat.encounter.id} · {view.combat.encounter.status} · vòng {view.combat.encounter.round} · {view.combat.encounter.nextTurnAtElapsedMs === null ? 'đã kết thúc' : 'lượt kế tiếp lúc T+' + elapsedLabel(view.combat.encounter.nextTurnAtElapsedMs)}</p>
-            {view.combat.encounter.status === 'active' && <><p>Thỏ băng {view.combat.encounter.targetHealth.current}/{view.combat.encounter.targetHealth.max} HP · clock {view.clockControl.status === 'running' ? 'đang chạy' : 'đang dừng'}.</p>
+            <p>{playerStatus(view.combat.encounter.status)} · vòng {view.combat.encounter.round} · {view.combat.encounter.nextTurnAtElapsedMs === null ? 'đã kết thúc' : 'lượt kế tiếp ' + elapsedLabel(view.combat.encounter.nextTurnAtElapsedMs)}</p>
+            {view.combat.encounter.status === 'active' && <><p>Thỏ băng {view.combat.encounter.targetHealth.current}/{view.combat.encounter.targetHealth.max} máu · thời gian {view.clockControl.status === 'running' ? 'đang chạy' : 'đang dừng'}.</p>
               <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'retreat', { actorIds: view.combat!.encounter!.actorIds, encounterId: view.combat!.encounter!.id }))}>Ra lệnh rút lui</button>
             </>}
             {view.combat.encounter.log.length > 0 && <ul className="live-plain-list">{view.combat.encounter.log.map((entry, index) => <li key={entry.atElapsedMs + ':' + index}>
-              <strong>Vòng {index + 1} · {entry.actorId === view.combat!.target!.id ? 'Thỏ băng' : view.units.find(unit => unit.id === entry.actorId)?.name ?? 'Chiến binh'} · {entry.outcome}</strong>
+              <strong>Vòng {index + 1} · {entry.actorId === view.combat!.target!.id ? 'Thỏ băng' : view.units.find(unit => unit.id === entry.actorId)?.name ?? 'Chiến binh'} · {playerStatus(entry.outcome)}</strong>
               <span>Gây {entry.damage} · nhận {entry.damageTaken} · sức khỏe chiến binh {entry.actorHealth} · mục tiêu {entry.targetHealth}/{view.combat!.encounter!.targetHealth.max}</span>
             </li>)}</ul>}
           </div>}
           {view.combat.target.state === 'dead' && <p>Thi thể thật đã được đánh dấu trên bản đồ. Hãy chọn thi thể để kiểm tra hồ sơ trước khi Tử Phục.</p>}
-          {view.combat.target.state === 'retreated' && <p>Cá thể này đã sống sót và rời khỏi encounter. Không có thi thể hoặc phần thưởng XP.</p>}
+          {view.combat.target.state === 'retreated' && <p>Con mồi đã chạy thoát. Không có thi thể hoặc kinh nghiệm nhận được.</p>}
         </article>}
         {view.units.length
           ? <div className="live-force-unit-grid">{view.units.map(unit => {
@@ -1604,9 +1604,9 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
             return <article key={unit.id} className="live-container-card">
               <div className="live-panel-heading"><h3>{unit.name}</h3><span className="live-data-chip">{routeLabel}</span></div>
               <p>Bậc {unit.sourceStats.formTier} · Cấp {unit.level} · Phẩm {unit.sourceStats.grade} · XP {unit.xp}</p>
-              <p>Phe {unit.sourceStats.faction} · hoạt động {inCombat ? 'đang giao chiến' : unit.health?.current === 0 ? 'đã gục' : 'sẵn sàng'}.</p>
+              <p>Phe {playerStatus(unit.sourceStats.faction)} · hoạt động {inCombat ? 'đang giao chiến' : unit.health?.current === 0 ? 'đã gục' : 'sẵn sàng'}.</p>
               {unit.health && <p>Sức khỏe {unit.health.current}/{unit.health.max} · độ nguyên vẹn {unit.integrity ?? '—'}%</p>}
-              <p>{unit.xpMirrorEligible ? 'Kinh nghiệm chiến đấu của đơn vị này được chia sẻ với Lí Lan.' : 'Kinh nghiệm của đơn vị này không được chia sẻ.'}</p>
+              <p>{unit.xpMirrorEligible ? 'Kinh nghiệm chiến đấu được chia sẻ với Lí Lan.' : 'Kinh nghiệm không được chia sẻ với Lí Lan.'}</p>
               {unit.attributes && <p>Thuộc tính: {Object.entries(unit.attributes).map(([stat, value]) => `${stat} ${value}`).join(' · ')}</p>}
               {unit.skills?.length ? <p>Kỹ năng: {unit.skills.map(skill => `${playerItemName(skill.templateId)} · thông thạo ${skill.mastery}`).join(' · ')}</p> : <p>Chưa ghi nhận kỹ năng riêng.</p>}
               {unit.equipmentSlots?.map(slot => {
@@ -1774,7 +1774,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           <div className="live-panel-heading"><div><span className="live-eyebrow">SỔ KIẾN TRÚC</span><h3>Công trình đã mở</h3></div><Shield size={20} /></div>
           <ul className="live-plain-list">{availableBlueprints.map(blueprint => <li key={blueprint.id}>
             <strong>{blueprint.name}</strong>
-            <span>{blueprint.buildCost.map(item => `${item.quantity} ${playerItemName(item.materialId)}`).join(' + ')} · {blueprint.footprint.areaM2 ?? `${blueprint.footprint.lengthM} m chiều dài`} m²</span>
+            <span>{blueprint.buildCost.map(item => `${item.quantity} ${playerItemName(item.materialId)}`).join(' + ')} · {blueprint.footprint.areaM2 !== null ? `${blueprint.footprint.areaM2} m²` : `${blueprint.footprint.lengthM} m chiều dài`}</span>
           </li>)}</ul>
         </section>}
         {view.territory.buildings.length > 0 && <section className="live-panel">
