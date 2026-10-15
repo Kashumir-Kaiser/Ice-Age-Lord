@@ -191,6 +191,6 @@ test('live mode keeps the API disconnection visible and does not fall back to de
   await page.route('**/api/v1/health', route => route.abort());
   await page.goto('/?mode=live');
   await expect(page.getByRole('heading', { name: 'Kết nối trò chơi' })).toBeVisible();
-  await expect(page.getByText(/Không kết nối được API cục bộ/)).toBeVisible();
+  await expect(page.getByText(/Không thể kết nối với trò chơi/)).toBeVisible();
   await expect(page.getByText(/Chế độ demo/)).toHaveCount(0);
 });
