@@ -17,6 +17,12 @@ jobs:
           node-version: '22'
       - name: Validate Windows-native map asset paths and hashes
         run: node --test frontend/tests/mapAssetPaths.test.mjs
+      - name: Install frontend dependencies on Windows
+        run: npm ci --no-audit --no-fund
+        working-directory: frontend
+      - name: Run complete Windows predev asset sync
+        run: npm run assets:sync
+        working-directory: frontend
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 45
