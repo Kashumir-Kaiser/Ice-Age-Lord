@@ -48,6 +48,8 @@ test('all nine live screens remain on one server-owned save projection at releas
         await page.screenshot({ path: testInfo.outputPath(`stage09-overview-${viewport.width}x${viewport.height}.png`), fullPage: true });
       }
       if (screen === 'Nhân vật') {
+        await expect(page.locator('.live-character-page .character-equipment-layout')).toBeVisible();
+        await expect(page.locator('.live-character-page [data-equipment-slot]')).toHaveCount(9);
         const portrait = page.getByRole('img', { name: 'Toàn thân Lí Lan' });
         await expect(portrait).toBeVisible();
         await expect.poll(() => portrait.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
@@ -57,13 +59,29 @@ test('all nine live screens remain on one server-owned save projection at releas
         await expect(page.getByRole('heading', { name: 'Xếp hạng và quyết toán' })).toBeVisible();
       }
       if (screen === 'Bản đồ') {
+        await expect(page.locator('.live-exploration-panel .live-map-canvas')).toBeVisible();
         await expect(page.getByTestId('search-for-chests')).toBeVisible();
         const mapArt = page.locator('[data-testid="map-campfire-marker"] .live-map-marker-art image');
         await expect(mapArt).toHaveAttribute('href', '/assets/buildings/survival-fire-l01/icon.svg');
         const assetLoaded = await page.evaluate(async path => (await fetch(path)).ok, '/assets/buildings/survival-fire-l01/icon.svg');
         expect(assetLoaded).toBe(true);
       }
-      if (screen === 'Quân lực') await expect(page.getByTestId('search-for-chests')).toBeVisible();
+      if (screen === 'Kho vật phẩm') {
+        await expect(page.locator('.live-inventory-grid')).toBeVisible();
+        const items = page.locator('.live-inventory-art-list > li');
+        if (await items.count()) {
+          await expect(items.first().locator('.live-item-art,.live-item-placeholder-art')).toBeVisible();
+          await expect(items.first().locator('.live-item-details summary')).toBeVisible();
+        }
+      }
+      if (screen === 'Quân lực') {
+        await expect(page.locator('.live-forces-stats .stat-card')).toHaveCount(4);
+        await expect(page.getByTestId('search-for-chests')).toBeVisible();
+      }
+      if (screen === 'Công trình') {
+        await expect(page.locator('.live-building-gallery')).toBeVisible();
+        await expect(page.locator('.live-building-gallery-card').first()).toBeVisible();
+      }
       if (screen === 'Lãnh địa') {
         const fireSprite = page.locator('.territory-building[data-building-id="SITE-LL01-000"]');
         await expect(page.locator('.territory-scene-svg')).toBeVisible();
@@ -88,6 +106,17 @@ test('all nine live screens remain on one server-owned save projection at releas
   await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Bản đồ/ }).click();
   const revisionBeforeCameraInput = await page.locator('.live-footer span').nth(1).innerText();
   await page.getByRole('button', { name: 'Show map overview' }).click();
+  await expect(page.locator('.live-footer span').nth(1)).toHaveText(revisionBeforeCameraInput);
+  const map = page.getByTestId('live-map');
+  const box = await map.boundingBox();
+  expect(box).not.toBeNull();
+  const beforeCenter = await page.locator('.live-map-tools .live-data-chip').last().innerText();
+  await page.mouse.move(box!.x + box!.width * .38, box!.y + box!.height * .40);
+  await page.mouse.down();
+  await page.mouse.move(box!.x + box!.width * .64, box!.y + box!.height * .53, { steps: 8 });
+  await page.mouse.up();
+  const afterCenter = await page.locator('.live-map-tools .live-data-chip').last().innerText();
+  expect(afterCenter).not.toBe(beforeCenter);
   await expect(page.locator('.live-footer span').nth(1)).toHaveText(revisionBeforeCameraInput);
 });
 
