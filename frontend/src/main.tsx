@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import LandingPage from './landing/LandingPage';
 import './styles.css';
 import './live/live.css';
+import './landing/landing.css';
 
 type GameMode = 'demo' | 'live';
 type LiveEntryIntent = 'new' | 'load' | 'either';
