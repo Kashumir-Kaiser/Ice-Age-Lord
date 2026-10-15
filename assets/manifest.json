@@ -938,12 +938,7 @@
       ],
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/fixture-fire-max/foundation.svg",
-      "generatedOrientationViews": [],
-      "equivalentOrientations": [
-        "east",
-        "south",
-        "west"
-      ]
+      "generatedOrientationViews": []
     },
     {
       "assetId": "fixture-tall-tower",
@@ -1453,12 +1448,7 @@
       ],
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/fixture-tall-tower/foundation.svg",
-      "generatedOrientationViews": [],
-      "equivalentOrientations": [
-        "east",
-        "south",
-        "west"
-      ]
+      "generatedOrientationViews": []
     },
     {
       "assetId": "lord-house-damaged",
@@ -15333,110 +15323,6 @@
           }
         },
         {
-          "path": "/assets/map/buildings/lord-house-l30/base-close.png",
-          "source": "/assets/map/buildings/lord-house-l30/foundation.svg",
-          "sourceSha256": "3c62616e555f3b1b5d3ded6ca4b7fe57ff952074cac19eb377f8d07a58ec00e8",
-          "sourceDependencies": [
-            {
-              "source": "frontend/public/assets/map/buildings/lord-house-l30/foundation.svg",
-              "sha256": "3c62616e555f3b1b5d3ded6ca4b7fe57ff952074cac19eb377f8d07a58ec00e8"
-            },
-            {
-              "source": "assets/map-ground-registration.json",
-              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
-            },
-            {
-              "source": "frontend/scripts/map-ground-shadow.mjs",
-              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
-            }
-          ],
-          "sha256": "4662839fae09a04e94c99aad5f315dfddc1d2987e061aa2da69f093205334148",
-          "exportVersion": 3,
-          "width": 272,
-          "height": 123,
-          "role": "base",
-          "lod": "close",
-          "orientation": "north",
-          "alpha": "straight",
-          "colorSpace": "srgb",
-          "logicalCanvas": {
-            "width": 480,
-            "height": 400
-          },
-          "rasterCanvas": {
-            "width": 384,
-            "height": 320
-          },
-          "trim": {
-            "x": 70,
-            "y": 211.24999999999997,
-            "width": 340,
-            "height": 153.75
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/lord-house-l30/atlas-close.png",
-            "x": 396,
-            "y": 4,
-            "width": 272,
-            "height": 123,
-            "atlasWidth": 1024,
-            "atlasHeight": 1024,
-            "sha256": "cae0d051ada25dfdc7c53679e14805bf18acacf947eee17223aba492c4153e74"
-          }
-        },
-        {
-          "path": "/assets/map/buildings/lord-house-l30/base-district.png",
-          "source": "/assets/map/buildings/lord-house-l30/foundation.svg",
-          "sourceSha256": "3c62616e555f3b1b5d3ded6ca4b7fe57ff952074cac19eb377f8d07a58ec00e8",
-          "sourceDependencies": [
-            {
-              "source": "frontend/public/assets/map/buildings/lord-house-l30/foundation.svg",
-              "sha256": "3c62616e555f3b1b5d3ded6ca4b7fe57ff952074cac19eb377f8d07a58ec00e8"
-            },
-            {
-              "source": "assets/map-ground-registration.json",
-              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
-            },
-            {
-              "source": "frontend/scripts/map-ground-shadow.mjs",
-              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
-            }
-          ],
-          "sha256": "1dcaab4bdcb4d215e362e445ce6b78fd64415d66da1ddda1313e2d096f357ffd",
-          "exportVersion": 3,
-          "width": 138,
-          "height": 64,
-          "role": "base",
-          "lod": "district",
-          "orientation": "north",
-          "alpha": "straight",
-          "colorSpace": "srgb",
-          "logicalCanvas": {
-            "width": 480,
-            "height": 400
-          },
-          "rasterCanvas": {
-            "width": 192,
-            "height": 160
-          },
-          "trim": {
-            "x": 67.5,
-            "y": 207.50000000000003,
-            "width": 345,
-            "height": 160
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/lord-house-l30/atlas-district.png",
-            "x": 204,
-            "y": 4,
-            "width": 138,
-            "height": 64,
-            "atlasWidth": 512,
-            "atlasHeight": 512,
-            "sha256": "0bc39688987548e563e9dd8b86c3918e53623b9a22ca0256f6777546f0fffcce"
-          }
-        },
-        {
           "path": "/assets/map/buildings/lord-house-l30/base-north-close.png",
           "layerPath": "/assets/map/buildings/lord-house-l30/base-north-close.png",
           "source": "assets/source/map-buildings/lord-house-l30-foundation.png",
@@ -15444,11 +15330,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -15505,11 +15391,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -15562,15 +15448,43 @@
           "path": "/assets/map/buildings/lord-house-l30/body-layered-north-close.png",
           "layerPath": "/assets/map/buildings/lord-house-l30/body-layered-north-close.png",
           "source": "frontend/scripts/apply-authored-architecture.mjs",
-          "sourceSha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056",
+          "sourceSha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae",
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-l30-foundation.png",
+              "sha256": "c8bcca06bda0c114e606c55e563cd0bf3092dc863da00595c3eb5d932c502b6a"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-l30-upper.png",
+              "sha256": "cae5f5c011ee91c015a7d314f5ce093738ba0812b36008a3176c2cb2d3c3e3e2"
+            },
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -15626,11 +15540,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -15687,11 +15601,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -15744,15 +15658,43 @@
           "path": "/assets/map/buildings/lord-house-l30/body-layered-north-district.png",
           "layerPath": "/assets/map/buildings/lord-house-l30/body-layered-north-close.png",
           "source": "frontend/scripts/apply-authored-architecture.mjs",
-          "sourceSha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056",
+          "sourceSha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae",
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-l30-foundation.png",
+              "sha256": "c8bcca06bda0c114e606c55e563cd0bf3092dc863da00595c3eb5d932c502b6a"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-l30-upper.png",
+              "sha256": "cae5f5c011ee91c015a7d314f5ce093738ba0812b36008a3176c2cb2d3c3e3e2"
+            },
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -16376,110 +16318,6 @@
           }
         },
         {
-          "path": "/assets/map/buildings/lord-house-repaired/base-close.png",
-          "source": "/assets/map/buildings/lord-house-repaired/foundation.svg",
-          "sourceSha256": "4c7461ef9030b110c0c8cf513407417d10518c022d4ac8c509ac22c52827617e",
-          "sourceDependencies": [
-            {
-              "source": "frontend/public/assets/map/buildings/lord-house-repaired/foundation.svg",
-              "sha256": "4c7461ef9030b110c0c8cf513407417d10518c022d4ac8c509ac22c52827617e"
-            },
-            {
-              "source": "assets/map-ground-registration.json",
-              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
-            },
-            {
-              "source": "frontend/scripts/map-ground-shadow.mjs",
-              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
-            }
-          ],
-          "sha256": "4662839fae09a04e94c99aad5f315dfddc1d2987e061aa2da69f093205334148",
-          "exportVersion": 3,
-          "width": 272,
-          "height": 123,
-          "role": "base",
-          "lod": "close",
-          "orientation": "north",
-          "alpha": "straight",
-          "colorSpace": "srgb",
-          "logicalCanvas": {
-            "width": 480,
-            "height": 400
-          },
-          "rasterCanvas": {
-            "width": 384,
-            "height": 320
-          },
-          "trim": {
-            "x": 70,
-            "y": 211.24999999999997,
-            "width": 340,
-            "height": 153.75
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/lord-house-repaired/atlas-close.png",
-            "x": 396,
-            "y": 4,
-            "width": 272,
-            "height": 123,
-            "atlasWidth": 1024,
-            "atlasHeight": 1024,
-            "sha256": "cae0d051ada25dfdc7c53679e14805bf18acacf947eee17223aba492c4153e74"
-          }
-        },
-        {
-          "path": "/assets/map/buildings/lord-house-repaired/base-district.png",
-          "source": "/assets/map/buildings/lord-house-repaired/foundation.svg",
-          "sourceSha256": "4c7461ef9030b110c0c8cf513407417d10518c022d4ac8c509ac22c52827617e",
-          "sourceDependencies": [
-            {
-              "source": "frontend/public/assets/map/buildings/lord-house-repaired/foundation.svg",
-              "sha256": "4c7461ef9030b110c0c8cf513407417d10518c022d4ac8c509ac22c52827617e"
-            },
-            {
-              "source": "assets/map-ground-registration.json",
-              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
-            },
-            {
-              "source": "frontend/scripts/map-ground-shadow.mjs",
-              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
-            }
-          ],
-          "sha256": "1dcaab4bdcb4d215e362e445ce6b78fd64415d66da1ddda1313e2d096f357ffd",
-          "exportVersion": 3,
-          "width": 138,
-          "height": 64,
-          "role": "base",
-          "lod": "district",
-          "orientation": "north",
-          "alpha": "straight",
-          "colorSpace": "srgb",
-          "logicalCanvas": {
-            "width": 480,
-            "height": 400
-          },
-          "rasterCanvas": {
-            "width": 192,
-            "height": 160
-          },
-          "trim": {
-            "x": 67.5,
-            "y": 207.50000000000003,
-            "width": 345,
-            "height": 160
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/lord-house-repaired/atlas-district.png",
-            "x": 204,
-            "y": 4,
-            "width": 138,
-            "height": 64,
-            "atlasWidth": 512,
-            "atlasHeight": 512,
-            "sha256": "0bc39688987548e563e9dd8b86c3918e53623b9a22ca0256f6777546f0fffcce"
-          }
-        },
-        {
           "path": "/assets/map/buildings/lord-house-repaired/base-north-close.png",
           "layerPath": "/assets/map/buildings/lord-house-repaired/base-north-close.png",
           "source": "assets/source/map-buildings/lord-house-repaired-foundation.png",
@@ -16487,11 +16325,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -16548,11 +16386,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -16605,15 +16443,43 @@
           "path": "/assets/map/buildings/lord-house-repaired/body-layered-north-close.png",
           "layerPath": "/assets/map/buildings/lord-house-repaired/body-layered-north-close.png",
           "source": "frontend/scripts/apply-authored-architecture.mjs",
-          "sourceSha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056",
+          "sourceSha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae",
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-repaired-foundation.png",
+              "sha256": "9e62b3cbbfc118b7caeb3126e8131f56bb608d55220e2a2a0cbff12756772881"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-repaired-upper.png",
+              "sha256": "86fdf1520f88145ca77ed833e256700858e3fab26cb5d96c59407bdba85bc32e"
+            },
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -16669,11 +16535,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -16730,11 +16596,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -16787,15 +16653,43 @@
           "path": "/assets/map/buildings/lord-house-repaired/body-layered-north-district.png",
           "layerPath": "/assets/map/buildings/lord-house-repaired/body-layered-north-close.png",
           "source": "frontend/scripts/apply-authored-architecture.mjs",
-          "sourceSha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056",
+          "sourceSha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae",
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-repaired-foundation.png",
+              "sha256": "9e62b3cbbfc118b7caeb3126e8131f56bb608d55220e2a2a0cbff12756772881"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-repaired-upper.png",
+              "sha256": "86fdf1520f88145ca77ed833e256700858e3fab26cb5d96c59407bdba85bc32e"
+            },
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -40957,7 +40851,7 @@
         }
       },
       "referenceSource": "assets/source/concepts/polar-farmhouse-levels-01-10.png#cell=0,0",
-      "composition": "single-body",
+      "composition": "architectural",
       "mapExports": [
         {
           "path": "/assets/map/buildings/polar-farmhouse-l01/body-close.png",
@@ -40991,16 +40885,6 @@
             "y": 32.5,
             "width": 410,
             "height": 336.25
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/polar-farmhouse-l01/atlas-close.png",
-            "x": 4,
-            "y": 4,
-            "width": 328,
-            "height": 269,
-            "atlasWidth": 1024,
-            "atlasHeight": 1024,
-            "sha256": "656264783c49d0ebddb00ea18dc787d276a1021d1f677fda82dc8dcb811fac16"
           }
         },
         {
@@ -41035,16 +40919,6 @@
             "y": 30,
             "width": 415,
             "height": 340
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/polar-farmhouse-l01/atlas-district.png",
-            "x": 4,
-            "y": 4,
-            "width": 166,
-            "height": 136,
-            "atlasWidth": 512,
-            "atlasHeight": 512,
-            "sha256": "939fbc0ef1db62ba2423e46f78c082c26f2ddd45551b452e4413a912bf599784"
           }
         },
         {
@@ -41082,13 +40956,13 @@
           },
           "atlas": {
             "path": "/assets/map/buildings/polar-farmhouse-l01/atlas-close.png",
-            "x": 396,
+            "x": 4,
             "y": 4,
             "width": 304,
             "height": 58,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "656264783c49d0ebddb00ea18dc787d276a1021d1f677fda82dc8dcb811fac16"
+            "sha256": "20730cb1165797d71d51ad7e8dd23c286296866860ae5fe9659fecf079db2120"
           }
         },
         {
@@ -41126,29 +41000,52 @@
           },
           "atlas": {
             "path": "/assets/map/buildings/polar-farmhouse-l01/atlas-district.png",
-            "x": 204,
+            "x": 4,
             "y": 4,
             "width": 154,
             "height": 32,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "939fbc0ef1db62ba2423e46f78c082c26f2ddd45551b452e4413a912bf599784"
+            "sha256": "780de1210b97e8ef6164675aa28c40b4147ddfdf948a11cb464dd8cff70a1bf7"
           }
         },
         {
-          "path": "/assets/map/buildings/polar-farmhouse-l01/base-close.png",
-          "source": "/assets/map/buildings/polar-farmhouse-l01/foundation.svg",
-          "sourceSha256": "b5342cc2ad8e2e63086665bdec12aaf8300e322141a53879455a1f11cdade9a4",
+          "path": "/assets/map/buildings/polar-farmhouse-l01/base-north-close.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/base-north-close.png",
+          "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+          "sourceSha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91",
           "sourceDependencies": [
             {
-              "source": "frontend/public/assets/map/buildings/polar-farmhouse-l01/foundation.svg",
-              "sha256": "b5342cc2ad8e2e63086665bdec12aaf8300e322141a53879455a1f11cdade9a4"
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
             }
           ],
-          "sha256": "4662839fae09a04e94c99aad5f315dfddc1d2987e061aa2da69f093205334148",
-          "exportVersion": 3,
-          "width": 272,
-          "height": 123,
+          "sha256": "12a84dc763868cb197a6d01af64405bb8cd365fa06e8cb02ceff4d4c81288b8c",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "architecturePart": true,
+          "width": 283,
+          "height": 121,
           "role": "base",
           "lod": "close",
           "orientation": "north",
@@ -41163,36 +41060,194 @@
             "height": 320
           },
           "trim": {
-            "x": 70,
-            "y": 211.24999999999997,
-            "width": 340,
-            "height": 153.75
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/polar-farmhouse-l01/atlas-close.png",
-            "x": 4,
-            "y": 332,
-            "width": 272,
-            "height": 123,
-            "atlasWidth": 1024,
-            "atlasHeight": 1024,
-            "sha256": "656264783c49d0ebddb00ea18dc787d276a1021d1f677fda82dc8dcb811fac16"
+            "x": 71.25,
+            "y": 213.75000000000003,
+            "width": 353.75,
+            "height": 151.25
           }
         },
         {
-          "path": "/assets/map/buildings/polar-farmhouse-l01/base-district.png",
-          "source": "/assets/map/buildings/polar-farmhouse-l01/foundation.svg",
-          "sourceSha256": "b5342cc2ad8e2e63086665bdec12aaf8300e322141a53879455a1f11cdade9a4",
+          "path": "/assets/map/buildings/polar-farmhouse-l01/upper-north-close.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/upper-north-close.png",
+          "source": "/assets/buildings/polar-farmhouse-l01/body.svg",
+          "sourceSha256": "83186bf6ec80dc68f0678dbdb1a700a95bcc561a6ea099e636227fb135f897f6",
           "sourceDependencies": [
             {
-              "source": "frontend/public/assets/map/buildings/polar-farmhouse-l01/foundation.svg",
-              "sha256": "b5342cc2ad8e2e63086665bdec12aaf8300e322141a53879455a1f11cdade9a4"
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
+            {
+              "source": "frontend/public/assets/buildings/polar-farmhouse-l01/body.svg",
+              "sha256": "83186bf6ec80dc68f0678dbdb1a700a95bcc561a6ea099e636227fb135f897f6"
             }
           ],
-          "sha256": "1dcaab4bdcb4d215e362e445ce6b78fd64415d66da1ddda1313e2d096f357ffd",
-          "exportVersion": 3,
-          "width": 138,
-          "height": 64,
+          "sha256": "2029cd2da7a2bfa0685a9a595ad69fbfea29489fac5adfc6aa97ca95d566860a",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "architecturePart": true,
+          "width": 328,
+          "height": 269,
+          "role": "upper",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 35,
+            "y": 32.5,
+            "width": 410,
+            "height": 336.25
+          }
+        },
+        {
+          "path": "/assets/map/buildings/polar-farmhouse-l01/body-layered-north-close.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-layered-north-close.png",
+          "source": "frontend/scripts/apply-authored-architecture.mjs",
+          "sourceSha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
+            {
+              "source": "frontend/public/assets/buildings/polar-farmhouse-l01/body.svg",
+              "sha256": "83186bf6ec80dc68f0678dbdb1a700a95bcc561a6ea099e636227fb135f897f6"
+            }
+          ],
+          "sha256": "5181c70f9bc9b07919b50731638d2d9e1456fa97293d1b705736de658680bdde",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "width": 328,
+          "height": 269,
+          "role": "body",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 35,
+            "y": 32.5,
+            "width": 410,
+            "height": 336.25
+          }
+        },
+        {
+          "path": "/assets/map/buildings/polar-farmhouse-l01/base-north-district.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/base-north-close.png",
+          "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+          "sourceSha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            }
+          ],
+          "sha256": "bbb023555369b07c80690fbaf773827239c077a4562f122619b38195faba74a1",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "architecturePart": true,
+          "width": 145,
+          "height": 62,
           "role": "base",
           "lod": "district",
           "orientation": "north",
@@ -41207,35 +41262,280 @@
             "height": 160
           },
           "trim": {
-            "x": 67.5,
-            "y": 207.50000000000003,
-            "width": 345,
-            "height": 160
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/polar-farmhouse-l01/atlas-district.png",
-            "x": 4,
-            "y": 172,
-            "width": 138,
-            "height": 64,
-            "atlasWidth": 512,
-            "atlasHeight": 512,
-            "sha256": "939fbc0ef1db62ba2423e46f78c082c26f2ddd45551b452e4413a912bf599784"
+            "x": 65,
+            "y": 215,
+            "width": 362.5,
+            "height": 155
           }
         },
         {
-          "path": "/assets/map/buildings/polar-farmhouse-l01/body-east-close.png",
-          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-east-close.png",
+          "path": "/assets/map/buildings/polar-farmhouse-l01/upper-north-district.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/upper-north-close.png",
+          "source": "/assets/buildings/polar-farmhouse-l01/body.svg",
+          "sourceSha256": "83186bf6ec80dc68f0678dbdb1a700a95bcc561a6ea099e636227fb135f897f6",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
+            {
+              "source": "frontend/public/assets/buildings/polar-farmhouse-l01/body.svg",
+              "sha256": "83186bf6ec80dc68f0678dbdb1a700a95bcc561a6ea099e636227fb135f897f6"
+            }
+          ],
+          "sha256": "208653fc3e17aa70afb493dacda201b7925ea20993824f67f90801df2f2902d3",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "architecturePart": true,
+          "width": 166,
+          "height": 136,
+          "role": "upper",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 32.5,
+            "y": 30,
+            "width": 415,
+            "height": 340
+          }
+        },
+        {
+          "path": "/assets/map/buildings/polar-farmhouse-l01/body-layered-north-district.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-layered-north-close.png",
+          "source": "frontend/scripts/apply-authored-architecture.mjs",
+          "sourceSha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
+            {
+              "source": "frontend/public/assets/buildings/polar-farmhouse-l01/body.svg",
+              "sha256": "83186bf6ec80dc68f0678dbdb1a700a95bcc561a6ea099e636227fb135f897f6"
+            }
+          ],
+          "sha256": "4a143d3dafb7dad0fabd9d7b63e5e04caade972b4a7d5d337e7cc7357136d149",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "width": 166,
+          "height": 136,
+          "role": "body",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 32.5,
+            "y": 30,
+            "width": 415,
+            "height": 340
+          }
+        },
+        {
+          "path": "/assets/map/buildings/polar-farmhouse-l01/upper-east-close.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/upper-east-close.png",
           "source": "assets/source/map-buildings/polar-farmhouse-l01-east.png",
           "sourceSha256": "6ef78778f2693b39272fcb823a74e6f0950d0c2a0b85bfc386f1ca1181350618",
           "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
             {
               "source": "assets/source/map-buildings/polar-farmhouse-l01-east.png",
               "sha256": "6ef78778f2693b39272fcb823a74e6f0950d0c2a0b85bfc386f1ca1181350618"
             }
           ],
           "sha256": "9d67557be18c93872fb9c0a2be656c17850d640ed6fec4f4d0517f2ea6f688fb",
-          "exportVersion": 3,
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "architecturePart": true,
+          "width": 333,
+          "height": 257,
+          "role": "upper",
+          "lod": "close",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 32.5,
+            "y": 48.75,
+            "width": 416.25,
+            "height": 321.25
+          }
+        },
+        {
+          "path": "/assets/map/buildings/polar-farmhouse-l01/body-layered-east-close.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-layered-east-close.png",
+          "source": "frontend/scripts/apply-authored-architecture.mjs",
+          "sourceSha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-east.png",
+              "sha256": "6ef78778f2693b39272fcb823a74e6f0950d0c2a0b85bfc386f1ca1181350618"
+            }
+          ],
+          "sha256": "40f4bf626e6d35172c5cf93295261c87b83d1c2f5dfd006debd1e00b78c603a6",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
           "width": 333,
           "height": 257,
           "role": "body",
@@ -41256,31 +41556,131 @@
             "y": 48.75,
             "width": 416.25,
             "height": 321.25
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/polar-farmhouse-l01/atlas-close.png",
-            "x": 396,
-            "y": 332,
-            "width": 333,
-            "height": 257,
-            "atlasWidth": 1024,
-            "atlasHeight": 1024,
-            "sha256": "656264783c49d0ebddb00ea18dc787d276a1021d1f677fda82dc8dcb811fac16"
           }
         },
         {
-          "path": "/assets/map/buildings/polar-farmhouse-l01/body-east-district.png",
-          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-east-close.png",
+          "path": "/assets/map/buildings/polar-farmhouse-l01/upper-east-district.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/upper-east-close.png",
           "source": "assets/source/map-buildings/polar-farmhouse-l01-east.png",
           "sourceSha256": "6ef78778f2693b39272fcb823a74e6f0950d0c2a0b85bfc386f1ca1181350618",
           "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
             {
               "source": "assets/source/map-buildings/polar-farmhouse-l01-east.png",
               "sha256": "6ef78778f2693b39272fcb823a74e6f0950d0c2a0b85bfc386f1ca1181350618"
             }
           ],
           "sha256": "4658341c6d59c4463a612b59f8912fe81c60d9072815f7f227b893eb9ac5849b",
-          "exportVersion": 3,
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "architecturePart": true,
+          "width": 171,
+          "height": 133,
+          "role": "upper",
+          "lod": "district",
+          "orientation": "east",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 27.5,
+            "y": 42.5,
+            "width": 427.5,
+            "height": 332.5
+          }
+        },
+        {
+          "path": "/assets/map/buildings/polar-farmhouse-l01/body-layered-east-district.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-layered-east-close.png",
+          "source": "frontend/scripts/apply-authored-architecture.mjs",
+          "sourceSha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-east.png",
+              "sha256": "6ef78778f2693b39272fcb823a74e6f0950d0c2a0b85bfc386f1ca1181350618"
+            }
+          ],
+          "sha256": "8d934711937f169404bc37796f3ae8f5622d78a4e79fab11bba5d82d49000bd0",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
           "width": 171,
           "height": 133,
           "role": "body",
@@ -41301,31 +41701,131 @@
             "y": 42.5,
             "width": 427.5,
             "height": 332.5
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/polar-farmhouse-l01/atlas-district.png",
-            "x": 204,
-            "y": 172,
-            "width": 171,
-            "height": 133,
-            "atlasWidth": 512,
-            "atlasHeight": 512,
-            "sha256": "939fbc0ef1db62ba2423e46f78c082c26f2ddd45551b452e4413a912bf599784"
           }
         },
         {
-          "path": "/assets/map/buildings/polar-farmhouse-l01/body-south-close.png",
-          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-south-close.png",
+          "path": "/assets/map/buildings/polar-farmhouse-l01/upper-south-close.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/upper-south-close.png",
           "source": "assets/source/map-buildings/polar-farmhouse-l01-south.png",
           "sourceSha256": "22ca8d3aa24e343f2c95b077e8f2a09277b37b63f2fd98a189d058aedf61b010",
           "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
             {
               "source": "assets/source/map-buildings/polar-farmhouse-l01-south.png",
               "sha256": "22ca8d3aa24e343f2c95b077e8f2a09277b37b63f2fd98a189d058aedf61b010"
             }
           ],
           "sha256": "09bf13bfe5e94b683f258e6466207412d84f2336908ce8b9cc09e6cfc3af980b",
-          "exportVersion": 3,
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "architecturePart": true,
+          "width": 333,
+          "height": 260,
+          "role": "upper",
+          "lod": "close",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 32.5,
+            "y": 45,
+            "width": 416.25,
+            "height": 325
+          }
+        },
+        {
+          "path": "/assets/map/buildings/polar-farmhouse-l01/body-layered-south-close.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-layered-south-close.png",
+          "source": "frontend/scripts/apply-authored-architecture.mjs",
+          "sourceSha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-south.png",
+              "sha256": "22ca8d3aa24e343f2c95b077e8f2a09277b37b63f2fd98a189d058aedf61b010"
+            }
+          ],
+          "sha256": "8b8e0689962a388bf6c6ab5eca4ebec10f2b4f37f084a11a0323f2d48184ef2d",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
           "width": 333,
           "height": 260,
           "role": "body",
@@ -41346,31 +41846,131 @@
             "y": 45,
             "width": 416.25,
             "height": 325
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/polar-farmhouse-l01/atlas-close.png",
-            "x": 4,
-            "y": 660,
-            "width": 333,
-            "height": 260,
-            "atlasWidth": 1024,
-            "atlasHeight": 1024,
-            "sha256": "656264783c49d0ebddb00ea18dc787d276a1021d1f677fda82dc8dcb811fac16"
           }
         },
         {
-          "path": "/assets/map/buildings/polar-farmhouse-l01/body-south-district.png",
-          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-south-close.png",
+          "path": "/assets/map/buildings/polar-farmhouse-l01/upper-south-district.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/upper-south-close.png",
           "source": "assets/source/map-buildings/polar-farmhouse-l01-south.png",
           "sourceSha256": "22ca8d3aa24e343f2c95b077e8f2a09277b37b63f2fd98a189d058aedf61b010",
           "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
             {
               "source": "assets/source/map-buildings/polar-farmhouse-l01-south.png",
               "sha256": "22ca8d3aa24e343f2c95b077e8f2a09277b37b63f2fd98a189d058aedf61b010"
             }
           ],
           "sha256": "c04caa0b2f07b1b5d57d0ceaddf39df97103f06528a60facccdf2fdb7d989937",
-          "exportVersion": 3,
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "architecturePart": true,
+          "width": 171,
+          "height": 134,
+          "role": "upper",
+          "lod": "district",
+          "orientation": "south",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 27.5,
+            "y": 40,
+            "width": 427.5,
+            "height": 335
+          }
+        },
+        {
+          "path": "/assets/map/buildings/polar-farmhouse-l01/body-layered-south-district.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-layered-south-close.png",
+          "source": "frontend/scripts/apply-authored-architecture.mjs",
+          "sourceSha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-south.png",
+              "sha256": "22ca8d3aa24e343f2c95b077e8f2a09277b37b63f2fd98a189d058aedf61b010"
+            }
+          ],
+          "sha256": "3c394e25ea7a34017c6fbf0acdc31943a570f96a59f9061255da6a951f1b0bd9",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
           "width": 171,
           "height": 134,
           "role": "body",
@@ -41391,31 +41991,131 @@
             "y": 40,
             "width": 427.5,
             "height": 335
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/polar-farmhouse-l01/atlas-district.png",
-            "x": 4,
-            "y": 340,
-            "width": 171,
-            "height": 134,
-            "atlasWidth": 512,
-            "atlasHeight": 512,
-            "sha256": "939fbc0ef1db62ba2423e46f78c082c26f2ddd45551b452e4413a912bf599784"
           }
         },
         {
-          "path": "/assets/map/buildings/polar-farmhouse-l01/body-west-close.png",
-          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-west-close.png",
+          "path": "/assets/map/buildings/polar-farmhouse-l01/upper-west-close.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/upper-west-close.png",
           "source": "assets/source/map-buildings/polar-farmhouse-l01-west.png",
           "sourceSha256": "54bc64306a4b57173c41e27e3561a436d7a5822a95e26b87581e49be22103753",
           "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
             {
               "source": "assets/source/map-buildings/polar-farmhouse-l01-west.png",
               "sha256": "54bc64306a4b57173c41e27e3561a436d7a5822a95e26b87581e49be22103753"
             }
           ],
           "sha256": "a213a3baa1ed9534d3ece77ec0b1c127f9ab88fd10fae9a6180350a81bf1bf36",
-          "exportVersion": 3,
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "architecturePart": true,
+          "width": 333,
+          "height": 262,
+          "role": "upper",
+          "lod": "close",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 32.5,
+            "y": 42.5,
+            "width": 416.25,
+            "height": 327.5
+          }
+        },
+        {
+          "path": "/assets/map/buildings/polar-farmhouse-l01/body-layered-west-close.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-layered-west-close.png",
+          "source": "frontend/scripts/apply-authored-architecture.mjs",
+          "sourceSha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-west.png",
+              "sha256": "54bc64306a4b57173c41e27e3561a436d7a5822a95e26b87581e49be22103753"
+            }
+          ],
+          "sha256": "a75ebff59dc22781dae447d2ed431606e1a1d174180b46889f03df722fc8c332",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
           "width": 333,
           "height": 262,
           "role": "body",
@@ -41436,31 +42136,131 @@
             "y": 42.5,
             "width": 416.25,
             "height": 327.5
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/polar-farmhouse-l01/atlas-close.png",
-            "x": 396,
-            "y": 660,
-            "width": 333,
-            "height": 262,
-            "atlasWidth": 1024,
-            "atlasHeight": 1024,
-            "sha256": "656264783c49d0ebddb00ea18dc787d276a1021d1f677fda82dc8dcb811fac16"
           }
         },
         {
-          "path": "/assets/map/buildings/polar-farmhouse-l01/body-west-district.png",
-          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-west-close.png",
+          "path": "/assets/map/buildings/polar-farmhouse-l01/upper-west-district.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/upper-west-close.png",
           "source": "assets/source/map-buildings/polar-farmhouse-l01-west.png",
           "sourceSha256": "54bc64306a4b57173c41e27e3561a436d7a5822a95e26b87581e49be22103753",
           "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
             {
               "source": "assets/source/map-buildings/polar-farmhouse-l01-west.png",
               "sha256": "54bc64306a4b57173c41e27e3561a436d7a5822a95e26b87581e49be22103753"
             }
           ],
           "sha256": "978a174899e459a8cb960963eb5f1aeee98e121497815b9011ac64f1906d9e7c",
-          "exportVersion": 3,
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "architecturePart": true,
+          "width": 171,
+          "height": 136,
+          "role": "upper",
+          "lod": "district",
+          "orientation": "west",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 27.5,
+            "y": 37.5,
+            "width": 427.5,
+            "height": 340
+          }
+        },
+        {
+          "path": "/assets/map/buildings/polar-farmhouse-l01/body-layered-west-district.png",
+          "layerPath": "/assets/map/buildings/polar-farmhouse-l01/body-layered-west-close.png",
+          "source": "frontend/scripts/apply-authored-architecture.mjs",
+          "sourceSha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+              "sha256": "204acf7b8b168fbb60416a00adc8e16ffeeb437bc6b6501bc56024614f0c2e91"
+            },
+            {
+              "source": "assets/source/map-buildings/polar-farmhouse-l01-west.png",
+              "sha256": "54bc64306a4b57173c41e27e3561a436d7a5822a95e26b87581e49be22103753"
+            }
+          ],
+          "sha256": "5bc10a834e63897d53b8683d8031ef9613b5d39b2329a6c5dcd3b663a6998f13",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
           "width": 171,
           "height": 136,
           "role": "body",
@@ -41481,16 +42281,6 @@
             "y": 37.5,
             "width": 427.5,
             "height": 340
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/polar-farmhouse-l01/atlas-district.png",
-            "x": 204,
-            "y": 340,
-            "width": 171,
-            "height": 136,
-            "atlasWidth": 512,
-            "atlasHeight": 512,
-            "sha256": "939fbc0ef1db62ba2423e46f78c082c26f2ddd45551b452e4413a912bf599784"
           }
         }
       ],
@@ -41504,25 +42294,33 @@
       "orientationViews": {
         "east": {
           "uiIcon": "/assets/buildings/polar-farmhouse-l01/icon.svg",
-          "body": "/assets/map/buildings/polar-farmhouse-l01/body-east-close.png",
-          "base": "/assets/buildings/polar-farmhouse-l01/base.svg",
-          "upper": "/assets/buildings/polar-farmhouse-l01/upper.svg",
+          "body": "/assets/map/buildings/polar-farmhouse-l01/body-layered-east-close.png",
+          "base": "/assets/map/buildings/polar-farmhouse-l01/base-north-close.png",
+          "upper": "/assets/map/buildings/polar-farmhouse-l01/upper-east-close.png",
           "shadow": "/assets/buildings/polar-farmhouse-l01/shadow.svg",
           "vfx": null
         },
         "south": {
           "uiIcon": "/assets/buildings/polar-farmhouse-l01/icon.svg",
-          "body": "/assets/map/buildings/polar-farmhouse-l01/body-south-close.png",
-          "base": "/assets/buildings/polar-farmhouse-l01/base.svg",
-          "upper": "/assets/buildings/polar-farmhouse-l01/upper.svg",
+          "body": "/assets/map/buildings/polar-farmhouse-l01/body-layered-south-close.png",
+          "base": "/assets/map/buildings/polar-farmhouse-l01/base-north-close.png",
+          "upper": "/assets/map/buildings/polar-farmhouse-l01/upper-south-close.png",
           "shadow": "/assets/buildings/polar-farmhouse-l01/shadow.svg",
           "vfx": null
         },
         "west": {
           "uiIcon": "/assets/buildings/polar-farmhouse-l01/icon.svg",
-          "body": "/assets/map/buildings/polar-farmhouse-l01/body-west-close.png",
-          "base": "/assets/buildings/polar-farmhouse-l01/base.svg",
-          "upper": "/assets/buildings/polar-farmhouse-l01/upper.svg",
+          "body": "/assets/map/buildings/polar-farmhouse-l01/body-layered-west-close.png",
+          "base": "/assets/map/buildings/polar-farmhouse-l01/base-north-close.png",
+          "upper": "/assets/map/buildings/polar-farmhouse-l01/upper-west-close.png",
+          "shadow": "/assets/buildings/polar-farmhouse-l01/shadow.svg",
+          "vfx": null
+        },
+        "north": {
+          "uiIcon": "/assets/buildings/polar-farmhouse-l01/icon.svg",
+          "body": "/assets/map/buildings/polar-farmhouse-l01/body-layered-north-close.png",
+          "base": "/assets/map/buildings/polar-farmhouse-l01/base-north-close.png",
+          "upper": "/assets/map/buildings/polar-farmhouse-l01/upper-north-close.png",
           "shadow": "/assets/buildings/polar-farmhouse-l01/shadow.svg",
           "vfx": null
         }
@@ -41531,810 +42329,984 @@
         "east": {
           "hitPolygon": [
             [
-              0.07916666666666666,
-              0.7475
+              0.078125,
+              0.746875
             ],
             [
-              0.08125,
-              0.7425
+              0.08072916666666667,
+              0.740625
             ],
             [
-              0.0875,
-              0.73
+              0.0859375,
+              0.73125
             ],
             [
-              0.42291666666666666,
-              0.18
+              0.421875,
+              0.18125
             ],
             [
-              0.43333333333333335,
-              0.1675
+              0.4348958333333333,
+              0.165625
             ],
             [
-              0.48125,
+              0.4869791666666667,
+              0.134375
+            ],
+            [
+              0.4973958333333333,
+              0.134375
+            ],
+            [
+              0.5052083333333334,
               0.1375
             ],
             [
-              0.4875,
-              0.135
-            ],
-            [
-              0.4979166666666667,
-              0.135
-            ],
-            [
-              0.5041666666666667,
-              0.1375
-            ],
-            [
-              0.55625,
-              0.17
+              0.5546875,
+              0.16875
             ],
             [
               0.5625,
-              0.1775
-            ],
-            [
-              0.9083333333333333,
-              0.675
-            ],
-            [
-              0.9208333333333333,
-              0.7475
-            ],
-            [
-              0.9208333333333333,
-              0.7575
-            ],
-            [
-              0.9125,
-              0.7725
+              0.178125
             ],
             [
               0.90625,
-              0.7775
+              0.671875
             ],
             [
-              0.8270833333333333,
-              0.84
+              0.9088541666666666,
+              0.678125
             ],
             [
-              0.7833333333333333,
-              0.8575
+              0.921875,
+              0.75
             ],
             [
-              0.75625,
-              0.865
+              0.921875,
+              0.753125
             ],
             [
-              0.6416666666666667,
-              0.895
+              0.9192708333333334,
+              0.759375
             ],
             [
-              0.5541666666666667,
-              0.9075
+              0.9140625,
+              0.76875
             ],
             [
-              0.5145833333333333,
-              0.9075
+              0.9088541666666666,
+              0.775
             ],
             [
-              0.38125,
-              0.905
+              0.8463541666666666,
+              0.825
             ],
             [
-              0.35,
-              0.9025
+              0.8255208333333334,
+              0.840625
             ],
             [
-              0.26458333333333334,
-              0.885
+              0.7864583333333334,
+              0.85625
             ],
             [
-              0.22291666666666668,
-              0.8625
+              0.7526041666666666,
+              0.865625
             ],
             [
-              0.19166666666666668,
-              0.845
+              0.6354166666666666,
+              0.896875
             ],
             [
-              0.11875,
-              0.79
+              0.5651041666666666,
+              0.90625
+            ],
+            [
+              0.3854166666666667,
+              0.90625
+            ],
+            [
+              0.3385416666666667,
+              0.9
+            ],
+            [
+              0.2916666666666667,
+              0.890625
+            ],
+            [
+              0.2630208333333333,
+              0.884375
+            ],
+            [
+              0.21614583333333334,
+              0.859375
+            ],
+            [
+              0.19010416666666666,
+              0.84375
+            ],
+            [
+              0.11979166666666667,
+              0.790625
             ],
             [
               0.08333333333333333,
-              0.7575
+              0.75625
             ],
             [
-              0.07916666666666666,
-              0.7525
+              0.078125,
+              0.75
             ]
           ],
           "upper": [
             [
-              0.07916666666666666,
-              0.7475
+              0.078125,
+              0.746875
             ],
             [
-              0.08125,
-              0.7425
+              0.08072916666666667,
+              0.740625
             ],
             [
-              0.0875,
-              0.73
+              0.0859375,
+              0.73125
             ],
             [
-              0.42291666666666666,
-              0.18
+              0.421875,
+              0.18125
             ],
             [
-              0.43333333333333335,
-              0.1675
+              0.4348958333333333,
+              0.165625
             ],
             [
-              0.48125,
+              0.4869791666666667,
+              0.134375
+            ],
+            [
+              0.4973958333333333,
+              0.134375
+            ],
+            [
+              0.5052083333333334,
               0.1375
             ],
             [
-              0.4875,
-              0.135
-            ],
-            [
-              0.4979166666666667,
-              0.135
-            ],
-            [
-              0.5041666666666667,
-              0.1375
-            ],
-            [
-              0.55625,
-              0.17
+              0.5546875,
+              0.16875
             ],
             [
               0.5625,
-              0.1775
-            ],
-            [
-              0.9083333333333333,
-              0.675
-            ],
-            [
-              0.9208333333333333,
-              0.7475
-            ],
-            [
-              0.9208333333333333,
-              0.7575
-            ],
-            [
-              0.9125,
-              0.7725
+              0.178125
             ],
             [
               0.90625,
-              0.7775
+              0.671875
             ],
             [
-              0.8270833333333333,
-              0.84
+              0.9088541666666666,
+              0.678125
             ],
             [
-              0.7833333333333333,
-              0.8575
+              0.921875,
+              0.75
             ],
             [
-              0.75625,
-              0.865
+              0.921875,
+              0.753125
             ],
             [
-              0.6416666666666667,
-              0.895
+              0.9192708333333334,
+              0.759375
             ],
             [
-              0.5541666666666667,
-              0.9075
+              0.9140625,
+              0.76875
             ],
             [
-              0.5145833333333333,
-              0.9075
+              0.9088541666666666,
+              0.775
             ],
             [
-              0.38125,
-              0.905
+              0.8463541666666666,
+              0.825
             ],
             [
-              0.35,
-              0.9025
+              0.8255208333333334,
+              0.840625
             ],
             [
-              0.26458333333333334,
-              0.885
+              0.7864583333333334,
+              0.85625
             ],
             [
-              0.22291666666666668,
-              0.8625
+              0.7526041666666666,
+              0.865625
             ],
             [
-              0.19166666666666668,
-              0.845
+              0.6354166666666666,
+              0.896875
             ],
             [
-              0.11875,
-              0.79
+              0.5651041666666666,
+              0.90625
+            ],
+            [
+              0.3854166666666667,
+              0.90625
+            ],
+            [
+              0.3385416666666667,
+              0.9
+            ],
+            [
+              0.2916666666666667,
+              0.890625
+            ],
+            [
+              0.2630208333333333,
+              0.884375
+            ],
+            [
+              0.21614583333333334,
+              0.859375
+            ],
+            [
+              0.19010416666666666,
+              0.84375
+            ],
+            [
+              0.11979166666666667,
+              0.790625
             ],
             [
               0.08333333333333333,
-              0.7575
+              0.75625
             ],
             [
-              0.07916666666666666,
-              0.7525
+              0.078125,
+              0.75
             ]
           ]
         },
         "south": {
           "hitPolygon": [
             [
-              0.07916666666666666,
+              0.078125,
               0.7375
             ],
             [
-              0.10625,
-              0.6575
+              0.10677083333333333,
+              0.65625
             ],
             [
-              0.45208333333333334,
-              0.18
+              0.453125,
+              0.178125
             ],
             [
-              0.4625,
-              0.1675
+              0.4609375,
+              0.16875
             ],
             [
-              0.5145833333333333,
-              0.13
+              0.5130208333333334,
+              0.13125
             ],
             [
-              0.5208333333333334,
-              0.1275
+              0.5182291666666666,
+              0.128125
             ],
             [
-              0.525,
-              0.1275
+              0.5286458333333334,
+              0.128125
             ],
             [
-              0.53125,
-              0.13
-            ],
-            [
-              0.5854166666666667,
+              0.5859375,
               0.1625
             ],
             [
-              0.5916666666666667,
-              0.1675
+              0.59375,
+              0.16875
             ],
             [
-              0.5958333333333333,
-              0.1725
+              0.5963541666666666,
+              0.171875
             ],
             [
-              0.8791666666666667,
-              0.6225
+              0.8802083333333334,
+              0.625
             ],
             [
-              0.88125,
-              0.6275
+              0.921875,
+              0.746875
             ],
             [
-              0.9208333333333333,
-              0.745
+              0.921875,
+              0.75
             ],
             [
-              0.9208333333333333,
-              0.7525
+              0.9192708333333334,
+              0.75625
             ],
             [
-              0.91875,
-              0.7575
+              0.8932291666666666,
+              0.7875
             ],
             [
-              0.8958333333333334,
-              0.785
+              0.8697916666666666,
+              0.80625
             ],
             [
-              0.875,
-              0.8025
-            ],
-            [
-              0.86875,
-              0.8075
-            ],
-            [
-              0.83125,
-              0.835
-            ],
-            [
-              0.8270833333333333,
+              0.828125,
               0.8375
             ],
             [
-              0.8,
+              0.7994791666666666,
               0.85
             ],
             [
-              0.7458333333333333,
-              0.8725
+              0.7473958333333334,
+              0.871875
             ],
             [
-              0.7333333333333333,
-              0.8775
+              0.7317708333333334,
+              0.878125
             ],
             [
-              0.7229166666666667,
-              0.88
+              0.6875,
+              0.884375
             ],
             [
-              0.45,
-              0.9075
+              0.453125,
+              0.90625
             ],
             [
-              0.44375,
-              0.9075
+              0.3828125,
+              0.90625
             ],
             [
-              0.3770833333333333,
-              0.905
+              0.3697916666666667,
+              0.903125
             ],
             [
-              0.35833333333333334,
-              0.9
+              0.3359375,
+              0.89375
             ],
             [
-              0.33125,
-              0.8925
+              0.328125,
+              0.890625
             ],
             [
-              0.25,
-              0.855
+              0.2604166666666667,
+              0.859375
             ],
             [
-              0.23541666666666666,
-              0.8475
+              0.234375,
+              0.846875
             ],
             [
-              0.22708333333333333,
-              0.8425
+              0.22395833333333334,
+              0.840625
             ],
             [
-              0.08333333333333333,
-              0.755
+              0.08072916666666667,
+              0.753125
             ],
             [
-              0.08125,
-              0.7525
-            ],
-            [
-              0.07916666666666666,
-              0.745
+              0.078125,
+              0.74375
             ]
           ],
           "upper": [
             [
-              0.07916666666666666,
+              0.078125,
               0.7375
             ],
             [
-              0.10625,
-              0.6575
+              0.10677083333333333,
+              0.65625
             ],
             [
-              0.45208333333333334,
-              0.18
+              0.453125,
+              0.178125
             ],
             [
-              0.4625,
-              0.1675
+              0.4609375,
+              0.16875
             ],
             [
-              0.5145833333333333,
-              0.13
+              0.5130208333333334,
+              0.13125
             ],
             [
-              0.5208333333333334,
-              0.1275
+              0.5182291666666666,
+              0.128125
             ],
             [
-              0.525,
-              0.1275
+              0.5286458333333334,
+              0.128125
             ],
             [
-              0.53125,
-              0.13
-            ],
-            [
-              0.5854166666666667,
+              0.5859375,
               0.1625
             ],
             [
-              0.5916666666666667,
-              0.1675
+              0.59375,
+              0.16875
             ],
             [
-              0.5958333333333333,
-              0.1725
+              0.5963541666666666,
+              0.171875
             ],
             [
-              0.8791666666666667,
-              0.6225
+              0.8802083333333334,
+              0.625
             ],
             [
-              0.88125,
-              0.6275
+              0.921875,
+              0.746875
             ],
             [
-              0.9208333333333333,
-              0.745
+              0.921875,
+              0.75
             ],
             [
-              0.9208333333333333,
-              0.7525
+              0.9192708333333334,
+              0.75625
             ],
             [
-              0.91875,
-              0.7575
+              0.8932291666666666,
+              0.7875
             ],
             [
-              0.8958333333333334,
-              0.785
+              0.8697916666666666,
+              0.80625
             ],
             [
-              0.875,
-              0.8025
-            ],
-            [
-              0.86875,
-              0.8075
-            ],
-            [
-              0.83125,
-              0.835
-            ],
-            [
-              0.8270833333333333,
+              0.828125,
               0.8375
             ],
             [
-              0.8,
+              0.7994791666666666,
               0.85
             ],
             [
-              0.7458333333333333,
-              0.8725
+              0.7473958333333334,
+              0.871875
             ],
             [
-              0.7333333333333333,
-              0.8775
+              0.7317708333333334,
+              0.878125
             ],
             [
-              0.7229166666666667,
-              0.88
+              0.6875,
+              0.884375
             ],
             [
-              0.45,
-              0.9075
+              0.453125,
+              0.90625
             ],
             [
-              0.44375,
-              0.9075
+              0.3828125,
+              0.90625
             ],
             [
-              0.3770833333333333,
-              0.905
+              0.3697916666666667,
+              0.903125
             ],
             [
-              0.35833333333333334,
-              0.9
+              0.3359375,
+              0.89375
             ],
             [
-              0.33125,
-              0.8925
+              0.328125,
+              0.890625
             ],
             [
-              0.25,
-              0.855
+              0.2604166666666667,
+              0.859375
             ],
             [
-              0.23541666666666666,
-              0.8475
+              0.234375,
+              0.846875
             ],
             [
-              0.22708333333333333,
-              0.8425
+              0.22395833333333334,
+              0.840625
             ],
             [
-              0.08333333333333333,
-              0.755
+              0.08072916666666667,
+              0.753125
             ],
             [
-              0.08125,
-              0.7525
-            ],
-            [
-              0.07916666666666666,
-              0.745
+              0.078125,
+              0.74375
             ]
           ]
         },
         "west": {
           "hitPolygon": [
             [
-              0.07916666666666666,
-              0.7125
+              0.078125,
+              0.715625
             ],
             [
               0.09375,
-              0.6675
+              0.665625
             ],
             [
-              0.1625,
-              0.535
+              0.16145833333333334,
+              0.5375
             ],
             [
-              0.2125,
-              0.445
+              0.2109375,
+              0.446875
             ],
             [
-              0.4395833333333333,
-              0.1675
+              0.4401041666666667,
+              0.165625
             ],
             [
-              0.4479166666666667,
-              0.1575
+              0.4453125,
+              0.159375
             ],
             [
-              0.49583333333333335,
-              0.1225
+              0.4921875,
+              0.125
             ],
             [
-              0.5020833333333333,
-              0.12
+              0.4973958333333333,
+              0.121875
             ],
             [
-              0.5104166666666666,
-              0.12
+              0.5052083333333334,
+              0.11875
             ],
             [
-              0.5166666666666667,
-              0.1225
+              0.5078125,
+              0.11875
             ],
             [
-              0.5666666666666667,
-              0.165
+              0.515625,
+              0.121875
             ],
             [
-              0.56875,
-              0.1675
+              0.5677083333333334,
+              0.165625
             ],
             [
-              0.875,
-              0.5925
+              0.5703125,
+              0.16875
             ],
             [
-              0.9208333333333333,
-              0.705
+              0.8723958333333334,
+              0.5875
             ],
             [
-              0.9208333333333333,
-              0.71
+              0.921875,
+              0.70625
             ],
             [
-              0.9041666666666667,
-              0.765
+              0.9036458333333334,
+              0.765625
             ],
             [
-              0.875,
-              0.8025
+              0.8723958333333334,
+              0.80625
             ],
             [
-              0.86875,
-              0.81
+              0.8697916666666666,
+              0.809375
             ],
             [
-              0.8583333333333333,
-              0.82
+              0.859375,
+              0.81875
             ],
             [
-              0.8145833333333333,
-              0.8475
+              0.8151041666666666,
+              0.846875
             ],
             [
-              0.7895833333333333,
-              0.86
+              0.7890625,
+              0.859375
             ],
             [
-              0.7833333333333333,
+              0.78125,
               0.8625
             ],
             [
-              0.7333333333333333,
-              0.88
+              0.7291666666666666,
+              0.88125
             ],
             [
-              0.6875,
-              0.89
+              0.6848958333333334,
+              0.890625
             ],
             [
-              0.5729166666666666,
-              0.91
+              0.5755208333333334,
+              0.909375
             ],
             [
-              0.50625,
-              0.91
+              0.5052083333333334,
+              0.909375
             ],
             [
-              0.37083333333333335,
-              0.89
+              0.3723958333333333,
+              0.890625
             ],
             [
-              0.36041666666666666,
+              0.3619791666666667,
               0.8875
             ],
             [
-              0.23333333333333334,
-              0.8425
+              0.23697916666666666,
+              0.84375
             ],
             [
-              0.22083333333333333,
-              0.835
+              0.22916666666666666,
+              0.840625
             ],
             [
-              0.14166666666666666,
-              0.7825
+              0.14322916666666666,
+              0.784375
             ],
             [
               0.09375,
-              0.74
+              0.740625
             ],
             [
-              0.07916666666666666,
-              0.72
+              0.078125,
+              0.71875
             ]
           ],
           "upper": [
             [
-              0.07916666666666666,
-              0.7125
+              0.078125,
+              0.715625
             ],
             [
               0.09375,
-              0.6675
+              0.665625
             ],
             [
-              0.1625,
-              0.535
+              0.16145833333333334,
+              0.5375
             ],
             [
-              0.2125,
-              0.445
+              0.2109375,
+              0.446875
             ],
             [
-              0.4395833333333333,
-              0.1675
+              0.4401041666666667,
+              0.165625
             ],
             [
-              0.4479166666666667,
-              0.1575
+              0.4453125,
+              0.159375
             ],
             [
-              0.49583333333333335,
-              0.1225
+              0.4921875,
+              0.125
             ],
             [
-              0.5020833333333333,
-              0.12
+              0.4973958333333333,
+              0.121875
             ],
             [
-              0.5104166666666666,
-              0.12
+              0.5052083333333334,
+              0.11875
             ],
             [
-              0.5166666666666667,
-              0.1225
+              0.5078125,
+              0.11875
             ],
             [
-              0.5666666666666667,
-              0.165
+              0.515625,
+              0.121875
             ],
             [
-              0.56875,
-              0.1675
+              0.5677083333333334,
+              0.165625
             ],
             [
-              0.875,
-              0.5925
+              0.5703125,
+              0.16875
             ],
             [
-              0.9208333333333333,
-              0.705
+              0.8723958333333334,
+              0.5875
             ],
             [
-              0.9208333333333333,
-              0.71
+              0.921875,
+              0.70625
             ],
             [
-              0.9041666666666667,
-              0.765
+              0.9036458333333334,
+              0.765625
             ],
             [
-              0.875,
-              0.8025
+              0.8723958333333334,
+              0.80625
             ],
             [
-              0.86875,
-              0.81
+              0.8697916666666666,
+              0.809375
             ],
             [
-              0.8583333333333333,
-              0.82
+              0.859375,
+              0.81875
             ],
             [
-              0.8145833333333333,
-              0.8475
+              0.8151041666666666,
+              0.846875
             ],
             [
-              0.7895833333333333,
-              0.86
+              0.7890625,
+              0.859375
             ],
             [
-              0.7833333333333333,
+              0.78125,
               0.8625
             ],
             [
-              0.7333333333333333,
-              0.88
+              0.7291666666666666,
+              0.88125
             ],
             [
-              0.6875,
-              0.89
+              0.6848958333333334,
+              0.890625
             ],
             [
-              0.5729166666666666,
-              0.91
+              0.5755208333333334,
+              0.909375
             ],
             [
-              0.50625,
-              0.91
+              0.5052083333333334,
+              0.909375
             ],
             [
-              0.37083333333333335,
-              0.89
+              0.3723958333333333,
+              0.890625
             ],
             [
-              0.36041666666666666,
+              0.3619791666666667,
               0.8875
             ],
             [
-              0.23333333333333334,
-              0.8425
+              0.23697916666666666,
+              0.84375
             ],
             [
-              0.22083333333333333,
-              0.835
+              0.22916666666666666,
+              0.840625
             ],
             [
-              0.14166666666666666,
-              0.7825
+              0.14322916666666666,
+              0.784375
             ],
             [
               0.09375,
-              0.74
+              0.740625
             ],
             [
-              0.07916666666666666,
-              0.72
+              0.078125,
+              0.71875
+            ]
+          ]
+        },
+        "north": {
+          "upper": [
+            [
+              0.078125,
+              0.73125
+            ],
+            [
+              0.09635416666666667,
+              0.64375
+            ],
+            [
+              0.2760416666666667,
+              0.38125
+            ],
+            [
+              0.4453125,
+              0.1375
+            ],
+            [
+              0.4505208333333333,
+              0.13125
+            ],
+            [
+              0.5026041666666666,
+              0.09375
+            ],
+            [
+              0.5130208333333334,
+              0.0875
+            ],
+            [
+              0.5234375,
+              0.0875
+            ],
+            [
+              0.578125,
+              0.121875
+            ],
+            [
+              0.5885416666666666,
+              0.134375
+            ],
+            [
+              0.8854166666666666,
+              0.615625
+            ],
+            [
+              0.9192708333333334,
+              0.73125
+            ],
+            [
+              0.9192708333333334,
+              0.7375
+            ],
+            [
+              0.9088541666666666,
+              0.753125
+            ],
+            [
+              0.9010416666666666,
+              0.7625
+            ],
+            [
+              0.7421875,
+              0.859375
+            ],
+            [
+              0.6276041666666666,
+              0.90625
+            ],
+            [
+              0.53125,
+              0.9125
+            ],
+            [
+              0.5286458333333334,
+              0.9125
+            ],
+            [
+              0.4348958333333333,
+              0.903125
+            ],
+            [
+              0.3125,
+              0.875
+            ],
+            [
+              0.09114583333333333,
+              0.753125
+            ],
+            [
+              0.08072916666666667,
+              0.74375
+            ],
+            [
+              0.078125,
+              0.740625
+            ]
+          ],
+          "hitPolygon": [
+            [
+              0.078125,
+              0.73125
+            ],
+            [
+              0.09635416666666667,
+              0.64375
+            ],
+            [
+              0.2760416666666667,
+              0.38125
+            ],
+            [
+              0.4453125,
+              0.1375
+            ],
+            [
+              0.4505208333333333,
+              0.13125
+            ],
+            [
+              0.5026041666666666,
+              0.09375
+            ],
+            [
+              0.5130208333333334,
+              0.0875
+            ],
+            [
+              0.5234375,
+              0.0875
+            ],
+            [
+              0.578125,
+              0.121875
+            ],
+            [
+              0.5885416666666666,
+              0.134375
+            ],
+            [
+              0.8854166666666666,
+              0.615625
+            ],
+            [
+              0.9192708333333334,
+              0.73125
+            ],
+            [
+              0.9192708333333334,
+              0.7375
+            ],
+            [
+              0.9088541666666666,
+              0.753125
+            ],
+            [
+              0.9010416666666666,
+              0.7625
+            ],
+            [
+              0.7421875,
+              0.859375
+            ],
+            [
+              0.6276041666666666,
+              0.90625
+            ],
+            [
+              0.53125,
+              0.9125
+            ],
+            [
+              0.5286458333333334,
+              0.9125
+            ],
+            [
+              0.4348958333333333,
+              0.903125
+            ],
+            [
+              0.3125,
+              0.875
+            ],
+            [
+              0.09114583333333333,
+              0.753125
+            ],
+            [
+              0.08072916666666667,
+              0.74375
+            ],
+            [
+              0.078125,
+              0.740625
             ]
           ]
         }
@@ -49977,110 +50949,6 @@
           }
         },
         {
-          "path": "/assets/map/buildings/tomb-entry/base-close.png",
-          "source": "/assets/map/buildings/tomb-entry/foundation.svg",
-          "sourceSha256": "1cdd3723958ff84ad9b3960b861a454f75c77a45fb2df8f116c414b0666a1a12",
-          "sourceDependencies": [
-            {
-              "source": "frontend/public/assets/map/buildings/tomb-entry/foundation.svg",
-              "sha256": "1cdd3723958ff84ad9b3960b861a454f75c77a45fb2df8f116c414b0666a1a12"
-            },
-            {
-              "source": "assets/map-ground-registration.json",
-              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
-            },
-            {
-              "source": "frontend/scripts/map-ground-shadow.mjs",
-              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
-            }
-          ],
-          "sha256": "4662839fae09a04e94c99aad5f315dfddc1d2987e061aa2da69f093205334148",
-          "exportVersion": 3,
-          "width": 272,
-          "height": 123,
-          "role": "base",
-          "lod": "close",
-          "orientation": "north",
-          "alpha": "straight",
-          "colorSpace": "srgb",
-          "logicalCanvas": {
-            "width": 480,
-            "height": 400
-          },
-          "rasterCanvas": {
-            "width": 384,
-            "height": 320
-          },
-          "trim": {
-            "x": 70,
-            "y": 211.24999999999997,
-            "width": 340,
-            "height": 153.75
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/tomb-entry/atlas-close.png",
-            "x": 396,
-            "y": 4,
-            "width": 272,
-            "height": 123,
-            "atlasWidth": 1024,
-            "atlasHeight": 1024,
-            "sha256": "ef3ed9184ebba6f46882220cc52da8800e311217404b06c51d041921d928be32"
-          }
-        },
-        {
-          "path": "/assets/map/buildings/tomb-entry/base-district.png",
-          "source": "/assets/map/buildings/tomb-entry/foundation.svg",
-          "sourceSha256": "1cdd3723958ff84ad9b3960b861a454f75c77a45fb2df8f116c414b0666a1a12",
-          "sourceDependencies": [
-            {
-              "source": "frontend/public/assets/map/buildings/tomb-entry/foundation.svg",
-              "sha256": "1cdd3723958ff84ad9b3960b861a454f75c77a45fb2df8f116c414b0666a1a12"
-            },
-            {
-              "source": "assets/map-ground-registration.json",
-              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
-            },
-            {
-              "source": "frontend/scripts/map-ground-shadow.mjs",
-              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
-            }
-          ],
-          "sha256": "1dcaab4bdcb4d215e362e445ce6b78fd64415d66da1ddda1313e2d096f357ffd",
-          "exportVersion": 3,
-          "width": 138,
-          "height": 64,
-          "role": "base",
-          "lod": "district",
-          "orientation": "north",
-          "alpha": "straight",
-          "colorSpace": "srgb",
-          "logicalCanvas": {
-            "width": 480,
-            "height": 400
-          },
-          "rasterCanvas": {
-            "width": 192,
-            "height": 160
-          },
-          "trim": {
-            "x": 67.5,
-            "y": 207.50000000000003,
-            "width": 345,
-            "height": 160
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/tomb-entry/atlas-district.png",
-            "x": 204,
-            "y": 4,
-            "width": 138,
-            "height": 64,
-            "atlasWidth": 512,
-            "atlasHeight": 512,
-            "sha256": "6dbb758037a2e2574fae7d33b44454c13d3b9ce6de0ca4f73fa74acd0a996693"
-          }
-        },
-        {
           "path": "/assets/map/buildings/tomb-entry/base-north-close.png",
           "layerPath": "/assets/map/buildings/tomb-entry/base-north-close.png",
           "source": "assets/source/map-buildings/tomb-entry-foundation.png",
@@ -50088,11 +50956,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -50149,11 +51017,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -50210,11 +51078,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -50274,11 +51142,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -50335,11 +51203,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -50396,11 +51264,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+              "sha256": "96c1fe9f759d0c4b5cd411667028ca62701504a7334ee15f30b02c00a551e4d9"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+              "sha256": "1da81504a20b6420d8ae9bf8030b980adb23c89bb7b2ad33824fd7d60a0d2cae"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -63325,5 +64193,97 @@
       "license": "Original generated art created for this project.",
       "status": "draft"
     }
-  ]
+  ],
+  "mapEffects": {
+    "path": "/assets/map/effects/ambient-atlas.png",
+    "sha256": "136556c5896141a9a0f356fe927c3279f15981a88c8aaf540b9316a498ca183b",
+    "width": 448,
+    "height": 64,
+    "sourceDependencies": [
+      {
+        "source": "assets/source/map-effects/snow-particle.svg",
+        "sha256": "592d7e2ae32d33987fc8953ef8758603fea8646eac8ca2c81d5c0ca528ee51a6"
+      },
+      {
+        "source": "assets/source/map-effects/ember-loop-sheet.svg",
+        "sha256": "cb938aaff8af7842753501f6e0e891b0a74d6266408c820f0421325f496bc49f"
+      },
+      {
+        "source": "assets/source/map-effects/smoke-loop-sheet.svg",
+        "sha256": "1b44ed57d3a0aa74940ff44a7d2264e17925322cb9dc46086d37a82998697b77"
+      }
+    ],
+    "exportVersion": 1,
+    "alpha": "straight",
+    "colorSpace": "srgb",
+    "provenance": "Hand-authored deterministic SVG particle sources; rasterized and packed by frontend/scripts/export-map-effects.mjs.",
+    "regions": {
+      "snow": {
+        "frame": {
+          "x": 0,
+          "y": 0,
+          "width": 64,
+          "height": 64
+        },
+        "anchor": {
+          "x": 0.5,
+          "y": 0.5
+        }
+      },
+      "ember": {
+        "frames": [
+          {
+            "x": 64,
+            "y": 16,
+            "width": 64,
+            "height": 32
+          },
+          {
+            "x": 128,
+            "y": 16,
+            "width": 64,
+            "height": 32
+          }
+        ],
+        "fps": 8,
+        "anchor": {
+          "x": 0.5,
+          "y": 0.72
+        }
+      },
+      "smoke": {
+        "frames": [
+          {
+            "x": 192,
+            "y": 0,
+            "width": 64,
+            "height": 64
+          },
+          {
+            "x": 256,
+            "y": 0,
+            "width": 64,
+            "height": 64
+          },
+          {
+            "x": 320,
+            "y": 0,
+            "width": 64,
+            "height": 64
+          },
+          {
+            "x": 384,
+            "y": 0,
+            "width": 64,
+            "height": 64
+          }
+        ],
+        "fps": 6,
+        "anchor": {
+          "x": 0.5,
+          "y": 0.82
+        }
+      }
+    }
+  }
 }
