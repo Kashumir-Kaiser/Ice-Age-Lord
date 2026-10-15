@@ -769,7 +769,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       ? workerContainer?.items.find(item => item.label === resource.requiredToolTemplateId && item.quantity > 0)
       : undefined;
     if (!resource || !workerContainer || (resource.requiredToolTemplateId && !tool)) {
-      setFeedback({ kind: 'rejected', text: !workerContainer ? 'Inspect the worker’s inventory before assigning this harvest.' : resource?.requiredToolTemplateId ? `Move a ${resource.requiredToolTemplateId} into this worker’s inventory first.` : 'This material is not currently available.' });
+      setFeedback({ kind: 'rejected', text: !workerContainer ? 'Hãy kiểm tra hành trang của đơn vị trước khi thu thập.' : resource?.requiredToolTemplateId ? `Đơn vị cần mang theo ${playerItemName(resource.requiredToolTemplateId)} trước khi thu thập.` : 'Nguồn tài nguyên này hiện chưa thể thu thập.' });
       return;
     }
     const command = commandFor(view, 'harvest', {
@@ -1107,7 +1107,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
             <label className="live-inline-field live-resource-quantity">Số lượng thu thập <input type="number" min={1} max={Math.max(1, maxHarvestQuantity)} value={selectedHarvestQuantity} disabled={maxHarvestQuantity < 1} onChange={event => setHarvestQuantity(Math.min(Math.max(1, maxHarvestQuantity), Math.max(1, Number(event.target.value) || 1)))} /></label>
             <ul className="live-resource-materials">{resourceDeposit.materials.map(material => {
               const remaining = material.remaining === null ? 'Chưa rõ' : `${material.remaining.toLocaleString()} ${material.unit}`;
-              const renewal = material.renewal === 'none' ? 'Finite stock; does not regenerate.'
+              const renewal = material.renewal === 'none' ? 'Tài nguyên có hạn, không tự phục hồi.'
                 : material.renewal === 'biological_rate' ? `Phục hồi ${material.regenerationPerDay.toLocaleString()} ${material.unit} mỗi ngày.`
                   : `Có thể thu thập ${material.dailyQuota?.toLocaleString() ?? '—'} ${material.unit} mỗi ngày, làm mới lúc nửa đêm.`;
               const workerHasTool = !material.requiredToolTemplateId || Boolean(harvestWorkerContainer?.items.some(item => item.label === material.requiredToolTemplateId && item.quantity > 0));
@@ -1115,7 +1115,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
               const serverAvailability = harvestAvailability[material.resourceId];
               const blocked = localBlock || Boolean(serverAvailability && !serverAvailability.enabled);
               return <li key={material.resourceId}>
-                <div><strong>{material.materialName}</strong><span>{remaining} / {material.capacity.toLocaleString()} {material.dailyQuota === null ? 'capacity' : 'daily quota'}{material.reserved ? ` · ${material.reserved.toLocaleString()} reserved` : ''}</span></div>
+                <div><strong>{material.materialName}</strong><span>{remaining} / {material.capacity.toLocaleString()} {material.dailyQuota === null ? 'trữ lượng' : 'giới hạn mỗi ngày'}{material.reserved ? ` · ${material.reserved.toLocaleString()} đã dành` : ''}</span></div>
                 <small>{material.harvestRateUnitsPerHour.toLocaleString()} {material.unit}/giờ trên mỗi đơn vị{material.dailyQuota !== null ? ` · Hôm nay còn ${material.dailyRemaining?.toLocaleString() ?? 'chưa rõ'}/${material.dailyQuota.toLocaleString()}` : ''} · {renewal}</small>
                 {material.access !== 'open_surface' && <small className="live-resource-access">{material.accessReason ? playerMessage(material.accessReason) : 'Chưa đủ điều kiện tiếp cận tài nguyên này.'}</small>}
                 {material.requiredToolTemplateId && <small className="live-resource-access">{workerHasTool ? `Đã có ${playerItemName(material.requiredToolTemplateId)}.` : `Cần trang bị ${playerItemName(material.requiredToolTemplateId)}.`}</small>}
@@ -1798,7 +1798,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           <div className="live-panel-heading"><div><span className="live-eyebrow">SỰ KIỆN</span><h3>Lịch sử sự kiện</h3></div></div>
           {view.calendar.length
             ? <ul className="live-plain-list">{view.calendar.map(event => <li key={event.id}>
-              <strong>{event.displayName} · {event.status === 'active' ? 'Đang mở' : event.status === 'locked' ? 'Đã khóa' : event.status === 'resolved' ? 'Đã kết thúc' : event.status === 'blocked' ? 'Tạm dừng' : event.status}</strong>
+              <strong>{event.displayName} · {playerStatus(event.status)}</strong>
               <span>{event.status === 'active' ? `Khóa lúc ${elapsedLabel(event.locksAtElapsedMs)}`
                 : event.status === 'locked' ? `Quyết toán lúc ${elapsedLabel(event.resolvesAtElapsedMs)}`
                   : event.status === 'resolved' ? `Kết thúc lúc ${elapsedLabel(event.resolvesAtElapsedMs)}`
@@ -1835,7 +1835,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         </section>
       </div>
       {events.length
-        ? <ol className="live-event-list">{events.map(item => <li key={item.eventId}><span className="live-event-sequence">#{item.sequence}</span><strong>{item.title}</strong><p>{item.text}</p></li>)}</ol>
+        ? <ol className="live-event-list">{events.map(item => <li key={item.eventId}><strong>{playerMessage(item.title)}</strong><p>{playerMessage(item.text)}</p></li>)}</ol>
         : <p className="live-empty-state">Chưa có sự kiện nào trong nhật ký.</p>}
     </section>;
   }
@@ -1945,7 +1945,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
               <div className="live-notification-heading"><strong>Thông báo</strong><button className="live-text-button" onClick={() => setScreen('journal')}>Mở nhật ký</button></div>
               {events.length
                 ? <ol className="live-event-list">{events.slice(-5).reverse().map(item => <li key={item.eventId}>
-                  <span className="live-event-sequence">#{item.sequence}</span><strong>{item.title}</strong><p>{item.text}</p>
+                  <strong>{playerMessage(item.title)}</strong><p>{playerMessage(item.text)}</p>
                 </li>)}</ol>
                 : <p className="live-empty-state">Chưa có thông báo.</p>}
             </section>}
