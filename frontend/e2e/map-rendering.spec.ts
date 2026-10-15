@@ -4,14 +4,24 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import sharp from 'sharp';
+import { fogOpacityAt } from '../src/mapModel.ts';
 
 test.beforeEach(async({page})=>installLocalPreviewRoute(page));
+async function renderHostIntoView(page:import('@playwright/test').Page){await page.locator('.map-render-host').first().scrollIntoViewIfNeeded();}
+async function scrollMapHostOffscreen(page:import('@playwright/test').Page,host:import('@playwright/test').Locator){
+ await page.evaluate(()=>{
+  const spacer=document.createElement('div');spacer.dataset.mapQaOffscreenSpacer='true';spacer.style.cssText=`display:block;width:1px;height:${innerHeight*2}px;pointer-events:none;`;
+  document.body.append(spacer);window.scrollTo(0,document.documentElement.scrollHeight);
+ });
+ await expect.poll(()=>host.evaluate(node=>{const box=node.getBoundingClientRect();return box.bottom<0||box.top>=innerHeight;}),{timeout:10000}).toBe(true);
+}
 async function territory(page:import('@playwright/test').Page,options=''){
  await page.goto('/?mode=demo&mapQA=1'+options);await expect(page.locator('.app-shell')).toBeVisible();
  const menu=page.getByRole('button',{name:'Mở điều hướng'});if(await menu.isVisible())await menu.click();
  await page.getByRole('navigation',{name:'Các mục giao diện'}).getByRole('button',{name:'Lãnh địa',exact:true}).click();
  await expect(page.locator('.territory-stage [data-map-renderer]')).toHaveAttribute('data-map-renderer',/webgl|canvas2d/);
  await expect(page.locator('.territory-stage .map-render-canvas')).toHaveCount(1);
+ await renderHostIntoView(page);
 }
 test('real renderer opens normal gameplay with exact opening IDs, grid toggle and planning control',async({page})=>{
  await territory(page);await expect(page.locator('.territory-building:not(.is-draft)')).toHaveCount(4);
@@ -19,6 +29,20 @@ test('real renderer opens normal gameplay with exact opening IDs, grid toggle an
  await page.getByRole('button',{name:'Lưới',exact:true}).click();expect(await page.locator('.territory-scene-svg line').count()).toBeGreaterThan(0);
  await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();await expect(page.locator('.territory-building image')).toHaveCount(0);
  await page.locator('.territory-scene-svg').focus();await page.keyboard.press('p');await expect(page.getByRole('button',{name:'Bình thường',exact:true})).toHaveAttribute('aria-pressed','true');
+});
+test('ordinary demo placement palette keeps authored four-pose art and hides calibration fixtures',async({page})=>{
+ await page.goto('/?mode=demo');await expect(page.locator('.app-shell')).toBeVisible();
+ const menu=page.getByRole('button',{name:'Mở điều hướng'});if(await menu.isVisible())await menu.click();
+ await page.getByRole('navigation',{name:'Các mục giao diện'}).getByRole('button',{name:'Lãnh địa',exact:true}).click();
+ for(const name of ['Nhà Nông Phu Cực Địa','Tường Rào','Cổng Gỗ · mẫu ảnh','Nhà thấp · minh họa','Tháp Canh · mẫu ảnh','Tháp Nguyên Tố · mẫu ảnh'])
+  await expect(page.getByRole('button',{name:`Thử bố trí ${name}`,exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Thử bố trí Tháp cao · minh họa',exact:true})).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'Thử bố trí Mẫu lửa tối đa',exact:true})).toHaveCount(0);
+ await page.goto('/?mode=demo&mapQA=1');
+ const qaMenu=page.getByRole('button',{name:'Mở điều hướng'});if(await qaMenu.isVisible())await qaMenu.click();
+ await page.getByRole('navigation',{name:'Các mục giao diện'}).getByRole('button',{name:'Lãnh địa',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Thử bố trí Tháp cao · minh họa',exact:true})).toBeVisible();
+ const fireMax=page.getByRole('button',{name:'Thử bố trí Mẫu lửa tối đa',exact:true});await fireMax.scrollIntoViewIfNeeded();await expect(fireMax).toBeVisible();
 });
 test('25 km preview fits the complete heat boundary without changing the real heat radius',async({page})=>{
  await territory(page);await page.getByLabel('Xem thử vùng nhiệt').selectOption('25000');await page.getByRole('button',{name:'Toàn bộ vùng nhiệt',exact:true}).click();
@@ -33,6 +57,7 @@ test('a dense scene stops its animation loop when its active fire is outside the
  await page.locator('.territory-calibration > summary').click();await page.getByRole('button',{name:'Xem nhóm công trình minh họa',exact:true}).click();
  const scene=page.locator('.territory-scene-svg');await scene.evaluate(node=>node.scrollIntoView({block:'center'}));const box=(await scene.boundingBox())!;
  await page.mouse.move(box.x+box.width*.65,box.y+box.height*.65);await page.mouse.down();await page.mouse.move(box.x+box.width*.35,box.y+box.height*.65,{steps:4});await page.mouse.up();
+ await renderHostIntoView(page);
  await expect.poll(()=>page.evaluate(()=>{const m=(window as unknown as {__mapMetrics:{queued:number;pendingTextures:number;activeLoops:number}[]}).__mapMetrics.at(-1)!;return m.queued+m.pendingTextures+m.activeLoops;}),{timeout:60000}).toBe(0);
  await expect(page.locator('.territory-building[data-building-id^="qa-dense-"] circle')).toHaveCount(0);
 });
@@ -44,6 +69,7 @@ test('Canvas2D fallback uses the same geometry, selection list and camera contro
 });
 test('reduced motion and locked low quality remain selectable and do not start effects loops',async({page})=>{
  await page.emulateMedia({reducedMotion:'reduce'});await territory(page);await page.getByLabel('Chất lượng bản đồ').selectOption('low');
+ await renderHostIntoView(page);
  await expect.poll(()=>page.evaluate(()=>{const metrics=(window as unknown as {__mapMetrics:{activeLoops:number;queued:number}[]}).__mapMetrics;return metrics?.at(-1)?.queued;}),{timeout:15000}).toBe(0);
  await expect.poll(()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{activeLoops:number}[]}).__mapMetrics.at(-1)?.activeLoops)).toBe(0);
 });
@@ -53,8 +79,9 @@ test('preserved painted flame animates only for visible active fire; reduced mot
  await page.getByRole('button',{name:'Về lửa trại',exact:true}).click();
  await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();
  await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();
+ await renderHostIntoView(page);
  const backend=await page.locator('[data-map-renderer]').getAttribute('data-map-renderer');test.skip(backend!=='webgl','Canvas2D retains static fire indication with effects disabled.');
- const flames=()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{flameFrame:number|null;flameSprites:number}[]}).__mapMetrics.at(-1)!);
+ const flames=async()=>{await renderHostIntoView(page);return page.evaluate(()=>(window as unknown as {__mapMetrics:{flameFrame:number|null;flameSprites:number}[]}).__mapMetrics.at(-1)!);};
  await expect.poll(async()=>(await flames()).flameSprites,{timeout:30000}).toBe(1);
  const first=(await flames()).flameFrame;
  await expect.poll(async()=>(await flames()).flameFrame).not.toBe(first);
@@ -101,6 +128,7 @@ test('wall and gate preview exits planning and loads registered depth slices for
   const draft=page.locator(`.territory-building.is-draft[data-asset-id="${asset}"]`);
   for(const orientation of ['north','east','south','west']){
    await expect(draft).toHaveAttribute('data-orientation',orientation);await expect(draft).not.toHaveAttribute('data-missing-orientation','true');
+   await renderHostIntoView(page);
    await expect.poll(()=>Array.from(requested).some(p=>p.includes(`/assets/map/buildings/${asset}/depth-${orientation}-`)||p.includes(`/assets/map/buildings/${asset}/slice-${orientation}-`)),{timeout:20000}).toBe(true);
    await page.getByRole('button',{name:`Xoay ${name}`,exact:true}).click();
   }
@@ -119,6 +147,8 @@ test('architectural tower loads separate footing and upper art when its atlas is
  await scene.click({position:{x:box.width*.55,y:box.height*.65}});await scene.focus();await page.keyboard.press('Escape');
  for(const role of ['base','upper'])await expect.poll(()=>Array.from(requested).some(p=>new RegExp(`/fixture-tall-tower/${role}-(close|district)\\.png$`).test(p)),{timeout:20000}).toBe(true);
  const draft=page.locator('.territory-building.is-draft[data-asset-id="fixture-tall-tower"]');await expect(draft).toHaveCount(1);
+ await expect(page.getByRole('button',{name:'Xoay 90°'})).toBeDisabled();
+ await expect(page.getByRole('button',{name:'Xoay Tháp cao · minh họa',exact:true})).toBeDisabled();
  await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();await expect(page.getByRole('button',{name:'Mặt bằng',exact:true})).toHaveAttribute('aria-pressed','true');
  await page.getByRole('button',{name:'Xóa Tháp cao · minh họa',exact:true}).click();await expect(draft).toHaveCount(0);
 });
@@ -136,6 +166,7 @@ test('watchtower and elemental art previews load every authored pose without cha
   const draft=page.locator(`.territory-building.is-draft[data-asset-id="${asset}"]`);await expect(draft).toHaveCount(1);
   for(const orientation of ['north','east','south','west']){
    await expect(draft).toHaveAttribute('data-orientation',orientation);await expect(draft).not.toHaveAttribute('data-missing-orientation','true');
+   await renderHostIntoView(page);
    for(const role of ['base','upper'])await expect.poll(()=>Array.from(requested).some(p=>new RegExp(`/${asset}/${role}-${orientation}-(close|district)\\.png$`).test(p)),{timeout:20000}).toBe(true);
    await page.getByRole('button',{name:`Xoay ${name}`,exact:true}).click();
   }
@@ -157,6 +188,7 @@ test('twenty map switches dispose departed renderers and preserve territory sele
   await expect(page.locator('.map-render-canvas')).toHaveCount(1);
  }
  await expect(page.locator('.territory-building.is-selected')).toHaveAttribute('data-building-id','SITE-LL01-001');
+ await renderHostIntoView(page);
  await expect.poll(()=>page.evaluate(()=>{
   const data=(window as unknown as {__mapMetrics:{activeLoops:number;textureBytes:number;queued:number}[]}).__mapMetrics;
   return data?.slice(0,-1).some(m=>m.activeLoops!==0||m.textureBytes!==0||m.queued!==0);
@@ -219,6 +251,7 @@ test('compact overview keeps permitted map controls without downloading full sce
  const requested=new Set<string>();page.on('request',request=>requested.add(request.url()));
  await page.goto('/?mode=demo&mapQA=1');await expect(page.locator('.app-shell')).toBeVisible();
  await expect(page.locator('.map-experience--compact .map-render-canvas')).toHaveCount(1);
+ await renderHostIntoView(page);
  await expect.poll(()=>page.evaluate(()=>{
   const m=(window as unknown as {__mapMetrics?:{frames:number;queued:number;pendingTextures:number}[]}).__mapMetrics?.at(-1);
   return Boolean(m&&m.frames>0&&m.queued===0&&m.pendingTextures===0);
@@ -238,6 +271,108 @@ test('compact overview keeps permitted map controls without downloading full sce
  expect(Array.from(requested).some(url=>/\/assets\/map\/buildings\/(watchtower|elemental-tower)-preview\/body\.svg/.test(url))).toBe(false);
 });
 
+test('DEMO QA territory fixtures are static and expose only fixture counts',async({page})=>{
+ await page.goto('/?mode=demo&mapQA=1&mapFixture=populated12');await expect(page.locator('.app-shell')).toBeVisible();
+ const menu=page.getByRole('button',{name:'Mở điều hướng'});if(await menu.isVisible())await menu.click();
+ await page.getByRole('navigation',{name:'Các mục giao diện'}).getByRole('button',{name:'Lãnh địa',exact:true}).click();
+ const stage=page.locator('.territory-stage');await expect(stage).toHaveAttribute('data-map-qa-fixture','populated12');await expect(stage).toHaveAttribute('data-map-qa-fixture-count','12');
+ await expect(page.locator('.territory-building.is-draft')).toHaveCount(0);
+ await expect(page.locator('[data-entity-id^="map-qa-static-"], [data-building-id^="map-qa-static-"], [aria-label*="Hình minh họa QA"]')).toHaveCount(0);
+ await expect(page.getByRole('button',{name:/QA fixture/i})).toHaveCount(0);
+ await page.goto('/?mode=demo&mapQA=1&mapFixture=overlap');await expect(page.locator('.app-shell')).toBeVisible();
+ const overlapMenu=page.getByRole('button',{name:'Mở điều hướng'});if(await overlapMenu.isVisible())await overlapMenu.click();
+ await page.getByRole('navigation',{name:'Các mục giao diện'}).getByRole('button',{name:'Lãnh địa',exact:true}).click();
+ await expect(page.locator('.territory-stage')).toHaveAttribute('data-map-qa-fixture','overlap');
+ await expect(page.locator('.territory-stage')).toHaveAttribute('data-map-qa-fixture-count','3');
+ await expect(page.locator('.territory-building.is-draft')).toHaveCount(0);
+});
+
+test('fog QA metadata reflects only projected known entities and omits unknown targets',async({page})=>{
+ // MODELED-STONE-01's authored fixture coordinate is (-31,-52) in src/worldFeatures.ts;
+ // the live projector uses this exact fogOpacityAt predicate for currentSight.
+ const oracleSight={day:Number(fogOpacityAt(-31,-52,420,1,true)<.12),night:Number(fogOpacityAt(-31,-52,1140,1,true)<.12)};
+ expect(oracleSight).toEqual({day:1,night:0});
+ await page.goto('/?mode=demo&mapQA=1&mapFixture=local-camp');await expect(page.locator('.app-shell')).toBeVisible();
+ const menu=page.getByRole('button',{name:'Mở điều hướng'});if(await menu.isVisible())await menu.click();
+ await page.getByRole('navigation',{name:'Các mục giao diện'}).getByRole('button',{name:'Bản đồ',exact:true}).click();
+ const scene=page.locator('.map-scene');
+ const setTime=async(minutes:number)=>{
+  await page.locator('.map-developer-tools > summary').click();await page.getByLabel('Mô phỏng giờ hiển thị').selectOption(String(minutes));await page.locator('.map-developer-tools > summary').click();
+  await expect(scene).toHaveAttribute('data-map-qa-clock-minutes',String(minutes));
+ };
+ await setTime(420);
+ await expect(scene).toHaveAttribute('data-map-qa-phase','day');
+ await expect(scene).toHaveAttribute('data-map-qa-provenance','demo-visible-snapshot');
+ await expect(scene).toHaveAttribute('data-map-qa-known-state',JSON.stringify([
+  {id:'SITE-LL01-000',knowledge:'current',currentSight:1},
+  {id:'MODELED-SALVAGE-01',knowledge:'current',currentSight:1},
+  {id:'MODELED-STONE-01',knowledge:'remembered',currentSight:oracleSight.day},
+ ]));
+ const unknownFixtureId='MODELED-01-001';
+ const assertUnknownAbsent=async()=>{
+  await expect(page.locator(`[data-entity-id="${unknownFixtureId}"]`)).toHaveCount(0);
+  await expect(page.locator('.map-accessible-entities')).not.toContainText(unknownFixtureId);
+  expect(await page.evaluate(()=>JSON.stringify((window as unknown as {__mapMetrics?:unknown[]}).__mapMetrics??[]))).not.toContain(unknownFixtureId);
+ };
+ await assertUnknownAbsent();await setTime(1140);
+ await expect(scene).toHaveAttribute('data-map-qa-phase','night');
+ await expect(scene).toHaveAttribute('data-map-qa-known-state',JSON.stringify([
+  {id:'SITE-LL01-000',knowledge:'current',currentSight:1},
+  {id:'MODELED-SALVAGE-01',knowledge:'current',currentSight:1},
+  {id:'MODELED-STONE-01',knowledge:'remembered',currentSight:oracleSight.night},
+ ]));
+ await assertUnknownAbsent();
+ await page.goto('/?mode=demo&mapQA=1&mapFixture=unknown-fog');await expect(page.locator('.app-shell')).toBeVisible();
+ const unknownMenu=page.getByRole('button',{name:'Mở điều hướng'});if(await unknownMenu.isVisible())await unknownMenu.click();
+ await page.getByRole('navigation',{name:'Các mục giao diện'}).getByRole('button',{name:'Bản đồ',exact:true}).click();
+ await expect(page.locator('.map-scene')).toHaveAttribute('data-map-qa-fixture','unknown-fog');
+ await expect(page.locator('.map-scene')).toHaveAttribute('data-map-qa-phase','night');await assertUnknownAbsent();
+});
+
+test('renderer combines document-hidden and offscreen gates, then resumes with its stable host',async({page})=>{
+ test.setTimeout(60000);await page.emulateMedia({reducedMotion:'no-preference'});await territory(page);
+ await page.getByRole('button',{name:'Về lửa trại',exact:true}).click();
+ await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();
+ const backend=await page.locator('[data-map-renderer]').getAttribute('data-map-renderer');test.skip(backend!=='webgl','Canvas2D has no animated flame loop to observe.');
+ const host=page.locator('.map-render-host').first();await renderHostIntoView(page);
+ const flameFrame=()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{flameFrame:number|null;activeLoops:number}[]}).__mapMetrics.at(-1)!);
+ await expect.poll(async()=>(await flameFrame()).flameFrame,{timeout:30000}).not.toBe(0);
+ const visibleFrame=(await flameFrame()).flameFrame;
+ await scrollMapHostOffscreen(page,host);
+ await expect.poll(async()=>(await flameFrame()).activeLoops,{timeout:10000}).toBe(0);
+ const pausedFrame=(await flameFrame()).flameFrame;await page.waitForTimeout(250);
+ expect((await flameFrame()).flameFrame).toBe(pausedFrame);
+ expect(visibleFrame).not.toBe(pausedFrame);
+ await page.evaluate(()=>{
+  Object.defineProperty(document,'hidden',{configurable:true,value:true});
+  Object.defineProperty(document,'visibilityState',{configurable:true,value:'hidden'});
+  document.dispatchEvent(new Event('visibilitychange'));
+ });
+ await renderHostIntoView(page);
+ await expect.poll(()=>host.evaluate(node=>{const box=node.getBoundingClientRect();return box.bottom>0&&box.top<innerHeight;}),{timeout:10000}).toBe(true);
+ await page.waitForTimeout(250);expect((await flameFrame()).flameFrame).toBe(pausedFrame);
+ await expect.poll(async()=>(await flameFrame()).activeLoops,{timeout:10000}).toBe(0);
+ await page.evaluate(()=>{
+  delete (document as Document&{hidden?:boolean}).hidden;
+  delete (document as Document&{visibilityState?:DocumentVisibilityState}).visibilityState;
+  document.dispatchEvent(new Event('visibilitychange'));
+ });
+ await expect.poll(async()=>(await flameFrame()).flameFrame,{timeout:10000}).not.toBe(pausedFrame);
+});
+
+test('Canvas2D fallback retains its host observer and renders invalidation after returning onscreen',async({page})=>{
+ test.setTimeout(45000);await page.emulateMedia({reducedMotion:'reduce'});await territory(page,'&mapFallback=1');
+ await expect(page.locator('[data-map-renderer]')).toHaveAttribute('data-map-renderer','canvas2d');
+ const host=page.locator('.map-render-host').first(),frames=()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{frames:number;queued:number}[]}).__mapMetrics.at(-1)!);
+ await renderHostIntoView(page);await expect.poll(async()=>(await frames()).frames,{timeout:20000}).toBeGreaterThan(0);
+ await scrollMapHostOffscreen(page,host);
+ const before=(await frames()).frames;
+ await page.locator('.territory-scene-svg').evaluate(node=>node.dispatchEvent(new KeyboardEvent('keydown',{key:'+',bubbles:true,cancelable:true})));
+ await page.waitForTimeout(200);expect((await frames()).frames).toBe(before);
+ await renderHostIntoView(page);
+ await expect.poll(async()=>(await frames()).frames,{timeout:10000}).toBeGreaterThan(before);
+});
+
 test('repaired and damaged house architecture load for normal, planning and focus',async({page})=>{
  test.setTimeout(90000);await page.emulateMedia({reducedMotion:'reduce'});
  const requested=new Set<string>();page.on('request',request=>requested.add(new URL(request.url()).pathname));
@@ -246,7 +381,7 @@ test('repaired and damaged house architecture load for normal, planning and focu
  await page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
  await expect(page.getByLabel('Hướng hình kiểm tra',{exact:true})).toHaveCount(0);
  for(const role of ['base','upper'])await expect.poll(()=>Array.from(requested).some(path=>new RegExp(`/lord-house-repaired/${role}-north-(close|district)\\.png$`).test(path)),{timeout:30000}).toBe(true);
- const alphas=()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{qaArtLayers:{base:number|null;upper:number|null;body:number|null}|null}[]}).__mapMetrics.at(-1)?.qaArtLayers);
+ const alphas=async()=>{await renderHostIntoView(page);return page.evaluate(()=>(window as unknown as {__mapMetrics:{qaArtLayers:{base:number|null;upper:number|null;body:number|null}|null}[]}).__mapMetrics.at(-1)?.qaArtLayers);};
  await expect.poll(alphas,{timeout:30000}).toEqual({base:1,upper:1,body:null});
  await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();await expect.poll(alphas,{timeout:30000}).toEqual({base:1,upper:null,body:null});
  await page.getByRole('button',{name:'Làm mờ phần che',exact:true}).click();await expect.poll(alphas,{timeout:30000}).toEqual({base:1,upper:.22,body:null});
@@ -286,7 +421,7 @@ test('canonical 6 × 5 m tomb renders registered base and upper layers in normal
  await page.locator('.territory-calibration > summary').click();await page.getByLabel('Hình minh họa',{exact:true}).selectOption('tomb-entry');
  await page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
  await expect(page.locator('[data-art-qa-footprint]')).toHaveCount(1);await expect(page.locator('[data-art-qa-footprint]')).toHaveAttribute('points',/^[-\d., ]{8,}$/);
- const alphas=()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{qaArtLayers:{base:number|null;upper:number|null;body:number|null}|null}[]}).__mapMetrics.at(-1)?.qaArtLayers);
+ const alphas=async()=>{await renderHostIntoView(page);return page.evaluate(()=>(window as unknown as {__mapMetrics:{qaArtLayers:{base:number|null;upper:number|null;body:number|null}|null}[]}).__mapMetrics.at(-1)?.qaArtLayers);};
  for(const [mode,expected] of [['normal',{base:1,upper:1,body:null}],['planning',{base:1,upper:null,body:null}],['focus',{base:1,upper:.22,body:null}]] as const){
   if(mode==='planning')await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();
   if(mode==='focus')await page.getByRole('button',{name:'Làm mờ phần che',exact:true}).click();
@@ -314,15 +449,17 @@ test('all tomb map PNG and atlas failures use the registered versioned idle SVG 
  expect(registered.sourceSha256).toMatch(/^[a-f0-9]{64}$/);
  await page.locator('.territory-calibration > summary').click();await page.getByLabel('Hình minh họa',{exact:true}).selectOption('tomb-entry');
  await page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
+ await renderHostIntoView(page);
  await expect.poll(()=>requested.has(registered.fallback),{timeout:30000}).toBe(true);
  expect(Array.from(requested).some(path=>path.includes('/tomb-entry/atlas-'))).toBe(true);
  expect(Array.from(requestedUrls).some(url=>url.includes(registered.fallback+'?mapHash='+registered.sourceSha256))).toBe(true);
+ await renderHostIntoView(page);
  await expect.poll(()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{qaArtLayers:{base:number|null;upper:number|null;body:number|null}|null;queued:number;pendingTextures:number}[]}).__mapMetrics.at(-1)),{timeout:30000}).toMatchObject({qaArtLayers:{base:null,upper:null,body:1},queued:0,pendingTextures:0});
  await expect(page.locator('.map-render-canvas')).toHaveCount(1);
  if(test.info().project.name==='chromium'){
   const directory=resolve(process.cwd(),'map-evidence/after/1366/architecture/tomb-entry');mkdirSync(directory,{recursive:true});
   const renderer=page.locator('.territory-stage [data-map-renderer]');
-  await renderer.scrollIntoViewIfNeeded();await expect(renderer).toBeVisible();
+  await renderHostIntoView(page);await expect(renderer).toBeVisible();
   await expect.poll(()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{queued:number;pendingTextures:number}[]}).__mapMetrics.at(-1)),{timeout:30000}).toMatchObject({queued:0,pendingTextures:0});
   const scenePng=await renderer.screenshot(),scene=await sharp(scenePng).removeAlpha().raw().toBuffer({resolveWithObject:true});
   const backdropIndex=(Math.floor(scene.info.height*.15)*scene.info.width+Math.floor(scene.info.width*.284))*scene.info.channels;

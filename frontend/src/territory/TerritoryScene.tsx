@@ -16,7 +16,7 @@ import {projectDepthNodes} from '../rendering/DepthSlices';
 import type {SceneLOD} from '../rendering/mapStyle';
 import { depthOrder } from '../rendering/DepthOrder';
 import { cameraOverlayTransform } from '../rendering/transientCamera';
-import { footprintHeatRelation, snapPlanningPoint, validatePlacement } from './placement';
+import { footprintHeatRelation, legalPlacementOrientations, nextPlacementOrientation, snapPlanningPoint, validatePlacement } from './placement';
 import { fitWorldBounds, isoToWorld, screenToWorld, worldToIso, worldToScreen, zoomAtScreenPoint, MIN_TERRITORY_ZOOM } from './projection';
 import type { TerritoryCamera, WorldPoint } from './projection';
 
@@ -91,6 +91,8 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
   const [denseQa,setDenseQa]=useState(false);
   const [showCalibrationArt,setShowCalibrationArt]=useState(false);
   const artQaEnabled=!liveApi&&new URLSearchParams(location.search).get('mapQA')==='1';
+  const requestedTerritoryFixture=artQaEnabled?new URLSearchParams(location.search).get('mapFixture'):null;
+  const territoryQaFixture=requestedTerritoryFixture==='populated12'||requestedTerritoryFixture==='overlap'?requestedTerritoryFixture:null;
   const [message,setMessage]=useState('');
   const [showGrid,setShowGrid]=useState(false);
   const origin=settlement.worldOrigin;
@@ -98,6 +100,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
   const displayedRadius=heatPreview==='actual'?actualRadius:heatPreview==='off'?0:Number(heatPreview);
   const effectiveMode:ReadabilityMode=placingId?'planning':readability;
   const activeDefinition=placementDefinitions.find(def=>def.id===placingId)??null;
+  const visiblePlacementDefinitions=placementDefinitions.filter(definition=>!definition.qaOnly||artQaEnabled);
   const activeCamera=camera??{x:origin.x+10,y:origin.y+5,zoom:.7};
   const transient=useRef(activeCamera),lastCameraCommit=useRef(0),wheelCommit=useRef<ReturnType<typeof setTimeout>|null>(null);
   useLayoutEffect(()=>{transient.current=activeCamera;svgRef.current?.querySelector('.territory-camera-overlay')?.removeAttribute('transform');},[activeCamera.x,activeCamera.y,activeCamera.zoom,size.width,size.height]);
@@ -192,8 +195,6 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
   const validation=activeDefinition?validatePlacement({point:ghostWorld?{x:ghostWorld.x-origin.x,y:ghostWorld.y-origin.y}:{x:0,y:0},footprint:activeDefinition.footprint,orientation:placingOrientation,heatRadiusM:actualRadius,heatActive:settlement.fireActive,existing:[...settlement.buildings,...drafts]}):null;
   const currentPlacementPoint=ghostWorld??{x:origin.x,y:origin.y};
   const currentPlacementLocal={x:currentPlacementPoint.x-origin.x,y:currentPlacementPoint.y-origin.y};
-  const orientationCycle:LayoutDraft['orientation'][]=['north','east','south','west'];
-
   const focusWorld=(point:WorldPoint,zoom=Math.max(.72,activeCamera.zoom))=>{if(followPlayer)onFollowPlayerChange(false);onCameraChange(previous=>({...(previous??activeCamera),x:point.x,y:point.y,zoom}));};
   const fitFire=()=>{if(followPlayer)onFollowPlayerChange(false);onCameraChange(fitWorldBounds(heatBoundary(origin,Math.max(actualRadius,8)),size,110,PX_PER_ISO_METRE));};
   const fitBuildings=()=>{if(followPlayer)onFollowPlayerChange(false);onCameraChange(fitWorldBounds(settlement.buildings.flatMap(building=>pointsForBuilding(building,origin)),size,110,PX_PER_ISO_METRE));};
@@ -203,14 +204,14 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
     focusWorld({x:origin.x+building.x,y:origin.y+building.y},Math.max(.8,activeCamera.zoom));
   };
   const startPlacement=(definition:SettlementPlacementDefinition)=>{
-    setPlacingId(definition.id);setPlacingOrientation('north');setGhostWorld({x:activeCamera.x,y:activeCamera.y});
+    const initialOrientation=legalPlacementOrientations(definition.orientations)[0]??'north';
+    setPlacingId(definition.id);setPlacingOrientation(initialOrientation);setGhostWorld({x:activeCamera.x,y:activeCamera.y});
     setMessage(`Thử bố trí: ${definition.name}. Bản nháp không tạo công trình.`);
   };
   const cancelPlacement=()=>{setPlacingId(null);setGhostWorld(null);setMessage('Đã hủy chế độ thử bố trí.');};
   const rotatePlacement=()=>{
-    const allowed=orientationCycle.filter(orientation=>activeDefinition?.orientations.includes(orientation));
-    if(allowed.length<2)return;
-    setPlacingOrientation(previous=>allowed[(allowed.indexOf(previous)+1)%allowed.length]??allowed[0]);
+    if(!activeDefinition)return;
+    setPlacingOrientation(previous=>nextPlacementOrientation(previous,activeDefinition.orientations));
   };
   useEffect(()=>{
     if(!activeDefinition)return;
@@ -353,17 +354,40 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
     return ground.y>target.y&&pointInPolygon(target,artPolygon(asset.occlusionRegion.upper,spriteRect(asset,ground,scale)));
   };
   const renderDrafts=[...drafts,...(denseQa?denseFixture:[]),...(activeDefinition?[{id:'placement-ghost',definitionId:activeDefinition.id,assetId:activeDefinition.assetId,x:currentPlacementLocal.x,y:currentPlacementLocal.y,footprint:activeDefinition.footprint,orientation:placingOrientation}]:[])];
+  const qaStaticBuildings=useMemo(()=>{
+    if(!manifest||!territoryQaFixture)return [];
+    const assets=['lord-house-damaged','polar-farmhouse-l01','opening-palisade-wall','opening-timber-gate','watchtower-preview','elemental-tower-preview'] as const;
+    const specs=territoryQaFixture==='overlap'
+      ? [
+          {assetId:'opening-palisade-wall',x:0,y:0,orientation:'north' as const},
+          {assetId:'opening-timber-gate',x:1,y:0,orientation:'north' as const},
+          {assetId:'watchtower-preview',x:.4,y:.5,orientation:'north' as const},
+        ]
+      : Array.from({length:12},(_,index)=>({assetId:assets[index%assets.length]!,x:((index%4)-1.5)*28,y:(Math.floor(index/4)-1)*32,orientation:(['north','east','south','west'] as const)[index%4]!}));
+    return specs.flatMap((spec,index)=>{
+      const asset=findAsset(manifest,spec.assetId);
+      if(!asset)return [];
+      return [{
+        id:`map-qa-static-${index+1}`,name:'Hình minh họa QA',asset,assetId:spec.assetId,
+        point:{x:origin.x+spec.x,y:origin.y+spec.y},orientation:spec.orientation,
+        footprint:asset.compatiblePhysicalFootprint??fixtureFootprint,
+        selected:false,active:false,draft:false,fixture:true,
+      }];
+    });
+  },[manifest,territoryQaFixture,origin.x,origin.y]);
+  const expectedTerritoryFixtureCount=territoryQaFixture==='populated12'?12:territoryQaFixture==='overlap'?3:0;
+  const readyTerritoryQaFixture=expectedTerritoryFixtureCount>0&&qaStaticBuildings.length===expectedTerritoryFixtureCount?territoryQaFixture:null;
   const renderSnapshot=useMemo(()=>{
     const snapshot=territorySnapshot(settlement,manifest,activeCamera,effectiveMode,selectedRef?.id??null,renderDrafts,{visualIdentity,modeledInfill:!liveApi,regions:terrainRegions});
     // Render-only QA: no placement definition, command or saved entity.
     const asset=artQaEnabled&&showCalibrationArt?selectedCalibrationAsset:null;
-    return {...snapshot,buildingLODs:buildingLODs.current,buildings:asset?[...snapshot.buildings,{
+    return {...snapshot,buildingLODs:buildingLODs.current,buildings:[...snapshot.buildings,...qaStaticBuildings,...(asset?[{
       id:'qa-art-preview',name:'Hình ảnh kiểm tra',asset,assetId:asset.assetId,
       point:{x:origin.x+4,y:origin.y-2},orientation:activeQaArtOrientation,
       footprint:asset.compatiblePhysicalFootprint??fixtureFootprint,
       selected:false,active:false,draft:false,fixture:true,
-    }]:snapshot.buildings};
-  },[settlement,manifest,activeCamera,effectiveMode,selectedRef?.id,drafts,denseQa,activeDefinition,ghostWorld,placingOrientation,visualIdentity,terrainRegions,liveApi,artQaEnabled,showCalibrationArt,selectedCalibrationAsset,activeQaArtOrientation]);
+    }]:[])]};
+  },[settlement,manifest,activeCamera,effectiveMode,selectedRef?.id,drafts,denseQa,activeDefinition,ghostWorld,placingOrientation,visualIdentity,terrainRegions,liveApi,artQaEnabled,showCalibrationArt,selectedCalibrationAsset,activeQaArtOrientation,qaStaticBuildings,origin.x,origin.y]);
   const artQaPreview=renderSnapshot.buildings.find(b=>b.id==='qa-art-preview'&&b.fixture);
   const artQaOutline=artQaPreview?[[-1,-1],[1,-1],[1,1],[-1,1]].map(([x,y])=>{
     const turned=artQaPreview.orientation==='east'||artQaPreview.orientation==='west';
@@ -411,7 +435,9 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
       <span><Compass size={14}/> Bao phủ nền: {actualInside} trong · {actualPartial} giao cắt · {actualOutside} ngoài · luật chưa xác định</span>
       {!liveApi&&<label className="territory-heat-preview">Xem thử vùng nhiệt <select aria-label="Xem thử vùng nhiệt" value={heatPreview} onChange={event=>setHeatPreview(event.target.value as typeof heatPreview)}><option value="actual">Nguồn thực tế</option><option value="2500">2.5 km · minh họa</option><option value="25000">25 km · minh họa</option><option value="off">Tắt · minh họa</option></select></label>}
     </div>
-    <div className="territory-stage" ref={rootRef}>
+    <div className="territory-stage" ref={rootRef}
+      data-map-qa-fixture={readyTerritoryQaFixture??undefined}
+      data-map-qa-fixture-count={readyTerritoryQaFixture?expectedTerritoryFixtureCount:undefined}>
       <MapCanvas snapshot={renderSnapshot} label="Địa hình và công trình lãnh địa. Dùng danh sách công trình hoặc điều khiển mặt bằng để chọn."/>
       <svg ref={svgRef} className="territory-scene-svg" viewBox={`0 0 ${size.width} ${size.height}`} role="img" aria-label="Lãnh địa theo phối cảnh isometric cố định. Kéo để di chuyển, cuộn để thu phóng, dùng phím mũi tên để điều hướng."
         tabIndex={0} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={()=>{presentCamera(transient.current,true);gesture.current=null;pinch.current=null;touches.current.clear();ignoreClick.current=true;setTimeout(()=>{ignoreClick.current=false;},0);}} onLostPointerCapture={event=>{if(gesture.current?.pointerId===event.pointerId){presentCamera(transient.current,true);gesture.current=null;}}} onClickCapture={captureSelection} onClick={canvasClick} onKeyDown={keyDown}>
@@ -459,7 +485,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
     <div className="territory-workbench">
       {!liveApi&&<section className="panel territory-build-tray">
         <div className="territory-section-heading"><div><span className="eyebrow">BỐ TRÍ MINH HỌA</span><h3>Công trình</h3></div>{placingId&&<button className="text-button" onClick={cancelPlacement}><X size={14}/> Hủy</button>}</div>
-        <div className="territory-definition-grid">{placementDefinitions.map(definition=>{
+        <div className="territory-definition-grid">{visiblePlacementDefinitions.map(definition=>{
           const artwork=findAsset(manifest,definition.assetId);
           return <article className={`territory-definition${placingId===definition.id?' is-active':''}`} key={definition.id}>
             <img src={artwork?.layers.uiIcon??artwork?.layers.body??'/assets/buildings/lord-house-damaged/icon.svg'} alt=""/>
@@ -467,7 +493,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
             <button onClick={()=>startPlacement(definition)} aria-label={`Thử bố trí ${definition.name}`}>Đặt thử</button>
           </article>;
         })}</div>
-        {placingId&&<div className="territory-placement-controls"><span><b>{activeDefinition?.name}</b> · hướng {ORIENTATION_LABEL[placingOrientation]} · lưới 1 m</span><button onClick={rotatePlacement} disabled={(activeDefinition?.orientations.length??0)<2}><RotateCw size={15}/> Xoay 90° <kbd>R</kbd></button><button onClick={cancelPlacement}><X size={15}/> Hủy</button></div>}
+        {placingId&&<div className="territory-placement-controls"><span><b>{activeDefinition?.name}</b> · hướng {ORIENTATION_LABEL[placingOrientation]} · lưới 1 m</span><button onClick={rotatePlacement} disabled={legalPlacementOrientations(activeDefinition?.orientations).length<2}><RotateCw size={15}/> Xoay 90° <kbd>R</kbd></button><button onClick={cancelPlacement}><X size={15}/> Hủy</button></div>}
         <p className="territory-fixture-note"><AlertTriangle size={14}/> Mặt bằng và chi phí vật liệu đang được hoàn thiện. Vùng nhiệt không tự quyết định quyền xây.</p>
       </section>}
       <section className="panel territory-instance-panel">
@@ -478,7 +504,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
           const artwork=findAsset(manifest,resolveSettlementAssetId(manifest,building.assetId,settlement.fireLevel,building.ref.id===settlement.fireRef.id,building.visualState,building.level));
           return <div className={`territory-instance${selected?' is-selected':''}`} key={building.id} role="listitem"><button className="territory-instance-main" onClick={()=>focusBuilding(building)}><span className="territory-instance-icon"><img src={artwork?.layers.body??artwork?.layers.uiIcon??'/assets/buildings/survival-fire-l01/icon.svg'} alt=""/></span><span><b>{building.name}</b><small>{building.x>=0?'+':''}{building.x}, {building.y>=0?'+':''}{building.y} m · {heat==='inside'?'Trong nhiệt':heat==='partial'?'Giao cắt':'Ngoài nhiệt'}</small></span><LocateFixed size={15}/></button><button className="territory-instance-focus" onClick={()=>{focusBuilding(building);setMessage(`Đang xem ${building.name}; vị trí nguồn không đổi.`);}}>Đến</button><small className="territory-instance-state">{building.state} · kích thước mặt bằng tạm tính</small></div>;
         })}{filteredBuildings.length===0&&<p className="muted-text">Không có công trình khớp bộ lọc.</p>}</div>
-        {!liveApi&&drafts.length>0&&<div className="territory-draft-list"><div><b>Bố trí đang xem trước</b><button className="text-button" onClick={()=>{onDraftsChange([]);setMessage('Xóa bố trí xem trước.');}}>Xóa tất cả</button></div>{drafts.map(draft=>{const validation=validatePlacement({point:{x:draft.x,y:draft.y},footprint:draft.footprint,orientation:draft.orientation,heatRadiusM:actualRadius,heatActive:settlement.fireActive,existing:[...settlement.buildings,...drafts],ignoreId:draft.id});const definitionName=placementDefinitions.find(item=>item.id===draft.definitionId)?.name??'Công trình';return <div key={draft.id}><span>{definitionName} · ({draft.x}, {draft.y}) m · {validation.blockers.length?'bị cản trở':'có thể đặt'}</span><button aria-label={`Xoay ${definitionName}`} onClick={()=>onDraftsChange(previous=>previous.map(item=>item.id===draft.id?{...item,orientation:orientationCycle[(orientationCycle.indexOf(item.orientation)+1)%orientationCycle.length]}:item))}><RotateCw size={14}/></button><button aria-label={`Xóa ${definitionName}`} onClick={()=>onDraftsChange(previous=>previous.filter(item=>item.id!==draft.id))}><X size={14}/></button></div>;})}</div>}
+        {!liveApi&&drafts.length>0&&<div className="territory-draft-list"><div><b>Bố trí đang xem trước</b><button className="text-button" onClick={()=>{onDraftsChange([]);setMessage('Xóa bố trí xem trước.');}}>Xóa tất cả</button></div>{drafts.map(draft=>{const validation=validatePlacement({point:{x:draft.x,y:draft.y},footprint:draft.footprint,orientation:draft.orientation,heatRadiusM:actualRadius,heatActive:settlement.fireActive,existing:[...settlement.buildings,...drafts],ignoreId:draft.id});const definition=placementDefinitions.find(item=>item.id===draft.definitionId);const definitionName=definition?.name??'Công trình';const allowedOrientations=legalPlacementOrientations(definition?.orientations);return <div key={draft.id}><span>{definitionName} · ({draft.x}, {draft.y}) m · {validation.blockers.length?'bị cản trở':'có thể đặt'}</span><button aria-label={`Xoay ${definitionName}`} disabled={allowedOrientations.length<2} onClick={()=>onDraftsChange(previous=>previous.map(item=>item.id===draft.id?{...item,orientation:nextPlacementOrientation(item.orientation,definition?.orientations)}:item))}><RotateCw size={14}/></button><button aria-label={`Xóa ${definitionName}`} onClick={()=>onDraftsChange(previous=>previous.filter(item=>item.id!==draft.id))}><X size={14}/></button></div>;})}</div>}
       </section>
     </div>
     {!liveApi&&<details className="panel territory-calibration" open={calibrationOpen} onToggle={event=>setCalibrationOpen(event.currentTarget.open)}><summary><span><EyeOff size={15}/> Hiệu chỉnh hình minh họa</span><small>Chỉ thay đổi cách hiển thị</small></summary>

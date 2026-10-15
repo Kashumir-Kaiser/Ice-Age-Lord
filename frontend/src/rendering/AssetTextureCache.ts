@@ -1,8 +1,9 @@
 import { Texture, Rectangle } from 'pixi.js';
-import type { AssetManifestEntry } from '../assets/assetRegistry.ts';
+import type { AssetManifestEntry, MapEffectsAtlas } from '../assets/assetRegistry.ts';
 import type { CompositionLayer } from './SpriteRegistration.ts';
 import {trimmedRect,type SpriteRect} from './SpriteRegistration.ts';
 import {flameKey} from './FlamePresentation.ts';
+import {mapEffectFrameKey,mapEffectSnowKey} from './MapEffects.ts';
 export function exportPath(asset:AssetManifestEntry,layer:CompositionLayer,lod:'close'|'district'):string {
   return asset.mapExports?.find(e=>e.role===layer.role&&e.lod===lod&&(e.layerPath??e.source)===layer.path)?.path??layer.path;
 }
@@ -37,6 +38,13 @@ export class AssetTextureCache {
   maxTextureSize=2048;
   registerEnvironment(entries:readonly {path:string;sha256:string;width:number;height:number}[]):void{
     for(const entry of entries){this.revision(entry.path,entry.sha256);this.estimates.set(entry.path,entry.width*entry.height*4);}
+  }
+  registerMapEffects(atlas:MapEffectsAtlas|undefined):void{
+    if(!atlas)return;
+    this.revision(atlas.path,atlas.sha256);this.estimates.set(atlas.path,atlas.width*atlas.height*4);
+    this.registrations.set(mapEffectSnowKey(atlas.path),{path:atlas.path,...atlas.regions.snow.frame});
+    for(const [kind,region] of [['ember',atlas.regions.ember],['smoke',atlas.regions.smoke]] as const)
+      for(let i=0;i<region.frames.length;i++)this.registrations.set(mapEffectFrameKey(atlas.path,kind,i),{path:atlas.path,...region.frames[i]});
   }
   register(asset:AssetManifestEntry,useAtlas=true):void{
     const cached=this.registered.get(asset);

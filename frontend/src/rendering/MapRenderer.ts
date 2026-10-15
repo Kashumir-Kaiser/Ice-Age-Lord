@@ -1,4 +1,5 @@
 import { Application, Container, Graphics, Matrix, Sprite, Texture } from 'pixi.js';
+import type {MapEffectsAtlas} from '../assets/assetRegistry.ts';
 import type { MapSnapshot } from './MapSceneAdapter.ts';
 import { TerrainSampler, GROUND_MATERIALS, chunkLevel, chunkCoverage, boundedChunkLevel } from './TerrainSampler.ts';
 import { TerrainChunkCache } from './TerrainChunkCache.ts';
@@ -6,6 +7,7 @@ import type { TerrainChunk } from './TerrainChunkCache.ts';
 import { AssetTextureCache, exportPath } from './AssetTextureCache.ts';
 import { MapMetrics } from './MapMetrics.ts';
 import { MapEffects } from './MapEffects.ts';
+import type {EffectParticleDraw} from './MapEffects.ts';
 import { flameFrame, flameRect, flameKey } from './FlamePresentation.ts';
 import { artPolygon, composition } from './SpriteRegistration.ts';
 import { pointInPolygon } from './MapPicking.ts';
@@ -27,6 +29,9 @@ export class MapRenderer {
   private context:CanvasRenderingContext2D|null=null;
   private stage=new Container();
   private effectsGraphics=new Graphics();
+  private particleLayer=new Container();
+  private particleSprites:Sprite[]=[];
+  private effectDraws:EffectParticleDraw[]=[];
   private drawSprites=new Map<string,Sprite>();
   private chunkTextures=new Map<string,Texture>();
   private assets:AssetTextureCache;
@@ -49,10 +54,11 @@ export class MapRenderer {
   private quality:Quality='normal';
   private renderDpr=1;
   private adaptive=new AdaptiveQuality();
-  private readonly effects=new MapEffects(24);
+  private readonly effects=new MapEffects(180);
   private reducedMotion=false;
   private preference:'auto'|Quality='auto';
   private hidden=false;
+  private hostVisibility:'unknown'|'visible'|'hidden'='unknown';
   private transferred=false;
   private visibleEmitter=false;
   private visibleEmitters:{point:WorldPoint;selected:boolean}[]=[];
@@ -62,13 +68,14 @@ export class MapRenderer {
   private depthPlanning=false;
   private depthIds:string[]=[];
   readonly metrics:MapMetrics;
-  constructor(private canvas:HTMLCanvasElement,snapshot:MapSnapshot,private status:(backend:string)=>void,enabledMetrics=false,environment:readonly {path:string;sha256:string;width:number;height:number}[]=[]){
+  constructor(private canvas:HTMLCanvasElement,snapshot:MapSnapshot,private status:(backend:string)=>void,enabledMetrics=false,environment:readonly {path:string;sha256:string;width:number;height:number}[]=[],private readonly mapEffects?:MapEffectsAtlas){
     this.snapshot=snapshot;this.metrics=new MapMetrics(enabledMetrics);
     this.sampler=new TerrainSampler(snapshot.visualIdentity??snapshot.identity,snapshot.geography,snapshot.regions,snapshot.modeledInfill);
     this.terrain=new TerrainChunkCache(this.sampler,QUALITY.normal.terrainBytes,QUALITY.normal.textureSize,()=>this.invalidate());
     this.updateContacts(snapshot);
     this.assets=new AssetTextureCache(()=>this.invalidate(),path=>{this.failures.add(path);this.metrics.error('asset: '+path);this.invalidate();},QUALITY.normal.totalBytes-QUALITY.normal.terrainBytes);
     this.assets.registerEnvironment(environment);
+    this.assets.registerMapEffects(mapEffects);
   }
   async init(forceFallback=false):Promise<void>{
     if(this.destroyed)return;
@@ -80,7 +87,7 @@ export class MapRenderer {
       this.app=app;
       const gl=(app.renderer as unknown as {gl?:WebGLRenderingContext}).gl;
       if(gl){this.assets.maxTextureSize=gl.getParameter(gl.MAX_TEXTURE_SIZE);if(this.metrics.enabled){const elements=gl.drawElements,arrays=gl.drawArrays;gl.drawElements=(...args)=>{this.draws++;elements.apply(gl,args);};gl.drawArrays=(...args)=>{this.draws++;arrays.apply(gl,args);};this.restoreDrawCounters=()=>{gl.drawElements=elements;gl.drawArrays=arrays;};}}
-      app.stop();this.transferred=true;app.stage.addChild(this.stage,this.effectsGraphics);this.canvas.addEventListener('webglcontextlost',this.lost);
+      app.stop();this.transferred=true;app.stage.addChild(this.stage,this.effectsGraphics,this.particleLayer);this.canvas.addEventListener('webglcontextlost',this.lost);
       this.metrics.data.backend='webgl';this.status('webgl');
     }catch(error){
       this.metrics.error('WebGL initialization: '+String(error));
@@ -95,8 +102,8 @@ export class MapRenderer {
     this.resize(this.size);this.invalidate();
   }
   private lost=(event:Event)=>{event.preventDefault();this.metrics.error('WebGL context lost');this.stop();this.restoreDrawCounters?.();this.restoreDrawCounters=null;this.canvas.removeEventListener('webglcontextlost',this.lost);
-    this.clearSprites();this.effectsGraphics.destroy();this.stage.destroy({children:true,texture:false,textureSource:false});
-    this.app?.destroy(false,{children:false,texture:false,textureSource:false});this.app=null;this.effectsGraphics=new Graphics();this.stage=new Container();void this.init(true);
+    this.clearSprites();this.clearParticleSprites();this.effectsGraphics.destroy();this.particleLayer.destroy({children:false});this.stage.destroy({children:true,texture:false,textureSource:false});
+    this.app?.destroy(false,{children:false,texture:false,textureSource:false});this.app=null;this.effectsGraphics=new Graphics();this.particleLayer=new Container();this.stage=new Container();void this.init(true);
   };
   update(snapshot:MapSnapshot):void{
     if(this.destroyed)return;
@@ -122,9 +129,10 @@ export class MapRenderer {
     else if(this.context){this.canvas.width=Math.ceil(this.size.width*dpr);this.canvas.height=Math.ceil(this.size.height*dpr);this.canvas.style.width=this.size.width+'px';this.canvas.style.height=this.size.height+'px';}
     this.invalidate();
   }
-  setHidden(hidden:boolean):void{this.hidden=hidden;if(hidden)this.stop();else{this.previous=0;this.invalidate();}}
+  setHidden(hidden:boolean):void{this.hidden=hidden;if(hidden||this.hostVisibility==='hidden')this.stop();else{this.previous=0;this.invalidate();}}
+  setHostVisible(visible:boolean|undefined):void{this.hostVisibility=visible===undefined?'unknown':visible?'visible':'hidden';if(this.hidden||this.hostVisibility==='hidden')this.stop();else{this.previous=0;this.invalidate();}}
   invalidate():void{if(this.destroyed)return;this.dirty=true;if(!this.inFrame)this.schedule();}
-  private schedule():void{if(!this.raf&&!this.hidden&&!this.destroyed){if(!this.cameraGesture&&!this.metrics.data.activeLoops&&performance.now()-this.idleSince>150){this.lastFrame=0;this.metrics.resetClock();this.adaptive.resetObservation();}this.metrics.data.activeLoops=1;this.raf=requestAnimationFrame(this.frame);}}
+  private schedule():void{if(!this.raf&&!this.hidden&&this.hostVisibility!=='hidden'&&!this.destroyed){if(!this.cameraGesture&&!this.metrics.data.activeLoops&&performance.now()-this.idleSince>150){this.lastFrame=0;this.metrics.resetClock();this.adaptive.resetObservation();}this.metrics.data.activeLoops=1;this.raf=requestAnimationFrame(this.frame);}}
   private stop():void{if(this.raf)cancelAnimationFrame(this.raf);this.raf=0;this.metrics.data.activeLoops=0;this.lastFrame=0;this.idleSince=performance.now();this.metrics.resetClock();}
   private setQuality(quality:Quality):void{if(quality===this.quality)return;this.quality=quality;this.assets.limit=QUALITY[quality].totalBytes-QUALITY[quality].terrainBytes;this.terrain.size=QUALITY[quality].textureSize;this.terrain.limit=QUALITY[quality].terrainBytes;this.terrain.invalidate();this.resize(this.size);}
   private project=(p:WorldPoint):WorldPoint=>{
@@ -137,10 +145,10 @@ export class MapRenderer {
     const sy=this.scale(),sx=this.snapshot.northExtent?this.size.width/this.snapshot.northExtent.width:sy;return {x:this.snapshot.camera.x+(p.x-this.size.width/2)/sx,y:-this.snapshot.camera.y-(p.y-this.size.height/2)/sy};
   };
   private scale():number{return this.snapshot.projection==='territory'?3*this.snapshot.camera.zoom:this.size.height*this.snapshot.camera.zoom/BASE_VIEW_HEIGHT_M;}
-  private motionActive():boolean{return !this.reducedMotion&&this.snapshot.mode!=='planning'&&this.visibleEmitter&&Boolean(this.app);}
+  private motionActive():boolean{return !this.reducedMotion&&!this.hidden&&this.hostVisibility==='visible'&&(this.snapshot.mode==='normal'||this.snapshot.mode==='focus')&&this.visibleEmitter&&Boolean(this.app);}
   private renderTargetBytes():number{return Math.ceil(this.size.width*this.size.height*this.renderDpr**2*8);}
   private frame=(time:number)=>{
-    this.raf=0;if(this.destroyed||this.hidden)return;
+    this.raf=0;if(this.destroyed||this.hidden||this.hostVisibility==='hidden')return;
     this.inFrame=true;
     try{
     const active=this.motionActive();
@@ -149,7 +157,7 @@ export class MapRenderer {
       const start=performance.now(),generated=this.terrain.process();
       if(this.dirty||generated||active||this.previousLevel!==undefined){
         const interval=this.lastFrame?time-this.lastFrame:0;
-        this.dirty=false;this.effects.update((time-this.previous)/1000,this.reducedMotion);this.render();this.metrics.frame(start);this.lastFrame=time;
+        this.dirty=false;this.effects.update((time-this.previous)/1000,this.reducedMotion,active);this.render();this.metrics.frame(start);this.lastFrame=time;
         if(interval>0)this.setQuality(this.adaptive.update(interval,Math.min(interval,1000),this.preference==='auto'?undefined:this.preference));
         else this.adaptive.resetObservation();
       }
@@ -234,7 +242,7 @@ export class MapRenderer {
       const showFlame=Boolean(this.app&&b.active&&this.snapshot.mode!=='planning'&&key&&this.assets.frame(key));
       if(showFlame&&key)used.add(key);
       const loadedFlame=showFlame&&key&&this.assets.acquire(key);
-      if(b.active&&this.snapshot.mode!=='planning'){
+      if(b.active&&(this.snapshot.mode==='normal'||this.snapshot.mode==='focus')&&this.hostVisibility==='visible'){
         this.visibleEmitter=true;
         const rect=flameRect(asset,b.rect),emitter=rect&&flame?{x:rect.x+rect.width*flame.anchor.x,y:rect.y+rect.height*flame.anchor.y}:b.ground;
         this.visibleEmitters.push({point:emitter,selected:b.selected});
@@ -270,6 +278,9 @@ export class MapRenderer {
       if(loadedFlame&&key){const rect=flameRect(asset,b.rect)!;draws.push({id:b.id+':flame',path:key,...rect,alpha:(occludes&&this.snapshot.mode==='focus'?.22:1)*(b.draft?.55:1)});}
     };
     for(const id of this.depthIds){const b=visibleById.get(id);if(!b)continue;while(propIndex<sortedProps.length&&sortedProps[propIndex].depth<=b.depth)draws.push(sortedProps[propIndex++]);drawBuilding(b);}while(propIndex<sortedProps.length)draws.push(sortedProps[propIndex++]);
+    const allowedEffects=(this.snapshot.mode==='normal'||this.snapshot.mode==='focus')&&!this.hidden&&this.hostVisibility==='visible';
+    this.effectDraws=allowedEffects?this.effects.draws(this.visibleEmitters.map(({point})=>point),this.mapEffects,QUALITY[this.quality].particles,this.reducedMotion,this.scale()):[];
+    if(this.effectDraws.length&&this.mapEffects)used.add(this.mapEffects.path);
     for(const d of draws)if(!d.path.startsWith('chunk:')){Object.assign(d,this.assets.rect(d.path,d));used.add(d.path);this.assets.acquire(d.path);}
     this.assets.retain(used);
     if(this.app)this.renderWebGL(draws);else if(this.context)this.render2D(draws);
@@ -280,6 +291,7 @@ export class MapRenderer {
       body:draws.find(d=>d.id==='qa-art-preview:body')?.alpha??null,
     }:null;
     const flames=draws.filter(d=>d.id.endsWith(':flame'));m.flameSprites=flames.length;m.flameFrame=flames.length?Number(flames[0].path.split('#flame-')[1]):null;
+    m.effectSprites=this.effectDraws.length;
     let terrainGPUBytes=0;for(const texture of this.chunkTextures.values())terrainGPUBytes+=texture.source.width*texture.source.height*4;
     m.textureBytes=this.app?this.assets.gpuBytes+terrainGPUBytes+this.renderTargetBytes():0;
     m.decodedBytes=this.assets.bytes+this.terrain.bytes+this.terrain.scratchBytes;m.terrainBytes=terrainGPUBytes;m.queued=this.terrain.pending;m.pendingTextures=this.assets.pending+this.assets.deferred;m.visible=buildingObjects.length+props.length;m.total=this.snapshot.buildings.length+worldProps.length;
@@ -302,9 +314,19 @@ export class MapRenderer {
     this.effectsGraphics.clear();
     for(const b of this.visibleEmitters){const p=b.point,radius=Math.min(72,10*this.scale()),light=this.effects.light(this.reducedMotion);
       for(let i=4;i>=1;i--)this.effectsGraphics.ellipse(p.x,p.y-2,radius*i/4,radius*i/8).fill({color:MAP_PALETTE.spill,alpha:.018*light});
-      if(!this.reducedMotion&&this.quality!=='low')for(let i=0;i<Math.min(this.effects.particles.length,Math.floor(QUALITY[this.quality].particles/Math.max(1,this.visibleEmitters.length)));i++){const e=this.effects.particles[i];this.effectsGraphics.circle(p.x+e.x*.3,p.y+e.y*.4,1).fill({color:MAP_PALETTE.fire,alpha:(1-e.life)*.35});}
     }
+    this.renderEffectSprites();
     this.draws=0;this.app!.render();this.metrics.data.drawCalls=this.draws;
+  }
+  private renderEffectSprites():void{
+    if(!this.effectDraws.length){this.clearParticleSprites();return;}
+    for(let i=0;i<this.effectDraws.length;i++){
+      const draw=this.effectDraws[i],texture=this.assets.texture(draw.key);
+      let sprite=this.particleSprites[i];if(!sprite){sprite=new Sprite(Texture.EMPTY);sprite.eventMode='none';this.particleSprites.push(sprite);this.particleLayer.addChild(sprite);}
+      sprite.visible=Boolean(texture);if(!texture)continue;
+      sprite.texture=texture;sprite.anchor.set(draw.anchor.x,draw.anchor.y);sprite.position.set(draw.x,draw.y);sprite.width=draw.width;sprite.height=draw.height;sprite.alpha=draw.alpha;
+    }
+    for(let i=this.effectDraws.length;i<this.particleSprites.length;i++)this.particleSprites[i].visible=false;
   }
   private render2D(draws:Draw[]):void {
     const ctx=this.context!,dpr=this.renderDpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle=MAP_PALETTE.snow;ctx.fillRect(0,0,this.size.width,this.size.height);
@@ -312,7 +334,10 @@ export class MapRenderer {
       if(d.path.startsWith('chunk:')){const [level,x,y]=d.path.slice(6).split(':').map(Number);image=this.terrain.get(x,y,level)?.canvas??null;}else image=this.assets.acquire(d.path);if(!image)continue;
       ctx.save();ctx.globalAlpha=d.alpha;if(d.matrix){const m=d.matrix;ctx.transform(m.a,m.b,m.c,m.d,m.tx,m.ty);ctx.drawImage(image,0,0);}else{const f=this.assets.frame(d.path);if(f)ctx.drawImage(image,f.x,f.y,f.width,f.height,d.x,d.y,d.width,d.height);else ctx.drawImage(image,d.x,d.y,d.width,d.height);}ctx.restore();
     }
+    for(const emitter of this.visibleEmitters){const radius=Math.min(72,10*this.scale());for(let i=4;i>=1;i--){ctx.beginPath();ctx.ellipse(emitter.point.x,emitter.point.y-2,radius*i/4,radius*i/8,0,0,Math.PI*2);ctx.fillStyle=`rgba(217,150,84,${.018*this.effects.light(this.reducedMotion)})`;ctx.fill();}}
+    for(const draw of this.effectDraws){const image=this.assets.acquire(draw.key),frame=this.assets.frame(draw.key);if(!image||!frame)continue;ctx.save();ctx.globalAlpha=draw.alpha;ctx.drawImage(image,frame.x,frame.y,frame.width,frame.height,draw.x-draw.width*draw.anchor.x,draw.y-draw.height*draw.anchor.y,draw.width,draw.height);ctx.restore();}
   }
   private clearSprites():void{for(const s of this.drawSprites.values())s.destroy();this.drawSprites.clear();for(const t of this.chunkTextures.values())if(!t.destroyed)t.destroy(true);this.chunkTextures.clear();}
-  destroy():void{if(this.destroyed)return;this.destroyed=true;this.stop();this.restoreDrawCounters?.();this.restoreDrawCounters=null;this.canvas.removeEventListener('webglcontextlost',this.lost);this.clearSprites();this.terrain.destroy();this.assets.destroy();if(this.app){this.app.destroy(false,{children:true,texture:false,textureSource:false});this.app=null;}this.canvas.width=this.canvas.height=0;this.context=null;Object.assign(this.metrics.data,{renderMs:[],intervalMs:[],textureBytes:0,decodedBytes:0,terrainBytes:0,queued:0,pendingTextures:0,activeLoops:0,visible:0,total:0});void this.transferred;}
+  private clearParticleSprites():void{for(const sprite of this.particleSprites)sprite.destroy();this.particleSprites=[];}
+  destroy():void{if(this.destroyed)return;this.destroyed=true;this.stop();this.restoreDrawCounters?.();this.restoreDrawCounters=null;this.canvas.removeEventListener('webglcontextlost',this.lost);this.clearSprites();this.clearParticleSprites();this.terrain.destroy();this.assets.destroy();if(this.app){this.app.destroy(false,{children:true,texture:false,textureSource:false});this.app=null;}this.canvas.width=this.canvas.height=0;this.context=null;Object.assign(this.metrics.data,{renderMs:[],intervalMs:[],textureBytes:0,decodedBytes:0,terrainBytes:0,queued:0,pendingTextures:0,activeLoops:0,visible:0,total:0,effectSprites:0});void this.transferred;}
 }

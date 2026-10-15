@@ -12,7 +12,7 @@ import { FogDefinitions, MapEntityGlyph } from './map/MapLayers';
 import './map-refinement.css';
 import MapCanvas from './rendering/MapCanvas';
 import { explorationSnapshot, permittedEntities } from './rendering/MapSceneAdapter';
-import { qaWorldFixture } from './rendering/mapFixtures';
+import { mapQaCenterKm, qaWorldFixture, requestedMapQaFixture } from './rendering/mapFixtures';
 
 type LayerState = { buildings: boolean; resources: boolean; discoveries: boolean };
 type PointerPoint = { x: number; y: number; pointerType: string };
@@ -67,6 +67,7 @@ export default function MapScene({
   followPlayer, onFollowPlayerChange, onOpenPlayerProfile, onOpenFullMap,
 }: Props) {
   const visibleMap=useMemo(()=>qaWorldFixture(suppliedVisibleMap),[suppliedVisibleMap]);
+  const mapQaFixture=requestedMapQaFixture();
   const unique = useId().replace(/[^a-zA-Z0-9]/g, '') || 'map';
   const rootRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -407,7 +408,18 @@ export default function MapScene({
       </details>
     </div>}
 
-    <div className="map-scene map-scene--deep" ref={rootRef}>
+    <div className="map-scene map-scene--deep" ref={rootRef}
+      data-map-qa-fixture={mapQaFixture??undefined}
+      data-map-qa-fixture-center-km={mapQaCenterKm(mapQaFixture)}
+      data-map-qa-camera-mode={mapQaFixture?camera.mode:undefined}
+      data-map-qa-camera-x-km={mapQaFixture?(activeCamera.x/1000).toFixed(3):undefined}
+      data-map-qa-camera-y-km={mapQaFixture?(activeCamera.y/1000).toFixed(3):undefined}
+      data-map-qa-camera-zoom={mapQaFixture?activeCamera.zoom:undefined}
+      data-map-qa-clock-minutes={mapQaFixture?minutes:undefined}
+      data-map-qa-phase={mapQaFixture?phase:undefined}
+      data-map-qa-provenance={mapQaFixture?'demo-visible-snapshot':undefined}
+      data-map-qa-known-count={mapQaFixture?filteredEntities.length:undefined}
+      data-map-qa-known-state={mapQaFixture&&mapQaFixture!=='1023'?JSON.stringify(filteredEntities.map(entity=>({id:entity.ref.id,knowledge:entity.knowledge,currentSight:Number(Boolean(entity.currentSight))}))):undefined}>
       <MapCanvas snapshot={explorationSnapshot(visibleMap,activeCamera,world,compact)} label="Địa hình băng nguyên hướng Bắc. Địa điểm đã biết được hiển thị trên lớp điều khiển."/>
       <svg ref={svgRef} className="terrain-svg terrain-svg--deep" viewBox={viewport.x + ' ' + viewport.y + ' ' + viewport.width + ' ' + viewport.height}
         aria-label="Bản đồ băng nguyên. Dùng các phím mũi tên để di chuyển, cộng trừ để thu phóng."
@@ -437,6 +449,7 @@ export default function MapScene({
           <text y="5" textAnchor="middle" fontSize="15" fontWeight="800" fill="#fff0cd">×{marker.count}</text>
         </g> : <g key={marker.id} transform={`translate(${marker.worldX - (marker.value.x ?? 0)} ${(marker.value.y ?? 0) - marker.worldY})`} className={'map-entity-marker' + (sameEntityRef(marker.value.ref, selectedEntity) ? ' is-selected' : '') + (marker.value.knowledge === 'remembered' ? ' is-remembered' : '')}
           role="button" tabIndex={0} data-entity-id={marker.value.ref.id} data-entity-type={marker.value.ref.type} data-knowledge={marker.value.knowledge}
+          data-current-sight={mapQaFixture?Number(Boolean(marker.value.currentSight)):undefined}
           aria-label={labelFor(marker.value)} onClick={() => { onSelectEntity(marker.value.ref); setClusterMembers(null); }}
           onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectEntity(marker.value.ref); setClusterMembers(null); } }}>
           <MapEntityGlyph entity={marker.value} scale={scale} selected={sameEntityRef(marker.value.ref, selectedEntity)} remembered={marker.value.knowledge === 'remembered' || !marker.value.currentSight}/>

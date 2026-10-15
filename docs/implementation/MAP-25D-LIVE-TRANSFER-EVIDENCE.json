@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "label": "LOCAL persisted LIVE fixture",
+  "scope": "Actual LiveApp against a temporary SQLite HTTP API, served from the production frontend dist over local gzip-capable HTTP.",
+  "sourceContext": {
+    "baseCommit": "8510782a7389aa4c8c1acad76b1beafb8edd4627",
+    "sha256": "6528b71b659006595e1f677d41669b1cb494b02db999c1b5a58f5191b70890e4",
+    "fileCount": 1751,
+    "scope": [
+      "package.json",
+      "frontend/package.json",
+      "frontend/package-lock.json",
+      "frontend/vite.config.ts",
+      "frontend/scripts/map-live-transfer.mjs",
+      "frontend/src",
+      "frontend/public/assets",
+      "packages/api/src",
+      "packages/storage/src",
+      "packages/sim/src",
+      "packages/contracts/src",
+      "packages/content/src"
+    ]
+  },
+  "productionDist": {
+    "sha256": "4213c2432ea827eb3af266c3cc76d2619ae0d5972dfdebff18595d60669f815d",
+    "fileCount": 1655,
+    "indexHtmlSha256": "8f892b16a5ee850b9b43ee1de815359a086a37a57c789ffb707321f607a266c7",
+    "manifestSha256": "d1b3fe8d1f0ea858e0f968a67030fe68ed0caa6f37bd4dce090c7b8caa8bf7c7",
+    "manifestBytesDecoded": 1304049,
+    "manifestBytesGzip": 110703,
+    "manifestAssetEntries": 103
+  },
+  "liveSaveFlow": {
+    "revisionBeforeReload": 1,
+    "revisionAfterReload": 2,
+    "committedCommand": "inspect_entity via the visible LiveApp map and authenticated API",
+    "visibleWorldEntityCount": 4,
+    "visibleWorldEntityRefs": [
+      "site:SITE-LL01-000",
+      "resource:RES-LL01-06",
+      "resource:RES-LL01-07",
+      "corpse:CORPSE-STAGE07-ROOK-01"
+    ],
+    "visibleWorldEntitiesHavePositions": true,
+    "territoryBuildingCount": 3,
+    "territoryBuildingRefs": [
+      "LL-BLD-HOUSE-01",
+      "LL-BLD-FIRE-01",
+      "LL-BLD-TOMB-01"
+    ],
+    "territoryBuildingsHaveDirectPositions": true,
+    "associatedSitePositionKnownFor": [
+      "LL-BLD-FIRE-01"
+    ],
+    "associatedSitePositionUnavailableFor": [
+      "LL-BLD-HOUSE-01",
+      "LL-BLD-TOMB-01"
+    ],
+    "renderedBuildingIdsLowAndNormal": [
+      "LL-BLD-TOMB-01",
+      "SITE-LL01-000",
+      "LL-BLD-HOUSE-01"
+    ],
+    "renderer": "webgl",
+    "qaFixtureAttributes": 0,
+    "syntheticMapEntitiesOrBuildingsInjected": false,
+    "stateIntegrityRuns": {
+      "successfulTransferAndRenderPanRun": {
+        "domainStateSha256AfterReloadBeforePan": "5e46341a76ba7ac549e7eed85bf141728f644903bc9d5561c5495636b967321b",
+        "domainStateSha256AfterLowPan": "5e46341a76ba7ac549e7eed85bf141728f644903bc9d5561c5495636b967321b",
+        "domainStateSha256AfterNormalPan": "5e46341a76ba7ac549e7eed85bf141728f644903bc9d5561c5495636b967321b",
+        "unchangedByRenderAndPan": true
+      },
+      "separateReloadIntegrityRun": {
+        "revisionBeforeReload": 2,
+        "revisionAfterReload": 2,
+        "domainStateSha256BeforeReload": "11bf516e6f4b0aba989840e30e1d1fde0141688efe76b03eb1c62524c90097ea",
+        "domainStateSha256AfterReload": "11bf516e6f4b0aba989840e30e1d1fde0141688efe76b03eb1c62524c90097ea",
+        "unchangedAcrossReload": true,
+        "transferMeasurementCompletedInThisRun": false
+      },
+      "combinedRunCompleted": false,
+      "note": "The successful transfer/render-pan measurement and pre/post-reload hash comparison are separate bounded runs against the same production dist hash. A later combined attempt stopped after reload during an API proxy response disposal before collecting transfer results."
+    }
+  },
+  "assetTransfers": {
+    "method": "Real production dist over local HTTP; text assets gzip-compressed; binary assets identity; no-store; fresh browser contexts; 24 px pan after territory render.",
+    "qualityPreferenceSetBeforeInitialPageLoad": true,
+    "rendererAssetSelection": {
+      "low": "District exports selected by the low quality path.",
+      "normal": "Atlas exports selected when the normal quality budget permits them."
+    },
+    "low": {
+      "mapAssetRequestCount": 39,
+      "uniqueMapAssetFiles": 24,
+      "mapAssetWireBytes": 3226903,
+      "manifestRequestCount": 2,
+      "manifestWireBytesPerRequest": 110703
+    },
+    "normal": {
+      "mapAssetRequestCount": 22,
+      "uniqueMapAssetFiles": 22,
+      "mapAssetWireBytes": 2467797,
+      "manifestRequestCount": 1,
+      "manifestWireBytesPerRequest": 110703
+    },
+    "scopeNote": "Counts include all requests during territory rendering and the post-render pan. Repeated requests are counted in total wire bytes; unique file counts are reported separately. Low used the district-export path and produced higher local transfer totals than normal in this scenario; no claim is made that low quality transfers fewer bytes. These observations are not a target-hardware or bandwidth guarantee."
+  },
+  "populationStatus": {
+    "status": "baseline-only",
+    "blockerCode": "RESOURCE_LEDGER_STAGE_05",
+    "message": "Authoritative harvest extraction is unavailable. No material, building, or map entity data was injected; this run does not represent a populated-save gallery."
+  },
+  "validation": {
+    "productionDistServedOverLocalHttp": true,
+    "temporarySqliteApiAndAuthenticatedLiveFlow": true,
+    "externalNetworkOrProductionCredentialsUsed": false,
+    "domainStateUnchangedAcrossReload": true,
+    "domainStateUnchangedByRenderAndPanInSeparateRun": true,
+    "transferAndReloadHashesCollectedInOneRun": false,
+    "scriptSyntaxCheck": "passed",
+    "liveQueryRegression": "pending"
+  },
+  "limitations": [
+    "Measures a local browser and temporary SQLite fixture, not production or target hardware.",
+    "The clean-save baseline was persisted and reopened through LiveApp; populated resource extraction and a genuinely populated material-building save remain blocked by RESOURCE_LEDGER_STAGE_05."
+  ]
+}

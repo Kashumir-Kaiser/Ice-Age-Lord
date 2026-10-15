@@ -2,20 +2,110 @@
   "lord-house-repaired": {
     "orientation": "north",
     "note": "Map-only authored layer variants. Contacts use normalized original image coordinates and logical-canvas target pixels; physical footprint and world anchor stay unchanged.",
-    "base": {"source":"assets/source/map-buildings/lord-house-repaired-foundation.png","scale":0.9,"contact":[0.509,0.764],"target":[240,301]},
-    "upper": {"source":"assets/source/map-buildings/lord-house-repaired-upper.png","scale":0.8,"contact":[0.509,0.826],"target":[240,300]}
+    "base": {
+      "source": "assets/source/map-buildings/lord-house-repaired-foundation.png",
+      "scale": 0.9,
+      "contact": [
+        0.509,
+        0.764
+      ],
+      "target": [
+        240,
+        301
+      ]
+    },
+    "upper": {
+      "source": "assets/source/map-buildings/lord-house-repaired-upper.png",
+      "scale": 0.8,
+      "contact": [
+        0.509,
+        0.826
+      ],
+      "target": [
+        240,
+        300
+      ]
+    }
   },
   "lord-house-l30": {
     "orientation": "north",
     "note": "Map-only ART-ONLY draft layers. Preserve the original north body/UI composition and 4 by 4 metre preview footprint; no unsupported poses or canonical progression claims are introduced.",
-    "base": {"source":"assets/source/map-buildings/lord-house-l30-foundation.png","scale":0.78,"contact":[0.516,0.56],"target":[240,288]},
-    "upper": {"source":"assets/source/map-buildings/lord-house-l30-upper.png","scale":0.86,"contact":[0.517,0.905],"target":[240,339]}
+    "base": {
+      "source": "assets/source/map-buildings/lord-house-l30-foundation.png",
+      "scale": 0.78,
+      "contact": [
+        0.516,
+        0.56
+      ],
+      "target": [
+        240,
+        288
+      ]
+    },
+    "upper": {
+      "source": "assets/source/map-buildings/lord-house-l30-upper.png",
+      "scale": 0.86,
+      "contact": [
+        0.517,
+        0.905
+      ],
+      "target": [
+        240,
+        339
+      ]
+    }
   },
   "tomb-entry": {
     "orientation": "north",
     "note": "Map-only idle architecture. Preserve the original body/UI and canonical 6 by 5 metre footprint; the upper master is unlit and has no emitter.",
     "vectorFallback": true,
-    "base": {"source":"assets/source/map-buildings/tomb-entry-foundation.png","scale":0.95,"contact":[0.52,0.70],"target":[240,288]},
-    "upper": {"source":"assets/source/map-buildings/tomb-entry-upper.png","scale":0.85,"contact":[0.517,0.905],"target":[240,337]}
+    "base": {
+      "source": "assets/source/map-buildings/tomb-entry-foundation.png",
+      "scale": 0.95,
+      "contact": [
+        0.52,
+        0.7
+      ],
+      "target": [
+        240,
+        288
+      ]
+    },
+    "upper": {
+      "source": "assets/source/map-buildings/tomb-entry-upper.png",
+      "scale": 0.85,
+      "contact": [
+        0.517,
+        0.905
+      ],
+      "target": [
+        240,
+        337
+      ]
+    }
+  },
+  "polar-farmhouse-l01": {
+    "orientation": "north",
+    "views": [
+      "north",
+      "east",
+      "south",
+      "west"
+    ],
+    "note": "Map-only layered draft. Reuse each registered whole-body pose unchanged as the upper layer above the shared authored timber-and-snow foundation; retain ART-ONLY preview footprint and static baked warmth.",
+    "upperFromBody": true,
+    "base": {
+      "source": "assets/source/map-buildings/polar-farmhouse-l01-foundation.png",
+      "scale": 0.8,
+      "contact": [
+        0.5,
+        0.80625
+      ],
+      "target": [
+        240,
+        328
+      ],
+      "preserveRawAlpha": true
+    }
   }
 }

@@ -17,6 +17,7 @@ import {applyMapArchitecture} from './apply-map-architecture.mjs';
 import {prepareTowerPreviews} from './map-tower-previews.mjs';
 import {staticMapBody} from './map-static-body.mjs';
 import {applyAuthoredArchitecture} from './apply-authored-architecture.mjs';
+import {exportMapEffects} from './export-map-effects.mjs';
 const repo=resolve(new URL('../..',import.meta.url).pathname),manifestPath=resolve(repo,'assets/manifest.json');
 const manifest=JSON.parse(readFileSync(manifestPath,'utf8'));
 const authoredViews=JSON.parse(readFileSync(resolve(repo,'assets/map-building-views.json'),'utf8'));
@@ -25,6 +26,8 @@ const architecture=JSON.parse(readFileSync(resolve(repo,'assets/map-architecture
 const staticBodies=JSON.parse(readFileSync(resolve(repo,'assets/map-static-bodies.json'),'utf8'));
 const groundRegistrations=JSON.parse(readFileSync(resolve(repo,'assets/map-ground-registration.json'),'utf8'));
 const authoredArchitecture=JSON.parse(readFileSync(resolve(repo,'assets/map-authored-architecture.json'),'utf8'));
+const registeredBodyCanvases=new Map();
+const registeredBodyExports=new Map();
 // This tower's authored SVG groups separate the complete footing from the shaft/roof.
 // Other legacy base/upper files contain arbitrary horizontal clips and remain unaccepted.
 const architecturalAssets=new Set(['fixture-tall-tower']);
@@ -39,6 +42,7 @@ for(const asset of manifest.assets){
   if(!['north','east','south','west'].includes(defaultOrientation))throw new Error('Invalid default map orientation');
   asset.orientation=defaultOrientation;
  }
+ delete asset.equivalentOrientations;
  const equivalents=authoredViews._equivalentOrientations?.[asset.assetId];
  if(equivalents){
   if(!Array.isArray(equivalents)||equivalents.some(o=>!['north','east','south','west'].includes(o)))throw new Error('Invalid equivalent map orientations');
@@ -82,6 +86,7 @@ for(const asset of manifest.assets){
     const calibrated=await calibrateMapGround(full,asset,asset.orientation,defaultCalibration);full=calibrated.png;defaultCalibration=calibrated.registration;
     if(lod==='close'){asset.orientationRegions??={};asset.orientationRegions[asset.orientation]={hitPolygon:calibrated.hitPolygon,upper:calibrated.hitPolygon};}
    }
+   if(role==='body'&&authoredArchitecture[asset.assetId]?.upperFromBody)registeredBodyCanvases.set(`${asset.assetId}:${asset.orientation}:${lod}`,full);
    const cropped=await trimMapRaster(full,asset.logicalCanvas),png=cropped.png;
    const path=`/assets/map/buildings/${asset.assetId}/${role}-${lod}.png`;writeFileSync(resolve(repo,'frontend/public'+path),png);
    const meta=await sharp(png).metadata();
@@ -94,7 +99,8 @@ for(const asset of manifest.assets){
    const shadowLayer=`/assets/map/buildings/${asset.assetId}/shadow-close.png`;
    if(shadow&&lod==='close'){asset.orientationViews??={};asset.orientationViews[asset.orientation]={...asset.layers,shadow:shadowLayer};}
    const primarySource=shadow?'frontend/scripts/map-ground-shadow.mjs':source,primaryFile=shadow?resolve(repo,primarySource):file;
-   asset.mapExports.push({path,source:primarySource,sourceSha256:sha(readFileSync(primaryFile)),sourceDependencies,sha256:sha(png),exportVersion:shadow||role==='body'&&defaultCalibration?4:3,...(shadow?{layerPath:shadowLayer,groundShadow:{...asset.compatiblePhysicalFootprint,orientation:asset.orientation}}:{}),...(role==='body'&&defaultCalibration?{groundCalibration:defaultCalibration}:{}),width:meta.width,height:meta.height,role,lod,orientation:asset.orientation,alpha:'straight',colorSpace:'srgb',logicalCanvas:asset.logicalCanvas,rasterCanvas:cropped.rasterCanvas,trim:cropped.trim});count++;
+   asset.mapExports.push({path,source:primarySource,sourceSha256:sha(readFileSync(primaryFile)),sourceDependencies,sha256:sha(png),exportVersion:shadow||role==='body'&&defaultCalibration?4:3,...(shadow?{layerPath:shadowLayer,groundShadow:{...asset.compatiblePhysicalFootprint,orientation:asset.orientation}}:{}),...(role==='body'&&defaultCalibration?{groundCalibration:defaultCalibration}:{}),width:meta.width,height:meta.height,role,lod,orientation:asset.orientation,alpha:'straight',colorSpace:'srgb',logicalCanvas:asset.logicalCanvas,rasterCanvas:cropped.rasterCanvas,trim:cropped.trim});
+   if(role==='body'&&authoredArchitecture[asset.assetId]?.upperFromBody)registeredBodyExports.set(`${asset.assetId}:${asset.orientation}:${lod}`,asset.mapExports.at(-1));count++;
   }
  }
  for(const [orientation,source] of Object.entries(authoredViews[asset.assetId]??{})){
@@ -121,9 +127,11 @@ for(const asset of manifest.assets){
     const calibrated=await calibrateMapGround(full,asset,orientation,viewCalibration);full=calibrated.png;viewCalibration=calibrated.registration;
     if(lod==='close')asset.orientationRegions[orientation]={hitPolygon:calibrated.hitPolygon,upper:calibrated.hitPolygon};
    }
+   if(authoredArchitecture[asset.assetId]?.upperFromBody)registeredBodyCanvases.set(`${asset.assetId}:${orientation}:${lod}`,full);
    const cropped=await trimMapRaster(full,asset.logicalCanvas),png=cropped.png,meta=await sharp(png).metadata();
    const path=`/assets/map/buildings/${asset.assetId}/body-${orientation}-${lod}.png`;writeFileSync(resolve(repo,'frontend/public'+path),png);
-   asset.mapExports.push({path,layerPath,source,sourceSha256:sha(readFileSync(file)),sourceDependencies:[{source,sha256:sha(readFileSync(file))},...(viewCalibration?[{source:'frontend/scripts/calibrate-map-ground.mjs',sha256:sha(readFileSync(resolve(repo,'frontend/scripts/calibrate-map-ground.mjs')))}]:[])],sha256:sha(png),exportVersion:viewCalibration?4:3,...(viewCalibration?{groundCalibration:viewCalibration}:{}),width:meta.width,height:meta.height,role:'body',lod,orientation,alpha:'straight',colorSpace:'srgb',logicalCanvas:asset.logicalCanvas,rasterCanvas:cropped.rasterCanvas,trim:cropped.trim});count++;
+   asset.mapExports.push({path,layerPath,source,sourceSha256:sha(readFileSync(file)),sourceDependencies:[{source,sha256:sha(readFileSync(file))},...(viewCalibration?[{source:'frontend/scripts/calibrate-map-ground.mjs',sha256:sha(readFileSync(resolve(repo,'frontend/scripts/calibrate-map-ground.mjs')))}]:[])],sha256:sha(png),exportVersion:viewCalibration?4:3,...(viewCalibration?{groundCalibration:viewCalibration}:{}),width:meta.width,height:meta.height,role:'body',lod,orientation,alpha:'straight',colorSpace:'srgb',logicalCanvas:asset.logicalCanvas,rasterCanvas:cropped.rasterCanvas,trim:cropped.trim});
+   if(authoredArchitecture[asset.assetId]?.upperFromBody)registeredBodyExports.set(`${asset.assetId}:${orientation}:${lod}`,asset.mapExports.at(-1));count++;
   }
  }
 }
@@ -149,7 +157,7 @@ for (const asset of manifest.assets) for (const lod of ['close','district']) {
 manifest.environmentArt=[];
 // Prefer the actual registered pose over the palette-traced default fallback.
 count+=await applyMapArchitecture(manifest,architecture,repo);
-count+=await applyAuthoredArchitecture(manifest,authoredArchitecture,repo);
+count+=await applyAuthoredArchitecture(manifest,authoredArchitecture,repo,registeredBodyCanvases,registeredBodyExports);
 // Registered map-only shadows must win over source/UI shadows in authored pose views.
 for(const asset of manifest.assets)if(groundRegistrations[asset.assetId]&&asset.mapLayers?.shadow){
  for(const view of Object.values(asset.orientationViews??{}))if(view)view.shadow=asset.mapLayers.shadow;
@@ -195,5 +203,6 @@ for(const asset of manifest.assets){
  if(!ellipse)throw new Error('Missing registered Fire emitter: '+asset.assetId);
  asset.mapFlame={path:flamePath,source:flameSource,sourceSha256:sha(readFileSync(flameFile)),sha256:sha(flame.png),width:flame.width,height:flame.height,frames:flame.frames,fps:flame.fps,anchor:flame.anchor,emitter:{x:Number(ellipse[1])/asset.logicalCanvas.width,y:Number(ellipse[2])/asset.logicalCanvas.height},relativeWidth:asset.assetId==='campfire-start'||asset.assetId==='survival-fire-l01'?.12:.16};
 }
+manifest.mapEffects=await exportMapEffects(repo);
 writeFileSync(manifestPath,JSON.stringify(manifest,null,2)+'\n');
 console.log(`Exported ${count} registered map layers and ${manifest.environmentArt.length} environment assets. No UI SVG replaced.`);

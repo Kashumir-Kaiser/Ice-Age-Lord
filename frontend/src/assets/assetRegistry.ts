@@ -16,6 +16,14 @@ export type MapExport = {
   trim: {x:number;y:number;width:number;height:number};
   atlas?: {path:string;x:number;y:number;width:number;height:number;atlasWidth:number;atlasHeight:number;sha256?:string};
 };
+export type MapEffectFrame={x:number;y:number;width:number;height:number};
+export type MapEffectRegion={frames:readonly MapEffectFrame[];fps:number;anchor:{x:number;y:number}};
+export type MapEffectsAtlas={
+  path:string;sha256:string;width:number;height:number;exportVersion:number;
+  sourceDependencies:readonly {source:string;sha256:string}[];
+  alpha:'straight';colorSpace:'srgb';provenance:string;
+  regions:{snow:{frame:MapEffectFrame;anchor:{x:number;y:number}};ember:MapEffectRegion;smoke:MapEffectRegion};
+};
 export type AssetLayerPaths = { uiIcon?: string; body?: string; base?: string; upper?: string; shadow?: string; vfx?: string | null };
 export type AssetManifestEntry = {
   assetId: string;
@@ -95,6 +103,7 @@ export type AssetManifest = {
   itemArt?: readonly StandaloneArtEntry[];
   unitArt?: readonly StandaloneArtEntry[];
   environmentArt?: readonly {path:string;sha256:string;width:number;height:number}[];
+  mapEffects?: MapEffectsAtlas;
 };
 
 const isFinitePoint = (value: unknown): value is { x: number; y: number } => Boolean(value && typeof value === 'object'
@@ -152,6 +161,26 @@ function validateManifest(value: unknown): AssetManifest {
         throw new Error('Building artwork progression must cover exact levels 1 through ' + progression.maxLevel + '.');
       }
     }
+  }
+  if(manifest.mapEffects){
+    const atlas=manifest.mapEffects;
+    if(typeof atlas.path!=='string'||!atlas.path.startsWith('/assets/map/effects/')||!/^[a-f0-9]{64}$/.test(atlas.sha256)
+      ||!Number.isInteger(atlas.width)||!Number.isInteger(atlas.height)||atlas.width<1||atlas.height<1
+      ||atlas.width>2048||atlas.height>2048||atlas.alpha!=='straight'||atlas.colorSpace!=='srgb'
+      ||!atlas.regions?.snow?.frame||!Array.isArray(atlas.regions?.ember?.frames)||!Array.isArray(atlas.regions?.smoke?.frames)
+      ||!Array.isArray(atlas.sourceDependencies)||!atlas.sourceDependencies.length)throw new Error('Invalid map effect atlas registration.');
+    const frames=[atlas.regions?.snow?.frame,...(atlas.regions?.ember?.frames??[]),...(atlas.regions?.smoke?.frames??[])];
+    for(const frame of frames)if(!frame||![frame.x,frame.y,frame.width,frame.height].every(Number.isInteger)
+      ||frame.x<0||frame.y<0||frame.width<1||frame.height<1||frame.x+frame.width>atlas.width||frame.y+frame.height>atlas.height)
+      throw new Error('Map effect frame outside atlas bounds.');
+    if(atlas.regions.ember.frames.length!==2||atlas.regions.smoke.frames.length!==4)throw new Error('Invalid map effect animation frame count.');
+    for(let i=0;i<frames.length;i++)for(let j=i+1;j<frames.length;j++)if(frames[i].x<frames[j].x+frames[j].width&&frames[i].x+frames[i].width>frames[j].x&&frames[i].y<frames[j].y+frames[j].height&&frames[i].y+frames[i].height>frames[j].y)throw new Error('Overlapping map effect atlas frames.');
+    for(const region of [atlas.regions?.snow,atlas.regions?.ember,atlas.regions?.smoke]){
+      const anchor=region?.anchor;if(!anchor||![anchor.x,anchor.y].every(v=>Number.isFinite(v)&&v>=0&&v<=1))throw new Error('Invalid map effect anchor.');
+    }
+    for(const region of [atlas.regions.ember,atlas.regions.smoke])if(!Number.isFinite(region.fps)||region.fps<1||region.fps>24||!Array.isArray(region.frames)||region.frames.length<1)
+      throw new Error('Invalid map effect animation registration.');
+    for(const source of atlas.sourceDependencies)if(typeof source.source!=='string'||!/^[a-f0-9]{64}$/.test(source.sha256))throw new Error('Invalid map effect source dependency.');
   }
   return manifest;
 }

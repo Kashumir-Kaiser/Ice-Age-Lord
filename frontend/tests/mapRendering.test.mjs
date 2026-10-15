@@ -98,8 +98,8 @@ test('raster export validation rejects bad formats, anchors/trim/atlas/orientati
  for(const change of [{path:'/bad.svg'},{width:4096},{width:entry.width-1,atlas:undefined},{height:entry.height-1,atlas:undefined},{sha256:'bad'},{sourceSha256:'bad'},{orientation:'west'},{trim:{x:-1,y:0,width:1,height:1}},{atlas:{path:'/a.png',x:2040,y:0,width:64,height:64,atlasWidth:2048,atlasHeight:2048}}])assert.throws(()=>validateMapExport({...entry,...change},asset));
 });
 
-test('selectable asymmetric structures have registered raster coverage for every compass orientation',()=>{
- for(const id of ['lord-house-damaged','polar-farmhouse-l01','opening-palisade-wall','opening-timber-gate']){
+test('six real-art demo palette entries have registered raster coverage for every compass orientation',()=>{
+ for(const id of ['lord-house-damaged','polar-farmhouse-l01','opening-palisade-wall','opening-timber-gate','watchtower-preview','elemental-tower-preview']){
   const item=manifest.assets.find(a=>a.assetId===id);assert.ok(item,id);
   for(const orientation of ['north','east','south','west']){
    const resolved=resolveOrientation(item,orientation);assert.equal(resolved.missing,false,id+':'+orientation);
@@ -108,5 +108,13 @@ test('selectable asymmetric structures have registered raster coverage for every
     assert.ok(exported,id+':'+orientation+':'+lod);validateMapExport(exported,item);
    }
   }
+ }
+});
+
+test('north-only QA fixtures do not claim compass equivalence for asymmetric placeholder art',()=>{
+ for(const id of ['fixture-tall-tower','fixture-fire-max']){
+  const item=manifest.assets.find(a=>a.assetId===id);assert.ok(item,id);
+  assert.deepEqual(item.equivalentOrientations??[],[],id+' must not pass an unpainted pose off as symmetry');
+  for(const orientation of ['east','south','west'])assert.equal(resolveOrientation(item,orientation).missing,true,id+':'+orientation);
  }
 });

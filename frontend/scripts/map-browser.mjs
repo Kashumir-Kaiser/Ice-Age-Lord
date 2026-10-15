@@ -9,6 +9,8 @@ export async function navigateMap(page,name){
  await page.getByRole('navigation',{name:'Các mục giao diện'}).getByRole('button',{name,exact:true}).click();
 }
 export async function readyMap(page){
+ const host=page.locator('.map-render-host');
+ if(await host.count())await host.evaluate(node=>node.scrollIntoView({block:'center',inline:'nearest'}));
  await page.locator('[data-map-renderer]').waitFor();
  // Let React's camera update and the renderer's next frame submit their work.
  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));

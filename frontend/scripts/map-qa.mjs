@@ -14,7 +14,9 @@ const progressionOnly=process.env.MAP_QA_PROGRESSION_ONLY==='1';
 const damagedHouseOnly=process.env.MAP_QA_DAMAGED_HOUSE_ONLY==='1';
 const l30Only=process.env.MAP_QA_L30_ONLY==='1';
 const architectureOnly=progressionOnly||damagedHouseOnly||l30Only||tombOnly||process.env.MAP_QA_ARCHITECTURE_ONLY==='1';
-const families=[['wall','Thử bố trí Tường Rào'],['gate','Thử bố trí Cổng Gỗ · mẫu ảnh'],['tower','Thử bố trí Tháp cao · minh họa'],['house','Thử bố trí Nhà thấp · minh họa'],['farmhouse','Thử bố trí Nhà Nông Phu Cực Địa'],['watchtower','Thử bố trí Tháp Canh · mẫu ảnh'],['elemental','Thử bố trí Tháp Nguyên Tố · mẫu ảnh']];
+const allOrientations=['north','east','south','west'];
+const families=[['wall','Thử bố trí Tường Rào',allOrientations],['gate','Thử bố trí Cổng Gỗ · mẫu ảnh',allOrientations],['tower','Thử bố trí Tháp cao · minh họa',['north']],['house','Thử bố trí Nhà thấp · minh họa',allOrientations],['farmhouse','Thử bố trí Nhà Nông Phu Cực Địa',allOrientations],['watchtower','Thử bố trí Tháp Canh · mẫu ảnh',allOrientations],['elemental','Thử bố trí Tháp Nguyên Tố · mẫu ảnh',allOrientations]];
+const orientationAssetIds={wall:'opening-palisade-wall',gate:'opening-timber-gate',house:'lord-house-damaged',farmhouse:'polar-farmhouse-l01',watchtower:'watchtower-preview',elemental:'elemental-tower-preview'};
 const requestedFamilies=process.env.MAP_QA_FAMILIES?.split(',');
 if(requestedFamilies?.some(name=>!families.some(([family])=>family===name)))throw new Error('Unknown MAP_QA_FAMILIES entry');
 if(damagedHouseOnly&&(progressionOnly||process.env.MAP_QA_ARCHITECTURE_ONLY==='1'||requestedFamilies))throw new Error('MAP_QA_DAMAGED_HOUSE_ONLY cannot be combined with other scenario filters');
@@ -24,7 +26,7 @@ const browser=await launchMapBrowser(),evidence=[];
 const output=resolve(process.env.MAP_QA_DIR??'map-evidence/after');mkdirSync(output,{recursive:true});
 const dpr=Number(process.env.MAP_QA_DPR??1),quality=process.env.MAP_QA_QUALITY??'normal';
 async function capture(page,name,viewport,{waitForIdle=true}={}){
- await page.locator('[data-map-renderer]').evaluate(node=>node.scrollIntoView({block:'center',inline:'nearest'}));
+ await page.locator('.map-render-host').evaluate(node=>node.scrollIntoView({block:'center',inline:'nearest'}));
  const group=/^damaged-house/.test(name)?'architecture/damaged-house/':/^tomb-entry-/.test(name)?'architecture/tomb-entry/':/^(watchtower|elemental)-/.test(name)?'architecture/prototypes/':/^(farmhouse|late)-/.test(name)?'architecture/progression/':/^(house|tower)-/.test(name)?'architecture/extended/':/^(wall|gate)-/.test(name)?'architecture/':'';
  const directory=resolve(output,String(viewport.width),group);mkdirSync(directory,{recursive:true});
  const filename=`${viewport.width}/${group}${name}-${viewport.width}-${quality}-dpr${dpr}.png`;
@@ -34,12 +36,144 @@ async function capture(page,name,viewport,{waitForIdle=true}={}){
   await page.screenshot({path:resolve(output,filename+'.failure.png'),animations:'disabled'});throw error;
  }
  await page.screenshot({path:resolve(output,filename),animations:'disabled'});
- const row={filename,viewport,dpr,quality,metrics:await page.evaluate(()=>window.__mapMetrics.at(-1))};evidence.push(row);return row;
+ const row={filename,scenario:name,viewport,dpr,quality,reviewStatus:'pending-parent-visual-review',provenance:'demo-only-read-only-visual-qa',metrics:await page.evaluate(()=>window.__mapMetrics.at(-1))};evidence.push(row);return row;
+}
+async function captureDemoFixture(name,fixture,viewport,{screen='Lãnh địa',expectedCount}={}){
+ const page=await openMap(browser,{viewport,dpr,quality,fixture});
+ try{
+  await navigateMap(page,screen);
+  const stage=screen==='Lãnh địa'?page.locator('.territory-stage'):page.locator('.map-scene');
+  await stage.waitFor();
+  const marker=stage;
+  await marker.waitFor();
+  const actualFixture=await marker.getAttribute('data-map-qa-fixture');
+  const actualCount=Number(await marker.getAttribute('data-map-qa-fixture-count'));
+  if(actualFixture!==fixture)throw new Error(`${name} expected fixture ${fixture}, received ${actualFixture}`);
+  if(expectedCount!==undefined&&actualCount!==expectedCount)throw new Error(`${name} expected ${expectedCount} opaque QA fixtures, received ${actualCount}`);
+  const row=await capture(page,name,viewport);
+  row.fixture={label:'DEMO · QA-only static authored art',fixture,opaqueCount:actualCount,selectable:false,reviewStatus:'pending-parent-visual-review'};
+  return row;
+ }finally{await page.close();}
+}
+async function selectMapTime(page,minutes){
+ await page.locator('.map-developer-tools > summary').click();
+ await page.getByLabel('Mô phỏng giờ hiển thị').selectOption(String(minutes));
+ await page.locator('.map-developer-tools > summary').click();
+}
+async function bringMapIntoView(page){await page.locator('.map-render-host').evaluate(node=>node.scrollIntoView({block:'center',inline:'nearest'}));}
+const KNOWN_FOG_FIXTURE={
+ 'SITE-LL01-000':{knowledge:'current'},
+ 'MODELED-SALVAGE-01':{knowledge:'current'},
+ 'MODELED-STONE-01':{knowledge:'remembered'},
+};
+const UNKNOWN_FOG_PICK_FIXTURE_ID='MODELED-01-001';
+async function assertFogProjection(page,minutes,unknownCase){
+ const scene=page.locator('.map-scene');
+ const result=await scene.evaluate(node=>({
+  fixture:node.getAttribute('data-map-qa-fixture'),
+  cameraMode:node.getAttribute('data-map-qa-camera-mode'),
+  minutes:Number(node.getAttribute('data-map-qa-clock-minutes')),
+  phase:node.getAttribute('data-map-qa-phase'),
+  provenance:node.getAttribute('data-map-qa-provenance'),
+  states:JSON.parse(node.getAttribute('data-map-qa-known-state')??'null'),
+ }));
+ if(result.minutes!==minutes||result.phase!==(minutes===420?'day':'night')||result.provenance!=='demo-visible-snapshot')throw new Error(`Fog fixture metadata is not the requested demo projection: ${JSON.stringify(result)}`);
+ if(!Array.isArray(result.states))throw new Error('MapScene did not expose safe QA metadata for projected known entities');
+ const expected=Object.entries(KNOWN_FOG_FIXTURE).map(([id,value])=>({id,...value,currentSight:id==='MODELED-STONE-01'?Number(minutes===420):1}));
+ const observed=result.states.map(({id,knowledge,currentSight})=>({id,knowledge,currentSight}));
+ if(JSON.stringify(observed)!==JSON.stringify(expected))throw new Error(`Projected known IDs/knowledge/currentSight differ: ${JSON.stringify(result.states)}`);
+ const unknownPresent=await page.locator('[data-entity-id]').evaluateAll((nodes,id)=>nodes.some(node=>node.getAttribute('data-entity-id')===id),UNKNOWN_FOG_PICK_FIXTURE_ID);
+ if(unknownPresent)throw new Error('An unknown map entity became a rendered or selectable DOM target');
+ const accessibleText=await page.locator('.map-accessible-entities').innerText();
+ const accessibleUnknown=accessibleText.includes(UNKNOWN_FOG_PICK_FIXTURE_ID);
+ if(accessibleUnknown)throw new Error('An unknown map entity became an accessibility target');
+ const telemetry=await page.evaluate(()=>JSON.stringify((window).__mapMetrics??[]));
+ if(telemetry.includes(UNKNOWN_FOG_PICK_FIXTURE_ID))throw new Error('Unknown entity identity leaked into renderer window telemetry');
+ if(unknownCase){
+  const map=page.locator('.terrain-svg--deep'),box=await map.boundingBox();
+  if(!box)throw new Error('Unknown-fog map camera has no visible surface');
+  await map.click({position:{x:box.width/2,y:box.height/2}});
+  const pickedUnknown=await page.locator('[data-entity-id].is-selected').evaluateAll((nodes,id)=>nodes.some(node=>node.getAttribute('data-entity-id')===id),UNKNOWN_FOG_PICK_FIXTURE_ID);
+  if(pickedUnknown)throw new Error('An unknown map entity became a selectable target');
+ }
+ if(unknownCase&&result.fixture!=='unknown-fog')throw new Error(`Unknown-fog camera preset missing: ${JSON.stringify(result)}`);
+ if(!unknownCase&&result.cameraMode!=='local')throw new Error(`Known fog case should use the local camera: ${JSON.stringify(result)}`);
+}
+async function captureFogCase(minutes,kind,viewport){
+ const unknownCase=kind==='unknown',fixture=unknownCase?'unknown-fog':'local-camp';
+ const page=await openMap(browser,{viewport,dpr,quality,fixture});
+ try{
+  await navigateMap(page,'Bản đồ');
+  await selectMapTime(page,minutes);
+  await readyMap(page);
+  await assertFogProjection(page,minutes,unknownCase);
+  const row=await capture(page,`fog-${kind}-${minutes===420?'day':'night'}`,viewport);
+  row.fog={projection:'demo-visible-snapshot',phase:minutes===420?'day':'night',minutes,reviewStatus:'pending-parent-visual-review',unknownOmissionAsserted:unknownCase};
+  return row;
+ }finally{await page.close();}
+}
+async function captureLocalGeography(kind,viewport){
+ const page=await openMap(browser,{viewport,dpr,quality,fixture:`local-${kind}`});
+ try{
+  await navigateMap(page,'Bản đồ');
+  await readyMap(page);
+  const scene=page.locator('.map-scene');
+  const metadata=await scene.evaluate(node=>({fixture:node.getAttribute('data-map-qa-fixture'),cameraMode:node.getAttribute('data-map-qa-camera-mode'),provenance:node.getAttribute('data-map-qa-provenance'),centerKm:node.getAttribute('data-map-qa-fixture-center-km')}));
+  if(metadata.fixture!==`local-${kind}`||metadata.cameraMode!=='local'||metadata.provenance!=='demo-visible-snapshot'||!metadata.centerKm)throw new Error(`Local ${kind} scene is not using its declared demo geography anchor: ${JSON.stringify(metadata)}`);
+  const row=await capture(page,`local-${kind}`,viewport);row.geography={kind,provenance:metadata.provenance,centerKm:metadata.centerKm,reviewStatus:'pending-parent-visual-review'};return row;
+ }finally{await page.close();}
 }
 const assetManifest=JSON.parse(readFileSync(new URL('../public/assets/manifest.json',import.meta.url),'utf8'));
 const damagedAsset=assetManifest.assets.find(asset=>asset.assetId==='lord-house-damaged');
 if(!damagedAsset)throw new Error('lord-house-damaged is missing from the synchronized asset manifest');
 const sha256=buffer=>createHash('sha256').update(buffer).digest('hex');
+function authoredPoseSources(assetId){
+ const asset=assetManifest.assets.find(item=>item.assetId===assetId);
+ if(!asset)throw new Error(`Orientation review asset ${assetId} is missing from the synchronized manifest`);
+ const sources=Object.fromEntries(allOrientations.map(orientation=>{
+  // Layered architecture exports render their authored compass source in the
+  // upper layer; the body role points at the shared composition script.
+  const entry=asset.mapExports.find(item=>item.role==='upper'&&item.lod==='close'&&item.orientation===orientation)
+   ??asset.mapExports.find(item=>item.role==='body'&&item.lod==='close'&&item.orientation===orientation);
+  if(!entry?.source||!entry.sourceSha256)throw new Error(`${assetId} has no authored close body source for ${orientation}`);
+  const sourceUrl=entry.source.startsWith('/')?new URL('../public'+entry.source,import.meta.url):new URL('../../'+entry.source,import.meta.url);
+  if(entry.sourceSha256!==sha256(readFileSync(sourceUrl)))throw new Error(`${assetId} ${orientation} source hash differs from its registered master`);
+  return [orientation,{source:entry.source,sourceSha256:entry.sourceSha256}];
+ }));
+ if(new Set(Object.values(sources).map(source=>source.sourceSha256)).size!==4)throw new Error(`${assetId} compass poses are not four distinct authored source images`);
+ return sources;
+}
+async function savePoseContactSheet(family,items,viewport){
+ if(items.length!==4||new Set(items.map(item=>item.orientation)).size!==4)throw new Error(`${family} contact sheet requires four distinct authored compass poses`);
+ const group=family==='farmhouse'?'architecture/progression/':family==='watchtower'||family==='elemental'?'architecture/prototypes/':family==='house'?'architecture/extended/':'architecture/';
+ const directory=resolve(output,String(viewport.width),group);mkdirSync(directory,{recursive:true});
+ const tileWidth=360,tileHeight=320,labelHeight=30,composites=[];
+ for(let index=0;index<items.length;index++){
+  const item=items[index],full=readFileSync(resolve(output,item.filename)),metadata=await sharp(full).metadata();
+  const scale=(metadata.width??viewport.width)/viewport.width,box=item.box,side=Math.min(420,viewport.width,viewport.height);
+  const left=Math.max(0,Math.min(viewport.width-side,box.x+box.width/2-side/2)),top=Math.max(0,Math.min(viewport.height-side,box.y+box.height/2-side/2));
+  const detailPath=item.filename.replace(/\.png$/,'-detail.png');
+  await sharp(full).extract({left:Math.round(left*scale),top:Math.round(top*scale),width:Math.min(Math.round(side*scale),(metadata.width??viewport.width)-Math.round(left*scale)),height:Math.min(Math.round(side*scale),(metadata.height??viewport.height)-Math.round(top*scale))}).png().toFile(resolve(output,detailPath));
+  const tile=await sharp(resolve(output,detailPath)).resize(tileWidth,tileHeight-labelHeight,{fit:'contain',background:'#102128'}).png().toBuffer();
+  const x=(index%2)*tileWidth,y=Math.floor(index/2)*(tileHeight+labelHeight),label=Buffer.from(`<svg width="${tileWidth}" height="${labelHeight}"><rect width="100%" height="100%" fill="#12252c"/><text x="10" y="20" fill="#f2e5c8" font-family="sans-serif" font-size="15">${family} · ${item.orientation}</text></svg>`);
+  composites.push({input:tile,left:x,top:y+labelHeight},{input:label,left:x,top:y});item.row.artOrientation.detailCapture=detailPath;
+ }
+ const filename=`${viewport.width}/${group}orientation-sheet-${family}-${viewport.width}-${quality}-dpr${dpr}.png`;
+ await sharp({create:{width:tileWidth*2,height:(tileHeight+labelHeight)*2,channels:4,background:'#102128'}}).composite(composites).png().toFile(resolve(output,filename));
+ return filename;
+}
+async function saveProgressionContactSheet(items,viewport){
+ if(items.length!==12)throw new Error(`Progression review sheet requires 12 north-up mode captures; received ${items.length}`);
+ const directory=resolve(output,String(viewport.width),'architecture/progression');mkdirSync(directory,{recursive:true});
+ const columns=3,tileWidth=360,tileHeight=288,labelHeight=30,composites=[];
+ for(let index=0;index<items.length;index++){
+  const item=items[index],image=await sharp(resolve(output,item.detailCapture)).resize(tileWidth,tileHeight,{fit:'contain',background:'#102128'}).png().toBuffer(),x=(index%columns)*tileWidth,y=Math.floor(index/columns)*(tileHeight+labelHeight),label=Buffer.from(`<svg width="${tileWidth}" height="${labelHeight}"><rect width="100%" height="100%" fill="#12252c"/><text x="10" y="20" fill="#f2e5c8" font-family="sans-serif" font-size="14">${item.assetId} · ${item.mode} · north</text></svg>`);
+  composites.push({input:image,left:x,top:y+labelHeight},{input:label,left:x,top:y});
+ }
+ const filename=`${viewport.width}/architecture/progression/orientation-sheet-north-progression-${viewport.width}-${quality}-dpr${dpr}.png`;
+ await sharp({create:{width:columns*tileWidth,height:4*(tileHeight+labelHeight),channels:4,background:'#102128'}}).composite(composites).png().toFile(resolve(output,filename));
+ return filename;
+}
 const damagedSources=Object.fromEntries(['north','east','south','west'].map(orientation=>{
  const entry=damagedAsset.mapExports.find(item=>item.role==='body'&&item.lod==='close'&&item.orientation===orientation);
  const source=entry?.source;
@@ -74,6 +208,7 @@ async function captureDamagedHouse(calibration,viewport){
   return sharp(full).extract({left,top,width,height}).png().toBuffer();
  };
  const record=async(orientation,mode)=>{
+  await bringMapIntoView(calibration);
   await readyMap(calibration);
   const outlineOrientation=await preview.getAttribute('data-art-qa-orientation'),footprint=await preview.getAttribute('points');
   if(outlineOrientation!==orientation)throw new Error(`Damaged-house preview requested ${orientation} but rendered ${outlineOrientation}`);
@@ -167,6 +302,7 @@ async function captureTombModes(calibration,viewport){
  await calibration.getByRole('button',{name:'Ẩn hình kiểm tra trên bản đồ',exact:true}).click();
  writeFileSync(resolve(output,String(viewport.width),'architecture/tomb-entry','tomb-entry-qa.json'),JSON.stringify({assetId:'tomb-entry',orientation:'north',viewport,dpr,quality,cameraAdjustment:{zoomOutSteps:viewport.width===390?1:0},physicalFootprint:physical,sourceHashes:sources,captures},null,2));
 }
+let completed=false;
 try{
  for(const viewport of viewports){
   const page=architectureOnly?null:await openMap(browser,{viewport,dpr,quality});
@@ -178,15 +314,38 @@ try{
   if(l30Only){await captureL30Modes(calibration,viewport);await calibration.close();continue;}
   if(tombOnly){await captureTombModes(calibration,viewport);await calibration.close();continue;}
   if(!progressionOnly)await capture(calibration,'fire-close',viewport);
-  for(const [family,label] of families.filter(([family])=>!progressionOnly&&(!requestedFamilies||requestedFamilies.includes(family)))){
+  for(const [family,label,orientations] of families.filter(([family])=>!progressionOnly&&(!requestedFamilies||requestedFamilies.includes(family)))){
    await calibration.getByRole('button',{name:label,exact:true}).click();
    const scene=calibration.locator('.territory-scene-svg');await scene.scrollIntoViewIfNeeded();
    const box=await scene.boundingBox();await scene.click({position:{x:box.width*.55,y:box.height*.65}});
    await scene.focus();await calibration.keyboard.press('Escape');
    const name=label.replace('Thử bố trí ','');
-   for(const orientation of ['north','east','south','west']){
-    await capture(calibration,`${family}-${orientation}`,viewport);
-    await calibration.getByRole('button',{name:`Xoay ${name}`,exact:true}).click();
+   if(orientationAssetIds[family]){
+    const draft=calibration.locator(`.territory-building.is-draft[data-asset-id="${orientationAssetIds[family]}"]`).last();
+    for(let turn=0;turn<4&&await draft.getAttribute('data-orientation')!=='north';turn++)await calibration.getByRole('button',{name:`Xoay ${name}`,exact:true}).click();
+    if(await draft.getAttribute('data-orientation')!=='north')throw new Error(`${family} authored preview did not return to north before capture`);
+   }
+   const poseRows=[];
+   for(const [index,orientation] of orientations.entries()){
+    if(orientationAssetIds[family]){
+     const assetId=orientationAssetIds[family],item=calibration.locator(`.territory-building.is-draft[data-asset-id="${assetId}"]`).last();
+     const renderedOrientation=await item.getAttribute('data-orientation');
+     if(renderedOrientation!==orientation)throw new Error(`${family} requested ${orientation} but the authored placement rendered ${renderedOrientation}`);
+    }
+    const row=await capture(calibration,`${family}-${orientation}`,viewport);
+    if(orientationAssetIds[family]){
+     const assetId=orientationAssetIds[family],item=calibration.locator(`.territory-building.is-draft[data-asset-id="${assetId}"]`).last(),box=await item.boundingBox();
+     if(!box)throw new Error(`${family}-${orientation} authored draft has no visible crop bounds`);
+     const source=authoredPoseSources(assetId)[orientation];
+     row.artOrientation={assetId,orientation,source:source.source,sourceSha256:source.sourceSha256};
+     poseRows.push({row,orientation,filename:row.filename,box});
+    }
+    if(index<orientations.length-1)await calibration.getByRole('button',{name:`Xoay ${name}`,exact:true}).click();
+   }
+   if(orientationAssetIds[family]){
+    const sources=authoredPoseSources(orientationAssetIds[family]);
+    const contactSheet=await savePoseContactSheet(family,poseRows,viewport);
+    for(const row of evidence.slice(-poseRows.length))row.artOrientation={...row.artOrientation,contactSheet,sourceHashes:sources,reviewStatus:'pending-parent-visual-review'};
    }
    if(!['wall','gate'].includes(family)){
     await calibration.getByRole('button',{name:'Mặt bằng',exact:true}).click();await capture(calibration,`${family}-planning`,viewport);
@@ -199,14 +358,26 @@ try{
   if(progressionOnly||!requestedFamilies){
    await calibration.locator('.territory-calibration > summary').click();
    await calibration.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
+   const progressionCaptures=[];
    for(const id of ['lord-house-repaired','lord-house-l30','polar-farmhouse-l10','survival-fire-l26']){
     await calibration.getByLabel('Hình minh họa',{exact:true}).selectOption(id);
-    await capture(calibration,`late-${id}-normal`,viewport);
-    await calibration.getByRole('button',{name:'Mặt bằng',exact:true}).click();await capture(calibration,`late-${id}-planning`,viewport);
-    await calibration.getByRole('button',{name:'Làm mờ phần che',exact:true}).click();await capture(calibration,`late-${id}-focus`,viewport);
-    await calibration.getByRole('button',{name:'Bình thường',exact:true}).click();
+    for(const mode of ['normal','planning','focus']){
+     if(mode==='planning')await calibration.getByRole('button',{name:'Mặt bằng',exact:true}).click();
+     if(mode==='focus')await calibration.getByRole('button',{name:'Làm mờ phần che',exact:true}).click();
+     const row=await capture(calibration,`late-${id}-${mode}`,viewport),outline=calibration.locator('[data-art-qa-footprint]'),box=await outline.boundingBox();
+     if(!box)throw new Error(`Progression art preview ${id}/${mode} has no visible crop outline`);
+     const full=readFileSync(resolve(output,row.filename)),metadata=await sharp(full).metadata(),scale=(metadata.width??viewport.width)/viewport.width,side=Math.min(420,viewport.width,viewport.height),leftCss=Math.max(0,Math.min(viewport.width-side,box.x+box.width/2-side/2)),topCss=Math.max(0,Math.min(viewport.height-side,box.y+box.height/2-side/2)),left=Math.round(leftCss*scale),top=Math.round(topCss*scale),detailCapture=row.filename.replace(/\.png$/,'-detail.png');
+     await sharp(full).extract({left,top,width:Math.min(Math.round(side*scale),(metadata.width??viewport.width)-left),height:Math.min(Math.round(side*scale),(metadata.height??viewport.height)-top)}).png().toFile(resolve(output,detailCapture));
+     row.artPreview={assetId:id,orientation:'north',mode,detailCapture,reviewStatus:'pending-parent-visual-review'};
+     progressionCaptures.push({row,assetId:id,mode,detailCapture});
+     if(mode==='planning')await calibration.getByRole('button',{name:'Bình thường',exact:true}).click();
+     if(mode==='focus')await calibration.getByRole('button',{name:'Bình thường',exact:true}).click();
+    }
    }
+   const progressionSheet=await saveProgressionContactSheet(progressionCaptures,viewport);
+   for(const item of progressionCaptures)item.row.artPreview.contactSheet=progressionSheet;
    await calibration.getByRole('button',{name:'Ẩn hình kiểm tra trên bản đồ',exact:true}).click();
+   await captureTombModes(calibration,viewport);
   }
   await calibration.close();
   if(!page)continue;
@@ -223,6 +394,24 @@ try{
   await page.locator('.map-developer-tools > summary').click();await page.getByLabel('Mô phỏng giờ hiển thị').selectOption('420');await page.locator('.map-developer-tools > summary').click();await capture(page,'world',viewport);
   await page.close();
   const fallback=await openMap(browser,{viewport,dpr,quality,fallback:true});await navigateMap(fallback,'Lãnh địa');await capture(fallback,'fallback',viewport);await fallback.close();
+  await captureDemoFixture('populated-12','populated12',viewport,{expectedCount:12});
+  await captureDemoFixture('overlap-depth','overlap',viewport,{expectedCount:3});
+  for(const kind of ['forest','stone','water'])await captureLocalGeography(kind,viewport);
+  for(const minutes of [420,1140])for(const kind of ['current','remembered','unknown'])await captureFogCase(minutes,kind,viewport);
  }
-}finally{writeFileSync(resolve(output,'scenarios.json'),JSON.stringify(evidence,null,2));await browser.close();}
+ if(!architectureOnly&&!requestedFamilies&&!requestedWidths&&!tombOnly){
+  for(const viewport of viewports){
+   const count=evidence.filter(row=>row.viewport.width===viewport.width).length;
+   if(count!==73)throw new Error(`Full QA suite expected 73 capture rows at ${viewport.width}px, received ${count}`);
+  }
+ }
+ completed=true;
+}finally{
+ writeFileSync(resolve(output,'scenarios.json'),JSON.stringify(evidence,null,2));
+ const counts=Object.fromEntries(viewports.map(viewport=>[String(viewport.width),evidence.filter(row=>row.viewport.width===viewport.width).length]));
+ const fullSuite=!architectureOnly&&!requestedFamilies&&!requestedWidths&&!tombOnly;
+ const manifest={schema:'map-visual-qa-v1',status:completed?'captured-pending-visual-review':'incomplete',captureProvenance:'demo-only-read-only-visual-qa',reviewStatus:'pending-parent-visual-review',mode:'demo',quality,dpr,viewports:viewports.map(({width,height})=>({width,height})),captureRows:evidence.length,scenarioRowsByViewport:counts,expectedRowsPerViewport:fullSuite?73:null,fullSuite,outputs:{scenarioIndex:'scenarios.json'},orientationReview:{families:Object.keys(orientationAssetIds),poseOrientations:allOrientations,progressions:['lord-house-repaired','lord-house-l30','polar-farmhouse-l10','survival-fire-l26'],progressionOrientation:'north',contactSheets:'relative paths stored on capture rows'}};
+ writeFileSync(resolve(output,'qa-manifest.json'),JSON.stringify(manifest,null,2));
+ await browser.close();
+}
 console.log(`Captured ${evidence.length} deterministic map scenarios. Images require visual review; capture is not approval.`);

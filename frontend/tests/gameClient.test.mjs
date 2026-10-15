@@ -65,6 +65,8 @@ test('one clean player snapshot links four exact opening instances and starts wi
     'polar-farmhouse-l01','opening-palisade-wall','opening-timber-gate',
     'lord-house-damaged','fixture-tall-tower','watchtower-preview','elemental-tower-preview','fixture-fire-max',
   ]);
+  assert.deepEqual(view.placementDefinitions.filter(definition=>definition.qaOnly).map(definition=>definition.assetId),['fixture-tall-tower','fixture-fire-max']);
+  assert.ok(view.placementDefinitions.filter(definition=>!definition.qaOnly).every(definition=>definition.orientations.length===4));
 });
 
 test('known resource inspectors distinguish depleted, reserved, unreachable, and unknown quantities', () => {

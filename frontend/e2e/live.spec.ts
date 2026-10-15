@@ -119,7 +119,8 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
     await route.fulfill({ status: 404, json: { error: { code: 'NOT_FOUND', message: 'missing', displayText: 'missing' } } });
   });
 
-  await page.goto('/?mode=live');
+  await page.goto('/?mode=live&mapQA=1&mapFixture=1023');
+  await expect(page).toHaveURL(/mode=live.*mapQA=1.*mapFixture=1023/);
   await expect(page.getByRole('heading', { name: 'Kết nối game API' })).toBeVisible();
   await page.getByLabel('Khóa chủ sở hữu').fill('local-owner-key');
   await page.getByRole('button', { name: 'Kết nối API' }).click();
@@ -130,6 +131,7 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
   await page.getByRole('button', { name: 'Lãnh địa' }).click();
   const territoryCampfire = page.locator('.territory-building[data-building-id="SITE-LL01-000"]');
   await expect(territoryCampfire).toBeVisible();
+  await expect(page.locator('.territory-stage[data-map-qa-fixture], .territory-building[data-building-id^="map-qa-static-"]')).toHaveCount(0);
   await expect(territoryCampfire).toHaveAttribute('data-building-id', fireKey.slice('site:'.length));
   await expect(territoryCampfire).toHaveAttribute('data-asset-id','survival-fire-l01');
   await expect(page.locator('.territory-stage .map-render-canvas')).toBeVisible();
@@ -139,6 +141,11 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
   const mapCampfire = page.getByTestId('map-campfire-marker');
   await expect(mapCampfire).toHaveAttribute('data-entity-ref', fireKey);
   await expect(mapCampfire).toBeVisible();
+  await expect(page.locator('.live-map-marker')).toHaveCount(currentView.visibleMap.entities.length);
+  await expect(page.locator('.live-map-marker[data-entity-ref*="QA-KNOWN-"]')).toHaveCount(0);
+  await expect(page.locator('.map-scene, [data-map-qa-fixture], [data-map-qa-known-state]')).toHaveCount(0);
+  expect(await page.locator('.live-map-marker').evaluateAll(nodes => nodes.map(node => node.getAttribute('data-entity-ref'))))
+    .toEqual(currentView.visibleMap.entities.map(entity => `${entity.ref.type}:${entity.ref.id}`));
   await page.getByRole('button', { name: 'Zoom in' }).click();
   await page.getByRole('button', { name: 'Choose destination' }).click();
   const liveMapBox = await page.getByTestId('live-map').boundingBox();

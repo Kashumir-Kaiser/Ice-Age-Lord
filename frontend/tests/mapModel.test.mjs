@@ -4,11 +4,28 @@ import { join } from 'node:path';
 import test from 'node:test';
 import ts from 'typescript';
 import { fileURLToPath } from 'node:url';
+import { INITIAL_CAMERA } from '../src/map/camera.ts';
+import { mapQaInitialState } from '../src/rendering/mapFixtures.ts';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
 const source=readFileSync(join(root,'src/mapModel.ts'),'utf8');
 const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
 const model=await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
+
+test('map QA camera fixtures use canonical local anchors and a night-only unknown-region camera',()=>{
+  const camp=mapQaInitialState(INITIAL_CAMERA,7*3600,'local-camp');
+  assert.deepEqual(camp.camera.local,{x:0,y:0,zoom:1});
+  const forest=mapQaInitialState(INITIAL_CAMERA,7*3600,'local-forest');
+  assert.deepEqual(forest.camera.local,{x:4700,y:6800,zoom:172/5000});
+  const stone=mapQaInitialState(INITIAL_CAMERA,7*3600,'local-stone');
+  assert.deepEqual(stone.camera.local,{x:-7800,y:4700,zoom:172/5000});
+  const water=mapQaInitialState(INITIAL_CAMERA,7*3600,'local-water');
+  assert.deepEqual(water.camera.local,{x:8900,y:11200,zoom:172/5000});
+  const fog=mapQaInitialState(INITIAL_CAMERA,7*3600,'unknown-fog');
+  assert.deepEqual(fog.camera.local,{x:-14500,y:9000,zoom:172/5000});
+  assert.equal(fog.clockSeconds,19*3600);
+  assert.equal(mapQaInitialState(INITIAL_CAMERA,7*3600,null).clockSeconds,7*3600);
+});
 
 test('fire radii exactly follow the 30 source registry rows, not fabricated scaling',()=>{
   assert.equal(model.FIRE_RADII_M.length,30);

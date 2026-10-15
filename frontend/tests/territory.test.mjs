@@ -68,6 +68,15 @@ test('placement reports overlap and unknown eligibility separately; snapping sta
   assert.equal(allowedUnknown.heat,'outside');
 });
 
+test('draft rotation cycles only through declared orientations and is inert for unknown or north-only definitions', () => {
+  assert.deepEqual(placement.legalPlacementOrientations(['west','north']), ['north','west']);
+  assert.equal(placement.nextPlacementOrientation('north',['north','east','south','west']), 'east');
+  assert.equal(placement.nextPlacementOrientation('west',['north','east','south','west']), 'north');
+  assert.equal(placement.nextPlacementOrientation('north',['north']), 'north');
+  assert.equal(placement.nextPlacementOrientation('north',undefined), 'north');
+  assert.equal(placement.nextPlacementOrientation('east',['north','south']), 'north');
+});
+
 test('race filter tabs appear only for races with living units', () => {
   const groups=[
     {id:'h1',name:'Hero',raceId:'hero',raceLabel:'Herói',alive:1,available:1,role:'hero'},

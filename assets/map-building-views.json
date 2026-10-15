@@ -34,17 +34,5 @@
     "north": "assets/source/map-buildings/opening-timber-gate-north.png",
     "south": "assets/source/map-buildings/opening-timber-gate-south.png",
     "west": "assets/source/map-buildings/opening-timber-gate-west.png"
-  },
-  "_equivalentOrientations": {
-    "fixture-tall-tower": [
-      "east",
-      "south",
-      "west"
-    ],
-    "fixture-fire-max": [
-      "east",
-      "south",
-      "west"
-    ]
   }
 }

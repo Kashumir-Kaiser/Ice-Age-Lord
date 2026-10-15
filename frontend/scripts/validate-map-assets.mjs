@@ -68,6 +68,20 @@ export function validateMapAssets(manifest){
   }
  }
  for(const entry of manifest.environmentArt??[])validateMapExport(entry,{logicalCanvas:{width:entry.width,height:entry.height},orientation:entry.orientation});
+ if(manifest.mapEffects)validateMapEffectsAtlas(manifest.mapEffects);
+}
+export function validateMapEffectsAtlas(atlas,read=path=>readFileSync(resolve(root,path))){
+ if(atlas.path!=='/assets/map/effects/ambient-atlas.png'||!Number.isInteger(atlas.width)||!Number.isInteger(atlas.height)
+   ||atlas.width!==448||atlas.height!==64||atlas.alpha!=='straight'||atlas.colorSpace!=='srgb')throw new Error('Invalid map effect atlas registration');
+ const frames=[atlas.regions?.snow?.frame,...(atlas.regions?.ember?.frames??[]),...(atlas.regions?.smoke?.frames??[])];
+ if(!atlas.regions?.snow?.frame||atlas.regions.ember?.frames?.length!==2||atlas.regions.smoke?.frames?.length!==4)throw new Error('Map effect atlas has incomplete frame registrations');
+ for(const frame of frames)if(![frame.x,frame.y,frame.width,frame.height].every(Number.isInteger)||frame.x<0||frame.y<0||frame.width<1||frame.height<1||frame.x+frame.width>atlas.width||frame.y+frame.height>atlas.height)throw new Error('Map effect frame outside atlas bounds');
+ for(let i=0;i<frames.length;i++)for(let j=i+1;j<frames.length;j++)if(frames[i].x<frames[j].x+frames[j].width&&frames[i].x+frames[i].width>frames[j].x&&frames[i].y<frames[j].y+frames[j].height&&frames[i].y+frames[i].height>frames[j].y)throw new Error('Map effect atlas frames overlap');
+ for(const region of [atlas.regions.snow,atlas.regions.ember,atlas.regions.smoke])if(!region.anchor||![region.anchor.x,region.anchor.y].every(v=>Number.isFinite(v)&&v>=0&&v<=1))throw new Error('Invalid map effect anchor');
+ for(const region of [atlas.regions.ember,atlas.regions.smoke])if(!Number.isFinite(region.fps)||region.fps<1||region.fps>24)throw new Error('Invalid map effect fps');
+ if(!Array.isArray(atlas.sourceDependencies)||atlas.sourceDependencies.length!==3)throw new Error('Map effect atlas must preserve all three SVG source hashes');
+ for(const dependency of atlas.sourceDependencies)if(!/^assets\/source\/map-effects\/(snow-particle|ember-loop-sheet|smoke-loop-sheet)\.svg$/.test(dependency.source)||hash(read(dependency.source))!==dependency.sha256)throw new Error('Map effect source hash mismatch: '+dependency.source);
+ const buffer=read('frontend/public'+atlas.path);if(hash(buffer)!==atlas.sha256)throw new Error('Map effect atlas hash mismatch');checkDimensions(buffer,atlas.width,atlas.height);
 }
 export function validateMapFlame(flame,read=path=>readFileSync(resolve(root,path))){
  if(flame.path!=='/assets/map/effects/flame-loop.png'||flame.source!=='assets/source/map-effects/flame-loop-sheet.png')throw new Error('Invalid map flame path');

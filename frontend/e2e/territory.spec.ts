@@ -53,18 +53,22 @@ test('unit filters stay hidden until at least one race has living units',async({
 test('placement creates reversible drafts without changing the starting buildings',async({page})=>{
   await goTo(page,/Lãnh địa/);
   const initial=await page.locator('.territory-building:not(.is-draft)[data-building-id^="SITE-LL01-"]').count();
-  await page.getByRole('button',{name:/Thử bố trí Tháp cao/}).click();
+  await page.getByRole('button',{name:/Thử bố trí Tháp Canh/}).click();
   await expect(page.getByText(/Chạm mặt đất để đặt bản nháp/)).toBeVisible();
   const scene=page.locator('svg.territory-scene-svg');
   const box=await scene.boundingBox();
   expect(box).not.toBeNull();
   await scene.click({position:{x:box!.width*.52,y:box!.height*.52}});
-  await expect(page.locator('.territory-draft-list')).toContainText('Tháp cao');
+  await expect(page.locator('.territory-draft-list')).toContainText('Tháp Canh');
   await expect(page.locator('.territory-building:not(.is-draft)[data-building-id^="SITE-LL01-"]')).toHaveCount(initial);
+  const draft=page.locator('.territory-building.is-draft[data-asset-id="watchtower-preview"]');
+  await expect(draft).toHaveAttribute('data-orientation','north');
+  await page.getByRole('button',{name:'Xoay Tháp Canh · mẫu ảnh'}).click();
+  await expect(draft).toHaveAttribute('data-orientation','east');
   await page.getByRole('button',{name:/Xoay 90°/}).click();
   await expect(page.locator('.territory-placement-controls')).toContainText('hướng Đông');
   await page.locator('.territory-placement-controls').getByRole('button',{name:'Hủy'}).click();
-  await expect(page.locator('.territory-draft-list')).toContainText('Tháp cao');
+  await expect(page.locator('.territory-draft-list')).toContainText('Tháp Canh');
   await page.getByRole('button',{name:'Xóa tất cả'}).click();
   await expect(page.locator('.territory-draft-list')).toHaveCount(0);
 });
