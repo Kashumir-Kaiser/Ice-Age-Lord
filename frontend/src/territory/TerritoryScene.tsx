@@ -352,7 +352,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
     const asset=artQaEnabled&&showCalibrationArt?selectedCalibrationAsset:null;
     return {...snapshot,buildingLODs:buildingLODs.current,buildings:asset?[...snapshot.buildings,{
       id:'qa-art-preview',name:'Hình ảnh kiểm tra',asset,assetId:asset.assetId,
-      point:{x:origin.x+12,y:origin.y},orientation:(['north','east','south','west'] as const).find(o=>o===asset.orientation)??'north',
+      point:{x:origin.x+4,y:origin.y-2},orientation:(['north','east','south','west'] as const).find(o=>o===asset.orientation)??'north',
       footprint:asset.compatiblePhysicalFootprint??fixtureFootprint,
       selected:false,active:false,draft:false,fixture:true,
     }]:snapshot.buildings};
@@ -479,7 +479,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
         <div className="territory-calibration-info"><label>Hình minh họa <select aria-label="Hình minh họa" value={calibrationAssetId} onChange={event=>setCalibrationAssetId(event.target.value)}>{assetIds.map(id=><option key={id}>{id}</option>)}</select></label>{artQaEnabled&&<button className="text-button" disabled={!selectedCalibrationAsset} onClick={()=>{
           setShowCalibrationArt(previous=>!previous);setPlacingId(null);onReadabilityChange('normal');
           if(followPlayer)onFollowPlayerChange(false);
-          onCameraChange({x:origin.x+12,y:origin.y,zoom:3});
+          onCameraChange({x:origin.x+4,y:origin.y-2,zoom:3});
         }}>{showCalibrationArt?'Ẩn hình kiểm tra trên bản đồ':'Xem hình kiểm tra trên bản đồ'}</button>}<p>Điểm neo: {selectedCalibrationAsset?`${Math.round(selectedCalibrationAsset.groundAnchor.x*100)}%, ${Math.round(selectedCalibrationAsset.groundAnchor.y*100)}%`:'mặc định'} · khung 240 × 200</p><p>Vùng chọn, che khuất và kích thước hiển thị được căn chỉnh riêng trong thư viện hình ảnh.</p><label className="territory-qa-toggle"><input type="checkbox" checked={denseQa} onChange={event=>setDenseQa(event.target.checked)}/> Hiện 520 công trình minh họa</label><button className="text-button" onClick={frameDenseQa}>Xem nhóm công trình minh họa</button><span>Đang hiển thị {visibleQa.length} / {denseQa?520:0} công trình minh họa.</span><span>{manifestError?'Không tải được thư viện hình ảnh; dùng hình thay thế.':`Đã tải ${manifest?.assets.length??0} hình ảnh.`}</span></div>
       </div>
     </details>}

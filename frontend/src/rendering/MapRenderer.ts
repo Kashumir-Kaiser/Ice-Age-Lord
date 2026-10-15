@@ -274,6 +274,11 @@ export class MapRenderer {
     this.assets.retain(used);
     if(this.app)this.renderWebGL(draws);else if(this.context)this.render2D(draws);
     const m=this.metrics.data;
+    m.qaArtLayers=this.metrics.enabled&&this.snapshot.buildings.some(b=>b.id==='qa-art-preview')?{
+      base:draws.find(d=>d.id==='qa-art-preview:base')?.alpha??null,
+      upper:draws.find(d=>d.id==='qa-art-preview:upper')?.alpha??null,
+      body:draws.find(d=>d.id==='qa-art-preview:body')?.alpha??null,
+    }:null;
     const flames=draws.filter(d=>d.id.endsWith(':flame'));m.flameSprites=flames.length;m.flameFrame=flames.length?Number(flames[0].path.split('#flame-')[1]):null;
     let terrainGPUBytes=0;for(const texture of this.chunkTextures.values())terrainGPUBytes+=texture.source.width*texture.source.height*4;
     m.textureBytes=this.app?this.assets.gpuBytes+terrainGPUBytes+this.renderTargetBytes():0;

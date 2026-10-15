@@ -1,0 +1,8 @@
+{
+  "lord-house-repaired": {
+    "orientation": "north",
+    "note": "Map-only authored layer variants. Contacts use normalized original image coordinates and logical-canvas target pixels; physical footprint and world anchor stay unchanged.",
+    "base": {"source":"assets/source/map-buildings/lord-house-repaired-foundation.png","scale":0.9,"contact":[0.509,0.764],"target":[240,301]},
+    "upper": {"source":"assets/source/map-buildings/lord-house-repaired-upper.png","scale":0.8,"contact":[0.509,0.826],"target":[240,300]}
+  }
+}

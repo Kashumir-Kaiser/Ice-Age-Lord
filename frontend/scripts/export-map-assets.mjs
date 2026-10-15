@@ -16,6 +16,7 @@ import {mapGroundShadow} from './map-ground-shadow.mjs';
 import {applyMapArchitecture} from './apply-map-architecture.mjs';
 import {prepareTowerPreviews} from './map-tower-previews.mjs';
 import {staticMapBody} from './map-static-body.mjs';
+import {applyAuthoredArchitecture} from './apply-authored-architecture.mjs';
 const repo=resolve(new URL('../..',import.meta.url).pathname),manifestPath=resolve(repo,'assets/manifest.json');
 const manifest=JSON.parse(readFileSync(manifestPath,'utf8'));
 const authoredViews=JSON.parse(readFileSync(resolve(repo,'assets/map-building-views.json'),'utf8'));
@@ -23,6 +24,7 @@ const depthJoints=JSON.parse(readFileSync(resolve(repo,'assets/map-depth-slices.
 const architecture=JSON.parse(readFileSync(resolve(repo,'assets/map-architecture.json'),'utf8'));
 const staticBodies=JSON.parse(readFileSync(resolve(repo,'assets/map-static-bodies.json'),'utf8'));
 const groundRegistrations=JSON.parse(readFileSync(resolve(repo,'assets/map-ground-registration.json'),'utf8'));
+const authoredArchitecture=JSON.parse(readFileSync(resolve(repo,'assets/map-authored-architecture.json'),'utf8'));
 // This tower's authored SVG groups separate the complete footing from the shaft/roof.
 // Other legacy base/upper files contain arbitrary horizontal clips and remain unaccepted.
 const architecturalAssets=new Set(['fixture-tall-tower']);
@@ -127,7 +129,7 @@ for(const asset of manifest.assets){
 }
 // Stable per-asset/LOD atlases: 4 px extrusion, same logical registration.
 for (const asset of manifest.assets) for (const lod of ['close','district']) {
- const entries=asset.mapExports.filter(e=>e.lod===lod&&!(e.groundShadow&&e.orientation!==asset.orientation)&&!(e.role==='body'&&!e.layerPath&&asset.orientationViews?.[asset.orientation]?.body&&asset.orientationViews[asset.orientation].body!==asset.layers.body));
+ const entries=asset.mapExports.filter(e=>e.lod===lod&&!(e.groundShadow&&e.orientation!==asset.orientation)&&!(e.role==='body'&&!e.layerPath&&(authoredArchitecture[asset.assetId]||asset.orientationViews?.[asset.orientation]?.body&&asset.orientationViews[asset.orientation].body!==asset.layers.body)));
  const side=lod==='close'?1024:512,pad=4,cell=lod==='close'?392:200,cellY=lod==='close'?328:168;
  const pixels=Buffer.alloc(side*side*4);
  for (let i=0;i<entries.length;i++) {
@@ -147,6 +149,7 @@ for (const asset of manifest.assets) for (const lod of ['close','district']) {
 manifest.environmentArt=[];
 // Prefer the actual registered pose over the palette-traced default fallback.
 count+=await applyMapArchitecture(manifest,architecture,repo);
+count+=await applyAuthoredArchitecture(manifest,authoredArchitecture,repo);
 for(const asset of manifest.assets)for(const [orientation,cuts] of Object.entries(depthJoints[asset.assetId]??{})){
  asset.mapDepthSlices??={};asset.mapDepthSlices[orientation]=[];
  for(const lod of ['close','district']){

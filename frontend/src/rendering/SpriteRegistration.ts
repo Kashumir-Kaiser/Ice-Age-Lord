@@ -9,7 +9,7 @@ export function trimmedRect(rect:SpriteRect,trim:SpriteRect):SpriteRect {
 const orientedAssets=new WeakMap<AssetManifestEntry,Map<Orientation,AssetManifestEntry>>();
 const referenceSizes=new WeakMap<AssetManifestEntry,{width:number;height:number}>();
 export function orientationAsset(asset:AssetManifestEntry,orientation:Orientation):AssetManifestEntry {
- const region=asset.orientationRegions?.[orientation];if(!region)return asset;
+ const region=asset.orientationRegions?.[orientation]??asset.orientationRegions?.[asset.orientation as Orientation];if(!region)return asset;
  let views=orientedAssets.get(asset);if(!views){views=new Map();orientedAssets.set(asset,views);}let view=views.get(orientation);if(!view){view={...asset,hitPolygon:region.hitPolygon,occlusionRegion:{upper:region.upper}};views.set(orientation,view);}return view;
 }
 /** Fixed reference from registered art, not the current orientation or building level. */
@@ -33,7 +33,7 @@ export function resolveOrientation(asset: AssetManifestEntry, orientation: Orien
   if (authored) return { layers: authored, missing: false };
   const layers={...asset.layers,...asset.mapLayers};
   if (asset.orientation === orientation || asset.equivalentOrientations?.includes(orientation)) return { layers, missing: false };
-  return { layers, missing: true };
+  return { layers:asset.orientationViews?.[asset.orientation as Orientation]??layers, missing: true };
 }
 export type CompositionLayer = { role: 'shadow' | 'base' | 'upper' | 'body' | 'vfx'; path: string; alpha: number };
 export function composition(asset: AssetManifestEntry, mode: 'normal' | 'focus' | 'planning', occludes: boolean, active: boolean, orientation: Orientation): CompositionLayer[] {

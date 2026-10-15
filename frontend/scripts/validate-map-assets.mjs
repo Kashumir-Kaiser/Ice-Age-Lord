@@ -42,7 +42,7 @@ export function validateMapExport(entry,asset,read=path=>readFileSync(resolve(ro
   const registered=layers[entry.role];
   const source=entry.layerPath??entry.source;
   const planning=entry.role==='base'&&source===asset.planningLayer;
-  const wholeBodyFallback=entry.role==='body'&&!entry.layerPath&&entry.orientation===asset.orientation&&source===asset.layers.body;
+  const wholeBodyFallback=entry.role==='body'&&!entry.layerPath&&entry.orientation===asset.orientation&&(source===asset.layers.body||source===asset.mapLayers?.body);
   if(registered&&source!==registered&&!planning&&!wholeBodyFallback)throw new Error('Map export does not match its registered orientation layer');
  }
  if(entry.atlas){const f=entry.atlas;if(f.x<0||f.y<0||f.width!==entry.width||f.height!==entry.height||f.x+f.width>f.atlasWidth||f.y+f.height>f.atlasHeight||f.atlasWidth>2048||f.atlasHeight>2048)throw new Error('Atlas frame outside bounds');const buffer=read('frontend/public'+f.path);if(!f.sha256||hash(buffer)!==f.sha256)throw new Error('Atlas hash mismatch');checkDimensions(buffer,f.atlasWidth,f.atlasHeight);}

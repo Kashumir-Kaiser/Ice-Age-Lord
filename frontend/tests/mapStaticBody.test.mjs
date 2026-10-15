@@ -33,7 +33,7 @@ test('registered map sources and SVG failure fallback use the static body while 
  const manifest=JSON.parse(readFileSync(new URL('assets/manifest.json',root))),asset=manifest.assets.find(a=>a.assetId===id);
  assert.equal(asset.layers.body,'/assets/buildings/'+id+'/body.svg');
  assert.equal(asset.mapLayers.body,'/assets/map/buildings/'+id+'/body-static.svg');
- for(const mode of ['normal','focus'])assert.equal(composition(asset,mode,true,false,'north').find(l=>l.role==='body').path,asset.mapLayers.body);
+ for(const mode of ['normal','focus'])assert.deepEqual(composition(asset,mode,true,false,'north').filter(l=>l.role!=='shadow').map(l=>l.role),['base','upper']);
  assert.ok(!composition(asset,'planning',false,false,'north').some(l=>l.role==='body'));
  for(const lod of ['close','district']){
   const entry=asset.mapExports.find(e=>e.role==='body'&&e.lod===lod);assert.equal(entry.source,asset.mapLayers.body);validateMapExport(entry,asset);

@@ -2,7 +2,7 @@
   "generator": "OpenAI ImageGen",
   "referenceSource": "assets/source/buildings/lord-house-repaired.svg",
   "referenceSourceSha256": "e7588350010fe8f04b5ca5b31294d0706d1e47840b36135a941e87c4c59ead2a",
-  "purpose": "Missing architectural map-only layers; preserve the original master and UI art. New variants remain drafts pending registration and visual acceptance.",
+  "purpose": "Missing architectural map-only layers; preserve the original master and UI art. North-pose review supports limited draft acceptance: normal composition is coherent, planning shows the foundation only, and focus retains the base at opacity 1 while the upper fades to 0.22. Other poses and broader artistic acceptance remain open.",
   "entries": [
     {
       "role": "base",
@@ -22,5 +22,6 @@
       "generatedAtUtc": "2026-10-15T07:47:04.768036+00:00",
       "instruction": "Preserve the complete timber house, roof/chimney and whole ancillary fence/stacks. Remove low stone footing, steps and snow ground. No smoke or emitted effects. Match the original reference and separate base guide."
     }
-  ]
+  ],
+  "status": "limited-north-only-draft-acceptance"
 }

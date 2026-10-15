@@ -233,3 +233,17 @@ test('compact overview keeps permitted map controls without downloading full sce
  await expect(watchCard.locator('img')).toHaveAttribute('src','/assets/map/buildings/watchtower-preview/icon.svg');
  expect(Array.from(requested).some(url=>/\/assets\/map\/buildings\/(watchtower|elemental-tower)-preview\/body\.svg/.test(url))).toBe(false);
 });
+
+test('repaired-house authored footing and complete upper load for normal, planning and focus',async({page})=>{
+ test.setTimeout(90000);await page.emulateMedia({reducedMotion:'reduce'});
+ const requested=new Set<string>();page.on('request',request=>requested.add(new URL(request.url()).pathname));
+ await territory(page);const before=await page.locator('.territory-instance-main').allTextContents();
+ await page.locator('.territory-calibration > summary').click();await page.getByLabel('Hình minh họa',{exact:true}).selectOption('lord-house-repaired');
+ await page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
+ for(const role of ['base','upper'])await expect.poll(()=>Array.from(requested).some(path=>new RegExp(`/lord-house-repaired/${role}-north-(close|district)\\.png$`).test(path)),{timeout:30000}).toBe(true);
+ const alphas=()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{qaArtLayers:{base:number|null;upper:number|null;body:number|null}|null}[]}).__mapMetrics.at(-1)?.qaArtLayers);
+ await expect.poll(alphas,{timeout:30000}).toEqual({base:1,upper:1,body:null});
+ await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();await expect.poll(alphas,{timeout:30000}).toEqual({base:1,upper:null,body:null});
+ await page.getByRole('button',{name:'Làm mờ phần che',exact:true}).click();await expect.poll(alphas,{timeout:30000}).toEqual({base:1,upper:.22,body:null});
+ await expect(page.locator('.territory-instance-main')).toHaveText(before);
+});
