@@ -597,7 +597,8 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     if (working || !view) return;
     const scope = saveScope.capture(view.saveId);
     if (!scope) return;
-    setWorking(true);
+    // A read-only refresh must not lock save switching while its network request
+    // is outstanding. The save-scope guard below discards stale responses.
     setFeedback({ kind: 'saving', text: 'Đang tải lại tiến trình…' });
     try {
       const nextView = await client.getView();
@@ -611,8 +612,6 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         kind: error instanceof GameApiError && error.code === 'API_DISCONNECTED' ? 'disconnected' : 'rejected',
         text: errorMessage(error),
       });
-    } finally {
-      setWorking(false);
     }
   }
 
