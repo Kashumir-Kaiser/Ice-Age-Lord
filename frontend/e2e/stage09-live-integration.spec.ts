@@ -21,6 +21,12 @@ async function connectAndCreate(page: import('@playwright/test').Page, slotName:
 test('all nine live screens remain on one server-owned save projection at release viewports', async ({ page }, testInfo) => {
   test.setTimeout(180_000);
   await connectAndCreate(page, 'Stage 09 screens ' + crypto.randomUUID());
+  // Fresh inventory is unknown until the player inspects a carried bag.
+  // Use the real gameplay inspection to populate the visible item cards.
+  await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Kho vật phẩm/ }).click();
+  await expect(page.locator('.live-inspectable-list button').first()).toBeVisible();
+  await page.locator('.live-inspectable-list button').first().click();
+  await expect(page.locator('.live-inventory-grid')).toBeVisible();
   const initialRevision = await page.locator('.live-footer').getAttribute('data-revision');
   expect(initialRevision).toBeTruthy();
 
@@ -185,7 +191,7 @@ test('switching saves clears selection and ignores a delayed response from the p
   await expect(page.getByRole('heading', { name: 'Chọn hoặc tạo lượt lưu' })).toBeVisible();
   await page.getByLabel('Tên lượt lưu mới').fill(saveBName);
   await page.getByRole('button', { name: 'Bắt đầu lượt chơi' }).click();
-  await expect(page.getByText('Đang niêm phong', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Thẻ nghề nghiệp chưa kiểm tra' })).toBeVisible();
   const saveBId = await page.locator('.live-footer').getAttribute('data-save-id');
   expect(saveBId).toBeTruthy();
   expect(saveBId).not.toBe(saveAId);
