@@ -62,11 +62,13 @@ export function playerStorageLocation(view: PlayerView, container: Container): s
     case 'carried': return `${playerOwnerName(view, container.location.ownerId)} đang mang`;
     case 'unit': return `Hành trang của ${playerOwnerName(view, container.location.unitId)}`;
     case 'building': {
-      const building = view.territory.buildings.find(b => b.id === container.location.buildingId);
+      const buildingId = container.location.buildingId;
+      const building = view.territory.buildings.find(b => b.id === buildingId);
       return building ? `Trong ${building.name}` : 'Trong công trình';
     }
     case 'site': {
-      const site = view.visibleMap.entities.find(e => e.ref.id === container.location.siteId);
+      const siteId = container.location.siteId;
+      const site = view.visibleMap.entities.find(e => e.ref.id === siteId);
       return site ? `Tại ${site.label}` : 'Tại địa điểm đã biết';
     }
     default: return 'Vị trí chưa rõ';
@@ -85,6 +87,9 @@ export function playerStatus(status: string | null | undefined): string {
     returning:'Đang trở về', sweeping:'Đang tìm kiếm', harvesting:'Đang thu thập',
     weather_unresolved:'Chưa có thông tin thời tiết',
     paused_by_user:'Đã tạm dừng', extinguished:'Đã tắt',
+    day:'Ban ngày', night:'Ban đêm', twilight:'Chạng vạng',
+    queued:'Đang chờ', success:'Thành công', failed:'Không thành công',
+    verified:'Đã xác nhận', unknown:'Chưa biết', normal:'Bình thường',
   };
   return labels[status] ?? status.replace(/_/g, ' ').toLocaleLowerCase('vi-VN');
 }
@@ -98,7 +103,8 @@ export function playerElapsed(elapsedMs: number | null | undefined): string {
 }
 
 /** Only for narrative display. Does not touch authoritative errors or commands. */
-export function playerMessage(message: string): string {
+export function playerMessage(message: string | null | undefined): string {
+  if (!message) return 'Đang chờ cập nhật.';
   return message
     .replace(/\b(?:P0\d?|H0|LL01(?:-[A-Z0-9]+)*)\b/g, 'giai đoạn đầu')
     .replace(/\bWU\/h\b/g, 'đơn vị công việc mỗi giờ')
