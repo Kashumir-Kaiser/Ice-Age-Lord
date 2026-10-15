@@ -229,7 +229,7 @@ function TombQueueList({ view, working, blocked, onCancel }: {
   })}</ul>;
 }
 
-function LiveApp() {
+function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'load' | 'either'; onExit?: () => void }) {
   const [client] = useState(() => new HttpGameClient());
   const [saveScope] = useState(() => new SaveResponseScopeGate());
   const [apiState, setApiState] = useState<'checking' | 'ready' | 'disconnected'>('checking');
@@ -237,6 +237,7 @@ function LiveApp() {
   const [ownerKey, setOwnerKey] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
   const [saves, setSaves] = useState<readonly SaveSummary[]>([]);
+  const [pickerIntent, setPickerIntent] = useState<'new' | 'load' | 'either'>(entryIntent);
   const [slotName, setSlotName] = useState('Lãnh Địa Mới');
   const [view, setView] = useState<PlayerView | null>(null);
   const [events, setEvents] = useState<readonly PlayerEvent[]>([]);
@@ -422,6 +423,7 @@ function LiveApp() {
 
   async function returnToSavePicker() {
     if (working || pendingCommand) return;
+    setPickerIntent('either');
     const generation = saveScope.clear();
     setView(null);
     setSelectedRef(null);
@@ -477,7 +479,8 @@ function LiveApp() {
       const availableSaves = await client.listSaves();
       setSaves(availableSaves);
       setAuthenticated(true);
-      const rememberedId = localStorage.getItem(SAVE_KEY);
+      // A deliberate New Game or Load Save selection must never be bypassed by auto-resume.
+      const rememberedId = entryIntent === 'either' ? localStorage.getItem(SAVE_KEY) : null;
       if (rememberedId && availableSaves.some(save => save.saveId === rememberedId)) {
         try {
           await activateSave(rememberedId);
@@ -1732,6 +1735,7 @@ function LiveApp() {
   if (!authenticated) {
     return <main className="live-start-page">
       <section className="live-start-card">
+        {onExit && <button type="button" className="frozen-menu__back" onClick={onExit}>← Menu chính</button>}
         <span className="live-eyebrow">PHIÊN CHƠI CỤC BỘ</span>
         <h1>Kết nối game API</h1>
         <p>Chế độ live chỉ dùng API SQLite cục bộ. Khóa chủ sở hữu chỉ được gửi tới API để tạo bearer session và không được lưu trong trình duyệt.</p>
@@ -1757,21 +1761,28 @@ function LiveApp() {
   if (!view) {
     return <main className="live-start-page">
       <section className="live-start-card live-save-picker">
-        <span className="live-eyebrow">OWNER SESSION CONNECTED</span>
-        <h1>Chọn hoặc tạo lượt lưu</h1>
-        <p>Chưa có trạng thái game nào được mở. Tạo clean game mới hoặc tải một save đã có.</p>
+        {onExit && <button type="button" className="frozen-menu__back" onClick={onExit}>← Menu chính</button>}
+        <span className="live-eyebrow">OWNER SESSION CONNECTED · SQLITE</span>
+        <h1>{pickerIntent === 'new' ? 'Trò chơi mới' : pickerIntent === 'load' ? 'Tải lượt lưu' : 'Chọn hoặc tạo lượt lưu'}</h1>
+        <p>{pickerIntent === 'new' ? 'Tạo một lượt chơi độc lập, bắt đầu ở T0. Không dùng lại tiến trình hoặc vật phẩm từ lượt khác.' :
+          pickerIntent === 'load' ? 'Chọn một lượt đã tồn tại trên máy chủ để tiếp tục. Việc mở danh sách không tạo lượt mới.' :
+          'Chưa có trạng thái game nào được mở. Tạo clean game mới hoặc tải một save đã có.'}</p>
         <StatusBanner feedback={feedback} retry={pendingCommand ? retryPending : undefined} />
-        <form className="live-owner-form" onSubmit={createFreshSave}>
+        {pickerIntent !== 'either' && <div className="live-picker-tabs" role="group" aria-label="Tạo mới hoặc tải lượt lưu">
+          <button type="button" className={pickerIntent === 'new' ? 'is-active' : ''} aria-pressed={pickerIntent === 'new'} disabled={working} onClick={() => setPickerIntent('new')}>Trò chơi mới</button>
+          <button type="button" className={pickerIntent === 'load' ? 'is-active' : ''} aria-pressed={pickerIntent === 'load'} disabled={working} onClick={() => setPickerIntent('load')}>Tải lượt lưu</button>
+        </div>}
+        {(pickerIntent === 'new' || pickerIntent === 'either') && <form className="live-owner-form" onSubmit={createFreshSave}>
           <label htmlFor="slot-name">Tên lượt lưu mới</label>
           <input id="slot-name" value={slotName} onChange={event => setSlotName(event.target.value)} maxLength={80} required disabled={working} />
           <button className="live-button" type="submit" disabled={working}>{working ? 'Đang tạo…' : 'Tạo lượt chơi sạch'} <ArrowRight size={16} /></button>
-        </form>
-        {saves.length > 0 && <div className="live-save-list">
+        </form>}
+        {(pickerIntent === 'load' || pickerIntent === 'either') && (saves.length > 0 ? <div className="live-save-list">
           <h2>Lượt lưu có sẵn</h2>
           {saves.map(save => <button key={save.saveId} className="live-save-row" disabled={working} onClick={() => void openSave(save.saveId)}>
             <span><strong>{save.slotName}</strong><small>{save.saveId} · revision {save.revision}</small></span><ArrowRight size={17} />
           </button>)}
-        </div>}
+        </div> : <p className="live-empty-state" role="status">Chưa có lượt lưu trên máy chủ. Hãy chọn Trò chơi mới để bắt đầu.</p>)}
       </section>
     </main>;
   }
@@ -1794,6 +1805,7 @@ function LiveApp() {
       <header className="live-topbar">
         <ScreenHeading mode="live" className="live-topbar-heading" eyebrow="CUỘC HÀNH TRÌNH" title={navigation.find(item => item.id === screen)?.name ?? screen} description={`${selectedSave?.slotName || view.player.name} · Ngày ${view.worldClock.day} ${String(view.worldClock.hour).padStart(2, '0')}:${String(view.worldClock.minute).padStart(2, '0')} · revision ${view.revision}`}/>
         <div className="live-header-actions">
+          {onExit && <button type="button" className="live-button live-button--secondary live-save-switch" disabled={working || Boolean(pendingCommand)} onClick={onExit}>Menu chính</button>}
           <button
             className="live-button live-button--secondary live-save-switch"
             title={pendingCommand ? 'Gửi lại cùng mã lệnh trước khi đổi lượt lưu.' : 'Chọn một lượt lưu khác.'}
