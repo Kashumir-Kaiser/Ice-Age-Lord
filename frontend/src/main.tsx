@@ -19,10 +19,8 @@ const demoEnabled = import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEMO === 
 function configuredLaunch(): Launch | null {
   const params = new URLSearchParams(window.location.search);
   const queryMode = params.get('mode');
-  const configuredMode = import.meta.env.VITE_GAME_MODE;
-  const mode = queryMode === 'live' || queryMode === 'demo'
-    ? queryMode
-    : configuredMode === 'live' || configuredMode === 'demo' ? configuredMode : null;
+  // The root URL always opens the main menu; an explicit URL is required to skip it.
+  const mode = queryMode === 'live' || queryMode === 'demo' ? queryMode : null;
   if (!mode || (mode === 'demo' && !demoEnabled)) return null;
   const value = params.get('intent');
   const intent: LiveEntryIntent = value === 'new' || value === 'load' ? value : 'either';
