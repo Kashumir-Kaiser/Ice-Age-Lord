@@ -280,3 +280,30 @@
 @media (max-width: 370px) {
   .live-inventory-art-list { grid-template-columns: 1fr; }
 }
+
+/* An actual building list should look like the demo's structure collection. */
+.live-building-gallery-panel { padding: 22px 23px; }
+.live-building-gallery { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; }
+.live-building-gallery-card { display: flex; flex-direction: column; min-width: 0; overflow: hidden; padding: 0; text-align: left; }
+.live-building-gallery-card:hover { border-color: rgba(226,192,142,.38); }
+.live-building-gallery-art {
+  display: grid; place-items: center; width: 100%; min-height: 140px;
+  background: radial-gradient(ellipse at center,rgba(88,142,149,.2),transparent 65%),linear-gradient(140deg,#193846,#112b39);
+  color: #d7c29c;
+}
+.live-building-gallery-art img { display: block; width: 100px; height: 100px; max-width: 75%; object-fit: contain; filter: drop-shadow(0 9px 17px rgba(0,0,0,.4)); }
+.live-building-gallery-card .building-info { min-width: 0; flex: 1; padding: 17px; }
+.live-building-gallery-card .building-info > span:first-child { color: #98c0c1; }
+.live-building-gallery-card .building-info h3 { font: normal 19px Georgia,'Times New Roman',serif; margin: 8px 0; }
+.live-building-gallery-card .building-info p { min-height: 18px; margin-bottom: 10px; }
+.live-building-gallery-card .building-open { display: inline-flex; gap: 5px; align-items: center; color: #e0c28e; font-size: 11px; }
+@media (max-width: 1020px) { .live-building-gallery { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 620px) {
+  .live-building-gallery-panel { padding: 15px; }
+  .live-building-gallery { gap: 8px; }
+  .live-building-gallery-art { min-height: 110px; }
+  .live-building-gallery-art img { width: 75px; height: 75px; }
+  .live-building-gallery-card .building-info { padding: 12px; }
+  .live-building-gallery-card .building-info h3 { font-size: 16px; }
+}
+@media (max-width: 390px) { .live-building-gallery { grid-template-columns: 1fr; } }
