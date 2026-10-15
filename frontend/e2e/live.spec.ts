@@ -127,7 +127,7 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
   await page.getByRole('button', { name: 'Tạo lượt chơi sạch' }).click();
   await expect(page.locator('.live-footer')).toContainText('revision 1');
 
-  await page.getByRole('button', { name: 'Lãnh địa' }).click();
+  await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Lãnh địa/ }).click();
   const territoryCampfire = page.locator('.territory-building[data-building-id="SITE-LL01-000"]');
   await expect(territoryCampfire).toBeVisible();
   await expect(territoryCampfire).toHaveAttribute('data-building-id', fireKey.slice('site:'.length));
