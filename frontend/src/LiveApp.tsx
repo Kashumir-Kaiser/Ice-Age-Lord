@@ -411,14 +411,14 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     setSelectedRef(nextView.territory.survivalFire.ref);
     localStorage.setItem(SAVE_KEY, saveId);
     setScreen('overview');
-    try {
-      await refreshEvents(nextView.lastEventSequence, scope);
-    } catch (error) {
+    // The selected save/view is ready for commands. Event history is an optional
+    // sidebar read and must never keep the entire game locked while SQLite loads it.
+    void refreshEvents(nextView.lastEventSequence, scope).catch(error => {
       if (saveScope.isCurrent(scope)) {
         setEvents([]);
-        setFeedback({ kind: 'committed', text: 'Lượt lưu đã mở; nhật ký chưa tải được: ' + errorMessage(error) });
+        console.warn('Event history could not be loaded for the selected save:', errorMessage(error));
       }
-    }
+    });
   }
 
   async function returnToSavePicker() {
@@ -543,12 +543,19 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       localStorage.setItem(SAVE_KEY, result.save.saveId);
       localStorage.removeItem(storageKey);
       setSaves(current => [result.save, ...current.filter(save => save.saveId !== result.save.saveId)]);
-      await refreshEvents(nextView.lastEventSequence, scope);
       setScreen('overview');
       setFeedback({
         kind: 'committed',
         text: (result.created ? 'Clean game đã được tạo và commit.' : 'Đã khôi phục yêu cầu tạo lượt lưu idempotent.')
           + ' Revision ' + nextView.revision + '.',
+      });
+      // Do not leave New Game controls disabled while an optional event page loads.
+      // Save selection, clock ownership and the authoritative view have committed.
+      void refreshEvents(nextView.lastEventSequence, scope).catch(error => {
+        if (saveScope.isCurrent(scope)) {
+          setEvents([]);
+          console.warn('Initial save event history could not be loaded:', errorMessage(error));
+        }
       });
     } catch (error) {
       setFeedback({
