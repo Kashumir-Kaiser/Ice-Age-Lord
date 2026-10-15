@@ -1,0 +1,200 @@
+/* Ice Age Lord original main-menu art direction: carved iron, frozen stone, deep teal, candle-gold.
+   Scoped: menu selectors never style the game maps or simulation panels. */
+.frozen-menu {
+  --menu-iron: #071321;
+  --menu-ice: #9fcbd5;
+  --menu-gold: #e6c28b;
+  min-height: 100vh;
+  min-height: 100dvh;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(410px,520px);
+  grid-template-rows: auto 1fr auto;
+  color: #eef4ef;
+  background: #061322;
+  font-family: Georgia, "Times New Roman", serif;
+}
+.frozen-menu::after {
+  content:""; position:absolute; z-index:-1; inset:0; pointer-events:none;
+  background: radial-gradient(ellipse 53% 50% at 36% 43%,transparent 45%,#030b15a8 100%),
+    linear-gradient(0deg,#030b15 0%,transparent 27%,transparent 78%,#040b16a0 100%);
+}
+.frozen-menu__scene {
+  position:absolute; z-index:-4; inset:-1.5%; pointer-events:none;
+  background: url('/menu-ice-citadel.svg') 32% 50%/cover no-repeat;
+  animation: frozen-scene-drift 24s ease-in-out infinite alternate;
+  transform-origin: 42% 46%;
+}
+.frozen-menu__veils {
+  position:absolute; z-index:-3; inset:0; pointer-events:none;
+  background:linear-gradient(90deg,rgba(5,17,31,.12) 0%,rgba(4,13,24,.06) 47%,rgba(2,8,16,.58) 70%,rgba(2,8,15,.95) 100%),
+    radial-gradient(ellipse at 39% 20%,rgba(120,192,227,.18),transparent 53%);
+}
+.frozen-menu__snow { position:absolute; z-index:-2; inset:-100px 0 0; pointer-events:none; opacity:.38; }
+.frozen-menu__snow--far {
+  background-image:radial-gradient(1px 1px at 24px 35px,#e5f5f7 93%,transparent),
+                   radial-gradient(1px 1px at 104px 155px,#cfe7eb 93%,transparent),
+                   radial-gradient(1.5px 1.5px at 174px 86px,#d9f1f5 93%,transparent);
+  background-size:227px 187px; animation:frozen-snow 26s linear infinite;
+}
+.frozen-menu__snow--near {
+  opacity:.31;
+  background-image:radial-gradient(2px 2px at 60px 30px,#fff 90%,transparent),
+                   radial-gradient(1.5px 1.5px at 154px 124px,#d0f3ff 90%,transparent);
+  background-size:311px 251px; animation:frozen-snow 15s linear infinite;
+}
+.frozen-menu__masthead {
+  grid-column:1; grid-row:1; margin:clamp(36px,7vh,82px) 0 0 clamp(28px,6vw,112px);
+  display:flex; align-items:center; gap:22px; position:relative; z-index:1;
+  filter:drop-shadow(0 8px 23px #000a);
+}
+.frozen-menu__seal {
+  flex:none; position:relative; width:79px;height:87px; display:grid;place-items:center;
+  clip-path:polygon(50% 0%,87% 16%,100% 72%,50% 100%,0% 72%,13% 16%);
+  border:0; color:#e2e2d6; background:linear-gradient(125deg,#b5cfcd 0%,#486e7d 16%,#071728 39%,#244454 74%,#c0d9d4 100%);
+  box-shadow:inset 0 0 0 4px #061425;
+}
+.frozen-menu__seal::before {
+  content:"";position:absolute;inset:7px;clip-path:inherit;
+  background:radial-gradient(circle at 51% 33%,#4d7787,#081b2c 65%,#040a16);
+}
+.frozen-menu__seal svg {position:absolute;z-index:1;filter:drop-shadow(0 0 10px #61cbef88);}
+.frozen-menu__seal svg:last-child {color:#e8b871;transform:translateY(16px);filter:drop-shadow(0 0 8px #dea36399);}
+.frozen-menu__overline {
+  display:block;color:#b7cdd0;font:700 10px/1.5 "Segoe UI",Arial,sans-serif;letter-spacing:5px;
+  text-shadow:0 2px 8px #000;
+}
+.frozen-menu__title-group h1 {
+  margin:5px 0 3px; white-space:nowrap;
+  font:700 clamp(45px,4.8vw,82px)/.95 Georgia,serif; letter-spacing:-2px;
+  color:#d3e4e8; -webkit-text-stroke:.5px #f7ffff55;
+  text-shadow:0 2px 0 #4b6876,0 5px 0 #081827,0 12px 18px #000e,0 0 40px #8bd9f040;
+}
+.frozen-menu__title-group h1 em {font-style:normal;color:#f0d8a6;text-shadow:0 3px 0 #7e6342,0 6px 3px #08121e,0 11px 19px #000c;}
+.frozen-menu__title-rule {height:2px; width:100%; max-width:385px; margin-top:14px; background:linear-gradient(90deg,#d5e5dd99,#d6af6baa,transparent);position:relative;}
+.frozen-menu__title-rule span {position:absolute;top:-4px;left:46%;width:7px;height:7px;transform:rotate(45deg);background:#dcb878;box-shadow:0 0 14px #f4cf8c8c;}
+.frozen-menu__lore {
+  grid-column:1;grid-row:2;align-self:end; margin:0 0 clamp(85px,12vh,154px) clamp(34px,9vw,174px);
+  width:min(580px,75%);text-shadow:0 4px 18px #010914;
+}
+.frozen-menu__lore-mark {display:block;font-size:45px;line-height:1;color:#d6e5e4a8;margin-bottom:10px;}
+.frozen-menu__lore p {margin:0 0 5px;color:#e2eced;font-size:clamp(18px,2vw,31px);letter-spacing:1px;}
+.frozen-menu__lore strong {font-size:clamp(13px,1.25vw,20px);font-weight:400;color:#c9c3b0;font-style:italic;}
+.frozen-menu__right {
+  grid-column:2;grid-row:1 / 3;align-self:center;justify-self:end;
+  padding:84px clamp(34px,4vw,78px) 70px 0;width:100%;position:relative;z-index:2;
+}
+.frozen-menu__frame {
+  position:relative;min-height:520px;padding:38px 30px 27px;
+  background:
+    linear-gradient(140deg,#a9bfc157 0 1px,transparent 1px) top left/100% 100% no-repeat,
+    linear-gradient(160deg,#12293cfa,#081826f6 55%,#050f1cfc);
+  border:2px solid #456477;outline:1px solid #030c17;outline-offset:6px;
+  box-shadow:inset 0 0 0 2px #09141e,inset 0 0 0 4px #7795a038,0 27px 65px #000b,0 0 45px #89a7ab16;
+}
+.frozen-menu__frame::before {content:"";position:absolute;inset:10px;pointer-events:none;border:1px solid #7a969c28;}
+.frozen-menu__frame::after {content:"";position:absolute;left:29%;right:29%;top:-12px;height:10px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,#a9c3c6,#7eabb7,#d2bd8f,transparent);
+  clip-path:polygon(0 100%,18% 30%,50% 0,82% 30%,100% 100%);
+}
+.frozen-menu__corner {position:absolute;width:42px;height:42px;z-index:1;border:3px solid #9fb9b7;filter:drop-shadow(0 2px 2px #000);}
+.frozen-menu__corner--tl {top:-3px;left:-3px;border-right:0;border-bottom:0;}
+.frozen-menu__corner--tr {top:-3px;right:-3px;border-left:0;border-bottom:0;}
+.frozen-menu__corner--bl {bottom:-3px;left:-3px;border-right:0;border-top:0;}
+.frozen-menu__corner--br {bottom:-3px;right:-3px;border-left:0;border-top:0;}
+.frozen-menu__frame-head {text-align:center;padding:3px 5px 25px;}
+.frozen-menu__ornament {display:flex;align-items:center;gap:16px;color:#cfb37e;margin:0 auto 17px;justify-content:center;font-size:14px;}
+.frozen-menu__ornament::before,.frozen-menu__ornament::after {content:"";height:1px;flex:1;max-width:92px;background:linear-gradient(90deg,transparent,#94b3b9);}
+.frozen-menu__ornament::after {transform:rotate(180deg);}
+.frozen-menu__frame-head>span {font:700 10px/1.4 "Segoe UI",Arial,sans-serif;color:#bba783;letter-spacing:3px;}
+.frozen-menu__frame-head h2 {margin:9px 0 8px;color:#f4e7cb;font:500 clamp(23px,2.15vw,30px)/1.15 Georgia,serif;text-shadow:0 3px 9px #000;}
+.frozen-menu__frame-head p {margin:0;color:#94b6be;font:12px/1.65 "Segoe UI",Arial,sans-serif;}
+.frozen-menu__actions {display:flex;flex-direction:column;gap:12px;}
+.frozen-menu__action {
+  position:relative;width:100%;min-height:80px;display:flex;align-items:center;gap:15px;text-align:left;
+  padding:12px 17px;border-radius:2px;border:1px solid #6a859095;color:#d9e5e4;
+  background:linear-gradient(105deg,#223d50 0%,#122738 46%,#081b2d 100%);
+  box-shadow:inset 0 1px #cadcdb18,inset 0 -3px #010b16,0 6px 12px #0007;
+  transition:border-color .16s,background .16s,transform .16s,box-shadow .16s;
+}
+.frozen-menu__action::before {content:"";position:absolute;left:7px;top:7px;bottom:7px;width:2px;background:linear-gradient(#a3d5d6,transparent);opacity:.34;}
+.frozen-menu__action--primary {border-color:#bdac80a1;background:linear-gradient(105deg,#304b59,#1c3241 45%,#102536);}
+.frozen-menu__action--demo {opacity:.79;}
+.frozen-menu__action:hover {
+  border-color:#e8c98b;transform:translateX(-5px);
+  background:linear-gradient(105deg,#416274,#213f51 46%,#122b40);
+  box-shadow:inset 0 1px #d9f3f33c,0 0 24px #72c3dd2c,0 8px 20px #0009;
+}
+.frozen-menu__action:focus-visible {outline:3px solid #edcf94;outline-offset:4px;}
+.frozen-menu__action:active {transform:translate(-2px,2px);}
+.frozen-menu__action-icon {width:43px;height:43px;flex:none;display:grid;place-items:center;color:#dbbd87;border:1px solid #9db7ba4d;transform:rotate(45deg);background:#081b2b;}
+.frozen-menu__action-icon>svg {transform:rotate(-45deg);}
+.frozen-menu__action-content {display:flex;flex-direction:column;flex:1;gap:6px;min-width:0;}
+.frozen-menu__action-content strong {font:600 20px/1.1 Georgia,serif;letter-spacing:.3px;color:#f0e5d0;text-shadow:0 2px 8px #000;}
+.frozen-menu__action-content small {font:11px/1.35 "Segoe UI",Arial,sans-serif;color:#96b7bf;}
+.frozen-menu__action>svg:last-child {color:#cdb987;opacity:.8;flex:none;transition:transform .16s;}
+.frozen-menu__action:hover>svg:last-child {transform:translateX(4px);}
+.frozen-menu__frame-foot {display:flex;align-items:center;justify-content:center;gap:9px;margin-top:24px;padding-top:20px;border-top:1px solid #7796a52c;color:#7898a3;font:10px/1.6 "Segoe UI",Arial,sans-serif;text-align:center;}
+.frozen-menu__frame-foot svg {flex:none;color:#ae9971;}
+.frozen-menu__footer {
+  grid-column:1 / -1;grid-row:3;z-index:2;
+  display:flex;align-items:center;justify-content:space-between;gap:15px;
+  padding:16px clamp(22px,4vw,75px);color:#7f9aa3;border-top:1px solid #8bafba22;
+  background:linear-gradient(90deg,#030b16c7,#061726c2,#030b16ea);
+  font:700 9px/1.5 "Segoe UI",Arial,sans-serif;letter-spacing:1.6px;
+}
+.frozen-menu__footer-center {color:#b3c0b9;letter-spacing:2px;}
+.frozen-menu__footer-center b {color:#d0ae7e;margin:0 8px;font-size:8px;}
+/* The existing owner-auth and save picker inherit the new visual language without changing their API. */
+.live-start-page {background:linear-gradient(95deg,#030b16bf,#071626d9),url('/menu-ice-citadel.svg') center/cover no-repeat,#081722;}
+.live-start-card {
+  border-radius:3px;
+  border:1px solid #688b92a0;
+  box-shadow:inset 0 0 0 2px #051522,0 26px 85px #000b;
+  background:linear-gradient(155deg,#1a3445fa,#091a2afa 85%);
+}
+.frozen-menu__back {display:inline-flex;align-items:center;gap:7px;border:0;background:transparent;color:#d5c093;padding:7px 0;font:700 11px "Segoe UI",Arial,sans-serif;cursor:pointer;}
+.frozen-menu__back:hover {color:#fff0c4;}
+.live-picker-tabs {display:flex;gap:10px;margin:19px 0 8px;}
+.live-picker-tabs button {flex:1;min-height:43px;border:1px solid #6a859073;background:#102638;color:#a6c1c7;font-weight:700;}
+.live-picker-tabs button.is-active {border-color:#d0b47f;color:#f2dfb8;background:#2b3840;}
+@keyframes frozen-scene-drift {from {transform:scale(1.025) translate3d(-.4%,0,0);}to {transform:scale(1.075) translate3d(.4%,-.6%,0);}}
+@keyframes frozen-snow {from {transform:translate3d(0,-25px,0);}to {transform:translate3d(-55px,170px,0);}}
+@media (max-width:1120px) {
+  .frozen-menu {grid-template-columns:minmax(0,1fr) minmax(360px,450px);}
+  .frozen-menu__masthead {margin-left:35px;gap:12px;}
+  .frozen-menu__title-group h1 {font-size:clamp(39px,4vw,58px);}
+  .frozen-menu__seal {width:61px;height:70px;}
+  .frozen-menu__right {padding-right:30px;}
+  .frozen-menu__lore {margin-left:44px;}
+}
+@media (max-width:770px) {
+  .frozen-menu {display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;min-height:100dvh;overflow-x:hidden;}
+  .frozen-menu__scene {background-position:38% center;}
+  .frozen-menu__veils {background:linear-gradient(0deg,#020812f0,#020913bb 55%,#0614236e),radial-gradient(ellipse at 40% 30%,#417aa92a,transparent);}
+  .frozen-menu__masthead {margin:35px 24px 0;justify-content:center;gap:13px;}
+  .frozen-menu__title-group h1 {font-size:clamp(40px,8vw,67px);letter-spacing:-1px;}
+  .frozen-menu__overline {font-size:8px;letter-spacing:3px;}
+  .frozen-menu__lore {display:none;}
+  .frozen-menu__right {align-self:center;max-width:510px;padding:75px 23px 65px;}
+  .frozen-menu__frame {padding:25px 17px 20px;min-height:0;}
+  .frozen-menu__frame-head {padding-bottom:22px;}
+  .frozen-menu__action {min-height:72px;}
+  .frozen-menu__footer {margin-top:auto;justify-content:center;text-align:center;padding:13px 18px;}
+  .frozen-menu__footer-center,.frozen-menu__footer>span:last-child {display:none;}
+}
+@media (max-width:390px) {
+  .frozen-menu__masthead {gap:8px;margin:30px 11px 0;}
+  .frozen-menu__seal {width:51px;height:58px;}
+  .frozen-menu__title-group h1 {font-size:39px;}
+  .frozen-menu__right {padding:70px 16px 50px;}
+  .frozen-menu__frame-head h2 {font-size:23px;}
+  .frozen-menu__action-content strong {font-size:18px;}
+  .frozen-menu__action-content small {font-size:10px;}
+}
+@media (prefers-reduced-motion:reduce) {
+  .frozen-menu__scene,.frozen-menu__snow {animation:none!important;}
+  .frozen-menu__action,.frozen-menu__action>svg:last-child {transition:none!important;}
+}
