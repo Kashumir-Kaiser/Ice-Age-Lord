@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import {
   AlertCircle, ArrowRight, Bell, CalendarDays, CheckCircle2, Eye, Flame, Hammer, Map as MapIcon,
-  MapPin, PackageOpen, RefreshCw, ScrollText, Shield, Sparkles, UserRound, Users,
+  MapPin, PackageOpen, RefreshCw, ScrollText, Shield, Sparkles, UserRound, Users, Layers,
 } from 'lucide-react';
 import type {
   ActionAvailability, ClockSpeedSelection, CommandEnvelope, CommandPayloadByType, CommandType,
@@ -829,9 +829,9 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     const selectedCombatTarget = view.combat?.target && view.combat.target.id === selectedCombatTargetId ? view.combat.target : null;
     const selectedCombatActorId = combatActorId || view.units.find(unit => unit.health && unit.health.current > 0)?.id || '';
     return <div className="live-section-stack">
-      <section className="live-panel">
+      <section className="live-panel live-exploration-panel">
         <div className="live-panel-heading">
-          <div><span className="live-eyebrow">VISIBLE MAP · SERVER KNOWLEDGE</span><h2>Exploration and travel</h2></div>
+          <div><span className="live-eyebrow">BẢN ĐỒ ĐÃ KHÁM PHÁ</span><h2>Exploration and travel</h2></div>
           <span className="live-data-chip">{view.visibleMap.entities.length} entity</span>
         </div>
         <p className="live-muted">Camera movement only changes the view. Travel, sight, and searching change saved knowledge after the server settles them.</p>
@@ -1473,7 +1473,18 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     }
 
     if (screen === 'forces') {
-      return <div className="live-section-stack">{renderDispatchPanel()}<section className="live-panel">
+      const livingUnits = view.units.filter(unit => unit.health?.current !== 0);
+      const activeOrders = view.spatial.searchJobs.filter(job => job.status === 'active').length
+        + view.spatial.movementOrders.filter(order => order.status === 'active').length
+        + view.spatial.harvestJobs.filter(job => job.status === 'active').length;
+      return <div className="live-section-stack live-force-page">
+        <section className="stats-grid live-forces-stats" aria-label="Tổng quan quân lực">
+          <article className="stat-card"><span className="stat-icon"><Shield size={20}/></span><span>Đơn vị còn sống</span><strong>{livingUnits.length}</strong><small>Số lượng có trong lượt lưu</small></article>
+          <article className="stat-card stat-card--ice"><span className="stat-icon"><Sparkles size={20}/></span><span>Thiên phú chính</span><strong>{view.player.talent.grade}</strong><small>{view.player.talent.name}</small></article>
+          <article className="stat-card"><span className="stat-icon"><Users size={20}/></span><span>Đội đang làm nhiệm vụ</span><strong>{activeOrders}</strong><small>Lệnh di chuyển, tìm kiếm và thu thập</small></article>
+          <article className="stat-card stat-card--warm"><span className="stat-icon"><Layers size={20}/></span><span>Đang sản xuất tại Mộ</span><strong>{view.territory.tomb.activeCount}</strong><small>{view.territory.tomb.productionSlots} ô sản xuất</small></article>
+        </section>
+        <section className="live-panel live-force-roster">
         <div className="live-panel-heading"><div><span className="live-eyebrow">OWNED UNITS</span><h2>Quân lực</h2></div><Users size={22} /></div>
         {view.combat?.target && <article className="live-container-card" data-testid="stage07-combat-panel">
           <div className="live-panel-heading"><div><span className="live-eyebrow">H0 · OPENING ENCOUNTER</span><h3>{view.combat.target.label}</h3></div>
@@ -1505,7 +1516,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           {view.combat.target.state === 'retreated' && <p>Cá thể này đã sống sót và rời khỏi encounter. Không có thi thể hoặc phần thưởng XP.</p>}
         </article>}
         {view.units.length
-          ? <div className="live-section-stack">{view.units.map(unit => {
+          ? <div className="live-force-unit-grid">{view.units.map(unit => {
             const routeLabel = unit.creationRoute === 'DIRECT_TU_PHUC' ? 'Được Lí Lan Tử Phục' : unit.creationRoute === 'TOMB_QUEUE' ? 'Được tạo từ Mộ' : 'Đơn vị thuộc quyền Lí Lan';
             const inCombat = view.combat?.encounter?.status === 'active' && view.combat.encounter.actorIds.includes(unit.id);
             const accessibleItems = view.inventory.containers.filter(container => container.accessible).flatMap(container => container.items);
@@ -1542,7 +1553,9 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         </li>)}</ul></>}
         <h3>Việc Mộ đang chờ</h3>
         <TombQueueList view={view} working={working} blocked={Boolean(pendingCommand)} onCancel={cancelTombJob} />
-      </section></div>;
+      </section>
+      {renderDispatchPanel()}
+      </div>;
     }
 
     if (screen === 'buildings') {
