@@ -15,6 +15,12 @@ const ITEM_NAMES: Readonly<Record<string,string>> = {
   'BROWN-COAL': 'Than nâu',
   'RAW-SALT': 'Muối thô',
   'WILD-FOOD': 'Thực phẩm hoang dã',
+  'STAGE07-ASH-WOOD-SPEAR': 'Giáo gỗ tần bì',
+  'STAGE07-FELT-CLOAK': 'Áo choàng nỉ',
+  'IRON-POT': 'Nồi sắt',
+  'STONE-AXE': 'Rìu đá',
+  'WOODEN-STAFF': 'Gậy gỗ',
+  'WOODEN-ROUND-SHIELD': 'Khiên gỗ tròn',
 };
 
 const TOKEN_NAMES: Readonly<Record<string,string>> = {
@@ -100,6 +106,8 @@ export function playerStatus(status: string | null | undefined): string {
     depleted:'Đã cạn', partial:'Một phần', open_surface:'Trên mặt đất',
     cancelled:'Đã hủy', expired:'Hết hạn', closed:'Đã đóng',
     common:'Thường', white:'Trắng', green:'Lục', blue:'Lam', purple:'Tím', gold:'Vàng',
+    victory:'Chiến thắng', dead:'Đã chết', retreated:'Đã rút lui', available:'Sẵn sàng',
+    hit:'Trúng đòn', missed:'Đánh trượt', miss:'Đánh trượt', defeated:'Đã bị đánh bại',
   };
   if (labels[status]) return labels[status];
   if (/(?:^|[-_])(?:H\d+|P\d{1,2}|LL\d+|EV\d+|BP)(?:[-_]|$)/i.test(status)) return 'Chưa rõ';
