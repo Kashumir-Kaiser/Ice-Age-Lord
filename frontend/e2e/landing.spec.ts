@@ -26,7 +26,7 @@ test('main menu is the default entry, is keyboard accessible, and fits mobile', 
   await page.getByTestId('menu-new-game').focus();
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/mode=live&intent=new/);
-  await expect(page.getByRole('heading', { name: 'Kết nối game API' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Kết nối trò chơi' })).toBeVisible();
   await page.getByRole('button', { name: /Menu chính/ }).click();
   await expect(page.getByTestId('menu-load-save')).toBeVisible();
 });
@@ -47,7 +47,7 @@ test('New Game asks for a clean slot and never auto-resumes the remembered save'
 
   await page.goto('/');
   await page.getByTestId('menu-new-game').click();
-  await expect(page.getByRole('heading', { name: 'Kết nối game API' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Kết nối trò chơi' })).toBeVisible();
   await page.getByLabel('Khóa chủ sở hữu').fill('test-key');
   await page.getByRole('button', { name: 'Kết nối API' }).click();
   await expect(page.getByRole('heading', { name: 'Trò chơi mới' })).toBeVisible();
@@ -115,6 +115,6 @@ test('explicit disabled demo route does not fall back to the real API', async ({
   // guards only the development route. Production must be built separately
   // without VITE_ENABLE_DEMO=true and smoke-tested against ?mode=demo.
   await page.goto('/?mode=live&intent=load');
-  await expect(page.getByRole('heading', { name: 'Kết nối game API' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Kết nối trò chơi' })).toBeVisible();
   await expect(page.getByText(/Chế độ demo/)).toHaveCount(0);
 });
