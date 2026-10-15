@@ -858,7 +858,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
               setDestinationAvailability(null);
             } else setChooseDestination(true);
           }}>
-            {chooseDestination ? 'Cancel destination selection' : 'Choose destination'}
+            {chooseDestination ? 'Hủy chọn điểm đến' : 'Chọn điểm đến'}
           </button>
           <div className="live-zoom-controls"><button className="live-button live-button--secondary" aria-label="Zoom out" disabled={mapZoom <= 0.2} onClick={() => setMapZoom(value => Math.max(0.2, Math.round(value / 1.6 * 100) / 100))}>−</button><span>{mapZoom.toFixed(2)}×</span><button className="live-button live-button--secondary" aria-label="Zoom in" disabled={mapZoom >= 500} onClick={() => setMapZoom(value => Math.min(500, Math.round(value * 1.6 * 100) / 100))}>+</button><button className="live-button live-button--secondary live-map-overview" aria-label="Show map overview" onClick={() => { setMapZoom(1); setMapOffsetMm({ xMm: 0, yMm: 0 }); }}>Overview</button></div>
           <label className="live-inline-field">Người di chuyển <select value={travelActorId} onChange={event => { setTravelActorId(event.target.value); setMapOffsetMm({ xMm: 0, yMm: 0 }); setDestination(null); setDestinationAvailability(null); }}><option value={view.player.id}>{view.player.name}</option>{view.units.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}</select></label>
@@ -1217,7 +1217,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         <button className="live-button" data-testid={dispatchMode === 'hunt' ? 'hunt-area' : 'search-for-chests'} disabled={working || Boolean(pendingCommand) || busy || !dispatchPreview?.enabled} onClick={() => void sendCommand(searchCommand)}>{dispatchMode === 'hunt' ? 'Săn bắt' : 'Tìm rương'}</button>
       </div>
       {busy && <small className="live-resource-access">Một thành viên đã có nhiệm vụ khác. Hãy chọn người đang rảnh.</small>}
-      {dispatchPreview && <p className={dispatchPreview.enabled ? 'live-preview-success' : 'live-inline-error'}>{dispatchPreview.enabled ? `${dispatchPreview.preview?.label}: ${dispatchPreview.preview?.value}` : availabilityMessage(dispatchPreview)}</p>}
+      {dispatchPreview && <p className={dispatchPreview.enabled ? 'live-preview-success' : 'live-inline-error'}>{dispatchPreview.enabled ? 'Đã kiểm tra hành trình. Có thể điều động đội.' : availabilityMessage(dispatchPreview)}</p>}
       {knownTarget?.state === 'available' && <div className="live-hunt-row">
         <label className="live-inline-field">Chiến binh<select value={selectedHunter} onChange={event => setHuntActorId(event.target.value)}>
           <option value="">Choose a living owned unit</option>{livingUnits.map(unit => <option key={unit.id} value={unit.id} disabled={busyActorIds.has(unit.id)}>{unit.name}{busyActorIds.has(unit.id) ? ' · assigned' : ''}</option>)}
@@ -1793,7 +1793,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       <div className="live-panel-heading"><div><span className="live-eyebrow">NHẬT KÝ</span><h2>Nhật ký</h2></div><ScrollText size={22} /></div>
       <div className="live-two-column">
         <section className="live-panel">
-          <div className="live-panel-heading"><div><span className="live-eyebrow">SỰ KIỆN ĐÃ BIẾT</span><h3>Lịch sử sự kiện</h3></div></div>
+          <div className="live-panel-heading"><div><span className="live-eyebrow">SỰ KIỆN</span><h3>Lịch sử sự kiện</h3></div></div>
           {view.calendar.length
             ? <ul className="live-plain-list">{view.calendar.map(event => <li key={event.id}>
               <strong>{event.displayName} · {event.status === 'active' ? 'Đang mở' : event.status === 'locked' ? 'Đã khóa' : event.status === 'resolved' ? 'Đã kết thúc' : event.status === 'blocked' ? 'Tạm dừng' : event.status}</strong>
@@ -1964,7 +1964,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         </details>
         <PageFrame mode="live" className={`live-screen live-screen--${screen}`}>{pageContent()}</PageFrame>
       </div>
-      <footer className="live-footer" data-revision={view.revision}><span><img src="/crest.svg" width={21} height={21} alt=""/> ICE AGE LORD</span><span>{selectedSave?.slotName || 'Cuộc phiêu lưu của ' + view.player.name}</span></footer>
+      <footer className="live-footer" data-save-id={view.saveId} data-revision={view.revision}><span><img src="/crest.svg" width={21} height={21} alt=""/> ICE AGE LORD</span><span>{selectedSave?.slotName || 'Cuộc phiêu lưu của ' + view.player.name}</span></footer>
     </main>
   </div>;
 }
