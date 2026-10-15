@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-label="An original illustration of a frozen ruined citadel on an ancient battlefield">
+<defs>
+<linearGradient id="sky" x2=".2" y2="1"><stop stop-color="#030a18"/><stop offset=".4" stop-color="#102841"/><stop offset=".72" stop-color="#1b4154"/><stop offset="1" stop-color="#091722"/></linearGradient>
+<radialGradient id="aura"><stop stop-color="#d4f4ff" stop-opacity=".57"/><stop offset=".26" stop-color="#79cde8" stop-opacity=".35"/><stop offset=".65" stop-color="#5ba2dc" stop-opacity=".09"/><stop offset="1" stop-color="#3b70a4" stop-opacity="0"/></radialGradient>
+<linearGradient id="ice" x2=".8" y2="1"><stop stop-color="#c5e4e3"/><stop offset=".35" stop-color="#4d8ca2"/><stop offset=".8" stop-color="#163e59"/><stop offset="1" stop-color="#081e30"/></linearGradient>
+<linearGradient id="shadow" x2=".9" y2="1"><stop stop-color="#213d56"/><stop offset=".45" stop-color="#0a1f34"/><stop offset="1" stop-color="#030b16"/></linearGradient>
+<linearGradient id="ground" x2="0" y2="1"><stop stop-color="#42758c"/><stop offset=".25" stop-color="#264e64"/><stop offset=".75" stop-color="#102a40"/><stop offset="1" stop-color="#040b18"/></linearGradient>
+<linearGradient id="crystal" x2=".3" y2="1"><stop stop-color="#e9fcff"/><stop offset=".38" stop-color="#73bdd6"/><stop offset="1" stop-color="#0e405e"/></linearGradient>
+<filter id="haze"><feGaussianBlur stdDeviation="34"/></filter>
+<filter id="glow"><feGaussianBlur stdDeviation="11"/></filter>
+</defs>
+<rect width="1920" height="1080" fill="url(#sky)"/>
+<ellipse cx="758" cy="420" rx="665" ry="596" fill="url(#aura)"/>
+<path d="M0 435 83 372 134 406 223 251 276 323 358 192 418 286 514 189 604 330 680 248 740 336 810 219 904 370 990 284 1120 404 1288 280 1395 369 1502 305 1630 385 1816 273 1920 398V714H0Z" fill="#102a40"/>
+<path d="M0 515 116 433 182 480 325 320 391 403 510 322 632 471 722 385 839 465 965 349 1109 480 1228 385 1355 466 1491 361 1635 454 1772 363 1920 456V706H0Z" fill="#16374e"/>
+<path d="m88 439 28-6 66 47 141-158 58 75 129-74 120 148 92-87 118 80 130-113 140 128 120-91 122 80 133-106 137 91 137-91 147 93-124-55-121 33-112-37-105 47-133-36-126 42-141-69-119 57-123-38-99 45-91-52-92 37-130-29Z" fill="#9bbbc2" opacity=".28"/>
+<path d="M0 600Q210 470 404 575T815 566Q1000 490 1155 560t336-33q228-60 429 10v543H0Z" fill="#2d6075" opacity=".34" filter="url(#haze)"/>
+<!-- The ruined polar stronghold -->
+<path d="M270 759 295 629 369 593 382 435 405 397 418 308 435 425 462 458 465 570 524 576 553 497 568 391 584 481 632 513 651 407 668 480 717 535 764 555 813 644 800 750Z" fill="#061522"/>
+<path d="M378 604 396 431 418 307 434 430 449 594Z" fill="url(#crystal)"/>
+<path d="M405 425 418 307 419 601 382 601Z" fill="#152e4b"/>
+<path d="m397 428 21-122 3 307-28-9Z" fill="#abdfe1" opacity=".35"/>
+<path d="m330 631 41-43 15-76 13 87 54 39 44-76 32 62 37-31 31 41 34-92 38 73 41-36 53 51 38 105H295Z" fill="url(#shadow)" stroke="#406478" stroke-width="3"/>
+<path d="M340 629 367 583 387 588 384 512 409 594 460 608 494 567 522 623 569 602 598 629 634 564 659 623 702 604 752 641" fill="none" stroke="#a7cdd5" stroke-opacity=".43" stroke-width="6"/>
+<path d="M275 751 319 635 401 615 452 630 475 706 538 624 612 651 673 639 758 684 811 771Z" fill="#0a1f32"/>
+<path d="m307 708 48-67 65-20 22 79-60 33m88 13 51-90 79-18 55 83m-5-68 40-24 60 47" fill="none" stroke="#446a7c" stroke-width="4" opacity=".8"/>
+<path d="M379 637v103m13-99v80m17-80v87m33-100v92m172-66v102m14-114v118" stroke="#203951" stroke-width="10"/>
+<!-- Lost bridge and hanging chains -->
+<path d="M479 618Q603 714 750 607M473 636Q612 725 752 631" fill="none" stroke="#17283b" stroke-width="12"/>
+<g stroke="#728b99" stroke-opacity=".6" stroke-width="5" fill="none"><path d="M480 611Q593 709 746 608"/><path d="M494 619l2 15m24 7-3 17m25 3-5 18m27-1-3 19m30-13-1 20m33-20 1 18m32-19 4 17m27-29 6 16m26-40 9 14"/></g>
+<ellipse cx="418" cy="401" rx="110" ry="340" fill="#97cde9" opacity=".11" filter="url(#glow)"/>
+<path d="M416 304 407 540 418 575 426 526Z" fill="#c5fbff" opacity=".5" filter="url(#glow)"/>
+<!-- Foreground cliffs, cracked ancient ice -->
+<path d="M0 778Q139 696 239 748t257 4q154-57 282 25t363-41q211-99 420 11t359-11v344H0Z" fill="url(#ground)"/>
+<path d="M0 839 127 774 200 792 325 747 434 786 552 748 635 784 755 752 871 827 1026 759 1125 815 1280 778 1430 809 1600 751 1760 787 1920 737V1080H0Z" fill="#102c42"/>
+<path d="M0 890 156 850 252 887 352 833 442 862 610 813 795 904 983 846 1130 887 1352 821 1553 863 1752 792 1920 839V1080H0Z" fill="#071a2c"/>
+<path d="M102 910 259 876 372 898 510 865 635 894 757 866 867 907 977 872 1080 925 1278 882 1435 902 1598 858 1839 876" fill="none" stroke="#9ed0d5" stroke-width="5" opacity=".22"/>
+<path d="m207 858-59 100 108-62 99-17m360 24-43 85 89-64 50-11m300-2-33 84 73-41m271-53-49 90 85-55" fill="none" stroke="#4c879b" stroke-width="3" opacity=".35"/>
+<!-- Frozen monoliths and ancient battlefield markers -->
+<path d="M124 872 167 695 206 826 184 932Z" fill="url(#ice)" stroke="#568da2" stroke-width="4"/>
+<path d="m154 763 14-68 5 208-22-35Z" fill="#b1e7e9" opacity=".3"/>
+<path d="M848 890 893 678 926 851 899 951Z" fill="url(#shadow)" stroke="#6e9eb0" stroke-width="3"/>
+<path d="M1325 884 1371 708 1417 832 1392 946Z" fill="url(#ice)" opacity=".62"/>
+<path d="M1050 828 1074 765l14 84-20 42Z" fill="#487a94"/>
+<path d="M1169 832 1196 754l15 90-22 62Z" fill="#335f77"/>
+<path d="M1049 820h24m120-43 13-13M260 824l23 9" stroke="#c7eaf0" stroke-width="3" opacity=".3"/>
+<!-- Far right vignette, preserving reading contrast -->
+<rect width="1920" height="1080" fill="#01060e" opacity=".07"/>
+<path d="M1330 0h590v1080h-750Q1580 680 1500 420T1330 0Z" fill="#030a14" opacity=".48"/>
+<path d="M0 0h1920v1080H0Z" fill="none" stroke="#09111d" stroke-width="24"/>
+</svg>
