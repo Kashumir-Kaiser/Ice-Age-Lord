@@ -55,7 +55,7 @@ test('Stage 07 plays and reloads a timed H0 combat encounter through the browser
   await expect(page.getByRole('heading', { name: 'Kết nối trò chơi' })).toBeVisible();
   await expect(page.getByText('Trò chơi đã sẵn sàng')).toBeVisible();
   await page.getByLabel('Khóa chủ sở hữu').fill(ownerKey!);
-  await page.getByRole('button', { name: 'Kết nối API' }).click();
+  await page.getByRole('button', { name: 'Kết nối trò chơi' }).click();
   await expect(page.getByRole('heading', { name: 'Chọn hoặc tạo lượt lưu' })).toBeVisible();
 
   const slotName = 'Stage 07 combat ' + crypto.randomUUID();
@@ -101,7 +101,7 @@ test('Stage 07 plays and reloads a timed H0 combat encounter through the browser
   await expect(combatPanel).toContainText(/Đang hoạt động · vòng [1-9]/);
   await page.reload();
   await page.getByLabel('Khóa chủ sở hữu').fill(ownerKey!);
-  await page.getByRole('button', { name: 'Kết nối API' }).click();
+  await page.getByRole('button', { name: 'Kết nối trò chơi' }).click();
   await expect(page.getByText('Đã mở lượt lưu trước đó.')).toBeVisible();
   await navigation.getByRole('button', { name: /^Quân lực/ }).click();
   const restoredCombatPanel = page.getByTestId('stage07-combat-panel');
