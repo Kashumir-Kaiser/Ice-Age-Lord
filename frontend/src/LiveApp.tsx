@@ -293,7 +293,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     client.health().then(() => {
       if (!active) return;
       setApiState('ready');
-      setApiMessage('API sẵn sàng · SQLite · phiên cục bộ');
+      setApiMessage('Trò chơi đã sẵn sàng');
     }).catch(error => {
       if (!active) return;
       setApiState('disconnected');
@@ -387,7 +387,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     try {
       await client.health();
       setApiState('ready');
-      setApiMessage('API sẵn sàng · SQLite · phiên cục bộ');
+      setApiMessage('Trò chơi đã sẵn sàng');
     } catch (error) {
       setApiState('disconnected');
       setApiMessage(errorMessage(error));
@@ -572,8 +572,8 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       setScreen('overview');
       setFeedback({
         kind: 'committed',
-        text: (result.created ? 'Clean game đã được tạo và commit.' : 'Đã khôi phục yêu cầu tạo lượt lưu idempotent.')
-          + ' Revision ' + nextView.revision + '.',
+        text: (result.created ? 'Đã tạo cuộc phiêu lưu mới.' : 'Đã tiếp tục lượt chơi.')
+         ,
       });
       // Do not leave New Game controls disabled while an optional event page loads.
       // Save selection, clock ownership and the authoritative view have committed.
@@ -1328,7 +1328,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
               <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'inspect_career_card', {}))}><Eye size={16} /> Kiểm tra thẻ nghề nghiệp</button></>}
         </section>
         {view.construction.rewardEntitlements.map(reward =>
-          <p className="live-inline-error" key={reward.id}>Thành tựu {reward.achievementId} đang chặn phần thưởng: {reward.blocker}. Vật phẩm chưa được tạo.</p>)}
+          <p className="live-inline-error" key={reward.id}>Phần thưởng thành tựu đang chờ hoàn tất: {playerMessage(reward.blocker)}</p>)}
         {eventBoard()}
         <details className="live-panel live-overview-diagnostics">
           <summary>Thông tin phiên chơi và dữ liệu máy chủ</summary>
@@ -1809,8 +1809,8 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           <div className="live-panel-heading"><div><span className="live-eyebrow">NHIỆM VỤ</span><h3>Nhiệm vụ</h3></div></div>
           {view.quests.length
             ? <ul className="live-plain-list">{view.quests.map(quest => <li key={quest.questId}>
-              <strong>{quest.questId} · {quest.state}</strong>
-              <span>{quest.rewardReceipt ? `Biên nhận thưởng ${quest.rewardReceipt}` : quest.completedAt !== null ? `Hoàn tất lúc ${elapsedLabel(quest.completedAt)}` : quest.acceptedAt !== null ? `Nhận lúc ${elapsedLabel(quest.acceptedAt)}` : 'Đang chờ điều kiện đã biết'}</span>
+              <strong>Nhiệm vụ · {playerStatus(quest.state)}</strong>
+              <span>{quest.rewardReceipt ? 'Đã nhận phần thưởng' : quest.completedAt !== null ? `Hoàn tất lúc ${elapsedLabel(quest.completedAt)}` : quest.acceptedAt !== null ? `Nhận lúc ${elapsedLabel(quest.acceptedAt)}` : 'Đang chờ điều kiện đã biết'}</span>
               {quest.questId === 'QUEST-LL01-08' && quest.state === 'open' && <>
                 <span>Torven’s convoy is distressed at the old trade-road bridge; its response window closes at {elapsedLabel(view.stage08.caravan?.deadlineAtElapsedMs ?? null)}.</span>
                 <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'accept_quest', { questId: quest.questId }))}>Accept caravan request</button>
@@ -1833,8 +1833,8 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         </section>
       </div>
       {events.length
-        ? <ol className="live-event-list">{events.map(item => <li key={item.eventId}><span className="live-event-sequence">#{item.sequence} · {item.category}</span><strong>{item.title}</strong><p>{item.text}</p></li>)}</ol>
-        : <p className="live-empty-state">API chưa trả event nào cho lượt lưu này.</p>}
+        ? <ol className="live-event-list">{events.map(item => <li key={item.eventId}><span className="live-event-sequence">#{item.sequence}</span><strong>{item.title}</strong><p>{item.text}</p></li>)}</ol>
+        : <p className="live-empty-state">Chưa có sự kiện nào trong nhật ký.</p>}
     </section>;
   }
 
@@ -1845,11 +1845,11 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       <section className="live-start-card">
         {onExit && <button type="button" className="frozen-menu__back" onClick={onExit}>← Menu chính</button>}
         <span className="live-eyebrow">PHIÊN CHƠI CỤC BỘ</span>
-        <h1>Kết nối game API</h1>
-        <p>Chế độ live chỉ dùng API SQLite cục bộ. Khóa chủ sở hữu chỉ được gửi tới API để tạo bearer session và không được lưu trong trình duyệt.</p>
+        <h1>Kết nối trò chơi</h1>
+        <p>Nhập khóa truy cập để mở các lượt chơi đã lưu. Khóa chỉ dùng để kết nối và không được lưu trên trình duyệt.</p>
         <div className={'live-api-status live-api-status--' + apiState}>
           <span className="live-status-dot" />
-          <span>{apiMessage || 'Đang kiểm tra API…'}</span>
+          <span>{apiMessage || 'Đang kết nối…'}</span>
           {apiState === 'disconnected' && <button className="live-icon-button" aria-label="Thử kết nối lại" onClick={() => void checkApi()}><RefreshCw size={16} /></button>}
         </div>
         <form className="live-owner-form" onSubmit={connectOwner}>
@@ -1861,7 +1861,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           </button>
         </form>
         <StatusBanner feedback={feedback} />
-        <p className="live-footnote">Thời gian mô phỏng do máy chủ quyết toán. Lỗi API sẽ dừng thao tác tại đây.</p>
+        <p className="live-footnote">Tiến trình được lưu tự động sau khi hành động hoàn tất.</p>
       </section>
     </main>;
   }
@@ -1870,7 +1870,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     return <main className="live-start-page">
       <section className="live-start-card live-save-picker">
         {onExit && <button type="button" className="frozen-menu__back" onClick={onExit}>← Menu chính</button>}
-        <span className="live-eyebrow">OWNER SESSION CONNECTED · SQLITE</span>
+        <span className="live-eyebrow">CHỌN LƯỢT CHƠI</span>
         <h1>{pickerIntent === 'new' ? 'Trò chơi mới' : pickerIntent === 'load' ? 'Tải lượt lưu' : 'Chọn hoặc tạo lượt lưu'}</h1>
         <p>{pickerIntent === 'new' ? 'Bắt đầu một cuộc phiêu lưu mới. Vật phẩm và tiến trình được tách biệt với các lượt chơi khác.' :
           pickerIntent === 'load' ? 'Chọn một lượt đã tồn tại trên máy chủ để tiếp tục. Việc mở danh sách không tạo lượt mới.' :
@@ -1883,12 +1883,12 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         {(pickerIntent === 'new' || pickerIntent === 'either') && <form className="live-owner-form" onSubmit={createFreshSave}>
           <label htmlFor="slot-name">Tên lượt lưu mới</label>
           <input id="slot-name" value={slotName} onChange={event => setSlotName(event.target.value)} maxLength={80} required disabled={working} />
-          <button className="live-button" type="submit" disabled={working}>{working ? 'Đang tạo…' : 'Tạo lượt chơi sạch'} <ArrowRight size={16} /></button>
+          <button className="live-button" type="submit" disabled={working}>{working ? 'Đang tạo…' : 'Bắt đầu lượt chơi'} <ArrowRight size={16} /></button>
         </form>}
         {(pickerIntent === 'load' || pickerIntent === 'either') && (saves.length > 0 ? <div className="live-save-list">
           <h2>Lượt lưu có sẵn</h2>
           {saves.map(save => <button key={save.saveId} className="live-save-row" disabled={working} onClick={() => void openSave(save.saveId)}>
-            <span><strong>{save.slotName}</strong><small>{save.saveId} · revision {save.revision}</small></span><ArrowRight size={17} />
+            <span><strong>{save.slotName}</strong><small>Tiếp tục cuộc phiêu lưu</small></span><ArrowRight size={17} />
           </button>)}
         </div> : <p className="live-empty-state" role="status">Chưa có lượt lưu trên máy chủ. Hãy chọn Trò chơi mới để bắt đầu.</p>)}
       </section>
@@ -1907,11 +1907,11 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           </button>;
         })}
       </nav>
-      <div className="live-sidebar-footer"><span>Đồng hồ thế giới</span><strong>{view.clockControl.status.toUpperCase()}</strong></div>
+      <div className="live-sidebar-footer"><span>Đồng hồ thế giới</span><strong>{playerStatus(view.clockControl.status)}</strong></div>
     </aside>
     <main className="live-main">
       <header className="live-topbar">
-        <ScreenHeading mode="live" className="live-topbar-heading" eyebrow="CUỘC HÀNH TRÌNH" title={navigation.find(item => item.id === screen)?.name ?? screen} description={`${selectedSave?.slotName || view.player.name} · Ngày ${view.worldClock.day} ${String(view.worldClock.hour).padStart(2, '0')}:${String(view.worldClock.minute).padStart(2, '0')} · revision ${view.revision}`}/>
+        <ScreenHeading mode="live" className="live-topbar-heading" eyebrow="CUỘC HÀNH TRÌNH" title={navigation.find(item => item.id === screen)?.name ?? screen} description={`${selectedSave?.slotName || view.player.name} · Ngày ${view.worldClock.day} ${String(view.worldClock.hour).padStart(2, '0')}:${String(view.worldClock.minute).padStart(2, '0')}`}/>
         <div className="live-header-actions">
           {onExit && <button type="button" className="live-button live-button--secondary live-save-switch" disabled={working || Boolean(pendingCommand)} onClick={onExit}>Menu chính</button>}
           <button
@@ -1943,9 +1943,9 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
               <div className="live-notification-heading"><strong>Thông báo</strong><button className="live-text-button" onClick={() => setScreen('journal')}>Mở nhật ký</button></div>
               {events.length
                 ? <ol className="live-event-list">{events.slice(-5).reverse().map(item => <li key={item.eventId}>
-                  <span className="live-event-sequence">#{item.sequence} · {item.category}</span><strong>{item.title}</strong><p>{item.text}</p>
+                  <span className="live-event-sequence">#{item.sequence}</span><strong>{item.title}</strong><p>{item.text}</p>
                 </li>)}</ol>
-                : <p className="live-empty-state">Chưa có thông báo trong nhật ký máy chủ.</p>}
+                : <p className="live-empty-state">Chưa có thông báo.</p>}
             </section>}
           </div>
           <button className="live-icon-button" aria-label="Tải lại tiến trình" onClick={() => void loadLatest()} disabled={working}><RefreshCw size={17} /></button>
@@ -1959,12 +1959,12 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       <div className="live-content">
         <StatusBanner feedback={feedback} retry={pendingCommand ? retryPending : undefined} />
         <details className="live-runtime-details">
-          <summary><span>Trạng thái thế giới và mô phỏng</span><span>Ngày {view.worldClock.day} · {view.clockControl.status} · {view.territory.tomb.activeCount} đơn vị đang sản xuất</span></summary>
+          <summary><span>Tình hình lãnh địa</span><span>Ngày {view.worldClock.day} · {playerStatus(view.clockControl.status)} · {view.territory.tomb.activeCount} đơn vị đang sản xuất</span></summary>
           <RuntimeStrip view={view}/>
         </details>
         <PageFrame mode="live" className={`live-screen live-screen--${screen}`}>{pageContent()}</PageFrame>
       </div>
-      <footer className="live-footer"><span><img src="/crest.svg" width={21} height={21} alt=""/> ICE AGE LORD</span><span>Lượt lưu {view.saveId} · revision {view.revision}</span></footer>
+      <footer className="live-footer" data-revision={view.revision}><span><img src="/crest.svg" width={21} height={21} alt=""/> ICE AGE LORD</span><span>{selectedSave?.slotName || 'Cuộc phiêu lưu của ' + view.player.name}</span></footer>
     </main>
   </div>;
 }
