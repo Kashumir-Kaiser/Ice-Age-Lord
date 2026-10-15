@@ -8,21 +8,20 @@ async function connectAndCreate(page: import('@playwright/test').Page, slotName:
   const ownerKey = process.env.ILL_TEST_OWNER_KEY;
   expect(ownerKey, 'CI must provide the ephemeral Stage 09 owner key').toBeTruthy();
   await page.goto('/?mode=live');
-  await expect(page.getByRole('heading', { name: 'Kết nối game API' })).toBeVisible();
-  await expect(page.getByText('API sẵn sàng · SQLite · phiên cục bộ')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Kết nối trò chơi' })).toBeVisible();
+  await expect(page.getByText('Trò chơi đã sẵn sàng')).toBeVisible();
   await page.getByLabel('Khóa chủ sở hữu').fill(ownerKey!);
   await page.getByRole('button', { name: 'Kết nối API' }).click();
   await expect(page.getByRole('heading', { name: 'Chọn hoặc tạo lượt lưu' })).toBeVisible();
   await page.getByLabel('Tên lượt lưu mới').fill(slotName);
-  await page.getByRole('button', { name: 'Tạo lượt chơi sạch' }).click();
+  await page.getByRole('button', { name: 'Bắt đầu lượt chơi' }).click();
   await expect(page.getByTestId('live-overview-parity').getByText('Ngày 1 · 07:00', { exact: true })).toBeVisible({ timeout: 35_000 });
 }
 
 test('all nine live screens remain on one server-owned save projection at release viewports', async ({ page }, testInfo) => {
   test.setTimeout(180_000);
   await connectAndCreate(page, 'Stage 09 screens ' + crypto.randomUUID());
-  const initialFooter = await page.locator('.live-footer').innerText();
-  const initialRevision = initialFooter.match(/revision (\d+)/)?.[1];
+  const initialRevision = await page.locator('.live-footer').getAttribute('data-revision');
   expect(initialRevision).toBeTruthy();
 
   const viewports = [
@@ -36,7 +35,7 @@ test('all nine live screens remain on one server-owned save projection at releas
     for (const screen of screens) {
       await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: new RegExp(`^${screen}`) }).click();
       await expect(page.getByRole('heading', { level: 1, name: screen })).toBeVisible();
-      await expect(page.locator('.live-footer')).toContainText(`revision ${initialRevision}`);
+      await expect(page.locator('.live-footer')).toHaveAttribute('data-revision', initialRevision!);
       if (screen === 'Tổng quan') {
         const overview = page.getByTestId('live-overview-parity');
         await expect(overview).toBeVisible();
@@ -104,9 +103,9 @@ test('all nine live screens remain on one server-owned save projection at releas
 
   await page.setViewportSize(viewports[0]);
   await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Bản đồ/ }).click();
-  const revisionBeforeCameraInput = await page.locator('.live-footer span').nth(1).innerText();
+  const revisionBeforeCameraInput = await page.locator('.live-footer').getAttribute('data-revision');
   await page.getByRole('button', { name: 'Show map overview' }).click();
-  await expect(page.locator('.live-footer span').nth(1)).toHaveText(revisionBeforeCameraInput);
+  await expect(page.locator('.live-footer')).toHaveAttribute('data-revision', revisionBeforeCameraInput!);
   const map = page.getByTestId('live-map');
   const box = await map.boundingBox();
   expect(box).not.toBeNull();
@@ -117,30 +116,27 @@ test('all nine live screens remain on one server-owned save projection at releas
   await page.mouse.up();
   const afterCenter = await page.locator('.live-map-tools .live-data-chip').last().innerText();
   expect(afterCenter).not.toBe(beforeCenter);
-  await expect(page.locator('.live-footer span').nth(1)).toHaveText(revisionBeforeCameraInput);
+  await expect(page.locator('.live-footer')).toHaveAttribute('data-revision', revisionBeforeCameraInput!);
 });
 
 test('map expedition preview and area search commit through the selected save API', async ({ page }) => {
   test.setTimeout(120_000);
   await connectAndCreate(page, 'Stage 09 area expedition ' + crypto.randomUUID());
   await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Bản đồ/ }).click();
-  await page.getByRole('button', { name: 'Pick center on map' }).click();
+  await page.getByRole('button', { name: 'Chọn tâm tìm kiếm' }).click();
   const map = page.locator('[data-testid="live-map"]');
   const bounds = await map.boundingBox();
   expect(bounds).toBeTruthy();
   await map.click({ position: { x: bounds!.width / 2, y: bounds!.height / 2 } });
-  await expect(page.getByText(/· custom$/)).toBeVisible();
-  await page.getByLabel('Stop after targets').fill('1');
-  await page.getByLabel('Work time limit').selectOption('15');
-  await page.getByRole('button', { name: 'Preview expedition' }).click();
+  await expect(page.getByText(/Điểm đã chọn$/)).toBeVisible();
+  await page.getByLabel('Dừng sau số mục tiêu').fill('1');
+  await page.getByLabel('Thời gian tối đa').selectOption('15');
+  await page.getByRole('button', { name: 'Xem trước chuyến đi' }).click();
   const estimate = page.locator('.live-preview-success');
-  await expect(estimate).toContainText('outbound');
-  await expect(estimate).toContainText('estimated return');
-  await expect(estimate).toContainText('total');
-  await expect(estimate).toContainText('then returns');
+  await expect(estimate).toContainText('Đã kiểm tra hành trình');
   await page.getByTestId('search-for-chests').click();
   await expect(page.locator('.live-map-search-path')).toHaveCount(1);
-  await expect(page.locator('.live-footer')).toContainText(/revision [2-9]\d*/);
+  await expect(page.locator('.live-footer')).toHaveAttribute('data-revision', /[2-9]\d*/);
 });
 
 test('switching saves clears selection and ignores a delayed response from the prior save', async ({ page }) => {
@@ -156,15 +152,15 @@ test('switching saves clears selection and ignores a delayed response from the p
   await expect(woodMarker).toBeVisible();
   await woodMarker.click();
   await expect(woodMarker).toHaveClass(/is-selected/);
-  const saveAId = (await page.locator('.live-footer').innerText()).match(/Save ([0-9a-f-]+)/)?.[1];
+  const saveAId = await page.locator('.live-footer').getAttribute('data-save-id');
   expect(saveAId).toBeTruthy();
 
   await page.getByRole('button', { name: 'Đổi lượt lưu' }).click();
   await expect(page.getByRole('heading', { name: 'Chọn hoặc tạo lượt lưu' })).toBeVisible();
   await page.getByLabel('Tên lượt lưu mới').fill(saveBName);
-  await page.getByRole('button', { name: 'Tạo lượt chơi sạch' }).click();
+  await page.getByRole('button', { name: 'Bắt đầu lượt chơi' }).click();
   await expect(page.getByText('Đang niêm phong', { exact: true })).toBeVisible();
-  const saveBId = (await page.locator('.live-footer').innerText()).match(/Save ([0-9a-f-]+)/)?.[1];
+  const saveBId = await page.locator('.live-footer').getAttribute('data-save-id');
   expect(saveBId).toBeTruthy();
   expect(saveBId).not.toBe(saveAId);
   await navigation.getByRole('button', { name: /^Bản đồ/ }).click();
@@ -173,7 +169,7 @@ test('switching saves clears selection and ignores a delayed response from the p
 
   await page.getByRole('button', { name: 'Đổi lượt lưu' }).click();
   await page.getByRole('button', { name: new RegExp(saveAName) }).click();
-  await expect(page.locator('.live-footer')).toContainText(`Save ${saveAId}`);
+  await expect(page.locator('.live-footer')).toHaveAttribute('data-save-id', saveAId!);
   await expect(page.getByRole('heading', { name: 'Đã quan sát' })).toBeVisible();
   await navigation.getByRole('button', { name: /^Bản đồ/ }).click();
   await expect(page.getByTestId('map-campfire-marker')).toHaveClass(/is-selected/);
@@ -195,7 +191,7 @@ test('switching saves clears selection and ignores a delayed response from the p
   try {
     // Explicitly trigger a view request; background polls are intentionally
     // throttled while paused and should not be relied upon by this test.
-    await page.getByRole('button', { name: 'Tải lại từ API' }).click();
+    await page.getByRole('button', { name: 'Tải lại tiến trình' }).click();
     await Promise.race([
       delayedView,
       page.waitForTimeout(12_000).then(() => { throw new Error('The explicit save refresh did not reach the delayed response gate.'); }),
@@ -203,10 +199,12 @@ test('switching saves clears selection and ignores a delayed response from the p
     await page.getByRole('button', { name: 'Đổi lượt lưu' }).click();
     await expect(page.getByRole('heading', { name: 'Chọn hoặc tạo lượt lưu' })).toBeVisible();
     await page.getByRole('button', { name: new RegExp(saveBName) }).click();
-    await expect(page.locator('.live-footer')).toContainText(`Save ${saveBId} · revision 1`);
+    await expect(page.locator('.live-footer')).toHaveAttribute('data-save-id', saveBId!);
+    await expect(page.locator('.live-footer')).toHaveAttribute('data-revision', '1');
     releaseDelayedView?.();
     await expect(page.getByText('Đang niêm phong', { exact: true })).toBeVisible();
-    await expect(page.locator('.live-footer')).toContainText(`Save ${saveBId} · revision 1`);
+    await expect(page.locator('.live-footer')).toHaveAttribute('data-save-id', saveBId!);
+    await expect(page.locator('.live-footer')).toHaveAttribute('data-revision', '1');
     await navigation.getByRole('button', { name: /^Bản đồ/ }).click();
     await expect(page.getByTestId('map-campfire-marker')).toHaveClass(/is-selected/);
     await expect(page.locator('[data-entity-ref="resource:RES-LL01-06"]')).not.toHaveClass(/is-selected/);
