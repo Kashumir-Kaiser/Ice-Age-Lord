@@ -15444,11 +15444,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
+              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
+              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -15505,11 +15505,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
+              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
+              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -15562,15 +15562,15 @@
           "path": "/assets/map/buildings/lord-house-l30/body-layered-north-close.png",
           "layerPath": "/assets/map/buildings/lord-house-l30/body-layered-north-close.png",
           "source": "frontend/scripts/apply-authored-architecture.mjs",
-          "sourceSha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e",
+          "sourceSha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056",
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
+              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
+              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -15626,11 +15626,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
+              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
+              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -15687,11 +15687,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
+              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
+              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -15744,15 +15744,15 @@
           "path": "/assets/map/buildings/lord-house-l30/body-layered-north-district.png",
           "layerPath": "/assets/map/buildings/lord-house-l30/body-layered-north-close.png",
           "source": "frontend/scripts/apply-authored-architecture.mjs",
-          "sourceSha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e",
+          "sourceSha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056",
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
+              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
+              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -16186,7 +16186,7 @@
             },
             {
               "source": "assets/map-static-bodies.json",
-              "sha256": "f96dcbd7e78917740f51795b6fcec02a57e9ce9361bb28952bdcbca609a8e0e9"
+              "sha256": "3cb18aae5efe0975945236d79221a50b16af7458c15297d1b4f66bc0806df228"
             },
             {
               "source": "frontend/scripts/map-static-body.mjs",
@@ -16240,7 +16240,7 @@
             },
             {
               "source": "assets/map-static-bodies.json",
-              "sha256": "f96dcbd7e78917740f51795b6fcec02a57e9ce9361bb28952bdcbca609a8e0e9"
+              "sha256": "3cb18aae5efe0975945236d79221a50b16af7458c15297d1b4f66bc0806df228"
             },
             {
               "source": "frontend/scripts/map-static-body.mjs",
@@ -16487,11 +16487,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
+              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
+              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -16548,11 +16548,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
+              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
+              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -16605,15 +16605,15 @@
           "path": "/assets/map/buildings/lord-house-repaired/body-layered-north-close.png",
           "layerPath": "/assets/map/buildings/lord-house-repaired/body-layered-north-close.png",
           "source": "frontend/scripts/apply-authored-architecture.mjs",
-          "sourceSha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e",
+          "sourceSha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056",
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
+              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
+              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -16669,11 +16669,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
+              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
+              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -16730,11 +16730,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
+              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
+              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -16787,15 +16787,15 @@
           "path": "/assets/map/buildings/lord-house-repaired/body-layered-north-district.png",
           "layerPath": "/assets/map/buildings/lord-house-repaired/body-layered-north-close.png",
           "source": "frontend/scripts/apply-authored-architecture.mjs",
-          "sourceSha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e",
+          "sourceSha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056",
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
+              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
+              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -49786,7 +49786,7 @@
         }
       },
       "referenceSource": "assets/source/concepts/tomb-ranks-01-10.png#cell=0,0",
-      "composition": "single-body",
+      "composition": "architectural",
       "mapExports": [
         {
           "path": "/assets/map/buildings/tomb-entry/body-close.png",
@@ -49828,16 +49828,6 @@
             "y": 30,
             "width": 370,
             "height": 340
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/tomb-entry/atlas-close.png",
-            "x": 4,
-            "y": 4,
-            "width": 296,
-            "height": 272,
-            "atlasWidth": 1024,
-            "atlasHeight": 1024,
-            "sha256": "d7105b47c2e162c621e705b1febdaa519612d10666c35bdc085d4ae73f27326e"
           }
         },
         {
@@ -49880,16 +49870,6 @@
             "y": 27.500000000000004,
             "width": 375,
             "height": 345
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/tomb-entry/atlas-district.png",
-            "x": 4,
-            "y": 4,
-            "width": 150,
-            "height": 138,
-            "atlasWidth": 512,
-            "atlasHeight": 512,
-            "sha256": "472cf10586e4bae71d582ccb0db8b7017c525ba06d41cfd4119f7b80828af2d2"
           }
         },
         {
@@ -49935,13 +49915,13 @@
           },
           "atlas": {
             "path": "/assets/map/buildings/tomb-entry/atlas-close.png",
-            "x": 396,
+            "x": 4,
             "y": 4,
             "width": 214,
             "height": 113,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "d7105b47c2e162c621e705b1febdaa519612d10666c35bdc085d4ae73f27326e"
+            "sha256": "ef3ed9184ebba6f46882220cc52da8800e311217404b06c51d041921d928be32"
           }
         },
         {
@@ -49987,13 +49967,13 @@
           },
           "atlas": {
             "path": "/assets/map/buildings/tomb-entry/atlas-district.png",
-            "x": 204,
+            "x": 4,
             "y": 4,
             "width": 109,
             "height": 59,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "472cf10586e4bae71d582ccb0db8b7017c525ba06d41cfd4119f7b80828af2d2"
+            "sha256": "6dbb758037a2e2574fae7d33b44454c13d3b9ce6de0ca4f73fa74acd0a996693"
           }
         },
         {
@@ -50039,13 +50019,13 @@
           },
           "atlas": {
             "path": "/assets/map/buildings/tomb-entry/atlas-close.png",
-            "x": 4,
-            "y": 332,
+            "x": 396,
+            "y": 4,
             "width": 272,
             "height": 123,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "d7105b47c2e162c621e705b1febdaa519612d10666c35bdc085d4ae73f27326e"
+            "sha256": "ef3ed9184ebba6f46882220cc52da8800e311217404b06c51d041921d928be32"
           }
         },
         {
@@ -50091,21 +50071,624 @@
           },
           "atlas": {
             "path": "/assets/map/buildings/tomb-entry/atlas-district.png",
-            "x": 4,
-            "y": 172,
+            "x": 204,
+            "y": 4,
             "width": 138,
             "height": 64,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "472cf10586e4bae71d582ccb0db8b7017c525ba06d41cfd4119f7b80828af2d2"
+            "sha256": "6dbb758037a2e2574fae7d33b44454c13d3b9ce6de0ca4f73fa74acd0a996693"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/tomb-entry/base-north-close.png",
+          "layerPath": "/assets/map/buildings/tomb-entry/base-north-close.png",
+          "source": "assets/source/map-buildings/tomb-entry-foundation.png",
+          "sourceSha256": "41ff6a54954cd648918fe21982d7756b70cf034c16316046dee94b1f74d8f4e0",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/tomb-entry-foundation.png",
+              "sha256": "41ff6a54954cd648918fe21982d7756b70cf034c16316046dee94b1f74d8f4e0"
+            },
+            {
+              "source": "assets/source/map-buildings/tomb-entry-upper.png",
+              "sha256": "f716d1ca5d2ade50c3b31f0c35fe4c2bf73b2e6a300fee35a2907ac64a374564"
+            }
+          ],
+          "sha256": "c3189e080a3b947bd591277dd29dbcc63c53cfc231613221a416744527e780bc",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "architecturePart": true,
+          "width": 303,
+          "height": 143,
+          "role": "base",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 50,
+            "y": 197.5,
+            "width": 378.75,
+            "height": 178.75
+          }
+        },
+        {
+          "path": "/assets/map/buildings/tomb-entry/upper-north-close.png",
+          "layerPath": "/assets/map/buildings/tomb-entry/upper-north-close.png",
+          "source": "assets/source/map-buildings/tomb-entry-upper.png",
+          "sourceSha256": "f716d1ca5d2ade50c3b31f0c35fe4c2bf73b2e6a300fee35a2907ac64a374564",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/tomb-entry-foundation.png",
+              "sha256": "41ff6a54954cd648918fe21982d7756b70cf034c16316046dee94b1f74d8f4e0"
+            },
+            {
+              "source": "assets/source/map-buildings/tomb-entry-upper.png",
+              "sha256": "f716d1ca5d2ade50c3b31f0c35fe4c2bf73b2e6a300fee35a2907ac64a374564"
+            }
+          ],
+          "sha256": "164c17b4cd6bf6bbad6a4207d893befe05bbae0afee913ff048ce3d9540b289c",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "architecturePart": true,
+          "width": 302,
+          "height": 263,
+          "role": "upper",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 38.75,
+            "y": 43.75,
+            "width": 377.5,
+            "height": 328.75
+          }
+        },
+        {
+          "path": "/assets/map/buildings/tomb-entry/body-layered-north-close.png",
+          "layerPath": "/assets/map/buildings/tomb-entry/body-layered-north-close.png",
+          "source": "/assets/map/buildings/tomb-entry/body-layered-north.svg",
+          "sourceSha256": "d05e37139f01da09d38d15785d75814235dc4a7effb54188f86f188b9152427b",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/tomb-entry-foundation.png",
+              "sha256": "41ff6a54954cd648918fe21982d7756b70cf034c16316046dee94b1f74d8f4e0"
+            },
+            {
+              "source": "assets/source/map-buildings/tomb-entry-upper.png",
+              "sha256": "f716d1ca5d2ade50c3b31f0c35fe4c2bf73b2e6a300fee35a2907ac64a374564"
+            },
+            {
+              "source": "frontend/scripts/map-vector-fallback.mjs",
+              "sha256": "e67f66447ed9123ec91796c7ba97cfdbe70c6750ff71d317fa63e9c1406868cf"
+            }
+          ],
+          "sha256": "7e2101278d2d38f62736d0960b7eb9a073322afd7e900a4595004f8cb84b212e",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "width": 312,
+          "height": 266,
+          "role": "body",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 38.75,
+            "y": 43.75,
+            "width": 390,
+            "height": 332.5
+          }
+        },
+        {
+          "path": "/assets/map/buildings/tomb-entry/base-north-district.png",
+          "layerPath": "/assets/map/buildings/tomb-entry/base-north-close.png",
+          "source": "assets/source/map-buildings/tomb-entry-foundation.png",
+          "sourceSha256": "41ff6a54954cd648918fe21982d7756b70cf034c16316046dee94b1f74d8f4e0",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/tomb-entry-foundation.png",
+              "sha256": "41ff6a54954cd648918fe21982d7756b70cf034c16316046dee94b1f74d8f4e0"
+            },
+            {
+              "source": "assets/source/map-buildings/tomb-entry-upper.png",
+              "sha256": "f716d1ca5d2ade50c3b31f0c35fe4c2bf73b2e6a300fee35a2907ac64a374564"
+            }
+          ],
+          "sha256": "34445a599b1ced1cf59167405d025d7d8ed261e422cbebc025ee216862bc4d12",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "architecturePart": true,
+          "width": 155,
+          "height": 76,
+          "role": "base",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 45,
+            "y": 192.5,
+            "width": 387.5,
+            "height": 190
+          }
+        },
+        {
+          "path": "/assets/map/buildings/tomb-entry/upper-north-district.png",
+          "layerPath": "/assets/map/buildings/tomb-entry/upper-north-close.png",
+          "source": "assets/source/map-buildings/tomb-entry-upper.png",
+          "sourceSha256": "f716d1ca5d2ade50c3b31f0c35fe4c2bf73b2e6a300fee35a2907ac64a374564",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/tomb-entry-foundation.png",
+              "sha256": "41ff6a54954cd648918fe21982d7756b70cf034c16316046dee94b1f74d8f4e0"
+            },
+            {
+              "source": "assets/source/map-buildings/tomb-entry-upper.png",
+              "sha256": "f716d1ca5d2ade50c3b31f0c35fe4c2bf73b2e6a300fee35a2907ac64a374564"
+            }
+          ],
+          "sha256": "6383c9f668d3b783b619cef32c1ccd8603c60bc84ae8b951633fbbd07d47f7d4",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "architecturePart": true,
+          "width": 156,
+          "height": 136,
+          "role": "upper",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 32.5,
+            "y": 37.5,
+            "width": 390,
+            "height": 340
+          }
+        },
+        {
+          "path": "/assets/map/buildings/tomb-entry/body-layered-north-district.png",
+          "layerPath": "/assets/map/buildings/tomb-entry/body-layered-north-close.png",
+          "source": "/assets/map/buildings/tomb-entry/body-layered-north.svg",
+          "sourceSha256": "d05e37139f01da09d38d15785d75814235dc4a7effb54188f86f188b9152427b",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "973fd4a6a9db9daec50c1465b87d571851c43b48ca30c10bef6217cdb4fc49a7"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "bc4f1f0a69756e35280ef3ed7d3421086c1bbf7e41ee52643cc21ef82343e056"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/tomb-entry-foundation.png",
+              "sha256": "41ff6a54954cd648918fe21982d7756b70cf034c16316046dee94b1f74d8f4e0"
+            },
+            {
+              "source": "assets/source/map-buildings/tomb-entry-upper.png",
+              "sha256": "f716d1ca5d2ade50c3b31f0c35fe4c2bf73b2e6a300fee35a2907ac64a374564"
+            },
+            {
+              "source": "frontend/scripts/map-vector-fallback.mjs",
+              "sha256": "e67f66447ed9123ec91796c7ba97cfdbe70c6750ff71d317fa63e9c1406868cf"
+            }
+          ],
+          "sha256": "1b13251c806e7454777cba6732baf4517b97f0b9e26a721ead41ef4aa4eab1bc",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "width": 160,
+          "height": 138,
+          "role": "body",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 32.5,
+            "y": 37.5,
+            "width": 400,
+            "height": 345
           }
         }
       ],
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/tomb-entry/foundation.svg",
       "generatedOrientationViews": [],
+      "orientationViews": {
+        "north": {
+          "uiIcon": "/assets/buildings/tomb-entry/icon.svg",
+          "body": "/assets/map/buildings/tomb-entry/body-layered-north-close.png",
+          "base": "/assets/map/buildings/tomb-entry/base-north-close.png",
+          "upper": "/assets/map/buildings/tomb-entry/upper-north-close.png",
+          "shadow": "/assets/map/buildings/tomb-entry/shadow-ground.svg",
+          "vfx": null
+        }
+      },
+      "orientationRegions": {
+        "north": {
+          "upper": [
+            [
+              0.09114583333333333,
+              0.6625
+            ],
+            [
+              0.18229166666666666,
+              0.4375
+            ],
+            [
+              0.19270833333333334,
+              0.425
+            ],
+            [
+              0.4583333333333333,
+              0.134375
+            ],
+            [
+              0.46875,
+              0.125
+            ],
+            [
+              0.4739583333333333,
+              0.121875
+            ],
+            [
+              0.4765625,
+              0.121875
+            ],
+            [
+              0.4869791666666667,
+              0.125
+            ],
+            [
+              0.4921875,
+              0.128125
+            ],
+            [
+              0.7369791666666666,
+              0.328125
+            ],
+            [
+              0.7682291666666666,
+              0.378125
+            ],
+            [
+              0.8411458333333334,
+              0.56875
+            ],
+            [
+              0.8463541666666666,
+              0.584375
+            ],
+            [
+              0.8541666666666666,
+              0.68125
+            ],
+            [
+              0.8541666666666666,
+              0.796875
+            ],
+            [
+              0.8515625,
+              0.8
+            ],
+            [
+              0.8229166666666666,
+              0.81875
+            ],
+            [
+              0.8072916666666666,
+              0.828125
+            ],
+            [
+              0.6458333333333334,
+              0.915625
+            ],
+            [
+              0.6432291666666666,
+              0.915625
+            ],
+            [
+              0.1953125,
+              0.775
+            ],
+            [
+              0.16145833333333334,
+              0.7625
+            ],
+            [
+              0.13802083333333334,
+              0.753125
+            ],
+            [
+              0.1328125,
+              0.75
+            ],
+            [
+              0.09635416666666667,
+              0.709375
+            ]
+          ],
+          "hitPolygon": [
+            [
+              0.09114583333333333,
+              0.6625
+            ],
+            [
+              0.18229166666666666,
+              0.4375
+            ],
+            [
+              0.19270833333333334,
+              0.425
+            ],
+            [
+              0.4583333333333333,
+              0.134375
+            ],
+            [
+              0.46875,
+              0.125
+            ],
+            [
+              0.4739583333333333,
+              0.121875
+            ],
+            [
+              0.4765625,
+              0.121875
+            ],
+            [
+              0.4869791666666667,
+              0.125
+            ],
+            [
+              0.4921875,
+              0.128125
+            ],
+            [
+              0.7369791666666666,
+              0.328125
+            ],
+            [
+              0.7682291666666666,
+              0.378125
+            ],
+            [
+              0.8411458333333334,
+              0.56875
+            ],
+            [
+              0.8463541666666666,
+              0.584375
+            ],
+            [
+              0.8776041666666666,
+              0.771875
+            ],
+            [
+              0.8776041666666666,
+              0.775
+            ],
+            [
+              0.8515625,
+              0.8
+            ],
+            [
+              0.8229166666666666,
+              0.81875
+            ],
+            [
+              0.8072916666666666,
+              0.828125
+            ],
+            [
+              0.6458333333333334,
+              0.915625
+            ],
+            [
+              0.5963541666666666,
+              0.925
+            ],
+            [
+              0.5911458333333334,
+              0.925
+            ],
+            [
+              0.5729166666666666,
+              0.921875
+            ],
+            [
+              0.4505208333333333,
+              0.89375
+            ],
+            [
+              0.3958333333333333,
+              0.871875
+            ],
+            [
+              0.28125,
+              0.821875
+            ],
+            [
+              0.13802083333333334,
+              0.753125
+            ],
+            [
+              0.1328125,
+              0.75
+            ],
+            [
+              0.09635416666666667,
+              0.709375
+            ]
+          ]
+        }
+      },
       "mapLayers": {
-        "shadow": "/assets/map/buildings/tomb-entry/shadow-ground.svg"
+        "shadow": "/assets/map/buildings/tomb-entry/shadow-ground.svg",
+        "body": "/assets/map/buildings/tomb-entry/body-layered-north.svg"
       }
     },
     {
