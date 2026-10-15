@@ -1864,7 +1864,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
 
   return <div className="live-shell">
     <aside className="live-sidebar">
-      <div className="live-brand"><span className="live-brand-mark"><Flame size={19} /></span><div><strong>ICE AGE LORD</strong><small>TRỰC TUYẾN</small></div></div>
+      <div className="live-brand"><img className="live-brand-emblem" src="/crest.svg" width={43} height={43} alt="Biểu tượng Ice Age Lord"/><div><strong>ICE AGE <em>LORD</em></strong><small>BIÊN NIÊN BĂNG PHONG</small></div></div>
       <div className="live-sidebar-status"><span className="live-status-dot" /> Đã kết nối · SQLite API</div>
       <nav className="live-nav" aria-label="Màn hình game">
         {navigation.map(item => {
@@ -1916,14 +1916,22 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
             </section>}
           </div>
           <button className="live-icon-button" aria-label="Tải lại từ API" onClick={() => void loadLatest()} disabled={working}><RefreshCw size={17} /></button>
+          <button type="button" className="profile-mini live-profile-mini" onClick={() => setScreen('character')}
+            aria-label={`Mở hồ sơ người chơi: ${view.player.name}`}>
+            <img className="profile-portrait" src="/assets/characters/li-lan-t0-portrait.svg?v=20261010" width={38} height={38} alt=""/>
+            <span className="profile-name">{view.player.name}<small>Người chơi</small></span>
+          </button>
         </div>
       </header>
       <div className="live-content">
         <StatusBanner feedback={feedback} retry={pendingCommand ? retryPending : undefined} />
-        <RuntimeStrip view={view} />
+        <details className="live-runtime-details">
+          <summary><span>Trạng thái thế giới và mô phỏng</span><span>Ngày {view.worldClock.day} · {view.clockControl.status} · {view.territory.tomb.activeCount} đơn vị đang sản xuất</span></summary>
+          <RuntimeStrip view={view}/>
+        </details>
         <PageFrame mode="live" className={`live-screen live-screen--${screen}`}>{pageContent()}</PageFrame>
       </div>
-      <footer className="live-footer"><span>LIVE · API PLAYER VIEW</span><span>Save {view.saveId} · revision {view.revision}</span></footer>
+      <footer className="live-footer"><span><img src="/crest.svg" width={21} height={21} alt=""/> ICE AGE LORD</span><span>Lượt lưu {view.saveId} · revision {view.revision}</span></footer>
     </main>
   </div>;
 }
