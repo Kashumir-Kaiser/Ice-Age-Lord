@@ -1600,7 +1600,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -1652,7 +1652,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -1704,7 +1704,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -1756,7 +1756,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -1808,7 +1808,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -1860,7 +1860,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -2182,7 +2182,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -2238,7 +2238,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -2294,7 +2294,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -2350,7 +2350,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15553,7 +15553,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15607,7 +15607,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15661,7 +15661,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15713,7 +15713,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15765,7 +15765,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15817,7 +15817,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -45326,7 +45326,7 @@
       },
       "groundAnchor": {
         "x": 0.5,
-        "y": 0.82
+        "y": 0.72
       },
       "artFootprint": [
         [
@@ -45438,6 +45438,14 @@
             {
               "source": "frontend/public/assets/buildings/supply-crate/body.svg",
               "sha256": "c2001f0cf6efa768c19e5cfb39cca4d4a8d5ac53f68a01badba02ed2f3a427c1"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
           "sha256": "ad91f065d2c35172aa6869d5da656455cb029ef6f765b0d31af35ffe18f456af",
@@ -45471,7 +45479,7 @@
             "height": 238,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "f86e71df4938aef106708c57fd7849003069df6eb1061ed37593e7967d8d46f9"
+            "sha256": "196c75e465b284e618da3aa28032ffa91cde00143c629f60149890fbaea95f12"
           }
         },
         {
@@ -45482,6 +45490,14 @@
             {
               "source": "frontend/public/assets/buildings/supply-crate/body.svg",
               "sha256": "c2001f0cf6efa768c19e5cfb39cca4d4a8d5ac53f68a01badba02ed2f3a427c1"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
           "sha256": "d4b3ba5d049a29bab6c7884dbefd637cba6ae74a095956bbd2392b2c608220ad",
@@ -45515,23 +45531,31 @@
             "height": 120,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "598194a7cce9131e9f2c2ce54faa42fdd568c2771ec6a0cfb6053c70c6996618"
+            "sha256": "dee085190a19fe0c501d9d9486cadd5f2724a739acede97a107556e28a126409"
           }
         },
         {
           "path": "/assets/map/buildings/supply-crate/shadow-close.png",
-          "source": "/assets/buildings/supply-crate/shadow.svg",
-          "sourceSha256": "178d3233df73ca286ce0f5945e046a1df09e2e37c858fa992cb7cb460a7134db",
+          "source": "/assets/map/buildings/supply-crate/shadow-ground.svg",
+          "sourceSha256": "1f79b8d6dc077049fd299609c9f52097d499ed581a2bd0842c53069a60244491",
           "sourceDependencies": [
             {
-              "source": "frontend/public/assets/buildings/supply-crate/shadow.svg",
-              "sha256": "178d3233df73ca286ce0f5945e046a1df09e2e37c858fa992cb7cb460a7134db"
+              "source": "frontend/public/assets/map/buildings/supply-crate/shadow-ground.svg",
+              "sha256": "1f79b8d6dc077049fd299609c9f52097d499ed581a2bd0842c53069a60244491"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
-          "sha256": "563814346a32dc7d684ae03fbed9b77a0f7010c6986e1221656f0ddf1e96617d",
+          "sha256": "67cf0b4ea4bf1dbe69e95760a521f549d5aedb4c510937492fe43e04deb87493",
           "exportVersion": 3,
-          "width": 308,
-          "height": 61,
+          "width": 271,
+          "height": 147,
           "role": "shadow",
           "lod": "close",
           "orientation": "north",
@@ -45546,36 +45570,44 @@
             "height": 320
           },
           "trim": {
-            "x": 47.5,
-            "y": 303.75,
-            "width": 385,
-            "height": 76.25
+            "x": 72.5,
+            "y": 200,
+            "width": 338.75,
+            "height": 183.75
           },
           "atlas": {
             "path": "/assets/map/buildings/supply-crate/atlas-close.png",
             "x": 396,
             "y": 4,
-            "width": 308,
-            "height": 61,
+            "width": 271,
+            "height": 147,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "f86e71df4938aef106708c57fd7849003069df6eb1061ed37593e7967d8d46f9"
+            "sha256": "196c75e465b284e618da3aa28032ffa91cde00143c629f60149890fbaea95f12"
           }
         },
         {
           "path": "/assets/map/buildings/supply-crate/shadow-district.png",
-          "source": "/assets/buildings/supply-crate/shadow.svg",
-          "sourceSha256": "178d3233df73ca286ce0f5945e046a1df09e2e37c858fa992cb7cb460a7134db",
+          "source": "/assets/map/buildings/supply-crate/shadow-ground.svg",
+          "sourceSha256": "1f79b8d6dc077049fd299609c9f52097d499ed581a2bd0842c53069a60244491",
           "sourceDependencies": [
             {
-              "source": "frontend/public/assets/buildings/supply-crate/shadow.svg",
-              "sha256": "178d3233df73ca286ce0f5945e046a1df09e2e37c858fa992cb7cb460a7134db"
+              "source": "frontend/public/assets/map/buildings/supply-crate/shadow-ground.svg",
+              "sha256": "1f79b8d6dc077049fd299609c9f52097d499ed581a2bd0842c53069a60244491"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
-          "sha256": "e2ae99fccff1478cc5a2fbbf9f541e519fb791778b3e6f047419c3ca317eefa3",
+          "sha256": "b15614a490428b626bb2fb64e12754a59f80e704844e4ce21b006bb43f768340",
           "exportVersion": 3,
-          "width": 156,
-          "height": 33,
+          "width": 137,
+          "height": 75,
           "role": "shadow",
           "lod": "district",
           "orientation": "north",
@@ -45590,20 +45622,20 @@
             "height": 160
           },
           "trim": {
-            "x": 45,
-            "y": 300,
-            "width": 390,
-            "height": 82.5
+            "x": 70,
+            "y": 197.5,
+            "width": 342.5,
+            "height": 187.5
           },
           "atlas": {
             "path": "/assets/map/buildings/supply-crate/atlas-district.png",
             "x": 204,
             "y": 4,
-            "width": 156,
-            "height": 33,
+            "width": 137,
+            "height": 75,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "598194a7cce9131e9f2c2ce54faa42fdd568c2771ec6a0cfb6053c70c6996618"
+            "sha256": "dee085190a19fe0c501d9d9486cadd5f2724a739acede97a107556e28a126409"
           }
         },
         {
@@ -45614,6 +45646,14 @@
             {
               "source": "frontend/public/assets/map/buildings/supply-crate/foundation.svg",
               "sha256": "e3e286eb5413bb0b344cd0f64815bea01f09bb0d1a71c2a33497d3c8c6221d43"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
           "sha256": "4662839fae09a04e94c99aad5f315dfddc1d2987e061aa2da69f093205334148",
@@ -45647,7 +45687,7 @@
             "height": 123,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "f86e71df4938aef106708c57fd7849003069df6eb1061ed37593e7967d8d46f9"
+            "sha256": "196c75e465b284e618da3aa28032ffa91cde00143c629f60149890fbaea95f12"
           }
         },
         {
@@ -45658,6 +45698,14 @@
             {
               "source": "frontend/public/assets/map/buildings/supply-crate/foundation.svg",
               "sha256": "e3e286eb5413bb0b344cd0f64815bea01f09bb0d1a71c2a33497d3c8c6221d43"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
           "sha256": "1dcaab4bdcb4d215e362e445ce6b78fd64415d66da1ddda1313e2d096f357ffd",
@@ -45691,13 +45739,16 @@
             "height": 64,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "598194a7cce9131e9f2c2ce54faa42fdd568c2771ec6a0cfb6053c70c6996618"
+            "sha256": "dee085190a19fe0c501d9d9486cadd5f2724a739acede97a107556e28a126409"
           }
         }
       ],
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/supply-crate/foundation.svg",
-      "generatedOrientationViews": []
+      "generatedOrientationViews": [],
+      "mapLayers": {
+        "shadow": "/assets/map/buildings/supply-crate/shadow-ground.svg"
+      }
     },
     {
       "assetId": "survival-fire-l01",
@@ -49127,7 +49178,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -49179,7 +49230,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -49231,7 +49282,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -49283,7 +49334,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -49335,7 +49386,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -49387,7 +49438,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "5be371fa7fd3a9b4b5cbcddf5ac62f26be5892a637a66b111d9c14191c083405"
+              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
