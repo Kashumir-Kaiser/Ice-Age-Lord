@@ -247,3 +247,22 @@ test('repaired-house authored footing and complete upper load for normal, planni
  await page.getByRole('button',{name:'Làm mờ phần che',exact:true}).click();await expect.poll(alphas,{timeout:30000}).toEqual({base:1,upper:.22,body:null});
  await expect(page.locator('.territory-instance-main')).toHaveText(before);
 });
+
+test('Tomb map ground registration loads in normal and planning QA views with the physical outline',async({page})=>{
+ test.setTimeout(90000);await page.emulateMedia({reducedMotion:'reduce'});
+ const requested=new Set<string>();page.on('request',request=>requested.add(new URL(request.url()).pathname));
+ await territory(page);const before=await page.locator('.territory-instance-main').allTextContents();
+ await page.locator('.territory-calibration > summary').click();
+ await page.getByLabel('Hình minh họa',{exact:true}).selectOption('tomb-entry');
+ await page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
+ await expect(page.locator('[data-art-qa-footprint]')).toHaveCount(1);
+ await expect(page.locator('[data-art-qa-footprint]')).toHaveAttribute('points',/^[-\d., ]{8,}$/);
+ await expect(page.getByLabel('Hình minh họa',{exact:true})).toHaveValue('tomb-entry');
+ const alphas=()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{qaArtLayers:{base:number|null;upper:number|null;body:number|null}|null}[]}).__mapMetrics.at(-1)?.qaArtLayers);
+ await expect.poll(()=>Array.from(requested).some(path=>/\/assets\/map\/buildings\/tomb-entry\/(atlas-close|body-close|shadow-close)\.png$/.test(path)),{timeout:30000}).toBe(true);
+ await expect.poll(alphas,{timeout:30000}).toEqual({base:null,upper:null,body:1});
+ await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();
+ await expect.poll(alphas,{timeout:30000}).toEqual({base:1,upper:null,body:null});
+ await expect(page.locator('[data-art-qa-footprint]')).toHaveCount(1);
+ await expect(page.locator('.territory-instance-main')).toHaveText(before);
+});

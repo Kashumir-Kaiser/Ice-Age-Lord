@@ -30,8 +30,8 @@ test('source and public manifests agree and ink building variants use optimized 
     assert.ok(entry,id+': missing registration');
     assert.equal(entry.status,'draft');
     assert.deepEqual(entry.logicalCanvas,{width:480,height:400});
-    // The repaired house's authored footing centers at 72%; its old 82% anchor floated above occupancy.
-    assert.deepEqual(entry.groundAnchor,{x:.5,y:id==='lord-house-repaired'?.72:.82});
+    // These two authored foundations center at 72%; other assets retain their calibrated anchors.
+    assert.deepEqual(entry.groundAnchor,{x:.5,y:['lord-house-repaired','tomb-entry'].includes(id)?.72:.82});
     const source=read(entry.source);
     verifyGroupStructure(source,id+':master');
     for(const layer of ['body','base','upper','shadow','uiIcon']){
