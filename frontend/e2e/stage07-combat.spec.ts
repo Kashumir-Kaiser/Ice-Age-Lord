@@ -52,15 +52,15 @@ test('Stage 07 plays and reloads a timed H0 combat encounter through the browser
   expect(ownerKey, 'CI must provide the ephemeral API owner key').toBeTruthy();
 
   await page.goto('/?mode=live');
-  await expect(page.getByRole('heading', { name: 'Kết nối game API' })).toBeVisible();
-  await expect(page.getByText('API sẵn sàng · SQLite · phiên cục bộ')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Kết nối trò chơi' })).toBeVisible();
+  await expect(page.getByText('Trò chơi đã sẵn sàng')).toBeVisible();
   await page.getByLabel('Khóa chủ sở hữu').fill(ownerKey!);
   await page.getByRole('button', { name: 'Kết nối API' }).click();
   await expect(page.getByRole('heading', { name: 'Chọn hoặc tạo lượt lưu' })).toBeVisible();
 
   const slotName = 'Stage 07 combat ' + crypto.randomUUID();
   await page.getByLabel('Tên lượt lưu mới').fill(slotName);
-  await page.getByRole('button', { name: 'Tạo lượt chơi sạch' }).click();
+  await page.getByRole('button', { name: 'Bắt đầu lượt chơi' }).click();
   await expect(page.getByText(/Clean game đã được tạo và commit/)).toBeVisible();
 
   const navigation = page.getByRole('navigation', { name: 'Màn hình game' });
