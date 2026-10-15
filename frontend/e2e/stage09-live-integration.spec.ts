@@ -171,7 +171,7 @@ test('switching saves clears selection and ignores a delayed response from the p
   const saveBName = 'Stage 09 B ' + crypto.randomUUID();
   await connectAndCreate(page, saveAName);
   await page.getByRole('button', { name: 'Kiểm tra thẻ nghề nghiệp' }).click();
-  await expect(page.getByRole('heading', { name: 'Đã quan sát' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Thẻ nghề nghiệp', exact: true })).toBeVisible();
   const navigation = page.getByRole('navigation', { name: 'Màn hình game' });
   await navigation.getByRole('button', { name: /^Bản đồ/ }).click();
   const woodMarker = page.locator('[data-entity-ref="resource:RES-LL01-06"]');
@@ -196,7 +196,7 @@ test('switching saves clears selection and ignores a delayed response from the p
   await page.getByRole('button', { name: 'Đổi lượt lưu' }).click();
   await page.getByRole('button', { name: new RegExp(saveAName) }).click();
   await expect(page.locator('.live-footer')).toHaveAttribute('data-save-id', saveAId!);
-  await expect(page.getByRole('heading', { name: 'Đã quan sát' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Thẻ nghề nghiệp', exact: true })).toBeVisible();
   await navigation.getByRole('button', { name: /^Bản đồ/ }).click();
   await expect(page.getByTestId('map-campfire-marker')).toHaveClass(/is-selected/);
   await woodMarker.click();
