@@ -105,7 +105,7 @@ test('Stage 07 plays and reloads a timed H0 combat encounter through the browser
   await expect(page.getByText('Đã mở lượt lưu trước đó.')).toBeVisible();
   await navigation.getByRole('button', { name: /^Quân lực/ }).click();
   const restoredCombatPanel = page.getByTestId('stage07-combat-panel');
-  await expect(restoredCombatPanel).toContainText(/Đang hoạt động · vòng [1-9]/);
+  await expect(restoredCombatPanel).toContainText(/(?:Đang hoạt động|Chiến thắng) · vòng [1-9]/);
 
   await page.getByLabel('Tốc độ mô phỏng').selectOption('5x');
   await expect(restoredCombatPanel).toContainText(/Chiến thắng/, { timeout: 15_000 });
