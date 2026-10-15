@@ -141,7 +141,7 @@ function availabilityMessage(availability: ActionAvailability): string {
   const reasonCode = availability.reasonCode;
   if (reasonCode && messages[reasonCode]) return messages[reasonCode];
   const reason = availability.requirements.join(' ');
-  return reason || (reasonCode ? 'Hành động hiện không khả dụng.' : 'Hành động hiện không khả dụng.');
+  return reason ? playerMessage(reason) : 'Hành động hiện không khả dụng.';
 }
 
 function territoryRef(ref: EntityRef | null): DemoEntityRef | null {
@@ -192,9 +192,7 @@ function StatusBanner({ feedback, retry }: { feedback: Feedback; retry?: () => v
 
 function elapsedLabel(elapsedMs: number | null): string {
   if (elapsedMs === null) return 'chưa có mốc';
-  const hours = Math.floor(elapsedMs / 3_600_000);
-  const minutes = Math.floor((elapsedMs % 3_600_000) / 60_000);
-  return `T+${hours}h${String(minutes).padStart(2, '0')}`;
+  return playerElapsed(elapsedMs);
 }
 
 function RuntimeStrip({ view }: { view: PlayerView }) {
@@ -202,15 +200,15 @@ function RuntimeStrip({ view }: { view: PlayerView }) {
   const dayTime = `Ngày ${view.worldClock.day} · ${String(view.worldClock.hour).padStart(2, '0')}:${String(view.worldClock.minute).padStart(2, '0')}`;
   const cold = view.survival.coldStatus === 'weather_unresolved'
     ? 'Chưa có thông tin thời tiết ban đầu'
-    : `ColdLoad ${view.survival.coldLoad?.toFixed(1) ?? '—'} · ${view.survival.coldStatus}`;
+    : playerStatus(view.survival.coldStatus);
   const fuel = survivalFire.fuelRemaining === null ? 'Chưa rõ lượng nhiên liệu' : `${survivalFire.fuelRemaining} gỗ`;
   const catchingUp = view.clockStatus.catchingUp
-    ? `Đang quyết toán tới ${elapsedLabel(view.clockStatus.targetSimElapsedMs)}`
-    : `${dayTime} · T+${elapsedLabel(view.simElapsedMs).slice(2)}`;
+    ? `Đang cập nhật thời gian tới ${elapsedLabel(view.clockStatus.targetSimElapsedMs)}`
+    : dayTime;
   return <section className="live-stage-strip" aria-label="Trạng thái thế giới">
-    <div><span>Thế giới</span><strong>{catchingUp}</strong><small>{view.worldClock.lightPhase} · Bậc 0 là cấp đầu ra Mộ</small></div>
-    <div><span>Lửa trại</span><strong>{survivalFire.active ? 'Đang hoạt động' : 'Đã tắt'} · {fuel}</strong><small>{survivalFire.fuelBlocker || `Bán kính nhiệt ${survivalFire.heatRadiusMetres} m · mốc đốt ${elapsedLabel(survivalFire.nextFuelConsumptionAtElapsedMs)}`}</small></div>
-    <div><span>Sinh tồn</span><strong>{cold}</strong><small>{view.survival.blocker || `Đói: ${view.survival.hungerState}`}</small></div>
+    <div><span>Thế giới</span><strong>{catchingUp}</strong><small>{playerStatus(view.worldClock.lightPhase)}</small></div>
+    <div><span>Lửa trại</span><strong>{survivalFire.active ? 'Đang hoạt động' : 'Đã tắt'} · {fuel}</strong><small>{survivalFire.fuelBlocker ? playerMessage(survivalFire.fuelBlocker) : `Vùng nhiệt ${survivalFire.heatRadiusMetres} m · lần cháy tiếp theo ${elapsedLabel(survivalFire.nextFuelConsumptionAtElapsedMs)}`}</small></div>
+    <div><span>Sinh tồn</span><strong>{cold}</strong><small>{view.survival.blocker ? playerMessage(view.survival.blocker) : `Tình trạng đói: ${playerStatus(view.survival.hungerState)}`}</small></div>
     <div><span>Mộ</span><strong>{tomb.activeCount}/{tomb.productionSlots} ô · {tomb.deathQi.current}/{tomb.deathQi.capacity} Tử Khí</strong><small>{tomb.queuedCount} chờ · hoàn tất {elapsedLabel(tomb.nextCompletionAtElapsedMs)} · {view.units.length} đơn vị</small></div>
   </section>;
 }
@@ -225,7 +223,7 @@ function TombQueueList({ view, working, blocked, onCancel }: {
   return <ul className="live-plain-list">{view.territory.tomb.queue.map(job => {
     const progress = view.jobs.find(item => item.id === job.id)?.progressPercent;
     return <li key={job.id}>
-      <strong>{job.status === 'active' ? 'Đang sản xuất' : job.status === 'blocked' ? 'Đang chặn' : job.status === 'queued' ? 'Đang chờ ô' : job.status} · {job.outputUnitId}</strong>
+      <strong>{job.status === 'active' ? 'Đang sản xuất' : job.status === 'blocked' ? 'Đang chặn' : job.status === 'queued' ? 'Đang chờ ô' : job.status} · Cương thi</strong>
       <span>{job.status === 'active' ? `${Math.floor(progress ?? 0)}% · xong ${elapsedLabel(job.completesAtElapsedMs)}` : `Tử Khí giữ ${job.reservedDeathQi}`}</span>
       {(job.status === 'queued' || job.status === 'blocked') && <button className="live-text-button" disabled={working || blocked} onClick={() => onCancel(job.id)}>Hủy</button>}
     </li>;
@@ -375,7 +373,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         const result = await client.previewCommand(command);
         return [material.resourceId, result.availability] as const;
       } catch {
-        return [material.resourceId, { actionId: 'harvest', enabled: false, reasonCode: 'PREVIEW_UNAVAILABLE', requirements: ['The server could not check this harvest right now.'] }] as const;
+        return [material.resourceId, { actionId: 'harvest', enabled: false, reasonCode: 'PREVIEW_UNAVAILABLE', requirements: ['Chưa thể kiểm tra việc thu thập lúc này.'] }] as const;
       }
     })).then(entries => {
       if (active && saveScope.isCurrent(scope)) setHarvestAvailability(Object.fromEntries(entries));
@@ -385,7 +383,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
 
   async function checkApi() {
     setApiState('checking');
-    setApiMessage('Đang kiểm tra API cục bộ…');
+    setApiMessage('Đang kết nối trò chơi…');
     try {
       await client.health();
       setApiState('ready');
@@ -478,7 +476,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       const latestSaves = await client.listSaves();
       if (saveScope.isPickerCurrent(generation)) {
         setSaves(latestSaves);
-        setFeedback({ kind: 'committed', text: 'Đã tải danh sách lượt lưu từ API.' });
+        setFeedback({ kind: 'committed', text: 'Đã tải danh sách lượt lưu.' });
       }
     } catch (error) {
       if (saveScope.isPickerCurrent(generation)) {
@@ -508,7 +506,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       if (rememberedId && availableSaves.some(save => save.saveId === rememberedId)) {
         try {
           await activateSave(rememberedId);
-          setFeedback({ kind: 'committed', text: 'Đã khôi phục đúng lượt lưu từ API.' });
+          setFeedback({ kind: 'committed', text: 'Đã mở lượt lưu trước đó.' });
           return;
         } catch (error) {
           setFeedback({ kind: 'rejected', text: 'Không thể khôi phục lượt lưu đã chọn: ' + errorMessage(error) });
@@ -529,10 +527,10 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
   async function openSave(saveId: string) {
     if (working) return;
     setWorking(true);
-    setFeedback({ kind: 'saving', text: 'Đang mở snapshot từ API…' });
+    setFeedback({ kind: 'saving', text: 'Đang tải lượt chơi…' });
     try {
       await activateSave(saveId);
-      setFeedback({ kind: 'committed', text: 'Đã mở lượt lưu từ API.' });
+      setFeedback({ kind: 'committed', text: 'Đã vào lượt chơi.' });
     } catch (error) {
       setFeedback({
         kind: error instanceof GameApiError && error.code === 'API_DISCONNECTED' ? 'disconnected' : 'rejected',
@@ -549,7 +547,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     const name = slotName.trim();
     if (!name) return;
     setWorking(true);
-    setFeedback({ kind: 'saving', text: 'Đang tạo clean game trên API…' });
+    setFeedback({ kind: 'saving', text: 'Đang tạo lượt chơi mới…' });
     const storageKey = CREATE_KEY_PREFIX + name.toLocaleLowerCase();
     const creationKey = localStorage.getItem(storageKey) || crypto.randomUUID();
     localStorage.setItem(storageKey, creationKey);
@@ -600,13 +598,13 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     const scope = saveScope.capture(view.saveId);
     if (!scope) return;
     setWorking(true);
-    setFeedback({ kind: 'saving', text: 'Đang tải lại snapshot và event ledger…' });
+    setFeedback({ kind: 'saving', text: 'Đang tải lại tiến trình…' });
     try {
       const nextView = await client.getView();
       if (!saveScope.isCurrent(scope) || nextView.saveId !== scope.saveId) return;
       setView(nextView);
       await refreshEvents(nextView.lastEventSequence, scope);
-      setFeedback({ kind: 'committed', text: 'Đã tải lại revision ' + nextView.revision + ' từ API.' });
+      setFeedback({ kind: 'committed', text: 'Đã cập nhật tiến trình.' });
     } catch (error) {
       if (!saveScope.isCurrent(scope)) return;
       setFeedback({
@@ -623,7 +621,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     const scope = saveScope.capture(view.saveId);
     if (!scope || command.saveId !== scope.saveId) return;
     setWorking(true);
-    setFeedback({ kind: 'saving', text: retry ? 'Đang gửi lại cùng command ID…' : 'Đang kiểm tra lệnh với API…' });
+    setFeedback({ kind: 'saving', text: retry ? 'Đang thử lại hành động…' : 'Đang thực hiện hành động…' });
     try {
       if (!retry) {
         const preview = await client.previewCommand(command);
@@ -643,12 +641,12 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       setPendingCommand(null);
       setFeedback({
         kind: 'committed',
-        text: result.receipt.message + ' · revision ' + result.revision + ' đã commit.',
+        text: 'Đã thực hiện hành động.',
       });
       try {
         await refreshEvents(result.view.lastEventSequence, scope);
       } catch (error) {
-        setFeedback({ kind: 'committed', text: 'Lệnh đã commit; event ledger chưa tải được: ' + errorMessage(error) });
+        setFeedback({ kind: 'committed', text: 'Hành động đã hoàn tất nhưng chưa tải được nhật ký: ' + errorMessage(error) });
       }
     } catch (error) {
       if (!saveScope.isCurrent(scope)) return;
@@ -682,7 +680,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     const scope = saveScope.capture(view.saveId);
     if (!scope || command.saveId !== scope.saveId) return;
     setWorking(true);
-    setFeedback({ kind: 'saving', text: 'Đang kiểm tra chi phí, nhân công và vị trí với API…' });
+    setFeedback({ kind: 'saving', text: 'Đang kiểm tra chi phí, nhân công và vị trí…' });
     try {
       const result = await client.previewCommand(command);
       if (!saveScope.isCurrent(scope)) return;
@@ -690,7 +688,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       setFeedback({
         kind: result.availability.enabled ? 'committed' : 'rejected',
         text: result.availability.enabled
-          ? `${result.availability.preview?.label ?? 'Construction preview'} · ${result.availability.preview?.value ?? 'server validation passed'}`
+          ? 'Có thể thực hiện. Hãy xác nhận để bắt đầu.'
           : availabilityMessage(result.availability),
       });
     } catch (error) {
@@ -806,7 +804,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
   async function runInspection(entity: PlayerEntityView) {
     const inspection = entity.actions.find(action => action.actionId === 'inspect_entity');
     if (!inspection?.enabled) {
-      setFeedback({ kind: 'rejected', text: inspection ? availabilityMessage(inspection) : 'API chưa cho phép kiểm tra điểm này.' });
+      setFeedback({ kind: 'rejected', text: inspection ? availabilityMessage(inspection) : 'Chưa thể kiểm tra địa điểm này.' });
       return;
     }
     inspectSelected(entity);
@@ -848,8 +846,8 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     return <div className="live-section-stack">
       <section className="live-panel live-exploration-panel">
         <div className="live-panel-heading">
-          <div><span className="live-eyebrow">BẢN ĐỒ ĐÃ KHÁM PHÁ</span><h2>Khám phá và di chuyển</h2></div>
-          <span className="live-data-chip">{view.visibleMap.entities.length} địa điểm</span>
+          <div><span className="live-eyebrow">THẾ GIỚI BĂNG GIÁ</span><h2>Khám phá và di chuyển</h2></div>
+          <span className="live-data-chip">{view.visibleMap.entities.length} địa điểm đã biết</span>
         </div>
         <p className="live-muted">Kéo để di chuyển góc nhìn, cuộn để phóng to hoặc thu nhỏ. Chỉ các lệnh di chuyển và khám phá được máy chủ xác nhận mới thay đổi tiến trình.</p>
         <div className="live-map-tools">
@@ -864,7 +862,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           </button>
           <div className="live-zoom-controls"><button className="live-button live-button--secondary" aria-label="Zoom out" disabled={mapZoom <= 0.2} onClick={() => setMapZoom(value => Math.max(0.2, Math.round(value / 1.6 * 100) / 100))}>−</button><span>{mapZoom.toFixed(2)}×</span><button className="live-button live-button--secondary" aria-label="Zoom in" disabled={mapZoom >= 500} onClick={() => setMapZoom(value => Math.min(500, Math.round(value * 1.6 * 100) / 100))}>+</button><button className="live-button live-button--secondary live-map-overview" aria-label="Show map overview" onClick={() => { setMapZoom(1); setMapOffsetMm({ xMm: 0, yMm: 0 }); }}>Overview</button></div>
           <label className="live-inline-field">Travel actor <select value={travelActorId} onChange={event => { setTravelActorId(event.target.value); setMapOffsetMm({ xMm: 0, yMm: 0 }); setDestination(null); setDestinationAvailability(null); }}><option value={view.player.id}>{view.player.name}</option>{view.units.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}</select></label>
-          <span className="live-data-chip">Center · {center.xMm}, {center.yMm} mm</span>
+          
         </div>
         {chooseDestination && <p className="live-map-hint">Click an empty map coordinate to preview an order. Confirming travel is a separate action.</p>}
         {fireRef && !fireEntity && <div className="live-inline-error" role="alert">Không tìm thấy Lửa Sinh Tồn trên bản đồ hiện tại.</div>}
@@ -1191,7 +1189,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     }
 
     return <section className="live-panel live-dispatch-panel" aria-label="Unit dispatch">
-      <div className="live-panel-heading"><div><span className="live-eyebrow">AREA EXPEDITIONS · API CONTROLLED</span><h3>Unit dispatch</h3></div><Eye size={20} /></div>
+      <div className="live-panel-heading"><div><span className="live-eyebrow">THÁM HIỂM</span><h3>Điều động đội ngũ</h3></div><Eye size={20} /></div>
       <p className="live-muted">Choose a chest search or wildlife hunt, set the sweep radius and optional stop limits, then send the selected squad. Limit conditions stop field work and start the return journey.</p>
       <label className="live-inline-field">Expedition task<select value={dispatchMode} onChange={event => { setDispatchMode(event.target.value as 'chest' | 'hunt'); setDispatchPreview(null); }}>
         <option value="chest">Search for chests</option><option value="hunt">Hunt mobs</option>
@@ -1295,7 +1293,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
             <div className="character-details-heading"><Sparkles size={19}/><div><span className="eyebrow">NGHỀ NGHIỆP VÀ KỸ NĂNG</span><h2>Kỹ năng</h2></div></div>
             <p>{view.player.careerState === 'active' ? view.careerCard.career?.name ?? 'Đã kích hoạt' : 'Chưa kích hoạt nghề nghiệp'}</p>
             {view.player.skills?.length ? <ul className="live-plain-list">{view.player.skills.map(skill =>
-              <li key={skill.id}><strong>{skill.templateId}</strong><span>Thông thạo {skill.mastery}{skill.active ? ' · đang dùng' : ''}</span></li>)}</ul>
+              <li key={skill.id}><strong>{playerItemName(skill.templateId)}</strong><span>Thông thạo {skill.mastery}{skill.active ? ' · đang dùng' : ''}</span></li>)}</ul>
               : <p className="live-muted">Chưa có kỹ năng được ghi nhận.</p>}
           </section>
         </div>
@@ -1324,7 +1322,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
             ? <><p>{view.careerCard.career.name} · phân bổ tăng trưởng {view.careerCard.career.growthAllocation}</p>
               <p>{view.careerCard.active ? 'Nghề nghiệp đã kích hoạt.' : 'Thẻ đã mở; bạn có thể kích hoạt nghề nghiệp.'} {view.careerCard.openingSkillLearned ? 'Kỹ năng mở đầu đã học.' : 'Kỹ năng chưa được học.'}</p>
               {!view.careerCard.active && <button className="live-button" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'activate_career_card', { cardId: view.careerCard.career!.id }))}>Kích hoạt nghề nghiệp</button>}
-              {view.player.skills?.map(skill => <small key={skill.id}>Kỹ năng mở đầu · thông thạo {skill.mastery}</small>)}
+              {view.player.skills?.map(skill => <small key={skill.id}>{playerItemName(skill.templateId)} · thông thạo {skill.mastery}</small>)}
             </>
             : <><p>Nội dung thẻ sẽ hiện sau khi được máy chủ xác nhận kiểm tra.</p>
               <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'inspect_career_card', {}))}><Eye size={16} /> Kiểm tra thẻ nghề nghiệp</button></>}
@@ -1334,8 +1332,8 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         {eventBoard()}
         <details className="live-panel live-overview-diagnostics">
           <summary>Thông tin phiên chơi và dữ liệu máy chủ</summary>
-          <p>Save ID: <code>{view.saveId}</code> · Revision: {view.revision} · Event sequence: {view.lastEventSequence}</p>
-          <p>Đồng hồ: {view.clockStatus.driver} · {view.clockControl.status} · {view.clockControl.speedPermille / 1000}×</p>
+          
+          <p>Tốc độ thời gian: {view.clockControl.speedPermille / 1000}×</p>
           <p>Dân cư: {view.construction.occupiedHousing}/{view.construction.farmerHouseCapacity} · Nhiên liệu: {view.territory.survivalFire.fuelKnowledge === 'known' ? 'đã xác định' : 'chưa xác định'}</p>
         </details>
       </div>;
@@ -1348,9 +1346,9 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         <section className="live-panel">
           <div className="live-panel-heading">
             <div><span className="live-eyebrow">LÃNH ĐỊA</span><h2>Lãnh địa</h2></div>
-            <span className="live-data-chip">Ref {fireRef ? entityRefKey(fireRef) : 'chưa có'}</span>
+            <span className="live-data-chip">Lửa Sinh Tồn · Cấp {view.territory.survivalFire.level}</span>
           </div>
-          <p className="live-muted">Bố cục isometric và artwork dùng chung với bản xem thử. Vị trí, trạng thái, cấp và lựa chọn đều đọc từ PlayerView của lượt lưu đang mở.</p>
+          <p className="live-muted">Quản lý công trình và theo dõi vùng nhiệt quanh ngọn lửa trại.</p>
           <TerritoryScene
             mode="live"
             visualIdentity={view.saveId}
@@ -1377,29 +1375,29 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         </section>
         <div className="live-two-column">
           <section className="live-panel">
-            <span className="live-eyebrow">TRẠNG THÁI DO API CUNG CẤP</span>
+            <span className="live-eyebrow">LỬA SINH TỒN</span>
             <h3>{entityLabel(fireEntity)}</h3>
             <p>Cấp {view.territory.survivalFire.level} · bán kính nhiệt {view.territory.survivalFire.heatRadiusMetres} m</p>
-            <p>Bảo vệ: {view.territory.survivalFire.protection}</p>
+            <p>Bảo vệ: {playerStatus(view.territory.survivalFire.protection)}</p>
             <p>Nhiên liệu đã biết: {view.territory.survivalFire.fuelRemaining ?? 'chưa xác định'} · lần tiêu thụ kế: {elapsedLabel(view.territory.survivalFire.nextFuelConsumptionAtElapsedMs)}</p>
-            {view.territory.survivalFire.fuelBlocker && <p className="live-muted">Chặn nhiên liệu: {view.territory.survivalFire.fuelBlocker}</p>}
+            {view.territory.survivalFire.fuelBlocker && <p className="live-muted">Chặn nhiên liệu: {playerMessage(view.territory.survivalFire.fuelBlocker)}</p>}
             <div className="live-button-row">
               {fireEntity && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void runInspection(fireEntity)}><Eye size={15} /> Kiểm tra lửa</button>}
-              <button className="live-button live-button--secondary" title={woodFuel ? 'Chuyển 1 gỗ đã quan sát vào lửa; tổng nhiên liệu mở đầu vẫn chưa được tiết lộ.' : 'Không có gỗ đã quan sát trong container sở hữu và có thể truy cập.'} disabled={working || Boolean(pendingCommand) || !woodFuel} onClick={() => woodFuel && void sendCommand(commandFor(view, 'refuel_fire', { containerId: woodFuel.containerId, itemId: woodFuel.itemId, quantity: 1 }))}>Nạp 1 gỗ</button>
+              <button className="live-button live-button--secondary" title={woodFuel ? 'Chuyển 1 gỗ đã quan sát vào lửa; tổng nhiên liệu mở đầu vẫn chưa được tiết lộ.' : 'Không có gỗ trong túi đồ ở gần.'} disabled={working || Boolean(pendingCommand) || !woodFuel} onClick={() => woodFuel && void sendCommand(commandFor(view, 'refuel_fire', { containerId: woodFuel.containerId, itemId: woodFuel.itemId, quantity: 1 }))}>Nạp 1 gỗ</button>
               {view.territory.survivalFire.active
                 ? <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'extinguish_fire', {}))}>Tắt lửa</button>
                 : <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !view.territory.survivalFire.hasFuel} onClick={() => void sendCommand(commandFor(view, 'light_fire', {}))}>Nhóm lửa</button>}
             </div>
-            {fireEntity && <button className="live-button live-button--secondary" onClick={() => setScreen('map')}>Chọn cùng entity trên bản đồ <ArrowRight size={15} /></button>}
+            {fireEntity && <button className="live-button live-button--secondary" onClick={() => setScreen('map')}>Xem lửa trại trên bản đồ <ArrowRight size={15} /></button>}
           </section>
           <section className="live-panel">
-            <span className="live-eyebrow">BUILDINGS ĐÃ BIẾT</span>
-            <h3>{view.territory.buildings.length} instance</h3>
+            <span className="live-eyebrow">CÔNG TRÌNH</span>
+            <h3>{view.territory.buildings.length} công trình</h3>
             {view.territory.buildings.length
-              ? <ul className="live-plain-list">{view.territory.buildings.map(building => <li key={building.id}><strong>{building.name}</strong><span>{building.status} · {building.position ? `${(building.position.xMm / 1000).toFixed(1)}, ${(building.position.yMm / 1000).toFixed(1)} m` : 'tọa độ chưa biết'} · {building.footprintAreaM2 ?? 'n/a'} m²</span></li>)}</ul>
+              ? <ul className="live-plain-list">{view.territory.buildings.map(building => <li key={building.id}><strong>{building.name}</strong><span>{playerStatus(building.status)} · {building.position ? `${(building.position.xMm / 1000).toFixed(1)}, ${(building.position.yMm / 1000).toFixed(1)} m` : 'tọa độ chưa biết'} · {building.footprintAreaM2 ?? 'chưa rõ'} m²</span></li>)}</ul>
               : <p>API chưa trả về công trình đã biết.</p>}
-            <p>Nhà ở: {view.construction.occupiedHousing}/{view.construction.farmerHouseCapacity} chỗ · nhiên liệu lửa: {view.territory.survivalFire.fuelRemaining ?? 'chưa biết'} WOOD · công trình đang làm: {view.construction.jobs.filter(job => job.status === 'active' || job.status === 'paused' || job.status === 'blocked').length}</p>
-            {view.construction.jobs.filter(job => job.status === 'active' || job.status === 'paused' || job.status === 'blocked').map(job => <p key={job.id}>{job.kind} · {job.status} · {job.progressTicks}/{Math.round(job.workUnitsRequired * 300)} ticks · {job.workUnitsPerHour.toFixed(2)} WU/h · hoàn tất {elapsedLabel(job.estimatedCompletionAtElapsedMs)}</p>)}
+            <p>Nhà ở: {view.construction.occupiedHousing}/{view.construction.farmerHouseCapacity} chỗ · nhiên liệu lửa: {view.territory.survivalFire.fuelRemaining ?? 'chưa biết'} gỗ · công trình đang làm: {view.construction.jobs.filter(job => job.status === 'active' || job.status === 'paused' || job.status === 'blocked').length}</p>
+            {view.construction.jobs.filter(job => job.status === 'active' || job.status === 'paused' || job.status === 'blocked').map(job => <p key={job.id}>{job.kind === 'repair' ? 'Sửa chữa' : 'Xây dựng'} · {playerStatus(job.status)} · tiến độ {Math.min(100, Math.floor(100 * job.progressTicks / Math.max(1, job.workUnitsRequired * 300)))}% · dự kiến xong {elapsedLabel(job.estimatedCompletionAtElapsedMs)}</p>)}
           </section>
         </div>
       </div>;
@@ -1470,7 +1468,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
             : <p className="live-empty-state">Chưa có tiền tệ sự kiện nào được ghi nhận.</p>}
         </section>
         <section className="live-panel">
-          <div className="live-panel-heading"><div><span className="live-eyebrow">MARKET · SERVER OWNED</span><h3>Giao dịch tại Krona Gate</h3></div><PackageOpen size={20} /></div>
+          <div className="live-panel-heading"><div><span className="live-eyebrow">CHỢ</span><h3>Giao dịch tại Krona Gate</h3></div><PackageOpen size={20} /></div>
           {view.stage08.marketOffers.length > 0
             ? <div className="live-job-list">{view.stage08.marketOffers.map(offer => {
               const balance = view.currency.find(item => item.currencyId === offer.currencyId)?.amount ?? 0;
@@ -1566,7 +1564,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           <article className="stat-card stat-card--warm"><span className="stat-icon"><Layers size={20}/></span><span>Đang sản xuất tại Mộ</span><strong>{view.territory.tomb.activeCount}</strong><small>{view.territory.tomb.productionSlots} ô sản xuất</small></article>
         </section>
         <section className="live-panel live-force-roster">
-        <div className="live-panel-heading"><div><span className="live-eyebrow">OWNED UNITS</span><h2>Quân lực</h2></div><Users size={22} /></div>
+        <div className="live-panel-heading"><div><span className="live-eyebrow">QUÂN LỰC</span><h2>Quân lực</h2></div><Users size={22} /></div>
         {view.combat?.target && <article className="live-container-card" data-testid="stage07-combat-panel">
           <div className="live-panel-heading"><div><span className="live-eyebrow">H0 · OPENING ENCOUNTER</span><h3>{view.combat.target.label}</h3></div>
             <span className="live-data-chip">{view.combat.target.state}</span></div>
@@ -1668,11 +1666,11 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           </div> : <p className="live-empty-state">Chưa có công trình được ghi nhận.</p>}
         </section>
       <section className="live-panel">
-        <div className="live-panel-heading"><div><span className="live-eyebrow">CONSTRUCTION CONTRACTS</span><h2>Công trình và sửa chữa</h2></div><Hammer size={22} /></div>
+        <div className="live-panel-heading"><div><span className="live-eyebrow">XÂY DỰNG</span><h2>Công trình và sửa chữa</h2></div><Hammer size={22} /></div>
         {focusedConstructionBuildingId && <p className="live-preview-success">Map selection: {view.territory.buildings.find(building => building.id === focusedConstructionBuildingId)?.name ?? focusedConstructionBuildingId}. Current construction state is shown below.</p>}
         <p className="live-muted">Vị trí, vật liệu, quyền truy cập và lao động được kiểm tra lại trên API. Bản xem trước không giữ vật liệu; công việc bắt đầu mới đặt chỗ.</p>
         {repairHouse && repairHouse.status === 'damaged' && <article className="live-construction-card">
-          <div className="live-panel-heading"><div><span className="live-eyebrow">FIXED LORD HOUSE REPAIR</span><h3>{repairHouse.name}</h3></div><span className="live-data-chip">{repairHouse.status}</span></div>
+          <div className="live-panel-heading"><div><span className="live-eyebrow">SỬA CHỮA</span><h3>{repairHouse.name}</h3></div><span className="live-data-chip">{repairHouse.status}</span></div>
           <p>20 WOOD + 10 STONE · STONE-HAMMER per assigned worker · 17/60 WU · tối đa 2 worker. Hoàn tất mở đúng 11 blueprint tầng 1.</p>
           {repairHouse.position && <p>Tọa độ: {(repairHouse.position.xMm / 1000).toFixed(1)}, {(repairHouse.position.yMm / 1000).toFixed(1)} m · người chơi: {(view.player.position.xMm / 1000).toFixed(1)}, {(view.player.position.yMm / 1000).toFixed(1)} m</p>}
           <div className="live-building-form">
@@ -1693,7 +1691,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         {repairHouse?.status === 'active' && <p className="live-preview-success">Nhà Lãnh Chúa đã sửa. {view.construction.unlockedBlueprintIds.length} blueprint được mở.</p>}
 
         <section className="live-panel">
-          <div className="live-panel-heading"><div><span className="live-eyebrow">SOURCE-DEFINED HEAT SERVICE</span><h3>Lò Sưởi Đơn Giản</h3></div><Flame size={20} /></div>
+          <div className="live-panel-heading"><div><span className="live-eyebrow">SƯỞI ẤM</span><h3>Lò Sưởi Đơn Giản</h3></div><Flame size={20} /></div>
           {view.territory.buildings.filter(building => building.kind === 'heater' && building.status === 'active').length === 0
             ? <p className="live-empty-state">No active heater is built. Its fixed opening recipe is 6 STONE.</p>
             : view.territory.buildings.filter(building => building.kind === 'heater' && building.status === 'active').map(building => {
@@ -1714,7 +1712,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         </section>
 
         <article className="live-construction-card">
-          <div className="live-panel-heading"><div><span className="live-eyebrow">SERVER PLACEMENT PREVIEW</span><h3>Đặt công trình H0</h3></div><span className="live-data-chip">LL01-BUILDING-PLACEMENT-1.0</span></div>
+          <div className="live-panel-heading"><div><span className="live-eyebrow">QUY HOẠCH LÃNH ĐỊA</span><h3>Đặt công trình</h3></div></div>
           <div className="live-building-form">
             <label className="live-inline-field">Blueprint <select value={constructionBlueprintId} onChange={event => { setConstructionBlueprintId(event.target.value); setConstructionPreview(null); }}>
               <option value="" disabled>Chọn blueprint đã mở</option>
@@ -1740,7 +1738,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
 
         <div className="live-two-column">
           <section className="live-panel">
-            <div className="live-panel-heading"><div><span className="live-eyebrow">WORK ORDERS</span><h3>Tiến độ và nhân công</h3></div><Users size={20} /></div>
+            <div className="live-panel-heading"><div><span className="live-eyebrow">CÔNG VIỆC</span><h3>Tiến độ và nhân công</h3></div><Users size={20} /></div>
             {view.construction.jobs.length ? <ul className="live-job-list">{view.construction.jobs.map(job => {
               const percent = job.workUnitsRequired === 0 ? 100 : Math.min(100, job.progressTicks / (job.workUnitsRequired * 300) * 100);
               const nearbyUnits = view.units.filter(unit => unit.position && Math.hypot(unit.position.xMm - job.position.xMm, unit.position.yMm - job.position.yMm) <= 5_000);
@@ -1759,7 +1757,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
             })}</ul> : <p className="live-empty-state">No construction work has started.</p>}
           </section>
           <section className="live-panel">
-            <div className="live-panel-heading"><div><span className="live-eyebrow">HOUSING · FOOD LEDGER</span><h3>Nhà nông phu cực địa</h3></div><Users size={20} /></div>
+            <div className="live-panel-heading"><div><span className="live-eyebrow">NHÀ Ở VÀ LƯƠNG THỰC</span><h3>Nhà nông phu cực địa</h3></div><Users size={20} /></div>
             <p>{view.construction.occupiedHousing}/{view.construction.farmerHouseCapacity} resident capacity · {view.construction.residents.length} residents.</p>
             <p className="live-muted">Recruitment input: exactly 5 FOOD units per resident from food stacks in the selected accessible container. Daily upkeep is not compiled by the source.</p>
             {view.territory.buildings.filter(building => building.kind === 'polar_farmhouse' && building.status === 'active').map(building => <div className="live-button-row" key={building.id}>
@@ -1771,7 +1769,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         </div>
 
         <section className="live-panel">
-          <div className="live-panel-heading"><div><span className="live-eyebrow">FIXED OPENING REGISTRY</span><h3>Blueprints mở và bị khóa</h3></div><Shield size={20} /></div>
+          <div className="live-panel-heading"><div><span className="live-eyebrow">BẢN VẼ</span><h3>Blueprints mở và bị khóa</h3></div><Shield size={20} /></div>
           <ul className="live-plain-list">{view.construction.blueprints.map(blueprint => <li key={blueprint.id}>
             <strong>{blueprint.name} · {view.construction.unlockedBlueprintIds.includes(blueprint.id) ? 'available' : 'locked until Lord House repair'}</strong>
             <span>{`${blueprint.buildCost.map(item => `${item.quantity} ${item.materialId}`).join(' + ')} · ${blueprint.workUnits} WU · ${blueprint.footprint.areaM2 ?? `${blueprint.footprint.lengthM} m`} · ${blueprint.outputs.join('; ')}`}</span>
@@ -1783,7 +1781,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         </section>}
       </section>
       <section className="live-panel">
-        <div className="live-panel-heading"><div><span className="live-eyebrow">TOMB · SOURCE-LOCKED STANDARD OUTPUT</span><h2>Hàng đợi Mộ Bậc {view.territory.tomb.level}</h2></div><Shield size={22} /></div>
+        <div className="live-panel-heading"><div><span className="live-eyebrow">LĂNG MỘ</span><h2>Hàng đợi Mộ Bậc {view.territory.tomb.level}</h2></div><Shield size={22} /></div>
         <p>Đầu ra: Bậc {view.territory.tomb.output.formTier} · {view.territory.tomb.output.grade} · cấp {view.territory.tomb.output.level} · {view.territory.tomb.output.baseLaborRateWuPerHour} WU/giờ.</p>
         <p>{view.territory.tomb.deathQi.current}/{view.territory.tomb.deathQi.capacity} Tử Khí · {view.territory.tomb.activeCount}/{view.territory.tomb.productionSlots} ô đang chạy · hồi lúc T+{elapsedLabel(view.territory.tomb.deathQi.nextRefillAtElapsedMs)}</p>
         <div className="live-button-row"><button className="live-button" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'enqueue_tomb', { blueprintId: 'LL-TOMB-ZOMBIE-STANDARD-01' }))}>Xếp một Cương Thi tiêu chuẩn</button></div>
@@ -1792,7 +1790,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     }
 
     return <section className="live-panel">
-      <div className="live-panel-heading"><div><span className="live-eyebrow">PLAYER-SAFE EVENT LEDGER</span><h2>Nhật ký</h2></div><ScrollText size={22} /></div>
+      <div className="live-panel-heading"><div><span className="live-eyebrow">NHẬT KÝ</span><h2>Nhật ký</h2></div><ScrollText size={22} /></div>
       <div className="live-two-column">
         <section className="live-panel">
           <div className="live-panel-heading"><div><span className="live-eyebrow">SỰ KIỆN ĐÃ BIẾT</span><h3>Lịch sử sự kiện</h3></div></div>
@@ -1808,7 +1806,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
             : <p className="live-empty-state">Chưa có sự kiện nào được biết.</p>}
         </section>
         <section className="live-panel">
-          <div className="live-panel-heading"><div><span className="live-eyebrow">QUEST ĐÃ BIẾT</span><h3>Nhiệm vụ</h3></div></div>
+          <div className="live-panel-heading"><div><span className="live-eyebrow">NHIỆM VỤ</span><h3>Nhiệm vụ</h3></div></div>
           {view.quests.length
             ? <ul className="live-plain-list">{view.quests.map(quest => <li key={quest.questId}>
               <strong>{quest.questId} · {quest.state}</strong>
@@ -1874,9 +1872,9 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         {onExit && <button type="button" className="frozen-menu__back" onClick={onExit}>← Menu chính</button>}
         <span className="live-eyebrow">OWNER SESSION CONNECTED · SQLITE</span>
         <h1>{pickerIntent === 'new' ? 'Trò chơi mới' : pickerIntent === 'load' ? 'Tải lượt lưu' : 'Chọn hoặc tạo lượt lưu'}</h1>
-        <p>{pickerIntent === 'new' ? 'Tạo một lượt chơi độc lập, bắt đầu ở T0. Không dùng lại tiến trình hoặc vật phẩm từ lượt khác.' :
+        <p>{pickerIntent === 'new' ? 'Bắt đầu một cuộc phiêu lưu mới. Vật phẩm và tiến trình được tách biệt với các lượt chơi khác.' :
           pickerIntent === 'load' ? 'Chọn một lượt đã tồn tại trên máy chủ để tiếp tục. Việc mở danh sách không tạo lượt mới.' :
-          'Chưa có trạng thái game nào được mở. Tạo clean game mới hoặc tải một save đã có.'}</p>
+          'Bắt đầu cuộc phiêu lưu mới hoặc tiếp tục lượt chơi đã lưu.'}</p>
         <StatusBanner feedback={feedback} retry={pendingCommand ? retryPending : undefined} />
         {pickerIntent !== 'either' && <div className="live-picker-tabs" role="group" aria-label="Tạo mới hoặc tải lượt lưu">
           <button type="button" className={pickerIntent === 'new' ? 'is-active' : ''} aria-pressed={pickerIntent === 'new'} disabled={working} onClick={() => setPickerIntent('new')}>Trò chơi mới</button>
@@ -1900,7 +1898,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
   return <div className="live-shell">
     <aside className="live-sidebar">
       <div className="live-brand"><img className="live-brand-emblem" src="/crest.svg" width={43} height={43} alt="Biểu tượng Ice Age Lord"/><div><strong>ICE AGE <em>LORD</em></strong><small>BIÊN NIÊN BĂNG PHONG</small></div></div>
-      <div className="live-sidebar-status"><span className="live-status-dot" /> Đã kết nối · SQLite API</div>
+      <div className="live-sidebar-status"><span className="live-status-dot" /> Đã sẵn sàng</div>
       <nav className="live-nav" aria-label="Màn hình game">
         {navigation.map(item => {
           const Icon = item.icon;
@@ -1918,11 +1916,11 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           {onExit && <button type="button" className="live-button live-button--secondary live-save-switch" disabled={working || Boolean(pendingCommand)} onClick={onExit}>Menu chính</button>}
           <button
             className="live-button live-button--secondary live-save-switch"
-            title={pendingCommand ? 'Gửi lại cùng mã lệnh trước khi đổi lượt lưu.' : 'Chọn một lượt lưu khác.'}
+            title={pendingCommand ? 'Hãy hoàn tất hành động đang thực hiện.' : 'Chọn lượt chơi khác.'}
             disabled={working || Boolean(pendingCommand)}
             onClick={() => void returnToSavePicker()}
           >Đổi lượt lưu</button>
-          <span className="live-data-chip">EVENT {view.lastEventSequence}</span>
+          
           <div className="live-clock-controls" aria-label="Điều khiển đồng hồ mô phỏng">
             <select aria-label="Tốc độ mô phỏng" value={customSelection ? 'custom' : view.clockControl.selection} disabled={working || Boolean(pendingCommand) || Boolean(view.eventProgressionBlocker) || view.clockStatus.driver !== 'active'} onChange={event => {
               const speed = event.target.value as ClockSpeedSelection;
@@ -1938,11 +1936,11 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           </div>
           {view.clockStatus.driver === 'observing' && <span className="live-driver-label">Tab khác đang giữ quyền</span>}
           <div className="live-notification-wrap">
-            <button className="live-icon-button" aria-label="Mở thông báo từ nhật ký máy chủ" aria-expanded={notificationsOpen} onClick={() => setNotificationsOpen(open => !open)}>
+            <button className="live-icon-button" aria-label="Mở thông báo" aria-expanded={notificationsOpen} onClick={() => setNotificationsOpen(open => !open)}>
               <Bell size={17} />{events.length > 0 && <span className="live-notification-count">{Math.min(events.length, 99)}</span>}
             </button>
-            {notificationsOpen && <section className="live-notification-popover" role="status" aria-label="Thông báo máy chủ gần đây">
-              <div className="live-notification-heading"><strong>Thông báo máy chủ</strong><button className="live-text-button" onClick={() => setScreen('journal')}>Mở nhật ký</button></div>
+            {notificationsOpen && <section className="live-notification-popover" role="status" aria-label="Thông báo gần đây">
+              <div className="live-notification-heading"><strong>Thông báo</strong><button className="live-text-button" onClick={() => setScreen('journal')}>Mở nhật ký</button></div>
               {events.length
                 ? <ol className="live-event-list">{events.slice(-5).reverse().map(item => <li key={item.eventId}>
                   <span className="live-event-sequence">#{item.sequence} · {item.category}</span><strong>{item.title}</strong><p>{item.text}</p>
@@ -1950,7 +1948,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
                 : <p className="live-empty-state">Chưa có thông báo trong nhật ký máy chủ.</p>}
             </section>}
           </div>
-          <button className="live-icon-button" aria-label="Tải lại từ API" onClick={() => void loadLatest()} disabled={working}><RefreshCw size={17} /></button>
+          <button className="live-icon-button" aria-label="Tải lại tiến trình" onClick={() => void loadLatest()} disabled={working}><RefreshCw size={17} /></button>
           <button type="button" className="profile-mini live-profile-mini" onClick={() => setScreen('character')}
             aria-label={`Mở hồ sơ người chơi: ${view.player.name}`}>
             <img className="profile-portrait" src="/assets/characters/li-lan-t0-portrait.svg?v=20261010" width={38} height={38} alt=""/>
