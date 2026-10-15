@@ -32,6 +32,9 @@ const TOKEN_NAMES: Readonly<Record<string,string>> = {
 export function playerItemName(idOrName: string | null | undefined): string {
   if (!idOrName) return 'Vật phẩm chưa xác định';
   if (ITEM_NAMES[idOrName]) return ITEM_NAMES[idOrName];
+  // Internal identifiers are not item names. Keep undiscovered/unnamed items nameless.
+  if (/(?:^|[-_])(?:H\d+|P\d{1,2}|LL\d+|EV\d+|BP|UNIT|ASSET|CONTRACT)(?:[-_]|$)/i.test(idOrName)
+    || /[0-9A-F]{16,}/.test(idOrName)) return 'Vật phẩm chưa rõ tên';
   // Already a named item, not a registry identifier: preserve its authored name.
   if (!/^[A-Z0-9][A-Z0-9_-]*$/.test(idOrName) || !idOrName.includes('-') && !/^[A-Z0-9]+$/.test(idOrName)) return idOrName;
   return idOrName.replace(/[-_]+/g, ' ').split(' ')
@@ -90,8 +93,17 @@ export function playerStatus(status: string | null | undefined): string {
     day:'Ban ngày', night:'Ban đêm', twilight:'Chạng vạng',
     queued:'Đang chờ', success:'Thành công', failed:'Không thành công',
     verified:'Đã xác nhận', unknown:'Chưa biết', normal:'Bình thường',
+    daylight:'Ban ngày', clear:'Ổn định', FED:'Đã ăn no',
+    not_compiled:'Chưa xác định', pending_opening_settlement:'Chờ xác nhận',
+    'pending-opening-settlement':'Chờ xác nhận', recovering:'Đang hồi phục',
+    returning_home:'Đang quay về', travelling:'Đang di chuyển', scouting:'Đang trinh sát',
+    depleted:'Đã cạn', partial:'Một phần', open_surface:'Trên mặt đất',
+    cancelled:'Đã hủy', expired:'Hết hạn', closed:'Đã đóng',
+    common:'Thường', white:'Trắng', green:'Lục', blue:'Lam', purple:'Tím', gold:'Vàng',
   };
-  return labels[status] ?? status.replace(/_/g, ' ').toLocaleLowerCase('vi-VN');
+  if (labels[status]) return labels[status];
+  if (/(?:^|[-_])(?:H\d+|P\d{1,2}|LL\d+|EV\d+|BP)(?:[-_]|$)/i.test(status)) return 'Chưa rõ';
+  return status.replace(/_/g, ' ').toLocaleLowerCase('vi-VN');
 }
 
 export function playerElapsed(elapsedMs: number | null | undefined): string {
@@ -111,5 +123,6 @@ export function playerMessage(message: string | null | undefined): string {
     .replace(/\bWU\b/g, 'đơn vị công việc')
     .replace(/\b(?:server[- ]owned|server[- ]safe|server[- ]knowledge|API player view)\b/gi, 'trong lượt chơi')
     .replace(/\b(?:revision|event sequence)\s*#?\d+\b/gi, '')
+    .replace(/\b(?:encounter|source|contract|backend|client|server|snapshot)\b/gi, 'trò chơi')
     .trim();
 }
