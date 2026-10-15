@@ -2,7 +2,7 @@ name: Map rendering validation
 on:
   push:
     branches: [work, main, 'codex/**']
-    paths: ['frontend/**', 'assets/**', '.github/workflows/map-rendering.yml']
+    paths: ['frontend/**', 'assets/**', '.gitattributes', '.github/workflows/map-rendering.yml']
   workflow_dispatch:
 permissions:
   contents: read
