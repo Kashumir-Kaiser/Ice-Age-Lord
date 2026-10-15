@@ -88,7 +88,7 @@ test('Load Save lists server slots and opens only the explicitly selected one', 
   expect(creations).toBe(0);
   expect(selections).toBe(0);
   await page.getByRole('button', { name: /Lãnh địa cổ/ }).click();
-  await expect(page.locator('.live-footer')).toContainText('save-live-01');
+  await expect(page.locator('.live-footer')).toHaveAttribute('data-save-id', 'save-live-01');
   expect(selections).toBe(1);
   expect(creations).toBe(0);
 });
