@@ -860,18 +860,18 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           }}>
             {chooseDestination ? 'Hủy chọn điểm đến' : 'Chọn điểm đến'}
           </button>
-          <div className="live-zoom-controls"><button className="live-button live-button--secondary" aria-label="Thu nhỏ bản đồ" disabled={mapZoom <= 0.2} onClick={() => setMapZoom(value => Math.max(0.2, Math.round(value / 1.6 * 100) / 100))}>−</button><span>{mapZoom.toFixed(2)}×</span><button className="live-button live-button--secondary" aria-label="Phóng to bản đồ" disabled={mapZoom >= 500} onClick={() => setMapZoom(value => Math.min(500, Math.round(value * 1.6 * 100) / 100))}>+</button><button className="live-button live-button--secondary live-map-overview" aria-label="Show map overview" onClick={() => { setMapZoom(1); setMapOffsetMm({ xMm: 0, yMm: 0 }); }}>Overview</button></div>
+          <div className="live-zoom-controls"><button className="live-button live-button--secondary" aria-label="Thu nhỏ bản đồ" disabled={mapZoom <= 0.2} onClick={() => setMapZoom(value => Math.max(0.2, Math.round(value / 1.6 * 100) / 100))}>−</button><span>{mapZoom.toFixed(2)}×</span><button className="live-button live-button--secondary" aria-label="Phóng to bản đồ" disabled={mapZoom >= 500} onClick={() => setMapZoom(value => Math.min(500, Math.round(value * 1.6 * 100) / 100))}>+</button><button className="live-button live-button--secondary live-map-overview" aria-label="Xem toàn bản đồ" onClick={() => { setMapZoom(1); setMapOffsetMm({ xMm: 0, yMm: 0 }); }}>Toàn cảnh</button></div>
           <label className="live-inline-field">Người di chuyển <select value={travelActorId} onChange={event => { setTravelActorId(event.target.value); setMapOffsetMm({ xMm: 0, yMm: 0 }); setDestination(null); setDestinationAvailability(null); }}><option value={view.player.id}>{view.player.name}</option>{view.units.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}</select></label>
           
         </div>
         {chooseDestination && <p className="live-map-hint">Chọn một điểm trống trên bản đồ để xem trước hành trình. Xác nhận để bắt đầu di chuyển.</p>}
         {fireRef && !fireEntity && <div className="live-inline-error" role="alert">Không tìm thấy Lửa Sinh Tồn trên bản đồ hiện tại.</div>}
-        {selectedEntity && !selectedCombatTarget && <InspectorFrame as="div" className="live-inspector" label="Selected map entity inspector" entityId={selectedEntity.ref.id} knowledge={selectedEntity.knowledge}>
-          <InspectorHeading mode="live" eyebrow={`Selected · ${selectedEntity.category}`} title={entityLabel(selectedEntity)} description={`${selectedEntity.knowledge} · observed at ${elapsedLabel(selectedEntity.observedAtElapsedMs)}`}/>
+        {selectedEntity && !selectedCombatTarget && <InspectorFrame as="div" className="live-inspector" label="Thông tin địa điểm" entityId={selectedEntity.ref.id} knowledge={selectedEntity.knowledge}>
+          <InspectorHeading mode="live" eyebrow="ĐỊA ĐIỂM ĐÃ BIẾT" title={entityLabel(selectedEntity)} description={selectedEntity.knowledge === 'remembered' ? 'Vị trí đã biết lần cuối' : 'Đang trong tầm quan sát'}/>
           {selectedEntity.chestLoot && <div className="live-chest-loot" data-testid="chest-loot-inspector">
-              <strong>{selectedEntity.chestLoot.rarity} · {selectedEntity.chestLoot.chestType} chest · {selectedEntity.chestLoot.rollCount} roll(s)</strong>
-              {selectedEntity.chestLoot.eventId && <small>Vật phẩm trong rương sự kiện có thể hết hiệu lực khi sự kiện kết thúc.</small>}
-              {!selectedEntity.chestLoot.opened && <ul>{selectedEntity.chestLoot.odds.map(odds => <li key={odds.templateId}><span>{playerItemName(odds.templateId)}</span><span>{(odds.chanceAtLeastOncePermille / 10).toFixed(1)}% chance · {odds.perRollPermille / 10}% per roll</span></li>)}</ul>}
+              <strong>Rương {playerStatus(selectedEntity.chestLoot.rarity)}</strong>
+              
+              {!selectedEntity.chestLoot.opened && <p>Chưa mở rương. Những vật phẩm bên trong vẫn chưa được biết.</p>}
               {selectedEntity.chestLoot.opened && selectedEntity.chestLoot.outcome && <ul>{selectedEntity.chestLoot.outcome.map(item => <li key={item.templateId}><span>{playerItemName(item.templateId)}</span><span>×{item.quantity}</span></li>)}</ul>}
             </div>}
           <div className="live-action-stack">
@@ -883,19 +883,19 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
               {!selectedCorpse.butcher.enabled && <small>{availabilityMessage(selectedCorpse.butcher)}</small>}
             </div>}
             {selectedMove && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || (travelActorId === view.player.id && !selectedMove.enabled)} onClick={() => moveToEntity(selectedEntity)}><ArrowRight size={16} /> Di chuyển đến đây {travelActorId === view.player.id && selectedMove.preview?.value ? `· ${selectedMove.preview.value}` : ''}</button>}
-            {selectedBuilding && <button className="live-button live-button--secondary" onClick={() => { setFocusedConstructionBuildingId(selectedBuilding.id); setScreen('buildings'); }}><Hammer size={16} /> Open {selectedBuilding.name} inspector</button>}
+            {selectedBuilding && <button className="live-button live-button--secondary" onClick={() => { setFocusedConstructionBuildingId(selectedBuilding.id); setScreen('buildings'); }}><Hammer size={16} /> Xem {selectedBuilding.name}</button>}
             {selectedEntity.ref.type === 'site' && selectedEntity.ref.id === 'SITE-LL01-000' && <button className="live-button live-button--secondary" onClick={() => { setFocusedConstructionBuildingId(null); setScreen('buildings'); }}><Hammer size={16} /> Xem công trình tại lãnh địa</button>}
             {selectedOpen && <small>{availabilityMessage(selectedOpen)}</small>}
             {selectedEntity.ref.type === 'cache' && selectedEntity.chestLoot && <button className="live-button" disabled={working || Boolean(pendingCommand) || !selectedOpen?.enabled || selectedEntity.chestLoot.opened}
-              onClick={() => void sendCommand(commandFor(view, 'open_cache', { actorId: view.player.id, chestId: selectedEntity.ref.id }))}>Open chest · commit displayed odds</button>}
+              onClick={() => void sendCommand(commandFor(view, 'open_cache', { actorId: view.player.id, chestId: selectedEntity.ref.id }))}>Mở rương</button>}
             {selectedInspect && !selectedInspect.enabled && <small>{availabilityMessage(selectedInspect)}</small>}
             {selectedMove && !selectedMove.enabled && <small>{availabilityMessage(selectedMove)}</small>}
             {selectedHarvest && !selectedHarvest.enabled && <small>{availabilityMessage(selectedHarvest)}</small>}
           </div>
         </InspectorFrame>}
-        {selectedCombatTarget && <InspectorFrame as="div" className="live-inspector" label="Combat target inspector" testId="combat-target-inspector" entityId={selectedCombatTarget.id}>
+        {selectedCombatTarget && <InspectorFrame as="div" className="live-inspector" label="Mục tiêu giao chiến" testId="combat-target-inspector" entityId={selectedCombatTarget.id}>
           <InspectorHeading mode="live" eyebrow="MỤC TIÊU GIAO CHIẾN" title={selectedCombatTarget.label}
-            description={`${selectedCombatTarget.state === 'available' ? 'A known wildlife track is within sight.' : 'The target has reacted to the encounter.'} · regional population ${selectedCombatTarget.regionalPopulationRemaining}`}/>
+            description={selectedCombatTarget.state === 'available' ? 'Đã phát hiện dấu vết con mồi gần đây.' : 'Mục tiêu đã nhận ra đội của bạn.'}/>
           <div className="live-action-stack">
             <label className="live-inline-field">Chiến binh <select value={selectedCombatActorId} onChange={event => setCombatActorId(event.target.value)}>
               <option value="">Chọn đơn vị còn sống</option>{view.units.filter(unit => unit.health && unit.health.current > 0).map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
@@ -960,10 +960,10 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
             setDispatchPreview(null);
             setChooseDispatchCenter(false);
             setChooseDestination(false);
-            setFeedback({ kind: 'idle', text: `Search area center selected · ${coordinate.xMm}, ${coordinate.yMm} mm.` });
+            setFeedback({ kind: 'idle', text: `Đã chọn tâm tìm kiếm trên bản đồ.` });
           } else previewCoordinateDestination(coordinate);
         }}>
-          <MapCanvas snapshot={liveExplorationSnapshot(view,center,horizontalSpanMm/1000,spanMm/1000)} label="Known frozen geography; use the map markers and destination controls to navigate."/>
+          <MapCanvas snapshot={liveExplorationSnapshot(view,center,horizontalSpanMm/1000,spanMm/1000)} label="Bản đồ địa hình đã khám phá. Chọn địa điểm để di chuyển."/>
           <div className="live-map-crosshair" aria-hidden="true" />
           <svg className="live-map-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
             <defs><mask id="live-map-unknown" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
@@ -1043,7 +1043,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
               onClick={event => {
                 event.stopPropagation();
                 if (bot.knowledge === 'current') void sendCommand(commandFor(view, 'inspect_entity', { entity: { type: 'bot', id: bot.botId } }));
-                else setFeedback({ kind: 'idle', text: 'Return the settlement to current sight to inspect it.' });
+                else setFeedback({ kind: 'idle', text: 'Cần quan sát lại lãnh địa này trước khi kiểm tra.' });
               }}
               aria-label={bot.label} title={bot.label}><MapPin size={19} aria-hidden="true" /><span>{bot.label}</span></button>;
           })}
@@ -1051,12 +1051,12 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
             const projected = point(army.position);
             const left = Math.max(2, Math.min(98, projected.x));
             const top = Math.max(2, Math.min(98, projected.y));
-            const unitLabel = army.order === 'scout' ? 'scouts' : 'troops';
-            const summary = army.knowledge === 'current' ? `${army.count} ${unitLabel} · ${army.order}` : `Last seen ${unitLabel} movement`;
+            const unitLabel = army.order === 'scout' ? 'trinh sát' : 'quân lính';
+            const summary = army.knowledge === 'current' ? `${army.count} ${unitLabel}` : `Dấu vết ${unitLabel} đã thấy trước đây`;
             return <button key={`${army.botId}:${army.observedAtElapsedMs}`} className={'live-map-marker live-map-marker--enemy-army' + (army.knowledge === 'remembered' ? ' is-remembered' : '')}
               data-testid="map-enemy-army" style={{ left: left + '%', top: top + '%' }}
               onClick={event => { event.stopPropagation(); setFeedback({ kind: 'idle', text: summary }); }}
-              aria-label={summary} title={summary}><MapPin size={17} aria-hidden="true" /><span>{army.knowledge === 'current' ? `${army.count} ${unitLabel}` : 'Last seen'}</span></button>;
+              aria-label={summary} title={summary}><MapPin size={17} aria-hidden="true" /><span>{army.knowledge === 'current' ? `${army.count} ${unitLabel}` : 'Dấu vết cũ'}</span></button>;
           })}
           {view.units.filter(unit => unit.position).map(unit => {
             const projected = point(unit.position!);
@@ -1073,14 +1073,14 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           <span>Lương thực {view.botInspection.resourceBalances?.food ?? 0} · gỗ {view.botInspection.resourceBalances?.wood ?? 0} · đá {view.botInspection.resourceBalances?.stone ?? 0} · quặng {view.botInspection.resourceBalances?.ore ?? 0}</span>
           <div><strong>Công trình</strong><ul>{(view.botInspection.structures ?? []).map(structure => <li key={structure.id}>
             {playerBlueprintName(view, structure.blueprintId)} · cấp {structure.level} · {playerStatus(structure.status)}{structure.status === 'under_construction' ? ` · ${Math.floor(structure.workCompleted * 100 / Math.max(1, structure.workRequired))}%`
-              : structure.status === 'damaged' && structure.repairWorkRequired > 0 ? ` · repair ${Math.floor(structure.repairWorkCompleted * 100 / structure.repairWorkRequired)}%` : ''}
+              : structure.status === 'damaged' && structure.repairWorkRequired > 0 ? ` · sửa chữa ${Math.floor(structure.repairWorkCompleted * 100 / structure.repairWorkRequired)}%` : ''}
           </li>)}</ul></div>
           <div><strong>Quân lực</strong><ul>{(view.botInspection.army ?? []).map(cohort => <li key={cohort.id}>
             {cohort.livingCount} đơn vị · cấp {cohort.level} · {playerStatus(cohort.order)}
           </li>)}</ul></div>
         </section>}
         {destination && <div className="live-destination-preview">
-          <div><strong>Điểm đến</strong><span>{destination.xMm}, {destination.yMm} mm · {destinationAvailability?.preview?.value ?? (destinationAvailability ? availabilityMessage(destinationAvailability) : 'Calculating…')}</span></div>
+          <div><strong>Điểm đến</strong><span>{(destinationAvailability?.enabled ? 'Có thể di chuyển' : destinationAvailability ? availabilityMessage(destinationAvailability) : 'Đang tìm đường đi…')}</span></div>
           <button className="live-button" disabled={working || Boolean(pendingCommand) || !destinationAvailability?.enabled} onClick={() => void sendCommand(commandFor(view, 'move', { actorId: view.player.id, destination }))}>Bắt đầu di chuyển</button>
         </div>}
         {view.spatial.movementOrders.filter(order => order.status === 'active').map(order => <div key={order.id} className="live-destination-preview">
@@ -1092,10 +1092,10 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
             <div className="live-resource-heat-status">
               <Flame size={15} />
               {!resourceDeposit.heatActive
-                ? 'The survival fire is out; this deposit has no heating coverage.'
+                ? 'Lửa Sinh Tồn đã tắt; khu vực này không được sưởi ấm.'
                 : resourceDeposit.heatCovered
-                ? `Inside the active ${resourceDeposit.heatRadiusMm / 1_000} m heating zone.`
-                : `${(resourceDeposit.distanceFromHeatMm / 1_000).toFixed(0)} m from the fire; outside its ${resourceDeposit.heatRadiusMm / 1_000} m heating zone. Harvesting is allowed, but the worksite is not heated.`}
+                ? `Trong vùng nhiệt ${resourceDeposit.heatRadiusMm / 1_000} m của lửa trại.`
+                : `${(resourceDeposit.distanceFromHeatMm / 1_000).toFixed(0)} m từ lửa trại, ngoài vùng nhiệt. Có thể thu thập nhưng nơi làm việc rất lạnh.`}
             </div>
             <p className="live-resource-haul">Có thể mang tối đa {resourceDeposit.carryCapacityUnits.toLocaleString()} đơn vị tài nguyên; còn chỗ cho {maxHarvestQuantity.toLocaleString()}. Kho lãnh địa có {resourceDeposit.storageStackSlots ?? 'không giới hạn'} ô chứa.</p>
             <label className="live-inline-field">Đơn vị thu thập <select value={harvestActorId} onChange={event => { setHarvestActorId(event.target.value); setHarvestQuantity(1); }}>
@@ -1349,7 +1349,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
             <div><span className="live-eyebrow">LÃNH ĐỊA</span><h2>Lãnh địa</h2></div>
             <span className="live-data-chip">Lửa Sinh Tồn · Cấp {view.territory.survivalFire.level}</span>
           </div>
-          <p className="live-muted">Quản lý công trình và theo dõi vùng nhiệt quanh ngọn lửa trại.</p>
+          <p className="live-muted">Quản lý các công trình đã phát hiện và theo dõi vùng nhiệt quanh lửa trại.</p>
           <TerritoryScene
             mode="live"
             visualIdentity={view.saveId}
