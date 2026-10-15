@@ -2,6 +2,7 @@ export type MapExport = {
   path: string; source: string; sourceSha256: string; sha256: string;
   layerPath?: string;
   sliceId?: string;
+  architecturePart?: true;
   groundCalibration?: {contact:{x:number;y:number};scale:number;shear:number;sourceSlope:number;targetSlope:number};
   groundShadow?: {widthM:number;depthM:number;orientation:string};
   exportVersion: number; width: number; height: number;

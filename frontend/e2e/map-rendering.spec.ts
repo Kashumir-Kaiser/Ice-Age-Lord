@@ -132,7 +132,7 @@ test('watchtower and elemental art previews load every authored pose without cha
   const draft=page.locator(`.territory-building.is-draft[data-asset-id="${asset}"]`);await expect(draft).toHaveCount(1);
   for(const orientation of ['north','east','south','west']){
    await expect(draft).toHaveAttribute('data-orientation',orientation);await expect(draft).not.toHaveAttribute('data-missing-orientation','true');
-   await expect.poll(()=>Array.from(requested).some(p=>new RegExp(`/${asset}/body-${orientation}-(close|district)\\.png$`).test(p)),{timeout:20000}).toBe(true);
+   for(const role of ['base','upper'])await expect.poll(()=>Array.from(requested).some(p=>new RegExp(`/${asset}/${role}-${orientation}-(close|district)\\.png$`).test(p)),{timeout:20000}).toBe(true);
    await page.getByRole('button',{name:`Xoay ${name}`,exact:true}).click();
   }
   await page.getByRole('button',{name:`Xóa ${name}`,exact:true}).click();await expect(draft).toHaveCount(0);

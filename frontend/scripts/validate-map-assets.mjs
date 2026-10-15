@@ -20,6 +20,7 @@ export function rasterDimensions(buffer){
 }
 function checkDimensions(buffer,width,height){const actual=rasterDimensions(buffer);if(actual.width!==width||actual.height!==height)throw new Error('Raster dimensions differ from manifest');}
 export function validateMapExport(entry,asset,read=path=>readFileSync(resolve(root,path))){
+ if(entry.architecturePart&&!['base','upper'].includes(entry.role))throw new Error('Invalid architectural part role');
  if(entry.groundShadow){const s=entry.groundShadow,p=asset.compatiblePhysicalFootprint;if(entry.role!=='shadow'||s.orientation!==entry.orientation||s.widthM!==p?.widthM||s.depthM!==p?.depthM)throw new Error('Ground shadow differs from physical registration');}
  if(entry.groundCalibration){
   const c=entry.groundCalibration,target=entry.orientation==='east'||entry.orientation==='west'?-.5:.5;

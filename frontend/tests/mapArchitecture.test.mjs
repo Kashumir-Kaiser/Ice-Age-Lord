@@ -53,3 +53,21 @@ test('tower focus preserves its footing and planning omits the entire shaft/roof
   assert.ok(entry);assert.equal(entry.source,tower.layers[role]);validateMapExport(entry,tower);
  }
 });
+test('painted tower architecture reconstructs the registered pose and preserves plinth opacity in focus',async()=>{
+ for(const id of ['watchtower-preview','elemental-tower-preview']){
+  const asset=manifest.assets.find(a=>a.assetId===id);assert.equal(asset.composition,'architectural');
+  for(const orientation of ['north','east','south','west'])for(const lod of ['close','district']){
+   const registered=asset.orientationViews[orientation].body;
+   const body=asset.mapExports.find(e=>e.role==='body'&&e.orientation===orientation&&e.lod===lod&&(e.layerPath??e.source)===registered);
+   const entries=['base','upper'].map(role=>asset.mapExports.find(e=>e.architecturePart&&e.role===role&&e.orientation===orientation&&e.lod===lod));
+   for(const e of entries){assert.ok(e);assert.equal(e.source,body.source);validateMapExport(e,asset);}
+   assert.ok(entries[0].trim.y>250,'the retained plinth cannot contain a tall shaft or roof');
+   const place=e=>({input:readFileSync(new URL('../public'+e.path,import.meta.url)),left:Math.round(e.trim.x/asset.logicalCanvas.width*body.rasterCanvas.width),top:Math.round(e.trim.y/asset.logicalCanvas.height*body.rasterCanvas.height)});
+   const restore=async parts=>sharp({create:{width:body.rasterCanvas.width,height:body.rasterCanvas.height,channels:4,background:{r:0,g:0,b:0,alpha:0}}}).composite(parts.map(place)).ensureAlpha().raw().toBuffer();
+   const original=await restore([body]),composed=await restore(entries);
+   for(let i=0;i<original.length;i++)assert.ok(Math.abs(original[i]-composed[i])<=1,`${id}/${orientation}/${lod} pixel channel ${i}`);
+   const focused=composition(asset,'focus',true,false,orientation);assert.equal(focused.find(l=>l.role==='base').alpha,1);assert.equal(focused.find(l=>l.role==='upper').alpha,.22);
+   assert.deepEqual(composition(asset,'planning',true,true,orientation).map(l=>l.role),['shadow','base']);
+  }
+ }
+});

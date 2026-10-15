@@ -28,6 +28,13 @@ for the current map checkpoint; if GitHub still blocks execution, return to
 local checks. This supersedes the temporary quota instruction above. Use normal
 map-branch commits for this retry; do not dispatch redundant old runs.
 
+Local frontend unit verification should use `node --experimental-strip-types
+--test --test-isolation=none tests/*.test.mjs` from frontend, so individual test
+cases and skips are visible. The default local isolated runner reports file
+wrappers only. CI's standard npm test remains unchanged. Local TCP bind and
+Chromium socket setup are prohibited; the HTTP fixture case skips locally on
+EPERM and must execute in CI.
+
 If native git cannot reach GitHub and a large connector image upload stalls,
 transfer small base64 parts through the integration under assets/source/uploads.
 The map-asset-upload workflow verifies the original Git blob hashes, restores
