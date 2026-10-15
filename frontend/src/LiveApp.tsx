@@ -1242,6 +1242,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       items: container.items.filter(item => !normalizedInventoryFilter || `${item.label} ${item.itemId} ${item.ownerId ?? ''} ${item.unit ?? ''} ${item.equipmentTags?.join(' ') ?? ''} ${item.provenance}`.toLocaleLowerCase().includes(normalizedInventoryFilter)),
     })).filter(container => !normalizedInventoryFilter || container.items.length > 0 || `${container.label} ${container.id} ${container.location.kind}`.toLocaleLowerCase().includes(normalizedInventoryFilter));
     const availableBlueprints = view.construction.blueprints.filter(blueprint => view.construction.unlockedBlueprintIds.includes(blueprint.id));
+    const discoveredMarket = view.stage08.marketOffers.length > 0 || view.stage08.botMarketListings.length > 0 || view.stage08.auctionLots.length > 0;
     const selectedBlueprint = availableBlueprints.find(blueprint => blueprint.id === constructionBlueprintId);
     const parsedX = Number(constructionXMetres);
     const parsedY = Number(constructionYMetres);
@@ -1462,13 +1463,13 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
               </article>)}</div>
             : view.inventory.inspectableContainers.length === 0 && <p className="live-empty-state">Chưa có túi đồ được kiểm tra.</p>}
         </section>
-        <section className="live-panel">
+        {view.currency.length > 0 && <section className="live-panel">
           <div className="live-panel-heading"><div><span className="live-eyebrow">TIỀN TỆ ĐÃ NHẬN</span><h3>Số dư</h3></div><PackageOpen size={20} /></div>
           {view.currency.length
             ? <ul className="live-plain-list">{view.currency.map(balance => <li key={balance.currencyId}><strong>{balance.currencyId}</strong><span>{balance.amount.toLocaleString()}</span></li>)}</ul>
             : <p className="live-empty-state">Chưa có tiền tệ sự kiện nào được ghi nhận.</p>}
-        </section>
-        <section className="live-panel">
+        </section>}
+        {discoveredMarket && <section className="live-panel">
           <div className="live-panel-heading"><div><span className="live-eyebrow">CHỢ</span><h3>Giao dịch tại Cổng Krona</h3></div><PackageOpen size={20} /></div>
           {view.stage08.marketOffers.length > 0
             ? <div className="live-job-list">{view.stage08.marketOffers.map(offer => {
@@ -1538,7 +1539,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           {view.stage08.auctionBids.length > 0 && <ul className="live-plain-list">{view.stage08.auctionBids.map(bid => <li key={bid.id}>
             <strong>{bid.id} · {bid.status}</strong><span>{bid.quantity} unit(s) at {bid.unitBid} {view.stage08.auctionLots.find(lot => lot.id === bid.lotId)?.currencyId ?? ''} · escrow {bid.escrowAmount}</span>
           </li>)}</ul>}
-        </section>
+        </section>}
         <section className="live-panel">
           <div className="live-panel-heading"><div><span className="live-eyebrow">TÀI NGUYÊN</span><h3>Những nơi đã khám phá</h3></div><PackageOpen size={20} /></div>
           {view.spatial.resources.length ? <ul className="live-plain-list">{view.spatial.resources.map(resource => <li key={resource.resourceId}>
@@ -1757,7 +1758,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
               </li>;
             })}</ul> : <p className="live-empty-state">Chưa bắt đầu công trình nào.</p>}
           </section>
-          <section className="live-panel">
+          {(availableBlueprints.some(blueprint => /nông phu/i.test(blueprint.name)) || view.territory.buildings.some(building => building.kind === 'polar_farmhouse')) && <section className="live-panel">
             <div className="live-panel-heading"><div><span className="live-eyebrow">NHÀ Ở VÀ LƯƠNG THỰC</span><h3>Nhà nông phu cực địa</h3></div><Users size={20} /></div>
             <p>Chỗ ở: {view.construction.occupiedHousing}/{view.construction.farmerHouseCapacity} · {view.construction.residents.length} cư dân.</p>
             <p className="live-muted">Chiêu mộ một cư dân cần 5 phần lương thực từ túi đồ đang trong tầm với.</p>
@@ -1766,7 +1767,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
             </div>)}
             {view.construction.residents.length ? <ul className="live-plain-list">{view.construction.residents.map(resident => <li key={resident.id}><strong>{resident.name}</strong><span>Đã dùng {resident.foodUnitsPaid} phần lương thực · {playerStatus(resident.upkeepStatus)}</span></li>)}</ul> : <p className="live-empty-state">Chưa có cư dân được chiêu mộ.</p>}
             {view.construction.rewardEntitlements.map(reward => <p className="live-inline-error" key={reward.id}>Phần thưởng đang chờ: {playerMessage(reward.blocker)}</p>)}
-          </section>
+          </section>}
         </div>
 
         {availableBlueprints.length > 0 && <section className="live-panel">
