@@ -1,5 +1,4 @@
 import { ArrowRight, BookOpen, Flame, ScrollText, Shield, Snowflake } from 'lucide-react';
-import './landing.css';
 
 export type EntryIntent = 'new' | 'load';
 type LandingPageProps = {
