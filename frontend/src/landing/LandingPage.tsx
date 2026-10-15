@@ -70,7 +70,7 @@ export default function LandingPage({ demoEnabled, onNewGame, onLoadSave, onDemo
     <footer className="frozen-menu__footer">
       <span>ICE AGE LORD · BĂNG PHONG TẬN THẾ</span>
       <span className="frozen-menu__footer-center">SINH TỒN <b>✦</b> XÂY DỰNG <b>✦</b> CHINH PHỤC</span>
-      <span>© ICE AGE LORD · ORIGINAL GAME UI</span>
+      <span>© ICE AGE LORD · BĂNG PHONG TẬN THẾ</span>
     </footer>
   </main>;
 }
