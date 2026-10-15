@@ -2,7 +2,7 @@ name: Persist map asset checkpoint
 on:
   push:
     branches: ['codex/map-25d-overhaul']
-    paths: ['assets/source/uploads/manifest.json', 'assets/map-building-views.json', 'assets/map-depth-slices.json', 'assets/map-architecture.json', 'assets/map-static-bodies.json', 'frontend/scripts/map-static-body.mjs', 'assets/map-tower-previews.json', 'frontend/scripts/map-tower-previews.mjs', 'frontend/scripts/sync-assets.mjs', 'frontend/scripts/split-map-architecture.mjs', 'frontend/scripts/apply-map-architecture.mjs', 'frontend/scripts/export-map-assets.mjs', 'frontend/scripts/map-ground-shadow.mjs', 'frontend/scripts/calibrate-map-ground.mjs', 'frontend/scripts/export-depth-slices.mjs', 'frontend/scripts/export-map-flame.mjs', 'frontend/scripts/trim-map-raster.mjs', 'frontend/scripts/map-orientation-export.mjs', 'frontend/scripts/normalize-map-alpha.mjs']
+    paths: ['assets/source/uploads/manifest.json', 'assets/map-building-views.json', 'assets/map-depth-slices.json', 'assets/map-architecture.json', 'assets/map-static-bodies.json', 'assets/map-ground-registration.json', 'frontend/scripts/map-static-body.mjs', 'assets/map-tower-previews.json', 'frontend/scripts/map-tower-previews.mjs', 'frontend/scripts/sync-assets.mjs', 'frontend/scripts/split-map-architecture.mjs', 'frontend/scripts/apply-map-architecture.mjs', 'frontend/scripts/export-map-assets.mjs', 'frontend/scripts/map-ground-shadow.mjs', 'frontend/scripts/calibrate-map-ground.mjs', 'frontend/scripts/export-depth-slices.mjs', 'frontend/scripts/export-map-flame.mjs', 'frontend/scripts/trim-map-raster.mjs', 'frontend/scripts/map-orientation-export.mjs', 'frontend/scripts/normalize-map-alpha.mjs']
   workflow_dispatch:
 permissions:
   contents: write

@@ -22,6 +22,7 @@ const authoredViews=JSON.parse(readFileSync(resolve(repo,'assets/map-building-vi
 const depthJoints=JSON.parse(readFileSync(resolve(repo,'assets/map-depth-slices.json'),'utf8'));
 const architecture=JSON.parse(readFileSync(resolve(repo,'assets/map-architecture.json'),'utf8'));
 const staticBodies=JSON.parse(readFileSync(resolve(repo,'assets/map-static-bodies.json'),'utf8'));
+const groundRegistrations=JSON.parse(readFileSync(resolve(repo,'assets/map-ground-registration.json'),'utf8'));
 // This tower's authored SVG groups separate the complete footing from the shaft/roof.
 // Other legacy base/upper files contain arbitrary horizontal clips and remain unaccepted.
 const architecturalAssets=new Set(['fixture-tall-tower']);
@@ -47,6 +48,8 @@ for(const asset of manifest.assets){
  asset.generatedOrientationViews=Object.keys(authoredViews[asset.assetId]??{});
  let bodyReference,defaultCalibration;
  const destination=resolve(output,'buildings',asset.assetId);mkdirSync(destination,{recursive:true});
+ const groundRegistration=groundRegistrations[asset.assetId];
+ if(groundRegistration)asset.groundAnchor={...groundRegistration.anchor};
  delete asset.mapLayers;
  let staticDependencies=[];
  if(staticBodies[asset.assetId]){
@@ -55,6 +58,13 @@ for(const asset of manifest.assets){
   writeFileSync(resolve(repo,'frontend/public'+bodyPath),staticMapBody(graph.svg,asset.logicalCanvas,staticBodies[asset.assetId].removePolygons));
   asset.mapLayers={body:bodyPath};
   staticDependencies=[...Array.from(graph.dependencies,([path,sha256])=>({source:path.slice(repo.length+1),sha256})),...['assets/map-static-bodies.json','frontend/scripts/map-static-body.mjs'].map(source=>({source,sha256:sha(readFileSync(resolve(repo,source)))}))];
+ }
+ const groundDependencies=[];
+ if(groundRegistration){
+  const path=`/assets/map/buildings/${asset.assetId}/shadow-ground.svg`;
+  writeFileSync(resolve(repo,'frontend/public'+path),mapGroundShadow(asset,asset.orientation));
+  asset.mapLayers={...asset.mapLayers,shadow:path};
+  groundDependencies.push(...['assets/map-ground-registration.json','frontend/scripts/map-ground-shadow.mjs'].map(source=>({source,sha256:sha(readFileSync(resolve(repo,source)))})));
  }
  for(const role of ['body','shadow',...(asset.composition==='architectural'?['base','upper']:asset.planningLayer?['base']:[]),...(asset.layers.vfx?['vfx']:[])]){
   const source=role==='base'&&asset.composition!=='architectural'?asset.planningLayer:asset.mapLayers?.[role]??asset.layers[role],file=resolve(repo,'frontend/public'+source),graph=svgMapSource(file),shadow=role==='shadow'&&depthJoints[asset.assetId],svg=shadow?mapGroundShadow(asset,asset.orientation):graph.svg;
@@ -75,6 +85,7 @@ for(const asset of manifest.assets){
    const meta=await sharp(png).metadata();
    const sourceDependencies=Array.from(graph.dependencies,([path,sha256])=>({source:path.slice(repo.length+1),sha256}));
    sourceDependencies.push(...(previewDependencies.get(asset.assetId)??[]));
+   sourceDependencies.push(...groundDependencies);
    if(role==='body')sourceDependencies.push(...staticDependencies);
    if(shadow)sourceDependencies.push({source:'frontend/scripts/map-ground-shadow.mjs',sha256:sha(readFileSync(resolve(repo,'frontend/scripts/map-ground-shadow.mjs')))});
    if(role==='body'&&defaultCalibration)sourceDependencies.push({source:'frontend/scripts/calibrate-map-ground.mjs',sha256:sha(readFileSync(resolve(repo,'frontend/scripts/calibrate-map-ground.mjs')))});

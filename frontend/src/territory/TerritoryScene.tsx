@@ -357,6 +357,13 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
       selected:false,active:false,draft:false,fixture:true,
     }]:snapshot.buildings};
   },[settlement,manifest,activeCamera,effectiveMode,selectedRef?.id,drafts,denseQa,activeDefinition,ghostWorld,placingOrientation,visualIdentity,terrainRegions,liveApi,artQaEnabled,showCalibrationArt,selectedCalibrationAsset]);
+  const artQaPreview=renderSnapshot.buildings.find(b=>b.id==='qa-art-preview'&&b.fixture);
+  const artQaOutline=artQaPreview?[[-1,-1],[1,-1],[1,1],[-1,1]].map(([x,y])=>{
+    const turned=artQaPreview.orientation==='east'||artQaPreview.orientation==='west';
+    const w=turned?artQaPreview.footprint.depthM:artQaPreview.footprint.widthM,d=turned?artQaPreview.footprint.widthM:artQaPreview.footprint.depthM;
+    const point=worldToScreen({x:artQaPreview.point.x+x*w/2,y:artQaPreview.point.y+y*d/2},activeCamera,size);
+    return `${point.x},${point.y}`;
+  }).join(' '):undefined;
   const captureSelection=(event:React.MouseEvent<SVGSVGElement>)=>{
     if(ignoreClick.current){ignoreClick.current=false;event.preventDefault();event.stopPropagation();return;}
     if(activeDefinition||event.detail===0||event.target instanceof Element&&event.target.closest('.territory-player-marker'))return;
@@ -417,6 +424,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
           </g>;
         })}
         {denseQa&&visibleQa.map(item=><BuildingSprite geometryOnly qaFixture key={item.id} id={item.id} name="Fixture QA" asset={findAsset(manifest,item.assetId)} assetId={item.assetId} point={{x:origin.x+item.x,y:origin.y+item.y}} footprint={item.footprint} orientation={item.orientation} camera={activeCamera} viewport={size} mode={effectiveMode} selected={false} faded={false} draft/>) }
+        {artQaOutline&&<polygon data-art-qa-footprint points={artQaOutline} fill="none" stroke="#e4ba7f" strokeWidth="1.2" strokeDasharray="4 4" pointerEvents="none" aria-hidden="true"/>}
         {activeDefinition&&<BuildingSprite geometryOnly id="placement-ghost" name={activeDefinition.name} asset={findAsset(manifest,activeDefinition.assetId)} assetId={activeDefinition.assetId} point={snapPlanningPoint(currentPlacementPoint)} footprint={activeDefinition.footprint} orientation={placingOrientation} camera={activeCamera} viewport={size} mode="planning" selected={false} faded={false} draft blocked={Boolean(validation?.blockers.length)}/>}
         {showPlayerMarker&&<g className="territory-player-marker" transform={`translate(${playerPoint.x} ${playerPoint.y})`} role="button" tabIndex={0} aria-label={`${playerName} — mở hồ sơ người chơi`}
           onClick={onOpenPlayerProfile}

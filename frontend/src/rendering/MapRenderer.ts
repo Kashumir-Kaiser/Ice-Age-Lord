@@ -218,7 +218,7 @@ export class MapRenderer {
     });
     // Contact/cast shadows lie on the ground below every upright object.
     for(const b of buildingObjects){const asset=b.asset!;this.assets.register(asset,useAtlas);for(const layer of composition(asset,this.snapshot.mode,false,b.active,b.orientation))if(layer.role==='shadow'){
-      const exported=exportPath(asset,layer,preferDistrict?'district':'close'),path=(this.failures.has(exported)||this.failures.has(this.assets.url(exported)))?(asset.layers[layer.role]??layer.path):exported;
+      const exported=exportPath(asset,layer,preferDistrict?'district':'close'),path=(this.failures.has(exported)||this.failures.has(this.assets.url(exported)))?(asset.mapLayers?.[layer.role]??asset.layers[layer.role]??layer.path):exported;
       draws.push({id:b.id+':shadow',path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});
     }}
     // Architectural order from the partial order is preserved; props are inserted by their ground depths.

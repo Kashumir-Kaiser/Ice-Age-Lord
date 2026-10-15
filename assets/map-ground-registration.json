@@ -1,0 +1,6 @@
+{
+  "lord-house-repaired": {
+    "anchor": {"x": 0.5, "y": 0.72},
+    "reason": "The authored ground diamond and planning foundation center at (240,288), not the legacy (240,328). Align the map anchor to that preserved registration and derive its contact shadow from the unchanged 4 by 4 metre footprint."
+  }
+}

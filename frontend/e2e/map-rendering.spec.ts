@@ -181,10 +181,12 @@ test('art QA loads preserved late art without adding a settlement entity or plac
  await page.locator('.territory-calibration > summary').click();
  await page.getByLabel('Hình minh họa',{exact:true}).selectOption('lord-house-l30');
  await page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
+ await expect(page.locator('[data-art-qa-footprint]')).toHaveCount(1);
  await expect.poll(()=>Array.from(requested).some(path=>path.includes('/map/buildings/lord-house-l30/')),{timeout:30000}).toBe(true);
  await expect(list).toHaveText(before);
  await page.getByRole('button',{name:'Ẩn hình kiểm tra trên bản đồ',exact:true}).click();
  await expect(page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true})).toBeVisible();
+ await expect(page.locator('[data-art-qa-footprint]')).toHaveCount(0);
  await expect(list).toHaveText(before);
  await page.goto('/?mode=demo');
  const menu=page.getByRole('button',{name:'Mở điều hướng'});if(await menu.isVisible())await menu.click();
@@ -202,6 +204,7 @@ test('repaired house raster failures use its smoke-free map SVG and retain the o
  await page.getByLabel('Hình minh họa',{exact:true}).selectOption('lord-house-repaired');
  await page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
  await expect.poll(()=>requested.has('/assets/map/buildings/lord-house-repaired/body-static.svg'),{timeout:30000}).toBe(true);
+ await expect.poll(()=>requested.has('/assets/map/buildings/lord-house-repaired/shadow-ground.svg'),{timeout:30000}).toBe(true);
  await expect(page.locator('.territory-calibration-preview image').nth(1)).toHaveAttribute('href','/assets/buildings/lord-house-repaired/base.svg');
  await expect(page.locator('.map-render-canvas')).toHaveCount(1);
  await expect(page.locator('[data-map-renderer]')).toHaveAttribute('data-map-renderer',/webgl|canvas2d/);
