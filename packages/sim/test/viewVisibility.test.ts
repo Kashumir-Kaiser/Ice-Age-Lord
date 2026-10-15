@@ -22,6 +22,8 @@ test('the fresh player view reveals neither unreleased event names nor unopened 
   assert.equal(state.territory.repaired, false);
   assert.equal(state.construction.unlockedBlueprintIds.length, 0);
   assert.deepEqual(view.calendar, [], 'nothing scheduled is visible before its announcement');
+  assert.equal(view.visibleMap.entities.find(entity => entity.ref.id === 'SITE-LL01-000')?.label, 'Lửa Sinh Tồn',
+    'player must never see the internal H0 site name');
   assert.deepEqual(view.construction.blueprints, [], 'the damaged house has not opened the building book');
   assert.doesNotMatch(JSON.stringify(view.calendar), /eventContract|researchEvidence|SOURCE_LOCKED/);
 });
