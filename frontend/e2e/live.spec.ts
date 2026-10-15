@@ -167,7 +167,7 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
     console.log('COMMAND_DIAGNOSTIC', JSON.stringify({ commands, previews, commandDiagnostic }));
     throw error;
   }
-  await expect(page.getByRole('status')).toHaveAttribute('data-revision', '2');
+  await expect(page.locator('.live-notice')).toContainText('Đã thực hiện hành động.');
   await expect(page.locator('.live-footer')).toHaveAttribute('data-revision', '2');
   expect(created).toBe(true);
   expect(commands).toBe(1);
@@ -177,7 +177,7 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
   await page.getByLabel('Khóa chủ sở hữu').fill('local-owner-key');
   await page.getByRole('button', { name: 'Kết nối API' }).click();
   await expect(page.getByText('Đã mở lượt lưu trước đó.')).toBeVisible();
-  await expect(page.locator('.live-topbar')).toHaveAttribute('data-revision', '2');
+  await expect(page.locator('.live-footer')).toHaveAttribute('data-revision', '2');
   await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Bản đồ/ }).click();
   await expect(page.getByTestId('map-campfire-marker')).toHaveAttribute('data-entity-ref', fireKey);
   if (testInfo.project.name === 'chromium') {
