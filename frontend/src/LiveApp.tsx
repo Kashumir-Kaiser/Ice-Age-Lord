@@ -1241,7 +1241,8 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       ...container,
       items: container.items.filter(item => !normalizedInventoryFilter || `${item.label} ${item.itemId} ${item.ownerId ?? ''} ${item.unit ?? ''} ${item.equipmentTags?.join(' ') ?? ''} ${item.provenance}`.toLocaleLowerCase().includes(normalizedInventoryFilter)),
     })).filter(container => !normalizedInventoryFilter || container.items.length > 0 || `${container.label} ${container.id} ${container.location.kind}`.toLocaleLowerCase().includes(normalizedInventoryFilter));
-    const selectedBlueprint = view.construction.blueprints.find(blueprint => blueprint.id === constructionBlueprintId);
+    const availableBlueprints = view.construction.blueprints.filter(blueprint => view.construction.unlockedBlueprintIds.includes(blueprint.id));
+    const selectedBlueprint = availableBlueprints.find(blueprint => blueprint.id === constructionBlueprintId);
     const parsedX = Number(constructionXMetres);
     const parsedY = Number(constructionYMetres);
     const constructionPosition: CoordinateMm | null = Number.isFinite(parsedX) && Number.isFinite(parsedY)
@@ -1265,7 +1266,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       return `${templateId}: ${required} needed · ${Math.max(0, quantity - reserved)} available · ${reserved} reserved`;
     };
     const accessibleEventContainers = view.inventory.containers.filter(container => container.accessible)
-      .map(container => ({ id: container.id, label: container.label }));
+      .map(container => ({ id: container.id, label: playerContainerName(container.label) }));
     const eventBoard = () => <EventBoard
       mode="live"
       events={view.calendar}
@@ -1300,15 +1301,15 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       </div>;
     }
     if (screen === 'events') return <div className="live-section-stack">
-      {eventBoard()}
-      <OpeningRankingBoard
+      {view.calendar.length > 0 ? eventBoard() : <section className="live-panel"><h2>Sự kiện</h2><p className="live-empty-state">Chưa có sự kiện nào được công bố.</p></section>}
+      {view.calendar.some(event => event.id === 'EV01-OPENING-LEVEL') && <OpeningRankingBoard
         board={view.stage08.openingBoard}
         snapshots={view.stage08.rankSnapshots}
         playerId={view.player.id}
         formatTime={elapsedLabel}
         busy={working || Boolean(pendingCommand)}
         onClaim={boardId => { void sendCommand(commandFor(view, 'claim_opening_rank_reward', { boardId })); }}
-      />
+      />}
     </div>;
     if (screen === 'overview') {
       return <div className="live-section-stack">
@@ -1329,7 +1330,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         </section>
         {view.construction.rewardEntitlements.map(reward =>
           <p className="live-inline-error" key={reward.id}>Phần thưởng thành tựu đang chờ hoàn tất: {playerMessage(reward.blocker)}</p>)}
-        {eventBoard()}
+        {view.calendar.length > 0 && eventBoard()}
         <details className="live-panel live-overview-diagnostics">
           <summary>Thông tin phiên chơi và dữ liệu máy chủ</summary>
           
@@ -1671,7 +1672,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         <p className="live-muted">Kiểm tra vật liệu và nhân công trước khi bắt đầu. Vật liệu chỉ được giữ lại khi công việc bắt đầu.</p>
         {repairHouse && repairHouse.status === 'damaged' && <article className="live-construction-card">
           <div className="live-panel-heading"><div><span className="live-eyebrow">SỬA CHỮA</span><h3>{repairHouse.name}</h3></div><span className="live-data-chip">{repairHouse.status}</span></div>
-          <p>Cần 20 gỗ, 10 đá và búa đá cho mỗi người làm. Tối đa 2 nhân công. Hoàn thành sửa chữa sẽ mở thêm 11 bản vẽ cấp 1.</p>
+          <p>Cần 20 gỗ, 10 đá và búa đá cho mỗi người làm. Tối đa 2 nhân công. Tu sửa Nhà Lãnh Chúa sẽ mở Sổ Kiến Trúc.</p>
           {repairHouse.position && <p>Tọa độ: {(repairHouse.position.xMm / 1000).toFixed(1)}, {(repairHouse.position.yMm / 1000).toFixed(1)} m · người chơi: {(view.player.position.xMm / 1000).toFixed(1)}, {(view.player.position.yMm / 1000).toFixed(1)} m</p>}
           <div className="live-building-form">
             <label className="live-inline-field">Túi dùng nguyên liệu <select value={constructionContainer?.id ?? ''} onChange={event => { setConstructionContainerId(event.target.value); setConstructionPreview(null); }}>
@@ -1690,7 +1691,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
         </article>}
         {repairHouse?.status === 'active' && <p className="live-preview-success">Nhà Lãnh Chúa đã sửa. {view.construction.unlockedBlueprintIds.length} bản vẽ đã được mở.</p>}
 
-        <section className="live-panel">
+        {view.territory.buildings.some(building => building.kind === 'heater' && building.status === 'active') && <section className="live-panel">
           <div className="live-panel-heading"><div><span className="live-eyebrow">SƯỞI ẤM</span><h3>Lò Sưởi Đơn Giản</h3></div><Flame size={20} /></div>
           {view.territory.buildings.filter(building => building.kind === 'heater' && building.status === 'active').length === 0
             ? <p className="live-empty-state">Chưa có lò sưởi đang hoạt động. Xây lò sưởi cần 6 đá.</p>
@@ -1709,14 +1710,14 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
                 {operationCommand && operationPreviewed && <p className={constructionPreview?.availability.enabled ? 'live-preview-success' : 'live-inline-error'}>{constructionPreview?.availability.enabled ? constructionPreview.availability.preview?.value : availabilityMessage(constructionPreview!.availability)}</p>}
               </article>;
             })}
-        </section>
+        </section>}
 
-        <article className="live-construction-card">
+        {availableBlueprints.length > 0 && <article className="live-construction-card">
           <div className="live-panel-heading"><div><span className="live-eyebrow">QUY HOẠCH LÃNH ĐỊA</span><h3>Đặt công trình</h3></div></div>
           <div className="live-building-form">
             <label className="live-inline-field">Bản vẽ <select value={constructionBlueprintId} onChange={event => { setConstructionBlueprintId(event.target.value); setConstructionPreview(null); }}>
               <option value="" disabled>Chọn bản vẽ đã mở</option>
-              {view.construction.blueprints.map(blueprint => <option key={blueprint.id} value={blueprint.id} disabled={!view.construction.unlockedBlueprintIds.includes(blueprint.id)}>{blueprint.name} · {view.construction.unlockedBlueprintIds.includes(blueprint.id) ? 'đã mở' : 'bị khóa'}</option>)}
+              {availableBlueprints.map(blueprint => <option key={blueprint.id} value={blueprint.id}>{blueprint.name}</option>)}
             </select></label>
             <label className="live-inline-field">X (m) <input inputMode="decimal" value={constructionXMetres} onChange={event => { setConstructionXMetres(event.target.value); setConstructionPreview(null); }} /></label>
             <label className="live-inline-field">Y (m) <input inputMode="decimal" value={constructionYMetres} onChange={event => { setConstructionYMetres(event.target.value); setConstructionPreview(null); }} /></label>
@@ -1734,7 +1735,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           </>}
           {buildCommand && selectedCommandIsPreviewed(buildCommand) && <p className={constructionPreview?.availability.enabled ? 'live-preview-success' : 'live-inline-error'}>{constructionPreview?.availability.enabled ? constructionPreview.availability.preview?.value : availabilityMessage(constructionPreview!.availability)}</p>}
           <p className="live-muted">Có thể xây trong phạm vi 100 m quanh trại. Hãy đứng cách điểm xây tối đa 5 m và tránh chồng lấn với các công trình khác.</p>
-        </article>
+        </article>}
 
         <div className="live-two-column">
           <section className="live-panel">
@@ -1768,13 +1769,13 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           </section>
         </div>
 
-        <section className="live-panel">
-          <div className="live-panel-heading"><div><span className="live-eyebrow">BẢN VẼ</span><h3>Blueprints mở và bị khóa</h3></div><Shield size={20} /></div>
-          <ul className="live-plain-list">{view.construction.blueprints.map(blueprint => <li key={blueprint.id}>
-            <strong>{blueprint.name} · {view.construction.unlockedBlueprintIds.includes(blueprint.id) ? 'đã mở' : 'mở sau khi sửa Nhà Lãnh Chúa'}</strong>
+        {availableBlueprints.length > 0 && <section className="live-panel">
+          <div className="live-panel-heading"><div><span className="live-eyebrow">SỔ KIẾN TRÚC</span><h3>Công trình đã mở</h3></div><Shield size={20} /></div>
+          <ul className="live-plain-list">{availableBlueprints.map(blueprint => <li key={blueprint.id}>
+            <strong>{blueprint.name}</strong>
             <span>{blueprint.buildCost.map(item => `${item.quantity} ${playerItemName(item.materialId)}`).join(' + ')} · {blueprint.footprint.areaM2 ?? `${blueprint.footprint.lengthM} m chiều dài`} m²</span>
           </li>)}</ul>
-        </section>
+        </section>}
         {view.territory.buildings.length > 0 && <section className="live-panel">
           <div className="live-panel-heading"><div><span className="live-eyebrow">OWNED STRUCTURES</span><h3>Instance đã xây</h3></div><Hammer size={20} /></div>
           <ul className="live-plain-list">{view.territory.buildings.map(building => <li key={building.id}><strong>{building.name} · level {building.level} · {building.status}</strong><span>{building.id} · {building.siteId ?? 'site unknown'} · {building.position ? `${(building.position.xMm / 1000).toFixed(1)}, ${(building.position.yMm / 1000).toFixed(1)} m` : 'position unknown'} · {building.footprintAreaM2 ?? 'unspecified'} m²</span></li>)}</ul>
@@ -1900,7 +1901,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       <div className="live-brand"><img className="live-brand-emblem" src="/crest.svg" width={43} height={43} alt="Biểu tượng Ice Age Lord"/><div><strong>ICE AGE <em>LORD</em></strong><small>BIÊN NIÊN BĂNG PHONG</small></div></div>
       <div className="live-sidebar-status"><span className="live-status-dot" /> Đã sẵn sàng</div>
       <nav className="live-nav" aria-label="Màn hình game">
-        {navigation.map(item => {
+        {navigation.filter(item => item.id !== 'events' || view.calendar.length > 0).map(item => {
           const Icon = item.icon;
           return <button key={item.id} className={'live-nav-item' + (screen === item.id ? ' is-active' : '')} aria-current={screen === item.id ? 'page' : undefined} onClick={() => setScreen(item.id)}>
             <Icon size={18} /><span><strong>{item.name}</strong><small>{item.hint}</small></span>
