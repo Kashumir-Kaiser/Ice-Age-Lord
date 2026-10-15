@@ -50,7 +50,7 @@ export default function LiveOverview({ view, onNavigate }: Props) {
         <span className="live-overview-mode"><span className="signal-dot" /> LƯỢT CHƠI ĐANG DIỄN RA</span>
         <span className="hero-kicker">BIÊN NIÊN BĂNG PHONG</span>
         <h2>Từ ngọn lửa nhỏ,<br /><em>đến một lãnh địa.</em></h2>
-        <p>{view.player.name} · {view.player.talent.name}. Lãnh địa và mọi kết quả được cập nhật từ lượt lưu, không phải dữ liệu mẫu.</p>
+        <p>{view.player.name} · {view.player.talent.name}. Hành trình sinh tồn bắt đầu từ ngọn lửa đầu tiên.</p>
         <button type="button" className="hero-link" onClick={() => onNavigate('map')}>Khám phá bản đồ <ChevronRight size={18} /></button>
       </div>
       <div className="hero-art hero-art--portrait" aria-hidden="true">
@@ -59,9 +59,9 @@ export default function LiveOverview({ view, onNavigate }: Props) {
     </section>
 
     <section className="stats-grid" aria-label="Trạng thái lượt chơi hiện tại">
-      <StatCard icon={Clock3} label="Thời gian thế giới" value={clock} note={view.clockStatus.catchingUp ? 'Đang đồng bộ máy chủ' : 'Đồng hồ máy chủ'} tone="ice" />
+      <StatCard icon={Clock3} label="Thời gian thế giới" value={clock} note={view.clockStatus.catchingUp ? 'Đang cập nhật' : 'Thời gian thế giới'} tone="ice" />
       <StatCard icon={Crown} label="Nhân vật" value={`${view.player.name} · Cấp ${view.player.level}`} note={`Thiên phú ${view.player.talent.grade} · ${view.player.xp} XP`} />
-      <StatCard icon={ShieldCheck} label="Quân lực hiện tại" value={`${view.units.length} đơn vị`} note="Số đơn vị trong lượt lưu" />
+      <StatCard icon={ShieldCheck} label="Quân lực hiện tại" value={`${view.units.length} đơn vị`} note="Lực lượng đang sở hữu" />
       <StatCard icon={Layers} label="Lửa Sinh Tồn" value={`Cấp ${fire.level}`} note={fire.active ? `Vùng nhiệt ${heatRadius} m` : 'Đã tắt'} tone="warm" />
     </section>
 
@@ -82,7 +82,7 @@ export default function LiveOverview({ view, onNavigate }: Props) {
         <div className="preview-footer">
           <span><span className="legend-circle warm" /> Vòng nhiệt {heatRadius} m</span>
           <span><span className="legend-circle blue" /> {structures.length} công trình đã ghi nhận</span>
-          <span className="preview-warning">Chỉ hiển thị dữ liệu được biết</span>
+          <span className="preview-warning">Những vùng chưa khám phá vẫn bị che khuất</span>
         </div>
       </div>
 
