@@ -86,6 +86,8 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
   const [calibrationOpen,setCalibrationOpen]=useState(false);
   const [calibrationAssetId,setCalibrationAssetId]=useState('fixture-tall-tower');
   const [denseQa,setDenseQa]=useState(false);
+  const [showCalibrationArt,setShowCalibrationArt]=useState(false);
+  const artQaEnabled=!liveApi&&new URLSearchParams(location.search).get('mapQA')==='1';
   const [message,setMessage]=useState('');
   const [showGrid,setShowGrid]=useState(false);
   const origin=settlement.worldOrigin;
@@ -344,7 +346,17 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
     return ground.y>target.y&&pointInPolygon(target,artPolygon(asset.occlusionRegion.upper,spriteRect(asset,ground,scale)));
   };
   const renderDrafts=[...drafts,...(denseQa?denseFixture:[]),...(activeDefinition?[{id:'placement-ghost',definitionId:activeDefinition.id,assetId:activeDefinition.assetId,x:currentPlacementLocal.x,y:currentPlacementLocal.y,footprint:activeDefinition.footprint,orientation:placingOrientation}]:[])];
-  const renderSnapshot=useMemo(()=>({...territorySnapshot(settlement,manifest,activeCamera,effectiveMode,selectedRef?.id??null,renderDrafts,{visualIdentity,modeledInfill:!liveApi,regions:terrainRegions}),buildingLODs:buildingLODs.current}),[settlement,manifest,activeCamera,effectiveMode,selectedRef?.id,drafts,denseQa,activeDefinition,ghostWorld,placingOrientation,visualIdentity,terrainRegions,liveApi]);
+  const renderSnapshot=useMemo(()=>{
+    const snapshot=territorySnapshot(settlement,manifest,activeCamera,effectiveMode,selectedRef?.id??null,renderDrafts,{visualIdentity,modeledInfill:!liveApi,regions:terrainRegions});
+    // Render-only QA: no placement definition, command or saved entity.
+    const asset=artQaEnabled&&showCalibrationArt?selectedCalibrationAsset:null;
+    return {...snapshot,buildingLODs:buildingLODs.current,buildings:asset?[...snapshot.buildings,{
+      id:'qa-art-preview',name:'Hình ảnh kiểm tra',asset,assetId:asset.assetId,
+      point:{x:origin.x+12,y:origin.y},orientation:(['north','east','south','west'] as const).find(o=>o===asset.orientation)??'north',
+      footprint:asset.compatiblePhysicalFootprint??fixtureFootprint,
+      selected:false,active:false,draft:false,fixture:true,
+    }]:snapshot.buildings};
+  },[settlement,manifest,activeCamera,effectiveMode,selectedRef?.id,drafts,denseQa,activeDefinition,ghostWorld,placingOrientation,visualIdentity,terrainRegions,liveApi,artQaEnabled,showCalibrationArt,selectedCalibrationAsset]);
   const captureSelection=(event:React.MouseEvent<SVGSVGElement>)=>{
     if(ignoreClick.current){ignoreClick.current=false;event.preventDefault();event.stopPropagation();return;}
     if(activeDefinition||event.detail===0||event.target instanceof Element&&event.target.closest('.territory-player-marker'))return;
@@ -456,7 +468,11 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
     </div>
     {!liveApi&&<details className="panel territory-calibration" open={calibrationOpen} onToggle={event=>setCalibrationOpen(event.currentTarget.open)}><summary><span><EyeOff size={15}/> Hiệu chỉnh hình minh họa</span><small>Chỉ thay đổi cách hiển thị</small></summary>
       <div className="territory-calibration-body"><div className="territory-calibration-preview"><svg viewBox="0 0 240 200" aria-label="Hiệu chỉnh vị trí hình ảnh"><defs><pattern id="asset-cal-grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#86a6aa" strokeOpacity=".25"/></pattern></defs><rect width="240" height="200" fill="#102a37"/><rect width="240" height="200" fill="url(#asset-cal-grid)"/><image href={selectedCalibrationAsset?.layers.shadow??''} width="240" height="200"/><image href={selectedCalibrationAsset?.layers.base??''} width="240" height="200"/><image href={selectedCalibrationAsset?.layers.upper??''} width="240" height="200"/><line x1="120" y1="0" x2="120" y2="200" stroke="#e4ba7f" strokeDasharray="3 4"/><line x1="0" y1="164" x2="240" y2="164" stroke="#e4ba7f" strokeDasharray="3 4"/><circle cx="120" cy="164" r="5" fill="#ffd897"/></svg><span>Lưới · điểm neo · lớp hình ảnh</span></div>
-        <div className="territory-calibration-info"><label>Hình minh họa <select value={calibrationAssetId} onChange={event=>setCalibrationAssetId(event.target.value)}>{assetIds.map(id=><option key={id}>{id}</option>)}</select></label><p>Điểm neo: {selectedCalibrationAsset?`${Math.round(selectedCalibrationAsset.groundAnchor.x*100)}%, ${Math.round(selectedCalibrationAsset.groundAnchor.y*100)}%`:'mặc định'} · khung 240 × 200</p><p>Vùng chọn, che khuất và kích thước hiển thị được căn chỉnh riêng trong thư viện hình ảnh.</p><label className="territory-qa-toggle"><input type="checkbox" checked={denseQa} onChange={event=>setDenseQa(event.target.checked)}/> Hiện 520 công trình minh họa</label><button className="text-button" onClick={frameDenseQa}>Xem nhóm công trình minh họa</button><span>Đang hiển thị {visibleQa.length} / {denseQa?520:0} công trình minh họa.</span><span>{manifestError?'Không tải được thư viện hình ảnh; dùng hình thay thế.':`Đã tải ${manifest?.assets.length??0} hình ảnh.`}</span></div>
+        <div className="territory-calibration-info"><label>Hình minh họa <select aria-label="Hình minh họa" value={calibrationAssetId} onChange={event=>setCalibrationAssetId(event.target.value)}>{assetIds.map(id=><option key={id}>{id}</option>)}</select></label>{artQaEnabled&&<button className="text-button" disabled={!selectedCalibrationAsset} onClick={()=>{
+          setShowCalibrationArt(previous=>!previous);setPlacingId(null);onReadabilityChange('normal');
+          if(followPlayer)onFollowPlayerChange(false);
+          onCameraChange({x:origin.x+12,y:origin.y,zoom:3});
+        }}>{showCalibrationArt?'Ẩn hình kiểm tra trên bản đồ':'Xem hình kiểm tra trên bản đồ'}</button>}<p>Điểm neo: {selectedCalibrationAsset?`${Math.round(selectedCalibrationAsset.groundAnchor.x*100)}%, ${Math.round(selectedCalibrationAsset.groundAnchor.y*100)}%`:'mặc định'} · khung 240 × 200</p><p>Vùng chọn, che khuất và kích thước hiển thị được căn chỉnh riêng trong thư viện hình ảnh.</p><label className="territory-qa-toggle"><input type="checkbox" checked={denseQa} onChange={event=>setDenseQa(event.target.checked)}/> Hiện 520 công trình minh họa</label><button className="text-button" onClick={frameDenseQa}>Xem nhóm công trình minh họa</button><span>Đang hiển thị {visibleQa.length} / {denseQa?520:0} công trình minh họa.</span><span>{manifestError?'Không tải được thư viện hình ảnh; dùng hình thay thế.':`Đã tải ${manifest?.assets.length??0} hình ảnh.`}</span></div>
       </div>
     </details>}
     <div className="territory-accessible-status" role="status" aria-live="polite">{message||(liveApi?'Vị trí, trạng thái và artwork lấy từ save đang chọn. Điều khiển camera không thay đổi mô phỏng.':'Bản xem thử chỉ hiển thị vị trí và bố trí; không thực hiện lệnh trong thế giới.')}</div>

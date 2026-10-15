@@ -172,3 +172,23 @@ test('losing a WebGL context recovers into one usable canvas with the same selec
  await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();
  await expect(page.locator('.territory-building.is-selected')).toHaveAttribute('data-building-id','SITE-LL01-003');
 });
+
+test('art QA loads preserved late art without adding a settlement entity or placement rule',async({page})=>{
+ test.setTimeout(90000);
+ const requested=new Set<string>();page.on('request',request=>requested.add(new URL(request.url()).pathname));
+ await territory(page);
+ const list=page.locator('.territory-instance-main'),before=await list.allTextContents();
+ await page.locator('.territory-calibration > summary').click();
+ await page.getByLabel('Hình minh họa',{exact:true}).selectOption('lord-house-l30');
+ await page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
+ await expect.poll(()=>Array.from(requested).some(path=>path.includes('/map/buildings/lord-house-l30/')),{timeout:30000}).toBe(true);
+ await expect(list).toHaveText(before);
+ await page.getByRole('button',{name:'Ẩn hình kiểm tra trên bản đồ',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true})).toBeVisible();
+ await expect(list).toHaveText(before);
+ await page.goto('/?mode=demo');
+ const menu=page.getByRole('button',{name:'Mở điều hướng'});if(await menu.isVisible())await menu.click();
+ await page.getByRole('navigation',{name:'Các mục giao diện'}).getByRole('button',{name:'Lãnh địa',exact:true}).click();
+ await page.locator('.territory-calibration > summary').click();
+ await expect(page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true})).toHaveCount(0);
+});

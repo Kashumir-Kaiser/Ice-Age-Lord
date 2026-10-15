@@ -25,17 +25,17 @@
     "scope": "Unique JavaScript files actually requested while opening demo territory, local and world maps, including shared UI and worker scripts. Gzip each response independently; compare the same journey against the pinned pre-overhaul build.",
     "scripts": [
       {
-        "path": "assets/App-DFUf6KKp.js",
-        "bytes": 112336,
-        "gzipBytes": 33834
+        "path": "assets/App--lXpFDtZ.js",
+        "bytes": 113086,
+        "gzipBytes": 33926
       },
       {
-        "path": "assets/browserAll-8bq0qL8y.js",
+        "path": "assets/browserAll-BaZ4mDjO.js",
         "bytes": 41313,
-        "gzipBytes": 10935
+        "gzipBytes": 10936
       },
       {
-        "path": "assets/CanvasPool-CE3GHTIR.js",
+        "path": "assets/CanvasPool-BgrOwp9M.js",
         "bytes": 735,
         "gzipBytes": 409
       },
@@ -45,24 +45,24 @@
         "gzipBytes": 1150
       },
       {
-        "path": "assets/index-BY2zPH8H.js",
+        "path": "assets/index-Cnw1ZC0j.js",
         "bytes": 147412,
-        "gzipBytes": 47802
+        "gzipBytes": 47798
       },
       {
-        "path": "assets/InspectorFrame-5AGpo-Lu.js",
-        "bytes": 89372,
-        "gzipBytes": 28809
+        "path": "assets/InspectorFrame-Ddb2Lrjr.js",
+        "bytes": 92521,
+        "gzipBytes": 30011
       },
       {
-        "path": "assets/MapRenderer-BfFxRliX.js",
-        "bytes": 249730,
-        "gzipBytes": 78717
+        "path": "assets/MapRenderer-4P8h6f1H.js",
+        "bytes": 252114,
+        "gzipBytes": 79347
       },
       {
-        "path": "assets/SharedSystems-4hVagIFJ.js",
+        "path": "assets/SharedSystems-Bwh3ggXI.js",
         "bytes": 50912,
-        "gzipBytes": 13831
+        "gzipBytes": 13832
       },
       {
         "path": "assets/terrain.worker-CUz9uxme.js",
@@ -70,22 +70,23 @@
         "gzipBytes": 2640
       },
       {
-        "path": "assets/WebGLRenderer-DEUPFFTs.js",
+        "path": "assets/WebGLRenderer-_C5ebGTP.js",
         "bytes": 63077,
-        "gzipBytes": 17359
+        "gzipBytes": 17358
       },
       {
-        "path": "assets/webworkerAll-DSWdmMaa.js",
+        "path": "assets/webworkerAll-DdE_zsEx.js",
         "bytes": 83524,
-        "gzipBytes": 24756
+        "gzipBytes": 24755
       }
     ],
-    "gzipBytes": 260242
+    "gzipBytes": 262162
   },
-  "addedGzipBytes": 154807,
+  "addedGzipBytes": 156727,
   "budgetBytes": 307200,
   "withinBudget": true,
   "scope": "Complete requested frontend JavaScript delta for identical map-opening journeys; includes any other UI changes since the baseline. Not a named-renderer-chunk estimate.",
-  "runId": 38554261182,
-  "sourceCommit": "43471fb9581a2bd0f8f05594186f906c35ebec44"
+  "workflowRun": "https://github.com/Kashumir-Kaiser/Ice-Age-Lord/actions/runs/38693704302",
+  "sourceCommit": "b4166aaf86c39770cb3acd61a0dd5e5fbb90706b",
+  "transferMethod": "Real loopback HTTP fixture with native browser gzip decoding; each requested JavaScript file counted once."
 }

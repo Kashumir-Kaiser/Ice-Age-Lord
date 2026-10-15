@@ -31,9 +31,11 @@ map-branch commits for this retry; do not dispatch redundant old runs.
 Local frontend unit verification should use `node --experimental-strip-types
 --test --test-isolation=none tests/*.test.mjs` from frontend, so individual test
 cases and skips are visible. The default local isolated runner reports file
-wrappers only. CI's standard npm test remains unchanged. Local TCP bind and
-Chromium socket setup are prohibited; the HTTP fixture case skips locally on
-EPERM and must execute in CI.
+wrappers only. CI's standard npm test remains unchanged. After the environment
+change, local TCP bind and `/usr/bin/chromium` work. Set
+`CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium` for local browser checks. The HTTP
+fixture case must execute in CI; its EPERM skip only applies to older restricted
+local environments.
 
 If native git cannot reach GitHub and a large connector image upload stalls,
 transfer small base64 parts through the integration under assets/source/uploads.
