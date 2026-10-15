@@ -5,7 +5,7 @@ import { installLocalPreviewRoute } from './localPreviewRoute';
 test.beforeEach(async ({ page }) => installLocalPreviewRoute(page));
 
 async function visitMap(page: Page) {
-  await page.goto('/');
+  await page.goto('/?mode=demo');
   await expect(page.locator('.app-shell')).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
   const menu = page.getByRole('button', { name: 'Mở điều hướng' });
