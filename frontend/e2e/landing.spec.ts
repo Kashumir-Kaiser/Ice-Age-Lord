@@ -49,7 +49,7 @@ test('New Game asks for a clean slot and never auto-resumes the remembered save'
   await page.getByTestId('menu-new-game').click();
   await expect(page.getByRole('heading', { name: 'Kết nối trò chơi' })).toBeVisible();
   await page.getByLabel('Khóa chủ sở hữu').fill('test-key');
-  await page.getByRole('button', { name: 'Kết nối API' }).click();
+  await page.getByRole('button', { name: 'Kết nối trò chơi' }).click();
   await expect(page.getByRole('heading', { name: 'Trò chơi mới' })).toBeVisible();
   await expect(page.getByLabel('Tên lượt lưu mới')).toBeVisible();
   await expect(page.getByText('Lượt lưu có sẵn')).toHaveCount(0);
@@ -82,7 +82,7 @@ test('Load Save lists server slots and opens only the explicitly selected one', 
   await page.goto('/');
   await page.getByTestId('menu-load-save').click();
   await page.getByLabel('Khóa chủ sở hữu').fill('test-key');
-  await page.getByRole('button', { name: 'Kết nối API' }).click();
+  await page.getByRole('button', { name: 'Kết nối trò chơi' }).click();
   await expect(page.getByRole('heading', { name: 'Tải lượt lưu' })).toBeVisible();
   await expect(page.getByText('Lãnh địa cổ')).toBeVisible();
   expect(creations).toBe(0);
