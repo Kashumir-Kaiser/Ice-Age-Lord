@@ -108,7 +108,7 @@ test('Stage 07 plays and reloads a timed H0 combat encounter through the browser
   await expect(restoredCombatPanel).toContainText(/Đang hoạt động · vòng [1-9]/);
 
   await page.getByLabel('Tốc độ mô phỏng').selectOption('5x');
-  await expect(restoredCombatPanel).toContainText(/victory/, { timeout: 15_000 });
+  await expect(restoredCombatPanel).toContainText(/Chiến thắng/, { timeout: 15_000 });
   await expect(restoredCombatPanel).toContainText('Đã chết');
   await page.getByLabel('Tốc độ mô phỏng').selectOption('paused');
   const hareCorpse = page.getByTestId('force-corpse-row').last();
