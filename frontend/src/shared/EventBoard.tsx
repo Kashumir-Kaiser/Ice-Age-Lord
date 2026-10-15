@@ -1,4 +1,4 @@
-import { playerItemName, playerStatus } from '../live/playerText';
+import { playerStatus } from '../live/playerText';
 import { useState } from 'react';
 import { CalendarDays, Gift, ShoppingBag, Snowflake } from 'lucide-react';
 import type { SharedLayoutMode } from './PageFrame';
