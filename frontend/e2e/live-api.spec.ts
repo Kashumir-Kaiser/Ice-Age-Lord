@@ -46,7 +46,7 @@ test('Chromium runs the server-owned clock, completes a Tomb job once, and recov
   await page.getByLabel('Tốc độ tùy chỉnh').fill('3600');
   await page.getByRole('button', { name: 'Áp dụng' }).click();
 
-  await page.getByRole('button', { name: 'Quân lực' }).click();
+  await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Quân lực/ }).click();
   const tombUnit = page.locator('.live-container-card').filter({
     has: page.getByRole('heading', { name: 'Cương Thi 1', exact: true }),
   });
@@ -60,7 +60,7 @@ test('Chromium runs the server-owned clock, completes a Tomb job once, and recov
   await page.getByLabel('Khóa chủ sở hữu').fill(ownerKey!);
   await page.getByRole('button', { name: 'Kết nối API' }).click();
   await expect(page.getByText('Đã khôi phục đúng lượt lưu từ API.')).toBeVisible();
-  await page.getByRole('button', { name: 'Quân lực' }).click();
+  await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Quân lực/ }).click();
   await expect(page.getByRole('heading', { name: 'Cương Thi 1', exact: true })).toHaveCount(1);
   await expect(page.locator('.live-container-card').filter({
     has: page.getByRole('heading', { name: 'Cương Thi 1', exact: true }),
