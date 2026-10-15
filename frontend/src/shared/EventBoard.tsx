@@ -25,9 +25,9 @@ type DestinationOption = { id: string; label: string };
 function statusLabel(status: string): string {
   const labels: Readonly<Record<string, string>> = {
     active: 'Đang mở', locked: 'Đã khóa', resolved: 'Đã quyết toán', scheduled: 'Theo lịch',
-    blocked: 'Đang tạm dừng', calendar_only: 'Hợp đồng tham khảo',
+    blocked: 'Đang tạm dừng', calendar_only: 'Chưa thể tham gia',
   };
-  return labels[status] ?? status;
+  return labels[status] ?? playerStatus(status);
 }
 
 export function EventBoard({
@@ -48,6 +48,9 @@ export function EventBoard({
   const [destinationId, setDestinationId] = useState(destinationOptions[0]?.id ?? '');
   const destinationExists = destinationOptions.some(option => option.id === destinationId);
   const selectedDestinationId = destinationExists ? destinationId : destinationOptions[0]?.id ?? '';
+  // Do not trust calendar visibility to the presentation layer alone; reject premature entries.
+  const visibleEvents = mode === 'live' ? events.filter(event =>
+    event.status !== 'scheduled' && event.opensAtElapsedMs <= nowElapsedMs) : events;
   return <div className={`shared-event-board shared-event-board--${mode}`}>
     <section className={`shared-event-board__panel shared-event-board__panel--${mode}`} aria-label="Lịch và hoạt động sự kiện">
       <header className="shared-event-board__heading">
@@ -56,11 +59,11 @@ export function EventBoard({
         </div>
         <span className="shared-event-board__chip">{mode === 'demo' ? 'Bản xem thử' : 'Theo giờ thế giới'}</span>
       </header>
-      {mode === 'demo' && <p className="shared-event-board__notice">Ba mốc đại diện trong lịch 30 sự kiện. Bảng này dùng chung bố cục với giao diện trực tiếp, nhưng các dòng ở đây chỉ là hợp đồng tham khảo và không thể nhận thưởng.</p>}
+      {mode === 'demo' && <p className="shared-event-board__notice">Đây là bản xem trước để thử giao diện. Các sự kiện trong bản xem thử không ảnh hưởng đến lượt chơi thật.</p>}
       {blocker && <div className="shared-event-board__blocker" role="alert"><strong>{blocker.displayName}</strong><span>{blocker.playerMessage} · {formatTime(blocker.blockedAtElapsedMs)}</span></div>}
-      {events.length === 0
-        ? <p className="shared-event-board__empty">Chưa có sự kiện nào được tiết lộ trong lịch của người chơi.</p>
-        : <div className="shared-event-board__list">{events.map(event => {
+      {visibleEvents.length === 0
+        ? <p className="shared-event-board__empty">Chưa có sự kiện nào được công bố.</p>
+        : <div className="shared-event-board__list">{visibleEvents.map(event => {
           const shop = event.eventShop;
           const canBuy = mode === 'live' && shop?.status === 'active' && shop.stockRemaining > 0
             && shop.scoreAvailable >= shop.priceScore && Boolean(selectedDestinationId) && Boolean(onBuyMark);
@@ -85,24 +88,18 @@ export function EventBoard({
             </div>}
             {shop && <section className="shared-event-shop">
               <div><strong><ShoppingBag size={15} /> Cửa hàng sự kiện</strong><span>{shop.stockRemaining}/{shop.initialStock} · {shop.scoreAvailable} điểm còn dùng · {shop.priceScore} điểm / ấn</span></div>
-              <small>{playerItemName(shop.itemTemplateId)} · hết hạn {formatTime(shop.expiresAtElapsedMs)} · mua {shop.purchasedQuantity}</small>
+              <small>Ấn sự kiện · hết hạn {formatTime(shop.expiresAtElapsedMs)} · mua {shop.purchasedQuantity}</small>
               {mode === 'live' && shop.status === 'active' && <div className="shared-event-shop__controls">
                 <label>Kho nhận hàng<select value={selectedDestinationId} onChange={event => setDestinationId(event.target.value)} disabled={busy || destinationOptions.length === 0}>
                   {destinationOptions.map(option => <option key={option.id} value={option.id}>{option.label}</option>)}
                 </select></label>
-                <button type="button" disabled={busy || !canBuy} title={!destinationOptions.length ? 'Cần kiểm tra túi đồ ở gần trước khi nhận vật phẩm.' : shop.scoreAvailable < shop.priceScore ? 'Cần thêm điểm sự kiện.' : 'Mua một dấu ấn sự kiện; máy chủ trừ điểm, giảm kho và giao vật phẩm cùng lúc.'}
+                <button type="button" disabled={busy || !canBuy} title={!destinationOptions.length ? 'Cần kiểm tra túi đồ ở gần trước khi nhận vật phẩm.' : shop.scoreAvailable < shop.priceScore ? 'Cần thêm điểm sự kiện.' : 'Dùng điểm sự kiện để mua và nhận một ấn sự kiện.'}
                   onClick={() => selectedDestinationId && onBuyMark?.(event.id, selectedDestinationId)}>Mua 1 · {shop.priceScore} điểm</button>
               </div>}
               {mode === 'live' && shop.status === 'active' && shop.scoreAvailable < shop.priceScore && <small>Cần thêm {shop.priceScore - shop.scoreAvailable} điểm để mua một dấu ấn.</small>}
               {shop.status !== 'active' && <small>Quầy {shop.status === 'scheduled' ? 'chưa mở' : shop.status === 'closed' ? 'đã khóa' : 'đã hết hạn'}.</small>}
             </section>}
-            {event.readiness !== 'executable_lifecycle' && <small className="shared-event-card__readiness">{event.readiness === 'executable_ranked_board'
-              ? 'Bảng xếp hạng được chốt khi sự kiện kết thúc; phần thưởng đang chờ xử lý.'
-              : event.readiness === 'calendar_only'
-                ? 'Sự kiện này chưa thể tham gia.'
-                : event.readiness === 'settlement_blocked'
-                  ? 'Kết quả xếp hạng đang chờ hoàn tất.'
-                  : 'Sự kiện đang tạm dừng.'}</small>}
+            {mode === 'live' && event.status === 'blocked' && <small className="shared-event-card__readiness">Sự kiện tạm dừng. Hãy xem thông báo để biết thêm.</small>}
           </article>;
         })}</div>}
       <small className="shared-event-board__clock">Thời gian hiện tại: {formatTime(nowElapsedMs)}</small>
