@@ -22,11 +22,15 @@ export async function readyMap(page){
 }
 export async function openMap(browser,{viewport={width:1366,height:768},dpr=1,quality='normal',motion='reduce',fallback=false,fixture=''}={}){
  const page=await browser.newPage({viewport,deviceScaleFactor:dpr,reducedMotion:motion,hasTouch:viewport.width<500,isMobile:viewport.width<500});
+ const bootErrors=[];
+ page.on('pageerror',error=>bootErrors.push('pageerror: '+String(error)));
+ page.on('requestfailed',request=>bootErrors.push('failed '+request.url()+': '+request.failure()?.errorText));
+ page.on('console',message=>{if(message.type()==='error')bootErrors.push('console: '+message.text());});
  page.mapAssetTransfers=[];
   page.mapScriptTransfers=new Map();
  await page.route('**/*',async route=>{
   const relative=new URL(route.request().url()).pathname.replace(/^\//,'')||'index.html',path=resolve(dist,relative);
-  if(!path.startsWith(dist+sep)||!existsSync(path)){await route.fulfill({status:404,body:'Not found'});return;}
+  if(!path.startsWith(dist+sep)||!existsSync(path)){bootErrors.push('missing asset: '+relative);await route.fulfill({status:404,body:'Not found'});return;}
   const body=readFileSync(path),textual=['.html','.js','.css','.json','.svg'].includes(extname(path)),served=textual?gzipSync(body):body;
   if(relative.startsWith('assets/map/')||relative==='assets/manifest.json')page.mapAssetTransfers.push({path:relative,bytes:served.length,decodedBytes:body.length,encoding:textual?'gzip':'identity'});
   if(relative.endsWith('.js'))page.mapScriptTransfers.set(relative,{path:relative,bytes:body.length,gzipBytes:gzipSync(body).length});
@@ -34,6 +38,12 @@ export async function openMap(browser,{viewport={width:1366,height:768},dpr=1,qu
  });
  await page.addInitScript(value=>localStorage.setItem('ice-age-map-quality',value),quality);
  await page.goto(`http://map.preview.local/?mode=demo&mapQA=1${fallback?'&mapFallback=1':''}${fixture?'&mapFixture='+fixture:''}`);
- await page.locator('.app-shell').waitFor();await page.evaluate(()=>document.fonts.ready);
+ try {await page.locator('.app-shell').waitFor();} catch (error) {
+  const documentState=await page.evaluate(()=>({url:location.href,title:document.title,body:document.body?.innerText.slice(0,1000),scripts:Array.from(document.scripts).map(s=>s.src)})).catch(e=>({evaluationError:String(e)}));
+  console.error('MAP_PREVIEW_BOOT_DIAGNOSTIC',JSON.stringify({dist,documentState,errors:bootErrors.slice(0,30)}));
+  await page.close();
+  throw error;
+ }
+ await page.evaluate(()=>document.fonts.ready);
  return page;
 }
