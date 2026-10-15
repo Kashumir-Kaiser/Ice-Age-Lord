@@ -25,7 +25,7 @@ test('Chromium runs the server-owned clock, completes a Tomb job once, and recov
     }));
   }
   try {
-    await expect(page.getByText(/Clean game đã được tạo và commit/)).toBeVisible();
+    await expect(page.getByText(/Đã tạo cuộc phiêu lưu mới/)).toBeVisible();
   } catch (error) {
     console.error('LIVE_SAVE_CREATE_VIEW_FAILURE', JSON.stringify({
       status: posted.status(), displayed: (await page.locator('.live-start-card, .live-content, .live-topbar').allInnerTexts()).map(t => t.slice(0, 2000)),
@@ -39,7 +39,7 @@ test('Chromium runs the server-owned clock, completes a Tomb job once, and recov
   await page.getByRole('navigation', { name: 'Màn hình game' })
     .getByRole('button', { name: /^Công trình(?: Trạng thái API)?$/ }).click();
   await page.getByRole('button', { name: 'Xếp một Cương Thi tiêu chuẩn' }).click();
-  await expect(page.getByText(/Đang sản xuất · TOMB-UNIT-/)).toBeVisible();
+  await expect(page.getByText(/Đang sản xuất · Cương thi/)).toBeVisible();
 
   await page.getByLabel('Điều kiện tự dừng').selectOption('next_completion');
   await page.getByLabel('Tốc độ mô phỏng').selectOption('custom');
@@ -53,13 +53,13 @@ test('Chromium runs the server-owned clock, completes a Tomb job once, and recov
   await expect(tombUnit).toHaveCount(1, { timeout: 15000 });
   await expect(tombUnit).toContainText('Được tạo từ Mộ');
   await expect(tombUnit).toContainText('Bậc 0 · Cấp 1 · Phẩm Thường · XP 0');
-  await expect(tombUnit).toContainText('XP của đơn vị này không được chuyển cho Lí Lan.');
+  await expect(tombUnit).toContainText('Kinh nghiệm không được chia sẻ với Lí Lan.');
   await expect(page.getByText('Ngày 1 · 07:20')).toBeVisible();
 
   await page.reload();
   await page.getByLabel('Khóa chủ sở hữu').fill(ownerKey!);
   await page.getByRole('button', { name: 'Kết nối API' }).click();
-  await expect(page.getByText('Đã khôi phục đúng lượt lưu từ API.')).toBeVisible();
+  await expect(page.getByText('Đã mở lượt lưu trước đó.')).toBeVisible();
   await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Quân lực/ }).click();
   await expect(page.getByRole('heading', { name: 'Cương Thi 1', exact: true })).toHaveCount(1);
   await expect(page.locator('.live-container-card').filter({
