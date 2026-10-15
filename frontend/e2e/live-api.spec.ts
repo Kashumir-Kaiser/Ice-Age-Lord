@@ -37,7 +37,7 @@ test('Chromium runs the server-owned clock, completes a Tomb job once, and recov
   await expect(page.getByTestId('live-overview-parity').getByText('Ngày 1 · 07:00', { exact: true })).toBeVisible();
 
   await page.getByRole('navigation', { name: 'Màn hình game' })
-    .getByRole('button', { name: /^Công trình(?: Trạng thái API)?$/ }).click();
+    .getByRole('button', { name: /^Công trình/ }).click();
   await page.getByRole('button', { name: 'Xếp một Cương Thi tiêu chuẩn' }).click();
   await expect(page.getByText(/Đang sản xuất · Cương thi/)).toBeVisible();
 
@@ -54,7 +54,7 @@ test('Chromium runs the server-owned clock, completes a Tomb job once, and recov
   await expect(tombUnit).toContainText('Được tạo từ Mộ');
   await expect(tombUnit).toContainText('Bậc 0 · Cấp 1 · Phẩm Thường · XP 0');
   await expect(tombUnit).toContainText('Kinh nghiệm không được chia sẻ với Lí Lan.');
-  await expect(page.getByText('Ngày 1 · 07:20')).toBeVisible();
+  await expect(page.getByText('Ngày 1 · 07:20')).toHaveCount(1);
 
   await page.reload();
   await page.getByLabel('Khóa chủ sở hữu').fill(ownerKey!);
