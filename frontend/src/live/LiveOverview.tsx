@@ -1,6 +1,7 @@
 import { ArrowRight, Box, ChevronRight, Clock3, Crown, Flame, Layers, ShieldCheck, Sparkles } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { PlayerView } from '../../../packages/contracts/src/index.ts';
+import { playerStatus } from './playerText';
 import MapCanvas from '../rendering/MapCanvas';
 import { liveExplorationSnapshot } from '../rendering/MapSceneAdapter';
 import type { LiveScreen } from './screens';
@@ -91,7 +92,7 @@ export default function LiveOverview({ view, onNavigate }: Props) {
           <span className="site-sigil sigil-fire"><Flame size={24} /></span>
           <div><span className="inspector-kicker">CÔNG TRÌNH TRUNG TÂM</span><h3>Lửa Sinh Tồn</h3></div>
         </div>
-        <p className="muted-text">Trạng thái thực tế của ngọn lửa và các công trình trong lượt chơi.</p>
+        <p className="muted-text">Thông tin hiện tại về ngọn lửa và các công trình trong lãnh địa.</p>
         <div className="inspector-divider" />
         <div className="detail-line"><span>Cấp hiện tại</span><strong>Cấp {fire.level}</strong></div>
         <div className="detail-line"><span>Trạng thái</span><strong>{fire.active ? 'Đang cháy' : 'Đã tắt'}</strong></div>
@@ -106,13 +107,13 @@ export default function LiveOverview({ view, onNavigate }: Props) {
       <article className="panel feature-card">
         <div className="feature-icon"><Flame size={22} /></div>
         <h3>Sinh tồn đầu tiên</h3>
-        <p>Trạng thái lạnh: {view.survival.coldStatus}. {activeJobs} công việc xây dựng đang hoạt động hoặc chờ xử lý.</p>
+        <p>Trạng thái lạnh: {playerStatus(view.survival.coldStatus)}. {activeJobs} công việc xây dựng đang hoạt động hoặc chờ xử lý.</p>
         <button className="text-button" onClick={() => onNavigate('territory')}>Xem lãnh địa <ChevronRight size={15} /></button>
       </article>
       <article className="panel feature-card">
         <div className="feature-icon"><Sparkles size={22} /></div>
         <h3>{view.player.talent.grade} · {view.player.talent.name}</h3>
-        <p>{view.units.length} đơn vị hiện có. Quân lực và cấp độ thay đổi theo hành động đã được máy chủ xác nhận.</p>
+        <p>{view.units.length} đơn vị hiện có. Quân lực và cấp độ phát triển theo hành động trong hành trình.</p>
         <button className="text-button" onClick={() => onNavigate('forces')}>Xem quân lực <ChevronRight size={15} /></button>
       </article>
       <article className="panel feature-card">
