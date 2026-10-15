@@ -1490,7 +1490,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
                 </button>
               </article>;
             })}</div>
-            : <p className="live-empty-state">Quầy caravan mở sau khi Torven tới Krona Gate. Hàng trong kho chỉ hiện khi Lí Lan ở gần quầy.</p>}
+            : <p className="live-empty-state">Quầy giao thương sẽ mở khi đoàn xe của Torven đến Cổng Krona. Hàng trong kho chỉ hiện khi Lí Lan ở gần quầy.</p>}
           {view.stage08.botMarketListings.length > 0
             ? <div className="live-job-list" aria-label="Bản vẽ do các lãnh chúa rao bán">{view.stage08.botMarketListings.map(listing => {
               const paymentStack = listing.paymentResource === 'food'
@@ -1522,7 +1522,7 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
                 </button>
               </article>;
             })}</div>
-            : <p className="live-empty-state">Các lãnh chúa có thể bán bản vẽ tại Krona Gate. Hãy đến gần để xem hàng đang bán.</p>}
+            : <p className="live-empty-state">Các lãnh chúa có thể bán bản vẽ tại Cổng Krona. Hãy đến gần để xem hàng đang bán.</p>}
           {view.stage08.auctionLots.map(lot => {
             const balance = view.currency.find(item => item.currencyId === lot.currencyId)?.amount ?? 0;
             const bidId = view.stage08.auctionBids.find(bid => bid.lotId === lot.id && bid.status === 'open')?.id;
