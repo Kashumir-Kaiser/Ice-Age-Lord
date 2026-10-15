@@ -1,11 +1,41 @@
 import type { PlayerView } from '../../../packages/contracts/src/index.ts';
 import type { SettlementBuildingView, SettlementView } from '../game/GameClient';
 
+// Only map actual API building identities to registered demo artwork.
+// Missing artwork stays an untextured footprint; never depict a forge as a Lord House.
 const ART_BY_KIND: Readonly<Record<string, string>> = {
   lord_house: 'lord-house-damaged',
   survival_fire: 'survival-fire-l01',
-  tomb: 'tomb-damaged',
+  tomb: 'tomb-entry',
+  polar_farmer_house: 'polar-farmhouse-l01',
+  polar_farmhouse: 'polar-farmhouse-l01',
+  farmer_house: 'polar-farmhouse-l01',
+  simple_heater: 'opening-simple-heater',
+  heater: 'opening-simple-heater',
+  simple_stove: 'opening-simple-kitchen',
+  simple_kitchen: 'opening-simple-kitchen',
+  stove: 'opening-simple-kitchen',
+  sawmill: 'opening-woodshop',
+  woodshop: 'opening-woodshop',
+  tailor: 'opening-tailor',
+  ore_processor: 'opening-oreworks',
+  oreworks: 'opening-oreworks',
+  forge: 'opening-forge',
+  medical_room: 'opening-medical-station',
+  medical_station: 'opening-medical-station',
+  small_shelter: 'opening-small-shelter',
+  shelter: 'opening-small-shelter',
+  fence: 'opening-palisade-wall',
+  palisade_wall: 'opening-palisade-wall',
+  gate: 'opening-timber-gate',
+  timber_gate: 'opening-timber-gate',
 };
+
+export function artForLiveBuildingKind(kind: string): string {
+  const normalized = kind.trim().toLowerCase().replaceAll('-', '_');
+  // Deliberately unresolved: missing art must not impersonate a different structure.
+  return ART_BY_KIND[normalized] ?? `unregistered-building:${normalized}`;
+}
 
 /**
  * Adapts only player-visible API state to the shared isometric territory scene.
@@ -60,7 +90,7 @@ export function territorySceneFromApi(view: PlayerView): SettlementView {
       y: coordinate.yMm / 1_000 - origin.y,
       orientation: 'north',
       footprint: footprints(building.footprintAreaM2),
-      assetId: ART_BY_KIND[building.kind] ?? 'lord-house-damaged',
+      assetId: artForLiveBuildingKind(building.kind),
       level: building.level,
       visualState,
       heightM: null,
