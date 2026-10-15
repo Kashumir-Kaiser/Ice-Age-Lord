@@ -106,7 +106,7 @@ export function playerStatus(status: string | null | undefined): string {
     depleted:'Đã cạn', partial:'Một phần', open_surface:'Trên mặt đất',
     cancelled:'Đã hủy', expired:'Hết hạn', closed:'Đã đóng',
     common:'Thường', white:'Trắng', green:'Lục', blue:'Lam', purple:'Tím', gold:'Vàng',
-    victory:'Chiến thắng', dead:'Đã chết', retreated:'Đã rút lui', available:'Sẵn sàng',
+    victory:'Chiến thắng', dead:'Đã chết', retreated:'Đã rút lui',
     hit:'Trúng đòn', missed:'Đánh trượt', miss:'Đánh trượt', defeated:'Đã bị đánh bại',
   };
   if (labels[status]) return labels[status];
