@@ -408,29 +408,17 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
     clockControl: state.clockControl,
     clockStatus: { driver: 'unclaimed', catchingUp: false, targetSimElapsedMs: state.simElapsedMs, leaseRemainingMs: 0 },
     calendar: state.calendar.flatMap(event => {
+      // Internal schedules are never player knowledge: publication requires an actual opening receipt.
+      // Do not substitute elapsed time alone; a paused/unsettled world must not leak future events.
+      if (event.status === 'scheduled' || event.openReceiptSequence === null || event.opensAtMs > state.simElapsedMs) return [];
       const source = world.eventSchedule.find(row => row.id === event.id);
       if (!source) return [];
-      const contract = world.eventContracts.find(candidate => candidate.eventId === event.id);
-      if (!contract) throw new Error(`EVENT_CONTRACT_MISSING:${event.id}`);
+      if (!world.eventContracts.some(candidate => candidate.eventId === event.id)) throw new Error(`EVENT_CONTRACT_MISSING:${event.id}`);
       return [{
         id: event.id,
         displayName: source.displayName,
         status: event.status,
         readiness: eventRuntimeReadiness(event.id),
-        eventContract: {
-          handlerFamily: contract.handlerFamily,
-          runtimeStatus: contract.runtimeStatus,
-          participationRequirement: contract.participationRequirement,
-          objectives: contract.objectives,
-          scoring: contract.scoring,
-          encounters: contract.encounters,
-          rewardContract: contract.rewardContract,
-          shopContract: contract.shopContract,
-          stockAndExpiry: contract.stockAndExpiry,
-          settlement: contract.settlement,
-          source: contract.source,
-        },
-        researchEvidence: source.researchEvidence,
         opensAtElapsedMs: event.opensAtMs,
         locksAtElapsedMs: event.locksAtMs,
         resolvesAtElapsedMs: event.resolvesAtMs,
@@ -541,7 +529,9 @@ export function projectPlayerView(state: GameState, world: WorldDefinition): Pla
     },
     construction: {
       unlockedBlueprintIds: state.construction.unlockedBlueprintIds,
-      blueprints: OPENING_BUILDINGS,
+      // The source-fixed registry stays in world data until the repaired house unlocks it.
+      // Keep the player's construction catalogue restricted to actual unlock entitlements.
+      blueprints: OPENING_BUILDINGS.filter(definition => state.construction.unlockedBlueprintIds.includes(definition.id)),
       jobs: state.construction.jobs.map(job => {
         const workUnitsPerHour = constructionWorkRate(state, job);
         const remaining = Math.max(0, job.workUnitsRequired - job.progressTicks / 300);
