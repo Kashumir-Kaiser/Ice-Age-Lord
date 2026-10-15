@@ -262,6 +262,9 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
   // Open on H0's local resource area so its heat radius and starter deposits
   // have enough screen space to read. The overview control returns to region scale.
   const [mapZoom, setMapZoom] = useState(400);
+  const [mapOffsetMm, setMapOffsetMm] = useState({ xMm: 0, yMm: 0 });
+  const mapDrag = useRef<{ pointerId: number; startX: number; startY: number; startOffsetX: number; startOffsetY: number; moved: boolean } | null>(null);
+  const suppressMapClick = useRef(false);
   const [destination, setDestination] = useState<CoordinateMm | null>(null);
   const [destinationAvailability, setDestinationAvailability] = useState<ActionAvailability | null>(null);
   const [searchRadiusMetres, setSearchRadiusMetres] = useState(500);
@@ -798,7 +801,8 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
 
   function renderMap(): ReactNode {
     if (!view) return null;
-    const center = travelActorId === view.player.id ? view.player.position : view.units.find(unit => unit.id === travelActorId)?.position ?? view.player.position;
+    const actorCenter = travelActorId === view.player.id ? view.player.position : view.units.find(unit => unit.id === travelActorId)?.position ?? view.player.position;
+    const center = { ...actorCenter, xMm: actorCenter.xMm + mapOffsetMm.xMm, yMm: actorCenter.yMm + mapOffsetMm.yMm };
     const spanMm = 26_315_789 / mapZoom;
     const horizontalSpanMm = spanMm * 1.85;
     const point = (position: CoordinateMm) => ({
@@ -831,10 +835,10 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     return <div className="live-section-stack">
       <section className="live-panel live-exploration-panel">
         <div className="live-panel-heading">
-          <div><span className="live-eyebrow">BẢN ĐỒ ĐÃ KHÁM PHÁ</span><h2>Exploration and travel</h2></div>
-          <span className="live-data-chip">{view.visibleMap.entities.length} entity</span>
+          <div><span className="live-eyebrow">BẢN ĐỒ ĐÃ KHÁM PHÁ</span><h2>Khám phá và di chuyển</h2></div>
+          <span className="live-data-chip">{view.visibleMap.entities.length} địa điểm</span>
         </div>
-        <p className="live-muted">Camera movement only changes the view. Travel, sight, and searching change saved knowledge after the server settles them.</p>
+        <p className="live-muted">Kéo để di chuyển góc nhìn, cuộn để phóng to hoặc thu nhỏ. Chỉ các lệnh di chuyển và khám phá được máy chủ xác nhận mới thay đổi tiến trình.</p>
         <div className="live-map-tools">
           <button className={'live-button' + (chooseDestination ? '' : ' live-button--secondary')} disabled={working || Boolean(pendingCommand)} onClick={() => {
             if (chooseDestination) {
@@ -845,8 +849,8 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           }}>
             {chooseDestination ? 'Cancel destination selection' : 'Choose destination'}
           </button>
-          <div className="live-zoom-controls"><button className="live-button live-button--secondary" aria-label="Zoom out" disabled={mapZoom <= 0.2} onClick={() => setMapZoom(value => Math.max(0.2, Math.round(value / 1.6 * 100) / 100))}>−</button><span>{mapZoom.toFixed(2)}×</span><button className="live-button live-button--secondary" aria-label="Zoom in" disabled={mapZoom >= 500} onClick={() => setMapZoom(value => Math.min(500, Math.round(value * 1.6 * 100) / 100))}>+</button><button className="live-button live-button--secondary live-map-overview" aria-label="Show map overview" onClick={() => setMapZoom(1)}>Overview</button></div>
-          <label className="live-inline-field">Travel actor <select value={travelActorId} onChange={event => { setTravelActorId(event.target.value); setDestination(null); setDestinationAvailability(null); }}><option value={view.player.id}>{view.player.name}</option>{view.units.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}</select></label>
+          <div className="live-zoom-controls"><button className="live-button live-button--secondary" aria-label="Zoom out" disabled={mapZoom <= 0.2} onClick={() => setMapZoom(value => Math.max(0.2, Math.round(value / 1.6 * 100) / 100))}>−</button><span>{mapZoom.toFixed(2)}×</span><button className="live-button live-button--secondary" aria-label="Zoom in" disabled={mapZoom >= 500} onClick={() => setMapZoom(value => Math.min(500, Math.round(value * 1.6 * 100) / 100))}>+</button><button className="live-button live-button--secondary live-map-overview" aria-label="Show map overview" onClick={() => { setMapZoom(1); setMapOffsetMm({ xMm: 0, yMm: 0 }); }}>Overview</button></div>
+          <label className="live-inline-field">Travel actor <select value={travelActorId} onChange={event => { setTravelActorId(event.target.value); setMapOffsetMm({ xMm: 0, yMm: 0 }); setDestination(null); setDestinationAvailability(null); }}><option value={view.player.id}>{view.player.name}</option>{view.units.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}</select></label>
           <span className="live-data-chip">Center · {center.xMm}, {center.yMm} mm</span>
         </div>
         {chooseDestination && <p className="live-map-hint">Click an empty map coordinate to preview an order. Confirming travel is a separate action.</p>}
@@ -891,7 +895,47 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
           </div>
         </InspectorFrame>}
 
-        <div className="live-map-canvas" data-testid="live-map" onClickCapture={event => {
+        <div className="live-map-canvas" data-testid="live-map" tabIndex={0}
+          aria-label="Bản đồ khám phá. Kéo chuột để di chuyển góc nhìn, cuộn để thu phóng."
+          onWheel={event => {
+            if (chooseDestination || chooseDispatchCenter) return;
+            event.preventDefault();
+            setMapZoom(zoom => Math.min(500, Math.max(0.2, Math.round(zoom * (event.deltaY < 0 ? 1.18 : 1 / 1.18) * 100) / 100)));
+          }}
+          onKeyDown={event => {
+            if (event.target !== event.currentTarget) return;
+            const stepX = horizontalSpanMm * .1;
+            const stepY = spanMm * .1;
+            if (event.key === 'ArrowLeft') { event.preventDefault(); setMapOffsetMm(offset => ({ ...offset, xMm: offset.xMm - stepX })); }
+            else if (event.key === 'ArrowRight') { event.preventDefault(); setMapOffsetMm(offset => ({ ...offset, xMm: offset.xMm + stepX })); }
+            else if (event.key === 'ArrowUp') { event.preventDefault(); setMapOffsetMm(offset => ({ ...offset, yMm: offset.yMm + stepY })); }
+            else if (event.key === 'ArrowDown') { event.preventDefault(); setMapOffsetMm(offset => ({ ...offset, yMm: offset.yMm - stepY })); }
+          }}
+          onPointerDown={event => {
+            if (event.button !== 0 || chooseDestination || chooseDispatchCenter) return;
+            suppressMapClick.current = false;
+            mapDrag.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY,
+              startOffsetX: mapOffsetMm.xMm, startOffsetY: mapOffsetMm.yMm, moved: false };
+          }}
+          onPointerMove={event => {
+            const drag = mapDrag.current;
+            if (!drag || drag.pointerId !== event.pointerId) return;
+            const dx = event.clientX - drag.startX, dy = event.clientY - drag.startY;
+            if (!drag.moved && Math.hypot(dx, dy) < 6) return;
+            drag.moved = true;
+            suppressMapClick.current = true;
+            const bounds = event.currentTarget.getBoundingClientRect();
+            if (!bounds.width || !bounds.height) return;
+            setMapOffsetMm({
+              xMm: drag.startOffsetX - dx / bounds.width * horizontalSpanMm,
+              yMm: drag.startOffsetY + dy / bounds.height * spanMm,
+            });
+          }}
+          onPointerUp={event => { if (mapDrag.current?.pointerId === event.pointerId) mapDrag.current = null; }}
+          onPointerCancel={() => { mapDrag.current = null; }}
+          onPointerLeave={() => { mapDrag.current = null; }}
+          onClickCapture={event => {
+          if (suppressMapClick.current) { suppressMapClick.current = false; event.preventDefault(); event.stopPropagation(); return; }
           if (!chooseDestination && !chooseDispatchCenter) return;
           // Destination and expedition-center selection must take precedence over
           // marker buttons layered over the map, which stop their own click events.
