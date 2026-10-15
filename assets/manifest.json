@@ -1600,7 +1600,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -1652,7 +1652,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -1704,7 +1704,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -1756,7 +1756,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -1808,7 +1808,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -1860,7 +1860,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -2182,7 +2182,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -2238,7 +2238,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -2294,7 +2294,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -2350,7 +2350,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15040,7 +15040,7 @@
       },
       "groundAnchor": {
         "x": 0.5,
-        "y": 0.82
+        "y": 0.72
       },
       "artFootprint": [
         [
@@ -15142,7 +15142,7 @@
         }
       },
       "referenceSource": "assets/source/concepts/lord-house-levels-21-30.png#cell=4,1",
-      "composition": "single-body",
+      "composition": "architectural",
       "mapExports": [
         {
           "path": "/assets/map/buildings/lord-house-l30/body-close.png",
@@ -15152,6 +15152,14 @@
             {
               "source": "frontend/public/assets/buildings/lord-house-l30/body.svg",
               "sha256": "0fd805a84171288abf4730aca4c1e3663d1cbd479fcf6dd7a143ead650f3aac5"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
           "sha256": "e401615b5fc968ae04a386ba0efcbd18f3b10f3e6aae7f41140173ae7c35db34",
@@ -15176,16 +15184,6 @@
             "y": 30,
             "width": 300,
             "height": 341.25
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/lord-house-l30/atlas-close.png",
-            "x": 4,
-            "y": 4,
-            "width": 240,
-            "height": 273,
-            "atlasWidth": 1024,
-            "atlasHeight": 1024,
-            "sha256": "53e7da8de4c7aeff37fa1ad14d398db2c7b73b9d381f9a30f933f0707f0638e4"
           }
         },
         {
@@ -15196,6 +15194,14 @@
             {
               "source": "frontend/public/assets/buildings/lord-house-l30/body.svg",
               "sha256": "0fd805a84171288abf4730aca4c1e3663d1cbd479fcf6dd7a143ead650f3aac5"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
           "sha256": "df2cb286b1db23952ab2188ded8f59718f01bd571baa81d9937f7dcaf4f162c0",
@@ -15220,32 +15226,30 @@
             "y": 27.500000000000004,
             "width": 305,
             "height": 347.5
-          },
-          "atlas": {
-            "path": "/assets/map/buildings/lord-house-l30/atlas-district.png",
-            "x": 4,
-            "y": 4,
-            "width": 122,
-            "height": 139,
-            "atlasWidth": 512,
-            "atlasHeight": 512,
-            "sha256": "d61f449f522671db751626d0a1627dc02ab715d59ef651ebe1b0589accc87a11"
           }
         },
         {
           "path": "/assets/map/buildings/lord-house-l30/shadow-close.png",
-          "source": "/assets/buildings/lord-house-repaired/shadow.svg",
-          "sourceSha256": "d6b5f7ac47d1ba061d3bdad12ee25da5e701d35488d905274599e0bc4b44a17c",
+          "source": "/assets/map/buildings/lord-house-l30/shadow-ground.svg",
+          "sourceSha256": "870df8a4a612a4ce155a0dac777f857e07f8aff5b798f4ad2d6612bb370dd8fc",
           "sourceDependencies": [
             {
-              "source": "frontend/public/assets/buildings/lord-house-repaired/shadow.svg",
-              "sha256": "d6b5f7ac47d1ba061d3bdad12ee25da5e701d35488d905274599e0bc4b44a17c"
+              "source": "frontend/public/assets/map/buildings/lord-house-l30/shadow-ground.svg",
+              "sha256": "870df8a4a612a4ce155a0dac777f857e07f8aff5b798f4ad2d6612bb370dd8fc"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
-          "sha256": "71de6cc6ee0fe343be6a41ec1805cb2302308e302d70356d2dc9d1b27ba29962",
+          "sha256": "3795a838672fdfaacd309627ea67439f1143c8407b6b977fbc135e2a3ab24d32",
           "exportVersion": 3,
-          "width": 304,
-          "height": 58,
+          "width": 224,
+          "height": 120,
           "role": "shadow",
           "lod": "close",
           "orientation": "north",
@@ -15260,36 +15264,44 @@
             "height": 320
           },
           "trim": {
-            "x": 50,
-            "y": 313.75,
-            "width": 380,
-            "height": 72.5
+            "x": 101.25,
+            "y": 215,
+            "width": 280,
+            "height": 150
           },
           "atlas": {
             "path": "/assets/map/buildings/lord-house-l30/atlas-close.png",
-            "x": 396,
+            "x": 4,
             "y": 4,
-            "width": 304,
-            "height": 58,
+            "width": 224,
+            "height": 120,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "53e7da8de4c7aeff37fa1ad14d398db2c7b73b9d381f9a30f933f0707f0638e4"
+            "sha256": "cae0d051ada25dfdc7c53679e14805bf18acacf947eee17223aba492c4153e74"
           }
         },
         {
           "path": "/assets/map/buildings/lord-house-l30/shadow-district.png",
-          "source": "/assets/buildings/lord-house-repaired/shadow.svg",
-          "sourceSha256": "d6b5f7ac47d1ba061d3bdad12ee25da5e701d35488d905274599e0bc4b44a17c",
+          "source": "/assets/map/buildings/lord-house-l30/shadow-ground.svg",
+          "sourceSha256": "870df8a4a612a4ce155a0dac777f857e07f8aff5b798f4ad2d6612bb370dd8fc",
           "sourceDependencies": [
             {
-              "source": "frontend/public/assets/buildings/lord-house-repaired/shadow.svg",
-              "sha256": "d6b5f7ac47d1ba061d3bdad12ee25da5e701d35488d905274599e0bc4b44a17c"
+              "source": "frontend/public/assets/map/buildings/lord-house-l30/shadow-ground.svg",
+              "sha256": "870df8a4a612a4ce155a0dac777f857e07f8aff5b798f4ad2d6612bb370dd8fc"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
-          "sha256": "d007a4ef3cc03ad3340e272e2b01509bfca68c09671427c2afb3446984e6418f",
+          "sha256": "67ae9706b25df6cce1e011c47220b08df8a6a2bc494e2eaf108c5f92762c1fc6",
           "exportVersion": 3,
-          "width": 154,
-          "height": 32,
+          "width": 115,
+          "height": 62,
           "role": "shadow",
           "lod": "district",
           "orientation": "north",
@@ -15304,20 +15316,20 @@
             "height": 160
           },
           "trim": {
-            "x": 47.5,
-            "y": 310,
-            "width": 385,
-            "height": 80
+            "x": 97.5,
+            "y": 212.5,
+            "width": 287.5,
+            "height": 155
           },
           "atlas": {
             "path": "/assets/map/buildings/lord-house-l30/atlas-district.png",
-            "x": 204,
+            "x": 4,
             "y": 4,
-            "width": 154,
-            "height": 32,
+            "width": 115,
+            "height": 62,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "d61f449f522671db751626d0a1627dc02ab715d59ef651ebe1b0589accc87a11"
+            "sha256": "0bc39688987548e563e9dd8b86c3918e53623b9a22ca0256f6777546f0fffcce"
           }
         },
         {
@@ -15328,6 +15340,14 @@
             {
               "source": "frontend/public/assets/map/buildings/lord-house-l30/foundation.svg",
               "sha256": "3c62616e555f3b1b5d3ded6ca4b7fe57ff952074cac19eb377f8d07a58ec00e8"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
           "sha256": "4662839fae09a04e94c99aad5f315dfddc1d2987e061aa2da69f093205334148",
@@ -15355,13 +15375,13 @@
           },
           "atlas": {
             "path": "/assets/map/buildings/lord-house-l30/atlas-close.png",
-            "x": 4,
-            "y": 332,
+            "x": 396,
+            "y": 4,
             "width": 272,
             "height": 123,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "53e7da8de4c7aeff37fa1ad14d398db2c7b73b9d381f9a30f933f0707f0638e4"
+            "sha256": "cae0d051ada25dfdc7c53679e14805bf18acacf947eee17223aba492c4153e74"
           }
         },
         {
@@ -15372,6 +15392,14 @@
             {
               "source": "frontend/public/assets/map/buildings/lord-house-l30/foundation.svg",
               "sha256": "3c62616e555f3b1b5d3ded6ca4b7fe57ff952074cac19eb377f8d07a58ec00e8"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
           "sha256": "1dcaab4bdcb4d215e362e445ce6b78fd64415d66da1ddda1313e2d096f357ffd",
@@ -15399,19 +15427,612 @@
           },
           "atlas": {
             "path": "/assets/map/buildings/lord-house-l30/atlas-district.png",
-            "x": 4,
-            "y": 172,
+            "x": 204,
+            "y": 4,
             "width": 138,
             "height": 64,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "d61f449f522671db751626d0a1627dc02ab715d59ef651ebe1b0589accc87a11"
+            "sha256": "0bc39688987548e563e9dd8b86c3918e53623b9a22ca0256f6777546f0fffcce"
+          }
+        },
+        {
+          "path": "/assets/map/buildings/lord-house-l30/base-north-close.png",
+          "layerPath": "/assets/map/buildings/lord-house-l30/base-north-close.png",
+          "source": "assets/source/map-buildings/lord-house-l30-foundation.png",
+          "sourceSha256": "c8bcca06bda0c114e606c55e563cd0bf3092dc863da00595c3eb5d932c502b6a",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-l30-foundation.png",
+              "sha256": "c8bcca06bda0c114e606c55e563cd0bf3092dc863da00595c3eb5d932c502b6a"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-l30-upper.png",
+              "sha256": "cae5f5c011ee91c015a7d314f5ce093738ba0812b36008a3176c2cb2d3c3e3e2"
+            }
+          ],
+          "sha256": "57ebb19bdced882a24d3e1ed813cbea3e7a9a731b1d6a12861419d34b54cd17d",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "architecturePart": true,
+          "width": 264,
+          "height": 140,
+          "role": "base",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 75,
+            "y": 202.5,
+            "width": 330,
+            "height": 175
+          }
+        },
+        {
+          "path": "/assets/map/buildings/lord-house-l30/upper-north-close.png",
+          "layerPath": "/assets/map/buildings/lord-house-l30/upper-north-close.png",
+          "source": "assets/source/map-buildings/lord-house-l30-upper.png",
+          "sourceSha256": "cae5f5c011ee91c015a7d314f5ce093738ba0812b36008a3176c2cb2d3c3e3e2",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-l30-foundation.png",
+              "sha256": "c8bcca06bda0c114e606c55e563cd0bf3092dc863da00595c3eb5d932c502b6a"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-l30-upper.png",
+              "sha256": "cae5f5c011ee91c015a7d314f5ce093738ba0812b36008a3176c2cb2d3c3e3e2"
+            }
+          ],
+          "sha256": "c3d3f4563d36fab24df0c789030854ad981dd4aaf19e7fc53197152a305f8268",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "architecturePart": true,
+          "width": 251,
+          "height": 264,
+          "role": "upper",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 82.5,
+            "y": 31.25,
+            "width": 313.75,
+            "height": 330
+          }
+        },
+        {
+          "path": "/assets/map/buildings/lord-house-l30/body-layered-north-close.png",
+          "layerPath": "/assets/map/buildings/lord-house-l30/body-layered-north-close.png",
+          "source": "frontend/scripts/apply-authored-architecture.mjs",
+          "sourceSha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-l30-foundation.png",
+              "sha256": "c8bcca06bda0c114e606c55e563cd0bf3092dc863da00595c3eb5d932c502b6a"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-l30-upper.png",
+              "sha256": "cae5f5c011ee91c015a7d314f5ce093738ba0812b36008a3176c2cb2d3c3e3e2"
+            }
+          ],
+          "sha256": "d2b54de5e96557b3e09c9f0e46b33f66a08bb609f42ca2351e64c65a4b73409f",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "width": 264,
+          "height": 277,
+          "role": "body",
+          "lod": "close",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 384,
+            "height": 320
+          },
+          "trim": {
+            "x": 75,
+            "y": 31.25,
+            "width": 330,
+            "height": 346.25
+          }
+        },
+        {
+          "path": "/assets/map/buildings/lord-house-l30/base-north-district.png",
+          "layerPath": "/assets/map/buildings/lord-house-l30/base-north-close.png",
+          "source": "assets/source/map-buildings/lord-house-l30-foundation.png",
+          "sourceSha256": "c8bcca06bda0c114e606c55e563cd0bf3092dc863da00595c3eb5d932c502b6a",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-l30-foundation.png",
+              "sha256": "c8bcca06bda0c114e606c55e563cd0bf3092dc863da00595c3eb5d932c502b6a"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-l30-upper.png",
+              "sha256": "cae5f5c011ee91c015a7d314f5ce093738ba0812b36008a3176c2cb2d3c3e3e2"
+            }
+          ],
+          "sha256": "a9f10070f75a4dc7121eac9da4938a6f26fa15fed6c72edba24e0f85dbc83284",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "architecturePart": true,
+          "width": 136,
+          "height": 74,
+          "role": "base",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 70,
+            "y": 197.5,
+            "width": 340,
+            "height": 185
+          }
+        },
+        {
+          "path": "/assets/map/buildings/lord-house-l30/upper-north-district.png",
+          "layerPath": "/assets/map/buildings/lord-house-l30/upper-north-close.png",
+          "source": "assets/source/map-buildings/lord-house-l30-upper.png",
+          "sourceSha256": "cae5f5c011ee91c015a7d314f5ce093738ba0812b36008a3176c2cb2d3c3e3e2",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-l30-foundation.png",
+              "sha256": "c8bcca06bda0c114e606c55e563cd0bf3092dc863da00595c3eb5d932c502b6a"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-l30-upper.png",
+              "sha256": "cae5f5c011ee91c015a7d314f5ce093738ba0812b36008a3176c2cb2d3c3e3e2"
+            }
+          ],
+          "sha256": "e4d2623408d30aded11cd0d6402f12761275ec75bd7f44f9fbd3d979c5285263",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "architecturePart": true,
+          "width": 130,
+          "height": 135,
+          "role": "upper",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 77.5,
+            "y": 30,
+            "width": 325,
+            "height": 337.5
+          }
+        },
+        {
+          "path": "/assets/map/buildings/lord-house-l30/body-layered-north-district.png",
+          "layerPath": "/assets/map/buildings/lord-house-l30/body-layered-north-close.png",
+          "source": "frontend/scripts/apply-authored-architecture.mjs",
+          "sourceSha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e",
+          "sourceDependencies": [
+            {
+              "source": "assets/map-authored-architecture.json",
+              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
+            },
+            {
+              "source": "frontend/scripts/apply-authored-architecture.mjs",
+              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
+            },
+            {
+              "source": "frontend/scripts/normalize-map-alpha.mjs",
+              "sha256": "9f3cf90a01c1b0a1af0779c27c3089aac245f3d5d71dd31f778b16da9dcb270a"
+            },
+            {
+              "source": "frontend/scripts/trim-map-raster.mjs",
+              "sha256": "8b27773f2c546e92a555a29f915419db27ff59ba379b09fca1b3deba1e7d5b35"
+            },
+            {
+              "source": "frontend/scripts/map-orientation-export.mjs",
+              "sha256": "087ed5ca016a0d1e481ac6dd94cd1e1bbfece1273f5dfa33ac80cd7247750299"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-l30-foundation.png",
+              "sha256": "c8bcca06bda0c114e606c55e563cd0bf3092dc863da00595c3eb5d932c502b6a"
+            },
+            {
+              "source": "assets/source/map-buildings/lord-house-l30-upper.png",
+              "sha256": "cae5f5c011ee91c015a7d314f5ce093738ba0812b36008a3176c2cb2d3c3e3e2"
+            }
+          ],
+          "sha256": "aad68a8da0e28e5f2526995788b7c433d30750ebd6b18b1fec7ef6c338828fce",
+          "exportVersion": 4,
+          "authoredArchitecture": true,
+          "width": 136,
+          "height": 141,
+          "role": "body",
+          "lod": "district",
+          "orientation": "north",
+          "alpha": "straight",
+          "colorSpace": "srgb",
+          "logicalCanvas": {
+            "width": 480,
+            "height": 400
+          },
+          "rasterCanvas": {
+            "width": 192,
+            "height": 160
+          },
+          "trim": {
+            "x": 70,
+            "y": 30,
+            "width": 340,
+            "height": 352.5
           }
         }
       ],
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/lord-house-l30/foundation.svg",
-      "generatedOrientationViews": []
+      "generatedOrientationViews": [],
+      "orientationViews": {
+        "north": {
+          "uiIcon": "/assets/buildings/lord-house-l30/body.svg",
+          "body": "/assets/map/buildings/lord-house-l30/body-layered-north-close.png",
+          "base": "/assets/map/buildings/lord-house-l30/base-north-close.png",
+          "upper": "/assets/map/buildings/lord-house-l30/upper-north-close.png",
+          "shadow": "/assets/map/buildings/lord-house-l30/shadow-ground.svg",
+          "vfx": null
+        }
+      },
+      "orientationRegions": {
+        "north": {
+          "upper": [
+            [
+              0.18489583333333334,
+              0.509375
+            ],
+            [
+              0.2682291666666667,
+              0.26875
+            ],
+            [
+              0.4713541666666667,
+              0.09375
+            ],
+            [
+              0.4739583333333333,
+              0.09375
+            ],
+            [
+              0.6119791666666666,
+              0.209375
+            ],
+            [
+              0.6328125,
+              0.228125
+            ],
+            [
+              0.6354166666666666,
+              0.23125
+            ],
+            [
+              0.7994791666666666,
+              0.546875
+            ],
+            [
+              0.8125,
+              0.6125
+            ],
+            [
+              0.8125,
+              0.64375
+            ],
+            [
+              0.8072916666666666,
+              0.759375
+            ],
+            [
+              0.7994791666666666,
+              0.76875
+            ],
+            [
+              0.7005208333333334,
+              0.853125
+            ],
+            [
+              0.6953125,
+              0.85625
+            ],
+            [
+              0.6848958333333334,
+              0.859375
+            ],
+            [
+              0.5625,
+              0.8875
+            ],
+            [
+              0.5442708333333334,
+              0.8875
+            ],
+            [
+              0.4036458333333333,
+              0.88125
+            ],
+            [
+              0.3880208333333333,
+              0.878125
+            ],
+            [
+              0.3802083333333333,
+              0.875
+            ],
+            [
+              0.375,
+              0.871875
+            ],
+            [
+              0.2630208333333333,
+              0.746875
+            ],
+            [
+              0.2578125,
+              0.740625
+            ],
+            [
+              0.19270833333333334,
+              0.659375
+            ],
+            [
+              0.19010416666666666,
+              0.653125
+            ],
+            [
+              0.18489583333333334,
+              0.540625
+            ]
+          ],
+          "hitPolygon": [
+            [
+              0.16927083333333334,
+              0.715625
+            ],
+            [
+              0.18489583333333334,
+              0.509375
+            ],
+            [
+              0.2682291666666667,
+              0.26875
+            ],
+            [
+              0.4713541666666667,
+              0.09375
+            ],
+            [
+              0.4739583333333333,
+              0.09375
+            ],
+            [
+              0.6119791666666666,
+              0.209375
+            ],
+            [
+              0.6328125,
+              0.228125
+            ],
+            [
+              0.6354166666666666,
+              0.23125
+            ],
+            [
+              0.7994791666666666,
+              0.546875
+            ],
+            [
+              0.8125,
+              0.6125
+            ],
+            [
+              0.828125,
+              0.74375
+            ],
+            [
+              0.828125,
+              0.759375
+            ],
+            [
+              0.8229166666666666,
+              0.76875
+            ],
+            [
+              0.8151041666666666,
+              0.775
+            ],
+            [
+              0.7109375,
+              0.85625
+            ],
+            [
+              0.7057291666666666,
+              0.859375
+            ],
+            [
+              0.5859375,
+              0.915625
+            ],
+            [
+              0.578125,
+              0.91875
+            ],
+            [
+              0.4401041666666667,
+              0.928125
+            ],
+            [
+              0.4088541666666667,
+              0.928125
+            ],
+            [
+              0.3984375,
+              0.925
+            ],
+            [
+              0.3932291666666667,
+              0.921875
+            ],
+            [
+              0.2786458333333333,
+              0.83125
+            ],
+            [
+              0.17447916666666666,
+              0.740625
+            ],
+            [
+              0.171875,
+              0.7375
+            ],
+            [
+              0.16927083333333334,
+              0.73125
+            ]
+          ]
+        }
+      },
+      "mapLayers": {
+        "shadow": "/assets/map/buildings/lord-house-l30/shadow-ground.svg"
+      }
     },
     {
       "assetId": "lord-house-repaired",
@@ -15553,7 +16174,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15607,7 +16228,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15661,7 +16282,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15713,7 +16334,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15765,7 +16386,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15817,7 +16438,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15866,11 +16487,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "0bd05f5b0370a3be1fe0765637d3851a072faff5d2acc6ba30b6bfdba6f4afd8"
+              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "d0aa1903ca7bda4ef8c08fc6791da098cc7c0937d838978525424a3bfe617af3"
+              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -15927,11 +16548,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "0bd05f5b0370a3be1fe0765637d3851a072faff5d2acc6ba30b6bfdba6f4afd8"
+              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "d0aa1903ca7bda4ef8c08fc6791da098cc7c0937d838978525424a3bfe617af3"
+              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -15984,15 +16605,15 @@
           "path": "/assets/map/buildings/lord-house-repaired/body-layered-north-close.png",
           "layerPath": "/assets/map/buildings/lord-house-repaired/body-layered-north-close.png",
           "source": "frontend/scripts/apply-authored-architecture.mjs",
-          "sourceSha256": "d0aa1903ca7bda4ef8c08fc6791da098cc7c0937d838978525424a3bfe617af3",
+          "sourceSha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e",
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "0bd05f5b0370a3be1fe0765637d3851a072faff5d2acc6ba30b6bfdba6f4afd8"
+              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "d0aa1903ca7bda4ef8c08fc6791da098cc7c0937d838978525424a3bfe617af3"
+              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -16048,11 +16669,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "0bd05f5b0370a3be1fe0765637d3851a072faff5d2acc6ba30b6bfdba6f4afd8"
+              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "d0aa1903ca7bda4ef8c08fc6791da098cc7c0937d838978525424a3bfe617af3"
+              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -16109,11 +16730,11 @@
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "0bd05f5b0370a3be1fe0765637d3851a072faff5d2acc6ba30b6bfdba6f4afd8"
+              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "d0aa1903ca7bda4ef8c08fc6791da098cc7c0937d838978525424a3bfe617af3"
+              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -16166,15 +16787,15 @@
           "path": "/assets/map/buildings/lord-house-repaired/body-layered-north-district.png",
           "layerPath": "/assets/map/buildings/lord-house-repaired/body-layered-north-close.png",
           "source": "frontend/scripts/apply-authored-architecture.mjs",
-          "sourceSha256": "d0aa1903ca7bda4ef8c08fc6791da098cc7c0937d838978525424a3bfe617af3",
+          "sourceSha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e",
           "sourceDependencies": [
             {
               "source": "assets/map-authored-architecture.json",
-              "sha256": "0bd05f5b0370a3be1fe0765637d3851a072faff5d2acc6ba30b6bfdba6f4afd8"
+              "sha256": "fc6d059e9eb9cabf95e4586a0b08fcf8bdb67ff10bce4c8ab23c647034b76b3e"
             },
             {
               "source": "frontend/scripts/apply-authored-architecture.mjs",
-              "sha256": "d0aa1903ca7bda4ef8c08fc6791da098cc7c0937d838978525424a3bfe617af3"
+              "sha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e"
             },
             {
               "source": "frontend/scripts/normalize-map-alpha.mjs",
@@ -45441,7 +46062,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -45493,7 +46114,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -45545,7 +46166,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -45597,7 +46218,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -45649,7 +46270,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -45701,7 +46322,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -49178,7 +49799,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -49230,7 +49851,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -49282,7 +49903,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -49334,7 +49955,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -49386,7 +50007,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -49438,7 +50059,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "ea6bb915d9e0d990db7a14ca4776fcf7f53fb5ac72f04a0f00ebd673df44b753"
+              "sha256": "c4879bb5630b9912c39b688ffc05e62df442ebf14da86260b90e1df22246d7ed"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
