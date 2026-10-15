@@ -15449,18 +15449,30 @@
       "mapExports": [
         {
           "path": "/assets/map/buildings/lord-house-repaired/body-close.png",
-          "source": "/assets/buildings/lord-house-repaired/body.svg",
-          "sourceSha256": "e7588350010fe8f04b5ca5b31294d0706d1e47840b36135a941e87c4c59ead2a",
+          "source": "/assets/map/buildings/lord-house-repaired/body-static.svg",
+          "sourceSha256": "852a2257989943a7bad3151f0405cda444ccc83729a5a5ca77bc3df5bd468347",
           "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/map/buildings/lord-house-repaired/body-static.svg",
+              "sha256": "852a2257989943a7bad3151f0405cda444ccc83729a5a5ca77bc3df5bd468347"
+            },
             {
               "source": "frontend/public/assets/buildings/lord-house-repaired/body.svg",
               "sha256": "e7588350010fe8f04b5ca5b31294d0706d1e47840b36135a941e87c4c59ead2a"
+            },
+            {
+              "source": "assets/map-static-bodies.json",
+              "sha256": "f96dcbd7e78917740f51795b6fcec02a57e9ce9361bb28952bdcbca609a8e0e9"
+            },
+            {
+              "source": "frontend/scripts/map-static-body.mjs",
+              "sha256": "480e2d9765cad5744216762f700a8bf9ebad165e0046ae6ad41f88afaf68fb16"
             }
           ],
-          "sha256": "c9adc9f06540d1d11a21ec0e05e47653b88ad0786c4534bf8c9fc1fa494c9709",
+          "sha256": "3d01e957bacf735ccb74a70c464b577ce916dcd8a8ddf78ed9ac00c9299d79cf",
           "exportVersion": 3,
           "width": 333,
-          "height": 271,
+          "height": 240,
           "role": "body",
           "lod": "close",
           "orientation": "north",
@@ -15476,35 +15488,47 @@
           },
           "trim": {
             "x": 31.250000000000004,
-            "y": 31.25,
+            "y": 70,
             "width": 416.25,
-            "height": 338.75
+            "height": 300
           },
           "atlas": {
             "path": "/assets/map/buildings/lord-house-repaired/atlas-close.png",
             "x": 4,
             "y": 4,
             "width": 333,
-            "height": 271,
+            "height": 240,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "b501e693762963b6729cc8751f28d2e6ad2ef9f5cb3a4f0e39d1820ef997006e"
+            "sha256": "78c7f70fe5cfba86cbc469c345fa9fefb0f1ce20607d0dca668a82bbd6f32b8e"
           }
         },
         {
           "path": "/assets/map/buildings/lord-house-repaired/body-district.png",
-          "source": "/assets/buildings/lord-house-repaired/body.svg",
-          "sourceSha256": "e7588350010fe8f04b5ca5b31294d0706d1e47840b36135a941e87c4c59ead2a",
+          "source": "/assets/map/buildings/lord-house-repaired/body-static.svg",
+          "sourceSha256": "852a2257989943a7bad3151f0405cda444ccc83729a5a5ca77bc3df5bd468347",
           "sourceDependencies": [
+            {
+              "source": "frontend/public/assets/map/buildings/lord-house-repaired/body-static.svg",
+              "sha256": "852a2257989943a7bad3151f0405cda444ccc83729a5a5ca77bc3df5bd468347"
+            },
             {
               "source": "frontend/public/assets/buildings/lord-house-repaired/body.svg",
               "sha256": "e7588350010fe8f04b5ca5b31294d0706d1e47840b36135a941e87c4c59ead2a"
+            },
+            {
+              "source": "assets/map-static-bodies.json",
+              "sha256": "f96dcbd7e78917740f51795b6fcec02a57e9ce9361bb28952bdcbca609a8e0e9"
+            },
+            {
+              "source": "frontend/scripts/map-static-body.mjs",
+              "sha256": "480e2d9765cad5744216762f700a8bf9ebad165e0046ae6ad41f88afaf68fb16"
             }
           ],
-          "sha256": "618294b36215317d6b2622d593fb8b7c5a46449401d476c4b0a78b5928ed3b1f",
+          "sha256": "5ae9fffb45de39315eeae3f137ef7564fea13e9f2fc78b558b6c1db0a2c5d940",
           "exportVersion": 3,
           "width": 168,
-          "height": 137,
+          "height": 122,
           "role": "body",
           "lod": "district",
           "orientation": "north",
@@ -15520,19 +15544,19 @@
           },
           "trim": {
             "x": 30,
-            "y": 30,
+            "y": 67.5,
             "width": 420,
-            "height": 342.5
+            "height": 305
           },
           "atlas": {
             "path": "/assets/map/buildings/lord-house-repaired/atlas-district.png",
             "x": 4,
             "y": 4,
             "width": 168,
-            "height": 137,
+            "height": 122,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "d7d1af1527d721a7e76be3a792f3f85c4de34d515210f0f68e0acda399163890"
+            "sha256": "8f2ea8eb21e4276516f01067de7707dcf03de74d29a299b9611dd8ef0beec812"
           }
         },
         {
@@ -15576,7 +15600,7 @@
             "height": 58,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "b501e693762963b6729cc8751f28d2e6ad2ef9f5cb3a4f0e39d1820ef997006e"
+            "sha256": "78c7f70fe5cfba86cbc469c345fa9fefb0f1ce20607d0dca668a82bbd6f32b8e"
           }
         },
         {
@@ -15620,7 +15644,7 @@
             "height": 32,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "d7d1af1527d721a7e76be3a792f3f85c4de34d515210f0f68e0acda399163890"
+            "sha256": "8f2ea8eb21e4276516f01067de7707dcf03de74d29a299b9611dd8ef0beec812"
           }
         },
         {
@@ -15664,7 +15688,7 @@
             "height": 123,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "b501e693762963b6729cc8751f28d2e6ad2ef9f5cb3a4f0e39d1820ef997006e"
+            "sha256": "78c7f70fe5cfba86cbc469c345fa9fefb0f1ce20607d0dca668a82bbd6f32b8e"
           }
         },
         {
@@ -15708,13 +15732,16 @@
             "height": 64,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "d7d1af1527d721a7e76be3a792f3f85c4de34d515210f0f68e0acda399163890"
+            "sha256": "8f2ea8eb21e4276516f01067de7707dcf03de74d29a299b9611dd8ef0beec812"
           }
         }
       ],
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/lord-house-repaired/foundation.svg",
-      "generatedOrientationViews": []
+      "generatedOrientationViews": [],
+      "mapLayers": {
+        "body": "/assets/map/buildings/lord-house-repaired/body-static.svg"
+      }
     },
     {
       "assetId": "opening-forge",
