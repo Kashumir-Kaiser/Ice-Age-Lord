@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { Resvg } from '@resvg/resvg-js';
 import sharp from 'sharp';
@@ -15,7 +16,7 @@ import {calibrateMapGround} from './calibrate-map-ground.mjs';
 import {mapGroundShadow} from './map-ground-shadow.mjs';
 import {splitMapArchitecture} from './split-map-architecture.mjs';
 import {prepareTowerPreviews} from './map-tower-previews.mjs';
-const repo=resolve(new URL('../..',import.meta.url).pathname),manifestPath=resolve(repo,'assets/manifest.json');
+const repo=resolve(fileURLToPath(new URL('../..',import.meta.url))),manifestPath=resolve(repo,'assets/manifest.json');
 const manifest=JSON.parse(readFileSync(manifestPath,'utf8'));
 const authoredViews=JSON.parse(readFileSync(resolve(repo,'assets/map-building-views.json'),'utf8'));
 const depthJoints=JSON.parse(readFileSync(resolve(repo,'assets/map-depth-slices.json'),'utf8'));

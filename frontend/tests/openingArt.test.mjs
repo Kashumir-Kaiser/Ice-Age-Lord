@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const root=resolve(new URL('../',import.meta.url).pathname);
+const root=resolve(fileURLToPath(new URL('../',import.meta.url)));
 const repo=resolve(root,'..');
 const read=(path)=>readFileSync(resolve(repo,path),'utf8');
 const manifest=JSON.parse(read('assets/manifest.json'));

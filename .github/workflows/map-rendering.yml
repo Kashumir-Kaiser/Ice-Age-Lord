@@ -7,11 +7,21 @@ on:
 permissions:
   contents: read
 jobs:
+  windows-asset-paths:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Windows-native map asset paths and hashes
+        run: node --test frontend/tests/mapAssetPaths.test.mjs
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      VITE_GAME_MODE: demo
+      VITE_ENABLE_DEMO: 'true' # QA-only preview build.
       PLAYWRIGHT_PREVIEW: '1'
     defaults:
       run:

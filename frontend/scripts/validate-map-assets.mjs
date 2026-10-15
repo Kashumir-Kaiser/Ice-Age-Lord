@@ -1,7 +1,9 @@
 import {readFileSync} from 'node:fs';
 import {resolve,extname} from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
-const root=resolve(new URL('../..',import.meta.url).pathname);
+export const mapAssetRepositoryRoot=resolve(fileURLToPath(new URL('../..',import.meta.url)));
+const root=mapAssetRepositoryRoot;
 const hash=buffer=>createHash('sha256').update(buffer).digest('hex');
 /** Read the encoded size, independently of manifest claims, before loading a texture. */
 export function rasterDimensions(buffer){
