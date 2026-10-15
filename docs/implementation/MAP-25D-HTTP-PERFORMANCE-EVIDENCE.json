@@ -1922,5 +1922,47 @@
     "Timing and memory runs predate the compact overview change; no new frame-budget or memory acceptance is claimed.",
     "Headless software rendering is not Intel UHD 620 target-device proof; several frame/pointer budgets remain unmet.",
     "HTTP wire totals include duplicate requests and the gzip runtime manifest; historical raster-only totals have a different scope."
-  ]
+  ],
+  "buildingPropFilterMicrobenchmark": {
+    "status": "evaluated-and-rejected; production renderer remains unchanged",
+    "method": "Isolated JavaScript filtering microbenchmark; 34 deterministic TerrainSampler LL01 props around the dense fixture centers; warmup followed by three rounds of 1000 filters, reporting median filter and index-rebuild times. Both paths used the same building geometry and exact existing strict blocker predicate, with identical visible-prop output.",
+    "scope": "Measures filtering and index construction only; not end-to-end rendering, not a CI performance acceptance benchmark.",
+    "results": [
+      {
+        "buildings": 4,
+        "props": 34,
+        "visibleProps": 33,
+        "brutePredicateCalls": 133,
+        "indexedPredicateCalls": 5,
+        "predicateCallsReducedPercent": 96.2,
+        "bruteFilterMedianUs": 2.97,
+        "indexedQueryMedianUs": 12.47,
+        "indexRebuildMedianUs": 1.89
+      },
+      {
+        "buildings": 16,
+        "props": 34,
+        "visibleProps": 32,
+        "brutePredicateCalls": 525,
+        "indexedPredicateCalls": 14,
+        "predicateCallsReducedPercent": 97.3,
+        "bruteFilterMedianUs": 5.63,
+        "indexedQueryMedianUs": 11.02,
+        "indexRebuildMedianUs": 3.08
+      },
+      {
+        "buildings": 520,
+        "props": 34,
+        "visibleProps": 23,
+        "brutePredicateCalls": 14049,
+        "indexedPredicateCalls": 292,
+        "predicateCallsReducedPercent": 97.9,
+        "bruteFilterMedianUs": 78.05,
+        "indexedQueryMedianUs": 53.17,
+        "indexRebuildMedianUs": 93.71
+      }
+    ],
+    "interpretation": "The grid cuts exact predicate calls, but its query is slower on 4- and 16-building scenes. At 520 buildings the query alone is faster, yet rebuilding the index plus one query costs about 146.88 us versus 78.05 us for brute force. TerritoryScene creates a new buildings array when camera changes, so the renderer snapshot-reference invalidation contract rebuilds on camera updates; repeated-frame amortization cannot be assumed across those updates. The measured dense filtering work is small relative to the roughly 35 ms render p50 profile and does not justify the added index/runtime complexity.",
+    "decision": "Rejected; the broad-phase optimization and its tests were removed. The original renderer scan and strict predicate remain at HEAD."
+  }
 }
