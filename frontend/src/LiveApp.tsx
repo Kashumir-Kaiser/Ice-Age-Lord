@@ -304,14 +304,24 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     if (!scope) return;
     let active = true;
     let inFlight = false;
+    let lastSnapshotAt = 0;
+    let running = view.clockControl.status === 'running';
     const refreshClock = async () => {
       if (inFlight || working) return;
       inFlight = true;
       try {
-        await client.heartbeatClock();
+        const clock = await client.heartbeatClock();
         if (!active || !saveScope.isCurrent(scope)) return;
+        // Heartbeats retain the lease each second; a paused save does not need
+        // a full bot-backed view projection every second. Refresh at most four
+        // seconds apart while idle, always at 1s while running/catching up.
+        const now = performance.now();
+        const paused = !running;
+        if (paused && !clock.catchingUp && now - lastSnapshotAt < 4_000) return;
+        lastSnapshotAt = now;
         const nextView = await client.getView();
         if (active && saveScope.isCurrent(scope) && nextView.saveId === scope.saveId) {
+          running = nextView.clockControl.status === 'running';
           setView(nextView);
           if (nextView.lastEventSequence > eventSequenceRef.current) await refreshEvents(nextView.lastEventSequence, scope);
         }

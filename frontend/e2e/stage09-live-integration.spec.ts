@@ -154,9 +154,12 @@ test('switching saves clears selection and ignores a delayed response from the p
     await route.continue();
   });
   try {
+    // Explicitly trigger a view request; background polls are intentionally
+    // throttled while paused and should not be relied upon by this test.
+    await page.getByRole('button', { name: 'Tải lại từ API' }).click();
     await Promise.race([
       delayedView,
-      page.waitForTimeout(2_500).then(() => { throw new Error('The active save poll did not reach the delayed response gate.'); }),
+      page.waitForTimeout(12_000).then(() => { throw new Error('The explicit save refresh did not reach the delayed response gate.'); }),
     ]);
     await page.getByRole('button', { name: 'Đổi lượt lưu' }).click();
     await expect(page.getByRole('heading', { name: 'Chọn hoặc tạo lượt lưu' })).toBeVisible();
