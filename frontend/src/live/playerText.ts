@@ -39,6 +39,18 @@ export function playerItemName(idOrName: string | null | undefined): string {
     .filter(Boolean).join(' ') || 'Vật phẩm chưa xác định';
 }
 
+export function playerContainerName(label: string): string {
+  if (/^carried food bag$/i.test(label)) return 'Túi thực phẩm mang theo';
+  if (/^.+ pack$/i.test(label)) return 'Túi của ' + label.replace(/ pack$/i,'');
+  if (/^carried bag$/i.test(label)) return 'Túi mang theo';
+  return playerItemName(label);
+}
+
+export function playerBlueprintName(view: PlayerView, id: string | null | undefined): string {
+  if (!id) return 'Bản vẽ chưa rõ tên';
+  return view.construction.blueprints.find(blueprint => blueprint.id === id)?.name ?? 'Bản vẽ chưa rõ tên';
+}
+
 export function playerOwnerName(view: PlayerView, id: string | null | undefined): string {
   if (!id) return 'Chưa xác định';
   if (id === view.player.id) return view.player.name;
