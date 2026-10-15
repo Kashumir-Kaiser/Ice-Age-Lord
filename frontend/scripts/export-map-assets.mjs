@@ -150,6 +150,10 @@ manifest.environmentArt=[];
 // Prefer the actual registered pose over the palette-traced default fallback.
 count+=await applyMapArchitecture(manifest,architecture,repo);
 count+=await applyAuthoredArchitecture(manifest,authoredArchitecture,repo);
+// Registered map-only shadows must win over source/UI shadows in authored pose views.
+for(const asset of manifest.assets)if(groundRegistrations[asset.assetId]&&asset.mapLayers?.shadow){
+ for(const view of Object.values(asset.orientationViews??{}))if(view)view.shadow=asset.mapLayers.shadow;
+}
 for(const asset of manifest.assets)for(const [orientation,cuts] of Object.entries(depthJoints[asset.assetId]??{})){
  asset.mapDepthSlices??={};asset.mapDepthSlices[orientation]=[];
  for(const lod of ['close','district']){
