@@ -60,8 +60,9 @@ test('settlement map follows the player and dragging the player unlocks and pans
   await expect(scene).toBeVisible();
   await expect(lock).toBeVisible();
   await expect(marker).toHaveCount(1);
-  const fire = scene.locator('circle[fill="#db8c56"]');
-  const before = await fire.getAttribute('cx');
+  // The 2.5D renderer no longer promises a legacy SVG fire circle.
+  // Follow/pan is a camera contract; compare the registered scene viewBox instead.
+  const before = await scene.getAttribute('viewBox');
   const bounds = await marker.boundingBox();
   expect(bounds).not.toBeNull();
   await page.mouse.move(bounds!.x + bounds!.width / 2, bounds!.y + bounds!.height / 2);
@@ -71,5 +72,5 @@ test('settlement map follows the player and dragging the player unlocks and pans
 
   await expect(lock).toHaveCount(0);
   await expect(marker).toHaveCount(0);
-  await expect.poll(async () => Number(await fire.getAttribute('cx'))).not.toBe(Number(before));
+  await expect.poll(async () => scene.getAttribute('viewBox')).not.toBe(before);
 });

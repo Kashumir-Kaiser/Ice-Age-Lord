@@ -13,8 +13,26 @@ test('Chromium runs the server-owned clock, completes a Tomb job once, and recov
 
   const slotName = 'Chromium ' + crypto.randomUUID();
   await page.getByLabel('Tên lượt lưu mới').fill(slotName);
+  const createResponse = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/saves'
+    && response.request().method() === 'POST');
   await page.getByRole('button', { name: 'Tạo lượt chơi sạch' }).click();
-  await expect(page.getByText(/Clean game đã được tạo và commit/)).toBeVisible();
+  const posted = await createResponse;
+  if (!posted.ok()) {
+    const error = await posted.json().catch(() => null);
+    console.error('LIVE_SAVE_CREATE_HTTP_FAILURE', JSON.stringify({
+      status: posted.status(), code: error?.error?.code ?? null, displayText: error?.error?.displayText ?? null,
+    }));
+  }
+  try {
+    await expect(page.getByText(/Clean game đã được tạo và commit/)).toBeVisible();
+  } catch (error) {
+    console.error('LIVE_SAVE_CREATE_VIEW_FAILURE', JSON.stringify({
+      status: posted.status(), displayed: (await page.locator('.live-start-card, .live-content, .live-topbar').allInnerTexts()).map(t => t.slice(0, 2000)),
+      feedback: await page.locator('[role="alert"], [role="status"]').allInnerTexts(),
+      currentUrl: page.url(),
+    }));
+    throw error;
+  }
   await expect(page.getByText('Ngày 1 · 07:00')).toBeVisible();
 
   await page.getByRole('navigation', { name: 'Màn hình game' })
