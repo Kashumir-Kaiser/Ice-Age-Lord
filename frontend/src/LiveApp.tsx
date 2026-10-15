@@ -19,6 +19,7 @@ import { liveExplorationSnapshot, liveTerrainRegions } from './rendering/MapScen
 import { artForLiveBuildingKind, territorySceneFromApi } from './live/territoryAdapter';
 import LiveOverview from './live/LiveOverview';
 import LiveCharacterLoadout from './live/LiveCharacterLoadout';
+import { playerBlueprintName, playerContainerName, playerElapsed, playerItemName, playerMessage, playerOwnerName, playerStatus, playerStorageLocation } from './live/playerText';
 import type { EntityRef as DemoEntityRef, LayoutDraft } from './game/GameClient';
 import type { TerritoryCamera } from './territory/projection';
 import type { ReadabilityMode } from './territory/BuildingSprite';
@@ -1409,36 +1410,58 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     if (screen === 'inventory') {
       return <div className="live-section-stack">
         <section className="live-panel">
-          <div className="live-panel-heading"><div><span className="live-eyebrow">INVENTORY · SERVER PROJECTION</span><h2>Kho vật phẩm</h2></div><PackageOpen size={22} /></div>
-          <p className="live-muted">Chỉ hiển thị vật phẩm đã được quan sát trong lượt lưu hiện tại. Di chuyển vật phẩm yêu cầu cả hai kho đều nằm trong tầm với.</p>
-          <label className="live-inline-field live-inventory-search">Tìm vật phẩm hoặc kho <input aria-label="Tìm vật phẩm hoặc kho" value={inventoryFilter} onChange={event => setInventoryFilter(event.target.value)} placeholder="Tên vật phẩm, chủ sở hữu, nguồn gốc…" /></label>
+          <div className="live-panel-heading"><div><span className="live-eyebrow">HÀNH TRANG</span><h2>Kho vật phẩm</h2></div><PackageOpen size={22} /></div>
+          <p className="live-muted">Các túi và vật phẩm bạn đã kiểm tra. Đến gần túi đồ trước khi chuyển vật phẩm.</p>
+          <label className="live-inline-field live-inventory-search">Tìm vật phẩm hoặc kho <input aria-label="Tìm vật phẩm hoặc kho" value={inventoryFilter} onChange={event => setInventoryFilter(event.target.value)} placeholder="Tên vật phẩm, túi đồ…" /></label>
           {view.inventory.inspectableContainers.length > 0 && <div className="live-inspectable-list">
             {view.inventory.inspectableContainers.map(container => <article key={container.containerId} className="live-container-row">
-              <div><strong>{container.label}</strong><small>{container.kind} · chưa quan sát</small></div>
-              <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'inspect_starter_container', { containerId: container.containerId }))}><Eye size={15} /> Kiểm tra</button>
+              <div><strong>{playerContainerName(container.label)}</strong><small>Chưa kiểm tra túi đồ</small></div>
+              <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)}
+                onClick={() => void sendCommand(commandFor(view, 'inspect_starter_container', { containerId: container.containerId }))}><Eye size={15}/> Kiểm tra</button>
             </article>)}
           </div>}
-          {view.inventory.containers.length > 0
+          {inventoryContainers.length > 0
             ? <div className="live-inventory-grid">{inventoryContainers.map(container => <article className="live-container-card" key={container.id}>
-                <div className="live-panel-heading"><h3>{container.label}</h3><span>{container.occupiedSlots}/{container.capacitySlots ?? '∞'} ô</span></div>
-                <small className="live-container-access">Vị trí: {container.location.kind === 'site' ? container.location.siteId : container.location.kind === 'carried' ? `carried by ${container.location.ownerId}` : container.location.kind === 'building' ? container.location.buildingId : `unit ${container.location.unitId}`} · {container.accessible ? 'accessible' : 'out of reach'}</small>
+                <div className="live-panel-heading"><h3>{playerContainerName(container.label)}</h3>
+                  <span>{container.occupiedSlots}/{container.capacitySlots ?? '∞'} ô đã dùng</span></div>
+                <small className="live-container-access">Vị trí: {playerStorageLocation(view, container)} · {container.accessible ? 'Trong tầm với' : 'Ngoài tầm với'}</small>
                 {container.items.length
                   ? <ul className="live-inventory-art-list" aria-label="Các vật phẩm trong kho">{container.items.map(item => <li key={item.itemId}>
                     {itemArtPath(item.label)
-                      ? <img className="live-item-art" src={itemArtPath(item.label)!} alt="" aria-hidden="true" />
+                      ? <img className="live-item-art" src={itemArtPath(item.label)!} alt="" aria-hidden="true"/>
                       : <span className="live-item-placeholder-art" aria-hidden="true"><PackageOpen size={28}/></span>}
-                    <strong>{item.label} · × {item.quantity} · free {Math.max(0, item.quantity - item.reservedQuantity)}{item.equipped ? ' · equipped' : ''}</strong>
-                    <details className="live-item-details"><summary>Chi tiết · Di chuyển</summary><div className="live-item-details-body">{item.reservedQuantity} reserved · owner {item.ownerId ?? 'legacy/unspecified'} · {item.unit ?? 'unit unspecified'} · quality {item.quality ?? 'unspecified'}{item.condition !== null && item.condition !== undefined ? ` · độ bền ${Math.round(item.condition * 100)}%` : ''} · {item.provenance} · {item.equipped ? `equipped${item.equippedSlotId ? ` (${item.equippedSlotId})` : ''}` : 'not equipped'}{item.foodUnitsPerItem !== null ? ` · ${item.foodUnitsPerItem} food units/item` : ''}{item.equipmentTags?.length ? ` · loại: ${item.equipmentTags.map(tag => tag === 'WEAPON' || tag === 'WEAPON_1H' ? 'vũ khí' : tag === 'ARMOR' || tag === 'ARMOR_LIGHT' ? 'giáp nhẹ' : tag).join(', ')}` : ''} · {view.inventory.containers.filter(target => target.id !== container.id).map(target => <button key={target.id} className="live-text-button" disabled={working || Boolean(pendingCommand) || !container.accessible || !target.accessible || item.quantity <= item.reservedQuantity} title={!container.accessible || !target.accessible ? 'Move Lí Lan within reach of both containers.' : `Transfer unreserved items to ${target.label}.`} onClick={() => void sendCommand(commandFor(view, 'transfer_item', {
-                      actorId: view.player.id, sourceContainerId: container.id, destinationContainerId: target.id, itemId: item.itemId, quantity: item.quantity - item.reservedQuantity,
-                    }))}>→ {target.label}</button>)}</div></details>
-                    {item.label === 'BREAD' && item.foodUnitsPerItem !== null && <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || !container.accessible || item.quantity <= item.reservedQuantity} title="Consumes one actual bread item using its recorded food value." onClick={() => void sendCommand(commandFor(view, 'consume_item', {
-                      actorId: view.player.id, containerId: container.id, itemId: item.itemId, quantity: 1,
-                    }))}>Consume 1 · {item.foodUnitsPerItem} food unit</button>}
+                    <div className="live-item-card-copy">
+                      <strong className="live-item-name">{playerItemName(item.label)}</strong>
+                      <span className="live-item-quantity">Số lượng: {item.quantity}</span>
+                      {item.reservedQuantity > 0 && <small>Đang dành cho công việc: {item.reservedQuantity}</small>}
+                      {item.equipped && <small>Đang trang bị</small>}
+                    </div>
+                    <details className="live-item-details"><summary>Chi tiết và chuyển đồ</summary>
+                      <div className="live-item-details-body">
+                        <p>Có thể dùng: {Math.max(0, item.quantity - item.reservedQuantity)}</p>
+                        {item.ownerId && <p>Chủ sở hữu: {playerOwnerName(view, item.ownerId)}</p>}
+                        {item.condition !== null && item.condition !== undefined && <p>Độ bền: {Math.round(item.condition * 100)}%</p>}
+                        {item.foodUnitsPerItem !== null && <p>Thực phẩm: {item.foodUnitsPerItem} phần mỗi món</p>}
+                        {view.inventory.containers.filter(target => target.id !== container.id).map(target =>
+                          <button key={target.id} className="live-text-button"
+                            disabled={working || Boolean(pendingCommand) || !container.accessible || !target.accessible || item.quantity <= item.reservedQuantity}
+                            title={!container.accessible || !target.accessible ? 'Hãy đến gần cả hai túi đồ trước khi chuyển.' : `Chuyển vật phẩm sang ${playerContainerName(target.label)}`}
+                            onClick={() => void sendCommand(commandFor(view, 'transfer_item', {
+                              actorId: view.player.id, sourceContainerId: container.id, destinationContainerId: target.id,
+                              itemId: item.itemId, quantity: item.quantity - item.reservedQuantity,
+                            }))}>Chuyển sang {playerContainerName(target.label)}</button>)}
+                      </div>
+                    </details>
+                    {item.label === 'BREAD' && item.foodUnitsPerItem !== null && <button className="live-button live-button--secondary"
+                      disabled={working || Boolean(pendingCommand) || !container.accessible || item.quantity <= item.reservedQuantity}
+                      title="Dùng một phần bánh mì trong túi."
+                      onClick={() => void sendCommand(commandFor(view, 'consume_item', {
+                        actorId: view.player.id, containerId: container.id, itemId: item.itemId, quantity: 1,
+                      }))}>Ăn 1 bánh mì</button>}
                   </li>)}</ul>
-                  : <p>Container đã quan sát, chưa có vật phẩm.</p>}
-                <small className="live-container-access">{container.accessible ? 'Within reach' : 'Out of reach'}</small>
+                  : <p>Đã kiểm tra, túi hiện không có vật phẩm.</p>}
               </article>)}</div>
-            : view.inventory.inspectableContainers.length === 0 && <p className="live-empty-state">API chưa cung cấp container đã quan sát hoặc có thể kiểm tra.</p>}
+            : view.inventory.inspectableContainers.length === 0 && <p className="live-empty-state">Chưa có túi đồ được kiểm tra.</p>}
         </section>
         <section className="live-panel">
           <div className="live-panel-heading"><div><span className="live-eyebrow">TIỀN TỆ ĐÃ NHẬN</span><h3>Số dư</h3></div><PackageOpen size={20} /></div>
