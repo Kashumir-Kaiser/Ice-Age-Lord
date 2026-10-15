@@ -198,3 +198,6 @@
   .frozen-menu__scene,.frozen-menu__snow {animation:none!important;}
   .frozen-menu__action,.frozen-menu__action>svg:last-child {transition:none!important;}
 }
+
+.frozen-menu__demo-exit {position:fixed;top:12px;right:15px;z-index:110;padding:8px 13px;border:1px solid #bbd0d064;border-radius:3px;color:#f0e5cd;background:#071b2be9;font:700 11px "Segoe UI",Arial,sans-serif;box-shadow:0 8px 18px #000a;}
+.frozen-menu__demo-exit:hover {background:#244557;}
