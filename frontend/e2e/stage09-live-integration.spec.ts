@@ -15,7 +15,7 @@ async function connectAndCreate(page: import('@playwright/test').Page, slotName:
   await expect(page.getByRole('heading', { name: 'Chọn hoặc tạo lượt lưu' })).toBeVisible();
   await page.getByLabel('Tên lượt lưu mới').fill(slotName);
   await page.getByRole('button', { name: 'Tạo lượt chơi sạch' }).click();
-  await expect(page.getByText('Ngày 1 · 07:00')).toBeVisible({ timeout: 35_000 });
+  await expect(page.getByTestId('live-overview-parity').getByText('Ngày 1 · 07:00', { exact: true })).toBeVisible({ timeout: 35_000 });
 }
 
 test('all nine live screens remain on one server-owned save projection at release viewports', async ({ page }, testInfo) => {
