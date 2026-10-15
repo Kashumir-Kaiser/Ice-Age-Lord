@@ -154,3 +154,72 @@
   .live-overview .hero-copy h2 { font-size: 27px; }
   .live-overview .stats-grid { grid-template-columns: 1fr; }
 }
+
+/* Character uses the same authored three-column portrait composition as the demo. */
+.live-character-loadout { min-width: 0; }
+.live-character-loadout .equipment-socket { overflow: hidden; }
+.live-character-loadout .equipment-socket-copy small { overflow-wrap: anywhere; }
+.live-character-other-equipment {
+  display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 0;
+  border-top: 1px solid var(--line);
+  color: #c9d7d0; font-size: 11px;
+}
+.live-character-other-equipment strong { width: 100%; }
+.live-character-other-equipment span {
+  padding: 7px 9px; border: 1px solid var(--line);
+  border-radius: 6px; background: #102937;
+}
+.live-character-equipment-note { display: block; margin-top: 13px; color: #8ca7ae; font-size: 10px; line-height: 1.65; }
+.live-character-page .live-attribute-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.live-character-page .character-details-card > p { margin-top: 13px; color: #a5b8ba; }
+
+/* The local overview remains the visual starting point, not a monitoring dashboard. */
+.live-overview-diagnostics > summary { color: #bbd2d3; cursor: pointer; font-size: 12px; }
+.live-overview-diagnostics > p { margin-top: 12px; }
+
+/* Full map takes visual priority over status copy and selection details. */
+.live-exploration-panel { display: flex; flex-direction: column; gap: 12px; }
+.live-exploration-panel > .live-panel-heading { order: 0; margin-bottom: 0; }
+.live-exploration-panel > .live-muted { order: 1; margin: 0; }
+.live-exploration-panel > .live-map-tools { order: 2; }
+.live-exploration-panel > .live-map-canvas { order: 3; margin-top: 0; min-height: 465px;
+  border-color: rgba(177,201,201,.28); box-shadow: 0 12px 30px rgba(2,13,23,.26); }
+.live-exploration-panel > .live-inspector { order: 4; }
+.live-exploration-panel > :not(.live-panel-heading):not(.live-muted):not(.live-map-tools):not(.live-map-canvas):not(.live-inspector) { order: 5; }
+.live-exploration-panel > .live-inspector {
+  width: 100%; align-items: stretch;
+  border: 1px solid rgba(177,201,201,.16);
+  border-radius: 11px; background: rgba(8,28,40,.68);
+}
+.live-exploration-panel .live-map-tools { align-items: center; }
+
+/* Force roster displays cards in the same hierarchy as the demo, retaining commands. */
+.live-forces-stats { margin-bottom: 0; }
+.live-force-roster { min-width: 0; }
+.live-force-unit-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; padding-top: 8px; }
+.live-force-unit-grid > .live-container-card {
+  padding: 19px 20px 18px; min-width: 0;
+  border-color: rgba(164,199,195,.2);
+  border-radius: 11px;
+  background: radial-gradient(ellipse at 85% 5%,rgba(107,158,157,.12),transparent 52%),linear-gradient(140deg,#193340,#0e2432);
+}
+.live-force-unit-grid > .live-container-card .live-panel-heading {
+  padding-bottom: 12px; border-bottom: 1px solid var(--line);
+}
+.live-force-unit-grid > .live-container-card h3 {
+  font-size: 18px; font-family: Georgia,'Times New Roman',serif;
+}
+.live-force-unit-grid > .live-container-card p { margin-bottom: 9px; }
+.live-force-unit-grid > .live-container-card .live-container-row { align-items: center; }
+.live-force-unit-grid .live-data-chip { white-space: normal; }
+.live-force-page > .live-dispatch-panel { border-color: rgba(201,178,135,.2); }
+@media (max-width: 1000px) {
+  .live-force-unit-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 620px) {
+  .live-exploration-panel { padding: 12px; }
+  .live-exploration-panel > .live-map-canvas { min-height: 340px; }
+  .live-forces-stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .live-force-unit-grid > .live-container-card { padding: 14px; }
+  .live-character-page .live-attribute-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
