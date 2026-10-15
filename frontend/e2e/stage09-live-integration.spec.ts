@@ -125,7 +125,7 @@ test('all nine live screens remain on one server-owned save projection at releas
   await page.setViewportSize(viewports[0]);
   await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Bản đồ/ }).click();
   const revisionBeforeCameraInput = await page.locator('.live-footer').getAttribute('data-revision');
-  await page.getByRole('button', { name: 'Show map overview' }).click();
+  await page.getByRole('button', { name: 'Xem toàn bản đồ' }).click();
   await expect(page.locator('.live-footer')).toHaveAttribute('data-revision', revisionBeforeCameraInput!);
   const map = page.getByTestId('live-map');
   const box = await map.boundingBox();
