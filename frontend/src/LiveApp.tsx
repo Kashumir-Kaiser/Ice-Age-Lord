@@ -156,20 +156,20 @@ function territoryRef(ref: EntityRef | null): DemoEntityRef | null {
 
 function harvestBlockerMessage(availability: ActionAvailability): string {
   const messages: Readonly<Record<string, string>> = {
-    ACTOR_ALREADY_TRAVELLING: 'This worker is travelling.',
-    ACTOR_ASSIGNED_TO_SEARCH: 'This worker is assigned to a search.',
-    ACTOR_ASSIGNED_TO_HARVEST: 'This worker is already harvesting.',
-    REQUIRED_TOOL_NOT_CARRIED: 'The selected worker is missing the required tool.',
-    LOAD_CAPACITY_EXCEEDED: 'Unload this worker’s cargo before harvesting.',
-    NO_KNOWN_ROUTE: 'No known route currently reaches this deposit.',
-    NO_SUPPORTED_ROUTE: 'The worker has no supported route to this deposit.',
-    UNDERGROUND_ACCESS_REQUIRED: 'This resource requires underground access.',
-    INSUFFICIENT_RESOURCE: 'The remaining stock or today’s quota is reserved or exhausted.',
-    PROSPECTING_CONTRACT_NOT_COMPILED: 'Surveying is required, but that contract is not available yet.',
-    WATER_PREPARATION_CONTRACT_NOT_COMPILED: 'Water preparation is required, but that contract is not available yet.',
-    WORKFORCE_AND_FUEL_REQUIREMENTS_NOT_MET: 'This workfront needs its worker and fuel requirements first.',
+    ACTOR_ALREADY_TRAVELLING: 'Đơn vị đang di chuyển.',
+    ACTOR_ASSIGNED_TO_SEARCH: 'Đơn vị đang đi tìm kiếm.',
+    ACTOR_ASSIGNED_TO_HARVEST: 'Đơn vị đang thu thập.',
+    REQUIRED_TOOL_NOT_CARRIED: 'Đơn vị chưa có dụng cụ cần thiết.',
+    LOAD_CAPACITY_EXCEEDED: 'Hãy dỡ bớt hàng trước khi thu thập.',
+    NO_KNOWN_ROUTE: 'Chưa tìm thấy đường đi đến nơi này.',
+    NO_SUPPORTED_ROUTE: 'Đơn vị chưa có đường đi phù hợp.',
+    UNDERGROUND_ACCESS_REQUIRED: 'Cần có lối vào khu vực dưới lòng đất.',
+    INSUFFICIENT_RESOURCE: 'Tài nguyên còn lại đã hết hoặc đang được dành cho công việc khác.',
+    PROSPECTING_CONTRACT_NOT_COMPILED: 'Cần khảo sát khu vực trước khi khai thác.',
+    WATER_PREPARATION_CONTRACT_NOT_COMPILED: 'Cần xử lý nước trước khi sử dụng.',
+    WORKFORCE_AND_FUEL_REQUIREMENTS_NOT_MET: 'Cần đủ nhân công và nhiên liệu để bắt đầu.',
   };
-  return messages[availability.reasonCode ?? ''] ?? availability.requirements[0] ?? availability.reasonCode?.replaceAll('_', ' ').toLocaleLowerCase() ?? 'Harvesting is currently blocked.';
+  return messages[availability.reasonCode ?? ''] ?? availability.requirements[0] ?? availability.reasonCode?.replaceAll('_', ' ').toLocaleLowerCase() ?? 'Hiện chưa thể thu thập.';
 }
 
 function sameRef(a: EntityRef | null, b: EntityRef | null): boolean {
@@ -1102,9 +1102,9 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
               <option value={view.player.id}>{view.player.name}</option>
               {view.units.map(unit => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
             </select></label>
-            {harvestActorBusy && <small className="live-resource-access">This worker is already travelling or assigned to another job.</small>}
-            {!harvestWorkerContainer && <small className="live-resource-access">Inspect this worker’s inventory before assigning a harvest.</small>}
-            <label className="live-inline-field live-resource-quantity">Harvest quantity <input type="number" min={1} max={Math.max(1, maxHarvestQuantity)} value={selectedHarvestQuantity} disabled={maxHarvestQuantity < 1} onChange={event => setHarvestQuantity(Math.min(Math.max(1, maxHarvestQuantity), Math.max(1, Number(event.target.value) || 1)))} /></label>
+            {harvestActorBusy && <small className="live-resource-access">Đơn vị này đang làm nhiệm vụ khác.</small>}
+            {!harvestWorkerContainer && <small className="live-resource-access">Kiểm tra hành trang của đơn vị trước khi thu thập.</small>}
+            <label className="live-inline-field live-resource-quantity">Số lượng thu thập <input type="number" min={1} max={Math.max(1, maxHarvestQuantity)} value={selectedHarvestQuantity} disabled={maxHarvestQuantity < 1} onChange={event => setHarvestQuantity(Math.min(Math.max(1, maxHarvestQuantity), Math.max(1, Number(event.target.value) || 1)))} /></label>
             <ul className="live-resource-materials">{resourceDeposit.materials.map(material => {
               const remaining = material.remaining === null ? 'Unknown' : `${material.remaining.toLocaleString()} ${material.unit}`;
               const renewal = material.renewal === 'none' ? 'Finite stock; does not regenerate.'
@@ -1117,10 +1117,10 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
               return <li key={material.resourceId}>
                 <div><strong>{material.materialName}</strong><span>{remaining} / {material.capacity.toLocaleString()} {material.dailyQuota === null ? 'capacity' : 'daily quota'}{material.reserved ? ` · ${material.reserved.toLocaleString()} reserved` : ''}</span></div>
                 <small>{material.harvestRateUnitsPerHour.toLocaleString()} {material.unit}/worker-hour{material.dailyQuota !== null ? ` · ${material.dailyRemaining?.toLocaleString() ?? 'Unknown'} / ${material.dailyQuota.toLocaleString()} available today` : ''} · {renewal}</small>
-                {material.access !== 'open_surface' && <small className="live-resource-access">{material.accessReason ?? 'This material has an unresolved access requirement.'}</small>}
-                {material.requiredToolTemplateId && <small className="live-resource-access">{workerHasTool ? `Worker carries ${material.requiredToolTemplateId}.` : `This worker needs a ${material.requiredToolTemplateId}.`}</small>}
-                {material.status === 'depleted' && <small className="live-resource-access">{material.dailyQuota === null ? 'This deposit is exhausted.' : 'No usable stock remains today.'}</small>}
-                {maxHarvestQuantity < 1 && <small className="live-resource-access">Unload this worker’s cargo at the territory store before harvesting again.</small>}
+                {material.access !== 'open_surface' && <small className="live-resource-access">{material.accessReason ? playerMessage(material.accessReason) : 'Chưa đủ điều kiện tiếp cận tài nguyên này.'}</small>}
+                {material.requiredToolTemplateId && <small className="live-resource-access">{workerHasTool ? `Đã có ${playerItemName(material.requiredToolTemplateId)}.` : `Cần trang bị ${playerItemName(material.requiredToolTemplateId)}.`}</small>}
+                {material.status === 'depleted' && <small className="live-resource-access">{material.dailyQuota === null ? 'Nguồn tài nguyên đã cạn.' : 'Hôm nay không còn tài nguyên để thu thập.'}</small>}
+                {maxHarvestQuantity < 1 && <small className="live-resource-access">Dỡ bớt đồ ở kho lãnh địa trước khi thu thập tiếp.</small>}
                 {!localBlock && serverAvailability && !serverAvailability.enabled && <small className="live-resource-access">{harvestBlockerMessage(serverAvailability)}</small>}
                 <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand) || blocked}
                   onClick={() => harvestSelectedResource(selectedEntity, material.resourceId, selectedHarvestQuantity)}>
@@ -1812,21 +1812,21 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
               <strong>Nhiệm vụ · {playerStatus(quest.state)}</strong>
               <span>{quest.rewardReceipt ? 'Đã nhận phần thưởng' : quest.completedAt !== null ? `Hoàn tất lúc ${elapsedLabel(quest.completedAt)}` : quest.acceptedAt !== null ? `Nhận lúc ${elapsedLabel(quest.acceptedAt)}` : 'Đang chờ điều kiện đã biết'}</span>
               {quest.questId === 'QUEST-LL01-08' && quest.state === 'open' && <>
-                <span>Torven’s convoy is distressed at the old trade-road bridge; its response window closes at {elapsedLabel(view.stage08.caravan?.deadlineAtElapsedMs ?? null)}.</span>
-                <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'accept_quest', { questId: quest.questId }))}>Accept caravan request</button>
+                <span>Đoàn xe của Torven gặp nguy hiểm gần cây cầu trên đường thương mại cũ. Hạn nhận lời: {elapsedLabel(view.stage08.caravan?.deadlineAtElapsedMs ?? null)}.</span>
+                <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'accept_quest', { questId: quest.questId }))}>Nhận nhiệm vụ hộ tống</button>
               </>}
               {quest.questId === 'QUEST-LL01-08' && quest.state === 'accepted' && quest.objectiveId === 'Q08-NEGOTIATE-AND-ESCORT' && <>
-                <span>Choose the fixed safe-passage route. It records one grain sack from the actual caravan cargo.</span>
-                <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'negotiate_caravan', { questId: quest.questId, route: 'trade_one_grain_sack' }))}>Negotiate safe passage · 1 grain sack</button>
+                <span>Thỏa thuận lối đi an toàn bằng một bao lương thực từ đoàn xe.</span>
+                <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'negotiate_caravan', { questId: quest.questId, route: 'trade_one_grain_sack' }))}>Thương lượng · 1 bao lương thực</button>
               </>}
               {quest.questId === 'QUEST-LL01-08' && quest.state === 'accepted' && quest.objectiveId === 'Q08-ESCORT-TO-KRONA-GATE' && <>
-                <span>Meet the convoy at the bridge and escort it to Krona Gate before the response window closes.</span>
-                <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'escort_caravan', { questId: quest.questId }))}>Escort caravan</button>
+                <span>Đến cây cầu gặp đoàn xe và hộ tống họ tới cổng Krona trước hạn.</span>
+                <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'escort_caravan', { questId: quest.questId }))}>Hộ tống đoàn xe</button>
               </>}
-              {quest.questId === 'QUEST-LL01-08' && quest.state === 'accepted' && quest.objectiveId === 'Q08-ARRIVE-AT-KRONA-GATE' && <span>Caravan is en route; arrival is scheduled for {elapsedLabel(view.stage08.caravan?.arrivalAtElapsedMs ?? null)}.</span>}
+              {quest.questId === 'QUEST-LL01-08' && quest.state === 'accepted' && quest.objectiveId === 'Q08-ARRIVE-AT-KRONA-GATE' && <span>Đoàn xe đang trên đường đến cổng Krona; dự kiến đến {elapsedLabel(view.stage08.caravan?.arrivalAtElapsedMs ?? null)}.</span>}
               {quest.questId === 'QUEST-LL01-08' && quest.state === 'completed' && quest.rewardStatus === 'pending' && <>
-                <span>Torven alive · at least three draft animals · intact ledger. Claim at Krona Gate: RW-LL01-08.</span>
-                <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'claim_quest_reward', { questId: quest.questId }))}>Claim 60 Krona · unlock trade route</button>
+                <span>Torven còn sống, ít nhất ba con vật kéo xe sống sót và sổ hàng còn nguyên. Đến cổng Krona để nhận thưởng.</span>
+                <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'claim_quest_reward', { questId: quest.questId }))}>Nhận 60 Krona · mở tuyến buôn bán</button>
               </>}
             </li>)}</ul>
             : <p className="live-empty-state">Chưa có nhiệm vụ nào được mở trong lượt lưu này.</p>}
