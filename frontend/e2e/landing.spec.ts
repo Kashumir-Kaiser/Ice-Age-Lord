@@ -14,13 +14,14 @@ const existingSave = {
   forkedFrom: null,
 };
 
-test('main menu is the default entry, is keyboard accessible, and fits mobile', async ({ page }) => {
+test('main menu is the default entry, is keyboard accessible, and fits mobile', async ({ page }, testInfo) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: /ICE AGE LORD/i })).toBeVisible();
   await expect(page.getByTestId('menu-new-game')).toBeVisible();
   await expect(page.getByTestId('menu-load-save')).toBeVisible();
   await expect(page.getByTestId('menu-demo')).toBeVisible();
   await expect(page.locator('.frozen-menu__scene')).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath('landing-menu.png'), fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   await page.getByTestId('menu-new-game').focus();
   await page.keyboard.press('Enter');
