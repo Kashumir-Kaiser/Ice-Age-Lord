@@ -13,7 +13,7 @@
     "qa:territory": "npm run build && node scripts/territory-visual-qa.mjs",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "test:e2e": "playwright test",
-    "assets:map": "node scripts/export-map-assets.mjs && npm run assets:sync",
+    "assets:map": "node --experimental-strip-types scripts/export-map-assets.mjs && npm run assets:sync",
     "test:map-rendering": "node --experimental-strip-types --test tests/mapRendering.test.mjs tests/terrainCache.test.mjs tests/textureOwnership.test.mjs",
     "qa:maps": "npm run build && node scripts/map-qa.mjs",
     "benchmark:maps": "npm run build && node scripts/map-benchmark.mjs"
