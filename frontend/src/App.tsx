@@ -103,7 +103,7 @@ function Header({ screen, screens, player, onMenu, onOpenPlayerProfile, profileO
       <div className="clock-player" aria-label="Đồng hồ trong trò chơi">
         <span className="clock-chip" aria-live="off"><Clock3 size={14}/> Ngày {displayDay(clockSeconds)} · {displayClock(clockSeconds)}</span>
         <label className="clock-speed-wrap"><span>Tốc độ</span><select aria-label="Tốc độ thời gian" value={speed} onChange={e=>changeSpeed(e.target.value as ClockSpeed)}>
-          <option value="Frozen">Frozen</option><option value="1x">1×</option><option value="2x">2×</option><option value="5x">5×</option><option value="Custom">Tùy chọn</option>
+          <option value="Frozen">Đóng băng</option><option value="1x">1×</option><option value="2x">2×</option><option value="5x">5×</option><option value="Custom">Tùy chọn</option>
         </select></label>
         {speed==='Custom'&&<label className="custom-clock-wrap"><span>Hệ số</span><input type="number" min=".1" max="3600" step=".1" aria-label="Hệ số tốc độ tùy chọn" value={customSpeed} onChange={e=>setCustomSpeed(customMultiplier(Number(e.target.value)))} /></label>}
         <small className="clock-sim-label">Đồng hồ hiển thị</small>
@@ -304,7 +304,7 @@ function Journal({ entries }: {entries:PlayerView['journal']}) {
   const [filter,setFilter]=useState('Tất cả');
   const categories=['Tất cả','Bối cảnh','Hệ thống','Giao diện'];
   const events=entries.filter(e=>filter==='Tất cả'||e.category===filter);
-  return <div className="page-sections"><div className="notice-row"><Info size={17}/><span>Không có event ledger đang chạy. Những mục bên dưới là thông tin giới thiệu đã xác lập hoặc hướng dẫn giao diện.</span></div>
+  return <div className="page-sections"><div className="notice-row"><Info size={17}/><span>Chưa có sự kiện đang diễn ra. Những mục bên dưới là thông tin giới thiệu đã xác lập hoặc hướng dẫn giao diện.</span></div>
     <section className="panel journal-panel"><div className="inventory-toolbar"><div><span className="eyebrow">BIÊN NIÊN · BẢN MẪU</span><h2>Thông tin mở đầu</h2></div><div className="filter-strip journal-filter">{categories.map(c=><button className={filter===c?'is-selected':''} onClick={()=>setFilter(c)} key={c}>{c}</button>)}</div></div>
     <div className="timeline">{events.map(e=><article className="timeline-event" key={e.title}><span className="timeline-dot"/><div className="timeline-time">{e.time}<small>{e.category}</small></div><div className="timeline-body"><h3>{e.title}</h3><p>{e.text}</p></div></article>)}</div></section>
   </div>;
