@@ -411,6 +411,10 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     setView(null);
     setEvents([]);
     setTerritoryCamera(null);
+    setMapZoom(400);
+    setMapOffsetMm({ xMm: 0, yMm: 0 });
+    mapDrag.current = null;
+    suppressMapClick.current = false;
     setTerritoryDrafts([]);
     setTerritoryReadability('normal');
     setFollowTerritoryPlayer(false);
@@ -443,6 +447,10 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     setView(null);
     setSelectedRef(null);
     setTerritoryCamera(null);
+    setMapZoom(400);
+    setMapOffsetMm({ xMm: 0, yMm: 0 });
+    mapDrag.current = null;
+    suppressMapClick.current = false;
     setTerritoryDrafts([]);
     setTerritoryReadability('normal');
     setFollowTerritoryPlayer(false);
@@ -552,6 +560,10 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       const nextView = await client.getView();
       if (!saveScope.isCurrent(scope) || nextView.saveId !== scope.saveId) return;
       setView(nextView);
+      setMapZoom(400);
+      setMapOffsetMm({ xMm: 0, yMm: 0 });
+      mapDrag.current = null;
+      suppressMapClick.current = false;
       eventSequenceRef.current = 0;
       setEvents([]);
       setSelectedRef(nextView.territory.survivalFire.ref);
