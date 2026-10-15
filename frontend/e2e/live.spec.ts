@@ -139,7 +139,7 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
   const mapCampfire = page.getByTestId('map-campfire-marker');
   await expect(mapCampfire).toHaveAttribute('data-entity-ref', fireKey);
   await expect(mapCampfire).toBeVisible();
-  await page.getByRole('button', { name: 'Zoom in' }).click();
+  await page.getByRole('button', { name: 'Phóng to bản đồ' }).click();
   await page.getByRole('button', { name: 'Chọn điểm đến' }).click();
   const liveMapBox = await page.getByTestId('live-map').boundingBox();
   expect(liveMapBox).not.toBeNull();
