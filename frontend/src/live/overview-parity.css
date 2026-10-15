@@ -241,6 +241,41 @@
   background: radial-gradient(ellipse at 50% 10%,rgba(119,154,156,.15),transparent 60%),rgba(8,26,37,.64);
   transition: border-color .16s,background .16s;
 }
+/* Regression: live.css sets flex-wrap:wrap and flex:1 1 160px on list children.
+   Those legacy declarations cause vertical flex-column items to spill sideways.
+   Force a single column and constrain every descendant to the card. */
+.live-inventory-art-list > li {
+  flex-flow: column nowrap;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+.live-inventory-art-list > li > * { min-width: 0; max-width: 100%; }
+.live-inventory-art-list > li > strong {
+  flex: 0 0 auto;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+.live-inventory-art-list .live-item-art,
+.live-inventory-art-list .live-item-placeholder-art { align-self: center; }
+.live-inventory-art-list .live-item-details,
+.live-inventory-art-list .live-item-details summary,
+.live-inventory-art-list .live-item-details-body {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.live-inventory-grid > .live-container-card,
+.live-inventory-grid .live-container-card .live-panel-heading,
+.live-inventory-grid .live-container-access { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+.live-inventory-grid .live-container-access { white-space: normal; word-break: break-word; }
 .live-inventory-art-list > li:hover { border-color: rgba(218,187,139,.32); background-color: rgba(19,45,58,.78); }
 .live-inventory-art-list .live-item-art,
 .live-item-placeholder-art {
