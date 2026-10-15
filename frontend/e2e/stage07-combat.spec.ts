@@ -61,18 +61,18 @@ test('Stage 07 plays and reloads a timed H0 combat encounter through the browser
   const slotName = 'Stage 07 combat ' + crypto.randomUUID();
   await page.getByLabel('Tên lượt lưu mới').fill(slotName);
   await page.getByRole('button', { name: 'Bắt đầu lượt chơi' }).click();
-  await expect(page.getByText(/Clean game đã được tạo và commit/)).toBeVisible();
+  await expect(page.getByText(/Đã tạo cuộc phiêu lưu mới/)).toBeVisible();
 
   const navigation = page.getByRole('navigation', { name: 'Màn hình game' });
   await navigation.getByRole('button', { name: /^Quân lực/ }).click();
   await page.getByRole('button', { name: 'Kiểm tra thi thể' }).click();
   await page.getByRole('button', { name: 'Tử Phục', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Rook' })).toBeVisible();
-  await page.getByRole('button', { name: /Trang bị STAGE07-ASH-WOOD-SPEAR/ }).click();
-  await page.getByRole('button', { name: /Trang bị STAGE07-FELT-CLOAK/ }).click();
+  await page.getByRole('button', { name: /Trang bị Giáo gỗ tần bì/ }).click();
+  await page.getByRole('button', { name: /Trang bị Áo choàng nỉ/ }).click();
 
   await navigation.getByRole('button', { name: /^Kho vật phẩm/ }).click();
-  await expect(page.getByText(/STAGE07-ASH-WOOD-SPEAR/)).toBeVisible();
+  await expect(page.getByText(/Giáo gỗ tần bì/)).toBeVisible();
   await navigation.getByRole('button', { name: /^Bản đồ/ }).click();
   const target = page.getByTestId('map-combat-target');
   await expect(target).toBeVisible();
@@ -86,30 +86,30 @@ test('Stage 07 plays and reloads a timed H0 combat encounter through the browser
 
   await page.getByLabel('Điều kiện tự dừng').selectOption('next_completion');
   const combatInspector = page.getByTestId('combat-target-inspector');
-  await combatInspector.getByLabel('Fighter').selectOption({ label: 'Rook' });
-  const engageButton = combatInspector.getByRole('button', { name: 'Engage target' });
+  await combatInspector.getByLabel('Chiến binh').selectOption({ label: 'Rook' });
+  const engageButton = combatInspector.getByRole('button', { name: 'Tấn công' });
   await expect(engageButton).toBeEnabled();
   await tapVisualCenter(page, engageButton, testInfo.project.name === 'mobile-chromium');
   await navigation.getByRole('button', { name: /^Quân lực/ }).click();
   const combatPanel = page.getByTestId('stage07-combat-panel');
-  await expect(combatPanel).toContainText(/active/);
+  await expect(combatPanel).toContainText(/Đang hoạt động/);
   await page.getByLabel('Tốc độ mô phỏng').selectOption('1x');
-  await expect(combatPanel).toContainText(/active · vòng [1-9]/, { timeout: 20_000 });
+  await expect(combatPanel).toContainText(/Đang hoạt động · vòng [1-9]/, { timeout: 20_000 });
 
   // Pause after the first settled round so reload proves the encounter state is durable mid-fight.
   await page.getByLabel('Tốc độ mô phỏng').selectOption('paused');
-  await expect(combatPanel).toContainText(/active · vòng [1-9]/);
+  await expect(combatPanel).toContainText(/Đang hoạt động · vòng [1-9]/);
   await page.reload();
   await page.getByLabel('Khóa chủ sở hữu').fill(ownerKey!);
   await page.getByRole('button', { name: 'Kết nối API' }).click();
-  await expect(page.getByText('Đã khôi phục đúng lượt lưu từ API.')).toBeVisible();
+  await expect(page.getByText('Đã mở lượt lưu trước đó.')).toBeVisible();
   await navigation.getByRole('button', { name: /^Quân lực/ }).click();
   const restoredCombatPanel = page.getByTestId('stage07-combat-panel');
-  await expect(restoredCombatPanel).toContainText(/active · vòng [1-9]/);
+  await expect(restoredCombatPanel).toContainText(/Đang hoạt động · vòng [1-9]/);
 
   await page.getByLabel('Tốc độ mô phỏng').selectOption('5x');
   await expect(restoredCombatPanel).toContainText(/victory/, { timeout: 15_000 });
-  await expect(restoredCombatPanel).toContainText('dead');
+  await expect(restoredCombatPanel).toContainText('Đã chết');
   await page.getByLabel('Tốc độ mô phỏng').selectOption('paused');
   const hareCorpse = page.getByTestId('force-corpse-row').last();
   await hareCorpse.getByRole('button', { name: 'Kiểm tra thi thể' }).click();
