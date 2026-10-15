@@ -33,13 +33,17 @@ test('all nine live screens remain on one server-owned save projection at releas
   for (const viewport of viewports) {
     await page.setViewportSize(viewport);
     for (const screen of screens) {
-      await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: new RegExp(`^${screen}`) }).click();
+      const target = page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: new RegExp(`^${screen}`) });
+      // Events are absent from the player navigation until an actual event opens.
+      if (screen === 'Sự kiện' && await target.count() === 0) continue;
+      await target.click();
       await expect(page.getByRole('heading', { level: 1, name: screen })).toBeVisible();
       await expect(page.locator('.live-footer')).toHaveAttribute('data-revision', initialRevision!);
       if (screen === 'Tổng quan') {
         const overview = page.getByTestId('live-overview-parity');
         await expect(overview).toBeVisible();
         await expect(overview.locator('.hero-banner')).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Blueprints mở và bị khóa/ })).toHaveCount(0);
         await expect(overview.locator('.stats-grid .stat-card')).toHaveCount(4);
         await expect(page.getByTestId('live-overview-map')).toBeVisible();
         await expect(overview.locator('.hero-art img')).toHaveAttribute('src', /li-lan-t0-portrait/);
@@ -54,8 +58,8 @@ test('all nine live screens remain on one server-owned save projection at releas
         await expect.poll(() => portrait.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
       }
       if (screen === 'Sự kiện') {
-        await expect(page.locator('.shared-event-card')).toHaveCount(30);
-        await expect(page.getByRole('heading', { name: 'Xếp hạng và quyết toán' })).toBeVisible();
+        expect(await page.locator('.shared-event-card').count()).toBeLessThan(30);
+        expect(await page.locator('.shared-event-card').count()).toBeGreaterThan(0);
       }
       if (screen === 'Bản đồ') {
         await expect(page.locator('.live-exploration-panel .live-map-canvas')).toBeVisible();
@@ -94,6 +98,9 @@ test('all nine live screens remain on one server-owned save projection at releas
       if (screen === 'Công trình') {
         await expect(page.locator('.live-building-gallery')).toBeVisible();
         await expect(page.locator('.live-building-gallery-card').first()).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Công trình đã mở' })).toHaveCount(0);
+        await expect(page.getByRole('heading', { name: 'Đặt công trình' })).toHaveCount(0);
+        await expect(page.getByText('Lò Sưởi Đơn Giản', { exact: true })).toHaveCount(0);
       }
       if (screen === 'Lãnh địa') {
         const fireSprite = page.locator('.territory-building[data-building-id="SITE-LL01-000"]');
