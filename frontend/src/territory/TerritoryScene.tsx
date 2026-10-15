@@ -9,6 +9,7 @@ import './territory.css';
 import MapCanvas from '../rendering/MapCanvas';
 import { territorySnapshot, type MapSnapshot } from '../rendering/MapSceneAdapter';
 import { spriteRect, artPolygon } from '../rendering/SpriteRegistration';
+import type { Orientation } from '../rendering/SpriteRegistration';
 import { pointInPolygon, pickStack, cyclePick, pointerCSS } from '../rendering/MapPicking';
 import { rectPolygon } from '../rendering/BuildingGeometry';
 import {projectDepthNodes} from '../rendering/DepthSlices';
@@ -21,6 +22,7 @@ import type { TerritoryCamera, WorldPoint } from './projection';
 
 const PX_PER_ISO_METRE = 3;
 const ORIENTATION_LABEL:Record<LayoutDraft['orientation'],string>={north:'Bắc',east:'Đông',south:'Nam',west:'Tây'};
+const ORIENTATIONS:readonly Orientation[]=['north','east','south','west'];
 const fixtureFootprint = { kind:'rectangle' as const, widthM:2, depthM:2, provenance:'frontend-fixture' as const, assumptionId:'TERRITORY-QA-V1', note:'Kích thước giả định cho fixture QA.' };
 type PanGesture = { pointerId:number; x:number; y:number; origin:TerritoryCamera; moved:boolean; playerMarker:boolean };
 type Props = {
@@ -85,6 +87,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
   const [heatPreview,setHeatPreview]=useState<'actual'|'2500'|'25000'|'off'>('actual');
   const [calibrationOpen,setCalibrationOpen]=useState(false);
   const [calibrationAssetId,setCalibrationAssetId]=useState('fixture-tall-tower');
+  const [qaArtOrientation,setQaArtOrientation]=useState<Orientation>('north');
   const [denseQa,setDenseQa]=useState(false);
   const [showCalibrationArt,setShowCalibrationArt]=useState(false);
   const artQaEnabled=!liveApi&&new URLSearchParams(location.search).get('mapQA')==='1';
@@ -333,6 +336,10 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
   };
   const assetIds=manifest?.assets.map(asset=>asset.assetId)??[];
   const selectedCalibrationAsset=findAsset(manifest,calibrationAssetId);
+  const calibrationNativeOrientation=ORIENTATIONS.find(orientation=>orientation===selectedCalibrationAsset?.orientation)??'north';
+  const qaArtOrientations=selectedCalibrationAsset?ORIENTATIONS.filter(orientation=>orientation===selectedCalibrationAsset.orientation||Boolean(selectedCalibrationAsset.orientationViews?.[orientation])):[];
+  const activeQaArtOrientation:Orientation=qaArtOrientations.includes(qaArtOrientation)?qaArtOrientation:calibrationNativeOrientation;
+  useEffect(()=>{setQaArtOrientation(calibrationNativeOrientation);},[calibrationAssetId,calibrationNativeOrientation]);
   const densityLabel=activeCamera.zoom<.035?'Toàn cảnh · bố cục tổng thể':activeCamera.zoom<.16?'Khu vực · biểu tượng gọn':'Cận cảnh · công trình';
   const fireNorth=worldToScreen({x:origin.x,y:origin.y+Math.max(actualRadius,10)},activeCamera,size,PX_PER_ISO_METRE);
   const buildingLayer=[...visibleBuildings.map(building=>({id:building.id,name:building.name,assetId:building.assetId,level:building.level,visualState:building.visualState,point:{x:origin.x+building.x,y:origin.y+building.y},footprint:building.footprint,orientation:building.orientation,ref:building.ref,draft:false,blocked:false})),
@@ -352,11 +359,11 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
     const asset=artQaEnabled&&showCalibrationArt?selectedCalibrationAsset:null;
     return {...snapshot,buildingLODs:buildingLODs.current,buildings:asset?[...snapshot.buildings,{
       id:'qa-art-preview',name:'Hình ảnh kiểm tra',asset,assetId:asset.assetId,
-      point:{x:origin.x+4,y:origin.y-2},orientation:(['north','east','south','west'] as const).find(o=>o===asset.orientation)??'north',
+      point:{x:origin.x+4,y:origin.y-2},orientation:activeQaArtOrientation,
       footprint:asset.compatiblePhysicalFootprint??fixtureFootprint,
       selected:false,active:false,draft:false,fixture:true,
     }]:snapshot.buildings};
-  },[settlement,manifest,activeCamera,effectiveMode,selectedRef?.id,drafts,denseQa,activeDefinition,ghostWorld,placingOrientation,visualIdentity,terrainRegions,liveApi,artQaEnabled,showCalibrationArt,selectedCalibrationAsset]);
+  },[settlement,manifest,activeCamera,effectiveMode,selectedRef?.id,drafts,denseQa,activeDefinition,ghostWorld,placingOrientation,visualIdentity,terrainRegions,liveApi,artQaEnabled,showCalibrationArt,selectedCalibrationAsset,activeQaArtOrientation]);
   const artQaPreview=renderSnapshot.buildings.find(b=>b.id==='qa-art-preview'&&b.fixture);
   const artQaOutline=artQaPreview?[[-1,-1],[1,-1],[1,1],[-1,1]].map(([x,y])=>{
     const turned=artQaPreview.orientation==='east'||artQaPreview.orientation==='west';
@@ -424,7 +431,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
           </g>;
         })}
         {denseQa&&visibleQa.map(item=><BuildingSprite geometryOnly qaFixture key={item.id} id={item.id} name="Fixture QA" asset={findAsset(manifest,item.assetId)} assetId={item.assetId} point={{x:origin.x+item.x,y:origin.y+item.y}} footprint={item.footprint} orientation={item.orientation} camera={activeCamera} viewport={size} mode={effectiveMode} selected={false} faded={false} draft/>) }
-        {artQaOutline&&<polygon data-art-qa-footprint points={artQaOutline} fill="none" stroke="#e4ba7f" strokeWidth="1.2" strokeDasharray="4 4" pointerEvents="none" aria-hidden="true"/>}
+        {artQaOutline&&<polygon data-art-qa-footprint data-art-qa-orientation={artQaPreview?.orientation} points={artQaOutline} fill="none" stroke="#e4ba7f" strokeWidth="1.2" strokeDasharray="4 4" pointerEvents="none" aria-hidden="true"/>}
         {activeDefinition&&<BuildingSprite geometryOnly id="placement-ghost" name={activeDefinition.name} asset={findAsset(manifest,activeDefinition.assetId)} assetId={activeDefinition.assetId} point={snapPlanningPoint(currentPlacementPoint)} footprint={activeDefinition.footprint} orientation={placingOrientation} camera={activeCamera} viewport={size} mode="planning" selected={false} faded={false} draft blocked={Boolean(validation?.blockers.length)}/>}
         {showPlayerMarker&&<g className="territory-player-marker" transform={`translate(${playerPoint.x} ${playerPoint.y})`} role="button" tabIndex={0} aria-label={`${playerName} — mở hồ sơ người chơi`}
           onClick={onOpenPlayerProfile}
@@ -480,7 +487,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
           setShowCalibrationArt(previous=>!previous);setPlacingId(null);onReadabilityChange('normal');
           if(followPlayer)onFollowPlayerChange(false);
           onCameraChange({x:origin.x+4,y:origin.y-2,zoom:3});
-        }}>{showCalibrationArt?'Ẩn hình kiểm tra trên bản đồ':'Xem hình kiểm tra trên bản đồ'}</button>}<p>Điểm neo: {selectedCalibrationAsset?`${Math.round(selectedCalibrationAsset.groundAnchor.x*100)}%, ${Math.round(selectedCalibrationAsset.groundAnchor.y*100)}%`:'mặc định'} · khung 240 × 200</p><p>Vùng chọn, che khuất và kích thước hiển thị được căn chỉnh riêng trong thư viện hình ảnh.</p><label className="territory-qa-toggle"><input type="checkbox" checked={denseQa} onChange={event=>setDenseQa(event.target.checked)}/> Hiện 520 công trình minh họa</label><button className="text-button" onClick={frameDenseQa}>Xem nhóm công trình minh họa</button><span>Đang hiển thị {visibleQa.length} / {denseQa?520:0} công trình minh họa.</span><span>{manifestError?'Không tải được thư viện hình ảnh; dùng hình thay thế.':`Đã tải ${manifest?.assets.length??0} hình ảnh.`}</span></div>
+        }}>{showCalibrationArt?'Ẩn hình kiểm tra trên bản đồ':'Xem hình kiểm tra trên bản đồ'}</button>}{artQaEnabled&&showCalibrationArt&&qaArtOrientations.length>1&&<label>Hướng hình kiểm tra <select aria-label="Hướng hình kiểm tra" value={activeQaArtOrientation} onChange={event=>setQaArtOrientation(event.target.value as Orientation)}>{qaArtOrientations.map(orientation=><option key={orientation} value={orientation}>{ORIENTATION_LABEL[orientation]}</option>)}</select></label>}<p>Điểm neo: {selectedCalibrationAsset?`${Math.round(selectedCalibrationAsset.groundAnchor.x*100)}%, ${Math.round(selectedCalibrationAsset.groundAnchor.y*100)}%`:'mặc định'} · khung 240 × 200</p><p>Vùng chọn, che khuất và kích thước hiển thị được căn chỉnh riêng trong thư viện hình ảnh.</p><label className="territory-qa-toggle"><input type="checkbox" checked={denseQa} onChange={event=>setDenseQa(event.target.checked)}/> Hiện 520 công trình minh họa</label><button className="text-button" onClick={frameDenseQa}>Xem nhóm công trình minh họa</button><span>Đang hiển thị {visibleQa.length} / {denseQa?520:0} công trình minh họa.</span><span>{manifestError?'Không tải được thư viện hình ảnh; dùng hình thay thế.':`Đã tải ${manifest?.assets.length??0} hình ảnh.`}</span></div>
       </div>
     </details>}
     <div className="territory-accessible-status" role="status" aria-live="polite">{message||(liveApi?'Vị trí, trạng thái và artwork lấy từ save đang chọn. Điều khiển camera không thay đổi mô phỏng.':'Bản xem thử chỉ hiển thị vị trí và bố trí; không thực hiện lệnh trong thế giới.')}</div>

@@ -240,12 +240,17 @@ test('repaired and damaged house architecture load for normal, planning and focu
  await territory(page);const before=await page.locator('.territory-instance-main').allTextContents();
  await page.locator('.territory-calibration > summary').click();await page.getByLabel('Hình minh họa',{exact:true}).selectOption('lord-house-repaired');
  await page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
+ await expect(page.getByLabel('Hướng hình kiểm tra',{exact:true})).toHaveCount(0);
  for(const role of ['base','upper'])await expect.poll(()=>Array.from(requested).some(path=>new RegExp(`/lord-house-repaired/${role}-north-(close|district)\\.png$`).test(path)),{timeout:30000}).toBe(true);
  const alphas=()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{qaArtLayers:{base:number|null;upper:number|null;body:number|null}|null}[]}).__mapMetrics.at(-1)?.qaArtLayers);
  await expect.poll(alphas,{timeout:30000}).toEqual({base:1,upper:1,body:null});
  await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();await expect.poll(alphas,{timeout:30000}).toEqual({base:1,upper:null,body:null});
  await page.getByRole('button',{name:'Làm mờ phần che',exact:true}).click();await expect.poll(alphas,{timeout:30000}).toEqual({base:1,upper:.22,body:null});
  await page.getByLabel('Hình minh họa',{exact:true}).selectOption('lord-house-damaged');
+ const orientation=page.getByLabel('Hướng hình kiểm tra',{exact:true}),outline=page.locator('[data-art-qa-footprint]');
+ await expect(orientation).toHaveValue('north');
+ for(const pose of ['north','east','south','west']){await orientation.selectOption(pose);await expect(outline).toHaveAttribute('data-art-qa-orientation',pose);}
+ await orientation.selectOption('north');
  await expect.poll(()=>Array.from(requested).some(path=>/\/lord-house-damaged\/(atlas-close|base-north-close|upper-north-close)\.png$/.test(path)),{timeout:30000}).toBe(true);
  await page.getByRole('button',{name:'Bình thường',exact:true}).click();await expect.poll(alphas,{timeout:30000}).toEqual({base:1,upper:1,body:null});
  await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();await expect.poll(alphas,{timeout:30000}).toEqual({base:1,upper:null,body:null});
