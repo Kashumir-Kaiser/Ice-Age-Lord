@@ -109,15 +109,15 @@ test('all nine live screens remain on one server-owned save projection at releas
         await expect(page.getByText('Lò Sưởi Đơn Giản', { exact: true })).toHaveCount(0);
       }
       if (screen === 'Lãnh địa') {
-        const fireSprite = page.locator('.territory-building[data-building-id="SITE-LL01-000"]');
+        // Live buildings render through MapCanvas; SVG sprites are geometry-only.
         await expect(page.locator('.territory-scene-svg')).toBeVisible();
-        await expect(fireSprite).toBeVisible();
+        await expect(page.locator('.territory-instance-list')).toContainText('Lửa Sinh Tồn');
         // Live territory uses authoritative save data: sandbox planning controls are demo-only.
         await expect(page.getByRole('button', { name: 'Mặt bằng' })).toHaveCount(0);
         await expect(page.getByRole('button', { name: 'Bình thường' })).toBeVisible();
         await expect(page.getByRole('button', { name: 'Làm mờ phần che' })).toBeVisible();
         await expect(page.locator('.territory-build-tray')).toHaveCount(0);
-        await expect(fireSprite).toHaveAttribute('data-asset-id','survival-fire-l01');
+        await expect(page.locator('.territory-stage .map-render-canvas')).toBeVisible();
         await expect(page.locator('.territory-stage .map-render-canvas')).toBeVisible();
         await expect(page.locator('.territory-stage [data-map-renderer]')).toHaveAttribute('data-map-renderer',/webgl|canvas2d/);
       }
@@ -242,6 +242,6 @@ test('switching saves clears selection and ignores a delayed response from the p
     await expect(page.locator('[data-entity-ref="resource:RES-LL01-06"]')).not.toHaveClass(/is-selected/);
   } finally {
     releaseDelayedView?.();
-    await page.unroute(`**/api/v1/saves/${saveAId}/view`);
+    if (!page.isClosed()) await page.unroute(`**/api/v1/saves/${saveAId}/view`);
   }
 });
