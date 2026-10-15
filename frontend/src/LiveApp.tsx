@@ -18,11 +18,12 @@ import MapCanvas from './rendering/MapCanvas';
 import { liveExplorationSnapshot, liveTerrainRegions } from './rendering/MapSceneAdapter';
 import { territorySceneFromApi } from './live/territoryAdapter';
 import LiveOverview from './live/LiveOverview';
+import LiveCharacterLoadout from './live/LiveCharacterLoadout';
 import type { EntityRef as DemoEntityRef, LayoutDraft } from './game/GameClient';
 import type { TerritoryCamera } from './territory/projection';
 import type { ReadabilityMode } from './territory/BuildingSprite';
 import { EventBoard } from './shared/EventBoard';
-import { CharacterArtwork, CharacterSummary, PageFrame, ScreenHeading } from './shared/PageFrame';
+import { CharacterSummary, PageFrame, ScreenHeading } from './shared/PageFrame';
 import { InspectorFrame, InspectorHeading } from './shared/InspectorFrame';
 import { OpeningRankingBoard } from './shared/OpeningRankingBoard';
 
@@ -1223,26 +1224,24 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
       onBuyMark={(eventId, destinationContainerId) => { void sendCommand(commandFor(view, 'buy_event_offer', { eventId, destinationContainerId, quantity: 1 })); }}
     />;
     if (screen === 'character') {
-      return <div className="live-section-stack">
+      return <div className="live-section-stack live-character-page">
         <CharacterSummary mode="live" name={view.player.name} title={view.player.talent.name} grade={view.player.talent.grade}
           level={view.player.level} xp={view.player.xp} mana={view.player.mana} />
-        <section className="live-panel live-character-panel">
-          <CharacterArtwork className="live-character-art" name={view.player.name} />
-          <div className="live-character-profile">
-            <div className="live-panel-heading"><div><span className="live-eyebrow">SERVER CHARACTER INSPECTOR</span><h2>{view.player.name}</h2></div><UserRound size={21} /></div>
-            <p>{view.player.talent.name} · {view.player.talent.grade}</p>
-            <div className="live-two-column">
-              <article className="live-container-card"><strong>Thuộc tính</strong>
-                <ul className="live-plain-list">{Object.entries(view.player.attributes).map(([key, value]) => <li key={key}><strong>{key}</strong><span>{value}</span></li>)}</ul>
-              </article>
-              <article className="live-container-card"><strong>Nghề nghiệp và kỹ năng</strong>
-                <p>{view.player.careerState === 'active' ? view.careerCard.career?.name ?? 'Đã kích hoạt' : 'Chưa kích hoạt'}</p>
-                {view.player.skills?.length ? <ul className="live-plain-list">{view.player.skills.map(skill => <li key={skill.id}><strong>{skill.templateId}</strong><span>Thông thạo {skill.mastery}{skill.active ? ' · đang dùng' : ''}</span></li>)}</ul> : <p className="live-muted">Chưa có kỹ năng được ghi trong hồ sơ nhân vật.</p>}
-              </article>
-            </div>
-            <p>Vị trí, cấp độ, XP, Mana, thuộc tính và kỹ năng lấy từ cùng PlayerView. Trang không tự tạo trang bị hay thành tựu.</p>
-          </div>
-        </section>
+        <LiveCharacterLoadout view={view} />
+        <div className="character-details-grid">
+          <section className="panel character-details-card">
+            <div className="character-details-heading"><Shield size={19}/><div><span className="eyebrow">THUỘC TÍNH HIỆN TẠI</span><h2>Thuộc tính</h2></div></div>
+            <div className="live-attribute-grid">{Object.entries(view.player.attributes).map(([key, value]) =>
+              <article key={key}><span>{key}</span><strong>{value}</strong></article>)}</div>
+          </section>
+          <section className="panel character-details-card">
+            <div className="character-details-heading"><Sparkles size={19}/><div><span className="eyebrow">NGHỀ NGHIỆP VÀ KỸ NĂNG</span><h2>Kỹ năng</h2></div></div>
+            <p>{view.player.careerState === 'active' ? view.careerCard.career?.name ?? 'Đã kích hoạt' : 'Chưa kích hoạt nghề nghiệp'}</p>
+            {view.player.skills?.length ? <ul className="live-plain-list">{view.player.skills.map(skill =>
+              <li key={skill.id}><strong>{skill.templateId}</strong><span>Thông thạo {skill.mastery}{skill.active ? ' · đang dùng' : ''}</span></li>)}</ul>
+              : <p className="live-muted">Chưa có kỹ năng được ghi nhận.</p>}
+          </section>
+        </div>
       </div>;
     }
     if (screen === 'events') return <div className="live-section-stack">
