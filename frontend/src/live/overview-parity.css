@@ -312,3 +312,35 @@
 .live-exploration-panel .live-map-canvas:active { cursor: grabbing; }
 .live-exploration-panel .live-map-canvas:focus-visible { outline: 2px solid #e5c28a; outline-offset: 3px; }
 .live-exploration-panel .live-map-canvas .live-map-marker { cursor: pointer; }
+
+/* Brand, account portrait and unobtrusive runtime drawer follow the demo chrome. */
+.live-brand-emblem { display: block; flex: 0 0 auto; filter: drop-shadow(0 0 11px rgba(159,216,219,.14)); }
+.live-brand em { font-style: normal; color: #d7b787; }
+.live-profile-mini { flex: 0 0 auto; }
+.live-profile-mini .profile-portrait { display: block; width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
+.live-profile-mini .profile-name { max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
+.live-runtime-details {
+  margin: 0 0 14px; border: 1px solid rgba(159,189,194,.12);
+  border-radius: 9px; background: rgba(12,34,46,.65);
+}
+.live-runtime-details > summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 9px 15px; cursor: pointer; color: #c8d5d1;
+  font-size: 11px;
+}
+.live-runtime-details > summary::marker { color: #d2bb90; }
+.live-runtime-details > summary span:last-child { margin-left: auto; color: #819eaa; font-size: 10px; text-align: right; }
+.live-runtime-details > .live-stage-strip { margin: 7px 12px 12px; }
+.live-footer { align-items: center; }
+.live-footer > span:first-child { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
+.live-footer img { opacity: .72; }
+@media (max-width: 1150px) {
+  .live-profile-mini .profile-name { display: none; }
+  .live-header-actions { gap: 7px; }
+}
+@media (max-width: 620px) {
+  .live-profile-mini { padding-left: 9px; }
+  .live-profile-mini .profile-portrait { width: 30px; height: 30px; }
+  .live-runtime-details > summary { flex-direction: column; align-items: flex-start; gap: 3px; }
+  .live-runtime-details > summary span:last-child { margin-left: 0; text-align: left; }
+}
