@@ -6,8 +6,8 @@ test('Chromium runs the server-owned clock, completes a Tomb job once, and recov
   expect(ownerKey, 'CI must provide the ephemeral Stage 04 owner key').toBeTruthy();
 
   await page.goto('/?mode=live');
-  await expect(page.getByRole('heading', { name: 'Kết nối game API' })).toBeVisible();
-  await expect(page.getByText('API sẵn sàng · SQLite · phiên cục bộ')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Kết nối trò chơi' })).toBeVisible();
+  await expect(page.getByText('Trò chơi đã sẵn sàng')).toBeVisible();
   await page.getByLabel('Khóa chủ sở hữu').fill(ownerKey!);
   await page.getByRole('button', { name: 'Kết nối API' }).click();
   await expect(page.getByRole('heading', { name: 'Chọn hoặc tạo lượt lưu' })).toBeVisible();
@@ -16,7 +16,7 @@ test('Chromium runs the server-owned clock, completes a Tomb job once, and recov
   await page.getByLabel('Tên lượt lưu mới').fill(slotName);
   const createResponse = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/saves'
     && response.request().method() === 'POST');
-  await page.getByRole('button', { name: 'Tạo lượt chơi sạch' }).click();
+  await page.getByRole('button', { name: 'Bắt đầu lượt chơi' }).click();
   const posted = await createResponse;
   if (!posted.ok()) {
     const error = await posted.json().catch(() => null);
