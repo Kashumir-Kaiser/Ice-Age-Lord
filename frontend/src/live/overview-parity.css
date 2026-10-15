@@ -307,3 +307,8 @@
   .live-building-gallery-card .building-info h3 { font-size: 16px; }
 }
 @media (max-width: 390px) { .live-building-gallery { grid-template-columns: 1fr; } }
+
+.live-exploration-panel .live-map-canvas { cursor: grab; touch-action: none; user-select: none; }
+.live-exploration-panel .live-map-canvas:active { cursor: grabbing; }
+.live-exploration-panel .live-map-canvas:focus-visible { outline: 2px solid #e5c28a; outline-offset: 3px; }
+.live-exploration-panel .live-map-canvas .live-map-marker { cursor: pointer; }
