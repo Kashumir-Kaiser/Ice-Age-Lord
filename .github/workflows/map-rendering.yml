@@ -50,11 +50,12 @@ jobs:
       - run: npm run assets:map
       - run: npm run build
       - run: npm test
-      - run: npx playwright install --with-deps chromium
+      - id: install_playwright
+        run: npx playwright install --with-deps chromium
       - name: Map interaction journeys
         run: npm run test:e2e -- e2e/map-rendering.spec.ts e2e/territory.spec.ts e2e/map.spec.ts --grep-invert 'visual baselines'
       - name: Capture maps for review
-        if: always() && !cancelled()
+        if: always() && !cancelled() && steps.install_playwright.outcome == 'success'
         run: node scripts/map-qa.mjs
       - name: Verify benchmark harness
         env:
