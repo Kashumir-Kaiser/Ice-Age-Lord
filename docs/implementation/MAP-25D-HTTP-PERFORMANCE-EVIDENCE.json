@@ -1885,6 +1885,38 @@
       }
     ]
   },
+  "cpuDiagnosticProfile": {
+    "diagnosticBuildGitHead": "5fc3141608b0a0e0474c1cd6ffcf8460001222fc",
+    "distEntry": "frontend/dist/assets/MapRenderer-B4CvuaaH.js",
+    "distEntrySha256": "944810319e14ea2ac35faf21d56eb570781006fd675a343e473b098b46f0d6ed",
+    "fixture": "dense-520",
+    "viewport": "1366x768",
+    "dpr": 1,
+    "quality": "low",
+    "browser": "Chromium /usr/bin/chromium",
+    "backend": "WebGL, SwiftShader software renderer",
+    "warmupMs": 10000,
+    "profileDurationMs": 16050,
+    "samples": 8942,
+    "renderMs": {"count": 59, "p50": 35.1, "p95": 78, "p99": 182, "max": 182},
+    "frameIntervalMs": {"p50": 261, "p95": 319.5, "p99": 11516.6, "max": 11516.6},
+    "pointerFeedbackMs": {"count": 62, "p50": 253.8, "p95": 313.7, "p99": 398.4, "max": 398.4},
+    "scene": {"visible": 599, "total": 603, "drawCalls": 2, "terrainBytes": 5242880, "decodedBytes": 23257064, "queued": 0, "pendingTextures": 0, "errors": []},
+    "topProjectAndRendererCpuMs": [
+      {"function": "MapRenderer.render", "self": 246.1, "total": 2011.3},
+      {"function": "MapRenderer.renderWebGL", "self": 197.8, "total": 685.0},
+      {"function": "TerrainChunkCache.process", "self": 5.7, "total": 127.6},
+      {"function": "Pixi.Container.addChildAt", "self": 171.2, "total": 174.8},
+      {"function": "AssetTextureCache.acquire", "self": 141.5, "total": 157.7},
+      {"function": "Pixi.Container.setChildIndex", "self": 0, "total": 5.0}
+    ],
+    "limitations": [
+      "The diagnostic build included uncommitted QA-control source at profile time; the Git head identifies only the checkout baseline. The dist entry hash identifies the exact profiled renderer bundle captured before the crate rebuild.",
+      "The profile’s unattributed (program) self time is not GPU timing evidence; no GPU timer query was collected.",
+      "Minified renderer function Je has no source map and is not attributed to a source function.",
+      "This single short dense fixture profile is diagnostic evidence, not a benchmark acceptance run or regression comparison."
+    ]
+  },
   "limitations": [
     "New cold evidence covers the fresh demo journey only; ordinary saved-populated LIVE cold transfer remains unmeasured.",
     "Timing and memory runs predate the compact overview change; no new frame-budget or memory acceptance is claimed.",

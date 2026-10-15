@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import sharp from 'sharp';
 import {spriteRect,artPolygon} from '../src/rendering/SpriteRegistration.ts';
+import {pointInPolygon} from '../src/rendering/MapPicking.ts';
 import {worldToScreen} from '../src/territory/projection.ts';
 import {validateMapExport} from '../scripts/validate-map-assets.mjs';
 const root=new URL('../../',import.meta.url);
@@ -77,6 +78,63 @@ test('Tomb ground registration centers its 6 by 5 metre footprint and derives a 
   assert.ok(e.sourceDependencies.some(d=>d.source==='assets/map-ground-registration.json'));
   assert.ok(e.sourceDependencies.some(d=>d.source==='frontend/scripts/map-ground-shadow.mjs'));
  }
+});
+
+test('supply crate registration centers the preserved source art and painted front contact across zoom',async()=>{
+ const a=manifest().assets.find(a=>a.assetId==='supply-crate');
+ assert.deepEqual(a.groundAnchor,{x:.5,y:.72});
+ assert.deepEqual(a.compatiblePhysicalFootprint,{assumptionId:'TERRITORY-FOOTPRINTS-V1',widthM:3,depthM:3});
+ const bodyPath=new URL('frontend/public'+a.layers.body,root),uiShadowPath=new URL('frontend/public'+a.layers.shadow,root);
+ const body=readFileSync(bodyPath),uiShadow=readFileSync(uiShadowPath);
+ assert.equal(sha(body),'c2001f0cf6efa768c19e5cfb39cca4d4a8d5ac53f68a01badba02ed2f3a427c1');
+ assert.equal(sha(uiShadow),'178d3233df73ca286ce0f5945e046a1df09e2e37c858fa992cb7cb460a7134db');
+ assert.equal(a.layers.shadow,'/assets/buildings/supply-crate/shadow.svg');
+ const center=a.artFootprint.reduce((p,v)=>({x:p.x+v[0]/a.artFootprint.length,y:p.y+v[1]/a.artFootprint.length}),{x:0,y:0});
+ assert.deepEqual(center,{x:.5,y:.72});
+ const {data,info}=await sharp(body).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+ const contactY=[];
+ for(const fraction of [.42,.46,.5,.54,.58]){
+  const x=Math.round(fraction*(info.width-1));let lowest=-1;
+  for(let y=info.height-1;y>=0;y--)if(data[(y*info.width+x)*4+3]>=128){lowest=y;break;}
+  if(lowest>=0)contactY.push(lowest);
+ }
+ contactY.sort((x,y)=>x-y);const paintedY=contactY[Math.floor(contactY.length/2)];
+ assert.equal(contactY.length,5,'painted source has five front-contact probes');
+ assert.ok(paintedY>=0,'painted source front contact is measurable');
+ for(const zoom of [.16,.7,3]){
+  const origin={x:73,y:-29},camera={...origin,zoom},viewport={width:1366,height:768};
+  const ground=worldToScreen(origin,camera,viewport),rect=spriteRect(a,ground,3*zoom);
+  const centered=artPolygon([[center.x,center.y]],rect)[0];
+  assert.ok(Math.hypot(centered.x-ground.x,centered.y-ground.y)<1e-8,'crate art-footprint center stays on the world anchor');
+  const front=artPolygon([[.5,paintedY/info.height]],rect)[0];
+  const footprint=[
+   {x:origin.x-1.5,y:origin.y-1.5},{x:origin.x+1.5,y:origin.y-1.5},
+   {x:origin.x+1.5,y:origin.y+1.5},{x:origin.x-1.5,y:origin.y+1.5}
+  ].map(point=>worldToScreen(point,camera,viewport));
+  // The snow apron is painterly and intentionally sits 13.5% inside the projected front edge;
+  // preserve the 3 by 3 m footprint contract by requiring contact to remain inside its ground polygon.
+  assert.ok(pointInPolygon(front,footprint),`painted front contact y=${paintedY} remains inside the projected 3 by 3 m footprint at zoom ${zoom}`);
+ }
+});
+
+test('supply crate map shadow is derived, centered, exported at both LODs, and keeps source/UI layers',()=>{
+ const a=manifest().assets.find(a=>a.assetId==='supply-crate');
+ assert.equal(a.layers.shadow,'/assets/buildings/supply-crate/shadow.svg');
+ assert.equal(a.mapLayers.shadow,'/assets/map/buildings/supply-crate/shadow-ground.svg');
+ const svg=readFileSync(new URL('frontend/public'+a.mapLayers.shadow,root),'utf8');
+ assert.ok(!svg.includes('<ellipse'));
+ const polygons=Array.from(svg.matchAll(/<polygon points="([^"]+)"/g));assert.equal(polygons.length,2);
+ const contact=polygons[1][1].split(' ').map(p=>p.split(',').map(Number));
+ const shadowCenter=contact.reduce((v,p)=>[v[0]+p[0]/4,v[1]+p[1]/4],[0,0]);
+ assert.ok(Math.abs(shadowCenter[0]-240)<1e-8);assert.ok(Math.abs(shadowCenter[1]-288)<1e-8);
+ for(const lod of ['close','district']){
+  const entry=a.mapExports.find(e=>e.role==='shadow'&&e.lod===lod);
+  assert.equal(entry.source,a.mapLayers.shadow);validateMapExport(entry,a);
+  for(const dependency of ['assets/map-ground-registration.json','frontend/scripts/map-ground-shadow.mjs'])assert.ok(entry.sourceDependencies.some(d=>d.source===dependency));
+ }
+ assert.deepEqual(a.compatiblePhysicalFootprint,{assumptionId:'TERRITORY-FOOTPRINTS-V1',widthM:3,depthM:3});
+ assert.equal(sha(readFileSync(new URL('frontend/public'+a.layers.body,root))),'c2001f0cf6efa768c19e5cfb39cca4d4a8d5ac53f68a01badba02ed2f3a427c1');
+ assert.equal(sha(readFileSync(new URL('frontend/public'+a.layers.shadow,root))),'178d3233df73ca286ce0f5945e046a1df09e2e37c858fa992cb7cb460a7134db');
 });
 
 test('damaged house registration centers all four authored poses and keeps their painted front contacts',async()=>{
