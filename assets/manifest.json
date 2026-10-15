@@ -15458,7 +15458,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "fa073a8a5bbb35417a16a88456b608e88cf51a5a2630a44feb103bba16bf988c"
+              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15512,7 +15512,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "fa073a8a5bbb35417a16a88456b608e88cf51a5a2630a44feb103bba16bf988c"
+              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15566,7 +15566,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "fa073a8a5bbb35417a16a88456b608e88cf51a5a2630a44feb103bba16bf988c"
+              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15618,7 +15618,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "fa073a8a5bbb35417a16a88456b608e88cf51a5a2630a44feb103bba16bf988c"
+              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15670,7 +15670,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "fa073a8a5bbb35417a16a88456b608e88cf51a5a2630a44feb103bba16bf988c"
+              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -15722,7 +15722,7 @@
             },
             {
               "source": "assets/map-ground-registration.json",
-              "sha256": "fa073a8a5bbb35417a16a88456b608e88cf51a5a2630a44feb103bba16bf988c"
+              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
             },
             {
               "source": "frontend/scripts/map-ground-shadow.mjs",
@@ -48917,7 +48917,7 @@
       },
       "groundAnchor": {
         "x": 0.5,
-        "y": 0.82
+        "y": 0.72
       },
       "artFootprint": [
         [
@@ -49029,6 +49029,14 @@
             {
               "source": "frontend/public/assets/buildings/tomb-entry/body.svg",
               "sha256": "4f84f3ac007c803be6c86cd4a08fa8696ec2eed3489b13e48faa367664ab719a"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
           "sha256": "77f035b2d619594598ebf4079d7b12e33a5a6e1025f762051b08d2b4a238820d",
@@ -49062,7 +49070,7 @@
             "height": 272,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "f3dc9146d10b72711ebbf46009d40f85d3ac71d81a9fdc3550daef7185920108"
+            "sha256": "d7105b47c2e162c621e705b1febdaa519612d10666c35bdc085d4ae73f27326e"
           }
         },
         {
@@ -49073,6 +49081,14 @@
             {
               "source": "frontend/public/assets/buildings/tomb-entry/body.svg",
               "sha256": "4f84f3ac007c803be6c86cd4a08fa8696ec2eed3489b13e48faa367664ab719a"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
           "sha256": "d70941e517cf11d73c2f5b8eebf4401ce133b8b820be13e69ebd15741435a979",
@@ -49106,23 +49122,31 @@
             "height": 138,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "93e8b1a17bb6b64651445e23fa2083ff9ebb063cb9b88a37fc8cccc052b02fb1"
+            "sha256": "472cf10586e4bae71d582ccb0db8b7017c525ba06d41cfd4119f7b80828af2d2"
           }
         },
         {
           "path": "/assets/map/buildings/tomb-entry/shadow-close.png",
-          "source": "/assets/buildings/tomb-entry/shadow.svg",
-          "sourceSha256": "dac4789801d2e8c951484a28174cfae94266615428f350f26b0961ded5d8bf26",
+          "source": "/assets/map/buildings/tomb-entry/shadow-ground.svg",
+          "sourceSha256": "a89c49b963e7d2c63cb0e84528fc6eb4bd3de341ff0cbd5ba1bae01d4d3ff2ee",
           "sourceDependencies": [
             {
-              "source": "frontend/public/assets/buildings/tomb-entry/shadow.svg",
-              "sha256": "dac4789801d2e8c951484a28174cfae94266615428f350f26b0961ded5d8bf26"
+              "source": "frontend/public/assets/map/buildings/tomb-entry/shadow-ground.svg",
+              "sha256": "a89c49b963e7d2c63cb0e84528fc6eb4bd3de341ff0cbd5ba1bae01d4d3ff2ee"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
-          "sha256": "71de6cc6ee0fe343be6a41ec1805cb2302308e302d70356d2dc9d1b27ba29962",
+          "sha256": "08e2fdf177290a3a10c7846ed8dc6176cea7f5698eaa920c3fa23dc98444e763",
           "exportVersion": 3,
-          "width": 304,
-          "height": 58,
+          "width": 214,
+          "height": 113,
           "role": "shadow",
           "lod": "close",
           "orientation": "north",
@@ -49137,36 +49161,44 @@
             "height": 320
           },
           "trim": {
-            "x": 50,
-            "y": 313.75,
-            "width": 380,
-            "height": 72.5
+            "x": 107.5,
+            "y": 218.75,
+            "width": 267.5,
+            "height": 141.25
           },
           "atlas": {
             "path": "/assets/map/buildings/tomb-entry/atlas-close.png",
             "x": 396,
             "y": 4,
-            "width": 304,
-            "height": 58,
+            "width": 214,
+            "height": 113,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "f3dc9146d10b72711ebbf46009d40f85d3ac71d81a9fdc3550daef7185920108"
+            "sha256": "d7105b47c2e162c621e705b1febdaa519612d10666c35bdc085d4ae73f27326e"
           }
         },
         {
           "path": "/assets/map/buildings/tomb-entry/shadow-district.png",
-          "source": "/assets/buildings/tomb-entry/shadow.svg",
-          "sourceSha256": "dac4789801d2e8c951484a28174cfae94266615428f350f26b0961ded5d8bf26",
+          "source": "/assets/map/buildings/tomb-entry/shadow-ground.svg",
+          "sourceSha256": "a89c49b963e7d2c63cb0e84528fc6eb4bd3de341ff0cbd5ba1bae01d4d3ff2ee",
           "sourceDependencies": [
             {
-              "source": "frontend/public/assets/buildings/tomb-entry/shadow.svg",
-              "sha256": "dac4789801d2e8c951484a28174cfae94266615428f350f26b0961ded5d8bf26"
+              "source": "frontend/public/assets/map/buildings/tomb-entry/shadow-ground.svg",
+              "sha256": "a89c49b963e7d2c63cb0e84528fc6eb4bd3de341ff0cbd5ba1bae01d4d3ff2ee"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
-          "sha256": "d007a4ef3cc03ad3340e272e2b01509bfca68c09671427c2afb3446984e6418f",
+          "sha256": "36d7150be2686f8fef5ad9830e7c900dcded6f114b5d373b77053e7d45cc798d",
           "exportVersion": 3,
-          "width": 154,
-          "height": 32,
+          "width": 109,
+          "height": 59,
           "role": "shadow",
           "lod": "district",
           "orientation": "north",
@@ -49181,20 +49213,20 @@
             "height": 160
           },
           "trim": {
-            "x": 47.5,
-            "y": 310,
-            "width": 385,
-            "height": 80
+            "x": 105,
+            "y": 215,
+            "width": 272.5,
+            "height": 147.5
           },
           "atlas": {
             "path": "/assets/map/buildings/tomb-entry/atlas-district.png",
             "x": 204,
             "y": 4,
-            "width": 154,
-            "height": 32,
+            "width": 109,
+            "height": 59,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "93e8b1a17bb6b64651445e23fa2083ff9ebb063cb9b88a37fc8cccc052b02fb1"
+            "sha256": "472cf10586e4bae71d582ccb0db8b7017c525ba06d41cfd4119f7b80828af2d2"
           }
         },
         {
@@ -49205,6 +49237,14 @@
             {
               "source": "frontend/public/assets/map/buildings/tomb-entry/foundation.svg",
               "sha256": "1cdd3723958ff84ad9b3960b861a454f75c77a45fb2df8f116c414b0666a1a12"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
           "sha256": "4662839fae09a04e94c99aad5f315dfddc1d2987e061aa2da69f093205334148",
@@ -49238,7 +49278,7 @@
             "height": 123,
             "atlasWidth": 1024,
             "atlasHeight": 1024,
-            "sha256": "f3dc9146d10b72711ebbf46009d40f85d3ac71d81a9fdc3550daef7185920108"
+            "sha256": "d7105b47c2e162c621e705b1febdaa519612d10666c35bdc085d4ae73f27326e"
           }
         },
         {
@@ -49249,6 +49289,14 @@
             {
               "source": "frontend/public/assets/map/buildings/tomb-entry/foundation.svg",
               "sha256": "1cdd3723958ff84ad9b3960b861a454f75c77a45fb2df8f116c414b0666a1a12"
+            },
+            {
+              "source": "assets/map-ground-registration.json",
+              "sha256": "4359aa82784554fd923f1a637099b6f390c4ca4107c644a3f2fc02674211a31f"
+            },
+            {
+              "source": "frontend/scripts/map-ground-shadow.mjs",
+              "sha256": "5e8946e0bafa9be2b643326067e185b1721125292c72b39e39ce6d02a0763399"
             }
           ],
           "sha256": "1dcaab4bdcb4d215e362e445ce6b78fd64415d66da1ddda1313e2d096f357ffd",
@@ -49282,13 +49330,16 @@
             "height": 64,
             "atlasWidth": 512,
             "atlasHeight": 512,
-            "sha256": "93e8b1a17bb6b64651445e23fa2083ff9ebb063cb9b88a37fc8cccc052b02fb1"
+            "sha256": "472cf10586e4bae71d582ccb0db8b7017c525ba06d41cfd4119f7b80828af2d2"
           }
         }
       ],
       "planningFoundation": true,
       "planningLayer": "/assets/map/buildings/tomb-entry/foundation.svg",
-      "generatedOrientationViews": []
+      "generatedOrientationViews": [],
+      "mapLayers": {
+        "shadow": "/assets/map/buildings/tomb-entry/shadow-ground.svg"
+      }
     },
     {
       "assetId": "tomb-entry-b02",
