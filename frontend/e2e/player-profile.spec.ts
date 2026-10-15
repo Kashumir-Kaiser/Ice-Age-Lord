@@ -11,7 +11,7 @@ async function openPlayerProfile(page: import('@playwright/test').Page) {
 }
 
 test('player profile opens from the header and shows the T0 character record', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?mode=demo');
   await expect(page.locator('.app-shell')).toBeVisible();
   const dialog = await openPlayerProfile(page);
   await expect(dialog).toContainText('Tử Phục Linh Sư · SSS');
@@ -22,7 +22,7 @@ test('player profile opens from the header and shows the T0 character record', a
 });
 
 test('global map follows the player and dragging the player unlocks and pans', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?mode=demo');
   await expect(page.locator('.app-shell')).toBeVisible();
   const dialog = await openPlayerProfile(page);
   await dialog.getByRole('button', { name: /Định vị trên bản đồ thế giới/ }).click();
@@ -49,7 +49,7 @@ test('global map follows the player and dragging the player unlocks and pans', a
 });
 
 test('settlement map follows the player and dragging the player unlocks and pans', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?mode=demo');
   await expect(page.locator('.app-shell')).toBeVisible();
   const dialog = await openPlayerProfile(page);
   await dialog.getByRole('button', { name: /Định vị ở lãnh địa/ }).click();
