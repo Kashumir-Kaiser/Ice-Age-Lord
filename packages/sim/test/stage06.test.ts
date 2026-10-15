@@ -100,7 +100,7 @@ test('Stage 06 registry is fixed and a valid coordinate is required for a constr
   assert.deepEqual(LORD_HOUSE_REPAIR.completionUnlocks, OPENING_BUILDINGS.map(blueprint => blueprint.id));
   const fresh = freshState();
   const view = projectPlayerView(fresh, world);
-  assert.equal(view.construction.blueprints.length, 11);
+  assert.equal(view.construction.blueprints.length, 0, 'unrepaired Lord House must not publish future construction choices');
   assert.deepEqual(view.construction.unlockedBlueprintIds, []);
   assert.equal(view.construction.blueprints.some(item => /D1|charcoal|blueprint/i.test(item.id + item.name)), false);
   assert.equal(validateCommandEnvelope({ ...farmBuildCommand(fresh, 'missing-position'), payload: {
@@ -142,6 +142,8 @@ test('repair preview is side-effect free, reserves exact materials, and completi
   assert.equal(result.state.buildings.find(item => item.id === house.id)!.status, 'active');
   assert.equal(result.state.territory.repaired, true);
   assert.deepEqual(result.state.construction.unlockedBlueprintIds, OPENING_BUILDINGS.map(blueprint => blueprint.id));
+  assert.equal(projectPlayerView(result.state, world).construction.blueprints.length, 11,
+    'completed Lord House repair makes the eleven blueprints visible to the player');
   const after = result.state.inventory.containers.find(item => item.id === bag.id)!.stacks;
   assert.equal(after.some(item => item.templateId === 'WOOD' || item.templateId === 'STONE'), false);
   const returnedHammer = after.find(item => item.templateId === 'STONE-HAMMER')!;
