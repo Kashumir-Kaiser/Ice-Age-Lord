@@ -1,0 +1,62 @@
+{
+  "status": "draft-pending-registration",
+  "sourceCheckpoint": "b27356517bcf4d4917a3a978376f314291e43fa6",
+  "sourceSvgSha256": "4f84f3ac007c803be6c86cd4a08fa8696ec2eed3489b13e48faa367664ab719a",
+  "canonicalFootprint": {
+    "id": "TERRITORY-FOOTPRINTS-V1",
+    "widthMeters": 6,
+    "depthMeters": 5,
+    "unchanged": true
+  },
+  "asset": {
+    "id": "tomb-entry",
+    "layers": "north-only",
+    "canvas": [
+      480,
+      400
+    ],
+    "presentationScale": 1.27,
+    "groundAnchor": [
+      0.5,
+      0.72
+    ],
+    "uiShadowSha256": "dac4789801d2e8c951484a28174cfae94266615428f350f26b0961ded5d8bf26",
+    "masters": [
+      {
+        "role": "foundation",
+        "path": "assets/source/map-buildings/tomb-entry-foundation.png",
+        "toolOutput": "/workspace/generated_images/exec-2eeaa2ae-1809-4c9f-b3fb-7a215fd7790f.png",
+        "sha256": "41ff6a54954cd648918fe21982d7756b70cf034c16316046dee94b1f74d8f4e0",
+        "gitBlob": "92f4db1bd9ad935f213db9cef26173223a5e5cf9",
+        "bytes": 847665,
+        "dimensions": [
+          1374,
+          1145
+        ],
+        "format": "PNG RGBA"
+      },
+      {
+        "role": "upper",
+        "path": "assets/source/map-buildings/tomb-entry-upper.png",
+        "toolOutput": "/workspace/generated_images/exec-09bff8a0-894b-43f0-b6f6-9fded74c9f81.png",
+        "sha256": "f716d1ca5d2ade50c3b31f0c35fe4c2bf73b2e6a300fee35a2907ac64a374564",
+        "gitBlob": "ff1586e0f1e4b91212579bc2c8f1eb6a788f2653",
+        "bytes": 1680999,
+        "dimensions": [
+          1374,
+          1145
+        ],
+        "format": "PNG RGBA",
+        "variant": "idle, unlit; no emitter"
+      }
+    ]
+  },
+  "review": {
+    "masterCountSinceVerifiedCheckpoint": 2,
+    "manualBoundaryCut": "rejected",
+    "reason": "The candidate split produced jagged rectangular gaps in the planning foundation around retained grave markers.",
+    "registrationOrExport": false,
+    "visualAcceptance": false,
+    "statusNote": "Both raw masters are saved and pending original-master push, registration, visual review, and approval."
+  }
+}
