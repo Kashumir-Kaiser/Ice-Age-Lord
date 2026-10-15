@@ -11,7 +11,7 @@ async function connectAndCreate(page: import('@playwright/test').Page, slotName:
   await expect(page.getByRole('heading', { name: 'Kết nối trò chơi' })).toBeVisible();
   await expect(page.getByText('Trò chơi đã sẵn sàng')).toBeVisible();
   await page.getByLabel('Khóa chủ sở hữu').fill(ownerKey!);
-  await page.getByRole('button', { name: 'Kết nối API' }).click();
+  await page.getByRole('button', { name: 'Kết nối trò chơi' }).click();
   await expect(page.getByRole('heading', { name: 'Chọn hoặc tạo lượt lưu' })).toBeVisible();
   await page.getByLabel('Tên lượt lưu mới').fill(slotName);
   await page.getByRole('button', { name: 'Bắt đầu lượt chơi' }).click();
