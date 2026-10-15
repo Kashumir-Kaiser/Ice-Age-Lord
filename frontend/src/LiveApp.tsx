@@ -17,6 +17,7 @@ import TerritoryScene from './territory/TerritoryScene';
 import MapCanvas from './rendering/MapCanvas';
 import { liveExplorationSnapshot, liveTerrainRegions } from './rendering/MapSceneAdapter';
 import { territorySceneFromApi } from './live/territoryAdapter';
+import LiveOverview from './live/LiveOverview';
 import type { EntityRef as DemoEntityRef, LayoutDraft } from './game/GameClient';
 import type { TerritoryCamera } from './territory/projection';
 import type { ReadabilityMode } from './territory/BuildingSprite';
@@ -1257,57 +1258,30 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     </div>;
     if (screen === 'overview') {
       return <div className="live-section-stack">
-        <section className="live-hero">
-          <div>
-          <span className="live-eyebrow">BẢN ĐỒ VÀ HẬU CẦN</span>
-            <h2>{view.player.name}</h2>
-          <p>Thời gian, Tử Khí, hồi Mana và sản xuất đều lấy từ snapshot máy chủ. Lượt mới vẫn bắt đầu ở ngày 1 lúc 07:00.</p>
+        <LiveOverview view={view} onNavigate={setScreen} />
+        <section className="live-panel" aria-label="Thẻ nghề nghiệp">
+          <div className="live-panel-heading">
+            <div><span className="live-eyebrow">NGHỀ NGHIỆP</span><h3>{view.careerCard.observed ? 'Thẻ nghề nghiệp' : 'Thẻ nghề nghiệp chưa kiểm tra'}</h3></div>
+            <Shield size={21} />
           </div>
-          <div className="live-hero-mark"><Sparkles size={34} /><span>LL</span></div>
+          {view.careerCard.observed && view.careerCard.career
+            ? <><p>{view.careerCard.career.name} · phân bổ tăng trưởng {view.careerCard.career.growthAllocation}</p>
+              <p>{view.careerCard.active ? 'Nghề nghiệp đã kích hoạt.' : 'Thẻ đã mở; bạn có thể kích hoạt nghề nghiệp.'} {view.careerCard.openingSkillLearned ? 'Kỹ năng mở đầu đã học.' : 'Kỹ năng chưa được học.'}</p>
+              {!view.careerCard.active && <button className="live-button" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'activate_career_card', { cardId: view.careerCard.career!.id }))}>Kích hoạt nghề nghiệp</button>}
+              {view.player.skills?.map(skill => <small key={skill.id}>Kỹ năng mở đầu · thông thạo {skill.mastery}</small>)}
+            </>
+            : <><p>Nội dung thẻ sẽ hiện sau khi được máy chủ xác nhận kiểm tra.</p>
+              <button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'inspect_career_card', {}))}><Eye size={16} /> Kiểm tra thẻ nghề nghiệp</button></>}
         </section>
-        <div className="live-stat-grid">
-          <article className="live-stat"><span>Cấp độ</span><strong>{view.player.level}</strong></article>
-          <article className="live-stat"><span>Kinh nghiệm</span><strong>{view.player.xp}</strong></article>
-          <article className="live-stat"><span>Mana</span><strong>{view.player.mana.current} / {view.player.mana.max}</strong></article>
-          <article className="live-stat"><span>Revision</span><strong>{view.revision}</strong></article>
-        </div>
+        {view.construction.rewardEntitlements.map(reward =>
+          <p className="live-inline-error" key={reward.id}>Thành tựu {reward.achievementId} đang chặn phần thưởng: {reward.blocker}. Vật phẩm chưa được tạo.</p>)}
         {eventBoard()}
-        <section className="live-panel">
-          <div className="live-panel-heading"><div><span className="live-eyebrow">LEDGER SNAPSHOT</span><h3>Hậu cần và việc đang chạy</h3></div><PackageOpen size={20} /></div>
-          <div className="live-stat-grid">
-            <article className="live-stat"><span>Vật liệu quan sát</span><strong>{view.inventory.containers.reduce((sum, container) => sum + container.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0)}</strong></article>
-            <article className="live-stat"><span>Đang giữ chỗ</span><strong>{view.inventory.containers.reduce((sum, container) => sum + container.items.reduce((itemSum, item) => itemSum + item.reservedQuantity, 0), 0)}</strong></article>
-            <article className="live-stat"><span>Việc xây dựng</span><strong>{view.construction.jobs.filter(job => job.status === 'active' || job.status === 'paused' || job.status === 'blocked').length}</strong></article>
-            <article className="live-stat"><span>Nhà nông phu</span><strong>{view.construction.occupiedHousing} / {view.construction.farmerHouseCapacity}</strong></article>
-          </div>
-          <p className="live-muted">Cảnh báo: thời tiết mở đầu {view.survival.coldStatus}; nhiên liệu lửa {view.territory.survivalFire.fuelKnowledge === 'known' ? 'đã xác định' : 'chưa xác định'}; bảo trì dân cư {view.construction.residents.some(resident => resident.upkeepStatus === 'not_compiled') ? 'chưa có công thức nguồn' : 'chưa có cư dân'}.</p>
-          {view.construction.rewardEntitlements.map(reward => <p className="live-inline-error" key={reward.id}>Thành tựu {reward.achievementId} đang chặn phần thưởng: {reward.blocker}. Vật phẩm chưa được tạo.</p>)}
-        </section>
-        <div className="live-two-column">
-          <section className="live-panel">
-            <div className="live-panel-heading"><div><span className="live-eyebrow">CAMPFIRE LINK</span><h3>{entityLabel(fireEntity)}</h3></div><Flame size={22} /></div>
-            <p>Ref dùng chung: <code>{fireRef ? entityRefKey(fireRef) : 'API chưa cung cấp'}</code></p>
-            <div className="live-button-row">
-              <button className="live-button" onClick={() => setScreen('map')}>Mở trên bản đồ <ArrowRight size={15} /></button>
-              <button className="live-button live-button--secondary" onClick={() => setScreen('territory')}>Xem cấu trúc <ArrowRight size={15} /></button>
-            </div>
-          </section>
-          <section className="live-panel">
-            <div className="live-panel-heading"><div><span className="live-eyebrow">CAREER CARD</span><h3>{view.careerCard.observed ? 'Đã quan sát' : 'Đang niêm phong'}</h3></div><Shield size={21} /></div>
-            {view.careerCard.observed && view.careerCard.career
-              ? <><p>{view.careerCard.career.name} · phân bổ tăng trưởng {view.careerCard.career.growthAllocation}</p>
-                <p>{view.careerCard.active ? 'Nghề nghiệp đã kích hoạt.' : 'Thẻ đã mở; Lí Lan có thể kích hoạt nghề nghiệp.'} {view.careerCard.openingSkillLearned ? 'Kỹ năng mở đầu đã học.' : 'Kỹ năng chưa được học.'}</p>
-                {!view.careerCard.active && <button className="live-button" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'activate_career_card', { cardId: view.careerCard.career!.id }))}>Kích hoạt nghề nghiệp</button>}
-                {view.player.skills?.map(skill => <small key={skill.id}>Kỹ năng mở đầu · thông thạo {skill.mastery}</small>)}
-              </>
-              : <><p>Không hiển thị nội dung trước khi API xác nhận thao tác kiểm tra.</p><button className="live-button live-button--secondary" disabled={working || Boolean(pendingCommand)} onClick={() => void sendCommand(commandFor(view, 'inspect_career_card', {}))}><Eye size={16} /> Kiểm tra thẻ nghề nghiệp</button></>}
-          </section>
-        </div>
-        <section className="live-panel">
-            <div className="live-panel-heading"><div><span className="live-eyebrow">PHIÊN CHƠI</span><h3>Trạng thái lượt lưu</h3></div><span className="live-data-chip">Đồng hồ máy chủ</span></div>
-          <p>Save ID: <code>{view.saveId}</code> · Event sequence: {view.lastEventSequence} · API revision: {view.revision}</p>
-          <p>Quyền đồng hồ: {view.clockStatus.driver} · {view.clockControl.status} · {view.clockControl.speedPermille / 1000}× · {view.clockStatus.catchingUp ? 'đang quyết toán' : 'đã đồng bộ'}</p>
-        </section>
+        <details className="live-panel live-overview-diagnostics">
+          <summary>Thông tin phiên chơi và dữ liệu máy chủ</summary>
+          <p>Save ID: <code>{view.saveId}</code> · Revision: {view.revision} · Event sequence: {view.lastEventSequence}</p>
+          <p>Đồng hồ: {view.clockStatus.driver} · {view.clockControl.status} · {view.clockControl.speedPermille / 1000}×</p>
+          <p>Dân cư: {view.construction.occupiedHousing}/{view.construction.farmerHouseCapacity} · Nhiên liệu: {view.territory.survivalFire.fuelKnowledge === 'known' ? 'đã xác định' : 'chưa xác định'}</p>
+        </details>
       </div>;
     }
 
