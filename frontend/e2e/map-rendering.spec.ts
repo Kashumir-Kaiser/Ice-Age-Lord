@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { installLocalPreviewRoute } from './localPreviewRoute';
+import { createHash } from 'node:crypto';
+import { mkdirSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import sharp from 'sharp';
 
 test.beforeEach(async({page})=>installLocalPreviewRoute(page));
 async function territory(page:import('@playwright/test').Page,options=''){
@@ -258,21 +262,73 @@ test('repaired and damaged house architecture load for normal, planning and focu
  await expect(page.locator('.territory-instance-main')).toHaveText(before);
 });
 
-test('Tomb map ground registration loads in normal and planning QA views with the physical outline',async({page})=>{
+test('canonical 6 × 5 m tomb renders registered base and upper layers in normal, planning and focus',async({page})=>{
  test.setTimeout(90000);await page.emulateMedia({reducedMotion:'reduce'});
  const requested=new Set<string>();page.on('request',request=>requested.add(new URL(request.url()).pathname));
  await territory(page);const before=await page.locator('.territory-instance-main').allTextContents();
- await page.locator('.territory-calibration > summary').click();
- await page.getByLabel('Hình minh họa',{exact:true}).selectOption('tomb-entry');
+ const registered=await page.evaluate(async()=>{
+  const manifest=await fetch('/assets/manifest.json').then(response=>response.json()),asset=manifest.assets.find((item:{assetId:string})=>item.assetId==='tomb-entry');
+  if(!asset)throw new Error('tomb-entry is absent from the served manifest');
+  const footprint=asset.compatiblePhysicalFootprint,sources:Record<string,{source:string;sourceSha256:string}>={};
+  for(const role of ['base','upper']){
+   const entry=asset.mapExports.find((item:{role:string;lod:string;orientation:string})=>item.role===role&&item.lod==='close'&&item.orientation==='north');
+   if(!entry)throw new Error(`tomb-entry has no north close ${role} export source`);
+   sources[role]={source:entry.source,sourceSha256:entry.sourceSha256};
+  }
+  return {orientation:asset.orientation,footprint,sources};
+ });
+ expect(registered.orientation).toBe('north');
+ expect(registered.footprint).toMatchObject({widthM:6,depthM:5});
+ for(const [role,source] of Object.entries(registered.sources)){
+  const sourcePath=source.source.startsWith('/')?resolve(process.cwd(),'public',source.source.slice(1)):resolve(process.cwd(),'..',source.source);
+  expect(createHash('sha256').update(readFileSync(sourcePath)).digest('hex'),`tomb-entry ${role} source hash`).toBe(source.sourceSha256);
+ }
+ await page.locator('.territory-calibration > summary').click();await page.getByLabel('Hình minh họa',{exact:true}).selectOption('tomb-entry');
  await page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
- await expect(page.locator('[data-art-qa-footprint]')).toHaveCount(1);
- await expect(page.locator('[data-art-qa-footprint]')).toHaveAttribute('points',/^[-\d., ]{8,}$/);
- await expect(page.getByLabel('Hình minh họa',{exact:true})).toHaveValue('tomb-entry');
+ await expect(page.locator('[data-art-qa-footprint]')).toHaveCount(1);await expect(page.locator('[data-art-qa-footprint]')).toHaveAttribute('points',/^[-\d., ]{8,}$/);
  const alphas=()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{qaArtLayers:{base:number|null;upper:number|null;body:number|null}|null}[]}).__mapMetrics.at(-1)?.qaArtLayers);
- await expect.poll(()=>Array.from(requested).some(path=>/\/assets\/map\/buildings\/tomb-entry\/(atlas-close|body-close|shadow-close)\.png$/.test(path)),{timeout:30000}).toBe(true);
- await expect.poll(alphas,{timeout:30000}).toEqual({base:null,upper:null,body:1});
- await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();
- await expect.poll(alphas,{timeout:30000}).toEqual({base:1,upper:null,body:null});
- await expect(page.locator('[data-art-qa-footprint]')).toHaveCount(1);
+ for(const [mode,expected] of [['normal',{base:1,upper:1,body:null}],['planning',{base:1,upper:null,body:null}],['focus',{base:1,upper:.22,body:null}]] as const){
+  if(mode==='planning')await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();
+  if(mode==='focus')await page.getByRole('button',{name:'Làm mờ phần che',exact:true}).click();
+  await expect.poll(alphas,{timeout:30000}).toEqual(expected);
+  for(const role of mode==='planning'?['base']:['base','upper'])await expect.poll(()=>Array.from(requested).some(path=>new RegExp(`/assets/map/buildings/tomb-entry/${role}-north-(close|district)\\.png$`).test(path)),{timeout:30000}).toBe(true);
+  if(mode==='planning')await expect(page.locator('[data-art-qa-footprint]')).toHaveCount(1);
+  if(mode==='planning')await page.getByRole('button',{name:'Bình thường',exact:true}).click();
+ }
  await expect(page.locator('.territory-instance-main')).toHaveText(before);
+});
+
+test('all tomb map PNG and atlas failures use the registered versioned idle SVG fallback',async({page})=>{
+ test.setTimeout(90000);await page.emulateMedia({reducedMotion:'reduce'});
+ if(test.info().project.name==='chromium')await page.setViewportSize({width:1366,height:768});
+ const requested=new Set<string>(),requestedUrls=new Set<string>();page.on('request',request=>{requested.add(new URL(request.url()).pathname);requestedUrls.add(request.url());});
+ await page.route('**/assets/map/buildings/tomb-entry/*.png*',route=>route.fulfill({status:404,body:'exercise tomb map raster fallback'}));
+ await territory(page);
+ const registered=await page.evaluate(async()=>{
+  const manifest=await fetch('/assets/manifest.json').then(response=>response.json()),asset=manifest.assets.find((item:{assetId:string})=>item.assetId==='tomb-entry');
+  const fallback=asset?.mapLayers?.body,entry=asset?.mapExports.find((item:{path:string;source:string})=>item.path===fallback||item.source===fallback);
+  return {fallback,source:asset?.layers?.body,sourceSha256:entry?.sourceSha256};
+ });
+ expect(registered.fallback).toMatch(/^\/assets\/map\/buildings\/tomb-entry\/.*\.svg$/);
+ expect(registered.fallback).not.toBe(registered.source);
+ expect(registered.sourceSha256).toMatch(/^[a-f0-9]{64}$/);
+ await page.locator('.territory-calibration > summary').click();await page.getByLabel('Hình minh họa',{exact:true}).selectOption('tomb-entry');
+ await page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
+ await expect.poll(()=>requested.has(registered.fallback),{timeout:30000}).toBe(true);
+ expect(Array.from(requested).some(path=>path.includes('/tomb-entry/atlas-'))).toBe(true);
+ expect(Array.from(requestedUrls).some(url=>url.includes(registered.fallback+'?mapHash='+registered.sourceSha256))).toBe(true);
+ await expect.poll(()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{qaArtLayers:{base:number|null;upper:number|null;body:number|null}|null;queued:number;pendingTextures:number}[]}).__mapMetrics.at(-1)),{timeout:30000}).toMatchObject({qaArtLayers:{base:null,upper:null,body:1},queued:0,pendingTextures:0});
+ await expect(page.locator('.map-render-canvas')).toHaveCount(1);
+ if(test.info().project.name==='chromium'){
+  const directory=resolve(process.cwd(),'map-evidence/after/1366/architecture/tomb-entry');mkdirSync(directory,{recursive:true});
+  const renderer=page.locator('.territory-stage [data-map-renderer]');
+  await renderer.scrollIntoViewIfNeeded();await expect(renderer).toBeVisible();
+  await expect.poll(()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{queued:number;pendingTextures:number}[]}).__mapMetrics.at(-1)),{timeout:30000}).toMatchObject({queued:0,pendingTextures:0});
+  const scenePng=await renderer.screenshot(),scene=await sharp(scenePng).removeAlpha().raw().toBuffer({resolveWithObject:true});
+  const backdropIndex=(Math.floor(scene.info.height*.15)*scene.info.width+Math.floor(scene.info.width*.284))*scene.info.channels;
+  const backdropPixel=Array.from(scene.data.slice(backdropIndex,backdropIndex+3));
+  expect(backdropPixel.some(channel=>channel>8),`filtered SVG transparent corner must show terrain, got RGB ${backdropPixel.join(',')}`).toBe(true);
+  await page.screenshot({path:resolve(directory,'tomb-entry-png-failure-fallback-1366.png'),animations:'disabled'});
+  await renderer.screenshot({path:resolve(directory,'tomb-entry-png-failure-fallback-scene-1366.png'),animations:'disabled'});
+ }
 });

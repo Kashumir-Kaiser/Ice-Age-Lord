@@ -213,8 +213,8 @@ export class MapRenderer {
     const worldProps=this.snapshot.mode==='planning'||this.snapshot.compact?[]:this.sampler.props(propBounds,1/scale).filter(p=>!this.snapshot.buildings.some(b=>{const turned=b.orientation==='east'||b.orientation==='west',width=turned?b.footprint.depthM:b.footprint.widthM,depth=turned?b.footprint.widthM:b.footprint.depthM;return Math.abs(b.point.x-p.x)<width/2+p.size&&Math.abs(b.point.y-p.y)<depth/2+p.size;}));
     const props=worldProps.map(p=>{
       const tree=p.kind==='conifer'||p.kind==='bare',ground=this.project(p),name=p.kind==='ledge'?LEDGE_SOURCES[p.variant%4]:p.kind+'-'+String(p.variant%(p.kind==='conifer'?6:p.kind==='bare'?3:8)+1).padStart(2,'0'),path='/assets/map/terrain/'+name+'.png';
-      const image=this.assets.acquire(path),height=p.size*scale*(tree?1.8:.6);
-      const width=height*(image?image.naturalWidth/image.naturalHeight:tree?.65:1.9);
+      const image=this.assets.acquire(path),height=p.size*scale*(tree?1.8:.6),imageWidth=image?('naturalWidth' in image?image.naturalWidth:image.width):0,imageHeight=image?('naturalHeight' in image?image.naturalHeight:image.height):0;
+      const width=height*(image?imageWidth/imageHeight:tree?.65:1.9);
       return {id:'prop:'+p.id,path,x:ground.x-width/2,y:ground.y-height*.94,width,height,alpha:1,depth:ground.y};
     });
     // Contact/cast shadows lie on the ground below every upright object.

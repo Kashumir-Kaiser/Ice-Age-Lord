@@ -6,7 +6,16 @@ import {flameKey} from './FlamePresentation.ts';
 export function exportPath(asset:AssetManifestEntry,layer:CompositionLayer,lod:'close'|'district'):string {
   return asset.mapExports?.find(e=>e.role===layer.role&&e.lod===lod&&(e.layerPath??e.source)===layer.path)?.path??layer.path;
 }
-type Entry={refs:number;image:HTMLImageElement|null;texture:Texture|null;request:Promise<HTMLImageElement>;bytes:number;reservedBytes:number;controller:AbortController;state:'pending'|'ready'|'failed'};
+type CachedImage=HTMLImageElement|HTMLCanvasElement;
+type Entry={refs:number;image:CachedImage|null;texture:Texture|null;request:Promise<CachedImage>;bytes:number;reservedBytes:number;controller:AbortController;state:'pending'|'ready'|'failed'};
+function imageBytes(image:CachedImage):number {
+  const width='naturalWidth' in image?image.naturalWidth:image.width,height='naturalHeight' in image?image.naturalHeight:image.height;
+  return width*height*4;
+}
+function disposeImage(image:CachedImage):void {
+  if('src' in image){image.onload=image.onerror=null;image.src='';}
+  else image.width=image.height=0;
+}
 /** Per-path ownership permits multiple hosts without one destroying another's texture. */
 const shared=new Map<string,Entry>();
 export class AssetTextureCache {
@@ -69,7 +78,7 @@ export class AssetTextureCache {
     if(released)this.invalidate();
   }
   constructor(invalidate:()=>void,onError:(path:string)=>void,limit:number,onBudget:(path:string)=>void=()=>{}){this.invalidate=invalidate;this.onError=onError;this.byteLimit=limit;this.onBudget=onBudget;}
-  acquire(path:string):HTMLImageElement|null {
+  acquire(path:string):CachedImage|null {
     if(this.destroyed)return null;
     path=this.url(path);
     let e=shared.get(path);
@@ -79,13 +88,27 @@ export class AssetTextureCache {
       this.rejected.delete(path);
       if(!e){
         const image=new Image(),controller=new AbortController();image.decoding='async';
-        const request=new Promise<HTMLImageElement>((resolve,reject)=>{
-          image.onload=()=>resolve(image);image.onerror=()=>reject(new Error('Cannot decode '+path));
-          controller.signal.addEventListener('abort',()=>{image.onload=image.onerror=null;image.src='';reject(new Error('Disposed '+path));},{once:true});image.src=path;
+        const request=new Promise<CachedImage>((resolve,reject)=>{
+          let settled=false;
+          const detach=()=>controller.signal.removeEventListener('abort',abort);
+          const fail=(error:Error)=>{if(settled)return;settled=true;detach();disposeImage(image);reject(error);};
+          const finish=(value:CachedImage)=>{if(settled)return;settled=true;detach();image.onload=image.onerror=null;resolve(value);};
+          const abort=()=>fail(new Error('Disposed '+path));
+          image.onload=()=>{
+            if(!path.split(/[?#]/,1)[0].toLowerCase().endsWith('.svg')){finish(image);return;}
+            let canvas:HTMLCanvasElement|null=null;
+            try{
+              canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
+              const context=canvas.getContext('2d',{alpha:true});if(!context)throw new Error('Canvas2D unavailable for '+path);
+              context.drawImage(image,0,0);disposeImage(image);finish(canvas);
+            }catch(error){if(canvas)canvas.width=canvas.height=0;fail(error instanceof Error?error:new Error(String(error)));}
+          };
+          image.onerror=()=>fail(new Error('Cannot decode '+path));
+          controller.signal.addEventListener('abort',abort,{once:true});image.src=path;
         });
         e={refs:0,image:null,texture:null,request,bytes:0,reservedBytes:estimated,controller,state:'pending'};shared.set(path,e);
         const target=e;
-        void request.then(value=>{target.state='ready';if(!target.refs)return;target.image=value;target.bytes=value.naturalWidth*value.naturalHeight*4;target.reservedBytes=target.bytes;}).catch(()=>{target.state='failed';target.reservedBytes=0;});
+        void request.then(value=>{target.state='ready';if(!target.refs)return;target.image=value;target.bytes=imageBytes(value);target.reservedBytes=target.bytes;}).catch(()=>{target.state='failed';target.reservedBytes=0;});
       }
       e.refs++;this.owned.add(path);
       // Another host can finish a shared load without this host owning its callback.
@@ -115,7 +138,7 @@ export class AssetTextureCache {
   }
   private release(path:string):void {
     const e=shared.get(path);this.owned.delete(path);if(!e||--e.refs>0)return;
-    e.controller.abort();e.texture?.destroy(true);if(e.image){e.image.onload=e.image.onerror=null;e.image.src='';}shared.delete(path);
+    e.controller.abort();e.texture?.destroy(true);if(e.image)disposeImage(e.image);shared.delete(path);
   }
   destroy():void {if(this.destroyed)return;this.destroyed=true;for(const texture of this.frames.values())texture.destroy(false);this.frames.clear();this.registrations.clear();this.trims.clear();this.revisions.clear();this.failed.clear();for(const path of Array.from(this.owned))this.release(path);}
 }

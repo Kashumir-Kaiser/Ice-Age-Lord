@@ -1,0 +1,88 @@
+{
+  "assetId": "tomb-entry",
+  "review": {
+    "decision": "limited visual acceptance",
+    "acceptedScope": {
+      "orientation": "north only",
+      "physicalFootprint": {
+        "assumptionId": "TERRITORY-FOOTPRINTS-V1",
+        "widthM": 6,
+        "depthM": 5
+      },
+      "viewports": [
+        {"width": 1366, "height": 768},
+        {"width": 390, "height": 844, "cameraAdjustment": "one zoom-out step after preview initialization to show the full cross"}
+      ],
+      "dpr": 1,
+      "quality": "normal",
+      "modes": ["normal", "planning", "focus"]
+    },
+    "observations": [
+      "Normal view has a coherent pad and idle, unlit cups.",
+      "No walls are visibly chopped in the reviewed scenes.",
+      "Planning displays the registered base alone.",
+      "Focus fades the upper to 0.22 while the base remains solid at 1.0."
+    ],
+    "limits": [
+      "No other DPR or quality setting is accepted by this review.",
+      "No other orientation is accepted; this asset remains north-only.",
+      "A gold shape/overlay is visible in the native-background QA capture and is not part of the Tomb source artwork; its identity is unresolved because DOM confirmation is not yet available. No art change is based on it."
+    ]
+  },
+  "sourceHashes": {
+    "registeredBaseSvg": {
+      "path": "frontend/public/assets/map/buildings/tomb-entry/foundation.svg",
+      "sha256": "1cdd3723958ff84ad9b3960b861a454f75c77a45fb2df8f116c414b0666a1a12"
+    },
+    "originalFoundationMaster": {
+      "path": "assets/source/map-buildings/tomb-entry-foundation.png",
+      "sha256": "41ff6a54954cd648918fe21982d7756b70cf034c16316046dee94b1f74d8f4e0"
+    },
+    "upperMaster": {
+      "path": "assets/source/map-buildings/tomb-entry-upper.png",
+      "sha256": "f716d1ca5d2ade50c3b31f0c35fe4c2bf73b2e6a300fee35a2907ac64a374564"
+    }
+  },
+  "rendererAlpha": {
+    "normal": {"base": 1, "upper": 1, "body": null},
+    "planning": {"base": 1, "upper": null, "body": null},
+    "focus": {"base": 1, "upper": 0.22, "body": null}
+  },
+  "fallbackVisual": {
+    "decision": "accepted at 1366x768, DPR1, normal quality only",
+    "capture": "frontend/map-evidence/after/1366/architecture/tomb-entry/tomb-entry-png-failure-fallback-scene-1366.png",
+    "observations": [
+      "The opaque black quad is gone and terrain remains transparent around the Tomb.",
+      "The idle crypt is coherent and grounded, with no open flames.",
+      "The prior regression pixel at (200,70) in the 706x467 review crop changed from [0,0,0] to [181,198,200]."
+    ],
+    "implementation": "The filtered SVG ground shadow is decoded through a transparent Canvas2D surface and retained as Pixi CanvasSource. This retains one RGBA source reservation; the PNG pipeline is unchanged.",
+    "regression": "The filtered-SVG cache test verifies the retained alpha canvas, expected byte reservation and canvas disposal when ownership is released.",
+    "limits": ["No mobile fallback screenshot review, other DPR, or other quality setting is included in this fallback acceptance."]
+  },
+  "captures": {
+    "1366x768": {
+      "metadata": "frontend/map-evidence/after/1366/architecture/tomb-entry/tomb-entry-qa.json",
+      "normal": "frontend/map-evidence/after/1366/architecture/tomb-entry/tomb-entry-normal-1366-normal-dpr1.png",
+      "planning": "frontend/map-evidence/after/1366/architecture/tomb-entry/tomb-entry-planning-1366-normal-dpr1.png",
+      "focus": "frontend/map-evidence/after/1366/architecture/tomb-entry/tomb-entry-focus-1366-normal-dpr1.png"
+    },
+    "390x844": {
+      "metadata": "frontend/map-evidence/after/390/architecture/tomb-entry/tomb-entry-qa.json",
+      "normal": "frontend/map-evidence/after/390/architecture/tomb-entry/tomb-entry-normal-390-normal-dpr1.png",
+      "planning": "frontend/map-evidence/after/390/architecture/tomb-entry/tomb-entry-planning-390-normal-dpr1.png",
+      "focus": "frontend/map-evidence/after/390/architecture/tomb-entry/tomb-entry-focus-390-normal-dpr1.png"
+    }
+  },
+  "captureStorage": "The image captures and QA metadata are ephemeral workspace artifacts and are not tracked; paths are retained for reproduction and review context.",
+  "browserChecks": {
+    "layeredDesktopMobile": "passed 2/2 after changing source reads to filesystem input",
+    "fallbackDesktopMobile": "passed 2/2 with versioned idle SVG",
+    "focusedPlaywright": "passed 4/4 desktop/mobile checks for normal, planning, focus and all-PNG-failure fallback",
+    "frontendUnit": "114/114 passed, 0 skipped, 0 failed",
+    "productionBuild": "passed",
+    "typecheck": "passed",
+    "debugGlobals": "removed and verified",
+    "fallbackPngVisualReview": "accepted at 1366x768 DPR1 normal quality only"
+  }
+}

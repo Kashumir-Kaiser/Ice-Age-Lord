@@ -7,26 +7,28 @@ import {launchMapBrowser,openMap,navigateMap,readyMap} from './map-browser.mjs';
 const viewportChoices=[{width:1366,height:768},{width:1920,height:1080},{width:390,height:844}];
 const requestedWidths=process.env.MAP_QA_VIEWPORTS?.split(',').map(Number);
 if(requestedWidths?.some(width=>!viewportChoices.some(v=>v.width===width)))throw new Error('MAP_QA_VIEWPORTS must list 1366,1920,390');
-const viewports=viewportChoices.filter(v=>!requestedWidths||requestedWidths.includes(v.width));
+const tombOnly=process.env.MAP_QA_TOMB_ONLY==='1';
+const viewports=tombOnly?[viewportChoices[0],viewportChoices[2]].filter(v=>!requestedWidths||requestedWidths.includes(v.width)):viewportChoices.filter(v=>!requestedWidths||requestedWidths.includes(v.width));
 const progressionOnly=process.env.MAP_QA_PROGRESSION_ONLY==='1';
 // Target the real four-pose damaged-house QA fixture only; use MAP_QA_VIEWPORTS/DPR/QUALITY as usual.
 const damagedHouseOnly=process.env.MAP_QA_DAMAGED_HOUSE_ONLY==='1';
 const l30Only=process.env.MAP_QA_L30_ONLY==='1';
-const architectureOnly=progressionOnly||damagedHouseOnly||l30Only||process.env.MAP_QA_ARCHITECTURE_ONLY==='1';
+const architectureOnly=progressionOnly||damagedHouseOnly||l30Only||tombOnly||process.env.MAP_QA_ARCHITECTURE_ONLY==='1';
 const families=[['wall','Thử bố trí Tường Rào'],['gate','Thử bố trí Cổng Gỗ · mẫu ảnh'],['tower','Thử bố trí Tháp cao · minh họa'],['house','Thử bố trí Nhà thấp · minh họa'],['farmhouse','Thử bố trí Nhà Nông Phu Cực Địa'],['watchtower','Thử bố trí Tháp Canh · mẫu ảnh'],['elemental','Thử bố trí Tháp Nguyên Tố · mẫu ảnh']];
 const requestedFamilies=process.env.MAP_QA_FAMILIES?.split(',');
 if(requestedFamilies?.some(name=>!families.some(([family])=>family===name)))throw new Error('Unknown MAP_QA_FAMILIES entry');
 if(damagedHouseOnly&&(progressionOnly||process.env.MAP_QA_ARCHITECTURE_ONLY==='1'||requestedFamilies))throw new Error('MAP_QA_DAMAGED_HOUSE_ONLY cannot be combined with other scenario filters');
 if(l30Only&&(progressionOnly||damagedHouseOnly||process.env.MAP_QA_ARCHITECTURE_ONLY==='1'||requestedFamilies))throw new Error('MAP_QA_L30_ONLY cannot be combined with other scenario filters');
+if(tombOnly&&(progressionOnly||damagedHouseOnly||l30Only||process.env.MAP_QA_ARCHITECTURE_ONLY==='1'||requestedFamilies||requestedWidths?.some(width=>![1366,390].includes(width))))throw new Error('MAP_QA_TOMB_ONLY cannot be combined with other scenario filters and only captures 1366/390');
 const browser=await launchMapBrowser(),evidence=[];
 const output=resolve(process.env.MAP_QA_DIR??'map-evidence/after');mkdirSync(output,{recursive:true});
 const dpr=Number(process.env.MAP_QA_DPR??1),quality=process.env.MAP_QA_QUALITY??'normal';
-async function capture(page,name,viewport){
+async function capture(page,name,viewport,{waitForIdle=true}={}){
  await page.locator('[data-map-renderer]').evaluate(node=>node.scrollIntoView({block:'center',inline:'nearest'}));
- const group=/^damaged-house/.test(name)?'architecture/damaged-house/':/^(watchtower|elemental)-/.test(name)?'architecture/prototypes/':/^(farmhouse|late)-/.test(name)?'architecture/progression/':/^(house|tower)-/.test(name)?'architecture/extended/':/^(wall|gate)-/.test(name)?'architecture/':'';
+ const group=/^damaged-house/.test(name)?'architecture/damaged-house/':/^tomb-entry-/.test(name)?'architecture/tomb-entry/':/^(watchtower|elemental)-/.test(name)?'architecture/prototypes/':/^(farmhouse|late)-/.test(name)?'architecture/progression/':/^(house|tower)-/.test(name)?'architecture/extended/':/^(wall|gate)-/.test(name)?'architecture/':'';
  const directory=resolve(output,String(viewport.width),group);mkdirSync(directory,{recursive:true});
  const filename=`${viewport.width}/${group}${name}-${viewport.width}-${quality}-dpr${dpr}.png`;
- try{await readyMap(page);}catch(error){
+ try{if(waitForIdle)await readyMap(page);else await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));}catch(error){
   const metrics=await page.evaluate(()=>window.__mapMetrics?.at(-1));
   writeFileSync(resolve(output,filename+'.failure.json'),JSON.stringify({name,viewport,dpr,quality,metrics,error:String(error)},null,2));
   await page.screenshot({path:resolve(output,filename+'.failure.png'),animations:'disabled'});throw error;
@@ -110,7 +112,10 @@ async function captureL30Modes(calibration,viewport){
  for(const [mode,expected] of cases){
   if(mode==='planning')await calibration.getByRole('button',{name:'Mặt bằng',exact:true}).click();
   if(mode==='focus')await calibration.getByRole('button',{name:'Làm mờ phần che',exact:true}).click();
-  await readyMap(calibration);
+  await calibration.waitForFunction(expected=>{
+   const metric=window.__mapMetrics?.at(-1);
+   return metric&&metric.backend!=='initializing'&&JSON.stringify(metric.qaArtLayers)===JSON.stringify(expected);
+  },expected,{timeout:30000});
   const layers=await calibration.evaluate(()=>window.__mapMetrics?.at(-1)?.qaArtLayers);
   if(JSON.stringify(layers)!==JSON.stringify(expected))throw new Error(`L30 ${mode} alpha metrics differ: ${JSON.stringify(layers)}`);
   const row=await capture(calibration,`late-lord-house-l30-${mode}`,viewport);
@@ -119,6 +124,48 @@ async function captureL30Modes(calibration,viewport){
  }
  await calibration.getByRole('button',{name:'Bình thường',exact:true}).click();
  await calibration.getByRole('button',{name:'Ẩn hình kiểm tra trên bản đồ',exact:true}).click();
+}
+async function captureTombModes(calibration,viewport){
+ const asset=assetManifest.assets.find(item=>item.assetId==='tomb-entry');
+ if(!asset)throw new Error('Canonical tomb-entry is missing from the synchronized asset manifest');
+ if(asset.orientation!=='north')throw new Error(`Canonical tomb QA is north-only; registered orientation is ${asset.orientation}`);
+ const physical=asset.compatiblePhysicalFootprint;
+ if(!physical||physical.widthM!==6||physical.depthM!==5)throw new Error(`Canonical tomb footprint must be 6 × 5 m; found ${JSON.stringify(physical)}`);
+ const sources={};
+ for(const role of ['base','upper']){
+  const entry=asset.mapExports.find(item=>item.role===role&&item.lod==='close'&&item.orientation==='north');
+  const source=entry?.source,sourceUrl=source?.startsWith('/')?new URL('../public'+source,import.meta.url):source?new URL('../../'+source,import.meta.url):null;
+  if(!entry||!sourceUrl||entry.sourceSha256!==sha256(readFileSync(sourceUrl)))throw new Error(`Canonical tomb ${role} source hash differs from its registered north master`);
+  sources[role]={source,sourceSha256:entry.sourceSha256};
+ }
+ await calibration.locator('.territory-calibration > summary').click();
+ await calibration.getByLabel('Hình minh họa',{exact:true}).selectOption('tomb-entry');
+ await calibration.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
+ const outline=calibration.locator('[data-art-qa-footprint]');
+ if(viewport.width===390){
+  const before=await outline.getAttribute('points');
+  if(!before)throw new Error('Tomb preview footprint is missing before the mobile camera adjustment');
+  await calibration.getByRole('button',{name:'Thu nhỏ lãnh địa'}).click();
+  await calibration.waitForFunction(previous=>document.querySelector('[data-art-qa-footprint]')?.getAttribute('points')!==previous,before,{timeout:10000});
+ }
+ const cases=[['normal',{base:1,upper:1,body:null}],['planning',{base:1,upper:null,body:null}],['focus',{base:1,upper:.22,body:null}]];
+ const captures=[];
+ for(const [mode,expected] of cases){
+  if(mode==='planning')await calibration.getByRole('button',{name:'Mặt bằng',exact:true}).click();
+  if(mode==='focus')await calibration.getByRole('button',{name:'Làm mờ phần che',exact:true}).click();
+  await readyMap(calibration);
+  const layers=await calibration.evaluate(()=>window.__mapMetrics?.at(-1)?.qaArtLayers);
+  if(JSON.stringify(layers)!==JSON.stringify(expected))throw new Error(`Tomb ${mode} renderer alpha metrics differ: ${JSON.stringify(layers)}`);
+  const points=await outline.getAttribute('points');
+  if(!points||!/^[-\d., ]{8,}$/.test(points))throw new Error(`Tomb ${mode} is missing its physical footprint outline`);
+  const row=await capture(calibration,`tomb-entry-${mode}`,viewport,{waitForIdle:false});
+  row.tomb={assetId:'tomb-entry',orientation:'north',mode,qaArtLayers:layers,rendererReadiness:{backend:row.metrics.backend,queued:row.metrics.queued,pendingTextures:row.metrics.pendingTextures},footprint:{...physical,points},sourceHashes:sources};
+  captures.push(row.tomb);
+  if(mode==='planning')await calibration.getByRole('button',{name:'Bình thường',exact:true}).click();
+ }
+ await calibration.getByRole('button',{name:'Bình thường',exact:true}).click();
+ await calibration.getByRole('button',{name:'Ẩn hình kiểm tra trên bản đồ',exact:true}).click();
+ writeFileSync(resolve(output,String(viewport.width),'architecture/tomb-entry','tomb-entry-qa.json'),JSON.stringify({assetId:'tomb-entry',orientation:'north',viewport,dpr,quality,cameraAdjustment:{zoomOutSteps:viewport.width===390?1:0},physicalFootprint:physical,sourceHashes:sources,captures},null,2));
 }
 try{
  for(const viewport of viewports){
@@ -129,6 +176,7 @@ try{
   await calibration.getByRole('button',{name:'Phóng to lãnh địa'}).click();await calibration.getByRole('button',{name:'Phóng to lãnh địa'}).click();
   if(damagedHouseOnly){await captureDamagedHouse(calibration,viewport);await calibration.close();continue;}
   if(l30Only){await captureL30Modes(calibration,viewport);await calibration.close();continue;}
+  if(tombOnly){await captureTombModes(calibration,viewport);await calibration.close();continue;}
   if(!progressionOnly)await capture(calibration,'fire-close',viewport);
   for(const [family,label] of families.filter(([family])=>!progressionOnly&&(!requestedFamilies||requestedFamilies.includes(family)))){
    await calibration.getByRole('button',{name:label,exact:true}).click();

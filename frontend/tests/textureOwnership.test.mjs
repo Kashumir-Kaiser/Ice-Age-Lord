@@ -13,6 +13,23 @@ test('all flame frames share one bounded image and survive another host leaving'
  }finally{a.destroy();b.destroy();if(OriginalImage===undefined)delete globalThis.Image;else globalThis.Image=OriginalImage;}
 });
 
+test('filtered SVG cache entries retain one alpha canvas and release it with their byte reservation',async()=>{
+ const OriginalImage=globalThis.Image,OriginalDocument=globalThis.document,images=[],canvases=[];
+ globalThis.Image=class {naturalWidth=8;naturalHeight=4;onload=null;onerror=null;decoding='';_src='';constructor(){images.push(this);}set src(value){this._src=value;}get src(){return this._src;}};
+ globalThis.document={createElement(name){assert.equal(name,'canvas');const canvas={width:0,height:0,drawn:null,getContext(type,options){assert.equal(type,'2d');assert.deepEqual(options,{alpha:true});return {drawImage(image,x,y){canvas.drawn={image,x,y};}};}};canvases.push(canvas);return canvas;}};
+ const errors=[],cache=new AssetTextureCache(()=>{},path=>errors.push(path),1024);
+ try{
+  cache.registerEnvironment([{path:'/shadow.svg',sha256:'filtered-svg',width:8,height:4}]);
+  assert.equal(cache.acquire('/shadow.svg'),null);assert.equal(images.length,1);assert.equal(images[0].src,'/shadow.svg?mapHash=filtered-svg');
+  images[0].onload();await new Promise(setImmediate);
+  const image=cache.acquire('/shadow.svg'),canvas=canvases[0];
+  assert.equal(image,canvas);assert.equal(canvas.width,8);assert.equal(canvas.height,4);assert.deepEqual(canvas.drawn,{image:images[0],x:0,y:0});
+  assert.equal(images[0].src,'');assert.equal(images[0].onload,null);assert.equal(images[0].onerror,null);
+  assert.equal(cache.bytes,8*4*4);assert.equal(cache.reservedBytes,8*4*4);assert.deepEqual(errors,[]);
+  cache.retain(new Set());assert.equal(canvas.width,0);assert.equal(canvas.height,0);assert.equal(cache.bytes,0);assert.equal(cache.reservedBytes,0);
+ }finally{cache.destroy();if(OriginalImage===undefined)delete globalThis.Image;else globalThis.Image=OriginalImage;if(OriginalDocument===undefined)delete globalThis.document;else globalThis.document=OriginalDocument;}
+});
+
 test('a failed atlas falls back to the matching individual pose raster and can recover on a new content revision',async()=>{
  const OriginalImage=globalThis.Image,images=[];globalThis.Image=class {naturalWidth=8;naturalHeight=8;constructor(){images.push(this);}};
  const errors=[],cache=new AssetTextureCache(()=>{},path=>errors.push(path),1024);

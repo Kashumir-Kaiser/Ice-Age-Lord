@@ -5,6 +5,7 @@ import sharp from 'sharp';
 import {normalizeMapAlpha} from './normalize-map-alpha.mjs';
 import {trimMapRaster} from './trim-map-raster.mjs';
 import {alphaHull} from './map-orientation-export.mjs';
+import {registeredCompositeVectorFallback} from './map-vector-fallback.mjs';
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const transparent=(width,height)=>sharp({create:{width,height,channels:4,background:{r:0,g:0,b:0,alpha:0}}});
 
@@ -57,6 +58,15 @@ export async function applyAuthoredArchitecture(manifest,definitions,repo){
   asset.composition='architectural';
   // Preserve static whole-body provenance and the smoke-free SVG last-resort fallback.
   asset.mapExports=asset.mapExports.filter(e=>!e.authoredArchitecture);
+  let vectorFallbackSource;
+  if(definition.vectorFallback){
+   if(asset.assetId!=='tomb-entry')throw new Error('Vector architecture fallback is currently restricted to Tomb');
+   const registered=await transparent(canvas.width,canvas.height).composite([{input:full.base},{input:full.upper}]).png().toBuffer();
+   const path=`${prefix}body-layered-${orientation}.svg`,svg=await registeredCompositeVectorFallback(registered,canvas.width,canvas.height);
+   writeFileSync(resolve(repo,'frontend/public'+path),svg);
+   asset.mapLayers={...asset.mapLayers,body:path};
+   vectorFallbackSource={source:path,sourceSha256:hash(Buffer.from(svg)),sourceDependencies:[...dependencies,{source:'frontend/scripts/map-vector-fallback.mjs',sha256:hash(readFileSync(resolve(repo,'frontend/scripts/map-vector-fallback.mjs')))}]};
+  }
   for(const [lod,width] of [['close',384],['district',192]]){
    const buffers={};
    for(const role of ['base','upper'])buffers[role]=await sharp(full[role]).resize({width}).png({compressionLevel:9}).toBuffer();
@@ -65,8 +75,9 @@ export async function applyAuthoredArchitecture(manifest,definitions,repo){
    for(const role of ['base','upper','body']){
     const name=role==='body'?'body-layered':role,layerPath=role==='body'?bodyLayer:`${prefix}${role}-${orientation}-close.png`,path=`${prefix}${name}-${orientation}-${lod}.png`;
     const cropped=await trimMapRaster(buffers[role],canvas);writeFileSync(resolve(repo,'frontend/public'+path),cropped.png);
-    const source=role==='body'?'frontend/scripts/apply-authored-architecture.mjs':definition[role].source;
-    asset.mapExports.push({path,layerPath,source,sourceSha256:hash(readFileSync(resolve(repo,source))),sourceDependencies:dependencies,sha256:hash(cropped.png),exportVersion:4,authoredArchitecture:true,...(role==='body'?{}:{architecturePart:true}),width:cropped.width,height:cropped.height,role,lod,orientation,alpha:'straight',colorSpace:'srgb',logicalCanvas:canvas,rasterCanvas:cropped.rasterCanvas,trim:cropped.trim});count++;
+    const source=role==='body'&&vectorFallbackSource?vectorFallbackSource.source:role==='body'?'frontend/scripts/apply-authored-architecture.mjs':definition[role].source;
+    const sourceSha256=role==='body'&&vectorFallbackSource?vectorFallbackSource.sourceSha256:hash(readFileSync(resolve(repo,source)));
+    asset.mapExports.push({path,layerPath,source,sourceSha256,sourceDependencies:role==='body'&&vectorFallbackSource?vectorFallbackSource.sourceDependencies:dependencies,sha256:hash(cropped.png),exportVersion:4,authoredArchitecture:true,...(role==='body'?{}:{architecturePart:true}),width:cropped.width,height:cropped.height,role,lod,orientation,alpha:'straight',colorSpace:'srgb',logicalCanvas:canvas,rasterCanvas:cropped.rasterCanvas,trim:cropped.trim});count++;
     if(lod==='close'){
      asset.orientationViews[orientation][role]=layerPath;
      const {data,info}=await sharp(buffers[role]).ensureAlpha().raw().toBuffer({resolveWithObject:true}),hull=alphaHull(data,info.width,info.height);

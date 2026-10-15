@@ -1,6 +1,7 @@
 import { GROUND_MATERIALS, type TerrainSampler } from './TerrainSampler.ts';
 import type { ContactBounds } from './GroundContacts.ts';
 export type TerrainChunk = {key:string;level:number;x:number;y:number;span:number;canvas:HTMLCanvasElement;bytes:number;release?:()=>void};
+type PaintSource=HTMLImageElement|HTMLCanvasElement;
 type Job={key:string;x:number;y:number;level:number;revision:number;size:number};
 type Working=Job&{buffer:Uint8ClampedArray;row:number};
 export class TerrainChunkCache {
@@ -13,8 +14,8 @@ export class TerrainChunkCache {
   private finished:(Job&{buffer:Uint8ClampedArray})[]=[];
   private disposed=false;
   bytes=0;
-  paint:HTMLImageElement|null=null;
-  readonly paints=new Map<string,HTMLImageElement>();
+  paint:PaintSource|null=null;
+  readonly paints=new Map<string,PaintSource>();
   private mask:HTMLCanvasElement|null=null;
   private painted:HTMLCanvasElement|null=null;
   get scratchBytes():number{return (this.mask?this.mask.width*this.mask.height*4:0)+(this.painted?this.painted.width*this.painted.height*4:0);}

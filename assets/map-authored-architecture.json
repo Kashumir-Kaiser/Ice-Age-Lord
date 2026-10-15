@@ -10,5 +10,12 @@
     "note": "Map-only ART-ONLY draft layers. Preserve the original north body/UI composition and 4 by 4 metre preview footprint; no unsupported poses or canonical progression claims are introduced.",
     "base": {"source":"assets/source/map-buildings/lord-house-l30-foundation.png","scale":0.78,"contact":[0.516,0.56],"target":[240,288]},
     "upper": {"source":"assets/source/map-buildings/lord-house-l30-upper.png","scale":0.86,"contact":[0.517,0.905],"target":[240,339]}
+  },
+  "tomb-entry": {
+    "orientation": "north",
+    "note": "Map-only idle architecture. Preserve the original body/UI and canonical 6 by 5 metre footprint; the upper master is unlit and has no emitter.",
+    "vectorFallback": true,
+    "base": {"source":"assets/source/map-buildings/tomb-entry-foundation.png","scale":0.95,"contact":[0.52,0.70],"target":[240,288]},
+    "upper": {"source":"assets/source/map-buildings/tomb-entry-upper.png","scale":0.85,"contact":[0.517,0.905],"target":[240,337]}
   }
 }

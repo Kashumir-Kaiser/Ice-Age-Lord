@@ -2037,5 +2037,52 @@
       }
     ],
     "rawResults": "/tmp/l30-cold-transfer/results.json"
+  },
+  "tombFreshDemoColdTransfer": {
+    "status": "both existing fresh-demo map-asset cold-transfer budgets met on the post-cache-fix build",
+    "command": "CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium MAP_COLD_DIR=/tmp/tomb-cold-transfer-final node scripts/map-cold-transfer.mjs",
+    "scope": "Two fresh browser contexts using real gzip HTTP responses with no-store, from overview through first territory readiness. The budget sums only response bodies for exact assets/manifest.json and assets/map/** paths. It excludes index.html, JavaScript, CSS, fonts, and UI/splash assets; those are outside this map-asset transfer budget. This is not saved-populated LIVE or target-device evidence.",
+    "environment": {
+      "node": "v24.19.0",
+      "platform": "linux",
+      "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+      "viewport": {"width": 1366, "height": 768},
+      "dpr": 1,
+      "targetDeviceVerified": false
+    },
+    "distEntry": {
+      "path": "frontend/dist/index.html",
+      "bytes": 574,
+      "sha256": "004218c030a73239615e99a42c8410d9266399668f419c9b65bd8772fce6859d",
+      "runtimeManifestPath": "frontend/dist/assets/manifest.json",
+      "runtimeManifestBytes": 1276947,
+      "runtimeManifestSha256": "5aa21de866241c7efcb11fa9d2128d86f35b116c4ac1a8498141639e43ad054c",
+      "entryJavascriptPath": "frontend/dist/assets/index-CqWqxB80.js",
+      "entryJavascriptBytes": 147412,
+      "entryJavascriptSha256": "a8af2c243df9b50630b80f1d7594258f16a62260c8f14c77443f89678682c85c"
+    },
+    "results": [
+      {
+        "quality": "low",
+        "coldMapBytes": 3551112,
+        "budgetBytes": 4194304,
+        "withinBudget": true,
+        "overviewBytes": 108141,
+        "requests": 43,
+        "tombRequestedBytes": 92157,
+        "tombRequests": 4
+      },
+      {
+        "quality": "normal",
+        "coldMapBytes": 4572273,
+        "budgetBytes": 8388608,
+        "withinBudget": true,
+        "overviewBytes": 108141,
+        "requests": 41,
+        "tombRequestedBytes": 344708,
+        "tombRequests": 4
+      }
+    ],
+    "rawResults": "/tmp/tomb-cold-transfer-final/results.json"
   }
 }
