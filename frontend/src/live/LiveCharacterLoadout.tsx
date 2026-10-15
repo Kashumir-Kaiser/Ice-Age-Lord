@@ -2,6 +2,7 @@ import { Crown, PackageOpen, Shield, Sparkles, Swords } from 'lucide-react';
 import type { ReactNode } from 'react';
 import type { PlayerView } from '../../../packages/contracts/src/index.ts';
 import { CharacterArtwork } from '../shared/PageFrame';
+import { playerItemName } from './playerText';
 
 /**
  * Equipment artwork is a presentation of *observed equipped inventory only*.
@@ -32,10 +33,10 @@ function EquipmentSocket({ slot, label, icon, item, accessory = false }: {
   accessory?: boolean;
 }) {
   return <div className={`equipment-socket${accessory ? ' equipment-socket--accessory' : ''}`}
-    role="group" aria-label={`${label}: ${item?.label ?? 'chưa ghi nhận'}`} data-equipment-slot={slot}>
+    role="group" aria-label={`${label}: ${playerItemName(item?.label) ?? 'chưa ghi nhận'}`} data-equipment-slot={slot}>
     <span className="equipment-socket-icon" aria-hidden="true">{icon}</span>
     <span className="equipment-socket-copy"><strong>{label}</strong>
-      <small>{item ? `${item.label} · ×${item.quantity}` : 'Chưa ghi nhận'}</small>
+      <small>{item ? `${playerItemName(item.label)} · ×${item.quantity}` : 'Chưa ghi nhận'}</small>
     </span>
   </div>;
 }
@@ -67,8 +68,8 @@ export default function LiveCharacterLoadout({ view }: { view: PlayerView }) {
         <EquipmentSocket key={slot} slot={slot} label={label} icon={icon} item={inSlot(slot)}/>)}</div>
     </div>
     {other.length > 0 && <div className="live-character-other-equipment"><strong>Trang bị ở vị trí khác</strong>
-      {other.map(item => <span key={item.itemId}>{item.label} · {item.equippedSlotId ?? 'Vị trí chưa ghi nhận'}</span>)}
+      {other.map(item => <span key={item.itemId}>{playerItemName(item.label)} · Trang bị bổ sung</span>)}
     </div>}
-    <small className="live-character-equipment-note">Các ô là khung hiển thị. Chỉ vật phẩm được API ghi nhận là đã trang bị mới được điền vào ô; thao tác trang bị thực hiện trong giao diện quản lý đơn vị.</small>
+    <small className="live-character-equipment-note">Trang bị được hiển thị theo hành trang hiện có. Để thay đổi trang bị, hãy mở phần quản lý quân lực.</small>
   </section>;
 }
