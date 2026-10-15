@@ -16,7 +16,7 @@ import { LIVE_SCREENS, type LiveScreen } from './live/screens';
 import TerritoryScene from './territory/TerritoryScene';
 import MapCanvas from './rendering/MapCanvas';
 import { liveExplorationSnapshot, liveTerrainRegions } from './rendering/MapSceneAdapter';
-import { territorySceneFromApi } from './live/territoryAdapter';
+import { artForLiveBuildingKind, territorySceneFromApi } from './live/territoryAdapter';
 import LiveOverview from './live/LiveOverview';
 import LiveCharacterLoadout from './live/LiveCharacterLoadout';
 import type { EntityRef as DemoEntityRef, LayoutDraft } from './game/GameClient';
@@ -1561,7 +1561,33 @@ function LiveApp({ entryIntent = 'either', onExit }: { entryIntent?: 'new' | 'lo
     }
 
     if (screen === 'buildings') {
-      return <div className="live-section-stack">
+      return <div className="live-section-stack live-buildings-page">
+        <section className="panel live-building-gallery-panel" aria-label="Các công trình thực tế trong lãnh địa">
+          <div className="block-title">
+            <div><span className="eyebrow">CÔNG TRÌNH TRONG LƯỢT CHƠI</span><h2>Danh sách công trình</h2></div>
+            <button className="text-button" onClick={() => setScreen('territory')}>Mở lãnh địa <ArrowRight size={15}/></button>
+          </div>
+          {view.territory.buildings.length ? <div className="building-grid live-building-gallery">
+            {view.territory.buildings.map(building => {
+              const artId = artForLiveBuildingKind(building.kind);
+              const assetKnown = !artId.startsWith('unregistered-building:');
+              return <button type="button" key={building.id}
+                className="panel building-card live-building-gallery-card"
+                onClick={() => { setFocusedConstructionBuildingId(building.id); setScreen('territory'); }}
+                aria-label={`Xem ${building.name} trên bản đồ lãnh địa`}>
+                <div className="building-thumb live-building-gallery-art">
+                  {assetKnown ? <img src={`/assets/buildings/${artId}/icon.svg`} alt="" loading="lazy"/> : <Hammer size={35} strokeWidth={1.2} aria-hidden="true"/>}
+                </div>
+                <div className="building-info">
+                  <span>Cấp {building.level} · {building.status === 'active' ? 'Hoạt động' : building.status === 'damaged' ? 'Hư hại' : building.status}</span>
+                  <h3>{building.name}</h3>
+                  <p>{building.footprintAreaM2 === null ? 'Kích thước chưa xác định' : `${building.footprintAreaM2} m²`}</p>
+                  <span className="building-open">Xem trên lãnh địa <ArrowRight size={15}/></span>
+                </div>
+              </button>;
+            })}
+          </div> : <p className="live-empty-state">Chưa có công trình được ghi nhận.</p>}
+        </section>
       <section className="live-panel">
         <div className="live-panel-heading"><div><span className="live-eyebrow">CONSTRUCTION CONTRACTS</span><h2>Công trình và sửa chữa</h2></div><Hammer size={22} /></div>
         {focusedConstructionBuildingId && <p className="live-preview-success">Map selection: {view.territory.buildings.find(building => building.id === focusedConstructionBuildingId)?.name ?? focusedConstructionBuildingId}. Current construction state is shown below.</p>}
