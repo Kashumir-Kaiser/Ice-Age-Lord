@@ -43,7 +43,7 @@ function siteEntities(state: GameState, world: WorldDefinition): PlayerEntityVie
     if (!observation || observation.knowledge === 'unknown') return [];
     return [{
       ref: { type: 'site', id: site.id },
-      label: site.name,
+      label: site.id === 'SITE-LL01-000' ? 'Lửa Sinh Tồn' : site.name,
       category: 'site',
       knowledge: observation.knowledge === 'signs_only' ? 'current' : observation.knowledge,
       observedAtElapsedMs: observation.observedAtElapsedMs,
