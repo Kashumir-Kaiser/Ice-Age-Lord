@@ -192,7 +192,8 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
   }),[settlement.buildings,origin.x,origin.y,activeCamera,size.width,size.height,manifest,settlement.fireLevel]);
   const visibleDrafts=useMemo(()=>drafts.filter(draft=>onScreen({x:origin.x+draft.x,y:origin.y+draft.y})),[drafts,origin.x,origin.y,activeCamera,size.width,size.height]);
   const visibleQa=useMemo(()=>denseQa?denseFixture.filter(item=>onScreen({x:origin.x+item.x,y:origin.y+item.y})):[],[denseQa,denseFixture,origin.x,origin.y,activeCamera,size.width,size.height]);
-  const renderedQa=useMemo(()=>effectiveMode==='planning'?visibleQa:[],[effectiveMode,visibleQa]);
+  const densePerformanceFixture=artQaEnabled&&requestedTerritoryFixture==='dense-520';
+  const renderedQa=useMemo(()=>densePerformanceFixture&&effectiveMode!=='planning'?[]:visibleQa,[densePerformanceFixture,effectiveMode,visibleQa]);
   const scale=PX_PER_ISO_METRE*activeCamera.zoom;
   const firePoint=worldToScreen(origin,activeCamera,size,PX_PER_ISO_METRE);
   const playerPoint=worldToScreen(playerPosition,activeCamera,size,PX_PER_ISO_METRE);

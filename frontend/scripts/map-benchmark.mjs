@@ -12,7 +12,7 @@ const quality=process.env.MAP_BENCH_QUALITY??'normal';
 const percentile=(values,p)=>values.length?values.slice().sort((a,b)=>a-b)[Math.min(values.length-1,Math.floor(values.length*p))]:null;
 try{
  for(const fixture of ['fresh','populated','dense-520','local','world-1023'])for(let run=0;run<runs;run++){
-  const page=await openMap(browser,{quality,motion:'no-preference',fixture:fixture==='world-1023'?'1023':''});
+  const page=await openMap(browser,{quality,motion:'no-preference',fixture:fixture==='world-1023'?'1023':fixture==='dense-520'?'dense-520':''});
   const observerSupport=await page.evaluate(()=>{
    const supported=PerformanceObserver.supportedEntryTypes??[];
    const state={longTasks:[],longAnimationFrames:[],observers:[],dropped:{longTasks:0,longAnimationFrames:0}};window.__mapBenchObserverState=state;
