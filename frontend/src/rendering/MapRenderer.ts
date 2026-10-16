@@ -247,8 +247,9 @@ export class MapRenderer {
       const matrix=rootAnchoredSwayMatrix(prop.x,prop.y,prop.width,prop.height,prop.imageWidth,prop.imageHeight,offset);
       if(matrix){prop.matrix=new Matrix(...matrix);this.visibleSway=true;}
     }
-    // Contact/cast shadows lie on the ground below every upright object.
-    for(const b of buildingObjects){const asset=b.asset!;this.assets.register(asset,useAtlas);for(const layer of composition(asset,this.snapshot.mode,false,b.active,b.orientation))if(layer.role==='shadow'){
+    // Low quality omits the separate ground shadow pass; building layers and
+    // depth slices below retain their authored silhouettes and painter order.
+    if(this.quality!=='low')for(const b of buildingObjects){const asset=b.asset!;this.assets.register(asset,useAtlas);for(const layer of composition(asset,this.snapshot.mode,false,b.active,b.orientation))if(layer.role==='shadow'){
       const exported=exportPath(asset,layer,preferDistrict?'district':'close'),path=(this.failures.has(exported)||this.failures.has(this.assets.url(exported)))?(asset.mapLayers?.[layer.role]??asset.layers[layer.role]??layer.path):exported;
       draws.push({id:b.id+':shadow',path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});
     }}

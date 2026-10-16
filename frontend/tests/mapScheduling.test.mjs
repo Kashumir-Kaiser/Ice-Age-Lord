@@ -6,6 +6,7 @@ import ts from 'typescript';
 import {QUALITY} from '../src/rendering/mapStyle.ts';
 registerHooks({load(url,context,nextLoad){if(url.startsWith('file:')&&url.endsWith('.ts'))return {format:'module',shortCircuit:true,source:ts.transpileModule(readFileSync(new URL(url),'utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText};return nextLoad(url,context);}});
 const {MapRenderer}=await import('../src/rendering/MapRenderer.ts');
+const mapManifest=JSON.parse(readFileSync(new URL('../../assets/manifest.json',import.meta.url),'utf8'));
 test('invalidating during a rendered frame preserves follow-up work without scheduling a second animation loop',()=>{
  const original={requestAnimationFrame:globalThis.requestAnimationFrame,cancelAnimationFrame:globalThis.cancelAnimationFrame},callbacks=new Map();let serial=0;
  globalThis.requestAnimationFrame=callback=>{callbacks.set(++serial,callback);return serial;};globalThis.cancelAnimationFrame=id=>callbacks.delete(id);
@@ -38,4 +39,25 @@ test('continuous slow drag frames still downgrade quality, while deliberate idle
   clock+=40;if(callbacks.size)tick();renderer.setCameraGesture(false);const intervals=renderer.metrics.data.intervalMs.length;
   clock+=1000;renderer.invalidate();tick();assert.equal(renderer.metrics.data.intervalMs.length,intervals,'a deliberate idle gap is not a missed animation frame');
  }finally{renderer.destroy();for(const [key,value] of Object.entries(original))if(value===undefined)delete globalThis[key];else globalThis[key]=value;}
+});
+test('low quality omits building shadow sprites while retaining authored depth-slice draws and order',()=>{
+ const original={requestAnimationFrame:globalThis.requestAnimationFrame,cancelAnimationFrame:globalThis.cancelAnimationFrame,devicePixelRatio:globalThis.devicePixelRatio};
+ globalThis.requestAnimationFrame=()=>1;globalThis.cancelAnimationFrame=()=>{};globalThis.devicePixelRatio=1;
+ const asset=mapManifest.assets.find(entry=>entry.assetId==='opening-palisade-wall');
+ const building={id:'wall',name:'wall',point:{x:0,y:0},asset,assetId:asset.assetId,orientation:'north',footprint:{widthM:10,depthM:1},selected:false,active:false,draft:false};
+ const renderer=new MapRenderer({width:1,height:1,removeEventListener(){}},{identity:'shadow-quality-test',projection:'territory',camera:{x:0,y:0,zoom:1},buildings:[building],entities:[],mode:'normal',world:false,revision:0},()=>{});
+ try{
+  renderer.size={width:500,height:500};renderer.app={renderer:{resolution:1,resize(){}},destroy(){}};
+  renderer.sampler.props=()=>[];renderer.assets.acquire=()=>({naturalWidth:10,naturalHeight:10});renderer.assets.retain=()=>{};
+  renderer.terrain.request=()=>{};renderer.terrain.retainLevels=()=>{};
+  let draws=[];renderer.renderWebGL=next=>{draws=next;};
+  renderer.configure('normal',true);renderer.render();const normal=draws.map(draw=>draw.id);
+  renderer.configure('low',true);renderer.render();const low=draws.map(draw=>draw.id);
+  assert.deepEqual(normal,['wall:shadow','wall:slice:0:body','wall:slice:1:body','wall:slice:2:body']);
+  assert.deepEqual(low,['wall:slice:0:body','wall:slice:1:body','wall:slice:2:body']);
+  assert.deepEqual(low,normal.filter(id=>!id.endsWith(':shadow')),'the structural sprite sequence and painter order are unchanged');
+ }finally{
+  renderer.destroy();
+  for(const [key,value] of Object.entries(original))if(value===undefined)delete globalThis[key];else globalThis[key]=value;
+ }
 });

@@ -4,7 +4,8 @@ import {readFileSync} from 'node:fs';
 import sharp from 'sharp';
 import {exportDepthSlices} from '../scripts/export-depth-slices.mjs';
 import {projectDepthNodes} from '../src/rendering/DepthSlices.ts';
-import {projectBuildings} from '../src/rendering/BuildingGeometry.ts';
+import {projectBuildings,buildingLOD,regionalRect} from '../src/rendering/BuildingGeometry.ts';
+import {orientationAsset,spriteRect} from '../src/rendering/SpriteRegistration.ts';
 import {depthOrder} from '../src/rendering/DepthOrder.ts';
 import {pickStack} from '../src/rendering/MapPicking.ts';
 import {artPolygon} from '../src/rendering/SpriteRegistration.ts';
@@ -45,6 +46,28 @@ test('architectural slices keep one logical entity, stable ground extents, depth
   }
   assert.equal(JSON.stringify(b),before,'depth slices never mutate a footprint or entity');
  }
+});
+
+test('building projection avoids per-entity result arrays without changing visible geometry',()=>{
+ const previous=(buildings,project,scale,size,cull=true,lods)=>(buildings.flatMap(building=>{
+  if(!building.asset)return [];
+  const asset=orientationAsset(building.asset,building.orientation),ground=project(building.point),rect=spriteRect(asset,ground,scale);
+  const lod=buildingLOD(building.id,2*(building.footprint.widthM+building.footprint.depthM)*scale,lods),symbol=regionalRect(ground);
+  const bounds={minX:Math.min(rect.x,symbol.x),minY:Math.min(rect.y,symbol.y),maxX:Math.max(rect.x+rect.width,symbol.x+symbol.width),maxY:Math.max(rect.y+rect.height,symbol.y+symbol.height)};
+  if(cull&&!intersects(bounds,{minX:-16,minY:-16,maxX:size.width+16,maxY:size.height+16}))return [];
+  const turned=building.orientation==='east'||building.orientation==='west',width=turned?building.footprint.depthM:building.footprint.widthM,depth=turned?building.footprint.widthM:building.footprint.depthM;
+  return [{...building,asset,ground,rect,lod,symbol,bounds,depth:ground.y,footprint:{...building.footprint,minX:building.point.x-width/2,maxX:building.point.x+width/2,minY:building.point.y-depth/2,maxY:building.point.y+depth/2}}];
+ }));
+ const asset=manifest.assets.find(entry=>entry.mapDepthSlices),buildings=[];
+ for(let i=0;i<520;i++)buildings.push({id:'dense:'+i,name:asset.name,asset,assetId:asset.assetId,orientation:['north','east','south','west'][i%4],footprint:{widthM:asset.compatiblePhysicalFootprint.widthM,depthM:asset.compatiblePhysicalFootprint.depthM},point:{x:(i%26)*31-390,y:Math.floor(i/26)*27-270},selected:false,active:false,draft:false});
+ buildings.push({id:'missing',name:'missing',point:{x:0,y:0},selected:false,active:false,draft:false});
+ for(const scale of [.001,.2,3,15])for(const pan of [[0,0],[350,-170],[-710,95]])for(const cull of [false,true]){
+  const project=p=>({x:300+pan[0]+scale*1.3*(p.x+p.y),y:240+pan[1]+scale*.7*(p.x-p.y)}),oldLods=new Map(),newLods=new Map();
+  assert.deepEqual(projectBuildings(buildings,project,scale,{width:600,height:480},cull,newLods),previous(buildings,project,scale,{width:600,height:480},cull,oldLods),`scale=${scale}, pan=${pan}, cull=${cull}`);
+ }
+ const sparse=new Array(buildings.length+2);sparse[1]=buildings[0];sparse[buildings.length]=buildings.at(-1);
+ const project=p=>({x:300+3*(p.x+p.y),y:240+3*(p.x-p.y)});
+ assert.deepEqual(projectBuildings(sparse,project,3,{width:600,height:480}),previous(sparse,project,3,{width:600,height:480}),`sparse arrays retain flatMap hole and initial-length behavior`);
 });
 
 test('depth-node allocation reduction preserves the previous projection output exactly',()=>{
