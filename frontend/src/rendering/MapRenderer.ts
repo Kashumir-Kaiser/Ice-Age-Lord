@@ -175,7 +175,8 @@ export class MapRenderer {
   private motionActive():boolean{return this.motionAllowed()&&(this.visibleEmitter||this.visibleAmbient||this.visibleSway);}
   private renderTargetBytes():number{return Math.ceil(this.size.width*this.size.height*this.renderDpr**2*8);}
   private frame=(time:number)=>{
-    this.raf=0;if(this.destroyed||this.hidden||this.hostVisibility==='hidden')return;
+    const sampleCallback=this.metrics.enabled&&this.metrics.samplingAt(time),callbackEntry=sampleCallback?performance.now():0;let rendered=false;
+    this.raf=0;if(this.destroyed||this.hidden||this.hostVisibility==='hidden'){if(sampleCallback)this.metrics.frameCallback(time,callbackEntry,false);return;}
     this.inFrame=true;
     try{
     const active=this.motionActive();
@@ -184,14 +185,14 @@ export class MapRenderer {
       const start=performance.now(),generated=this.terrain.process();
       if(this.dirty||generated||active||this.previousLevel!==undefined){
         const interval=this.lastFrame?time-this.lastFrame:0;
-        this.dirty=false;this.effects.update((time-this.previous)/1000,this.reducedMotion,active);this.render();this.metrics.frame(start);this.lastFrame=time;
+        this.dirty=false;this.effects.update((time-this.previous)/1000,this.reducedMotion,active);this.render();this.metrics.frame(start);this.lastFrame=time;rendered=true;
         if(interval>0)this.setQuality(this.adaptive.update(interval,Math.min(interval,1000),this.preference==='auto'?undefined:this.preference));
         else this.adaptive.resetObservation();
       }
       this.previous=time;
     }
     if(this.motionActive()||pending||this.terrain.pending||this.dirty||this.previousLevel!==undefined){this.inFrame=false;this.schedule();}else {this.metrics.data.activeLoops=0;this.idleSince=performance.now();}
-    }finally{this.inFrame=false;}
+    }finally{if(sampleCallback)this.metrics.frameCallback(time,callbackEntry,rendered);this.inFrame=false;}
   };
   private render():void{
     const scale=this.scale(),corners=[this.inverse({x:0,y:0}),this.inverse({x:this.size.width,y:0}),this.inverse({x:0,y:this.size.height}),this.inverse({x:this.size.width,y:this.size.height})];
@@ -440,5 +441,5 @@ export class MapRenderer {
   }
   private clearSprites():void{for(const s of this.drawSprites.values())s.destroy();this.drawSprites.clear();for(const t of this.chunkTextures.values())if(!t.destroyed)t.destroy(true);this.chunkTextures.clear();this.clearArchitectureTextures();}
   private clearParticleSprites():void{for(const sprite of this.particleSprites)sprite.destroy();this.particleSprites=[];}
-  destroy():void{if(this.destroyed)return;this.destroyed=true;this.stop();this.restoreDrawCounters?.();this.restoreDrawCounters=null;this.canvas.removeEventListener('webglcontextlost',this.lost);this.clearSprites();this.clearParticleSprites();this.terrain.destroy();this.assets.destroy();if(this.app){this.app.destroy(false,{children:true,texture:false,textureSource:false});this.app=null;}this.canvas.width=this.canvas.height=0;this.context=null;Object.assign(this.metrics.data,{renderMs:[],intervalMs:[],intervalSamples:[],sampleStartMs:null,sampleEndMs:null,phaseTransitions:[],textureBytes:0,decodedBytes:0,terrainBytes:0,queued:0,pendingTextures:0,activeLoops:0,visible:0,total:0,effectSprites:0});void this.transferred;}
+  destroy():void{if(this.destroyed)return;this.destroyed=true;this.stop();this.restoreDrawCounters?.();this.restoreDrawCounters=null;this.canvas.removeEventListener('webglcontextlost',this.lost);this.clearSprites();this.clearParticleSprites();this.terrain.destroy();this.assets.destroy();if(this.app){this.app.destroy(false,{children:true,texture:false,textureSource:false});this.app=null;}this.canvas.width=this.canvas.height=0;this.context=null;Object.assign(this.metrics.data,{renderMs:[],intervalMs:[],intervalSamples:[],rendererRafSamples:[],sampleStartMs:null,sampleEndMs:null,phaseTransitions:[],textureBytes:0,decodedBytes:0,terrainBytes:0,queued:0,pendingTextures:0,activeLoops:0,visible:0,total:0,effectSprites:0});void this.transferred;}
 }

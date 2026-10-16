@@ -39,7 +39,7 @@ try{
    const rafHeartbeat=timestamp=>{if(lastHeartbeat!==null){const phaseIndex=phaseBounds.findIndex((bound,index)=>index<phaseNames.length&&lastHeartbeat>=bound&&timestamp<=phaseBounds[index+1]);if(phaseIndex>=0){if(pageRafSamples.length<20000)pageRafSamples.push({start:lastHeartbeat,end:timestamp,duration:timestamp-lastHeartbeat,phase:phaseNames[phaseIndex]});else pageRafDropped++;}}lastHeartbeat=timestamp;if(heartbeat&&timestamp<phaseBounds[3])requestAnimationFrame(rafHeartbeat);};
    requestAnimationFrame(rafHeartbeat);
    const send=(type,dx,dy)=>node.dispatchEvent(new PointerEvent(type,{bubbles:true,pointerId:41,pointerType:'mouse',button:0,clientX:x+dx,clientY:y+dy}));
-   const metrics=window.__mapMetrics.at(-1);metrics.renderMs=[];metrics.intervalMs=[];metrics.intervalSamples=[];metrics.sampleStartMs=start;metrics.sampleEndMs=null;metrics.phaseTransitions=[{at:start,phase:activePhase}];
+   const metrics=window.__mapMetrics.at(-1);metrics.renderMs=[];metrics.intervalMs=[];metrics.intervalSamples=[];metrics.rendererRafSamples=[];metrics.sampleStartMs=start;metrics.sampleEndMs=null;metrics.phaseTransitions=[{at:start,phase:activePhase}];
    send('pointerdown',0,0);
    await new Promise(resolve=>{
     const step=()=>{

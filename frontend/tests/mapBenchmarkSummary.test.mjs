@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {formatBenchmarkSummaries,formatIntervalDiagnostics,formatPageRafDiagnostics,formatSlowFrameAttribution} from '../scripts/map-benchmark-summary.mjs';
+import {formatBenchmarkSummaries,formatIntervalDiagnostics,formatPageRafDiagnostics,formatRendererRafDiagnostics,formatSlowFrameAttribution} from '../scripts/map-benchmark-summary.mjs';
 import {MapMetrics} from '../src/rendering/MapMetrics.ts';
 
 test('benchmark summary lines expose frame, render and pointer percentiles per run',()=>{
@@ -119,4 +119,50 @@ test('diagnostic intervals reset at sample start, use midpoint phase, and freeze
  assert.deepEqual(metrics.data.intervalMs,[20,30,30,20,10],'existing gate samples retain their prior interval semantics');
  const {intervalByPhase}=formatIntervalDiagnostics({metrics:metrics.data});
  assert.deepEqual(intervalByPhase,{pan:{count:1,p95:30},zoom:{count:1,p95:30},selection:{count:0,p95:null}});
+});
+
+
+test('renderer RAF diagnostics report cadence, entry delay and render/skip counts by phase',()=>{
+ const diagnostics=formatRendererRafDiagnostics([
+  {time:100,gapMs:null,entryLatenessMs:1,rendered:true,phase:'pan'},
+  {time:120,gapMs:20,entryLatenessMs:2,rendered:true,phase:'pan'},
+  {time:150,gapMs:30,entryLatenessMs:5,rendered:false,phase:'zoom'},
+  {time:170,gapMs:20,entryLatenessMs:3,rendered:false,phase:'selection'},
+  {time:180,gapMs:10,entryLatenessMs:99,rendered:true,phase:'boundary'},
+ ]);
+ assert.deepEqual(diagnostics,{
+  count:4,rendered:2,skipped:2,gapMs:{p50:20,p95:30,p99:30},entryLatenessMs:{p50:3,p95:5,p99:5},
+  byPhase:{
+   pan:{count:2,rendered:2,skipped:0,gapMs:{p50:20,p95:20,p99:20},entryLatenessMs:{p50:2,p95:2,p99:2}},
+   zoom:{count:1,rendered:0,skipped:1,gapMs:{p50:30,p95:30,p99:30},entryLatenessMs:{p50:5,p95:5,p99:5}},
+   selection:{count:1,rendered:0,skipped:1,gapMs:{p50:20,p95:20,p99:20},entryLatenessMs:{p50:3,p95:3,p99:3}},
+  },
+ });
+});
+
+test('MAP_BENCH_RESULT includes renderer RAF phase summaries without changing gate fields',()=>{
+ const [line]=formatBenchmarkSummaries([{
+  quality:'normal',fixture:'dense-520',run:0,interval:{p50:17,p95:83,p99:100},
+  metrics:{renderMs:[19,20],rendererRafSamples:[
+   {time:100,gapMs:null,entryLatenessMs:1,rendered:true,phase:'pan'},
+   {time:120,gapMs:20,entryLatenessMs:3,rendered:false,phase:'pan'},
+   {time:150,gapMs:30,entryLatenessMs:8,rendered:true,phase:'zoom'},
+  ]},pointerFeedback:{p50:20,p95:40},
+ }]);
+ const result=JSON.parse(line.slice('MAP_BENCH_RESULT '.length));
+ assert.equal(result.interval.p95,83);assert.deepEqual(result.renderMs,{p50:20,p95:20,p99:20});
+ assert.deepEqual(result.diagnostics.rendererRaf.byPhase.pan.gapMs,{p50:20,p95:20,p99:20});
+ assert.deepEqual(result.diagnostics.rendererRaf.byPhase.pan.entryLatenessMs,{p50:3,p95:3,p99:3});
+ assert.equal(result.diagnostics.rendererRaf.byPhase.pan.rendered,1);assert.equal(result.diagnostics.rendererRaf.byPhase.pan.skipped,1);
+ assert.equal(result.diagnostics.rendererRaf.byPhase.zoom.gapMs.p95,30);
+});
+
+test('renderer RAF samples exclude the pre-window gap and post-end callbacks and use midpoint phase',()=>{
+ const metrics=new MapMetrics(true);metrics.data.sampleStartMs=100;metrics.data.sampleEndMs=180;metrics.data.phaseTransitions=[{at:100,phase:'pan'},{at:150,phase:'zoom'}];
+ metrics.frameCallback(90,91,true);metrics.frameCallback(110,111,true);metrics.frameCallback(140,142,false);metrics.frameCallback(170,173,true);metrics.frameCallback(190,195,false);metrics.frameCallback(200,205,true);
+ assert.deepEqual(metrics.data.rendererRafSamples,[
+  {time:110,gapMs:null,entryLatenessMs:1,rendered:true,phase:'pan'},
+  {time:140,gapMs:30,entryLatenessMs:2,rendered:false,phase:'pan'},
+  {time:170,gapMs:30,entryLatenessMs:3,rendered:true,phase:'zoom'},
+ ]);
 });

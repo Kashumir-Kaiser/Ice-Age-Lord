@@ -7,6 +7,12 @@ export function formatPageRafDiagnostics(samples=[],dropped=0){
  return {...summarize(valid),dropped,byPhase:Object.fromEntries(['pan','zoom','selection'].map(phase=>[phase,summarize(valid.filter(sample=>sample.phase===phase))]))};
 }
 
+export function formatRendererRafDiagnostics(samples=[]){
+ const valid=samples.filter(sample=>['pan','zoom','selection'].includes(sample.phase)&&Number.isFinite(sample.time)&&Number.isFinite(sample.entryLatenessMs));
+ const summarize=rows=>({count:rows.length,rendered:rows.filter(row=>row.rendered).length,skipped:rows.filter(row=>!row.rendered).length,gapMs:{p50:percentile(rows.map(row=>row.gapMs).filter(Number.isFinite),.5),p95:percentile(rows.map(row=>row.gapMs).filter(Number.isFinite),.95),p99:percentile(rows.map(row=>row.gapMs).filter(Number.isFinite),.99)},entryLatenessMs:{p50:percentile(rows.map(row=>row.entryLatenessMs).filter(Number.isFinite),.5),p95:percentile(rows.map(row=>row.entryLatenessMs).filter(Number.isFinite),.95),p99:percentile(rows.map(row=>row.entryLatenessMs).filter(Number.isFinite),.99)}});
+ return {...summarize(valid),byPhase:Object.fromEntries(['pan','zoom','selection'].map(phase=>[phase,summarize(valid.filter(sample=>sample.phase===phase))]))};
+}
+
 function overlapDiagnostics(samples,entries,supported){
  if(!supported)return {supported:false,intervals:0,overlapMs:0};
  const intervals=samples.filter(sample=>Number.isFinite(sample.start)&&Number.isFinite(sample.end));
@@ -52,6 +58,7 @@ export function formatIntervalDiagnostics(result){
  }));
  const diagnostics={intervalByPhase:byPhase,longTaskOverlap:overlapDiagnostics(samples,result.longTasks,result.observerSupport?.longtask),longAnimationFrameOverlap:overlapDiagnostics(samples,result.longAnimationFrames,result.observerSupport?.longAnimationFrame)};
  if(result.pageRafDiagnostics)diagnostics.pageRaf=result.pageRafDiagnostics;
+ if(Array.isArray(result.metrics?.rendererRafSamples))diagnostics.rendererRaf=formatRendererRafDiagnostics(result.metrics.rendererRafSamples);
  if(result.longAnimationFrames)diagnostics.slowFrameAttribution=formatSlowFrameAttribution(samples,result.longAnimationFrames,result.quality);
  return diagnostics;
 }
