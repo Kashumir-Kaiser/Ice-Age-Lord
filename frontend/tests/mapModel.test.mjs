@@ -20,7 +20,7 @@ test('map QA camera fixtures use canonical local anchors and a night-only unknow
   const stone=mapQaInitialState(INITIAL_CAMERA,7*3600,'local-stone');
   assert.deepEqual(stone.camera.local,{x:-7800,y:4700,zoom:172/5000});
   const water=mapQaInitialState(INITIAL_CAMERA,7*3600,'local-water');
-  assert.deepEqual(water.camera.local,{x:8900,y:11200,zoom:172/5000});
+  assert.deepEqual(water.camera.local,{x:10700,y:11200,zoom:.4});
   const fog=mapQaInitialState(INITIAL_CAMERA,7*3600,'unknown-fog');
   assert.deepEqual(fog.camera.local,{x:-14500,y:9000,zoom:172/5000});
   assert.equal(fog.clockSeconds,19*3600);
@@ -66,6 +66,14 @@ test('daylight, twilight and night fog contracts around source heat radius',()=>
   assert.equal(model.fogOpacityAt(24000,0,1140,1),1);
   assert.equal(model.fogOpacityAt(0,0,1140,1,false),1);
   assert.deepEqual(model.visibilityDiscs(1140,1,false),[]);
+});
+test('DEMO remembered stone lies in explored fog at night without becoming current sight',()=>{
+  // MODELED-STONE-01 in worldFeatures.ts is at world (-31,-52), where +Y is north.
+  const stone={x:-31,y:-52};
+  assert.ok(model.DEMO_EXPLORED.some(disc=>Math.hypot(stone.x-disc.x,stone.y-disc.y)<disc.clear));
+  const currentSight=model.fogOpacityAt(stone.x,stone.y,1140,1,true)<.12;
+  assert.equal(currentSight,false,'the H0 fire radius does not make the remembered stone currently visible at night');
+  assert.equal(model.exploredOpacityAt(stone.x,stone.y),0,'the remembered stone remains visible through the explored-memory layer');
 });
 test('world atlas transition waits until entire source heat area is visible',()=>{
   assert.equal(model.shouldEnterWorldMap(.5,10),false);

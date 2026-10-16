@@ -12,7 +12,7 @@ import { FogDefinitions, MapEntityGlyph } from './map/MapLayers';
 import './map-refinement.css';
 import MapCanvas from './rendering/MapCanvas';
 import { explorationSnapshot, permittedEntities } from './rendering/MapSceneAdapter';
-import { mapQaCenterKm, qaWorldFixture, requestedMapQaFixture } from './rendering/mapFixtures';
+import { mapQaAnchorKm, mapQaCenterKm, mapQaFixtureKnownId, mapQaFixtureProvenance, qaKnownGeographyFixture, qaWorldFixture, requestedMapQaFixture } from './rendering/mapFixtures';
 
 type LayerState = { buildings: boolean; resources: boolean; discoveries: boolean };
 type PointerPoint = { x: number; y: number; pointerType: string };
@@ -66,8 +66,8 @@ export default function MapScene({
   showHeat, onShowHeatChange, showExploration, onShowExplorationChange, playerName, playerPosition,
   followPlayer, onFollowPlayerChange, onOpenPlayerProfile, onOpenFullMap,
 }: Props) {
-  const visibleMap=useMemo(()=>qaWorldFixture(suppliedVisibleMap),[suppliedVisibleMap]);
   const mapQaFixture=requestedMapQaFixture();
+  const visibleMap=useMemo(()=>qaWorldFixture(qaKnownGeographyFixture(suppliedVisibleMap,mapQaFixture)),[suppliedVisibleMap,mapQaFixture]);
   const unique = useId().replace(/[^a-zA-Z0-9]/g, '') || 'map';
   const rootRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -411,13 +411,17 @@ export default function MapScene({
     <div className="map-scene map-scene--deep" ref={rootRef}
       data-map-qa-fixture={mapQaFixture??undefined}
       data-map-qa-fixture-center-km={mapQaCenterKm(mapQaFixture)}
+      data-map-qa-fixture-anchor-km={mapQaAnchorKm(mapQaFixture)}
+      data-map-qa-fixture-known-id={mapQaFixtureKnownId(mapQaFixture)}
+      data-map-qa-fixture-sight-clear-m={mapQaFixtureKnownId(mapQaFixture)?2200:undefined}
+      data-map-qa-fixture-sight-fade-m={mapQaFixtureKnownId(mapQaFixture)?3000:undefined}
       data-map-qa-camera-mode={mapQaFixture?camera.mode:undefined}
       data-map-qa-camera-x-km={mapQaFixture?(activeCamera.x/1000).toFixed(3):undefined}
       data-map-qa-camera-y-km={mapQaFixture?(activeCamera.y/1000).toFixed(3):undefined}
       data-map-qa-camera-zoom={mapQaFixture?activeCamera.zoom:undefined}
       data-map-qa-clock-minutes={mapQaFixture?minutes:undefined}
       data-map-qa-phase={mapQaFixture?phase:undefined}
-      data-map-qa-provenance={mapQaFixture?'demo-visible-snapshot':undefined}
+      data-map-qa-provenance={mapQaFixtureProvenance(mapQaFixture)}
       data-map-qa-known-count={mapQaFixture?filteredEntities.length:undefined}
       data-map-qa-known-state={mapQaFixture&&mapQaFixture!=='1023'?JSON.stringify(filteredEntities.map(entity=>({id:entity.ref.id,knowledge:entity.knowledge,currentSight:Number(Boolean(entity.currentSight))}))):undefined}>
       <MapCanvas snapshot={explorationSnapshot(visibleMap,activeCamera,world,compact)} label="Địa hình băng nguyên hướng Bắc. Địa điểm đã biết được hiển thị trên lớp điều khiển."/>

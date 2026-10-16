@@ -119,7 +119,21 @@
     "domainStateUnchangedByRenderAndPanInSeparateRun": true,
     "transferAndReloadHashesCollectedInOneRun": false,
     "scriptSyntaxCheck": "passed",
-    "liveQueryRegression": "pending"
+    "liveQueryRegression": {
+      "status": "passed",
+      "scope": "Single Chromium LIVE route regression with ?mode=live&mapQA=1&mapFixture=1023.",
+      "assertions": [
+        "LiveApp retained actual API site references.",
+        "No QA fixture attributes or injected fixture entities appeared in the projected map."
+      ],
+      "durationSeconds": 21.5
+    },
+    "bufferedApiProxyReloadCloseRegression": {
+      "status": "passed",
+      "scope": "Isolated local HTTP endpoints and Playwright route.fetch proxy; a real local request was held across page reload, then routes drained before context close.",
+      "unexpectedProxyErrors": 0,
+      "externalNetworkOrProductionCredentialsUsed": false
+    }
   },
   "limitations": [
     "Measures a local browser and temporary SQLite fixture, not production or target hardware.",

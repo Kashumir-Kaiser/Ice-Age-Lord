@@ -10,11 +10,15 @@ if(requestedWidths?.some(width=>!viewportChoices.some(v=>v.width===width)))throw
 const tombOnly=process.env.MAP_QA_TOMB_ONLY==='1';
 const viewports=tombOnly?[viewportChoices[0],viewportChoices[2]].filter(v=>!requestedWidths||requestedWidths.includes(v.width)):viewportChoices.filter(v=>!requestedWidths||requestedWidths.includes(v.width));
 const progressionOnly=process.env.MAP_QA_PROGRESSION_ONLY==='1';
+const geographyOnly=process.env.MAP_QA_GEOGRAPHY_ONLY==='1';
+const geographyKind=process.env.MAP_QA_GEOGRAPHY_KIND;
+const fogOnly=process.env.MAP_QA_FOG_ONLY==='1';
 // Target the real four-pose damaged-house QA fixture only; use MAP_QA_VIEWPORTS/DPR/QUALITY as usual.
 const damagedHouseOnly=process.env.MAP_QA_DAMAGED_HOUSE_ONLY==='1';
 const l30Only=process.env.MAP_QA_L30_ONLY==='1';
-const architectureOnly=progressionOnly||damagedHouseOnly||l30Only||tombOnly||process.env.MAP_QA_ARCHITECTURE_ONLY==='1';
+const architectureOnly=progressionOnly||geographyOnly||fogOnly||damagedHouseOnly||l30Only||tombOnly||process.env.MAP_QA_ARCHITECTURE_ONLY==='1';
 const allOrientations=['north','east','south','west'];
+const QA_MAP_STYLE_VERSION='winter-ink-25d-v1';
 const families=[['wall','Thử bố trí Tường Rào',allOrientations],['gate','Thử bố trí Cổng Gỗ · mẫu ảnh',allOrientations],['tower','Thử bố trí Tháp cao · minh họa',['north']],['house','Thử bố trí Nhà thấp · minh họa',allOrientations],['farmhouse','Thử bố trí Nhà Nông Phu Cực Địa',allOrientations],['watchtower','Thử bố trí Tháp Canh · mẫu ảnh',allOrientations],['elemental','Thử bố trí Tháp Nguyên Tố · mẫu ảnh',allOrientations]];
 const orientationAssetIds={wall:'opening-palisade-wall',gate:'opening-timber-gate',house:'lord-house-damaged',farmhouse:'polar-farmhouse-l01',watchtower:'watchtower-preview',elemental:'elemental-tower-preview'};
 const requestedFamilies=process.env.MAP_QA_FAMILIES?.split(',');
@@ -22,9 +26,37 @@ if(requestedFamilies?.some(name=>!families.some(([family])=>family===name)))thro
 if(damagedHouseOnly&&(progressionOnly||process.env.MAP_QA_ARCHITECTURE_ONLY==='1'||requestedFamilies))throw new Error('MAP_QA_DAMAGED_HOUSE_ONLY cannot be combined with other scenario filters');
 if(l30Only&&(progressionOnly||damagedHouseOnly||process.env.MAP_QA_ARCHITECTURE_ONLY==='1'||requestedFamilies))throw new Error('MAP_QA_L30_ONLY cannot be combined with other scenario filters');
 if(tombOnly&&(progressionOnly||damagedHouseOnly||l30Only||process.env.MAP_QA_ARCHITECTURE_ONLY==='1'||requestedFamilies||requestedWidths?.some(width=>![1366,390].includes(width))))throw new Error('MAP_QA_TOMB_ONLY cannot be combined with other scenario filters and only captures 1366/390');
+if(geographyOnly&&(fogOnly||progressionOnly||damagedHouseOnly||l30Only||tombOnly||process.env.MAP_QA_ARCHITECTURE_ONLY==='1'||requestedFamilies))throw new Error('MAP_QA_GEOGRAPHY_ONLY cannot be combined with other scenario filters');
+if(geographyKind&&(!geographyOnly||!['forest','stone','water'].includes(geographyKind)))throw new Error('MAP_QA_GEOGRAPHY_KIND requires MAP_QA_GEOGRAPHY_ONLY and one of forest,stone,water');
+if(fogOnly&&(geographyOnly||progressionOnly||damagedHouseOnly||l30Only||tombOnly||process.env.MAP_QA_ARCHITECTURE_ONLY==='1'||requestedFamilies))throw new Error('MAP_QA_FOG_ONLY cannot be combined with other scenario filters');
 const browser=await launchMapBrowser(),evidence=[];
 const output=resolve(process.env.MAP_QA_DIR??'map-evidence/after');mkdirSync(output,{recursive:true});
 const dpr=Number(process.env.MAP_QA_DPR??1),quality=process.env.MAP_QA_QUALITY??'normal';
+const fullSuite=!architectureOnly&&!requestedFamilies&&!requestedWidths&&!tombOnly;
+const fullViewportBatch=process.env.MAP_QA_EXPECT_73==='1';
+if(fullViewportBatch&&(requestedWidths?.length!==1||architectureOnly||requestedFamilies||tombOnly))throw new Error('MAP_QA_EXPECT_73 requires exactly one requested viewport and the complete unfiltered scenario set');
+const expectFullPerViewport=fullSuite||fullViewportBatch;
+let completed=false;
+function persistProgress(status='in-progress'){
+ writeFileSync(resolve(output,'scenarios.json'),JSON.stringify(evidence,null,2));
+ const counts=Object.fromEntries(viewports.map(viewport=>[String(viewport.width),evidence.filter(row=>row.viewport.width===viewport.width).length]));
+ const manifest={schema:'map-visual-qa-v1',status,captureProvenance:'demo-only-read-only-visual-qa',reviewStatus:'pending-parent-visual-review',mode:'demo',quality,dpr,viewports:viewports.map(({width,height})=>({width,height})),captureRows:evidence.length,scenarioRowsByViewport:counts,expectedRowsPerViewport:expectFullPerViewport?73:null,fullSuite,fullViewportSuite:expectFullPerViewport,outputs:{scenarioIndex:'scenarios.json'},orientationReview:{families:Object.keys(orientationAssetIds),poseOrientations:allOrientations,progressions:['lord-house-repaired','lord-house-l30','polar-farmhouse-l10','survival-fire-l26'],progressionOrientation:'north',contactSheets:'relative paths stored on capture rows'}};
+ writeFileSync(resolve(output,'qa-manifest.json'),JSON.stringify(manifest,null,2));
+}
+persistProgress();
+function visualSeed(identity){let n=2166136261;for(const c of identity+':'+QA_MAP_STYLE_VERSION)n=Math.imul(n^c.charCodeAt(0),16777619);return n>>>0;}
+function visualHash(x,y,seed){let n=Math.imul(x|0,374761393)^Math.imul(y|0,668265263)^seed;n=Math.imul(n^(n>>>13),1274126177);return((n^(n>>>16))>>>0)/4294967296;}
+function expectedWaterBankProps(host,camera){
+ const scale=host.height*camera.zoom/172,halfWidth=host.width/(2*scale),halfHeight=host.height/(2*scale),seed=visualSeed('LL01');
+ const minX=Math.floor((camera.xKm*1000-halfWidth-20)/24),maxX=Math.floor((camera.xKm*1000+halfWidth+20)/24);
+ const centerY=-camera.yKm*1000,minY=Math.floor((centerY-halfHeight-20)/24),maxY=Math.floor((centerY+halfHeight+20)/24);
+ let count=0;for(let y=minY;y<=maxY;y++)for(let x=minX;x<=maxX;x++){const n=visualHash(x,y,seed+101);if(n>.9&&n<=.96)count++;}
+ return {count,metresPerPixel:1/scale,halfWidth,halfHeight};
+}
+async function ensureCalibrationOpen(page){
+ const details=page.locator('.territory-calibration');
+ if(!await details.evaluate(node=>node.open))await details.locator('summary').click();
+}
 async function capture(page,name,viewport,{waitForIdle=true}={}){
  await page.locator('.map-render-host').evaluate(node=>node.scrollIntoView({block:'center',inline:'nearest'}));
  const group=/^damaged-house/.test(name)?'architecture/damaged-house/':/^tomb-entry-/.test(name)?'architecture/tomb-entry/':/^(watchtower|elemental)-/.test(name)?'architecture/prototypes/':/^(farmhouse|late)-/.test(name)?'architecture/progression/':/^(house|tower)-/.test(name)?'architecture/extended/':/^(wall|gate)-/.test(name)?'architecture/':'';
@@ -36,7 +68,28 @@ async function capture(page,name,viewport,{waitForIdle=true}={}){
   await page.screenshot({path:resolve(output,filename+'.failure.png'),animations:'disabled'});throw error;
  }
  await page.screenshot({path:resolve(output,filename),animations:'disabled'});
- const row={filename,scenario:name,viewport,dpr,quality,reviewStatus:'pending-parent-visual-review',provenance:'demo-only-read-only-visual-qa',metrics:await page.evaluate(()=>window.__mapMetrics.at(-1))};evidence.push(row);return row;
+ const row={filename,scenario:name,viewport,dpr,quality,reviewStatus:'pending-parent-visual-review',provenance:'demo-only-read-only-visual-qa',metrics:await page.evaluate(()=>window.__mapMetrics.at(-1))};
+ const mapScene=page.locator('.map-scene');
+ if(await mapScene.count()){
+  const qa=await mapScene.evaluate(node=>({
+   fixture:node.getAttribute('data-map-qa-fixture'),
+   provenance:node.getAttribute('data-map-qa-provenance'),
+   cameraMode:node.getAttribute('data-map-qa-camera-mode'),
+   cameraXKm:Number(node.getAttribute('data-map-qa-camera-x-km')),
+   cameraYKm:Number(node.getAttribute('data-map-qa-camera-y-km')),
+   cameraZoom:Number(node.getAttribute('data-map-qa-camera-zoom')),
+   clockMinutes:Number(node.getAttribute('data-map-qa-clock-minutes')),
+   phase:node.getAttribute('data-map-qa-phase'),
+   centerKm:node.getAttribute('data-map-qa-fixture-center-km'),
+   anchorKm:node.getAttribute('data-map-qa-fixture-anchor-km'),
+   fixtureKnownId:node.getAttribute('data-map-qa-fixture-known-id'),
+   sightClearM:Number(node.getAttribute('data-map-qa-fixture-sight-clear-m'))||null,
+   sightFadeM:Number(node.getAttribute('data-map-qa-fixture-sight-fade-m'))||null,
+   knownState:JSON.parse(node.getAttribute('data-map-qa-known-state')??'null'),
+  }));
+  if(qa.fixture)row.mapQa={...qa,reviewStatus:'pending-parent-visual-review'};
+ }
+ evidence.push(row);persistProgress();return row;
 }
 async function captureDemoFixture(name,fixture,viewport,{screen='Lãnh địa',expectedCount}={}){
  const page=await openMap(browser,{viewport,dpr,quality,fixture});
@@ -118,9 +171,46 @@ async function captureLocalGeography(kind,viewport){
   await navigateMap(page,'Bản đồ');
   await readyMap(page);
   const scene=page.locator('.map-scene');
-  const metadata=await scene.evaluate(node=>({fixture:node.getAttribute('data-map-qa-fixture'),cameraMode:node.getAttribute('data-map-qa-camera-mode'),provenance:node.getAttribute('data-map-qa-provenance'),centerKm:node.getAttribute('data-map-qa-fixture-center-km')}));
-  if(metadata.fixture!==`local-${kind}`||metadata.cameraMode!=='local'||metadata.provenance!=='demo-visible-snapshot'||!metadata.centerKm)throw new Error(`Local ${kind} scene is not using its declared demo geography anchor: ${JSON.stringify(metadata)}`);
-  const row=await capture(page,`local-${kind}`,viewport);row.geography={kind,provenance:metadata.provenance,centerKm:metadata.centerKm,reviewStatus:'pending-parent-visual-review'};return row;
+  const metadata=await scene.evaluate(node=>({
+   fixture:node.getAttribute('data-map-qa-fixture'),cameraMode:node.getAttribute('data-map-qa-camera-mode'),
+   provenance:node.getAttribute('data-map-qa-provenance'),centerKm:node.getAttribute('data-map-qa-fixture-center-km'),
+   anchorKm:node.getAttribute('data-map-qa-fixture-anchor-km'),
+   fixtureKnownId:node.getAttribute('data-map-qa-fixture-known-id'),sightClearM:Number(node.getAttribute('data-map-qa-fixture-sight-clear-m')),
+   sightFadeM:Number(node.getAttribute('data-map-qa-fixture-sight-fade-m')),cameraXKm:Number(node.getAttribute('data-map-qa-camera-x-km')),
+   cameraYKm:Number(node.getAttribute('data-map-qa-camera-y-km')),cameraZoom:Number(node.getAttribute('data-map-qa-camera-zoom')),
+  }));
+  const expectedId=kind==='forest'?'QA-GEO-FOREST':kind==='stone'?'QA-GEO-STONE':'QA-GEO-WATER';
+  const canonicalUnknownId=kind==='forest'?'SITE-LL01-040':kind==='stone'?'SITE-LL01-041':'SITE-LL01-042';
+  const expectedAnchorKm=kind==='forest'?'4.7,-6.8':kind==='stone'?'-7.8,-4.7':'8.9,-11.2';
+  const expectedCameraCenterKm=kind==='water'?'10.7,-11.2':expectedAnchorKm;
+  const knownState=await scene.evaluate(node=>JSON.parse(node.getAttribute('data-map-qa-known-state')??'null'));
+  const knownFixture=Array.isArray(knownState)?knownState.find(entry=>entry.id===expectedId):null;
+  const marker=page.locator(`.map-entity-marker[data-entity-id="${expectedId}"]`);
+  const markerState=await marker.evaluate(node=>({knowledge:node.getAttribute('data-knowledge'),currentSight:Number(node.getAttribute('data-current-sight')),label:node.getAttribute('aria-label')})).catch(()=>null);
+  const canonicalUnknownLeaks=await page.evaluate(id=>({
+   rendered:Array.from(document.querySelectorAll('[data-entity-id]')).some(node=>node.getAttribute('data-entity-id')===id),
+   accessible:document.querySelector('.map-accessible-entities')?.textContent?.includes(id)??false,
+   telemetry:JSON.stringify((window).__mapMetrics??[]).includes(id),
+  }),canonicalUnknownId);
+  const metrics=await page.evaluate(()=>window.__mapMetrics.at(-1));
+  if(metadata.fixture!==`local-${kind}`||metadata.cameraMode!=='local'||metadata.provenance!=='demo-qa-known-geography-fixture'||metadata.fixtureKnownId!==expectedId||metadata.centerKm!==expectedCameraCenterKm||metadata.anchorKm!==expectedAnchorKm||metadata.sightClearM!==2200||metadata.sightFadeM!==3000)throw new Error(`Local ${kind} scene is not using its declared synthetic DEMO geography anchor/camera: ${JSON.stringify(metadata)}`);
+  if(!knownFixture||knownFixture.knowledge!=='current'||knownFixture.currentSight!==1)throw new Error(`Local ${kind} QA fixture was not retained in projected-known metadata: ${JSON.stringify(knownFixture)}`);
+  if(kind!=='water'&&(!markerState||markerState.knowledge!=='current'||markerState.currentSight!==1||!markerState.label?.includes('DEMO')))throw new Error(`Local ${kind} camera did not project its synthetic known marker: ${JSON.stringify(markerState)}`);
+  if(kind==='water'&&markerState&&(!markerState.label?.includes('DEMO')||markerState.knowledge!=='current'||markerState.currentSight!==1))throw new Error(`Local water off-camera marker metadata is inconsistent: ${JSON.stringify(markerState)}`);
+  if(canonicalUnknownLeaks.rendered||canonicalUnknownLeaks.accessible||canonicalUnknownLeaks.telemetry)throw new Error(`Local ${kind} QA leaked the undiscovered canonical site into DOM/accessibility/telemetry: ${JSON.stringify(canonicalUnknownLeaks)}`);
+  if(!metrics||metrics.visibleTerrainChunks<=0||metrics.terrainBytes<=0||metrics.errors.length)throw new Error(`Local ${kind} terrain renderer is not ready: ${JSON.stringify(metrics)}`);
+  let shoreline=null;
+  if(kind==='water'){
+   const host=await page.locator('.map-render-host').boundingBox();
+   if(!host)throw new Error('Water QA renderer host is missing');
+   const bankProps=expectedWaterBankProps(host,{xKm:metadata.cameraXKm,yKm:metadata.cameraYKm,zoom:metadata.cameraZoom});
+   const westEdgeDistance=Math.abs(metadata.cameraXKm*1000-bankProps.halfWidth-8900)/2100;
+   const eastEdgeDistance=Math.abs(metadata.cameraXKm*1000+bankProps.halfWidth-8900)/2100;
+   const waterWeight=distance=>{const t=Math.max(0,Math.min(1,(1-distance)*3));return t*t*(3-2*t);};
+   if(bankProps.metresPerPixel>1.5||bankProps.count<1||metrics.visible<bankProps.count||westEdgeDistance>.75||eastEdgeDistance<=1)throw new Error(`Water QA camera does not expose seeded bank props and both sides of the modeled ice edge: ${JSON.stringify({bankProps,renderedProps:metrics.visible,westEdgeDistance,eastEdgeDistance})}`);
+   shoreline={model:'terrain-sampler-ice-ellipse-plus-seeded-bank-props',ellipseCenterKm:expectedAnchorKm,ellipseRadiiM:{x:2100,y:1200},westEdgeDistance,eastEdgeDistance,westEdgeIceWeight:waterWeight(westEdgeDistance),eastEdgeIceWeight:waterWeight(eastEdgeDistance),expectedBankProps:bankProps.count,renderedWorldProps:metrics.visible,metresPerPixel:bankProps.metresPerPixel,halfViewportM:{x:bankProps.halfWidth,y:bankProps.halfHeight}};
+  }
+  const row=await capture(page,`local-${kind}`,viewport);row.geography={kind,fixtureKnownId:expectedId,knowledge:knownFixture.knowledge,currentSight:knownFixture.currentSight,markerVisibleInFrame:Boolean(markerState),provenance:metadata.provenance,anchorKm:metadata.anchorKm,centerKm:metadata.centerKm,camera:{mode:metadata.cameraMode,xKm:metadata.cameraXKm,yKm:metadata.cameraYKm,zoom:metadata.cameraZoom},sight:{clearM:metadata.sightClearM,fadeM:metadata.sightFadeM},terrain:{visibleChunks:metrics.visibleTerrainChunks,bytes:metrics.terrainBytes},...(shoreline?{shoreline}:{}),canonicalUnknownOmissionAsserted:true,reviewStatus:'pending-parent-visual-review'};persistProgress();return row;
  }finally{await page.close();}
 }
 const assetManifest=JSON.parse(readFileSync(new URL('../public/assets/manifest.json',import.meta.url),'utf8'));
@@ -198,7 +288,7 @@ async function saveDamagedHouseSheets(crops,viewport){
  await sheet('damaged-house-modes.png',crops.filter(item=>item.group==='mode'),3);
 }
 async function captureDamagedHouse(calibration,viewport){
- await calibration.locator('.territory-calibration > summary').click();
+ await ensureCalibrationOpen(calibration);
  await calibration.getByLabel('Hình minh họa',{exact:true}).selectOption('lord-house-damaged');
  await calibration.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
  const orientationSelect=calibration.getByLabel('Hướng hình kiểm tra',{exact:true}),preview=calibration.locator('[data-art-qa-footprint]'),crops=[];
@@ -236,7 +326,7 @@ async function captureDamagedHouse(calibration,viewport){
  writeFileSync(resolve(output,String(viewport.width),'architecture/damaged-house/damaged-house-qa.json'),JSON.stringify({assetId:'lord-house-damaged',viewport,dpr,quality,sourceHashes:damagedSources,captures:crops.map(({image,...item})=>item)},null,2));
 }
 async function captureL30Modes(calibration,viewport){
- await calibration.locator('.territory-calibration > summary').click();
+ await ensureCalibrationOpen(calibration);
  await calibration.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
  await calibration.getByLabel('Hình minh họa',{exact:true}).selectOption('lord-house-l30');
  const cases=[
@@ -273,7 +363,7 @@ async function captureTombModes(calibration,viewport){
   if(!entry||!sourceUrl||entry.sourceSha256!==sha256(readFileSync(sourceUrl)))throw new Error(`Canonical tomb ${role} source hash differs from its registered north master`);
   sources[role]={source,sourceSha256:entry.sourceSha256};
  }
- await calibration.locator('.territory-calibration > summary').click();
+ await ensureCalibrationOpen(calibration);
  await calibration.getByLabel('Hình minh họa',{exact:true}).selectOption('tomb-entry');
  await calibration.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
  const outline=calibration.locator('[data-art-qa-footprint]');
@@ -302,10 +392,22 @@ async function captureTombModes(calibration,viewport){
  await calibration.getByRole('button',{name:'Ẩn hình kiểm tra trên bản đồ',exact:true}).click();
  writeFileSync(resolve(output,String(viewport.width),'architecture/tomb-entry','tomb-entry-qa.json'),JSON.stringify({assetId:'tomb-entry',orientation:'north',viewport,dpr,quality,cameraAdjustment:{zoomOutSteps:viewport.width===390?1:0},physicalFootprint:physical,sourceHashes:sources,captures},null,2));
 }
-let completed=false;
 try{
  for(const viewport of viewports){
   const page=architectureOnly?null:await openMap(browser,{viewport,dpr,quality});
+  if(geographyOnly){
+   const kinds=geographyKind?[geographyKind]:['forest','stone','water'];
+   for(const kind of kinds)await captureLocalGeography(kind,viewport);
+   const count=evidence.filter(row=>row.viewport.width===viewport.width).length;
+   if(count!==kinds.length)throw new Error(`Geography-only QA expected ${kinds.length} anchored region captures at ${viewport.width}px, received ${count}`);
+   continue;
+  }
+  if(fogOnly){
+   await captureFogCase(1140,'remembered',viewport);
+   const count=evidence.filter(row=>row.viewport.width===viewport.width).length;
+   if(count!==1)throw new Error(`Fog-only QA expected one remembered-night capture at ${viewport.width}px, received ${count}`);
+   continue;
+  }
   if(page){await navigateMap(page,'Lãnh địa');await capture(page,'opening',viewport);}
   const calibration=await openMap(browser,{viewport,dpr,quality});await navigateMap(calibration,'Lãnh địa');
   await calibration.getByRole('button',{name:'Về lửa trại',exact:true}).click();
@@ -356,7 +458,7 @@ try{
    await calibration.getByRole('button',{name:`Xóa ${name}`,exact:true}).click();
   }
   if(progressionOnly||!requestedFamilies){
-   await calibration.locator('.territory-calibration > summary').click();
+   await ensureCalibrationOpen(calibration);
    await calibration.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
    const progressionCaptures=[];
    for(const id of ['lord-house-repaired','lord-house-l30','polar-farmhouse-l10','survival-fire-l26']){
@@ -387,7 +489,7 @@ try{
   await page.getByLabel('Xem thử vùng nhiệt').selectOption('2500');await page.getByRole('button',{name:'Toàn bộ vùng nhiệt',exact:true}).click();await capture(page,'heat-2500',viewport);
   await page.getByLabel('Xem thử vùng nhiệt').selectOption('25000');await page.getByRole('button',{name:'Toàn bộ vùng nhiệt',exact:true}).click();await capture(page,'heat-25000',viewport);
   await page.getByRole('button',{name:'Về lửa trại',exact:true}).click();
-  await page.locator('.territory-calibration > summary').click();await page.getByRole('button',{name:'Xem nhóm công trình minh họa',exact:true}).click();await capture(page,'dense-520',viewport);
+  await ensureCalibrationOpen(page);await page.getByRole('button',{name:'Xem nhóm công trình minh họa',exact:true}).click();await capture(page,'dense-520',viewport);
   await navigateMap(page,'Bản đồ');await capture(page,'local',viewport);
   await page.locator('.map-developer-tools > summary').click();await page.getByLabel('Mô phỏng giờ hiển thị').selectOption('1140');await page.locator('.map-developer-tools > summary').click();await capture(page,'night',viewport);
   await page.getByRole('button',{name:'Chuyển sang bản đồ thế giới',exact:true}).click();await capture(page,'world-night',viewport);
@@ -399,7 +501,7 @@ try{
   for(const kind of ['forest','stone','water'])await captureLocalGeography(kind,viewport);
   for(const minutes of [420,1140])for(const kind of ['current','remembered','unknown'])await captureFogCase(minutes,kind,viewport);
  }
- if(!architectureOnly&&!requestedFamilies&&!requestedWidths&&!tombOnly){
+ if(expectFullPerViewport){
   for(const viewport of viewports){
    const count=evidence.filter(row=>row.viewport.width===viewport.width).length;
    if(count!==73)throw new Error(`Full QA suite expected 73 capture rows at ${viewport.width}px, received ${count}`);
@@ -407,11 +509,7 @@ try{
  }
  completed=true;
 }finally{
- writeFileSync(resolve(output,'scenarios.json'),JSON.stringify(evidence,null,2));
- const counts=Object.fromEntries(viewports.map(viewport=>[String(viewport.width),evidence.filter(row=>row.viewport.width===viewport.width).length]));
- const fullSuite=!architectureOnly&&!requestedFamilies&&!requestedWidths&&!tombOnly;
- const manifest={schema:'map-visual-qa-v1',status:completed?'captured-pending-visual-review':'incomplete',captureProvenance:'demo-only-read-only-visual-qa',reviewStatus:'pending-parent-visual-review',mode:'demo',quality,dpr,viewports:viewports.map(({width,height})=>({width,height})),captureRows:evidence.length,scenarioRowsByViewport:counts,expectedRowsPerViewport:fullSuite?73:null,fullSuite,outputs:{scenarioIndex:'scenarios.json'},orientationReview:{families:Object.keys(orientationAssetIds),poseOrientations:allOrientations,progressions:['lord-house-repaired','lord-house-l30','polar-farmhouse-l10','survival-fire-l26'],progressionOrientation:'north',contactSheets:'relative paths stored on capture rows'}};
- writeFileSync(resolve(output,'qa-manifest.json'),JSON.stringify(manifest,null,2));
+ persistProgress(completed?'captured-pending-visual-review':'incomplete');
  await browser.close();
 }
 console.log(`Captured ${evidence.length} deterministic map scenarios. Images require visual review; capture is not approval.`);

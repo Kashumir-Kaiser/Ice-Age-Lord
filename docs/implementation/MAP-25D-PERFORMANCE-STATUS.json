@@ -27,6 +27,10 @@
       "qaOnlyAttributesPresent": 0,
       "domainHashUnchangedDuringPostReloadMapViewAndPan": true,
       "preReloadDomainHashCompared": false,
+      "focusedLiveQueryRegression": "passed in a separate targeted browser run",
+      "separateRevision2ReloadHashCheck": "passed; before/after reload hashes matched; this was separate from the complete transfer run",
+      "latestCombinedTransferAttempt": "not passed; a later attempt failed when a proxied response body was disposed during browser teardown",
+      "proxyCloseSmokeCheck": "passed separately with a real HTTP request and no proxy errors; not a rerun of the SQLite LIVE flow",
       "localBaselineMapAssetWireBytes": {
         "low": { "requests": 39, "uniqueFiles": 24, "bytes": 3226903 },
         "normal": { "requests": 22, "uniqueFiles": 22, "bytes": 2467797 }
@@ -37,7 +41,20 @@
       "evidence": "MAP-25D-LIVE-TRANSFER-EVIDENCE.json"
     },
     "browserVisualReview": {
-      "status": "focused farmhouse subset accepted; broader browser and visual matrix pending",
+      "status": "focused browser journeys and farmhouse visual subset accepted; broader browser and visual matrix pending",
+      "passedJourneys": [
+        "ordinary demo placement palette",
+        "wall and gate upright-pose previews",
+        "overlapping distant-symbol selection",
+        "static DEMO QA fixture metadata",
+        "visible-active-fire animation, reduced motion, and planning suppression",
+        "offscreen/document-hidden renderer pause and resume",
+        "known-entity fog metadata",
+        "Canvas2D fallback",
+        "repaired/damaged house architecture",
+        "layered Tomb rendering"
+      ],
+      "journeySuiteStatus": "focused-subset-only",
       "acceptedScope": {
         "asset": "polar-farmhouse-l01",
         "viewport": { "width": 1366, "height": 768 },
@@ -46,14 +63,115 @@
         "accepted": ["four-pose contact sheet", "planning full frame", "focus full frame"],
         "observations": ["planning pad remains solid", "focus fades roof while retaining full silhouette", "no horizontal cut or black rectangle"]
       },
-      "evidence": "../../frontend/map-evidence/focused-farmhouse-final/farmhouse-focused-review.json",
-      "suiteStatus": "incomplete-not-full-matrix"
+      "evidence": "MAP-25D-FARMHOUSE-VISUAL-REVIEW.json",
+      "suiteStatus": "incomplete-not-full-matrix",
+      "latestCaptureBatch": {
+      "status": "prior 73 of 73 batch pending visual review; geography rows are superseded by later QA-only camera, anchor, and fog-memory corrections",
+        "viewport": { "width": 1366, "height": 768 },
+        "quality": "normal",
+        "devicePixelRatio": 1,
+        "evidence": "../../frontend/map-evidence/local-proof/1366-normal-dpr1/qa-manifest.json",
+        "matrixCombinationsCompleted": 1,
+      "matrixCombinationsExpected": 12,
+      "supersededRows": ["local-forest", "local-stone", "local-water", "unknown-fog"]
+      }
+    },
+    "postGeographyFixtureValidation": {
+      "sourceChange": "DEMO-only synthetic QA-known-geography projection at authored anchors; water QA camera/pan metadata correction; align the remembered DEMO stone disc with MODELED-STONE-01 world coordinates; no saved/live knowledge mutation",
+      "focusedUnitFiles": [
+        "tests/mapGeographyFixtures.test.mjs",
+        "tests/mapModel.test.mjs",
+        "tests/mapRendering.test.mjs",
+        "tests/terrainCache.test.mjs",
+        "tests/textureOwnership.test.mjs"
+      ],
+      "focusedUnitSuitesPassed": 5,
+      "focusedUnitSuitesFailed": 0,
+      "typecheck": "passed (npx tsc --noEmit)",
+      "productionBuild": "passed; final build after frozen source; 2,282 modules transformed; 20.94 seconds",
+      "geographyOnlyBrowserCapture": "remembered-night full-frame capture reviewed and accepted; water shoreline capture remains pending review against the final build"
     },
     "savedPopulatedLiveTransfer": {
       "status": "pending",
       "evidence": null
     },
     "scopeNote": "The benchmark results below predate this integration. Dense-scene frame-budget misses and Intel UHD 620 validation remain open; the older measurements do not establish performance for the current integration."
+  },
+  "currentIntegrationMemoryPlateau": {
+    "status": "passed for the measured software-renderer environment; target-device verification pending",
+    "workflow": "Map performance evidence",
+    "runId": 38825240268,
+    "sourceCommit": "f31d314cf8fe9ad67a6368595aa94035e88a3501",
+    "scope": "Chromium headless, 1366×768, DPR 1; same warmed territory endpoint; two identical 20-return/pan cycles; exposed garbage collection before heap measurements.",
+    "heapBudgetBytes": 10485760,
+    "qualities": {
+      "low": {
+        "heapBytesByCycle": [9713873, 12689654, 13546598],
+        "heapGrowthLastTwoCyclesBytes": 856944,
+        "decodedBytesEstimate": 9507500,
+        "rendererGpuBytesEstimate": 6106609,
+        "pending": 0,
+        "activeMaps": 1,
+        "activeLoops": 0,
+        "canvasCount": 1,
+        "retainedMetricRecordsByCycle": [2, 42, 82],
+        "plateauVerified": true
+      },
+      "normal": {
+        "heapBytesByCycle": [9710268, 12594339, 13425255],
+        "heapGrowthLastTwoCyclesBytes": 830916,
+        "decodedBytesEstimate": 31092736,
+        "rendererGpuBytesEstimate": 17468229,
+        "pending": 0,
+        "activeMaps": 1,
+        "activeLoops": 0,
+        "canvasCount": 1,
+        "retainedMetricRecordsByCycle": [2, 42, 82],
+        "plateauVerified": true
+      }
+    },
+    "targetDeviceVerified": false,
+    "limitations": "Decoded and renderer GPU byte values are estimates, not driver VRAM measurements. Retained metric records increase from 2 to 82 over the measured cycles; heap growth remains below the configured gate, but metric-history retention still merits review."
+  },
+  "currentIntegrationFramePerformance": {
+    "status": "low and normal quality measurement jobs completed; configured frame budgets miss as reported below",
+    "workflow": "Map performance evidence",
+    "runId": 38825240268,
+    "sourceCommit": "f31d314cf8fe9ad67a6368595aa94035e88a3501",
+    "rawResultsSha256": "e5380326dd5a3a2fe946ac43c830dd8f5d9eea2641e4e12ecbef93b903be55e0",
+    "measurementSourcePredatesFinalGeoFogQaChanges": true,
+    "scope": "Chromium headless with SwiftShader, 1366×768, DPR 1; five fixtures, three 60-second runs each after a 10-second warmup. The populated fixture is DEMO drafts, not persisted LIVE data.",
+    "frameIntervalP95BudgetMs": 40,
+    "pointerFeedbackP95BudgetMs": 100,
+    "normalFrameIntervalP95BudgetMs": 20,
+    "normalPointerFeedbackP95BudgetMs": 75,
+    "rendererBundleGzipBytes": 100738,
+    "rendererBundleScope": "Named renderer entry and split chunks, not a full before/after JavaScript delta.",
+    "fixtures": {
+      "fresh": { "medianIntervalP95Ms": 33.5, "medianPointerP95Ms": 34.2, "frameIntervalBudgetMet": true, "pointerBudgetMet": true },
+      "populatedDemoDrafts": { "medianIntervalP95Ms": 48.0, "medianPointerP95Ms": 48.8, "frameIntervalBudgetMet": false, "pointerBudgetMet": true },
+      "dense520": { "medianIntervalP95Ms": 166.8, "medianPointerP95Ms": 154.1, "frameIntervalBudgetMet": false, "pointerBudgetMet": false },
+      "local": { "medianIntervalP95Ms": 110.9, "medianPointerP95Ms": 51.3, "frameIntervalBudgetMet": false, "pointerBudgetMet": true },
+      "world1023": { "medianIntervalP95Ms": 66.8, "medianPointerP95Ms": 42.2, "frameIntervalBudgetMet": false, "pointerBudgetMet": true }
+    },
+    "normalQualityRawResultsSha256": "e9e58c315403fcef4889461e28864b8d08f341157fc82ce1000f0d1f6d872ac3",
+    "normalQualityFixtures": {
+      "fresh": { "medianIntervalP95Ms": 24.1, "medianPointerP95Ms": 34.4, "frameIntervalBudgetMet": false, "pointerBudgetMet": true },
+      "populatedDemoDrafts": { "medianIntervalP95Ms": 27.4, "medianPointerP95Ms": 40.4, "frameIntervalBudgetMet": false, "pointerBudgetMet": true },
+      "dense520": { "medianIntervalP95Ms": 131.3, "medianPointerP95Ms": 122.7, "frameIntervalBudgetMet": false, "pointerBudgetMet": false, "longTasksPerRun": "337–342", "maxLongTaskDurationMs": "164–168" },
+      "local": { "medianIntervalP95Ms": 83.3, "medianPointerP95Ms": 41.7, "frameIntervalBudgetMet": false, "pointerBudgetMet": true },
+      "world1023": { "medianIntervalP95Ms": 93.6, "medianPointerP95Ms": 34.7, "frameIntervalBudgetMet": false, "pointerBudgetMet": true }
+    },
+    "normalQualityBundleGzipBytes": 100738,
+    "normalQualityBundleScope": "Named renderer entry and split chunks, not a full before/after JavaScript delta.",
+    "longTaskEvidence": {
+      "dense520CountAcrossThreeRuns": 814,
+      "dense520MaxDurationMs": 205,
+      "worstSampledIntervalsAround10Seconds": ["dense520", "local", "world1023"],
+      "interpretation": "The approximately 10-second worst interval samples are retained as anomalies in the raw artifact and are not treated as representative frame rates."
+    },
+    "interpretation": "Every normal-quality fixture misses its 20 ms frame-interval p95 budget; dense520 also misses the 75 ms pointer-feedback budget. Both qualities show occasional approximately 10-second worst-interval samples in raw output; these are anomalies, not representative frame rates.",
+    "targetDeviceVerified": false
   },
   "sourceCommit": "979f54d40f6884d3297e683cb02cc703f61d6e64",
   "workflowRun": {

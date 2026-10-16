@@ -144,10 +144,13 @@ test('architectural tower loads separate footing and upper art when its atlas is
  await page.getByRole('button',{name:'Về lửa trại',exact:true}).click();await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();
  await page.getByRole('button',{name:'Thử bố trí Tháp cao · minh họa',exact:true}).click();
  const scene=page.locator('.territory-scene-svg');await scene.scrollIntoViewIfNeeded();const box=(await scene.boundingBox())!;
- await scene.click({position:{x:box.width*.55,y:box.height*.65}});await scene.focus();await page.keyboard.press('Escape');
+ await scene.click({position:{x:box.width*.55,y:box.height*.65}});
+ await expect(page.locator('.territory-placement-controls').getByRole('button',{name:'Xoay 90°'})).toBeDisabled();
+ await scene.focus();await page.keyboard.press('Escape');
  for(const role of ['base','upper'])await expect.poll(()=>Array.from(requested).some(p=>new RegExp(`/fixture-tall-tower/${role}-(close|district)\\.png$`).test(p)),{timeout:20000}).toBe(true);
  const draft=page.locator('.territory-building.is-draft[data-asset-id="fixture-tall-tower"]');await expect(draft).toHaveCount(1);
- await expect(page.getByRole('button',{name:'Xoay 90°'})).toBeDisabled();
+ await expect(draft).toHaveAttribute('data-orientation','north');
+ await expect(page.locator('.territory-placement-controls')).toHaveCount(0);
  await expect(page.getByRole('button',{name:'Xoay Tháp cao · minh họa',exact:true})).toBeDisabled();
  await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();await expect(page.getByRole('button',{name:'Mặt bằng',exact:true})).toHaveAttribute('aria-pressed','true');
  await page.getByRole('button',{name:'Xóa Tháp cao · minh họa',exact:true}).click();await expect(draft).toHaveCount(0);
@@ -217,6 +220,7 @@ test('art QA loads preserved late art without adding a settlement entity or plac
  await page.locator('.territory-calibration > summary').click();
  await page.getByLabel('Hình minh họa',{exact:true}).selectOption('lord-house-l30');
  await page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
+ await renderHostIntoView(page);
  await expect(page.locator('[data-art-qa-footprint]')).toHaveCount(1);
  await expect.poll(()=>Array.from(requested).some(path=>path.includes('/map/buildings/lord-house-l30/')),{timeout:30000}).toBe(true);
  await expect(list).toHaveText(before);
@@ -239,6 +243,7 @@ test('repaired house raster failures use its smoke-free map SVG and retain the o
  await page.locator('.territory-calibration > summary').click();
  await page.getByLabel('Hình minh họa',{exact:true}).selectOption('lord-house-repaired');
  await page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
+ await renderHostIntoView(page);
  await expect.poll(()=>requested.has('/assets/map/buildings/lord-house-repaired/body-static.svg'),{timeout:30000}).toBe(true);
  await expect.poll(()=>requested.has('/assets/map/buildings/lord-house-repaired/shadow-ground.svg'),{timeout:30000}).toBe(true);
  await expect(page.locator('.territory-calibration-preview image').nth(1)).toHaveAttribute('href','/assets/buildings/lord-house-repaired/base.svg');
@@ -335,7 +340,7 @@ test('renderer combines document-hidden and offscreen gates, then resumes with i
  await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();
  const backend=await page.locator('[data-map-renderer]').getAttribute('data-map-renderer');test.skip(backend!=='webgl','Canvas2D has no animated flame loop to observe.');
  const host=page.locator('.map-render-host').first();await renderHostIntoView(page);
- const flameFrame=()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{flameFrame:number|null;activeLoops:number}[]}).__mapMetrics.at(-1)!);
+ const flameFrame=()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{flameFrame:number|null;activeLoops:number;frames:number}[]}).__mapMetrics.at(-1)!);
  await expect.poll(async()=>(await flameFrame()).flameFrame,{timeout:30000}).not.toBe(0);
  const visibleFrame=(await flameFrame()).flameFrame;
  await scrollMapHostOffscreen(page,host);
@@ -357,6 +362,9 @@ test('renderer combines document-hidden and offscreen gates, then resumes with i
   delete (document as Document&{visibilityState?:DocumentVisibilityState}).visibilityState;
   document.dispatchEvent(new Event('visibilitychange'));
  });
+ await expect.poll(async()=>(await flameFrame()).activeLoops,{timeout:10000}).toBeGreaterThan(0);
+ const resumedFrames=(await flameFrame()).frames;
+ await expect.poll(async()=>(await flameFrame()).frames,{timeout:10000}).toBeGreaterThan(resumedFrames);
  await expect.poll(async()=>(await flameFrame()).flameFrame,{timeout:10000}).not.toBe(pausedFrame);
 });
 
@@ -379,6 +387,7 @@ test('repaired and damaged house architecture load for normal, planning and focu
  await territory(page);const before=await page.locator('.territory-instance-main').allTextContents();
  await page.locator('.territory-calibration > summary').click();await page.getByLabel('Hình minh họa',{exact:true}).selectOption('lord-house-repaired');
  await page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true}).click();
+ await renderHostIntoView(page);
  await expect(page.getByLabel('Hướng hình kiểm tra',{exact:true})).toHaveCount(0);
  for(const role of ['base','upper'])await expect.poll(()=>Array.from(requested).some(path=>new RegExp(`/lord-house-repaired/${role}-north-(close|district)\\.png$`).test(path)),{timeout:30000}).toBe(true);
  const alphas=async()=>{await renderHostIntoView(page);return page.evaluate(()=>(window as unknown as {__mapMetrics:{qaArtLayers:{base:number|null;upper:number|null;body:number|null}|null}[]}).__mapMetrics.at(-1)?.qaArtLayers);};

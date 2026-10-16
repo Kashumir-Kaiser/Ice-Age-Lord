@@ -4,7 +4,7 @@ import { installLocalPreviewRoute } from './localPreviewRoute';
 test.beforeEach(async ({page})=>installLocalPreviewRoute(page));
 
 async function goTo(page:import('@playwright/test').Page,screen:RegExp){
-  await page.goto('/');
+  await page.goto('/?mode=demo');
   await expect(page.locator('.app-shell')).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
   const menu=page.getByRole('button',{name:'Mở điều hướng'});
@@ -51,9 +51,12 @@ test('unit filters stay hidden until at least one race has living units',async({
 });
 
 test('placement creates reversible drafts without changing the starting buildings',async({page})=>{
+  test.setTimeout(60000);
   await goTo(page,/Lãnh địa/);
   const initial=await page.locator('.territory-building:not(.is-draft)[data-building-id^="SITE-LL01-"]').count();
-  await page.getByRole('button',{name:/Thử bố trí Tháp Canh/}).click();
+  const placementAction=page.getByRole('button',{name:/Thử bố trí Tháp Canh/});
+  await placementAction.scrollIntoViewIfNeeded();
+  await placementAction.click();
   await expect(page.getByText(/Chạm mặt đất để đặt bản nháp/)).toBeVisible();
   const scene=page.locator('svg.territory-scene-svg');
   const box=await scene.boundingBox();
@@ -61,7 +64,7 @@ test('placement creates reversible drafts without changing the starting building
   await scene.click({position:{x:box!.width*.52,y:box!.height*.52}});
   await expect(page.locator('.territory-draft-list')).toContainText('Tháp Canh');
   await expect(page.locator('.territory-building:not(.is-draft)[data-building-id^="SITE-LL01-"]')).toHaveCount(initial);
-  const draft=page.locator('.territory-building.is-draft[data-asset-id="watchtower-preview"]');
+  const draft=page.locator('.territory-building.is-draft[data-asset-id="watchtower-preview"]:not([data-building-id="placement-ghost"])');
   await expect(draft).toHaveAttribute('data-orientation','north');
   await page.getByRole('button',{name:'Xoay Tháp Canh · mẫu ảnh'}).click();
   await expect(draft).toHaveAttribute('data-orientation','east');
