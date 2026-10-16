@@ -401,10 +401,14 @@ export class MapRenderer {
       if(!evicted.texture.destroyed)evicted.texture.destroy(true);
       this.architectureTextureBytes-=evicted.bytes;this.architectureTextures.delete(oldestKey);
     }
+    // A null texture means AssetTextureCache is still loading this source. Leave
+    // the key retryable so the next render can compose it once the load settles.
+    const sources=plan.parts.map(part=>this.assets.texture(part.path));
+    if(sources.some(source=>!source))return null;
     const target=new Container();
     try{
-      for(const part of plan.parts){
-        const source=this.assets.texture(part.path);if(!source){this.failArchitectureTexture(key);return null;}
+      for(let index=0;index<plan.parts.length;index++){
+        const part=plan.parts[index],source=sources[index]!;
         const sprite=new Sprite(source);sprite.eventMode='none';sprite.position.set(part.x,part.y);
         sprite.width=part.width;sprite.height=part.height;sprite.alpha=part.alpha;target.addChild(sprite);
       }
