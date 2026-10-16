@@ -13,8 +13,12 @@ const percentile=(values,p)=>values.length?values.slice().sort((a,b)=>a-b)[Math.
 try{
  for(const fixture of ['fresh','populated','dense-520','local','world-1023'])for(let run=0;run<runs;run++){
   const page=await openMap(browser,{quality,motion:'no-preference',fixture:fixture==='world-1023'?'1023':''});
-  const longTasks=[];await page.exposeFunction('recordMapLongTask',entry=>longTasks.push(entry));
-  await page.evaluate(()=>{if(PerformanceObserver.supportedEntryTypes.includes('longtask'))new PerformanceObserver(entries=>entries.getEntries().forEach(e=>window.recordMapLongTask({start:e.startTime,duration:e.duration}))).observe({entryTypes:['longtask']});});
+  const observerSupport=await page.evaluate(()=>{
+   const supported=PerformanceObserver.supportedEntryTypes??[];
+   const state={longTasks:[],longAnimationFrames:[],observers:[]};window.__mapBenchObserverState=state;
+   const observe=(type,key)=>{if(!supported.includes(type))return false;try{const observer=new PerformanceObserver(entries=>entries.getEntries().forEach(e=>state[key].push({start:e.startTime,duration:e.duration})));observer.observe({type,buffered:false});state.observers.push({observer,type,key});return true;}catch{return false;}};
+   return {longtask:observe('longtask','longTasks'),longAnimationFrame:observe('long-animation-frame','longAnimationFrames')};
+  });
   await navigateMap(page,fixture==='local'||fixture==='world-1023'?'Bản đồ':'Lãnh địa');
   if(fixture==='dense-520'){await page.locator('.territory-calibration > summary').click();await page.getByRole('button',{name:'Xem nhóm công trình minh họa',exact:true}).click();}
   if(fixture==='populated'){
@@ -28,14 +32,14 @@ try{
   await page.waitForTimeout(warmup*1000);
   const interactions=await page.evaluate(async duration=>{
    const node=document.querySelector('.territory-scene-svg,.terrain-svg--deep'),box=node.getBoundingClientRect();
-   const start=performance.now(),x=box.left+box.width*.45,y=box.top+box.height*.65,feedback=[],counts={pan:0,zoom:0,selection:0,selectionUnavailable:0,emptyPicks:0};let endedPan=false,lastZoom=0,lastSelection=0;
+   const start=performance.now(),x=box.left+box.width*.45,y=box.top+box.height*.65,feedback=[],counts={pan:0,zoom:0,selection:0,selectionUnavailable:0,emptyPicks:0};let endedPan=false,lastZoom=0,lastSelection=0,activePhase='pan';
    const send=(type,dx,dy)=>node.dispatchEvent(new PointerEvent(type,{bubbles:true,pointerId:41,pointerType:'mouse',button:0,clientX:x+dx,clientY:y+dy}));
-   const metrics=window.__mapMetrics.at(-1);metrics.renderMs=[];metrics.intervalMs=[];
+   const metrics=window.__mapMetrics.at(-1);metrics.renderMs=[];metrics.intervalMs=[];metrics.intervalSamples=[];metrics.sampleStartMs=start;metrics.sampleEndMs=null;metrics.phaseTransitions=[{at:start,phase:activePhase}];
    send('pointerdown',0,0);
    await new Promise(resolve=>{
     const step=()=>{
      const now=performance.now(),t=(now-start)/1000,stamp=performance.now();
-     const phase=t<duration/3?'pan':t<duration*2/3?'zoom':'selection';let dispatched=false;
+     const phase=t<duration/3?'pan':t<duration*2/3?'zoom':'selection';if(phase!==activePhase){activePhase=phase;metrics.phaseTransitions.push({at:now,phase});}let dispatched=false;
      if(phase==='pan'){send('pointermove',Math.sin(t*.8)*170,Math.cos(t*.5)*70-70);counts.pan++;dispatched=true;}
      else{
       if(!endedPan){send('pointerup',Math.sin(t*.8)*170,Math.cos(t*.5)*70-70);endedPan=true;}
@@ -48,14 +52,14 @@ try{
       else if(metrics.frames>before)feedback.push(performance.now()-stamp);
       else if(performance.now()-stamp<2000)requestAnimationFrame(waitForRender);
      });
-     if(now-start<duration*1000)requestAnimationFrame(step);else{if(!endedPan)send('pointerup',Math.sin(t*.8)*170,Math.cos(t*.5)*70-70);resolve();}
+     if(now-start<duration*1000)requestAnimationFrame(step);else{if(!endedPan)send('pointerup',Math.sin(t*.8)*170,Math.cos(t*.5)*70-70);metrics.sampleEndMs=now;resolve();}
     };requestAnimationFrame(step);
    });
    return {feedback,counts,segments:['pan','pointer-centered zoom','permitted entity/cluster selection or empty-footprint picking']};
   },seconds);
-  const metrics=await page.evaluate(()=>window.__mapMetrics.at(-1));
+  const {metrics,longTasks,longAnimationFrames}=await page.evaluate(()=>{const state=window.__mapBenchObserverState;if(state)for(const {observer,key} of state.observers)for(const entry of observer.takeRecords())state[key].push({start:entry.startTime,duration:entry.duration});return {metrics:window.__mapMetrics.at(-1),longTasks:state?.longTasks??[],longAnimationFrames:state?.longAnimationFrames??[]};});
   const gpu=await page.evaluate(()=>{const canvas=document.querySelector('.map-render-canvas');const gl=canvas.getContext('webgl2')||canvas.getContext('webgl');if(!gl)return null;const ext=gl.getExtension('WEBGL_debug_renderer_info');return ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER);});
-  results.push({fixture,run,quality,seconds,warmup,gpu,metrics,coldTransfer,longTasks,interactionCounts:interactions.counts,segments:interactions.segments,pointerFeedback:{p50:percentile(interactions.feedback,.5),p95:percentile(interactions.feedback,.95)},interval:{p50:percentile(metrics.intervalMs,.5),p95:percentile(metrics.intervalMs,.95),p99:percentile(metrics.intervalMs,.99),worst:metrics.intervalMs.length?Math.max(...metrics.intervalMs):null},visibleMarkers:await page.locator('.map-entity-marker,.map-cluster').count()});
+  results.push({fixture,run,quality,seconds,warmup,gpu,metrics,coldTransfer,longTasks,longAnimationFrames,observerSupport,interactionCounts:interactions.counts,segments:interactions.segments,pointerFeedback:{p50:percentile(interactions.feedback,.5),p95:percentile(interactions.feedback,.95)},interval:{p50:percentile(metrics.intervalMs,.5),p95:percentile(metrics.intervalMs,.95),p99:percentile(metrics.intervalMs,.99),worst:metrics.intervalMs.length?Math.max(...metrics.intervalMs):null},visibleMarkers:await page.locator('.map-entity-marker,.map-cluster').count()});
   await page.close();console.log(`Measured ${fixture} run ${run+1}/${runs}`);
  }
 }finally{

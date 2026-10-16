@@ -84,3 +84,22 @@ An additional warmed local LoAF sample reported script p95 of about 230 ms norma
 Fresh visual matrix workflow `38889534646` passed all four lanes. Transfer-budget workflow `38889534590` also passed; its current artifact byte totals were not recorded in this checkpoint. Rendering workflow `38889534662` had one timing-sensitive Playwright failure: the hidden/offscreen pause test saw the visible frame remain at 7 after resume. An isolated rerun of that exact test passed 1/1 with system Chromium. Its separate 390×844 QA capture timed out after 60 seconds with two pending textures despite 144 frames, an empty queue, and no renderer errors; a narrowed local 390×844 capture then passed all 73 deterministic scenarios. This does not establish a source rendering defect, and the motion code was unchanged. The backend regression workflow `38889534595` passed stages 02–10 but failed the separate bot activity-receipt archive assertion (8/9 bot tests passed); later suites were skipped and no backend packages changed.
 
 The focused local review found no obvious sprite issue in the inspected captures. Populated LIVE extraction remains blocked by `RESOURCE_LEDGER_STAGE_05`, target-device validation remains outstanding, and the dense-scene interval gates remain open. Full run IDs, thresholds, caveats, and current blockers are in [`MAP-25D-PERFORMANCE-STATUS.json`](MAP-25D-PERFORMANCE-STATUS.json).
+
+## Latest performance handoff — run 38904002622
+
+Source optimization `b0edab2c4cb00cc92a4c7ecf85663a217f3cc3f5` skips the separate building-shadow pass at low quality and reuses the building projection output loop; reporter-only commit `2bc8c072788e5e59b9e76a7ad76b0898f7616611` prints per-run metrics to CI logs without changing sampling or gates. The following are medians across three 60-second runs per fixture; each tuple gives p50/p95/p99 for frame interval and render work, then p50/p95 for pointer feedback (ms).
+
+| Quality | Fixture | Interval p50/p95/p99 | Render ms p50/p95/p99 | Pointer p50/p95 |
+| --- | --- | --- | --- | --- |
+| Low | Fresh | 33.3 / 33.4 / 33.8 | 0.7 / 1.0 / 1.9 | 32.9 / 33.5 |
+| Low | Populated | 33.3 / 33.5 / 33.7 | 0.8 / 1.1 / 2.4 | 32.9 / 33.6 |
+| Low | Dense-520 | 63.3 / 116.4 / 116.6 | 4.6 / 15.3 / 19.5 | 61.8 / 71.1 |
+| Low | Local | 33.3 / 37.3 / 39.7 | 0.7 / 1.0 / 1.7 | 30.4 / 38.3 |
+| Low | World-1023 | 33.3 / 34.1 / 68.1 | 0.3 / 0.7 / 1.2 | 32.7 / 33.9 |
+| Normal | Fresh | 16.7 / 16.9 / 19.7 | 0.8 / 1.1 / 1.9 | 16.7 / 20.2 |
+| Normal | Populated | 16.7 / 18.5 / 23.3 | 0.9 / 1.3 / 2.7 | 16.7 / 23.6 |
+| Normal | Dense-520 | 58.9 / 116.4 / 116.7 | 4.4 / 16.0 / 19.8 | 58.0 / 74.0 |
+| Normal | Local | 16.7 / 29.3 / 32.8 | 0.8 / 1.1 / 1.5 | 18.4 / 32.9 |
+| Normal | World-1023 | 16.7 / 19.2 / 28.5 | 0.3 / 0.5 / 1.6 | 16.7 / 26.3 |
+
+Low dense-520 interval p95 remains 116.4 ms against its 40 ms gate; normal dense-520 is 116.4 ms and local is 29.3 ms against the 20 ms gate. Low local is 37.3 ms against 40 ms. All pointer p95 values pass (100 ms low, 75 ms normal). The renderer reports `targetDeviceVerified=false`: hosted headless Chromium/SwiftShader cannot validate Intel UHD 620 performance. Visual, rendering, and JavaScript-transfer workflows passed. The backend regression workflow failed the unrelated activity-receipt archive assertion; its frontend job was skipped.
