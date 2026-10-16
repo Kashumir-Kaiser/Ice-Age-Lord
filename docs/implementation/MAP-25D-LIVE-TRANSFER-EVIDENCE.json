@@ -3,9 +3,9 @@
   "label": "LOCAL persisted LIVE fixture",
   "scope": "Actual LiveApp against a temporary SQLite HTTP API, served from the production frontend dist over local gzip-capable HTTP.",
   "sourceContext": {
-    "baseCommit": "8510782a7389aa4c8c1acad76b1beafb8edd4627",
-    "sha256": "6528b71b659006595e1f677d41669b1cb494b02db999c1b5a58f5191b70890e4",
-    "fileCount": 1751,
+    "baseCommit": "c7fa24b7320e23fc310ff083109f45fcf16f84a6",
+    "sha256": "ea687299b65929a1114131cad19a481972fce64fe92701fe37d03ba5c86e561f",
+    "fileCount": 1752,
     "scope": [
       "package.json",
       "frontend/package.json",
@@ -22,12 +22,12 @@
     ]
   },
   "productionDist": {
-    "sha256": "4213c2432ea827eb3af266c3cc76d2619ae0d5972dfdebff18595d60669f815d",
+    "sha256": "999ed313d7961149e2b1ed44d9e7463ca2417ff2509a51bc0a0bc304df8a3e6f",
     "fileCount": 1655,
-    "indexHtmlSha256": "8f892b16a5ee850b9b43ee1de815359a086a37a57c789ffb707321f607a266c7",
-    "manifestSha256": "d1b3fe8d1f0ea858e0f968a67030fe68ed0caa6f37bd4dce090c7b8caa8bf7c7",
+    "indexHtmlSha256": "04f2fcbfc2c019061d0d71c41a3500b4ac994e402736d92231650400a10846ae",
+    "manifestSha256": "21104723fc38e7f0fd86b8a54bf714b355122eb915255abf85dad5aa6c4d7494",
     "manifestBytesDecoded": 1304049,
-    "manifestBytesGzip": 110703,
+    "manifestBytesGzip": 110706,
     "manifestAssetEntries": 103
   },
   "liveSaveFlow": {
@@ -65,46 +65,50 @@
     "qaFixtureAttributes": 0,
     "syntheticMapEntitiesOrBuildingsInjected": false,
     "stateIntegrityRuns": {
-      "successfulTransferAndRenderPanRun": {
-        "domainStateSha256AfterReloadBeforePan": "5e46341a76ba7ac549e7eed85bf141728f644903bc9d5561c5495636b967321b",
-        "domainStateSha256AfterLowPan": "5e46341a76ba7ac549e7eed85bf141728f644903bc9d5561c5495636b967321b",
-        "domainStateSha256AfterNormalPan": "5e46341a76ba7ac549e7eed85bf141728f644903bc9d5561c5495636b967321b",
-        "unchangedByRenderAndPan": true
-      },
-      "separateReloadIntegrityRun": {
-        "revisionBeforeReload": 2,
+      "combinedRun": {
+        "initialSaveRevision": 1,
+        "revisionBeforeReloadAfterInspectEntity": 2,
         "revisionAfterReload": 2,
-        "domainStateSha256BeforeReload": "11bf516e6f4b0aba989840e30e1d1fde0141688efe76b03eb1c62524c90097ea",
-        "domainStateSha256AfterReload": "11bf516e6f4b0aba989840e30e1d1fde0141688efe76b03eb1c62524c90097ea",
+        "domainStateSha256BeforeReloadAtRevision2": "907aca737e5026d811a25e8bd2e6728e9c7ea2616c0a9adb83c8832c125717bf",
+        "domainStateSha256AfterReloadAtRevision2": "907aca737e5026d811a25e8bd2e6728e9c7ea2616c0a9adb83c8832c125717bf",
+        "domainStateSha256AfterLowAndNormalRenderPan": "907aca737e5026d811a25e8bd2e6728e9c7ea2616c0a9adb83c8832c125717bf",
         "unchangedAcrossReload": true,
-        "transferMeasurementCompletedInThisRun": false
+        "unchangedThroughRenderAndPan": true,
+        "transferMeasurementCompletedInThisRun": true
       },
-      "combinedRunCompleted": false,
-      "note": "The successful transfer/render-pan measurement and pre/post-reload hash comparison are separate bounded runs against the same production dist hash. A later combined attempt stopped after reload during an API proxy response disposal before collecting transfer results."
+      "priorSeparatedRuns": {
+        "supersededByCombinedRun": true,
+        "note": "Earlier separate transfer and reload-integrity results are retained only as historical record; the combined run above now covers both in one session."
+      },
+      "rawHarnessOutputRetained": false,
+      "evidenceProvenance": "Sanitized fields and hashes recorded from the successful harness stdout; full per-request stdout was not retained."
     }
   },
   "assetTransfers": {
-    "method": "Real production dist over local HTTP; text assets gzip-compressed; binary assets identity; no-store; fresh browser contexts; 24 px pan after territory render.",
+    "method": "Final production dist over local HTTP with gzip-capable text responses and identity binary responses; temporary authenticated SQLite API; fresh browser contexts; territory render and 24 px pan at each quality.",
     "qualityPreferenceSetBeforeInitialPageLoad": true,
     "rendererAssetSelection": {
       "low": "District exports selected by the low quality path.",
       "normal": "Atlas exports selected when the normal quality budget permits them."
     },
     "low": {
-      "mapAssetRequestCount": 39,
-      "uniqueMapAssetFiles": 24,
-      "mapAssetWireBytes": 3226903,
+      "mapAssetRequestCount": 37,
+      "uniqueMapAssetFiles": 23,
+      "mapAssetWireBytes": 2986115,
       "manifestRequestCount": 2,
-      "manifestWireBytesPerRequest": 110703
+      "manifestWireBytesPerRequest": 110706,
+      "manifestEncoding": "gzip"
     },
     "normal": {
-      "mapAssetRequestCount": 22,
-      "uniqueMapAssetFiles": 22,
-      "mapAssetWireBytes": 2467797,
+      "mapAssetRequestCount": 21,
+      "uniqueMapAssetFiles": 21,
+      "mapAssetWireBytes": 2406796,
       "manifestRequestCount": 1,
-      "manifestWireBytesPerRequest": 110703
+      "manifestWireBytesPerRequest": 110706,
+      "manifestEncoding": "gzip"
     },
-    "scopeNote": "Counts include all requests during territory rendering and the post-render pan. Repeated requests are counted in total wire bytes; unique file counts are reported separately. Low used the district-export path and produced higher local transfer totals than normal in this scenario; no claim is made that low quality transfers fewer bytes. These observations are not a target-hardware or bandwidth guarantee."
+    "manifestSha256": "21104723fc38e7f0fd86b8a54bf714b355122eb915255abf85dad5aa6c4d7494",
+    "scopeNote": "Counts include all requests during territory rendering and the post-render pan. Repeated requests count toward total wire bytes; unique files are reported separately. Low follows the district-export path and transfers more bytes than normal in this clean-save scenario. These local observations do not guarantee bandwidth or target-device performance."
   },
   "populationStatus": {
     "status": "baseline-only",
@@ -117,7 +121,7 @@
     "externalNetworkOrProductionCredentialsUsed": false,
     "domainStateUnchangedAcrossReload": true,
     "domainStateUnchangedByRenderAndPanInSeparateRun": true,
-    "transferAndReloadHashesCollectedInOneRun": false,
+    "transferAndReloadHashesCollectedInOneRun": true,
     "scriptSyntaxCheck": "passed",
     "liveQueryRegression": {
       "status": "passed",
@@ -133,10 +137,12 @@
       "scope": "Isolated local HTTP endpoints and Playwright route.fetch proxy; a real local request was held across page reload, then routes drained before context close.",
       "unexpectedProxyErrors": 0,
       "externalNetworkOrProductionCredentialsUsed": false
-    }
+    },
+    "successfulCombinedRunExitCode": 0
   },
   "limitations": [
     "Measures a local browser and temporary SQLite fixture, not production or target hardware.",
-    "The clean-save baseline was persisted and reopened through LiveApp; populated resource extraction and a genuinely populated material-building save remain blocked by RESOURCE_LEDGER_STAGE_05."
+    "The clean-save baseline was persisted and reopened through LiveApp; populated resource extraction and a genuinely populated material-building save remain blocked by RESOURCE_LEDGER_STAGE_05.",
+    "Summary values were transcribed from successful harness stdout; the full raw JSON and per-request response list were not retained."
   ]
 }

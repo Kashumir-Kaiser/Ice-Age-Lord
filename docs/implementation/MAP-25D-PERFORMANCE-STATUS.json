@@ -20,32 +20,73 @@
     "typecheck": "passed",
     "productionBuild": "passed",
     "liveBaselineIntegrity": {
-      "status": "passed",
-      "qualityModes": ["low", "normal"],
+      "status": "passed on the final local production dist",
+      "qualityModes": [
+        "low",
+        "normal"
+      ],
       "realApiTerritoryBuildingReferencesPreserved": 3,
       "lowAndNormalLiveViewsRenderedWithoutQaOnlyAttributes": true,
       "qaOnlyAttributesPresent": 0,
       "domainHashUnchangedDuringPostReloadMapViewAndPan": true,
-      "preReloadDomainHashCompared": false,
+      "preReloadDomainHashCompared": true,
       "focusedLiveQueryRegression": "passed in a separate targeted browser run",
       "separateRevision2ReloadHashCheck": "passed; before/after reload hashes matched; this was separate from the complete transfer run",
-      "latestCombinedTransferAttempt": "not passed; a later attempt failed when a proxied response body was disposed during browser teardown",
-      "proxyCloseSmokeCheck": "passed separately with a real HTTP request and no proxy errors; not a rerun of the SQLite LIVE flow",
+      "latestCombinedTransferAttempt": "passed; actual temporary SQLite API and production-dist LiveApp save/reopen/render/pan flow",
+      "proxyCloseSmokeCheck": "passed separately with a real HTTP request and no proxy errors",
       "localBaselineMapAssetWireBytes": {
-        "low": { "requests": 39, "uniqueFiles": 24, "bytes": 3226903 },
-        "normal": { "requests": 22, "uniqueFiles": 22, "bytes": 2467797 }
+        "low": {
+          "requests": 37,
+          "uniqueFiles": 23,
+          "bytes": 2986115
+        },
+        "normal": {
+          "requests": 21,
+          "uniqueFiles": 21,
+          "bytes": 2406796
+        }
       },
-      "gzipManifestBytesPerRequest": 110703,
+      "gzipManifestBytesPerRequest": 110706,
       "savedPopulatedAssetTransferMeasured": false,
       "populationBlocker": "RESOURCE_LEDGER_STAGE_05",
-      "evidence": "MAP-25D-LIVE-TRANSFER-EVIDENCE.json"
+      "evidence": "MAP-25D-LIVE-TRANSFER-EVIDENCE.json",
+      "visibleWorldEntityCount": 4,
+      "visibleWorldEntitiesHaveApiPositions": true,
+      "houseAndTombLinkedSitePositionsAvailable": false,
+      "survivalFireProjection": "anchored to API territory origin by existing LiveApp behavior",
+      "domainStateSha256": "907aca737e5026d811a25e8bd2e6728e9c7ea2616c0a9adb83c8832c125717bf",
+      "domainStateRevisionBeforeInspectEntity": 1,
+      "domainStateRevisionBeforeReload": 2,
+      "domainStateRevisionAfterReload": 2,
+      "domainHashUnchangedBeforeAndAfterReload": true,
+      "domainHashUnchangedThroughLowAndNormalRenderPan": true,
+      "previousSeparateRunMapAssetWireBytes": {
+        "low": {
+          "requests": 39,
+          "uniqueFiles": 24,
+          "bytes": 3226903
+        },
+        "normal": {
+          "requests": 22,
+          "uniqueFiles": 22,
+          "bytes": 2467797
+        }
+      },
+      "sourceFingerprint": "ea687299b65929a1114131cad19a481972fce64fe92701fe37d03ba5c86e561f",
+      "productionDistFingerprint": "999ed313d7961149e2b1ed44d9e7463ca2417ff2509a51bc0a0bc304df8a3e6f"
     },
     "browserVisualReview": {
-      "status": "latest rendering CI workflow passed; broader viewport/quality/DPR matrix is partly captured and awaiting review",
+      "status": "latest rendering CI workflow passed; 876-row visual matrix accepted at contact-sheet and selected-raw review scope",
       "ciInteractionValidation": {
         "workflowRun": 38852705019,
         "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
-        "playwright": { "passed": 87, "skipped": 5, "failed": 0, "duration": "2.4 minutes", "status": "passed" },
+        "playwright": {
+          "passed": 87,
+          "skipped": 5,
+          "failed": 0,
+          "duration": "2.4 minutes",
+          "status": "passed"
+        },
         "npmTest": "passed",
         "productionBuild": "passed",
         "captureStep": "passed",
@@ -56,10 +97,18 @@
       "watchtower390LowDpr2Readiness": {
         "status": "passed; four-pose renderer readiness diagnostics only",
         "durationSeconds": 22.4,
-        "viewport": { "width": 390, "height": 844 },
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
         "quality": "low",
         "devicePixelRatio": 2,
-        "orientations": ["north", "east", "south", "west"],
+        "orientations": [
+          "north",
+          "east",
+          "south",
+          "west"
+        ],
         "allFocusedAndVisible": true,
         "backend": "webgl",
         "queuedTextures": 0,
@@ -84,25 +133,62 @@
       "journeySuiteStatus": "focused-subset-only",
       "acceptedScope": {
         "asset": "polar-farmhouse-l01",
-        "viewport": { "width": 1366, "height": 768 },
+        "viewport": {
+          "width": 1366,
+          "height": 768
+        },
         "quality": "normal",
         "devicePixelRatio": 1,
-        "accepted": ["four-pose contact sheet", "planning full frame", "focus full frame"],
-        "observations": ["planning pad remains solid", "focus fades roof while retaining full silhouette", "no horizontal cut or black rectangle"]
+        "accepted": [
+          "four-pose contact sheet",
+          "planning full frame",
+          "focus full frame"
+        ],
+        "observations": [
+          "planning pad remains solid",
+          "focus fades roof while retaining full silhouette",
+          "no horizontal cut or black rectangle"
+        ]
       },
       "evidence": "MAP-25D-FARMHOUSE-VISUAL-REVIEW.json",
-      "suiteStatus": "incomplete-not-full-matrix",
-      "latestCaptureBatch": {
-        "status": "low-quality DPR1 lane captured; pending parent visual review",
+      "suiteStatus": "all-captures-reviewed-scoped-acceptance",
+      "visualMatrixReview": {
+        "status": "accepted at contact-sheet overview and representative raw-frame review scope",
+        "evidence": "MAP-25D-VISUAL-MATRIX-REVIEW.json",
         "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
-        "qualityDprLane": "low/DPR1",
-        "viewportWidths": [1366, 1920, 390],
+        "captureWorkflowRun": 38852705161,
+        "reviewPackagingWorkflowRun": 38855212025,
+        "reviewArtifacts": 12,
+        "rows": 876,
+        "lanes": 4,
+        "rowsPerLane": 219,
+        "representativeRawSha256Verified": true,
+        "scopeNote": "Contact sheets cover all rows; parent review included selected sheets and representative raw frames, not individual inspection of every original. Acceptance is limited to captured scenes and does not accept target-device performance.",
+        "appliesToSourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
+        "coversCurrentMotionAndFootprintIndexChanges": false,
+        "currentSourceRerun": "pending"
+      },
+      "latestCaptureBatch": {
+        "status": "all lanes captured and verified; contact-sheet overview and selected raw-frame review accepted",
+        "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
+        "viewportWidths": [
+          1366,
+          1920,
+          390
+        ],
         "rowsPerLane": 73,
-        "rowsCaptured": 219,
-        "laneCountCompleted": 1,
+        "rowsCaptured": 876,
+        "laneCountCompleted": 4,
         "laneCountExpected": 4,
         "rowsExpectedAcrossFullMatrix": 876,
-        "remainingLanes": ["low/DPR2", "normal/DPR1", "normal/DPR2"]
+        "laneReviewStatus": {
+          "low/DPR1": "accepted",
+          "low/DPR2": "accepted",
+          "normal/DPR1": "accepted",
+          "normal/DPR2": "accepted"
+        },
+        "appliesToSourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
+        "coversCurrentSourceChanges": false
       }
     },
     "postGeographyFixtureValidation": {
@@ -120,12 +206,12 @@
       "productionBuild": "passed; final build after frozen source; 2,282 modules transformed; 20.94 seconds",
       "geographyOnlyBrowserCapture": {
         "forest": {
-          "status": "captured and accepted at 1366×768, normal, DPR1",
+          "status": "captured and accepted at 1366\u00d7768, normal, DPR1",
           "file": "../../frontend/map-evidence/geo-final-1366-normal-dpr1/1366/local-forest-1366-normal-dpr1.png",
           "sha256": "755d1a6da60a5ac20006ae355a828becc80fc75b8dac8d5e0321df969ca7f31f"
         },
         "stone": {
-          "status": "captured and accepted at 1366×768, normal, DPR1",
+          "status": "captured and accepted at 1366\u00d7768, normal, DPR1",
           "file": "../../frontend/map-evidence/geo-final-1366-normal-dpr1/1366/local-stone-1366-normal-dpr1.png",
           "sha256": "4dc1e9a2a722a12cb4e049a45a4505cd19baa55280d6ca0cf40a951ee1f866ff"
         },
@@ -136,7 +222,7 @@
           "detailCrop": "../../frontend/map-evidence/shoreline-banks-final-1366-normal-dpr1/1366/local-water-1366-normal-dpr1-shore-detail.png",
           "detailCropSha256": "90388a96d79e1a8984fdbf21ea86f685b52abf4ce2f41deb5482036a94dcffd3",
           "scenarioMetadataSha256": "946fd6c6079bcd5bc499058c86a7e24dbbe51fe2bbd6dfaea24396f09470b65e",
-          "review": "pending coherent ice-edge treatment and another visual review"
+          "review": "replaced by accepted ICE-paint captures at 1366\u00d7768 and 390\u00d7844, normal quality, DPR1"
         },
         "rememberedNightFog": {
           "status": "captured and accepted",
@@ -163,7 +249,7 @@
       "compiledRendererBundle": "../../frontend/dist/assets/MapRenderer-YNH9O17d.js",
       "compiledRendererBundleSha256": "f4dafcfcede6031ecf4db8eaeea47ae4c80f531cf34f38ed82ec0e9a1d08a3a1",
       "waterCaptures": {
-        "status": "accepted at 1366×768 and 390×844, normal quality, DPR1",
+        "status": "accepted at 1366\u00d7768 and 390\u00d7844, normal quality, DPR1",
         "desktop1366": {
           "file": "../../frontend/map-evidence/ice-paint-review-1366-390-normal-dpr1/1366/local-water-1366-normal-dpr1.png",
           "sha256": "01f366401440cf0fad12a89530257ae7f1021846cca7910f9243b2d95565cc89"
@@ -174,23 +260,50 @@
         },
         "scenarioMetadata": "../../frontend/map-evidence/ice-paint-review-1366-390-normal-dpr1/scenarios.json",
         "scenarioMetadataSha256": "62aab1d629180b5cb34ad2f3c9f4a96a8b39b9c80669f8d9dc8f34632ffbe36b",
-        "paintedIceWeightTransition": [0.34, 0.56],
+        "paintedIceWeightTransition": [
+          0.34,
+          0.56
+        ],
         "visualReview": "coherent painted ice/snow transition with native-scale shoreline banks; no hard outline or black artifact",
         "renderErrors": 0
       }
     },
     "savedPopulatedLiveTransfer": {
-      "status": "pending",
-      "evidence": null
+      "status": "blocked; no populated-save gallery was fabricated",
+      "blocker": "RESOURCE_LEDGER_STAGE_05",
+      "evidence": "MAP-25D-LIVE-TRANSFER-EVIDENCE.json"
     },
-    "scopeNote": "The benchmark results below predate this integration. Dense-scene frame-budget misses and Intel UHD 620 validation remain open; the older measurements do not establish performance for the current integration."
+    "scopeNote": "The current 437a heap and frame measurements are recorded below. Frame-budget misses and Intel UHD 620 validation remain open; the software-renderer results do not establish target-device performance.",
+    "currentSourceVerification": {
+      "status": "focused local validation passed; current-source CI/browser matrix pending branch checkpoint",
+      "footprintIndex": {
+        "status": "integrated; preserves exact finite-geometry overlap behavior using a bounded spatial index",
+        "focusedTestFile": "frontend/tests/buildingFootprintIndex.test.mjs",
+        "focusedCasesPassed": 4,
+        "performanceImprovementClaimed": false
+      },
+      "ambientSnowAndFoliageSway": {
+        "status": "implemented; reduced-motion, planning, hidden/offscreen, and Canvas2D fallback behavior covered by focused tests",
+        "focusedTestFile": "frontend/tests/mapEffects.test.mjs",
+        "focusedCasesPassed": 7,
+        "selectedFrameReview": "parent accepted selected normal/reduced-motion frames; full-source matrix still pending",
+        "currentSightRequired": true,
+        "particleCapsSharedWithEmitterEffects": true,
+        "fallbackEffectsOff": true
+      },
+      "focusedSuitesPassed": 8,
+      "typecheck": "passed",
+      "productionBuild": "passed; 2,283 modules transformed",
+      "currentSourceVisualMatrix": "pending; the accepted 876-row matrix is from 437a885 before ambient motion and spatial-index changes",
+      "freshCI": "pending checkpoint run"
+    }
   },
   "currentIntegrationMemoryPlateau": {
     "status": "passed for the measured software-renderer environment; target-device verification pending",
     "workflow": "Map performance evidence",
     "runId": 38851076469,
     "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
-    "scope": "Chromium headless, 1366×768, DPR 1; same warmed territory endpoint; two identical 20-return/pan cycles; exposed garbage collection before heap measurements.",
+    "scope": "Chromium headless, 1366\u00d7768, DPR 1; same warmed territory endpoint; two identical 20-return/pan cycles; exposed garbage collection before heap measurements.",
     "heapBudgetBytes": 10485760,
     "qualities": {
       "low": {
@@ -218,44 +331,93 @@
     "limitations": "Decoded and renderer GPU byte values are estimates, not driver VRAM measurements. Retained metric records reached 82; heap growth remains below the configured gate, but metric-history retention still merits review."
   },
   "currentIntegrationFramePerformance": {
-    "status": "previous-source measurement completed; 437a low and normal frame benchmark jobs are still in progress",
+    "status": "data collection passed; configured performance gates are not all met",
     "workflow": "Map performance evidence",
-    "runId": 38825240268,
-    "sourceCommit": "f31d314cf8fe9ad67a6368595aa94035e88a3501",
-    "rawResultsSha256": "e5380326dd5a3a2fe946ac43c830dd8f5d9eea2641e4e12ecbef93b903be55e0",
-    "measurementSourcePredatesFinalGeoFogQaChanges": true,
-    "scope": "Chromium headless with SwiftShader, 1366×768, DPR 1; five fixtures, three 60-second runs each after a 10-second warmup. The populated fixture is DEMO drafts, not persisted LIVE data.",
+    "runId": 38852705039,
+    "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
+    "scope": "Chromium headless with SwiftShader, 1366\u00d7768, DPR 1; five fixtures, three 60-second runs each. Target hardware was not verified.",
     "frameIntervalP95BudgetMs": 40,
     "pointerFeedbackP95BudgetMs": 100,
     "normalFrameIntervalP95BudgetMs": 20,
     "normalPointerFeedbackP95BudgetMs": 75,
-    "rendererBundleGzipBytes": 100738,
-    "rendererBundleScope": "Named renderer entry and split chunks, not a full before/after JavaScript delta.",
+    "runsPerFixture": 3,
+    "measuredSecondsPerRun": 60,
+    "lowArtifact": {
+      "id": 12026596598,
+      "sha256": "23d79caf5dfacd5f5420fd76d9e3804494803e2513096d2fe3809bc80b391e82"
+    },
+    "normalArtifact": {
+      "id": 12026825644,
+      "sha256": "a849ca379ce10c67408b71f16458ac51f836e71b4fb826fc3f30bfb8d6f7c9fc"
+    },
     "fixtures": {
-      "fresh": { "medianIntervalP95Ms": 33.5, "medianPointerP95Ms": 34.2, "frameIntervalBudgetMet": true, "pointerBudgetMet": true },
-      "populatedDemoDrafts": { "medianIntervalP95Ms": 48.0, "medianPointerP95Ms": 48.8, "frameIntervalBudgetMet": false, "pointerBudgetMet": true },
-      "dense520": { "medianIntervalP95Ms": 166.8, "medianPointerP95Ms": 154.1, "frameIntervalBudgetMet": false, "pointerBudgetMet": false },
-      "local": { "medianIntervalP95Ms": 110.9, "medianPointerP95Ms": 51.3, "frameIntervalBudgetMet": false, "pointerBudgetMet": true },
-      "world1023": { "medianIntervalP95Ms": 66.8, "medianPointerP95Ms": 42.2, "frameIntervalBudgetMet": false, "pointerBudgetMet": true }
+      "low": {
+        "fresh": {
+          "intervalP95Ms": 33.9,
+          "pointerP95Ms": 33.9,
+          "frameBudgetMet": true,
+          "pointerBudgetMet": true
+        },
+        "populatedDemoDrafts": {
+          "intervalP95Ms": 48.1,
+          "pointerP95Ms": 48.8,
+          "frameBudgetMet": false,
+          "pointerBudgetMet": true
+        },
+        "dense520": {
+          "intervalP95Ms": 167.4,
+          "pointerP95Ms": 154.8,
+          "frameBudgetMet": false,
+          "pointerBudgetMet": false
+        },
+        "local": {
+          "intervalP95Ms": 111.5,
+          "pointerP95Ms": 51.1,
+          "frameBudgetMet": false,
+          "pointerBudgetMet": true
+        },
+        "world1023": {
+          "intervalP95Ms": 66.8,
+          "pointerP95Ms": 42.0,
+          "frameBudgetMet": false,
+          "pointerBudgetMet": true
+        }
+      },
+      "normal": {
+        "fresh": {
+          "intervalP95Ms": 16.8,
+          "pointerP95Ms": 19.7,
+          "frameBudgetMet": true,
+          "pointerBudgetMet": true
+        },
+        "populatedDemoDrafts": {
+          "intervalP95Ms": 17.7,
+          "pointerP95Ms": 22.4,
+          "frameBudgetMet": true,
+          "pointerBudgetMet": true
+        },
+        "dense520": {
+          "intervalP95Ms": 116.4,
+          "pointerP95Ms": 78.7,
+          "frameBudgetMet": false,
+          "pointerBudgetMet": false
+        },
+        "local": {
+          "intervalP95Ms": 33.3,
+          "pointerP95Ms": 33.3,
+          "frameBudgetMet": false,
+          "pointerBudgetMet": true
+        },
+        "world1023": {
+          "intervalP95Ms": 80.1,
+          "pointerP95Ms": 22.4,
+          "frameBudgetMet": false,
+          "pointerBudgetMet": true
+        }
+      }
     },
-    "normalQualityRawResultsSha256": "e9e58c315403fcef4889461e28864b8d08f341157fc82ce1000f0d1f6d872ac3",
-    "normalQualityFixtures": {
-      "fresh": { "medianIntervalP95Ms": 24.1, "medianPointerP95Ms": 34.4, "frameIntervalBudgetMet": false, "pointerBudgetMet": true },
-      "populatedDemoDrafts": { "medianIntervalP95Ms": 27.4, "medianPointerP95Ms": 40.4, "frameIntervalBudgetMet": false, "pointerBudgetMet": true },
-      "dense520": { "medianIntervalP95Ms": 131.3, "medianPointerP95Ms": 122.7, "frameIntervalBudgetMet": false, "pointerBudgetMet": false, "longTasksPerRun": "337–342", "maxLongTaskDurationMs": "164–168" },
-      "local": { "medianIntervalP95Ms": 83.3, "medianPointerP95Ms": 41.7, "frameIntervalBudgetMet": false, "pointerBudgetMet": true },
-      "world1023": { "medianIntervalP95Ms": 93.6, "medianPointerP95Ms": 34.7, "frameIntervalBudgetMet": false, "pointerBudgetMet": true }
-    },
-    "normalQualityBundleGzipBytes": 100738,
-    "normalQualityBundleScope": "Named renderer entry and split chunks, not a full before/after JavaScript delta.",
-    "longTaskEvidence": {
-      "dense520CountAcrossThreeRuns": 814,
-      "dense520MaxDurationMs": 205,
-      "worstSampledIntervalsAround10Seconds": ["dense520", "local", "world1023"],
-      "interpretation": "The approximately 10-second worst interval samples are retained as anomalies in the raw artifact and are not treated as representative frame rates."
-    },
-    "interpretation": "Every normal-quality fixture misses its 20 ms frame-interval p95 budget; dense520 also misses the 75 ms pointer-feedback budget. Both qualities show occasional approximately 10-second worst-interval samples in raw output; these are anomalies, not representative frame rates.",
-    "targetDeviceVerified": false
+    "targetDeviceVerified": false,
+    "interpretation": "Low-quality interval budget misses: populatedDemoDrafts, dense520, local, world1023. Normal-quality interval misses: dense520, local, world1023. Dense520 also misses pointer feedback at both qualities."
   },
   "fullJourneyJavaScriptTransfer": {
     "status": "passed the configured gzip transfer budget",
@@ -274,18 +436,22 @@
     "baselineResultsSha256": "c2d15d932741b91f6fa5184a7d8abfd8f6d2b5219eb042c24a697b9c16a2ac81",
     "currentResultsSha256": "073078cdd87648c77dbbfd2cb4cdedc0eb43168e5743a67af2b1e6d2f9c6ab04",
     "comparisonResultsSha256": "85bd91d390d8f1f6a088645fc5c3c917c93cbc79c34a8540c7e202106c6d784c",
-    "rendererBundleComparisonNote": "This complete journey measurement is distinct from the 100,738-byte named renderer entry-and-chunks figure above, which is not a before/after full JavaScript delta."
+    "rendererBundleComparisonNote": "This full journey measurement is distinct from the earlier 100,738-byte named renderer entry-and-chunks measurement; that figure was not a before/after full JavaScript delta."
   },
   "backendStage08Triage": {
     "status": "CI test failed; baseline classification is unconfirmed",
     "workflowRun": 38852705042,
     "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
     "runner": "Ubuntu 24.04, Node 24",
-    "suiteResult": { "passed": 6, "failed": 1, "total": 7 },
+    "suiteResult": {
+      "passed": 6,
+      "failed": 1,
+      "total": 7
+    },
     "failingTest": "a 5x clock settles through a restart and advances beyond EV02 while preserving the unresolved EV01 rank result",
     "testLocation": "packages/sim/test/stage08.test.ts:458",
     "failure": "RepositoryError: The stored save schema cannot be migrated safely.",
-    "stack": "SqliteRepository.getStateFromRow (repository.ts:345) → transaction (:613) → commitSystemTransition (:534) → GameApplicationService.persistSystemEvents (service.ts:1216) → settleClockTarget (:1336) → tickClock (:1394)",
+    "stack": "SqliteRepository.getStateFromRow (repository.ts:345) \u2192 transaction (:613) \u2192 commitSystemTransition (:534) \u2192 GameApplicationService.persistSystemEvents (service.ts:1216) \u2192 settleClockTarget (:1336) \u2192 tickClock (:1394)",
     "backendPackagesTreeId": "e1130d2da1ec585a873b7146e517100a7e6696b1",
     "comparisonCommit": "7caa55bd18632967368c46fee40bb59fc96f5c31",
     "backendTreeMatchesComparisonCommit": true,
@@ -297,10 +463,22 @@
     "id": 38791953178,
     "branch": "codex/map-25d-overhaul",
     "artifacts": [
-      { "name": "map-performance-low", "id": 12002320538 },
-      { "name": "map-performance-normal", "id": 12001936311 },
-      { "name": "map-memory-low", "id": 12000078430 },
-      { "name": "map-memory-normal", "id": 12000782145 }
+      {
+        "name": "map-performance-low",
+        "id": 12002320538
+      },
+      {
+        "name": "map-performance-normal",
+        "id": 12001936311
+      },
+      {
+        "name": "map-memory-low",
+        "id": 12000078430
+      },
+      {
+        "name": "map-memory-normal",
+        "id": 12000782145
+      }
     ]
   },
   "method": {
@@ -312,17 +490,34 @@
     "environment": {
       "platform": "linux",
       "browser": "Chromium headless",
-      "viewport": { "width": 1366, "height": 768 },
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
       "devicePixelRatio": 1,
       "renderer": "ANGLE (Google, Vulkan 1.3.0, SwiftShader Device (Subzero))",
       "targetDeviceVerified": false,
-      "lowRunner": { "cpu": "AMD EPYC 7763 64-Core Processor", "cpuCount": 4, "ramBytes": 16766414848 },
-      "normalRunner": { "cpu": "AMD EPYC 9V45 96-Core Processor", "cpuCount": 4, "ramBytes": 16766414848 }
+      "lowRunner": {
+        "cpu": "AMD EPYC 7763 64-Core Processor",
+        "cpuCount": 4,
+        "ramBytes": 16766414848
+      },
+      "normalRunner": {
+        "cpu": "AMD EPYC 9V45 96-Core Processor",
+        "cpuCount": 4,
+        "ramBytes": 16766414848
+      }
     }
   },
   "budgets": {
-    "frameIntervalP95Ms": { "low": 40, "normal": 20 },
-    "pointerFeedbackP95Ms": { "low": 100, "normal": 75 },
+    "frameIntervalP95Ms": {
+      "low": 40,
+      "normal": 20
+    },
+    "pointerFeedbackP95Ms": {
+      "low": 100,
+      "normal": 75
+    },
     "memoryHeapGrowthLastTwoCyclesBytes": 10485760
   },
   "units": {
@@ -334,27 +529,279 @@
     {
       "quality": "low",
       "scenarios": [
-        { "name": "fresh", "renderCpuMs": { "p50": 0.6, "p95": 1.0, "p99": 4.8 }, "frameIntervalMs": { "p50": 33.3, "p95": 33.5, "p99": 36.7 }, "pointerFeedbackMs": { "p50": 33.0, "p95": 33.9 }, "drawCalls": 2, "textureBytes": 16070629, "decodedBytes": 22092960, "visible": 42, "total": 42, "frameBudgetMet": true, "pointerBudgetMet": true },
-        { "name": "populated", "renderCpuMs": { "p50": 0.7, "p95": 1.2, "p99": 5.0 }, "frameIntervalMs": { "p50": 33.3, "p95": 36.8, "p99": 49.2 }, "pointerFeedbackMs": { "p50": 32.6, "p95": 45.0 }, "drawCalls": 2, "textureBytes": 15849445, "decodedBytes": 21871776, "visible": 53, "total": 53, "frameBudgetMet": true, "pointerBudgetMet": true },
-        { "name": "dense-520", "renderCpuMs": { "p50": 7.8, "p95": 23.7, "p99": 29.5 }, "frameIntervalMs": { "p50": 140.2, "p95": 166.7, "p99": 183.2 }, "pointerFeedbackMs": { "p50": 135.4, "p95": 154.4 }, "drawCalls": 2, "textureBytes": 17946925, "decodedBytes": 26328552, "visible": 649, "total": 653, "frameBudgetMet": false, "pointerBudgetMet": false },
-        { "name": "local", "renderCpuMs": { "p50": 0.7, "p95": 1.6, "p99": 6.0 }, "frameIntervalMs": { "p50": 36.3, "p95": 110.8, "p99": 115.8 }, "pointerFeedbackMs": { "p50": 35.2, "p95": 50.8 }, "drawCalls": 1, "textureBytes": 12807528, "decodedBytes": 17703936, "visible": 90, "total": 90, "frameBudgetMet": false, "pointerBudgetMet": true },
-        { "name": "world-1023", "renderCpuMs": { "p50": 0.3, "p95": 0.9, "p99": 2.2 }, "frameIntervalMs": { "p50": 33.6, "p95": 66.7, "p99": 83.5 }, "pointerFeedbackMs": { "p50": 32.4, "p95": 41.3 }, "drawCalls": 1, "textureBytes": 4282728, "decodedBytes": 5242880, "visible": 0, "total": 0, "frameBudgetMet": false, "pointerBudgetMet": true }
+        {
+          "name": "fresh",
+          "renderCpuMs": {
+            "p50": 0.6,
+            "p95": 1.0,
+            "p99": 4.8
+          },
+          "frameIntervalMs": {
+            "p50": 33.3,
+            "p95": 33.5,
+            "p99": 36.7
+          },
+          "pointerFeedbackMs": {
+            "p50": 33.0,
+            "p95": 33.9
+          },
+          "drawCalls": 2,
+          "textureBytes": 16070629,
+          "decodedBytes": 22092960,
+          "visible": 42,
+          "total": 42,
+          "frameBudgetMet": true,
+          "pointerBudgetMet": true
+        },
+        {
+          "name": "populated",
+          "renderCpuMs": {
+            "p50": 0.7,
+            "p95": 1.2,
+            "p99": 5.0
+          },
+          "frameIntervalMs": {
+            "p50": 33.3,
+            "p95": 36.8,
+            "p99": 49.2
+          },
+          "pointerFeedbackMs": {
+            "p50": 32.6,
+            "p95": 45.0
+          },
+          "drawCalls": 2,
+          "textureBytes": 15849445,
+          "decodedBytes": 21871776,
+          "visible": 53,
+          "total": 53,
+          "frameBudgetMet": true,
+          "pointerBudgetMet": true
+        },
+        {
+          "name": "dense-520",
+          "renderCpuMs": {
+            "p50": 7.8,
+            "p95": 23.7,
+            "p99": 29.5
+          },
+          "frameIntervalMs": {
+            "p50": 140.2,
+            "p95": 166.7,
+            "p99": 183.2
+          },
+          "pointerFeedbackMs": {
+            "p50": 135.4,
+            "p95": 154.4
+          },
+          "drawCalls": 2,
+          "textureBytes": 17946925,
+          "decodedBytes": 26328552,
+          "visible": 649,
+          "total": 653,
+          "frameBudgetMet": false,
+          "pointerBudgetMet": false
+        },
+        {
+          "name": "local",
+          "renderCpuMs": {
+            "p50": 0.7,
+            "p95": 1.6,
+            "p99": 6.0
+          },
+          "frameIntervalMs": {
+            "p50": 36.3,
+            "p95": 110.8,
+            "p99": 115.8
+          },
+          "pointerFeedbackMs": {
+            "p50": 35.2,
+            "p95": 50.8
+          },
+          "drawCalls": 1,
+          "textureBytes": 12807528,
+          "decodedBytes": 17703936,
+          "visible": 90,
+          "total": 90,
+          "frameBudgetMet": false,
+          "pointerBudgetMet": true
+        },
+        {
+          "name": "world-1023",
+          "renderCpuMs": {
+            "p50": 0.3,
+            "p95": 0.9,
+            "p99": 2.2
+          },
+          "frameIntervalMs": {
+            "p50": 33.6,
+            "p95": 66.7,
+            "p99": 83.5
+          },
+          "pointerFeedbackMs": {
+            "p50": 32.4,
+            "p95": 41.3
+          },
+          "drawCalls": 1,
+          "textureBytes": 4282728,
+          "decodedBytes": 5242880,
+          "visible": 0,
+          "total": 0,
+          "frameBudgetMet": false,
+          "pointerBudgetMet": true
+        }
       ]
     },
     {
       "quality": "normal",
       "scenarios": [
-        { "name": "fresh", "renderCpuMs": { "p50": 0.6, "p95": 0.9, "p99": 2.9 }, "frameIntervalMs": { "p50": 16.7, "p95": 16.8, "p99": 19.0 }, "pointerFeedbackMs": { "p50": 16.7, "p95": 19.2 }, "drawCalls": 3, "textureBytes": 51085469, "decodedBytes": 75195736, "visible": 42, "total": 42, "frameBudgetMet": true, "pointerBudgetMet": true },
-        { "name": "populated", "renderCpuMs": { "p50": 0.7, "p95": 1.1, "p99": 3.0 }, "frameIntervalMs": { "p50": 16.7, "p95": 17.5, "p99": 20.9 }, "pointerFeedbackMs": { "p50": 16.7, "p95": 21.6 }, "drawCalls": 3, "textureBytes": 50864285, "decodedBytes": 74974552, "visible": 62, "total": 62, "frameBudgetMet": true, "pointerBudgetMet": true },
-        { "name": "dense-520", "renderCpuMs": { "p50": 4.4, "p95": 15.8, "p99": 19.4 }, "frameIntervalMs": { "p50": 57.4, "p95": 116.4, "p99": 116.7 }, "pointerFeedbackMs": { "p50": 56.0, "p95": 73.0 }, "drawCalls": 2, "textureBytes": 45450693, "decodedBytes": 78998144, "visible": 635, "total": 639, "frameBudgetMet": false, "pointerBudgetMet": true },
-        { "name": "local", "renderCpuMs": { "p50": 0.5, "p95": 1.0, "p99": 3.2 }, "frameIntervalMs": { "p50": 17.9, "p95": 33.3, "p99": 115.8 }, "pointerFeedbackMs": { "p50": 18.1, "p95": 33.2 }, "drawCalls": 1, "textureBytes": 22244712, "decodedBytes": 42083328, "visible": 90, "total": 90, "frameBudgetMet": false, "pointerBudgetMet": true },
-        { "name": "world-1023", "renderCpuMs": { "p50": 0.3, "p95": 0.9, "p99": 1.7 }, "frameIntervalMs": { "p50": 16.7, "p95": 69.7, "p99": 115.1 }, "pointerFeedbackMs": { "p50": 16.7, "p95": 21.0 }, "drawCalls": 1, "textureBytes": 11098472, "decodedBytes": 25165824, "visible": 0, "total": 0, "frameBudgetMet": false, "pointerBudgetMet": true }
+        {
+          "name": "fresh",
+          "renderCpuMs": {
+            "p50": 0.6,
+            "p95": 0.9,
+            "p99": 2.9
+          },
+          "frameIntervalMs": {
+            "p50": 16.7,
+            "p95": 16.8,
+            "p99": 19.0
+          },
+          "pointerFeedbackMs": {
+            "p50": 16.7,
+            "p95": 19.2
+          },
+          "drawCalls": 3,
+          "textureBytes": 51085469,
+          "decodedBytes": 75195736,
+          "visible": 42,
+          "total": 42,
+          "frameBudgetMet": true,
+          "pointerBudgetMet": true
+        },
+        {
+          "name": "populated",
+          "renderCpuMs": {
+            "p50": 0.7,
+            "p95": 1.1,
+            "p99": 3.0
+          },
+          "frameIntervalMs": {
+            "p50": 16.7,
+            "p95": 17.5,
+            "p99": 20.9
+          },
+          "pointerFeedbackMs": {
+            "p50": 16.7,
+            "p95": 21.6
+          },
+          "drawCalls": 3,
+          "textureBytes": 50864285,
+          "decodedBytes": 74974552,
+          "visible": 62,
+          "total": 62,
+          "frameBudgetMet": true,
+          "pointerBudgetMet": true
+        },
+        {
+          "name": "dense-520",
+          "renderCpuMs": {
+            "p50": 4.4,
+            "p95": 15.8,
+            "p99": 19.4
+          },
+          "frameIntervalMs": {
+            "p50": 57.4,
+            "p95": 116.4,
+            "p99": 116.7
+          },
+          "pointerFeedbackMs": {
+            "p50": 56.0,
+            "p95": 73.0
+          },
+          "drawCalls": 2,
+          "textureBytes": 45450693,
+          "decodedBytes": 78998144,
+          "visible": 635,
+          "total": 639,
+          "frameBudgetMet": false,
+          "pointerBudgetMet": true
+        },
+        {
+          "name": "local",
+          "renderCpuMs": {
+            "p50": 0.5,
+            "p95": 1.0,
+            "p99": 3.2
+          },
+          "frameIntervalMs": {
+            "p50": 17.9,
+            "p95": 33.3,
+            "p99": 115.8
+          },
+          "pointerFeedbackMs": {
+            "p50": 18.1,
+            "p95": 33.2
+          },
+          "drawCalls": 1,
+          "textureBytes": 22244712,
+          "decodedBytes": 42083328,
+          "visible": 90,
+          "total": 90,
+          "frameBudgetMet": false,
+          "pointerBudgetMet": true
+        },
+        {
+          "name": "world-1023",
+          "renderCpuMs": {
+            "p50": 0.3,
+            "p95": 0.9,
+            "p99": 1.7
+          },
+          "frameIntervalMs": {
+            "p50": 16.7,
+            "p95": 69.7,
+            "p99": 115.1
+          },
+          "pointerFeedbackMs": {
+            "p50": 16.7,
+            "p95": 21.0
+          },
+          "drawCalls": 1,
+          "textureBytes": 11098472,
+          "decodedBytes": 25165824,
+          "visible": 0,
+          "total": 0,
+          "frameBudgetMet": false,
+          "pointerBudgetMet": true
+        }
       ]
     }
   ],
   "memoryPlateau": [
-    { "quality": "low", "artifactId": 12000078430, "heapGrowthLastTwoCyclesBytes": 837636, "budgetBytes": 10485760, "plateauVerified": true, "pending": 0, "activeMaps": 1, "activeLoops": 0, "canvasCount": 1, "targetDeviceVerified": false },
-    { "quality": "normal", "artifactId": 12000782145, "heapGrowthLastTwoCyclesBytes": 825128, "budgetBytes": 10485760, "plateauVerified": true, "pending": 0, "activeMaps": 1, "activeLoops": 0, "canvasCount": 1, "targetDeviceVerified": false }
+    {
+      "quality": "low",
+      "artifactId": 12000078430,
+      "heapGrowthLastTwoCyclesBytes": 837636,
+      "budgetBytes": 10485760,
+      "plateauVerified": true,
+      "pending": 0,
+      "activeMaps": 1,
+      "activeLoops": 0,
+      "canvasCount": 1,
+      "targetDeviceVerified": false
+    },
+    {
+      "quality": "normal",
+      "artifactId": 12000782145,
+      "heapGrowthLastTwoCyclesBytes": 825128,
+      "budgetBytes": 10485760,
+      "plateauVerified": true,
+      "pending": 0,
+      "activeMaps": 1,
+      "activeLoops": 0,
+      "canvasCount": 1,
+      "targetDeviceVerified": false
+    }
   ],
   "interpretation": {
     "misses": "The p95 end-to-end frame interval misses the configured budget in dense-520, local, and world-1023 at both quality settings. Dense-520 low also misses the 100 ms pointer-feedback budget; dense-520 normal meets the 75 ms pointer-feedback budget. Fresh and populated meet both budgets at both settings.",

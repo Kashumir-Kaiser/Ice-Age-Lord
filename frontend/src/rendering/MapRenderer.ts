@@ -6,7 +6,7 @@ import { TerrainChunkCache } from './TerrainChunkCache.ts';
 import type { TerrainChunk } from './TerrainChunkCache.ts';
 import { AssetTextureCache, exportPath } from './AssetTextureCache.ts';
 import { MapMetrics } from './MapMetrics.ts';
-import { MapEffects } from './MapEffects.ts';
+import { MapEffects, ambientSnowDraws, foliageSwayOffset, rootAnchoredSwayMatrix, selectSwayingConiferIds, sightIntersectsViewport } from './MapEffects.ts';
 import type {EffectParticleDraw} from './MapEffects.ts';
 import { flameFrame, flameRect, flameKey } from './FlamePresentation.ts';
 import { artPolygon, composition } from './SpriteRegistration.ts';
@@ -14,6 +14,7 @@ import { pointInPolygon } from './MapPicking.ts';
 import { depthOrder } from './DepthOrder.ts';
 import {projectDepthNodes} from './DepthSlices.ts';
 import { projectBuildings } from './BuildingGeometry.ts';
+import { BuildingFootprintIndex } from './BuildingFootprintIndex.ts';
 import { MAP_PALETTE, QUALITY, LEDGE_SOURCES, AdaptiveQuality } from './mapStyle.ts';
 import type { Quality, SceneLOD } from './mapStyle.ts';
 import { screenToWorld, worldToScreen } from '../territory/projection.ts';
@@ -21,6 +22,7 @@ import { BASE_VIEW_HEIGHT_M } from '../map/camera.ts';
 import type { WorldPoint } from '../territory/projection.ts';
 type Size={width:number;height:number};
 type Draw={id:string;path:string;x:number;y:number;width:number;height:number;alpha:number;matrix?:Matrix};
+type PropDraw=Draw&{depth:number;kind:string;world:WorldPoint;imageWidth:number;imageHeight:number};
 const BANK_ART_ASPECT=[384/127,384/115,384/111,384/201,384/76,384/123,384/144,384/99] as const;
 export class MapRenderer {
   private app:Application|null=null;
@@ -38,6 +40,7 @@ export class MapRenderer {
   private assets:AssetTextureCache;
   private terrain:TerrainChunkCache;
   private sampler:TerrainSampler;
+  private buildingFootprints:BuildingFootprintIndex;
   private snapshot:MapSnapshot;
   private size:Size={width:1,height:1};
   private raf=0;
@@ -62,6 +65,8 @@ export class MapRenderer {
   private hostVisibility:'unknown'|'visible'|'hidden'='unknown';
   private transferred=false;
   private visibleEmitter=false;
+  private visibleAmbient=false;
+  private visibleSway=false;
   private visibleEmitters:{point:WorldPoint;selected:boolean}[]=[];
   private depthBuildings:MapSnapshot['buildings']|null=null;
   private depthScale=0;
@@ -71,6 +76,7 @@ export class MapRenderer {
   readonly metrics:MapMetrics;
   constructor(private canvas:HTMLCanvasElement,snapshot:MapSnapshot,private status:(backend:string)=>void,enabledMetrics=false,environment:readonly {path:string;sha256:string;width:number;height:number}[]=[],private readonly mapEffects?:MapEffectsAtlas){
     this.snapshot=snapshot;this.metrics=new MapMetrics(enabledMetrics);
+    this.buildingFootprints=new BuildingFootprintIndex(snapshot.buildings);
     this.sampler=new TerrainSampler(snapshot.visualIdentity??snapshot.identity,snapshot.geography,snapshot.regions,snapshot.modeledInfill);
     this.terrain=new TerrainChunkCache(this.sampler,QUALITY.normal.terrainBytes,QUALITY.normal.textureSize,()=>this.invalidate());
     this.updateContacts(snapshot);
@@ -113,7 +119,7 @@ export class MapRenderer {
       this.terrain.destroy();this.sampler=new TerrainSampler(snapshot.visualIdentity??snapshot.identity,snapshot.geography,snapshot.regions,snapshot.modeledInfill);this.terrain=new TerrainChunkCache(this.sampler,QUALITY[this.quality].terrainBytes,QUALITY[this.quality].textureSize,()=>this.invalidate());this.level=undefined;
       rebuilt=true;
     }
-    if(rebuilt||snapshot.buildings!==this.snapshot.buildings){this.updateContacts(snapshot);const ids=new Set(snapshot.buildings.map(b=>b.id)),lods=snapshot.buildingLODs??this.lod;for(const id of lods.keys())if(!ids.has(id))lods.delete(id);}
+    if(rebuilt||snapshot.buildings!==this.snapshot.buildings){this.updateContacts(snapshot);this.buildingFootprints=new BuildingFootprintIndex(snapshot.buildings);const ids=new Set(snapshot.buildings.map(b=>b.id)),lods=snapshot.buildingLODs??this.lod;for(const id of lods.keys())if(!ids.has(id))lods.delete(id);}
     this.snapshot=snapshot;this.invalidate();
   }
   private updateContacts(snapshot:MapSnapshot):void {
@@ -146,7 +152,8 @@ export class MapRenderer {
     const sy=this.scale(),sx=this.snapshot.northExtent?this.size.width/this.snapshot.northExtent.width:sy;return {x:this.snapshot.camera.x+(p.x-this.size.width/2)/sx,y:-this.snapshot.camera.y-(p.y-this.size.height/2)/sy};
   };
   private scale():number{return this.snapshot.projection==='territory'?3*this.snapshot.camera.zoom:this.size.height*this.snapshot.camera.zoom/BASE_VIEW_HEIGHT_M;}
-  private motionActive():boolean{return !this.reducedMotion&&!this.hidden&&this.hostVisibility==='visible'&&(this.snapshot.mode==='normal'||this.snapshot.mode==='focus')&&this.visibleEmitter&&Boolean(this.app);}
+  private motionAllowed():boolean{return !this.reducedMotion&&!this.hidden&&this.hostVisibility==='visible'&&(this.snapshot.mode==='normal'||this.snapshot.mode==='focus')&&Boolean(this.app);}
+  private motionActive():boolean{return this.motionAllowed()&&(this.visibleEmitter||this.visibleAmbient||this.visibleSway);}
   private renderTargetBytes():number{return Math.ceil(this.size.width*this.size.height*this.renderDpr**2*8);}
   private frame=(time:number)=>{
     this.raf=0;if(this.destroyed||this.hidden||this.hostVisibility==='hidden')return;
@@ -219,14 +226,27 @@ export class MapRenderer {
     const preferDistrict=this.quality==='low'||distinctAssets*4*1048576+environmentReserve>this.assets.limit;
     const useAtlas=this.quality!=='low'&&distinctAssets*1048576+environmentReserve<=this.assets.limit;
     const propBounds={minX:bounds.minX-80,maxX:bounds.maxX+80,minY:bounds.minY-80,maxY:bounds.maxY+80};
-    const worldProps=this.snapshot.mode==='planning'||this.snapshot.compact?[]:this.sampler.props(propBounds,1/scale).filter(p=>!this.snapshot.buildings.some(b=>{const turned=b.orientation==='east'||b.orientation==='west',width=turned?b.footprint.depthM:b.footprint.widthM,depth=turned?b.footprint.widthM:b.footprint.depthM;return Math.abs(b.point.x-p.x)<width/2+p.size&&Math.abs(b.point.y-p.y)<depth/2+p.size;}));
-    const props=worldProps.map(p=>{
+    const worldProps=this.snapshot.mode==='planning'||this.snapshot.compact?[]:this.sampler.props(propBounds,1/scale).filter(p=>!this.buildingFootprints.overlaps({x:p.x,y:p.y,size:p.size}));
+    const props:PropDraw[]=worldProps.map(p=>{
       const tree=p.kind==='conifer'||p.kind==='bare',ground=this.project(p),name=p.kind==='ledge'?LEDGE_SOURCES[p.variant%4]:p.kind+'-'+String(p.variant%(p.kind==='conifer'?6:p.kind==='bare'?3:8)+1).padStart(2,'0'),path='/assets/map/terrain/'+name+'.png';
       const image=this.assets.acquire(path),imageWidth=image?('naturalWidth' in image?image.naturalWidth:image.width):0,imageHeight=image?('naturalHeight' in image?image.naturalHeight:image.height):0;
       const aspect=image?imageWidth/imageHeight:p.kind==='bank'?BANK_ART_ASPECT[p.variant%8]:tree?.65:1.9,height=p.worldWidth!==undefined?p.worldWidth*scale/aspect:p.size*scale*(tree?1.8:.6);
       const width=p.worldWidth!==undefined?p.worldWidth*scale:height*aspect;
-      return {id:'prop:'+p.id,path,x:ground.x-width/2,y:ground.y-height*.94,width,height,alpha:1,depth:ground.y};
+      const x=ground.x-width/2,y=ground.y-height*.94;
+      return {id:'prop:'+p.id,path,x,y,width,height,alpha:1,depth:ground.y,kind:p.kind,world:{x:p.x,y:p.y},imageWidth,imageHeight};
     });
+    const currentSight=this.snapshot.currentSight??[],screenViewport=[{x:0,y:0},{x:this.size.width,y:0},{x:this.size.width,y:this.size.height},{x:0,y:this.size.height}];
+    const snowVisible=(this.snapshot.mode==='normal'||this.snapshot.mode==='focus')&&!this.snapshot.compact&&sightIntersectsViewport(currentSight,screenViewport,this.inverse);
+    const swayCandidates=props.filter(p=>p.kind==='conifer'&&p.x+p.width>=0&&p.y+p.height>=0&&p.x<=this.size.width&&p.y<=this.size.height&&currentSight.some(sight=>Math.hypot(p.world.x-sight.x,p.world.y-sight.y)<=sight.radius));
+    const swayingIds=selectSwayingConiferIds(swayCandidates.map(p=>({id:p.id,kind:p.kind})),this.quality);
+    const animate=this.motionAllowed();this.visibleAmbient=false;this.visibleSway=false;
+    const swayTime=animate?this.effects.time:0;
+    for(const prop of props){
+      if(!swayingIds.has(prop.id)||!prop.imageWidth||!prop.imageHeight)continue;
+      const offset=foliageSwayOffset(prop.id,swayTime,animate);if(!offset)continue;
+      const matrix=rootAnchoredSwayMatrix(prop.x,prop.y,prop.width,prop.height,prop.imageWidth,prop.imageHeight,offset);
+      if(matrix){prop.matrix=new Matrix(...matrix);this.visibleSway=true;}
+    }
     // Contact/cast shadows lie on the ground below every upright object.
     for(const b of buildingObjects){const asset=b.asset!;this.assets.register(asset,useAtlas);for(const layer of composition(asset,this.snapshot.mode,false,b.active,b.orientation))if(layer.role==='shadow'){
       const exported=exportPath(asset,layer,preferDistrict?'district':'close'),path=(this.failures.has(exported)||this.failures.has(this.assets.url(exported)))?(asset.mapLayers?.[layer.role]??asset.layers[layer.role]??layer.path):exported;
@@ -280,8 +300,11 @@ export class MapRenderer {
       if(loadedFlame&&key){const rect=flameRect(asset,b.rect)!;draws.push({id:b.id+':flame',path:key,...rect,alpha:(occludes&&this.snapshot.mode==='focus'?.22:1)*(b.draft?.55:1)});}
     };
     for(const id of this.depthIds){const b=visibleById.get(id);if(!b)continue;while(propIndex<sortedProps.length&&sortedProps[propIndex].depth<=b.depth)draws.push(sortedProps[propIndex++]);drawBuilding(b);}while(propIndex<sortedProps.length)draws.push(sortedProps[propIndex++]);
-    const allowedEffects=(this.snapshot.mode==='normal'||this.snapshot.mode==='focus')&&!this.hidden&&this.hostVisibility==='visible';
-    this.effectDraws=allowedEffects?this.effects.draws(this.visibleEmitters.map(({point})=>point),this.mapEffects,QUALITY[this.quality].particles,this.reducedMotion,this.scale()):[];
+    const allowedEffects=Boolean(this.app)&&(this.snapshot.mode==='normal'||this.snapshot.mode==='focus')&&!this.hidden&&this.hostVisibility==='visible';
+    const snow=allowedEffects&&snowVisible&&this.mapEffects?ambientSnowDraws(currentSight,this.project,this.inverse,this.size,this.quality==='low'?8:16,this.reducedMotion||!this.app?0:this.effects.time,this.snapshot.visualIdentity??this.snapshot.identity,this.mapEffects.path):[];
+    this.visibleAmbient=animate&&snow.some(draw=>Boolean(this.assets.acquire(draw.key)));
+    const particleLimit=Math.max(0,QUALITY[this.quality].particles-snow.length);
+    this.effectDraws=[...snow,...(allowedEffects?this.effects.draws(this.visibleEmitters.map(({point})=>point),this.mapEffects,particleLimit,this.reducedMotion,this.scale()):[])];
     if(this.effectDraws.length&&this.mapEffects)used.add(this.mapEffects.path);
     for(const d of draws)if(!d.path.startsWith('chunk:')){Object.assign(d,this.assets.rect(d.path,d));used.add(d.path);this.assets.acquire(d.path);}
     this.assets.retain(used);
