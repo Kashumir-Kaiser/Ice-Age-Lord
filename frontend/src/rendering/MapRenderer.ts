@@ -9,7 +9,7 @@ import { MapMetrics } from './MapMetrics.ts';
 import { MapEffects, ambientSnowDraws, foliageSwayOffset, rootAnchoredSwayMatrix, selectSwayingConiferIds, sightIntersectsViewport } from './MapEffects.ts';
 import type {EffectParticleDraw} from './MapEffects.ts';
 import { flameFrame, flameRect, flameKey } from './FlamePresentation.ts';
-import { artPolygon, createCompositionCache, architecturalCompositePlan } from './SpriteRegistration.ts';
+import { artPolygon, createCompositionCache, architecturalCompositePlan, qaArtLayerMetrics } from './SpriteRegistration.ts';
 import { pointInPolygon } from './MapPicking.ts';
 import { depthOrder } from './DepthOrder.ts';
 import {projectDepthNodes} from './DepthSlices.ts';
@@ -21,7 +21,7 @@ import { screenToWorld, worldToScreen } from '../territory/projection.ts';
 import { BASE_VIEW_HEIGHT_M } from '../map/camera.ts';
 import type { WorldPoint } from '../territory/projection.ts';
 type Size={width:number;height:number};
-type Draw={id:string;path:string;x:number;y:number;width:number;height:number;alpha:number;matrix?:Matrix;texture?:Texture};
+type Draw={id:string;path:string;x:number;y:number;width:number;height:number;alpha:number;matrix?:Matrix;texture?:Texture;qaArtLayers?:{base:number|null;upper:number|null;body:number|null}};
 type PropDraw=Draw&{depth:number;kind:string;world:WorldPoint;imageWidth:number;imageHeight:number};
 const BANK_ART_ASPECT=[384/127,384/115,384/111,384/201,384/76,384/123,384/144,384/99] as const;
 export class MapRenderer {
@@ -296,7 +296,7 @@ export class MapRenderer {
             usedArchitectureTextures.add(this.architectureTextureKey(plan));
             // Replace base + upper at their original painter position. Draft opacity
             // is baked per layer into the shared texture, matching the old draw alpha.
-            draws.push({id:b.id+':body',path:'',texture,...b.rect,alpha:1});
+            draws.push({id:b.id+':body',path:'',texture,...b.rect,alpha:1,qaArtLayers:{base:plan.parts.find(part=>part.role==='base')?.alpha??null,upper:plan.parts.find(part=>part.role==='upper')?.alpha??null,body:null}});
             layers=layers.filter(layer=>layer.role!=='base'&&layer.role!=='upper');
           }
         }
@@ -332,11 +332,7 @@ export class MapRenderer {
     this.assets.retain(used);
     if(this.app)this.renderWebGL(draws);else if(this.context)this.render2D(draws);
     const m=this.metrics.data;
-    m.qaArtLayers=this.metrics.enabled&&this.snapshot.buildings.some(b=>b.id==='qa-art-preview')?{
-      base:draws.find(d=>d.id==='qa-art-preview:base')?.alpha??null,
-      upper:draws.find(d=>d.id==='qa-art-preview:upper')?.alpha??null,
-      body:draws.find(d=>d.id==='qa-art-preview:body')?.alpha??null,
-    }:null;
+    m.qaArtLayers=qaArtLayerMetrics(draws,this.metrics.enabled,this.snapshot.buildings.some(b=>b.id==='qa-art-preview'));
     const flames=draws.filter(d=>d.id.endsWith(':flame'));m.flameSprites=flames.length;m.flameFrame=flames.length?Number(flames[0].path.split('#flame-')[1]):null;
     m.effectSprites=this.effectDraws.length;
     let terrainGPUBytes=0;for(const texture of this.chunkTextures.values())terrainGPUBytes+=texture.source.width*texture.source.height*4;

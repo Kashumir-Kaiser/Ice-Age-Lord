@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { spriteRect, referenceSize, artPolygon, composition, resolveOrientation, architecturalCompositePlan } from '../src/rendering/SpriteRegistration.ts';
+import { spriteRect, referenceSize, artPolygon, composition, resolveOrientation, architecturalCompositePlan, qaArtLayerMetrics } from '../src/rendering/SpriteRegistration.ts';
 import { pointInPolygon, pointerCSS, pickStack, cyclePick } from '../src/rendering/MapPicking.ts';
 import { TerrainSampler, noise, chunkLevel } from '../src/rendering/TerrainSampler.ts';
 import { depthOrder } from '../src/rendering/DepthOrder.ts';

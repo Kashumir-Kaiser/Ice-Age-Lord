@@ -35,6 +35,16 @@ export function resolveOrientation(asset: AssetManifestEntry, orientation: Orien
   if (asset.orientation === orientation || asset.equivalentOrientations?.includes(orientation)) return { layers, missing: false };
   return { layers:asset.orientationViews?.[asset.orientation as Orientation]??layers, missing: true };
 }
+export type QAArtLayers={base:number|null;upper:number|null;body:number|null};
+export function qaArtLayerMetrics(draws:readonly {id:string;alpha:number;qaArtLayers?:QAArtLayers}[],enabled:boolean,hasPreview:boolean):QAArtLayers|null{
+  if(!enabled||!hasPreview)return null;
+  const composite=draws.find(d=>d.id==='qa-art-preview:body')?.qaArtLayers;
+  return {
+    base:draws.find(d=>d.id==='qa-art-preview:base')?.alpha??composite?.base??null,
+    upper:draws.find(d=>d.id==='qa-art-preview:upper')?.alpha??composite?.upper??null,
+    body:draws.find(d=>d.id==='qa-art-preview:body'&&!d.qaArtLayers)?.alpha??composite?.body??null,
+  };
+}
 export type CompositionLayer = { role: 'shadow' | 'base' | 'upper' | 'body' | 'vfx'; path: string; alpha: number };
 export type ArchitecturalCompositePlan = {
   key: string; width: number; height: number;
