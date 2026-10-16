@@ -6,6 +6,7 @@ import { TerrainChunkCache } from './TerrainChunkCache.ts';
 import type { TerrainChunk } from './TerrainChunkCache.ts';
 import { AssetTextureCache, exportPath } from './AssetTextureCache.ts';
 import { MapMetrics } from './MapMetrics.ts';
+import { cameraSourceChanged } from './CameraUpdate.ts';
 import { cameraOnlySnapshot, terrainInputsChanged } from './CameraUpdate.ts';
 import { MapEffects, ambientSnowDraws, foliageSwayOffset, rootAnchoredSwayMatrix, selectSwayingConiferIds, sightIntersectsViewport } from './MapEffects.ts';
 import type {EffectParticleDraw} from './MapEffects.ts';
