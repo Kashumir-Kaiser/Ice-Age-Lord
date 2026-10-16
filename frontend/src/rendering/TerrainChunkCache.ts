@@ -4,6 +4,16 @@ export type TerrainChunk = {key:string;level:number;x:number;y:number;span:numbe
 type PaintSource=HTMLImageElement|HTMLCanvasElement;
 type Job={key:string;x:number;y:number;level:number;revision:number;size:number};
 type Working=Job&{buffer:Uint8ClampedArray;row:number};
+
+/** Convert the modeled ice material into a stronger painted visual mask without changing classification. */
+export function paintedIceWeight(iceWeight:number):number {
+  const t=Math.max(0,Math.min(1,(iceWeight-.34)/(.56-.34)));
+  return t*t*(3-2*t);
+}
+export function paintedIceMaterialWeights(iceA:number,iceB:number):[number,number] {
+  const iceWeight=Math.max(0,iceA)+Math.max(0,iceB),mapped=paintedIceWeight(iceWeight);
+  return iceWeight>0?[mapped*Math.max(0,iceA)/iceWeight,mapped*Math.max(0,iceB)/iceWeight]:[0,0];
+}
 export class TerrainChunkCache {
   private cache=new Map<string,TerrainChunk>();
   private queue=new Map<string,Job>();
@@ -71,16 +81,27 @@ export class TerrainChunkCache {
       const maskContext=this.mask.getContext('2d')!,paintContext=this.painted.getContext('2d')!;
       const samples=Array.from({length:maskSize*maskSize},(_,i)=>this.sampler.materialWeights(job.x*span+(i%maskSize/(maskSize-1)*job.size-1)/scale,job.y*span+(Math.floor(i/maskSize)/(maskSize-1)*job.size-1)/scale));
       const maskPixels=new Uint8ClampedArray(maskSize*maskSize*4);
+      const paintedIceShares=new Float32Array(samples.length*2);
+      for(let i=0;i<samples.length;i++){
+        const weights=paintedIceMaterialWeights(samples[i][GROUND_MATERIALS.length-2],samples[i][GROUND_MATERIALS.length-1]);
+        paintedIceShares[i*2]=weights[0];paintedIceShares[i*2+1]=weights[1];
+      }
       ctx.save();ctx.globalCompositeOperation='soft-light';ctx.globalAlpha=.35;
       for(let material=0;material<GROUND_MATERIALS.length;material++){
         const image=this.paints.get(GROUND_MATERIALS[material]);if(!image||!samples.some(s=>s[material]>.002))continue;
-        for(let i=0;i<samples.length;i++){maskPixels[i*4]=maskPixels[i*4+1]=maskPixels[i*4+2]=255;maskPixels[i*4+3]=Math.round(samples[i][material]*255);}
+        const isIce=material>=GROUND_MATERIALS.length-2;
+        for(let i=0;i<samples.length;i++){
+          maskPixels[i*4]=maskPixels[i*4+1]=maskPixels[i*4+2]=255;
+          maskPixels[i*4+3]=Math.round((isIce?paintedIceShares[i*2+material-(GROUND_MATERIALS.length-2)]:samples[i][material])*255);
+        }
         maskContext.putImageData(new ImageData(maskPixels,maskSize,maskSize),0,0);
         paintContext.globalCompositeOperation='source-over';paintContext.clearRect(0,0,job.size,job.size);
         const pattern=paintContext.createPattern(image,'repeat');if(!pattern)continue;
         pattern.setTransform(new DOMMatrix([32*scale/image.width,0,0,32*scale/image.height,1-job.x*span*scale,1-job.y*span*scale]));
         paintContext.fillStyle=pattern;paintContext.fillRect(0,0,job.size,job.size);
         paintContext.globalCompositeOperation='destination-in';paintContext.drawImage(this.mask,0,0,job.size,job.size);
+        if(isIce){ctx.globalCompositeOperation='source-over';ctx.globalAlpha=.60;}
+        else{ctx.globalCompositeOperation='soft-light';ctx.globalAlpha=.35;}
         ctx.drawImage(this.painted,0,0);
       }
       ctx.restore();

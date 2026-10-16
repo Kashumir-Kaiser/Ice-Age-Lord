@@ -61,6 +61,27 @@ test('terrain/decor determinism, negative chunks, shared edges and varying viewp
  const live=new TerrainSampler('save-A',undefined,[],false);assert.equal(live.forestAt(305,-75),0,'demo modeled infill cannot invent LIVE terrain');
  const projected=new TerrainSampler('save-A',undefined,[{x:305,y:-75,width:40,depth:40,kind:'forest',ratio:.7}],false);near(projected.forestAt(305,-75),.7);
 });
+test('water berm art follows the ice boundary with stable overlap culling and no off-shore scatter',()=>{
+ const center={x:8900,y:-11200},geometry={forest:{x:100000,y:100000},stone:{x:200000,y:200000},water:center};
+ const shore=new TerrainSampler('shore-world',geometry,[],false),withoutWater=new TerrainSampler('shore-world',undefined,[],false);
+ const bounds={minX:center.x-2400,maxX:center.x+2400,minY:center.y-1450,maxY:center.y+1450},props=shore.props(bounds,.4),banks=props.filter(p=>p.kind==='bank');
+ assert.ok(banks.length>20,'shore contour produces a readable set of existing bank sprites');
+ for(const bank of banks){
+  const radius=Math.hypot((bank.x-center.x)/2100,(bank.y-center.y)/1200);
+  assert.ok(Math.abs(radius-.84446)<.015,`bank ${bank.id} stays on the ice blend boundary (${radius})`);
+  assert.ok(bank.worldWidth>=48&&bank.worldWidth<=80);assert.equal(bank.size,bank.worldWidth);
+ }
+ assert.deepEqual(shore.props(bounds,.4).filter(p=>p.kind!=='bank'),withoutWater.props(bounds,.4),'adding water leaves every seeded non-bank prop unchanged');
+ assert.equal(withoutWater.props(bounds,.4).some(p=>p.kind==='bank'),false,'worlds without water receive no shore banks');
+ const lodBanks=shore.props(bounds,1.2).filter(p=>p.kind==='bank');
+ assert.ok(lodBanks.length>0&&lodBanks.length<banks.length,'shore sprites use the existing gradual detail fade');
+ for(const bank of lodBanks)assert.ok(banks.some(fine=>fine.id===bank.id),'coarser LOD retains a deterministic subset');
+ assert.equal(shore.props(bounds,1.5).some(p=>p.kind==='bank'),false,'shore sprites share the existing 1.5 m/px cutoff');
+ const sample=banks[Math.floor(banks.length/2)],overlap={minX:sample.x-55,maxX:sample.x+55,minY:sample.y-55,maxY:sample.y+55};
+ const narrow=shore.props(overlap,.4).filter(p=>p.kind==='bank'),wide=shore.props({...bounds,minX:bounds.minX-80,maxX:bounds.maxX+80,minY:bounds.minY-80,maxY:bounds.maxY+80},.4).filter(p=>p.kind==='bank');
+ assert.ok(narrow.some(p=>p.id===sample.id));
+ for(const p of narrow)assert.deepEqual(p,wide.find(other=>other.id===p.id),'overlapping camera queries preserve bank identity and dimensions');
+});
 test('LOD and chunk hysteresis hold near boundaries; world chunk spans remain bounded',()=>{
  assert.equal(chooseLOD(34,'close'),'close');assert.equal(chooseLOD(11,'district'),'district');assert.equal(chooseLOD(13,'regional'),'regional');assert.equal(chooseLOD(40,'regional'),'close');
  const level=chunkLevel(4);assert.equal(chunkLevel(4.1,level),level);assert.ok(chunkLevel(.001)>level);

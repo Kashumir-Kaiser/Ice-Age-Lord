@@ -21,6 +21,7 @@ import { BASE_VIEW_HEIGHT_M } from '../map/camera.ts';
 import type { WorldPoint } from '../territory/projection.ts';
 type Size={width:number;height:number};
 type Draw={id:string;path:string;x:number;y:number;width:number;height:number;alpha:number;matrix?:Matrix};
+const BANK_ART_ASPECT=[384/127,384/115,384/111,384/201,384/76,384/123,384/144,384/99] as const;
 export class MapRenderer {
   private app:Application|null=null;
   private failures=new Set<string>();
@@ -217,12 +218,13 @@ export class MapRenderer {
     const distinctAssets=new Set(buildingObjects.map(b=>b.assetId)).size,environmentReserve=12*1048576;
     const preferDistrict=this.quality==='low'||distinctAssets*4*1048576+environmentReserve>this.assets.limit;
     const useAtlas=this.quality!=='low'&&distinctAssets*1048576+environmentReserve<=this.assets.limit;
-    const propBounds={minX:bounds.minX-20,maxX:bounds.maxX+20,minY:bounds.minY-20,maxY:bounds.maxY+20};
+    const propBounds={minX:bounds.minX-80,maxX:bounds.maxX+80,minY:bounds.minY-80,maxY:bounds.maxY+80};
     const worldProps=this.snapshot.mode==='planning'||this.snapshot.compact?[]:this.sampler.props(propBounds,1/scale).filter(p=>!this.snapshot.buildings.some(b=>{const turned=b.orientation==='east'||b.orientation==='west',width=turned?b.footprint.depthM:b.footprint.widthM,depth=turned?b.footprint.widthM:b.footprint.depthM;return Math.abs(b.point.x-p.x)<width/2+p.size&&Math.abs(b.point.y-p.y)<depth/2+p.size;}));
     const props=worldProps.map(p=>{
       const tree=p.kind==='conifer'||p.kind==='bare',ground=this.project(p),name=p.kind==='ledge'?LEDGE_SOURCES[p.variant%4]:p.kind+'-'+String(p.variant%(p.kind==='conifer'?6:p.kind==='bare'?3:8)+1).padStart(2,'0'),path='/assets/map/terrain/'+name+'.png';
-      const image=this.assets.acquire(path),height=p.size*scale*(tree?1.8:.6),imageWidth=image?('naturalWidth' in image?image.naturalWidth:image.width):0,imageHeight=image?('naturalHeight' in image?image.naturalHeight:image.height):0;
-      const width=height*(image?imageWidth/imageHeight:tree?.65:1.9);
+      const image=this.assets.acquire(path),imageWidth=image?('naturalWidth' in image?image.naturalWidth:image.width):0,imageHeight=image?('naturalHeight' in image?image.naturalHeight:image.height):0;
+      const aspect=image?imageWidth/imageHeight:p.kind==='bank'?BANK_ART_ASPECT[p.variant%8]:tree?.65:1.9,height=p.worldWidth!==undefined?p.worldWidth*scale/aspect:p.size*scale*(tree?1.8:.6);
+      const width=p.worldWidth!==undefined?p.worldWidth*scale:height*aspect;
       return {id:'prop:'+p.id,path,x:ground.x-width/2,y:ground.y-height*.94,width,height,alpha:1,depth:ground.y};
     });
     // Contact/cast shadows lie on the ground below every upright object.

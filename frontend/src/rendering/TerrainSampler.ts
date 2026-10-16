@@ -3,7 +3,7 @@ import { GroundContacts } from './GroundContacts.ts';
 export type Material = 'snow' | 'earth' | 'ice' | 'rock' | 'forest';
 export type Geography = { forest: {x:number;y:number}; stone: {x:number;y:number}; water: {x:number;y:number} };
 export type TerrainRegion={x:number;y:number;width:number;depth:number;kind:'forest'|'rock'|'ice';ratio:number};
-export type TerrainProp = {id:string;x:number;y:number;size:number;kind:'conifer'|'bare'|'rock'|'bank'|'ledge';variant:number};
+export type TerrainProp = {id:string;x:number;y:number;size:number;kind:'conifer'|'bare'|'rock'|'bank'|'ledge';variant:number;worldWidth?:number};
 export type TerrainRelief={id:string;x:number;y:number;width:number;depth:number;kind:'forest'|'ridge';variant:number};
 export const GROUND_MATERIALS=['snow-quiet','snow-02','snow-03','snow-04','dirty-snow-01','dirty-snow-02','earth-01','earth-02','ice-01','ice-02'] as const;
 export function visualHash(x:number,y:number,seed:number):number {
@@ -14,6 +14,11 @@ export function visualSeed(identity:string):number {
   let n=2166136261;for(const c of identity+':'+VISUAL_STYLE_VERSION)n=Math.imul(n^c.charCodeAt(0),16777619);return n>>>0;
 }
 const smooth=(n:number)=>n*n*(3-2*n);
+const BANK_CONTOUR_RADIUS=.84446;
+const BANK_SPACING_M=64;
+const BANK_MAX_WORLD_WIDTH=80;
+const BANK_VARIANT_WIDTHS=[0,1,2,4,7] as const;
+const BANK_JUNCTION_VARIANTS=[3,5,6] as const;
 export function noise(x:number,y:number,seed:number):number {
   const ix=Math.floor(x),iy=Math.floor(y),fx=smooth(x-ix),fy=smooth(y-iy);
   const a=visualHash(ix,iy,seed),b=visualHash(ix+1,iy,seed),c=visualHash(ix,iy+1,seed),d=visualHash(ix+1,iy+1,seed);
@@ -93,10 +98,31 @@ export class TerrainSampler {
     for(let cy=Math.floor(bounds.minY/cell);cy<=Math.floor(bounds.maxY/cell);cy++)for(let cx=Math.floor(bounds.minX/cell);cx<=Math.floor(bounds.maxX/cell);cx++){
       const n=visualHash(cx,cy,this.seed+101),x=(cx+.15+visualHash(cx,cy,this.seed+102)*.7)*cell,y=(cy+.15+visualHash(cx,cy,this.seed+103)*.7)*cell;
       if(visualHash(cx,cy,this.seed+105)>Math.min(1,(1.5-metresPerPixel)/.6))continue;
-      const forest=this.forestAt(x,y),kind=n<forest*.8?(visualHash(cx,cy,this.seed+104)<.16?'bare':'conifer'):n>.985?'ledge':n>.96?'rock':n>.9?'bank':null;
+      const forest=this.forestAt(x,y),kind=n<forest*.8?(visualHash(cx,cy,this.seed+104)<.16?'bare':'conifer'):n>.985?'ledge':n>.96?'rock':null;
       if(kind)result.push({id:cx+':'+cy,x,y,kind,variant:Math.floor(n*1000)%8,size:kind==='conifer'||kind==='bare'?5+n*5:kind==='rock'?.8+n*1.2:kind==='ledge'?4+n*4:4+n*5});
     }
+    if(this.geography?.water)result.push(...this.waterBankProps(bounds,this.geography.water,metresPerPixel));
     return result.sort((a,b)=>a.id.localeCompare(b.id));
+  }
+  private waterBankProps(bounds:{minX:number;maxX:number;minY:number;maxY:number},center:{x:number;y:number},metresPerPixel:number):TerrainProp[] {
+    const rx=2100*BANK_CONTOUR_RADIUS,ry=1200*BANK_CONTOUR_RADIUS;
+    const perimeter=Math.PI*(3*(rx+ry)-Math.sqrt((3*rx+ry)*(rx+3*ry)));
+    const count=Math.min(150,Math.max(1,Math.ceil(perimeter/BANK_SPACING_M))),props:TerrainProp[]=[];
+    for(let i=0;i<count;i++){
+      if(visualHash(i,0,this.seed+605)>Math.min(1,(1.5-metresPerPixel)/.6))continue;
+      if(visualHash(i,0,this.seed+601)<.2)continue;
+      const angle=2*Math.PI*i/count,cos=Math.cos(angle),sin=Math.sin(angle);
+      const normalLength=Math.hypot(cos/rx,sin/ry),normalX=(cos/rx)/normalLength,normalY=(sin/ry)/normalLength;
+      const jitter=(visualHash(i,0,this.seed+602)-.5)*32;
+      const x=center.x+rx*cos+normalX*jitter,y=center.y+ry*sin+normalY*jitter;
+      const junction=i%12===0,variants=junction?BANK_JUNCTION_VARIANTS:BANK_VARIANT_WIDTHS;
+      const variant=variants[Math.floor(visualHash(i,0,this.seed+603)*variants.length)];
+      const worldWidth=junction?48+visualHash(i,0,this.seed+604)*12:64+visualHash(i,0,this.seed+604)*16;
+      const halfExtent=BANK_MAX_WORLD_WIDTH/2;
+      if(x+halfExtent<bounds.minX||x-halfExtent>bounds.maxX||y+halfExtent<bounds.minY||y-halfExtent>bounds.maxY)continue;
+      props.push({id:'shore-bank:'+i,x,y,kind:'bank',variant,size:worldWidth,worldWidth});
+    }
+    return props;
   }
 }
 export function chunkLevel(pixelsPerMetre:number,previous?:number):number {

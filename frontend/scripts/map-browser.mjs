@@ -9,15 +9,26 @@ export async function navigateMap(page,name){
  await page.getByRole('navigation',{name:'Các mục giao diện'}).getByRole('button',{name,exact:true}).click();
 }
 export async function readyMap(page){
+ await page.bringToFront();
  const host=page.locator('.map-render-host');
  if(await host.count())await host.evaluate(node=>node.scrollIntoView({block:'center',inline:'nearest'}));
  await page.locator('[data-map-renderer]').waitFor();
  // Let React's camera update and the renderer's next frame submit their work.
  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
- await page.waitForFunction(()=>{
-  const m=window.__mapMetrics?.at(-1);
-  return m&&m.backend!=='initializing'&&m.queued===0&&m.pendingTextures===0;
- },null,{timeout:60000});
+ try{
+  await page.waitForFunction(()=>{
+   const host=document.querySelector('.map-render-host');
+   if(host){const rect=host.getBoundingClientRect();if(rect.bottom<=0||rect.top>=innerHeight||rect.right<=0||rect.left>=innerWidth)host.scrollIntoView({block:'center',inline:'nearest'});}
+   const m=window.__mapMetrics?.at(-1);
+   return m&&m.backend!=='initializing'&&m.queued===0&&m.pendingTextures===0;
+  },null,{timeout:60000});
+ }catch(error){
+  error.mapReadiness=await page.evaluate(()=>{
+   const host=document.querySelector('.map-render-host'),renderer=document.querySelector('[data-map-renderer]'),rect=host?.getBoundingClientRect();
+   return {visibilityState:document.visibilityState,focused:document.hasFocus(),viewport:{width:innerWidth,height:innerHeight},hostRect:rect?{x:rect.x,y:rect.y,width:rect.width,height:rect.height,top:rect.top,right:rect.right,bottom:rect.bottom,left:rect.left}:null,hostFullyOutside:rect?rect.bottom<=0||rect.top>=innerHeight||rect.right<=0||rect.left>=innerWidth:null,rendererPresent:Boolean(renderer),metrics:window.__mapMetrics?.at(-1)??null};
+  }).catch(()=>null);
+  throw error;
+ }
  await page.evaluate(()=>document.fonts.ready);
 }
 export async function openMap(browser,{viewport={width:1366,height:768},dpr=1,quality='normal',motion='reduce',fallback=false,fixture=''}={}){

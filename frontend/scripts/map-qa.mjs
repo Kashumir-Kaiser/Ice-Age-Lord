@@ -3,6 +3,8 @@ import {createHash} from 'node:crypto';
 import {resolve} from 'node:path';
 import sharp from 'sharp';
 import {launchMapBrowser,openMap,navigateMap,readyMap} from './map-browser.mjs';
+import {TerrainSampler,regionWeight} from '../src/rendering/TerrainSampler.ts';
+import {paintedIceWeight} from '../src/rendering/TerrainChunkCache.ts';
 
 const viewportChoices=[{width:1366,height:768},{width:1920,height:1080},{width:390,height:844}];
 const requestedWidths=process.env.MAP_QA_VIEWPORTS?.split(',').map(Number);
@@ -18,7 +20,6 @@ const damagedHouseOnly=process.env.MAP_QA_DAMAGED_HOUSE_ONLY==='1';
 const l30Only=process.env.MAP_QA_L30_ONLY==='1';
 const architectureOnly=progressionOnly||geographyOnly||fogOnly||damagedHouseOnly||l30Only||tombOnly||process.env.MAP_QA_ARCHITECTURE_ONLY==='1';
 const allOrientations=['north','east','south','west'];
-const QA_MAP_STYLE_VERSION='winter-ink-25d-v1';
 const families=[['wall','Thử bố trí Tường Rào',allOrientations],['gate','Thử bố trí Cổng Gỗ · mẫu ảnh',allOrientations],['tower','Thử bố trí Tháp cao · minh họa',['north']],['house','Thử bố trí Nhà thấp · minh họa',allOrientations],['farmhouse','Thử bố trí Nhà Nông Phu Cực Địa',allOrientations],['watchtower','Thử bố trí Tháp Canh · mẫu ảnh',allOrientations],['elemental','Thử bố trí Tháp Nguyên Tố · mẫu ảnh',allOrientations]];
 const orientationAssetIds={wall:'opening-palisade-wall',gate:'opening-timber-gate',house:'lord-house-damaged',farmhouse:'polar-farmhouse-l01',watchtower:'watchtower-preview',elemental:'elemental-tower-preview'};
 const requestedFamilies=process.env.MAP_QA_FAMILIES?.split(',');
@@ -44,14 +45,17 @@ function persistProgress(status='in-progress'){
  writeFileSync(resolve(output,'qa-manifest.json'),JSON.stringify(manifest,null,2));
 }
 persistProgress();
-function visualSeed(identity){let n=2166136261;for(const c of identity+':'+QA_MAP_STYLE_VERSION)n=Math.imul(n^c.charCodeAt(0),16777619);return n>>>0;}
-function visualHash(x,y,seed){let n=Math.imul(x|0,374761393)^Math.imul(y|0,668265263)^seed;n=Math.imul(n^(n>>>13),1274126177);return((n^(n>>>16))>>>0)/4294967296;}
-function expectedWaterBankProps(host,camera){
- const scale=host.height*camera.zoom/172,halfWidth=host.width/(2*scale),halfHeight=host.height/(2*scale),seed=visualSeed('LL01');
- const minX=Math.floor((camera.xKm*1000-halfWidth-20)/24),maxX=Math.floor((camera.xKm*1000+halfWidth+20)/24);
- const centerY=-camera.yKm*1000,minY=Math.floor((centerY-halfHeight-20)/24),maxY=Math.floor((centerY+halfHeight+20)/24);
- let count=0;for(let y=minY;y<=maxY;y++)for(let x=minX;x<=maxX;x++){const n=visualHash(x,y,seed+101);if(n>.9&&n<=.96)count++;}
- return {count,metresPerPixel:1/scale,halfWidth,halfHeight};
+function waterShoreEvidence(host,camera){
+ const scale=host.height*camera.zoom/172,halfWidth=host.width/(2*scale),halfHeight=host.height/(2*scale),centerX=camera.xKm*1000,centerY=-camera.yKm*1000;
+ const bounds={minX:centerX-halfWidth,maxX:centerX+halfWidth,minY:centerY-halfHeight,maxY:centerY+halfHeight};
+ const geography={forest:{x:4700,y:-6800},stone:{x:-7800,y:-4700},water:{x:8900,y:-11200}};
+ const sampler=new TerrainSampler('LL01',geography,[],true),props=sampler.props({minX:bounds.minX-80,maxX:bounds.maxX+80,minY:bounds.minY-80,maxY:bounds.maxY+80},1/scale);
+ const visibleBanks=props.filter(prop=>prop.kind==='bank'&&prop.id.startsWith('shore-bank:')&&prop.x>=bounds.minX&&prop.x<=bounds.maxX&&prop.y>=bounds.minY&&prop.y<=bounds.maxY);
+ const radii=visibleBanks.map(prop=>Math.hypot((prop.x-geography.water.x)/2100,(prop.y-geography.water.y)/1200));
+ const widths=visibleBanks.map(prop=>prop.worldWidth??prop.size);
+ const westEdgeDistance=Math.abs(bounds.minX-geography.water.x)/2100,eastEdgeDistance=Math.abs(bounds.maxX-geography.water.x)/2100;
+ const westEdgeIceWeight=regionWeight(bounds.minX,centerY,geography.water,2100,1200),eastEdgeIceWeight=regionWeight(bounds.maxX,centerY,geography.water,2100,1200);
+ return {metresPerPixel:1/scale,halfWidth,halfHeight,visibleBanks,sampledWorldProps:props.length,radii,widths,westEdgeDistance,eastEdgeDistance,westEdgeIceWeight,eastEdgeIceWeight,westPaintedIceWeight:paintedIceWeight(westEdgeIceWeight),eastPaintedIceWeight:paintedIceWeight(eastEdgeIceWeight)};
 }
 async function ensureCalibrationOpen(page){
  const details=page.locator('.territory-calibration');
@@ -64,7 +68,7 @@ async function capture(page,name,viewport,{waitForIdle=true}={}){
  const filename=`${viewport.width}/${group}${name}-${viewport.width}-${quality}-dpr${dpr}.png`;
  try{if(waitForIdle)await readyMap(page);else await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));}catch(error){
   const metrics=await page.evaluate(()=>window.__mapMetrics?.at(-1));
-  writeFileSync(resolve(output,filename+'.failure.json'),JSON.stringify({name,viewport,dpr,quality,metrics,error:String(error)},null,2));
+  writeFileSync(resolve(output,filename+'.failure.json'),JSON.stringify({name,phase:'renderer-idle-poll',viewport,dpr,quality,metrics,readiness:error?.mapReadiness??null,error:String(error)},null,2));
   await page.screenshot({path:resolve(output,filename+'.failure.png'),animations:'disabled'});throw error;
  }
  await page.screenshot({path:resolve(output,filename),animations:'disabled'});
@@ -203,12 +207,11 @@ async function captureLocalGeography(kind,viewport){
   if(kind==='water'){
    const host=await page.locator('.map-render-host').boundingBox();
    if(!host)throw new Error('Water QA renderer host is missing');
-   const bankProps=expectedWaterBankProps(host,{xKm:metadata.cameraXKm,yKm:metadata.cameraYKm,zoom:metadata.cameraZoom});
-   const westEdgeDistance=Math.abs(metadata.cameraXKm*1000-bankProps.halfWidth-8900)/2100;
-   const eastEdgeDistance=Math.abs(metadata.cameraXKm*1000+bankProps.halfWidth-8900)/2100;
-   const waterWeight=distance=>{const t=Math.max(0,Math.min(1,(1-distance)*3));return t*t*(3-2*t);};
-   if(bankProps.metresPerPixel>1.5||bankProps.count<1||metrics.visible<bankProps.count||westEdgeDistance>.75||eastEdgeDistance<=1)throw new Error(`Water QA camera does not expose seeded bank props and both sides of the modeled ice edge: ${JSON.stringify({bankProps,renderedProps:metrics.visible,westEdgeDistance,eastEdgeDistance})}`);
-   shoreline={model:'terrain-sampler-ice-ellipse-plus-seeded-bank-props',ellipseCenterKm:expectedAnchorKm,ellipseRadiiM:{x:2100,y:1200},westEdgeDistance,eastEdgeDistance,westEdgeIceWeight:waterWeight(westEdgeDistance),eastEdgeIceWeight:waterWeight(eastEdgeDistance),expectedBankProps:bankProps.count,renderedWorldProps:metrics.visible,metresPerPixel:bankProps.metresPerPixel,halfViewportM:{x:bankProps.halfWidth,y:bankProps.halfHeight}};
+   const banks=waterShoreEvidence(host,{xKm:metadata.cameraXKm,yKm:metadata.cameraYKm,zoom:metadata.cameraZoom});
+   const invalidBank=banks.visibleBanks.find(prop=>!prop.id.startsWith('shore-bank:')||prop.kind!=='bank'||!Number.isFinite(prop.worldWidth??prop.size)||(prop.worldWidth??prop.size)<48||(prop.worldWidth??prop.size)>80||prop.variant<0||prop.variant>7);
+   const invalidRadius=banks.radii.find(radius=>Math.abs(radius-.84446)>.015);
+   if(banks.metresPerPixel>1.5||!banks.visibleBanks.length||banks.sampledWorldProps!==metrics.visible||invalidBank||invalidRadius!==undefined||banks.westEdgeIceWeight<.45||banks.eastEdgeIceWeight>.45||banks.westPaintedIceWeight<.9||banks.eastPaintedIceWeight>.05)throw new Error(`Water QA camera does not expose authored shoreline banks and both sides of the semantic and painted ice edges: ${JSON.stringify({banks:{visible:banks.visibleBanks.length,radii:banks.radii,widths:banks.widths,sampled:banks.sampledWorldProps,invalidBank,invalidRadius},metricsVisible:metrics.visible,westEdgeDistance:banks.westEdgeDistance,eastEdgeDistance:banks.eastEdgeDistance,westEdgeIceWeight:banks.westEdgeIceWeight,eastEdgeIceWeight:banks.eastEdgeIceWeight,westPaintedIceWeight:banks.westPaintedIceWeight,eastPaintedIceWeight:banks.eastPaintedIceWeight})}`);
+   shoreline={model:'terrain-sampler-ice-ellipse-plus-shoreline-banks',ellipseCenterKm:expectedAnchorKm,ellipseRadiiM:{x:2100,y:1200},boundaryRadius:.84446,bankNormalJitterMaxM:16,bankVisibleCount:banks.visibleBanks.length,bankRadii:banks.radii,bankWorldWidthsM:banks.widths,westEdgeDistance:banks.westEdgeDistance,eastEdgeDistance:banks.eastEdgeDistance,westEdgeIceWeight:banks.westEdgeIceWeight,eastEdgeIceWeight:banks.eastEdgeIceWeight,westPaintedIceWeight:banks.westPaintedIceWeight,eastPaintedIceWeight:banks.eastPaintedIceWeight,paintMask:{transitionWeights:[.34,.56],perMaterialCompositeAlpha:.6},renderedWorldProps:metrics.visible,metresPerPixel:banks.metresPerPixel,halfViewportM:{x:banks.halfWidth,y:banks.halfHeight}};
   }
   const row=await capture(page,`local-${kind}`,viewport);row.geography={kind,fixtureKnownId:expectedId,knowledge:knownFixture.knowledge,currentSight:knownFixture.currentSight,markerVisibleInFrame:Boolean(markerState),provenance:metadata.provenance,anchorKm:metadata.anchorKm,centerKm:metadata.centerKm,camera:{mode:metadata.cameraMode,xKm:metadata.cameraXKm,yKm:metadata.cameraYKm,zoom:metadata.cameraZoom},sight:{clearM:metadata.sightClearM,fadeM:metadata.sightFadeM},terrain:{visibleChunks:metrics.visibleTerrainChunks,bytes:metrics.terrainBytes},...(shoreline?{shoreline}:{}),canonicalUnknownOmissionAsserted:true,reviewStatus:'pending-parent-visual-review'};persistProgress();return row;
  }finally{await page.close();}
