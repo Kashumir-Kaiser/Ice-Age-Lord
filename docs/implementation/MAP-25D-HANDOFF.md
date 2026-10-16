@@ -103,3 +103,22 @@ Source optimization `b0edab2c4cb00cc92a4c7ecf85663a217f3cc3f5` skips the separat
 | Normal | World-1023 | 16.7 / 19.2 / 28.5 | 0.3 / 0.5 / 1.6 | 16.7 / 26.3 |
 
 Low dense-520 interval p95 remains 116.4 ms against its 40 ms gate; normal dense-520 is 116.4 ms and local is 29.3 ms against the 20 ms gate. Low local is 37.3 ms against 40 ms. All pointer p95 values pass (100 ms low, 75 ms normal). The renderer reports `targetDeviceVerified=false`: hosted headless Chromium/SwiftShader cannot validate Intel UHD 620 performance. Visual, rendering, and JavaScript-transfer workflows passed. The backend regression workflow failed the unrelated activity-receipt archive assertion; its frontend job was skipped.
+
+## Hosted benchmark diagnosis — run 38909177744
+
+Both quality jobs completed successfully and uploaded `map-performance-low` and `map-performance-normal`. These are hosted headless Chromium/SwiftShader diagnostics, not Intel UHD 620 validation; `targetDeviceVerified` remains false. The table shows medians across the three runs for each fixture. Interval p95 budgets are 40 ms low and 20 ms normal.
+
+| Quality | Fixture | Interval p95 | Gate |
+| --- | --- | ---: | --- |
+| Low | Fresh | 33.5 ms | Pass |
+| Low | Populated | 33.5 ms | Pass |
+| Low | Dense-520 | 116.3 ms | Miss |
+| Low | Local | 39.7 ms | Pass |
+| Low | World-1023 | 37.9 ms | Pass |
+| Normal | Fresh | 19.7 ms | Pass |
+| Normal | Populated | 23.3 ms | Miss |
+| Normal | Dense-520 | 116.6 ms | Miss |
+| Normal | Local | 31.4 ms | Miss |
+| Normal | World-1023 | 26.4 ms | Miss |
+
+For dense-520, low pan had 248 samples at 91.8 ms p95 and zoom had 48 at 116.4 ms; normal pan had 248 at 98.2 ms and zoom had 49 at 116.6 ms. Selection had zero samples in both qualities. Fixture-wide LongTask overlap was about 23.9 seconds across 296 low and 297 normal overlapping intervals per run; phase-specific overlap is not recorded. LoAF observation was supported, with zero dense-520 overlaps in both qualities. The visual, rendering, and JavaScript-transfer workflows passed. The unrelated backend regression failed the activity-receipt archive assertion, so its frontend job was skipped.
