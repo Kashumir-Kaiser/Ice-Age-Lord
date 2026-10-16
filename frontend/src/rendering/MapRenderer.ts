@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, Matrix, Sprite, Texture } from 'pixi.js';
+import { Application, Container, Graphics, Matrix, Rectangle, Sprite, Texture } from 'pixi.js';
 import type {MapEffectsAtlas} from '../assets/assetRegistry.ts';
 import type { MapSnapshot } from './MapSceneAdapter.ts';
 import { TerrainSampler, GROUND_MATERIALS, chunkLevel, chunkCoverage, boundedChunkLevel } from './TerrainSampler.ts';
@@ -9,7 +9,7 @@ import { MapMetrics } from './MapMetrics.ts';
 import { MapEffects, ambientSnowDraws, foliageSwayOffset, rootAnchoredSwayMatrix, selectSwayingConiferIds, sightIntersectsViewport } from './MapEffects.ts';
 import type {EffectParticleDraw} from './MapEffects.ts';
 import { flameFrame, flameRect, flameKey } from './FlamePresentation.ts';
-import { artPolygon, createCompositionCache } from './SpriteRegistration.ts';
+import { artPolygon, createCompositionCache, architecturalCompositePlan } from './SpriteRegistration.ts';
 import { pointInPolygon } from './MapPicking.ts';
 import { depthOrder } from './DepthOrder.ts';
 import {projectDepthNodes} from './DepthSlices.ts';
@@ -21,7 +21,7 @@ import { screenToWorld, worldToScreen } from '../territory/projection.ts';
 import { BASE_VIEW_HEIGHT_M } from '../map/camera.ts';
 import type { WorldPoint } from '../territory/projection.ts';
 type Size={width:number;height:number};
-type Draw={id:string;path:string;x:number;y:number;width:number;height:number;alpha:number;matrix?:Matrix};
+type Draw={id:string;path:string;x:number;y:number;width:number;height:number;alpha:number;matrix?:Matrix;texture?:Texture};
 type PropDraw=Draw&{depth:number;kind:string;world:WorldPoint;imageWidth:number;imageHeight:number};
 const BANK_ART_ASPECT=[384/127,384/115,384/111,384/201,384/76,384/123,384/144,384/99] as const;
 export class MapRenderer {
@@ -37,6 +37,12 @@ export class MapRenderer {
   private effectDraws:EffectParticleDraw[]=[];
   private drawSprites=new Map<string,Sprite>();
   private chunkTextures=new Map<string,Texture>();
+  private architectureTextures=new Map<string,{texture:Texture;bytes:number;stamp:number}>();
+  private architectureTextureBytes=0;
+  private architectureTextureFailures=new Set<string>();
+  private architectureTextureStamp=0;
+  // These generated render targets are separate from source images and stay under a fixed memory cap.
+  private readonly architectureTextureLimit=16*1048576;
   private assets:AssetTextureCache;
   private terrain:TerrainChunkCache;
   private sampler:TerrainSampler;
@@ -188,7 +194,7 @@ export class MapRenderer {
       for(let y=Math.floor(bounds.minY/nextSpan);y<=Math.floor(bounds.maxY/nextSpan);y++)for(let x=Math.floor(bounds.minX/nextSpan);x<=Math.floor(bounds.maxX/nextSpan);x++){this.terrain.request(x,y,wanted);if(!this.terrain.get(x,y,wanted))ready=false;}
       if(ready){this.previousLevel=this.reducedMotion?undefined:this.level;this.level=wanted;this.transitionStart=performance.now();}
     }
-    const currentLevel=this.level,span=64*2**currentLevel,draws:Draw[]=[],used=new Set<string>();
+    const currentLevel=this.level,span=64*2**currentLevel,draws:Draw[]=[],used=new Set<string>(),usedArchitectureTextures=new Set<string>();
     const progress=this.previousLevel===undefined?1:Math.min(1,(performance.now()-this.transitionStart)/150);
     if(this.previousLevel!==undefined&&progress<1){const oldSpan=64*2**this.previousLevel;
       for(let y=Math.floor(bounds.minY/oldSpan);y<=Math.floor(bounds.maxY/oldSpan);y++)for(let x=Math.floor(bounds.minX/oldSpan);x<=Math.floor(bounds.maxX/oldSpan);x++){const c=this.terrain.get(x,y,this.previousLevel);if(c)draws.push({...this.groundDraw(c),alpha:1-progress});}
@@ -281,6 +287,20 @@ export class MapRenderer {
         // Missing architecture must retain one complete authored body, never a floating half.
         if(!ready)layers=compositionForFrame({...asset,composition:'single-body'},this.snapshot.mode,occludes,b.active,b.orientation);
       }
+      if(this.app&&!b.slice&&asset.composition==='architectural'&&this.snapshot.mode!=='planning'){
+        const compositeLOD=preferDistrict||lod!=='close'?'district':'close';
+        const plan=architecturalCompositePlan(asset,layers,b.orientation,compositeLOD,b.draft?.55:1);
+        if(plan){
+          const texture=this.architectureTexture(plan,usedArchitectureTextures);
+          if(texture){
+            usedArchitectureTextures.add(this.architectureTextureKey(plan));
+            // Replace base + upper at their original painter position. Draft opacity
+            // is baked per layer into the shared texture, matching the old draw alpha.
+            draws.push({id:b.id+':body',path:'',texture,...b.rect,alpha:1});
+            layers=layers.filter(layer=>layer.role!=='base'&&layer.role!=='upper');
+          }
+        }
+      }
       for(const layer of layers){
         if(layer.role==='shadow'||layer.role==='vfx'&&loadedFlame)continue;
         if(b.slice&&layer.role==='body'){
@@ -308,7 +328,7 @@ export class MapRenderer {
     const particleLimit=Math.max(0,QUALITY[this.quality].particles-snow.length);
     this.effectDraws=[...snow,...(allowedEffects?this.effects.draws(this.visibleEmitters.map(({point})=>point),this.mapEffects,particleLimit,this.reducedMotion,this.scale()):[])];
     if(this.effectDraws.length&&this.mapEffects)used.add(this.mapEffects.path);
-    for(const d of draws)if(!d.path.startsWith('chunk:')){Object.assign(d,this.assets.rect(d.path,d));used.add(d.path);this.assets.acquire(d.path);}
+    for(const d of draws)if(!d.texture&&!d.path.startsWith('chunk:')){Object.assign(d,this.assets.rect(d.path,d));used.add(d.path);this.assets.acquire(d.path);}
     this.assets.retain(used);
     if(this.app)this.renderWebGL(draws);else if(this.context)this.render2D(draws);
     const m=this.metrics.data;
@@ -320,7 +340,7 @@ export class MapRenderer {
     const flames=draws.filter(d=>d.id.endsWith(':flame'));m.flameSprites=flames.length;m.flameFrame=flames.length?Number(flames[0].path.split('#flame-')[1]):null;
     m.effectSprites=this.effectDraws.length;
     let terrainGPUBytes=0;for(const texture of this.chunkTextures.values())terrainGPUBytes+=texture.source.width*texture.source.height*4;
-    m.textureBytes=this.app?this.assets.gpuBytes+terrainGPUBytes+this.renderTargetBytes():0;
+    m.textureBytes=this.app?this.assets.gpuBytes+terrainGPUBytes+this.architectureTextureBytes+this.renderTargetBytes():0;
     m.decodedBytes=this.assets.bytes+this.terrain.bytes+this.terrain.scratchBytes;m.terrainBytes=terrainGPUBytes;m.queued=this.terrain.pending;m.pendingTextures=this.assets.pending+this.assets.deferred;m.visible=buildingObjects.length+props.length;m.total=this.snapshot.buildings.length+worldProps.length;
     m.quality=this.quality;m.terrainLevel=this.level;m.visibleTerrainChunks=chunkCoverage(bounds,this.level);m.prefetchChunks=prefetched;
   }
@@ -332,7 +352,7 @@ export class MapRenderer {
   }
   private renderWebGL(draws:Draw[]):void {
     const active=new Set<string>();let index=0;
-    for(const d of draws){const texture=d.path.startsWith('chunk:')?this.chunkTextures.get(d.path.slice(6)):this.assets.texture(d.path);if(!texture)continue;active.add(d.id);
+    for(const d of draws){const texture=d.texture??(d.path.startsWith('chunk:')?this.chunkTextures.get(d.path.slice(6)):this.assets.texture(d.path));if(!texture)continue;active.add(d.id);
       let sprite=this.drawSprites.get(d.id);if(!sprite){sprite=new Sprite(texture);sprite.eventMode='none';this.drawSprites.set(d.id,sprite);this.stage.addChild(sprite);}sprite.texture=texture;sprite.alpha=d.alpha;
       if(d.matrix)sprite.setFromMatrix(d.matrix);else{sprite.skew.set(0,0);sprite.rotation=0;sprite.position.set(d.x,d.y);sprite.width=d.width;sprite.height=d.height;}
       if(this.stage.children[index]!==sprite)this.stage.setChildIndex(sprite,index);index++;
@@ -364,7 +384,43 @@ export class MapRenderer {
     for(const emitter of this.visibleEmitters){const radius=Math.min(72,10*this.scale());for(let i=4;i>=1;i--){ctx.beginPath();ctx.ellipse(emitter.point.x,emitter.point.y-2,radius*i/4,radius*i/8,0,0,Math.PI*2);ctx.fillStyle=`rgba(217,150,84,${.018*this.effects.light(this.reducedMotion)})`;ctx.fill();}}
     for(const draw of this.effectDraws){const image=this.assets.acquire(draw.key),frame=this.assets.frame(draw.key);if(!image||!frame)continue;ctx.save();ctx.globalAlpha=draw.alpha;ctx.drawImage(image,frame.x,frame.y,frame.width,frame.height,draw.x-draw.width*draw.anchor.x,draw.y-draw.height*draw.anchor.y,draw.width,draw.height);ctx.restore();}
   }
-  private clearSprites():void{for(const s of this.drawSprites.values())s.destroy();this.drawSprites.clear();for(const t of this.chunkTextures.values())if(!t.destroyed)t.destroy(true);this.chunkTextures.clear();}
+  private architectureTextureKey(plan:NonNullable<ReturnType<typeof architecturalCompositePlan>>):string {
+    return plan.key+'|'+plan.parts.map(part=>this.assets.url(part.path)).join('|');
+  }
+  private architectureTexture(plan:NonNullable<ReturnType<typeof architecturalCompositePlan>>,inUse:ReadonlySet<string>):Texture|null {
+    const key=this.architectureTextureKey(plan),cached=this.architectureTextures.get(key);
+    if(cached){cached.stamp=++this.architectureTextureStamp;return cached.texture;}
+    if(this.architectureTextureFailures.has(key))return null;
+    const bytes=plan.width*plan.height*4;
+    if(bytes>this.architectureTextureLimit||plan.width>this.assets.maxTextureSize||plan.height>this.assets.maxTextureSize){this.failArchitectureTexture(key);return null;}
+    while(this.architectureTextureBytes+bytes>this.architectureTextureLimit){
+      let oldestKey:string|undefined,oldestStamp=Infinity;
+      for(const [candidate,item] of this.architectureTextures)if(!inUse.has(candidate)&&item.stamp<oldestStamp){oldestKey=candidate;oldestStamp=item.stamp;}
+      if(!oldestKey)return null;
+      const evicted=this.architectureTextures.get(oldestKey)!;
+      if(!evicted.texture.destroyed)evicted.texture.destroy(true);
+      this.architectureTextureBytes-=evicted.bytes;this.architectureTextures.delete(oldestKey);
+    }
+    const target=new Container();
+    try{
+      for(const part of plan.parts){
+        const source=this.assets.texture(part.path);if(!source){this.failArchitectureTexture(key);return null;}
+        const sprite=new Sprite(source);sprite.eventMode='none';sprite.position.set(part.x,part.y);
+        sprite.width=part.width;sprite.height=part.height;sprite.alpha=part.alpha;target.addChild(sprite);
+      }
+      const texture=this.app!.renderer.generateTexture({target,frame:new Rectangle(0,0,plan.width,plan.height),resolution:1,antialias:false,clearColor:[0,0,0,0]});
+      this.architectureTextures.set(key,{texture,bytes,stamp:++this.architectureTextureStamp});this.architectureTextureBytes+=bytes;
+      return texture;
+    }catch{this.failArchitectureTexture(key);return null;}
+    finally{target.destroy({children:true,texture:false,textureSource:false});}
+  }
+  private failArchitectureTexture(key:string):void {if(this.architectureTextureFailures.size>=128)this.architectureTextureFailures.clear();this.architectureTextureFailures.add(key);}
+  private clearArchitectureTextures():void {
+    this.architectureTextureFailures.clear();
+    for(const item of this.architectureTextures.values())if(!item.texture.destroyed)item.texture.destroy(true);
+    this.architectureTextures.clear();this.architectureTextureBytes=0;
+  }
+  private clearSprites():void{for(const s of this.drawSprites.values())s.destroy();this.drawSprites.clear();for(const t of this.chunkTextures.values())if(!t.destroyed)t.destroy(true);this.chunkTextures.clear();this.clearArchitectureTextures();}
   private clearParticleSprites():void{for(const sprite of this.particleSprites)sprite.destroy();this.particleSprites=[];}
   destroy():void{if(this.destroyed)return;this.destroyed=true;this.stop();this.restoreDrawCounters?.();this.restoreDrawCounters=null;this.canvas.removeEventListener('webglcontextlost',this.lost);this.clearSprites();this.clearParticleSprites();this.terrain.destroy();this.assets.destroy();if(this.app){this.app.destroy(false,{children:true,texture:false,textureSource:false});this.app=null;}this.canvas.width=this.canvas.height=0;this.context=null;Object.assign(this.metrics.data,{renderMs:[],intervalMs:[],intervalSamples:[],sampleStartMs:null,sampleEndMs:null,phaseTransitions:[],textureBytes:0,decodedBytes:0,terrainBytes:0,queued:0,pendingTextures:0,activeLoops:0,visible:0,total:0,effectSprites:0});void this.transferred;}
 }

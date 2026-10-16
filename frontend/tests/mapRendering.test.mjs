@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { spriteRect, referenceSize, artPolygon, composition, resolveOrientation } from '../src/rendering/SpriteRegistration.ts';
+import { spriteRect, referenceSize, artPolygon, composition, resolveOrientation, architecturalCompositePlan } from '../src/rendering/SpriteRegistration.ts';
 import { pointInPolygon, pointerCSS, pickStack, cyclePick } from '../src/rendering/MapPicking.ts';
 import { TerrainSampler, noise, chunkLevel } from '../src/rendering/TerrainSampler.ts';
 import { depthOrder } from '../src/rendering/DepthOrder.ts';
@@ -38,6 +38,35 @@ test('planning never draws body, upper or flame; normal chooses a single registe
  const layered={...asset,composition:'architectural'};
  const focused=composition(layered,'focus',true,false,'north');assert.equal(focused.find(l=>l.role==='upper').alpha,.22);assert.equal(focused.find(l=>l.role==='base').alpha,1);
  assert.equal(composition(layered,'focus',false,false,'north').find(l=>l.role==='upper').alpha,1);
+});
+test('static architecture composite plan preserves registered raster bounds, layer order and draft opacity; unsupported variants fall back',()=>{
+ const layers=composition(asset,'normal',false,false,'north'),draft=architecturalCompositePlan(asset,layers,'north','close',.55);
+ assert.ok(draft,'registered static architecture has an eligible composite');
+ assert.deepEqual(draft.parts.map(part=>part.role),['base','upper'],'painter order remains base then upper');
+ assert.deepEqual(draft.parts.map(part=>part.alpha),[.55,.55],'per-layer draft opacity is applied before composition');
+ const baseEntry=asset.mapExports.find(e=>e.path===draft.parts[0].path);
+ assert.equal(draft.width,baseEntry.rasterCanvas.width);assert.equal(draft.height,baseEntry.rasterCanvas.height);
+ for(const part of draft.parts){
+  const entry=asset.mapExports.find(e=>e.path===part.path),scaleX=entry.rasterCanvas.width/asset.logicalCanvas.width,scaleY=entry.rasterCanvas.height/asset.logicalCanvas.height;
+  near(part.x,entry.trim.x*scaleX);near(part.y,entry.trim.y*scaleY);
+  near(part.width,entry.trim.width*scaleX);near(part.height,entry.trim.height*scaleY);
+ }
+ const normal=architecturalCompositePlan(asset,layers,'north','close');assert.ok(normal);assert.notEqual(draft.key,normal.key,'draft opacity forms a separate reusable visual key');
+ for(const orientation of ['north','east','south','west'])for(const lod of ['close','district']){
+  const oriented=architecturalCompositePlan(asset,composition(asset,'normal',false,false,orientation),orientation,lod);
+  assert.ok(oriented,`${orientation} ${lod} exports have compatible registered bounds`);
+  assert.deepEqual(oriented.parts.map(part=>part.role),['base','upper']);
+  if(orientation==='north'&&lod==='close')assert.equal(oriented.key,normal.key);
+  else assert.notEqual(oriented.key,normal.key,`${orientation} ${lod} is keyed independently from north close`);
+ }
+ assert.equal(architecturalCompositePlan(asset,composition(asset,'focus',true,false,'north'),'north','close'),null,'unequal focus alpha remains on the original path');
+ assert.equal(architecturalCompositePlan(asset,composition(asset,'planning',false,false,'north'),'north','close'),null,'planning base-only art remains on the original path');
+ const sliced={...asset,mapDepthSlices:{north:[{id:'front',range:[0,1],hull:[],paths:{close:'a',district:'b'}}]}};
+ assert.equal(architecturalCompositePlan(sliced,layers,'north','close'),null,'depth-sliced architecture remains on the original path');
+ const unsupported={...asset,mapExports:asset.mapExports.map(entry=>entry.role==='upper'&&entry.lod==='close'&&entry.orientation==='north'?{...entry,rasterCanvas:undefined}:entry)};
+ assert.equal(architecturalCompositePlan(unsupported,layers,'north','close'),null,'unregistered raster metadata cannot be composed');
+ const outOfBounds={...asset,mapExports:asset.mapExports.map(entry=>entry.role==='upper'&&entry.lod==='close'&&entry.orientation==='north'?{...entry,trim:{...entry.trim,x:asset.logicalCanvas.width+1}}:entry)};
+ assert.equal(architecturalCompositePlan(outOfBounds,layers,'north','close'),null,'invalid trim bounds cannot be composed');
 });
 test('authored orientations resolve without changing geometry, unknown art coverage remains explicit',()=>{
  const rotated={...asset,orientationViews:{east:{body:'/east.png'}},equivalentOrientations:['south']};

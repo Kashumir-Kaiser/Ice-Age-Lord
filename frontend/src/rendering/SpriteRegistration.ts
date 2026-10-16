@@ -36,6 +36,42 @@ export function resolveOrientation(asset: AssetManifestEntry, orientation: Orien
   return { layers:asset.orientationViews?.[asset.orientation as Orientation]??layers, missing: true };
 }
 export type CompositionLayer = { role: 'shadow' | 'base' | 'upper' | 'body' | 'vfx'; path: string; alpha: number };
+export type ArchitecturalCompositePlan = {
+  key: string; width: number; height: number;
+  parts: { role: 'base' | 'upper'; path: string; x: number; y: number; width: number; height: number; alpha: number }[];
+};
+/** Resolve exact registered raster bounds for a reusable, static base/upper texture. */
+export function architecturalCompositePlan(
+  asset:AssetManifestEntry,layers:readonly CompositionLayer[],orientation:Orientation,lod:'close'|'district',entityAlpha=1,
+):ArchitecturalCompositePlan|null {
+  if(asset.composition!=='architectural'||asset.mapDepthSlices?.[orientation]?.length||!Number.isFinite(entityAlpha)||entityAlpha<0||entityAlpha>1)return null;
+  const body=layers.filter(layer=>layer.role==='base'||layer.role==='upper');
+  if(body.length!==2||body[0].role!=='base'||body[1].role!=='upper'||body[0].alpha!==body[1].alpha)return null;
+  const logical=asset.logicalCanvas;
+  if(!logical||![logical.width,logical.height].every(v=>Number.isFinite(v)&&v>0))return null;
+  const entries=body.map(layer=>asset.mapExports?.find(entry=>entry.role===layer.role&&entry.lod===lod&&(entry.layerPath??entry.source)===layer.path));
+  if(entries.some(entry=>!entry||entry.architecturePart!==true||!entry.rasterCanvas))return null;
+  const [base,upper]=entries as NonNullable<typeof entries[number]>[];
+  const raster=base.rasterCanvas!,otherRaster=upper.rasterCanvas!;
+  const sameLogical=(entry:typeof base)=>{const canvas=entry.logicalCanvas??logical;return canvas.width===logical.width&&canvas.height===logical.height;};
+  if(!sameLogical(base)||!sameLogical(upper)||raster.width!==otherRaster.width||raster.height!==otherRaster.height
+    ||![raster.width,raster.height].every(v=>Number.isInteger(v)&&v>0))return null;
+  const scaleX=raster.width/logical.width,scaleY=raster.height/logical.height;
+  const parts=body.map((layer,index)=>{
+    const entry=entries[index]!,trim=entry.trim;
+    if(!trim||![trim.x,trim.y,trim.width,trim.height,entry.width,entry.height].every(Number.isFinite)
+      ||trim.x<0||trim.y<0||trim.width<=0||trim.height<=0||trim.x+trim.width>logical.width+1||trim.y+trim.height>logical.height+1
+      ||entry.width<=0||entry.height<=0||!Number.isInteger(entry.width)||!Number.isInteger(entry.height)
+      ||Math.abs(entry.width-trim.width*scaleX)>1.1||Math.abs(entry.height-trim.height*scaleY)>1.1)return null;
+    return {role:layer.role as 'base'|'upper',path:entry.path,x:trim.x*scaleX,y:trim.y*scaleY,
+      width:entry.width,height:entry.height,alpha:layer.alpha*entityAlpha};
+  });
+  if(parts.some(part=>!part))return null;
+  const resolved=parts as ArchitecturalCompositePlan['parts'];
+  return {key:JSON.stringify({asset:asset.assetId,revision:asset.revision,orientation,lod,logical,raster,parts:resolved.map(part=>({...part,
+    export:entries[part.role==='base'?0:1]!.sha256,atlas:entries[part.role==='base'?0:1]!.atlas?.sha256}))}),
+    width:raster.width,height:raster.height,parts:resolved};
+}
 /** Per-frame memoizer for repeated, immutable sprite compositions. */
 export function createCompositionCache(): (asset:AssetManifestEntry,mode:'normal'|'focus'|'planning',occludes:boolean,active:boolean,orientation:Orientation)=>CompositionLayer[] {
  const byAsset=new WeakMap<AssetManifestEntry,Map<string,CompositionLayer[]>>();
