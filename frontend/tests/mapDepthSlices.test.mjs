@@ -97,3 +97,27 @@ test('depth-node allocation reduction preserves the previous projection output e
   assert.deepEqual(projectDepthNodes(buildings,project,scale,size,cull,lods,planning),previous(buildings,project,scale,size,cull,lods,planning),`unprojected scale=${scale}, pan=${pan}, cull=${cull}, planning=${planning}`);
  }
 });
+
+test('cached depth-slice bounds match legacy culling at viewport edges for every orientation',()=>{
+ const asset=manifest.assets.find(entry=>entry.mapDepthSlices),size={width:600,height:480},scale=3;
+ const legacyBounds=node=>{
+  const polygon=artPolygon(node.slice.hull,node.rect);
+  return {minX:Math.min(...polygon.map(point=>point.x)),maxX:Math.max(...polygon.map(point=>point.x)),minY:Math.min(...polygon.map(point=>point.y)),maxY:Math.max(...polygon.map(point=>point.y))};
+ };
+ const viewport={minX:-16,minY:-16,maxX:size.width+16,maxY:size.height+16};
+ for(const orientation of ['north','east','south','west']){
+  const building={id:'boundary:'+orientation,name:asset.name,point:{x:13,y:-29},asset,assetId:asset.assetId,orientation,footprint:{widthM:asset.compatiblePhysicalFootprint.widthM,depthM:asset.compatiblePhysicalFootprint.depthM},selected:false,active:false,draft:false};
+  const baseProject=point=>({x:300+scale*1.3*(point.x+point.y),y:240+scale*.7*(point.x-point.y)});
+  const baseNodes=projectDepthNodes([building],baseProject,scale,size,false);
+  assert.ok(baseNodes.some(node=>node.slice),`expected authored slices for ${orientation}`);
+  for(const anchor of baseNodes.filter(node=>node.slice))for(const edge of ['left','right','top','bottom'])for(const offset of [-1e-6,0,1e-6]){
+   const bounds=legacyBounds(anchor);
+   const dx=edge==='left'?-16-bounds.minX+offset:edge==='right'?size.width+16-bounds.maxX+offset:0;
+   const dy=edge==='top'?-16-bounds.minY+offset:edge==='bottom'?size.height+16-bounds.maxY+offset:0;
+   const project=point=>{const screen=baseProject(point);return {x:screen.x+dx,y:screen.y+dy};};
+   const all=projectDepthNodes([building],project,scale,size,false);
+   const expected=all.map(node=>({...node,bounds:legacyBounds(node)})).filter(node=>intersects(node.bounds,viewport));
+   assert.deepEqual(projectDepthNodes([building],project,scale,size,true),expected,`${orientation} ${anchor.slice.id} at ${edge} offset ${offset}`);
+  }
+ }
+});
