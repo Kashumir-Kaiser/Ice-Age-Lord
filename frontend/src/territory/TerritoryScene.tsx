@@ -107,10 +107,10 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
   const transient=useRef(activeCamera),lastCameraCommit=useRef(0),wheelCommit=useRef<ReturnType<typeof setTimeout>|null>(null);
   useLayoutEffect(()=>{transient.current=activeCamera;svgRef.current?.querySelector('.territory-camera-overlay')?.removeAttribute('transform');},[activeCamera.x,activeCamera.y,activeCamera.zoom,size.width,size.height]);
   useEffect(()=>()=>{if(wheelCommit.current)clearTimeout(wheelCommit.current);pointerRectCache.current.release();},[]);
-  const presentCamera=(next:TerritoryCamera,commit=false)=>{
+  const presentCamera=(next:TerritoryCamera,commit=false,dispatchRenderer=true)=>{
     transient.current=next;
     svgRef.current?.querySelector('.territory-camera-overlay')?.setAttribute('transform',cameraOverlayTransform(activeCamera,next,size,'territory'));
-    rootRef.current?.dispatchEvent(new CustomEvent('map-camera',{detail:{...next,interacting:!commit&&Boolean(gesture.current||pinch.current)}}));
+    if(dispatchRenderer)rootRef.current?.dispatchEvent(new CustomEvent('map-camera',{detail:{...next,interacting:!commit&&Boolean(gesture.current||pinch.current)}}));
     if(commit||(!gesture.current&&!pinch.current&&performance.now()-lastCameraCommit.current>=100)){lastCameraCommit.current=performance.now();onCameraChange(next);}
   };
 
@@ -346,7 +346,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
       const rect=svgRef.current?.getBoundingClientRect();if(!rect)return;
       const point=followPlayer?{x:size.width/2,y:size.height/2}:{x:event.clientX-rect.left,y:event.clientY-rect.top};
       const zoom=transient.current.zoom*Math.exp(-Math.max(-480,Math.min(480,event.deltaY))*.0014);
-      event.preventDefault();presentCamera(zoomAtScreenPoint(transient.current,point,size,zoom,PX_PER_ISO_METRE));if(wheelCommit.current)clearTimeout(wheelCommit.current);wheelCommit.current=setTimeout(()=>presentCamera(transient.current,true),120);
+      event.preventDefault();presentCamera(zoomAtScreenPoint(transient.current,point,size,zoom,PX_PER_ISO_METRE));if(wheelCommit.current)clearTimeout(wheelCommit.current);wheelCommit.current=setTimeout(()=>presentCamera(transient.current,true,false),120);
     };
     node.addEventListener('wheel',onWheel,{passive:false});return()=>node.removeEventListener('wheel',onWheel);
   },[camera,activeCamera,size,onCameraChange,followPlayer]);

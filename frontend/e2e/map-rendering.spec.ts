@@ -30,6 +30,31 @@ test('real renderer opens normal gameplay with exact opening IDs, grid toggle an
  await page.getByRole('button',{name:'Mặt bằng',exact:true}).click();await expect(page.locator('.territory-building image')).toHaveCount(0);
  await page.locator('.territory-scene-svg').focus();await page.keyboard.press('p');await expect(page.getByRole('button',{name:'Bình thường',exact:true})).toHaveAttribute('aria-pressed','true');
 });
+test('one isolated wheel update changes zoom once while pointer and pinch paths end their interactions',async({page})=>{
+ test.setTimeout(60000);
+ await territory(page);const stage=page.locator('.territory-stage'),scene=page.locator('.territory-scene-svg');
+ await stage.evaluate(node=>{
+  const target=window as Window&{__territoryCameraEvents?:{x:number;y:number;zoom:number;interacting?:boolean}[]};target.__territoryCameraEvents=[];
+  node.addEventListener('map-camera',event=>target.__territoryCameraEvents!.push((event as CustomEvent).detail));
+ });
+ const box=(await scene.boundingBox())!;await page.mouse.move(box.x+box.width*.5,box.y+box.height*.55);await page.mouse.wheel(0,-120);await page.waitForTimeout(180);
+ const first=await page.evaluate(()=>((window as Window&{__territoryCameraEvents?:{zoom:number;interacting?:boolean}[]}).__territoryCameraEvents??[]));
+ expect(first).toHaveLength(1);expect(first[0].zoom).toBeGreaterThan(0);expect(first[0].interacting).toBe(false);
+ await page.mouse.wheel(0,-120);await page.waitForTimeout(180);
+ const afterTwo=await page.evaluate(()=>((window as Window&{__territoryCameraEvents?:{zoom:number;interacting?:boolean}[]}).__territoryCameraEvents??[]));
+ expect(afterTwo).toHaveLength(2);expect(afterTwo[1].zoom).toBeGreaterThan(first[0].zoom);
+ const beforePinch=afterTwo.length;
+ await page.evaluate(({x,y})=>{
+  const svg=document.querySelector('.territory-scene-svg')!;
+  const send=(type:string,pointerId:number,clientX:number,clientY:number)=>svg.dispatchEvent(new PointerEvent(type,{bubbles:true,pointerId,pointerType:'touch',button:0,clientX,clientY}));
+  send('pointerdown',51,x-40,y);send('pointerdown',52,x+40,y);send('pointermove',52,x+60,y);send('pointerup',52,x+60,y);send('pointerup',51,x-40,y);
+ },{x:box.x+box.width*.5,y:box.y+box.height*.55});
+ const afterPinch=await page.evaluate(()=>((window as Window&{__territoryCameraEvents?:{zoom:number;interacting?:boolean}[]}).__territoryCameraEvents??[]));
+ const pinchEvents=afterPinch.slice(beforePinch);expect(pinchEvents.some(event=>event.interacting===true)).toBe(true);expect(pinchEvents.at(-1)?.interacting).toBe(false);
+ const beforeDrag=afterPinch.length;await page.mouse.move(box.x+box.width*.7,box.y+box.height*.7);await page.mouse.down();await page.mouse.move(box.x+box.width*.65,box.y+box.height*.68,{steps:3});await page.mouse.up();
+ const afterDrag=await page.evaluate(()=>((window as Window&{__territoryCameraEvents?:{zoom:number;interacting?:boolean}[]}).__territoryCameraEvents??[]));
+ const dragEvents=afterDrag.slice(beforeDrag);expect(dragEvents.some(event=>event.interacting===true)).toBe(true);expect(dragEvents.at(-1)?.interacting).toBe(false);
+});
 test('ordinary demo placement palette keeps authored four-pose art and hides calibration fixtures',async({page})=>{
  await page.goto('/?mode=demo');await expect(page.locator('.app-shell')).toBeVisible();
  const menu=page.getByRole('button',{name:'Mở điều hướng'});if(await menu.isVisible())await menu.click();
