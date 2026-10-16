@@ -50,6 +50,34 @@ export function formatSlowFrameAttribution(intervalSamples=[],entries=[],quality
  return {thresholdMs,badRendererIntervals:slow.length,overlappingLongAnimationFrames:frames.length,blockingDurationMs:rounded(blockingDurationMs),renderStartCount:frames.filter(entry=>Number.isFinite(entry.renderStart)&&entry.renderStart>0).length,styleAndLayoutStartCount:frames.filter(entry=>Number.isFinite(entry.styleAndLayoutStart)&&entry.styleAndLayoutStart>0).length,topScripts:[...contributors.values()].map(row=>({...row,overlapMs:rounded(row.overlapMs)})).sort((a,b)=>b.overlapMs-a.overlapMs||b.entries-a.entries).slice(0,5)};
 }
 
+
+function entryPhase(entry,samples){
+ const totals={pan:0,zoom:0,selection:0},entryStart=entry.start,entryEnd=entry.start+entry.duration;
+ for(const sample of samples??[]){if(!['pan','zoom','selection'].includes(sample.phase)||!Number.isFinite(sample.start)||!Number.isFinite(sample.end))continue;const overlap=Math.max(0,Math.min(entryEnd,sample.end)-Math.max(entryStart,sample.start));totals[sample.phase]+=overlap;}
+ return Object.entries(totals).sort((a,b)=>b[1]-a[1])[0]?.[1]>0?Object.entries(totals).sort((a,b)=>b[1]-a[1])[0][0]:null;
+}
+
+export function formatLongTaskAttributionByPhase(intervalSamples=[],entries=[],supported=false){
+ const phases=Object.fromEntries(['pan','zoom','selection'].map(phase=>[phase,{count:0,totalDurationMs:0,topAttributions:[]}]));
+ const groups=Object.fromEntries(['pan','zoom','selection'].map(phase=>[phase,new Map()]));
+ for(const entry of entries??[]){if(!Number.isFinite(entry.start)||!Number.isFinite(entry.duration)||!intervalSamples.some(sample=>overlapMs(sample,entry)>0))continue;const phase=entryPhase(entry,intervalSamples);if(!phase)continue;const out=phases[phase];out.count++;out.totalDurationMs+=entry.duration;
+  const attributions=Array.isArray(entry.attribution)&&entry.attribution.length?entry.attribution:[{containerType:null,containerSrc:null,containerId:null,containerName:null}];
+  for(const item of attributions){const key=JSON.stringify([item.containerType??null,item.containerSrc??null,item.containerId??null,item.containerName??null]);let row=groups[phase].get(key);if(!row){row={containerType:item.containerType??null,containerSrc:item.containerSrc??null,containerId:item.containerId??null,containerName:item.containerName??null,entries:0,durationMs:0};groups[phase].set(key,row);}row.entries++;row.durationMs+=entry.duration;}
+ }
+ for(const phase of Object.keys(phases)){phases[phase].totalDurationMs=rounded(phases[phase].totalDurationMs);phases[phase].topAttributions=[...groups[phase].values()].map(row=>({...row,durationMs:rounded(row.durationMs)})).sort((a,b)=>b.durationMs-a.durationMs||b.entries-a.entries).slice(0,5);}
+ return {supported:!!supported,byPhase:phases};
+}
+
+export function formatLongAnimationFrameScriptsByPhase(intervalSamples=[],entries=[],quality='normal',supported=false){
+ const byPhase=Object.fromEntries(['pan','zoom','selection'].map(phase=>{const phaseSamples=intervalSamples.filter(sample=>sample.phase===phase),summary=formatSlowFrameAttribution(phaseSamples,entries,quality);return [phase,{overlappingFrames:summary.overlappingLongAnimationFrames,topScripts:summary.topScripts}];}));
+ return {supported:!!supported,byPhase};
+}
+
+export function formatPointerMoveDispatchByPhase(samples=[],dropped=0){
+ const byPhase=Object.fromEntries(['pan','zoom','selection'].map(phase=>{const values=samples.filter(sample=>sample.phase===phase&&Number.isFinite(sample.duration)&&sample.duration>=0).map(sample=>sample.duration);return [phase,{count:values.length,p50:percentile(values,.5),p95:percentile(values,.95),p99:percentile(values,.99),max:values.length?Math.max(...values):null}];}));
+ return {dropped,byPhase};
+}
+
 export function formatIntervalDiagnostics(result){
  const samples=result.metrics?.intervalSamples??[];
  const byPhase=Object.fromEntries(['pan','zoom','selection'].map(phase=>{
@@ -60,6 +88,9 @@ export function formatIntervalDiagnostics(result){
  if(result.pageRafDiagnostics)diagnostics.pageRaf=result.pageRafDiagnostics;
  if(Array.isArray(result.metrics?.rendererRafSamples))diagnostics.rendererRaf=formatRendererRafDiagnostics(result.metrics.rendererRafSamples);
  if(result.longAnimationFrames)diagnostics.slowFrameAttribution=formatSlowFrameAttribution(samples,result.longAnimationFrames,result.quality);
+ if(result.observerSupport?.longtask!==undefined)diagnostics.longTaskAttributionByPhase=formatLongTaskAttributionByPhase(samples,result.longTasks,result.observerSupport.longtask);
+ if(result.observerSupport?.longAnimationFrame!==undefined)diagnostics.longAnimationFrameScriptsByPhase=formatLongAnimationFrameScriptsByPhase(samples,result.longAnimationFrames,result.quality,result.observerSupport.longAnimationFrame);
+ if(Array.isArray(result.pointerMoveSamples))diagnostics.pointerMoveDispatchByPhase=formatPointerMoveDispatchByPhase(result.pointerMoveSamples,result.pointerMoveDropped??0);
  return diagnostics;
 }
 

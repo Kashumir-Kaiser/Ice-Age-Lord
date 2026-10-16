@@ -17,7 +17,8 @@ try{
    const supported=PerformanceObserver.supportedEntryTypes??[];
    const state={longTasks:[],longAnimationFrames:[],observers:[],dropped:{longTasks:0,longAnimationFrames:0}};window.__mapBenchObserverState=state;
    const append=(key,value,limit)=>{if(state[key].length<limit)state[key].push(value);else state.dropped[key]++;};
-   const serialize=(type,e)=>type==='longtask'?{start:e.startTime,duration:e.duration}:{start:e.startTime,duration:e.duration,blockingDuration:Number.isFinite(e.blockingDuration)?e.blockingDuration:null,renderStart:Number.isFinite(e.renderStart)?e.renderStart:null,styleAndLayoutStart:Number.isFinite(e.styleAndLayoutStart)?e.styleAndLayoutStart:null,scripts:Array.from(e.scripts??[]).slice(0,16).map(script=>({sourceURL:script.sourceURL??null,sourceFunctionName:script.sourceFunctionName??null,invoker:script.invoker??null,duration:Number.isFinite(script.duration)?script.duration:null,start:Number.isFinite(script.startTime)?script.startTime:Number.isFinite(script.executionStart)?script.executionStart:null}))};
+   const read=(object,key)=>{try{const value=object?.[key];return typeof value==='string'?value.slice(0,200):Number.isFinite(value)?value:null;}catch{return null;}};
+   const serialize=(type,e)=>{if(type==='longtask'){let attribution=[];try{attribution=Array.from(e.attribution??[]).slice(0,8).map(item=>({containerType:read(item,'containerType'),containerSrc:read(item,'containerSrc'),containerId:read(item,'containerId'),containerName:read(item,'containerName')}));}catch{}return {start:read(e,'startTime'),duration:read(e,'duration'),attribution};}let scripts=[];try{scripts=Array.from(e.scripts??[]).slice(0,16).map(script=>({sourceURL:read(script,'sourceURL'),sourceFunctionName:read(script,'sourceFunctionName'),invoker:read(script,'invoker'),duration:read(script,'duration'),start:Number.isFinite(read(script,'startTime'))?read(script,'startTime'):read(script,'executionStart')}));}catch{}return {start:read(e,'startTime'),duration:read(e,'duration'),blockingDuration:read(e,'blockingDuration'),renderStart:read(e,'renderStart'),styleAndLayoutStart:read(e,'styleAndLayoutStart'),scripts};};
    const observe=(type,key)=>{if(!supported.includes(type))return false;try{const observer=new PerformanceObserver(entries=>entries.getEntries().forEach(e=>append(key,serialize(type,e),type==='longtask'?10000:1000)));observer.observe({type,buffered:false});state.observers.push({observer,type,key,serialize,append});return true;}catch{return false;}};
    return {longtask:observe('longtask','longTasks'),longAnimationFrame:observe('long-animation-frame','longAnimationFrames')};
   });
@@ -34,18 +35,19 @@ try{
   await page.waitForTimeout(warmup*1000);
   const interactions=await page.evaluate(async duration=>{
    const node=document.querySelector('.territory-scene-svg,.terrain-svg--deep'),box=node.getBoundingClientRect();
-   const start=performance.now(),x=box.left+box.width*.45,y=box.top+box.height*.65,feedback=[],pageRafSamples=[],counts={pan:0,zoom:0,selection:0,selectionUnavailable:0,emptyPicks:0};let pageRafDropped=0,heartbeat=true,lastHeartbeat=null,endedPan=false,lastZoom=0,lastSelection=0,activePhase='pan';
+   const start=performance.now(),x=box.left+box.width*.45,y=box.top+box.height*.65,feedback=[],pageRafSamples=[],pointerMoveSamples=[],counts={pan:0,zoom:0,selection:0,selectionUnavailable:0,emptyPicks:0};let pageRafDropped=0,pointerMoveDropped=0,heartbeat=true,lastHeartbeat=null,endedPan=false,lastZoom=0,lastSelection=0,activePhase='pan';
    const phaseBounds=[start,start+duration*1000/3,start+duration*2000/3,start+duration*1000],phaseNames=['pan','zoom','selection'];
    const rafHeartbeat=timestamp=>{if(lastHeartbeat!==null){const phaseIndex=phaseBounds.findIndex((bound,index)=>index<phaseNames.length&&lastHeartbeat>=bound&&timestamp<=phaseBounds[index+1]);if(phaseIndex>=0){if(pageRafSamples.length<20000)pageRafSamples.push({start:lastHeartbeat,end:timestamp,duration:timestamp-lastHeartbeat,phase:phaseNames[phaseIndex]});else pageRafDropped++;}}lastHeartbeat=timestamp;if(heartbeat&&timestamp<phaseBounds[3])requestAnimationFrame(rafHeartbeat);};
    requestAnimationFrame(rafHeartbeat);
    const send=(type,dx,dy)=>node.dispatchEvent(new PointerEvent(type,{bubbles:true,pointerId:41,pointerType:'mouse',button:0,clientX:x+dx,clientY:y+dy}));
+   const sendPointerMove=(dx,dy,phase)=>{const dispatchStart=performance.now();node.dispatchEvent(new PointerEvent('pointermove',{bubbles:true,pointerId:41,pointerType:'mouse',button:0,clientX:x+dx,clientY:y+dy}));const dispatchEnd=performance.now();if(pointerMoveSamples.length<20000)pointerMoveSamples.push({start:dispatchStart,end:dispatchEnd,duration:dispatchEnd-dispatchStart,phase});else pointerMoveDropped++;};
    const metrics=window.__mapMetrics.at(-1);metrics.renderMs=[];metrics.intervalMs=[];metrics.intervalSamples=[];metrics.rendererRafSamples=[];metrics.sampleStartMs=start;metrics.sampleEndMs=null;metrics.phaseTransitions=[{at:start,phase:activePhase}];
    send('pointerdown',0,0);
    await new Promise(resolve=>{
     const step=()=>{
      const now=performance.now(),t=(now-start)/1000,stamp=performance.now();
      const phase=t<duration/3?'pan':t<duration*2/3?'zoom':'selection';if(phase!==activePhase){activePhase=phase;metrics.phaseTransitions.push({at:now,phase});}let dispatched=false;
-     if(phase==='pan'){send('pointermove',Math.sin(t*.8)*170,Math.cos(t*.5)*70-70);counts.pan++;dispatched=true;}
+     if(phase==='pan'){sendPointerMove(Math.sin(t*.8)*170,Math.cos(t*.5)*70-70,phase);counts.pan++;dispatched=true;}
      else{
       if(!endedPan){send('pointerup',Math.sin(t*.8)*170,Math.cos(t*.5)*70-70);endedPan=true;}
       if(phase==='zoom'&&now-lastZoom>=500){node.dispatchEvent(new WheelEvent('wheel',{bubbles:true,cancelable:true,clientX:x,clientY:y,deltaY:Math.sin(t)*100}));lastZoom=now;counts.zoom++;dispatched=true;}
@@ -61,11 +63,11 @@ try{
     };requestAnimationFrame(step);
    });
    heartbeat=false;
-   return {feedback,counts,segments:['pan','pointer-centered zoom','permitted entity/cluster selection or empty-footprint picking'],pageRafSamples,pageRafDropped};
+   return {feedback,counts,segments:['pan','pointer-centered zoom','permitted entity/cluster selection or empty-footprint picking'],pageRafSamples,pageRafDropped,pointerMoveSamples,pointerMoveDropped};
   },seconds);
   const {metrics,longTasks,longAnimationFrames,observerDropped}=await page.evaluate(()=>{const state=window.__mapBenchObserverState;if(state)for(const {observer,type,key,serialize,append} of state.observers)for(const entry of observer.takeRecords())append(key,serialize(type,entry),type==='longtask'?10000:1000);return {metrics:window.__mapMetrics.at(-1),longTasks:state?.longTasks??[],longAnimationFrames:state?.longAnimationFrames??[],observerDropped:state?.dropped??{}};});
   const gpu=await page.evaluate(()=>{const canvas=document.querySelector('.map-render-canvas');const gl=canvas.getContext('webgl2')||canvas.getContext('webgl');if(!gl)return null;const ext=gl.getExtension('WEBGL_debug_renderer_info');return ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER);});
-  results.push({fixture,run,quality,seconds,warmup,gpu,metrics,coldTransfer,longTasks,longAnimationFrames,observerDropped,observerSupport,pageRafDiagnostics:formatPageRafDiagnostics(interactions.pageRafSamples,interactions.pageRafDropped),interactionCounts:interactions.counts,segments:interactions.segments,pointerFeedback:{p50:percentile(interactions.feedback,.5),p95:percentile(interactions.feedback,.95)},interval:{p50:percentile(metrics.intervalMs,.5),p95:percentile(metrics.intervalMs,.95),p99:percentile(metrics.intervalMs,.99),worst:metrics.intervalMs.length?Math.max(...metrics.intervalMs):null},visibleMarkers:await page.locator('.map-entity-marker,.map-cluster').count()});
+  results.push({fixture,run,quality,seconds,warmup,gpu,metrics,coldTransfer,longTasks,longAnimationFrames,observerDropped,observerSupport,pageRafDiagnostics:formatPageRafDiagnostics(interactions.pageRafSamples,interactions.pageRafDropped),pointerMoveSamples:interactions.pointerMoveSamples,pointerMoveDropped:interactions.pointerMoveDropped,interactionCounts:interactions.counts,segments:interactions.segments,pointerFeedback:{p50:percentile(interactions.feedback,.5),p95:percentile(interactions.feedback,.95)},interval:{p50:percentile(metrics.intervalMs,.5),p95:percentile(metrics.intervalMs,.95),p99:percentile(metrics.intervalMs,.99),worst:metrics.intervalMs.length?Math.max(...metrics.intervalMs):null},visibleMarkers:await page.locator('.map-entity-marker,.map-cluster').count()});
   await page.close();console.log(`Measured ${fixture} run ${run+1}/${runs}`);
  }
 }finally{

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {formatBenchmarkSummaries,formatIntervalDiagnostics,formatPageRafDiagnostics,formatRendererRafDiagnostics,formatSlowFrameAttribution} from '../scripts/map-benchmark-summary.mjs';
+import {formatBenchmarkSummaries,formatIntervalDiagnostics,formatPageRafDiagnostics,formatRendererRafDiagnostics,formatSlowFrameAttribution,formatLongTaskAttributionByPhase,formatLongAnimationFrameScriptsByPhase,formatPointerMoveDispatchByPhase} from '../scripts/map-benchmark-summary.mjs';
 import {MapMetrics} from '../src/rendering/MapMetrics.ts';
 
 test('benchmark summary lines expose frame, render and pointer percentiles per run',()=>{
@@ -74,6 +74,8 @@ test('benchmark diagnostics tag intervals by interaction phase and attribute uni
  assert.deepEqual(diagnostics.longTaskOverlap,{supported:true,intervals:1,overlapMs:25});
  assert.deepEqual(diagnostics.longAnimationFrameOverlap,{supported:false,intervals:0,overlapMs:0});
  assert.deepEqual(diagnostics.slowFrameAttribution,{thresholdMs:20,badRendererIntervals:2,overlappingLongAnimationFrames:1,blockingDurationMs:0,renderStartCount:0,styleAndLayoutStartCount:0,topScripts:[]});
+ assert.equal(diagnostics.longTaskAttributionByPhase.byPhase.zoom.count,2);
+ assert.equal(diagnostics.longAnimationFrameScriptsByPhase.byPhase.selection.overlappingFrames,1);
 });
 
 test('page RAF diagnostics group only valid samples and report bounded phase percentiles',()=>{
@@ -165,4 +167,43 @@ test('renderer RAF samples exclude the pre-window gap and post-end callbacks and
   {time:140,gapMs:30,entryLatenessMs:2,rendered:false,phase:'pan'},
   {time:170,gapMs:30,entryLatenessMs:3,rendered:true,phase:'zoom'},
  ]);
+});
+
+
+test('benchmark attributes Long Tasks, LoAF scripts and pointermove dispatch by phase',()=>{
+ const intervals=[{start:0,end:30,duration:30,phase:'pan'},{start:30,end:60,duration:30,phase:'zoom'}];
+ const longTasks=formatLongTaskAttributionByPhase(intervals,[
+  {start:2,duration:12,attribution:[{containerType:'window',containerSrc:'https://example.test',containerId:'frame',containerName:'map'}]},
+  {start:40,duration:15,attribution:[]},
+  {start:61,duration:20,attribution:[{containerName:'outside'}]},
+ ],true);
+ assert.deepEqual(longTasks,{supported:true,byPhase:{
+  pan:{count:1,totalDurationMs:12,topAttributions:[{containerType:'window',containerSrc:'https://example.test',containerId:'frame',containerName:'map',entries:1,durationMs:12}]},
+  zoom:{count:1,totalDurationMs:15,topAttributions:[{containerType:null,containerSrc:null,containerId:null,containerName:null,entries:1,durationMs:15}]},
+  selection:{count:0,totalDurationMs:0,topAttributions:[]},
+ }});
+ const frames=formatLongAnimationFrameScriptsByPhase(intervals,[
+  {start:3,duration:20,blockingDuration:8,scripts:[{sourceURL:'bundle.js',sourceFunctionName:'pointerMove',invoker:'event',start:5,duration:10}]},
+  {start:35,duration:20,scripts:[{sourceURL:'bundle.js',sourceFunctionName:'wheel',invoker:'event',start:38,duration:8}]},
+ ],'normal',true);
+ assert.equal(frames.supported,true);
+ assert.deepEqual(frames.byPhase.pan,{overlappingFrames:1,topScripts:[{sourceURL:'bundle.js',sourceFunctionName:'pointerMove',invoker:'event',entries:1,overlapMs:10}]});
+ assert.deepEqual(frames.byPhase.zoom,{overlappingFrames:1,topScripts:[{sourceURL:'bundle.js',sourceFunctionName:'wheel',invoker:'event',entries:1,overlapMs:8}]});
+ const [line]=formatBenchmarkSummaries([{
+  quality:'normal',fixture:'dense-520',run:0,interval:{p50:10,p95:30,p99:60},
+  metrics:{renderMs:[],intervalSamples:intervals},
+  longTasks:[{start:2,duration:12,attribution:[{containerType:'window',containerName:'map'}]}],
+  longAnimationFrames:[{start:3,duration:20,scripts:[{sourceURL:'bundle.js',sourceFunctionName:'pointerMove',invoker:'event',start:5,duration:10}]}],
+  observerSupport:{longtask:true,longAnimationFrame:true},
+  pointerMoveSamples:[{start:4,end:5,duration:1,phase:'pan'},{start:40,end:43,duration:3,phase:'zoom'}],pointerMoveDropped:2,
+  pointerFeedback:{p50:1,p95:3},
+ }]);
+ const result=JSON.parse(line.slice('MAP_BENCH_RESULT '.length));
+ assert.equal(result.diagnostics.longTaskAttributionByPhase.byPhase.pan.topAttributions[0].containerName,'map');
+ assert.equal(result.diagnostics.longAnimationFrameScriptsByPhase.byPhase.pan.topScripts[0].sourceFunctionName,'pointerMove');
+ assert.deepEqual(result.diagnostics.pointerMoveDispatchByPhase,{dropped:2,byPhase:{
+  pan:{count:1,p50:1,p95:1,p99:1,max:1},
+  zoom:{count:1,p50:3,p95:3,p99:3,max:3},
+  selection:{count:0,p50:null,p95:null,p99:null,max:null},
+ }});
 });
