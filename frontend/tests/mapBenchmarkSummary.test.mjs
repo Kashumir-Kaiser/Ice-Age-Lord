@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {formatBenchmarkSummaries,formatIntervalDiagnostics} from '../scripts/map-benchmark-summary.mjs';
+import {formatBenchmarkSummaries,formatIntervalDiagnostics,formatPageRafDiagnostics,formatSlowFrameAttribution} from '../scripts/map-benchmark-summary.mjs';
 import {MapMetrics} from '../src/rendering/MapMetrics.ts';
 
 test('benchmark summary lines expose frame, render and pointer percentiles per run',()=>{
@@ -73,6 +73,32 @@ test('benchmark diagnostics tag intervals by interaction phase and attribute uni
  });
  assert.deepEqual(diagnostics.longTaskOverlap,{supported:true,intervals:1,overlapMs:25});
  assert.deepEqual(diagnostics.longAnimationFrameOverlap,{supported:false,intervals:0,overlapMs:0});
+ assert.deepEqual(diagnostics.slowFrameAttribution,{thresholdMs:20,badRendererIntervals:2,overlappingLongAnimationFrames:1,blockingDurationMs:0,renderStartCount:0,styleAndLayoutStartCount:0,topScripts:[]});
+});
+
+test('page RAF diagnostics group only valid samples and report bounded phase percentiles',()=>{
+ const diagnostics=formatPageRafDiagnostics([
+  {start:0,end:10,duration:10,phase:'pan'},
+  {start:10,end:30,duration:20,phase:'pan'},
+  {start:30,end:60,duration:30,phase:'zoom'},
+  {start:60,end:100,duration:40,phase:'selection'},
+  {start:1,end:2,duration:1,phase:'boundary'},
+  {start:2,end:2,duration:0,phase:'pan'},
+ ],2);
+ assert.deepEqual(diagnostics,{count:4,p50:30,p95:40,p99:40,max:40,dropped:2,byPhase:{pan:{count:2,p50:20,p95:20,p99:20,max:20},zoom:{count:1,p50:30,p95:30,p99:30,max:30},selection:{count:1,p50:40,p95:40,p99:40,max:40}}});
+});
+
+test('slow-frame attribution aggregates scripts overlapping bad intervals',()=>{
+ const diagnostics=formatSlowFrameAttribution([
+  {start:20,end:40,duration:30,phase:'pan'},
+  {start:60,end:90,duration:30,phase:'zoom'},
+  {start:100,end:120,duration:20,phase:'selection'},
+ ],[
+  {start:18,duration:25,blockingDuration:8,renderStart:21,styleAndLayoutStart:30,scripts:[{sourceURL:'bundle.js',sourceFunctionName:'render',invoker:'raf',start:20,duration:20},{sourceURL:'other.js',sourceFunctionName:'layout',invoker:'timer',start:30,duration:8}]},
+  {start:55,duration:40,blockingDuration:12,renderStart:57,styleAndLayoutStart:70,scripts:[{sourceURL:'bundle.js',sourceFunctionName:'render',invoker:'raf',start:60,duration:25}]},
+  {start:100,duration:20,blockingDuration:50,scripts:[{sourceURL:'ignored.js',start:100,duration:20}]},
+ ],'normal');
+ assert.deepEqual(diagnostics,{thresholdMs:20,badRendererIntervals:2,overlappingLongAnimationFrames:2,blockingDurationMs:20,renderStartCount:2,styleAndLayoutStartCount:2,topScripts:[{sourceURL:'bundle.js',sourceFunctionName:'render',invoker:'raf',entries:2,overlapMs:45},{sourceURL:'other.js',sourceFunctionName:'layout',invoker:'timer',entries:1,overlapMs:8}]});
 });
 
 test('diagnostic intervals reset at sample start, use midpoint phase, and freeze at sample end',()=>{

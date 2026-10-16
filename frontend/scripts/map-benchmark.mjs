@@ -3,7 +3,7 @@ import {gzipSync} from 'node:zlib';
 import {resolve} from 'node:path';
 import os from 'node:os';
 import {launchMapBrowser,openMap,navigateMap,readyMap} from './map-browser.mjs';
-import {formatBenchmarkSummaries} from './map-benchmark-summary.mjs';
+import {formatBenchmarkSummaries,formatPageRafDiagnostics} from './map-benchmark-summary.mjs';
 
 const seconds=Number(process.env.MAP_BENCH_SECONDS??60),runs=Number(process.env.MAP_BENCH_RUNS??3),warmup=Number(process.env.MAP_BENCH_WARMUP??10);
 const browser=await launchMapBrowser(),results=[];
@@ -15,8 +15,10 @@ try{
   const page=await openMap(browser,{quality,motion:'no-preference',fixture:fixture==='world-1023'?'1023':''});
   const observerSupport=await page.evaluate(()=>{
    const supported=PerformanceObserver.supportedEntryTypes??[];
-   const state={longTasks:[],longAnimationFrames:[],observers:[]};window.__mapBenchObserverState=state;
-   const observe=(type,key)=>{if(!supported.includes(type))return false;try{const observer=new PerformanceObserver(entries=>entries.getEntries().forEach(e=>state[key].push({start:e.startTime,duration:e.duration})));observer.observe({type,buffered:false});state.observers.push({observer,type,key});return true;}catch{return false;}};
+   const state={longTasks:[],longAnimationFrames:[],observers:[],dropped:{longTasks:0,longAnimationFrames:0}};window.__mapBenchObserverState=state;
+   const append=(key,value,limit)=>{if(state[key].length<limit)state[key].push(value);else state.dropped[key]++;};
+   const serialize=(type,e)=>type==='longtask'?{start:e.startTime,duration:e.duration}:{start:e.startTime,duration:e.duration,blockingDuration:Number.isFinite(e.blockingDuration)?e.blockingDuration:null,renderStart:Number.isFinite(e.renderStart)?e.renderStart:null,styleAndLayoutStart:Number.isFinite(e.styleAndLayoutStart)?e.styleAndLayoutStart:null,scripts:Array.from(e.scripts??[]).slice(0,16).map(script=>({sourceURL:script.sourceURL??null,sourceFunctionName:script.sourceFunctionName??null,invoker:script.invoker??null,duration:Number.isFinite(script.duration)?script.duration:null,start:Number.isFinite(script.startTime)?script.startTime:Number.isFinite(script.executionStart)?script.executionStart:null}))};
+   const observe=(type,key)=>{if(!supported.includes(type))return false;try{const observer=new PerformanceObserver(entries=>entries.getEntries().forEach(e=>append(key,serialize(type,e),type==='longtask'?10000:1000)));observer.observe({type,buffered:false});state.observers.push({observer,type,key,serialize,append});return true;}catch{return false;}};
    return {longtask:observe('longtask','longTasks'),longAnimationFrame:observe('long-animation-frame','longAnimationFrames')};
   });
   await navigateMap(page,fixture==='local'||fixture==='world-1023'?'Bản đồ':'Lãnh địa');
@@ -32,7 +34,10 @@ try{
   await page.waitForTimeout(warmup*1000);
   const interactions=await page.evaluate(async duration=>{
    const node=document.querySelector('.territory-scene-svg,.terrain-svg--deep'),box=node.getBoundingClientRect();
-   const start=performance.now(),x=box.left+box.width*.45,y=box.top+box.height*.65,feedback=[],counts={pan:0,zoom:0,selection:0,selectionUnavailable:0,emptyPicks:0};let endedPan=false,lastZoom=0,lastSelection=0,activePhase='pan';
+   const start=performance.now(),x=box.left+box.width*.45,y=box.top+box.height*.65,feedback=[],pageRafSamples=[],counts={pan:0,zoom:0,selection:0,selectionUnavailable:0,emptyPicks:0};let pageRafDropped=0,heartbeat=true,lastHeartbeat=null,endedPan=false,lastZoom=0,lastSelection=0,activePhase='pan';
+   const phaseBounds=[start,start+duration*1000/3,start+duration*2000/3,start+duration*1000],phaseNames=['pan','zoom','selection'];
+   const rafHeartbeat=timestamp=>{if(lastHeartbeat!==null){const phaseIndex=phaseBounds.findIndex((bound,index)=>index<phaseNames.length&&lastHeartbeat>=bound&&timestamp<=phaseBounds[index+1]);if(phaseIndex>=0){if(pageRafSamples.length<20000)pageRafSamples.push({start:lastHeartbeat,end:timestamp,duration:timestamp-lastHeartbeat,phase:phaseNames[phaseIndex]});else pageRafDropped++;}}lastHeartbeat=timestamp;if(heartbeat&&timestamp<phaseBounds[3])requestAnimationFrame(rafHeartbeat);};
+   requestAnimationFrame(rafHeartbeat);
    const send=(type,dx,dy)=>node.dispatchEvent(new PointerEvent(type,{bubbles:true,pointerId:41,pointerType:'mouse',button:0,clientX:x+dx,clientY:y+dy}));
    const metrics=window.__mapMetrics.at(-1);metrics.renderMs=[];metrics.intervalMs=[];metrics.intervalSamples=[];metrics.sampleStartMs=start;metrics.sampleEndMs=null;metrics.phaseTransitions=[{at:start,phase:activePhase}];
    send('pointerdown',0,0);
@@ -55,11 +60,12 @@ try{
      if(now-start<duration*1000)requestAnimationFrame(step);else{if(!endedPan)send('pointerup',Math.sin(t*.8)*170,Math.cos(t*.5)*70-70);metrics.sampleEndMs=now;resolve();}
     };requestAnimationFrame(step);
    });
-   return {feedback,counts,segments:['pan','pointer-centered zoom','permitted entity/cluster selection or empty-footprint picking']};
+   heartbeat=false;
+   return {feedback,counts,segments:['pan','pointer-centered zoom','permitted entity/cluster selection or empty-footprint picking'],pageRafSamples,pageRafDropped};
   },seconds);
-  const {metrics,longTasks,longAnimationFrames}=await page.evaluate(()=>{const state=window.__mapBenchObserverState;if(state)for(const {observer,key} of state.observers)for(const entry of observer.takeRecords())state[key].push({start:entry.startTime,duration:entry.duration});return {metrics:window.__mapMetrics.at(-1),longTasks:state?.longTasks??[],longAnimationFrames:state?.longAnimationFrames??[]};});
+  const {metrics,longTasks,longAnimationFrames,observerDropped}=await page.evaluate(()=>{const state=window.__mapBenchObserverState;if(state)for(const {observer,type,key,serialize,append} of state.observers)for(const entry of observer.takeRecords())append(key,serialize(type,entry),type==='longtask'?10000:1000);return {metrics:window.__mapMetrics.at(-1),longTasks:state?.longTasks??[],longAnimationFrames:state?.longAnimationFrames??[],observerDropped:state?.dropped??{}};});
   const gpu=await page.evaluate(()=>{const canvas=document.querySelector('.map-render-canvas');const gl=canvas.getContext('webgl2')||canvas.getContext('webgl');if(!gl)return null;const ext=gl.getExtension('WEBGL_debug_renderer_info');return ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER);});
-  results.push({fixture,run,quality,seconds,warmup,gpu,metrics,coldTransfer,longTasks,longAnimationFrames,observerSupport,interactionCounts:interactions.counts,segments:interactions.segments,pointerFeedback:{p50:percentile(interactions.feedback,.5),p95:percentile(interactions.feedback,.95)},interval:{p50:percentile(metrics.intervalMs,.5),p95:percentile(metrics.intervalMs,.95),p99:percentile(metrics.intervalMs,.99),worst:metrics.intervalMs.length?Math.max(...metrics.intervalMs):null},visibleMarkers:await page.locator('.map-entity-marker,.map-cluster').count()});
+  results.push({fixture,run,quality,seconds,warmup,gpu,metrics,coldTransfer,longTasks,longAnimationFrames,observerDropped,observerSupport,pageRafDiagnostics:formatPageRafDiagnostics(interactions.pageRafSamples,interactions.pageRafDropped),interactionCounts:interactions.counts,segments:interactions.segments,pointerFeedback:{p50:percentile(interactions.feedback,.5),p95:percentile(interactions.feedback,.95)},interval:{p50:percentile(metrics.intervalMs,.5),p95:percentile(metrics.intervalMs,.95),p99:percentile(metrics.intervalMs,.99),worst:metrics.intervalMs.length?Math.max(...metrics.intervalMs):null},visibleMarkers:await page.locator('.map-entity-marker,.map-cluster').count()});
   await page.close();console.log(`Measured ${fixture} run ${run+1}/${runs}`);
  }
 }finally{
