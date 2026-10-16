@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cameraOnlySnapshot, terrainInputsChanged } from '../src/rendering/CameraUpdate.ts';
+import { cameraOnlySnapshot, cameraSourceChanged, terrainInputsChanged } from '../src/rendering/CameraUpdate.ts';
 
 const snapshot=()=>({
  identity:'LL01',visualIdentity:'LL01',modeledInfill:true,compact:false,
@@ -10,12 +10,24 @@ const snapshot=()=>({
  entities:[],world:false,revision:0,
 });
 
-test('camera-only updates retain terrain references, so the renderer does not rebuild terrain',()=>{
- const original=snapshot(),updated=cameraOnlySnapshot(original,{x:23,y:-17,zoom:1.4});
+test('same-source camera updates take the fast path and retain terrain/building references',()=>{
+ const original=snapshot();
+ assert.equal(cameraSourceChanged(original,original),false);
+ const updated=cameraOnlySnapshot(original,{x:23,y:-17,zoom:1.4});
  assert.deepEqual(updated.camera,{x:23,y:-17,zoom:1.4});
  assert.strictEqual(updated.geography,original.geography);
  assert.strictEqual(updated.regions,original.regions);
  assert.equal(terrainInputsChanged(original,updated),false);
+});
+
+test('changed snapshot source takes the full-update path and carries current scene data with the camera',()=>{
+ const previous=snapshot(),latest={...previous,buildings:[{id:'new-building'}],regions:[...previous.regions,{x:100,y:200,width:50,depth:60,kind:'rock',ratio:.9}]};
+ assert.equal(cameraSourceChanged(previous,latest),true);
+ const updated=cameraOnlySnapshot(latest,{x:23,y:-17,zoom:1.4});
+ assert.deepEqual(updated.camera,{x:23,y:-17,zoom:1.4});
+ assert.strictEqual(updated.buildings,latest.buildings);
+ assert.strictEqual(updated.regions,latest.regions);
+ assert.equal(terrainInputsChanged(previous,latest),true);
 });
 
 test('full snapshot comparison detects changed terrain values and preserves equivalent recreated arrays',()=>{

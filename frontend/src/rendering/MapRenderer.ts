@@ -50,6 +50,7 @@ export class MapRenderer {
   private sampler:TerrainSampler;
   private buildingFootprints:BuildingFootprintIndex;
   private snapshot:MapSnapshot;
+  private snapshotSource:MapSnapshot;
   private size:Size={width:1,height:1};
   private raf=0;
   private inFrame=false;
@@ -83,7 +84,7 @@ export class MapRenderer {
   private depthIds:string[]=[];
   readonly metrics:MapMetrics;
   constructor(private canvas:HTMLCanvasElement,snapshot:MapSnapshot,private status:(backend:string)=>void,enabledMetrics=false,environment:readonly {path:string;sha256:string;width:number;height:number}[]=[],private readonly mapEffects?:MapEffectsAtlas){
-    this.snapshot=snapshot;this.metrics=new MapMetrics(enabledMetrics);
+    this.snapshot=snapshot;this.snapshotSource=snapshot;this.metrics=new MapMetrics(enabledMetrics);
     this.buildingFootprints=new BuildingFootprintIndex(snapshot.buildings);
     this.sampler=new TerrainSampler(snapshot.visualIdentity??snapshot.identity,snapshot.geography,snapshot.regions,snapshot.modeledInfill);
     this.terrain=new TerrainChunkCache(this.sampler,QUALITY.normal.terrainBytes,QUALITY.normal.textureSize,()=>this.invalidate());
@@ -120,7 +121,15 @@ export class MapRenderer {
     this.clearSprites();this.clearParticleSprites();this.effectsGraphics.destroy();this.particleLayer.destroy({children:false});this.stage.destroy({children:true,texture:false,textureSource:false});
     this.app?.destroy(false,{children:false,texture:false,textureSource:false});this.app=null;this.effectsGraphics=new Graphics();this.particleLayer=new Container();this.stage=new Container();void this.init(true);
   };
-  updateCamera(camera:MapSnapshot['camera']):void{if(this.destroyed)return;this.snapshot=cameraOnlySnapshot(this.snapshot,camera);this.invalidate();}
+  updateCamera(source:MapSnapshot,camera:MapSnapshot['camera']):void{
+    if(this.destroyed)return;
+    if(cameraSourceChanged(this.snapshotSource,source)){
+      this.update({...source,camera});
+      this.snapshotSource=source;
+      return;
+    }
+    this.snapshot=cameraOnlySnapshot(this.snapshot,camera);this.invalidate();
+  }
   update(snapshot:MapSnapshot):void{
     if(this.destroyed)return;
     let rebuilt=false;
@@ -129,7 +138,7 @@ export class MapRenderer {
       rebuilt=true;
     }
     if(rebuilt||snapshot.buildings!==this.snapshot.buildings){this.updateContacts(snapshot);this.buildingFootprints=new BuildingFootprintIndex(snapshot.buildings);const ids=new Set(snapshot.buildings.map(b=>b.id)),lods=snapshot.buildingLODs??this.lod;for(const id of lods.keys())if(!ids.has(id))lods.delete(id);}
-    this.snapshot=snapshot;this.invalidate();
+    this.snapshot=snapshot;this.snapshotSource=snapshot;this.invalidate();
   }
   private updateContacts(snapshot:MapSnapshot):void {
     const contacts=snapshot.buildings.filter(b=>!b.draft&&!b.fixture&&b.asset).map(b=>{const turned=b.orientation==='east'||b.orientation==='west';return {id:b.id,x:b.point.x,y:b.point.y,width:turned?b.footprint.depthM:b.footprint.widthM,depth:turned?b.footprint.widthM:b.footprint.depthM};});

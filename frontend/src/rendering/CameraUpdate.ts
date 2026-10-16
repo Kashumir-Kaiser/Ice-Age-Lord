@@ -5,6 +5,11 @@ export function cameraOnlySnapshot(snapshot:MapSnapshot,camera:MapSnapshot['came
   return {...snapshot,camera};
 }
 
+/** A changed React source must be applied before a camera event can draw it. */
+export function cameraSourceChanged(previous:MapSnapshot,next:MapSnapshot):boolean {
+  return previous!==next;
+}
+
 /** Preserve structural terrain comparison for full snapshot updates, including recreated arrays. */
 export function terrainInputsChanged(previous:MapSnapshot,next:MapSnapshot):boolean {
   return next.identity!==previous.identity||
