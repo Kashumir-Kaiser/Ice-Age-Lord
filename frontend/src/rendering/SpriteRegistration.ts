@@ -51,8 +51,8 @@ export type ArchitecturalCompositePlan = {
   parts: { role: 'base' | 'upper'; path: string; x: number; y: number; width: number; height: number; alpha: number }[];
 };
 /** Resolve exact registered raster bounds for a reusable, static base/upper texture. */
-export function architecturalCompositePlan(
-  asset:AssetManifestEntry,layers:readonly CompositionLayer[],orientation:Orientation,lod:'close'|'district',entityAlpha=1,
+function buildArchitecturalCompositePlan(
+  asset:AssetManifestEntry,layers:readonly CompositionLayer[],orientation:Orientation,lod:'close'|'district',entityAlpha:number,
 ):ArchitecturalCompositePlan|null {
   if(asset.composition!=='architectural'||asset.mapDepthSlices?.[orientation]?.length||!Number.isFinite(entityAlpha)||entityAlpha<0||entityAlpha>1)return null;
   const body=layers.filter(layer=>layer.role==='base'||layer.role==='upper');
@@ -82,13 +82,30 @@ export function architecturalCompositePlan(
     export:entries[part.role==='base'?0:1]!.sha256,atlas:entries[part.role==='base'?0:1]!.atlas?.sha256}))}),
     width:raster.width,height:raster.height,parts:resolved};
 }
+const architecturalPlanCache=new WeakMap<AssetManifestEntry,WeakMap<readonly CompositionLayer[],Map<string,ArchitecturalCompositePlan|null>>>();
+/** Memoize only frozen composition arrays produced by createCompositionCache. */
+export function architecturalCompositePlan(
+ asset:AssetManifestEntry,layers:readonly CompositionLayer[],orientation:Orientation,lod:'close'|'district',entityAlpha=1,
+):ArchitecturalCompositePlan|null {
+ if(!Object.isFrozen(layers)||!layers.every(layer=>Object.isFrozen(layer)))
+  return buildArchitecturalCompositePlan(asset,layers,orientation,lod,entityAlpha);
+ let byLayers=architecturalPlanCache.get(asset);
+ if(!byLayers){byLayers=new WeakMap();architecturalPlanCache.set(asset,byLayers);}
+ let variants=byLayers.get(layers);
+ if(!variants){variants=new Map();byLayers.set(layers,variants);}
+ const variantKey=`${orientation}:${lod}:${entityAlpha}`;
+ if(variants.has(variantKey))return variants.get(variantKey)??null;
+ const plan=buildArchitecturalCompositePlan(asset,layers,orientation,lod,entityAlpha);
+ variants.set(variantKey,plan);
+ return plan;
+}
 /** Per-frame memoizer for repeated, immutable sprite compositions. */
-export function createCompositionCache(): (asset:AssetManifestEntry,mode:'normal'|'focus'|'planning',occludes:boolean,active:boolean,orientation:Orientation)=>CompositionLayer[] {
- const byAsset=new WeakMap<AssetManifestEntry,Map<string,CompositionLayer[]>>();
+export function createCompositionCache(): (asset:AssetManifestEntry,mode:'normal'|'focus'|'planning',occludes:boolean,active:boolean,orientation:Orientation)=>readonly CompositionLayer[] {
+ const byAsset=new WeakMap<AssetManifestEntry,Map<string,readonly CompositionLayer[]>>();
  return (asset,mode,occludes,active,orientation)=>{
   let entries=byAsset.get(asset);if(!entries){entries=new Map();byAsset.set(asset,entries);}
   const key=`${mode}:${Number(occludes)}:${Number(active)}:${orientation}`;
-  let layers=entries.get(key);if(!layers){layers=composition(asset,mode,occludes,active,orientation);entries.set(key,layers);}
+  let layers=entries.get(key);if(!layers){layers=Object.freeze(composition(asset,mode,occludes,active,orientation).map(layer=>Object.freeze(layer)));entries.set(key,layers);}
   return layers;
  };
 }

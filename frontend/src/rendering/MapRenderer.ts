@@ -39,6 +39,7 @@ export class MapRenderer {
   private chunkTextures=new Map<string,Texture>();
   private architectureTextures=new Map<string,{texture:Texture;bytes:number;stamp:number}>();
   private architectureTextureBytes=0;
+  private architectureTextureKeyCache=new WeakMap<NonNullable<ReturnType<typeof architecturalCompositePlan>>,{urlRevision:number;key:string}>();
   private architectureTextureFailures=new Set<string>();
   private architectureTextureStamp=0;
   // These generated render targets are separate from source images and stay under a fixed memory cap.
@@ -381,7 +382,11 @@ export class MapRenderer {
     for(const draw of this.effectDraws){const image=this.assets.acquire(draw.key),frame=this.assets.frame(draw.key);if(!image||!frame)continue;ctx.save();ctx.globalAlpha=draw.alpha;ctx.drawImage(image,frame.x,frame.y,frame.width,frame.height,draw.x-draw.width*draw.anchor.x,draw.y-draw.height*draw.anchor.y,draw.width,draw.height);ctx.restore();}
   }
   private architectureTextureKey(plan:NonNullable<ReturnType<typeof architecturalCompositePlan>>):string {
-    return plan.key+'|'+plan.parts.map(part=>this.assets.url(part.path)).join('|');
+    const cached=this.architectureTextureKeyCache.get(plan);
+    if(cached?.urlRevision===this.assets.urlRevision)return cached.key;
+    const key=plan.key+'|'+plan.parts.map(part=>this.assets.url(part.path)).join('|');
+    this.architectureTextureKeyCache.set(plan,{urlRevision:this.assets.urlRevision,key});
+    return key;
   }
   private architectureTexture(plan:NonNullable<ReturnType<typeof architecturalCompositePlan>>,inUse:ReadonlySet<string>):Texture|null {
     const key=this.architectureTextureKey(plan),cached=this.architectureTextures.get(key);
@@ -417,6 +422,7 @@ export class MapRenderer {
   private failArchitectureTexture(key:string):void {if(this.architectureTextureFailures.size>=128)this.architectureTextureFailures.clear();this.architectureTextureFailures.add(key);}
   private clearArchitectureTextures():void {
     this.architectureTextureFailures.clear();
+    this.architectureTextureKeyCache=new WeakMap();
     for(const item of this.architectureTextures.values())if(!item.texture.destroyed)item.texture.destroy(true);
     this.architectureTextures.clear();this.architectureTextureBytes=0;
   }

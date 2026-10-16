@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { spriteRect, referenceSize, artPolygon, composition, resolveOrientation, architecturalCompositePlan, qaArtLayerMetrics } from '../src/rendering/SpriteRegistration.ts';
+import { spriteRect, referenceSize, artPolygon, composition, resolveOrientation, architecturalCompositePlan, qaArtLayerMetrics, createCompositionCache } from '../src/rendering/SpriteRegistration.ts';
 import { pointInPolygon, pointerCSS, pickStack, cyclePick } from '../src/rendering/MapPicking.ts';
 import { TerrainSampler, noise, chunkLevel } from '../src/rendering/TerrainSampler.ts';
 import { depthOrder } from '../src/rendering/DepthOrder.ts';
@@ -38,6 +38,23 @@ test('planning never draws body, upper or flame; normal chooses a single registe
  const layered={...asset,composition:'architectural'};
  const focused=composition(layered,'focus',true,false,'north');assert.equal(focused.find(l=>l.role==='upper').alpha,.22);assert.equal(focused.find(l=>l.role==='base').alpha,1);
  assert.equal(composition(layered,'focus',false,false,'north').find(l=>l.role==='upper').alpha,1);
+});
+test('architectural plan memoization reuses only the same immutable composition variant',()=>{
+ const compositions=createCompositionCache(),layers=compositions(asset,'normal',false,false,'north');
+ assert.ok(Object.isFrozen(layers));assert.ok(layers.every(layer=>Object.isFrozen(layer)));
+ const first=architecturalCompositePlan(asset,layers,'north','close');
+ assert.ok(first);assert.strictEqual(architecturalCompositePlan(asset,layers,'north','close'),first,'same asset/layer identity/variant returns the same cached plan');
+ const district=architecturalCompositePlan(asset,layers,'north','district');
+ assert.ok(district);assert.notStrictEqual(district,first);assert.notEqual(district.key,first.key,'LOD is part of the memoized variant');
+ const faded=architecturalCompositePlan(asset,layers,'north','close',.55);
+ assert.ok(faded);assert.notStrictEqual(faded,first);assert.notEqual(faded.key,first.key,'entity opacity is part of the memoized variant');
+ const eastLayers=compositions(asset,'normal',false,false,'east');
+ const east=architecturalCompositePlan(asset,eastLayers,'east','close');
+ assert.ok(east);assert.notStrictEqual(east,first);assert.notEqual(east.key,first.key,'orientation is part of the memoized variant');
+ const separateLayers=createCompositionCache()(asset,'normal',false,false,'north');
+ const equivalent=architecturalCompositePlan(asset,separateLayers,'north','close');
+ assert.ok(equivalent);assert.notStrictEqual(equivalent,first,'a different immutable layer-array identity has an independent plan');
+ assert.equal(equivalent.key,first.key,'equivalent immutable input keeps the same texture key');
 });
 test('static architecture composite plan preserves registered raster bounds, layer order and draft opacity; unsupported variants fall back',()=>{
  const layers=composition(asset,'normal',false,false,'north'),draft=architecturalCompositePlan(asset,layers,'north','close',.55);

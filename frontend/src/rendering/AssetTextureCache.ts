@@ -25,12 +25,17 @@ export class AssetTextureCache {
   private frames=new Map<string,Texture>();
   private trims=new Map<string,SpriteRect>();
   private revisions=new Map<string,string>();
+  private urlRevisionValue=0;
+  get urlRevision():number{return this.urlRevisionValue;}
   private failed=new Set<string>();
   private registered=new WeakMap<AssetManifestEntry,{useAtlas:boolean;maxTextureSize:number}>();
   private revision(path:string,hash:string|undefined):void{
     if(!hash)return;
     const previous=this.revisions.get(path);
-    if(previous&&previous!==hash)for(const [key,texture] of this.frames)if((this.registrations.get(key)?.path??key)===path){texture.destroy(false);this.frames.delete(key);}
+    if(previous!==hash){
+      this.urlRevisionValue++;
+      if(previous)for(const [key,texture] of this.frames)if((this.registrations.get(key)?.path??key)===path){texture.destroy(false);this.frames.delete(key);}
+    }
     this.revisions.set(path,hash);
   }
   private estimates=new Map<string,number>();
@@ -65,7 +70,7 @@ export class AssetTextureCache {
       else this.trims.delete(entry.path);
       this.estimates.set(entry.path,entry.width*entry.height*4);
       const previous=this.registrations.get(entry.path),next=useAtlas&&entry.atlas&&!this.failed.has(this.url(entry.atlas.path))&&entry.atlas.atlasWidth<=this.maxTextureSize&&entry.atlas.atlasHeight<=this.maxTextureSize?entry.atlas:undefined;
-      if(previous?.path!==next?.path){this.frames.get(entry.path)?.destroy(false);this.frames.delete(entry.path);}
+      if(previous?.path!==next?.path){this.urlRevisionValue++;this.frames.get(entry.path)?.destroy(false);this.frames.delete(entry.path);}
       if(next){this.registrations.set(entry.path,next);this.estimates.set(next.path,next.atlasWidth*next.atlasHeight*4);}
       else this.registrations.delete(entry.path);
     }
