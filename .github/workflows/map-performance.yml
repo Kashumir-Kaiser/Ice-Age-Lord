@@ -2,8 +2,14 @@ name: Map performance evidence
 on:
   push:
     branches: ['codex/map-25d-overhaul']
-    paths: ['frontend/src/rendering/**', 'frontend/src/territory/**', 'frontend/src/LiveApp.tsx', 'frontend/src/live/**', 'frontend/scripts/map-benchmark.mjs', 'frontend/scripts/map-memory.mjs', 'frontend/scripts/map-browser.mjs', 'frontend/scripts/map-fixture-server.mjs', '.github/workflows/map-performance.yml']
+    paths: ['frontend/src/rendering/**', 'frontend/src/territory/**', 'frontend/src/LiveApp.tsx', 'frontend/src/live/**', 'frontend/scripts/map-benchmark.mjs', 'frontend/scripts/map-memory.mjs', 'frontend/scripts/map-browser.mjs', 'frontend/scripts/map-fixture-server.mjs', 'frontend/scripts/map-cpu-profile.mjs', 'frontend/scripts/map-cpu-profile-summary.mjs', '.github/workflows/map-performance.yml']
   workflow_dispatch:
+    inputs:
+      profile_dense_pan:
+        description: 'Run a bounded CDP CPU profile for a dense-520 pan'
+        required: false
+        default: false
+        type: boolean
 permissions:
   contents: read
 jobs:
@@ -77,4 +83,36 @@ jobs:
         with:
           name: map-memory-${{ matrix.quality }}
           path: frontend/map-evidence/memory/
+          retention-days: 14
+
+  cpu-profile:
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/codex/map-25d-overhaul') || (github.event_name == 'workflow_dispatch' && inputs.profile_dense_pan == true)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore checkpoint artwork when this push contains a transfer
+        run: python scripts/restore-map-upload.py
+        working-directory: .
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run assets:map && npm run build
+        env:
+          VITE_GAME_MODE: demo
+      - run: npx playwright install --with-deps chromium
+      - name: Capture bounded dense-520 pan CPU profile
+        run: node scripts/map-cpu-profile.mjs
+        env:
+          MAP_CPU_PROFILE_SECONDS: '8'
+          MAP_CPU_PROFILE_QUALITY: 'low'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-cpu-profile-dense-520-pan
+          path: frontend/map-evidence/cpu-profile/
           retention-days: 14
