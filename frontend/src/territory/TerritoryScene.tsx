@@ -7,7 +7,7 @@ import { findAsset, loadAssetManifest, resolveSettlementAssetId } from '../asset
 import BuildingSprite, { type ReadabilityMode } from './BuildingSprite';
 import './territory.css';
 import MapCanvas from '../rendering/MapCanvas';
-import { territorySnapshot, type MapSnapshot } from '../rendering/MapSceneAdapter';
+import { composeTerritoryBuildings, territoryBuildings, territorySnapshot, type MapSnapshot } from '../rendering/MapSceneAdapter';
 import { spriteRect, artPolygon } from '../rendering/SpriteRegistration';
 import type { Orientation } from '../rendering/SpriteRegistration';
 import { pointInPolygon, pickStack, cyclePick, pointerCSS } from '../rendering/MapPicking';
@@ -382,7 +382,8 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
     const ground=worldToScreen(point,activeCamera,size);
     return ground.y>target.y&&pointInPolygon(target,artPolygon(asset.occlusionRegion.upper,spriteRect(asset,ground,scale)));
   };
-  const renderDrafts=[...drafts,...(denseQa?denseFixture:[]),...(activeDefinition?[{id:'placement-ghost',definitionId:activeDefinition.id,assetId:activeDefinition.assetId,x:currentPlacementLocal.x,y:currentPlacementLocal.y,footprint:activeDefinition.footprint,orientation:placingOrientation}]:[])];
+  const renderDrafts=useMemo(()=>[...drafts,...(denseQa?denseFixture:[]),...(activeDefinition?[{id:'placement-ghost',definitionId:activeDefinition.id,assetId:activeDefinition.assetId,x:currentPlacementLocal.x,y:currentPlacementLocal.y,footprint:activeDefinition.footprint,orientation:placingOrientation}]:[])],[drafts,denseQa,denseFixture,activeDefinition,currentPlacementLocal.x,currentPlacementLocal.y,placingOrientation]);
+  const baseRenderBuildings=useMemo(()=>territoryBuildings(settlement,manifest,selectedRef?.id??null,renderDrafts),[settlement,manifest,selectedRef?.id,renderDrafts]);
   const qaStaticBuildings=useMemo(()=>{
     if(!manifest||!territoryQaFixture)return [];
     const assets=['lord-house-damaged','polar-farmhouse-l01','opening-palisade-wall','opening-timber-gate','watchtower-preview','elemental-tower-preview'] as const;
@@ -406,18 +407,21 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
   },[manifest,territoryQaFixture,origin.x,origin.y]);
   const expectedTerritoryFixtureCount=territoryQaFixture==='populated12'?12:territoryQaFixture==='overlap'?3:0;
   const readyTerritoryQaFixture=expectedTerritoryFixtureCount>0&&qaStaticBuildings.length===expectedTerritoryFixtureCount?territoryQaFixture:null;
-  const renderSnapshot=useMemo(()=>{
-    const snapshot=territorySnapshot(settlement,manifest,activeCamera,effectiveMode,selectedRef?.id??null,renderDrafts,{visualIdentity,modeledInfill:!liveApi,regions:terrainRegions});
+  const qaArtPreview=useMemo(()=>{
     // Render-only QA: no placement definition, command or saved entity.
     const asset=artQaEnabled&&showCalibrationArt?selectedCalibrationAsset:null;
-    return {...snapshot,buildingLODs:buildingLODs.current,buildings:[...snapshot.buildings,...qaStaticBuildings,...(asset?[{
+    return asset?{
       id:'qa-art-preview',name:'Hình ảnh kiểm tra',asset,assetId:asset.assetId,
       point:{x:origin.x+4,y:origin.y-2},orientation:activeQaArtOrientation,
       footprint:asset.compatiblePhysicalFootprint??fixtureFootprint,
       selected:false,active:false,draft:false,fixture:true,
-    }]:[])]};
-  },[settlement,manifest,activeCamera,effectiveMode,selectedRef?.id,drafts,denseQa,activeDefinition,ghostWorld,placingOrientation,visualIdentity,terrainRegions,liveApi,artQaEnabled,showCalibrationArt,selectedCalibrationAsset,activeQaArtOrientation,qaStaticBuildings,origin.x,origin.y]);
-  const artQaPreview=renderSnapshot.buildings.find(b=>b.id==='qa-art-preview'&&b.fixture);
+    }:null;
+  },[artQaEnabled,showCalibrationArt,selectedCalibrationAsset,activeQaArtOrientation,origin.x,origin.y]);
+  const renderBuildings=useMemo(()=>composeTerritoryBuildings(baseRenderBuildings,qaStaticBuildings,qaArtPreview),[baseRenderBuildings,qaStaticBuildings,qaArtPreview]);
+  const renderSnapshot=useMemo(()=>{
+    const snapshot=territorySnapshot(settlement,manifest,activeCamera,effectiveMode,selectedRef?.id??null,[],{visualIdentity,modeledInfill:!liveApi,regions:terrainRegions},renderBuildings);
+    return {...snapshot,buildingLODs:buildingLODs.current};
+  },[settlement,manifest,activeCamera,effectiveMode,selectedRef?.id,visualIdentity,terrainRegions,liveApi,renderBuildings]);
   const artQaOutline=artQaPreview?[[-1,-1],[1,-1],[1,1],[-1,1]].map(([x,y])=>{
     const turned=artQaPreview.orientation==='east'||artQaPreview.orientation==='west';
     const w=turned?artQaPreview.footprint.depthM:artQaPreview.footprint.widthM,d=turned?artQaPreview.footprint.widthM:artQaPreview.footprint.depthM;

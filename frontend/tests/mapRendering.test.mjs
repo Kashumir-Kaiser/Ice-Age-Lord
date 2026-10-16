@@ -7,6 +7,7 @@ import { TerrainSampler, noise, chunkLevel } from '../src/rendering/TerrainSampl
 import { depthOrder } from '../src/rendering/DepthOrder.ts';
 import { projectBuildings, rectPolygon } from '../src/rendering/BuildingGeometry.ts';
 import { AdaptiveQuality, chooseLOD } from '../src/rendering/mapStyle.ts';
+import { composeTerritoryBuildings, territoryBuildings, territorySnapshot } from '../src/rendering/MapSceneAdapter.ts';
 import { worldToScreen, screenToWorld, zoomAtScreenPoint } from '../src/territory/projection.ts';
 import { validateMapExport } from '../scripts/validate-map-assets.mjs';
 const manifest=JSON.parse(readFileSync(new URL('../../assets/manifest.json',import.meta.url),'utf8'));
@@ -106,6 +107,29 @@ test('global building depth remains stable under pan while the visible subset st
  const viewport={width:120,height:100},allA=projectBuildings(buildings,project(20,60),3,viewport,false),allB=projectBuildings(buildings,project(-500,120),3,viewport,false);
  assert.deepEqual(depthOrder(allA).objects.map(b=>b.id),depthOrder(allB).objects.map(b=>b.id));
  assert.equal(projectBuildings(buildings,project(-500,120),3,viewport).length,0);assert.equal(allB.length,3,'offscreen topology remains available without drawing it');
+});
+test('camera-only territory snapshots reuse world-space building data while content changes replace it',()=>{
+ const building={id:'house',settlementId:'s',ref:{type:'site',id:'house-ref'},definitionId:'house',name:'House',x:7,y:-3,orientation:'north',footprint:{widthM:4,depthM:3},assetId:'lord-house-damaged',heightM:null,state:'active'};
+ const settlement={id:'s',worldOrigin:{x:100,y:200},fireRef:{type:'site',id:'fire'},fireLevel:1,fireActive:false,heatRadiusM:0,buildings:[building],obstacles:[],knowledge:'demo-fixture'};
+ const drafts=[{id:'draft-1',definitionId:'house',assetId:'lord-house-damaged',x:2,y:5,orientation:'east',footprint:building.footprint}];
+ const worldBuildings=territoryBuildings(settlement,manifest,null,drafts);
+ const first=territorySnapshot(settlement,manifest,{x:0,y:0,zoom:1},'normal',null,[],{},worldBuildings);
+ const panned=territorySnapshot(settlement,manifest,{x:30,y:-12,zoom:1},'normal',null,[],{},worldBuildings);
+ assert.strictEqual(first.buildings,panned.buildings,'camera-only snapshots retain the exact building-list reference');
+ assert.notDeepEqual(first.camera,panned.camera,'camera updates still reach the renderer');
+ assert.deepEqual(worldBuildings[0].point,{x:107,y:197},'building coordinates remain world-space');
+ assert.notStrictEqual(territoryBuildings(settlement,manifest,'house-ref',drafts),worldBuildings,'selection changes rebuild render rows');
+ const moved={...settlement,buildings:[{...building,x:8}]};
+ assert.deepEqual(territoryBuildings(moved,manifest,null,drafts)[0].point,{x:108,y:197});
+ const changedDrafts=territoryBuildings(settlement,manifest,null,[...drafts,{...drafts[0],id:'draft-2'}]);
+ assert.equal(changedDrafts.length,3,'draft changes are included in the newly built list');
+ assert.notStrictEqual(changedDrafts,worldBuildings);
+ const qa=[{...worldBuildings[0],id:'qa'}],preview={...worldBuildings[0],id:'preview'};
+ const composed=composeTerritoryBuildings(worldBuildings,qa,preview);
+ assert.deepEqual(composed.map(row=>row.id),['house','draft-1','qa','preview']);
+ assert.notStrictEqual(composeTerritoryBuildings(worldBuildings,[...qa]),composed,'QA fixture updates replace the composed list');
+ assert.notStrictEqual(composeTerritoryBuildings(worldBuildings,qa,{...preview,orientation:'west'}),composed,'preview changes replace the composed list');
+ assert.deepEqual(composeTerritoryBuildings(worldBuildings,qa,null).map(row=>row.id),['house','draft-1','qa'],'preview visibility changes update the composed list');
 });
 test('quality requires sustained overload and stable headroom, respecting locked mode',()=>{
  const quality=new AdaptiveQuality();for(let i=0;i<29;i++)assert.equal(quality.update(30,100),'normal');assert.equal(quality.update(30,100),'low');
