@@ -3,13 +3,25 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import sharp from 'sharp';
 import {Resvg} from '@resvg/resvg-js';
-import {composition,artPolygon} from '../src/rendering/SpriteRegistration.ts';
+import {composition,createCompositionCache,artPolygon} from '../src/rendering/SpriteRegistration.ts';
 import {pointInPolygon} from '../src/rendering/MapPicking.ts';
 import {validateMapExport} from '../scripts/validate-map-assets.mjs';
 import {splitMapArchitecture} from '../scripts/split-map-architecture.mjs';
 
 const manifest=JSON.parse(readFileSync(new URL('../../assets/manifest.json',import.meta.url)));
 const tower=manifest.assets.find(a=>a.assetId==='fixture-tall-tower');
+test('composition cache reuses only identical asset and render-state keys',()=>{
+ const cache=createCompositionCache(),house=manifest.assets.find(a=>a.assetId==='lord-house-damaged'),other=manifest.assets.find(a=>a.assetId==='fixture-tall-tower');
+ const base=cache(house,'normal',false,false,'north');
+ assert.strictEqual(cache(house,'normal',false,false,'north'),base);
+ assert.notStrictEqual(cache(house,'normal',false,true,'north'),base);
+ assert.notStrictEqual(cache(house,'focus',false,false,'north'),base);
+ assert.notStrictEqual(cache(house,'focus',true,false,'north'),cache(house,'focus',false,false,'north'));
+ assert.notStrictEqual(cache(house,'normal',false,false,'east'),base);
+ assert.notStrictEqual(cache(other,'normal',false,false,'north'),base);
+ assert.deepEqual(base,composition(house,'normal',false,false,'north'));
+ assert.deepEqual(cache(house,'focus',true,false,'north'),composition(house,'focus',true,false,'north'));
+});
 test('authored tower footing and shaft/roof reconstruct its original body without horizontal clipping',async()=>{
  for(const width of [384,192]){
   const png=role=>new Resvg(readFileSync(new URL('../public'+tower.layers[role],import.meta.url)),{fitTo:{mode:'width',value:width}}).render().asPng();

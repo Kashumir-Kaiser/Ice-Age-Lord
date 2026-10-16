@@ -36,6 +36,16 @@ export function resolveOrientation(asset: AssetManifestEntry, orientation: Orien
   return { layers:asset.orientationViews?.[asset.orientation as Orientation]??layers, missing: true };
 }
 export type CompositionLayer = { role: 'shadow' | 'base' | 'upper' | 'body' | 'vfx'; path: string; alpha: number };
+/** Per-frame memoizer for repeated, immutable sprite compositions. */
+export function createCompositionCache(): (asset:AssetManifestEntry,mode:'normal'|'focus'|'planning',occludes:boolean,active:boolean,orientation:Orientation)=>CompositionLayer[] {
+ const byAsset=new WeakMap<AssetManifestEntry,Map<string,CompositionLayer[]>>();
+ return (asset,mode,occludes,active,orientation)=>{
+  let entries=byAsset.get(asset);if(!entries){entries=new Map();byAsset.set(asset,entries);}
+  const key=`${mode}:${Number(occludes)}:${Number(active)}:${orientation}`;
+  let layers=entries.get(key);if(!layers){layers=composition(asset,mode,occludes,active,orientation);entries.set(key,layers);}
+  return layers;
+ };
+}
 export function composition(asset: AssetManifestEntry, mode: 'normal' | 'focus' | 'planning', occludes: boolean, active: boolean, orientation: Orientation): CompositionLayer[] {
   const { layers } = resolveOrientation(asset, orientation), result: CompositionLayer[] = [];
   const add = (role: CompositionLayer['role'], alpha = 1) => { const path = layers[role]; if (path) result.push({role,path,alpha}); };
