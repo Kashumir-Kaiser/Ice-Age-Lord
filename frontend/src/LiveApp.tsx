@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import {
   AlertCircle, ArrowRight, Bell, CalendarDays, CheckCircle2, Eye, Flame, Hammer, Map as MapIcon,
@@ -239,6 +239,7 @@ function LiveApp() {
   const [saves, setSaves] = useState<readonly SaveSummary[]>([]);
   const [slotName, setSlotName] = useState('Lãnh Địa Mới');
   const [view, setView] = useState<PlayerView | null>(null);
+  const territorySettlement = useMemo(() => view ? territorySceneFromApi(view) : null, [view?.territory, view?.visibleMap]);
   const [events, setEvents] = useState<readonly PlayerEvent[]>([]);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const eventSequenceRef = useRef(0);
@@ -1292,7 +1293,7 @@ function LiveApp() {
     }
 
     if (screen === 'territory') {
-      const settlement = territorySceneFromApi(view);
+      const settlement = territorySettlement!;
       const territorySelection = territoryRef(selectedRef);
       return <div className="live-section-stack">
         <section className="live-panel">
