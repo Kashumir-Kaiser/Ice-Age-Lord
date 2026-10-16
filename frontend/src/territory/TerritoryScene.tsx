@@ -422,6 +422,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
     const snapshot=territorySnapshot(settlement,manifest,activeCamera,effectiveMode,selectedRef?.id??null,[],{visualIdentity,modeledInfill:!liveApi,regions:terrainRegions},renderBuildings);
     return {...snapshot,buildingLODs:buildingLODs.current};
   },[settlement,manifest,activeCamera,effectiveMode,selectedRef?.id,visualIdentity,terrainRegions,liveApi,renderBuildings]);
+  const artQaPreview=renderSnapshot.buildings.find(b=>b.id==='qa-art-preview'&&b.fixture);
   const artQaOutline=artQaPreview?[[-1,-1],[1,-1],[1,1],[-1,1]].map(([x,y])=>{
     const turned=artQaPreview.orientation==='east'||artQaPreview.orientation==='west';
     const w=turned?artQaPreview.footprint.depthM:artQaPreview.footprint.widthM,d=turned?artQaPreview.footprint.widthM:artQaPreview.footprint.depthM;
