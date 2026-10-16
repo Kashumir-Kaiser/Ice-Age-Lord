@@ -41,15 +41,33 @@
       "evidence": "MAP-25D-LIVE-TRANSFER-EVIDENCE.json"
     },
     "browserVisualReview": {
-      "status": "focused browser journeys and farmhouse visual subset accepted; broader browser and visual matrix pending",
+      "status": "latest rendering CI workflow passed; broader viewport/quality/DPR matrix is partly captured and awaiting review",
       "ciInteractionValidation": {
-        "workflowRun": 38851076470,
-        "sourceCommit": "7caa55bd18632967368c46fee40bb59fc96f5c31",
-        "playwright": { "passed": 87, "skipped": 5, "failed": 0, "duration": "3.6 minutes", "status": "passed" },
+        "workflowRun": 38852705019,
+        "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
+        "playwright": { "passed": 87, "skipped": 5, "failed": 0, "duration": "2.4 minutes", "status": "passed" },
         "npmTest": "passed",
         "productionBuild": "passed",
-        "captureStep": "failed on the legacy water visual assertion from this earlier source checkpoint; the final ICE-paint update has since been built and accepted at 1366×768 and 390×844",
-        "overallWorkflow": "failed at capture step; broad interaction suite passed; full visual matrix remains pending"
+        "captureStep": "passed",
+        "benchmarkHarness": "passed",
+        "artifactUploads": "passed",
+        "overallWorkflow": "passed"
+      },
+      "watchtower390LowDpr2Readiness": {
+        "status": "passed; four-pose renderer readiness diagnostics only",
+        "durationSeconds": 22.4,
+        "viewport": { "width": 390, "height": 844 },
+        "quality": "low",
+        "devicePixelRatio": 2,
+        "orientations": ["north", "east", "south", "west"],
+        "allFocusedAndVisible": true,
+        "backend": "webgl",
+        "queuedTextures": 0,
+        "pendingTextures": 0,
+        "errors": 0,
+        "proof": "../../frontend/map-evidence/watchtower-390-low-dpr2-readiness/readiness.json",
+        "proofSha256": "faf937f2c969890acda216ecd3e51cc96c7e5ee74defec432be262ccc5e22ecd",
+        "scopeNote": "Confirms readiness diagnostics and saved frames for this one viewport/quality/DPR combination; it does not accept the full visual matrix."
       },
       "passedJourneys": [
         "ordinary demo placement palette",
@@ -75,20 +93,16 @@
       "evidence": "MAP-25D-FARMHOUSE-VISUAL-REVIEW.json",
       "suiteStatus": "incomplete-not-full-matrix",
       "latestCaptureBatch": {
-      "status": "73 of 73 rows captured; selected geography/fog rows were replaced; overall batch remains pending visual review",
-        "viewport": { "width": 1366, "height": 768 },
-        "quality": "normal",
-        "devicePixelRatio": 1,
-        "evidence": "../../frontend/map-evidence/local-proof/1366-normal-dpr1/qa-manifest.json",
-        "matrixCombinationsCompleted": 1,
-      "matrixCombinationsExpected": 12,
-      "supersededRows": ["local-forest", "local-stone", "local-water", "unknown-fog"],
-      "replacementReviews": {
-        "localForest": "captured and accepted at 1366×768, normal, DPR1",
-        "localStone": "captured and accepted at 1366×768, normal, DPR1",
-        "localWater": "superseded by the accepted ICE-paint captures at 1366 and 390 pixel viewport widths",
-        "rememberedNightFog": "captured and accepted"
-      }
+        "status": "low-quality DPR1 lane captured; pending parent visual review",
+        "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
+        "qualityDprLane": "low/DPR1",
+        "viewportWidths": [1366, 1920, 390],
+        "rowsPerLane": 73,
+        "rowsCaptured": 219,
+        "laneCountCompleted": 1,
+        "laneCountExpected": 4,
+        "rowsExpectedAcrossFullMatrix": 876,
+        "remainingLanes": ["low/DPR2", "normal/DPR1", "normal/DPR2"]
       }
     },
     "postGeographyFixtureValidation": {
@@ -174,41 +188,37 @@
   "currentIntegrationMemoryPlateau": {
     "status": "passed for the measured software-renderer environment; target-device verification pending",
     "workflow": "Map performance evidence",
-    "runId": 38825240268,
-    "sourceCommit": "f31d314cf8fe9ad67a6368595aa94035e88a3501",
+    "runId": 38851076469,
+    "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
     "scope": "Chromium headless, 1366×768, DPR 1; same warmed territory endpoint; two identical 20-return/pan cycles; exposed garbage collection before heap measurements.",
     "heapBudgetBytes": 10485760,
     "qualities": {
       "low": {
-        "heapBytesByCycle": [9713873, 12689654, 13546598],
-        "heapGrowthLastTwoCyclesBytes": 856944,
-        "decodedBytesEstimate": 9507500,
-        "rendererGpuBytesEstimate": 6106609,
+        "heapGrowthLastTwoCyclesBytes": 721358,
         "pending": 0,
         "activeMaps": 1,
         "activeLoops": 0,
         "canvasCount": 1,
-        "retainedMetricRecordsByCycle": [2, 42, 82],
+        "retainedMetricRecords": 82,
         "plateauVerified": true
       },
       "normal": {
-        "heapBytesByCycle": [9710268, 12594339, 13425255],
-        "heapGrowthLastTwoCyclesBytes": 830916,
-        "decodedBytesEstimate": 31092736,
-        "rendererGpuBytesEstimate": 17468229,
+        "heapGrowthLastTwoCyclesBytes": 873684,
         "pending": 0,
         "activeMaps": 1,
         "activeLoops": 0,
         "canvasCount": 1,
-        "retainedMetricRecordsByCycle": [2, 42, 82],
+        "retainedMetricRecords": 82,
         "plateauVerified": true
       }
     },
     "targetDeviceVerified": false,
-    "limitations": "Decoded and renderer GPU byte values are estimates, not driver VRAM measurements. Retained metric records increase from 2 to 82 over the measured cycles; heap growth remains below the configured gate, but metric-history retention still merits review."
+    "lowResultSha256": "3d50f7471c2fb36a205b9b3bde9b5c1bbc2b8c5e4088fa38f002e63c27fc60d4",
+    "normalResultSha256": "892fb3b426c93f752c35a14d247aae55d2846f5449f486fdd09668a9d6dc76af",
+    "limitations": "Decoded and renderer GPU byte values are estimates, not driver VRAM measurements. Retained metric records reached 82; heap growth remains below the configured gate, but metric-history retention still merits review."
   },
   "currentIntegrationFramePerformance": {
-    "status": "low and normal quality measurement jobs completed; configured frame budgets miss as reported below",
+    "status": "previous-source measurement completed; 437a low and normal frame benchmark jobs are still in progress",
     "workflow": "Map performance evidence",
     "runId": 38825240268,
     "sourceCommit": "f31d314cf8fe9ad67a6368595aa94035e88a3501",
@@ -250,21 +260,37 @@
   "fullJourneyJavaScriptTransfer": {
     "status": "passed the configured gzip transfer budget",
     "workflow": "Map JavaScript transfer comparison",
-    "runId": 38851076467,
-    "artifactId": 12025905337,
+    "runId": 38852705055,
+    "artifactId": 12025993118,
     "baselineSourceCommit": "2de4ece02b5c00dea647b98bac0ffdb787690616",
-    "currentSourceCommit": "7caa55bd18632967368c46fee40bb59fc96f5c31",
+    "currentSourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
     "scope": "One identical measured journey per build. Sum the gzip-compressed unique JavaScript responses actually requested while opening demo territory, local map, and world map, including UI, shared, and worker scripts. These are single-case totals, not repeated-run medians.",
     "uniqueJavaScriptResponsesPerJourney": 11,
     "baselineGzipBytes": 105435,
-    "currentGzipBytes": 266384,
-    "increaseGzipBytes": 160949,
+    "currentGzipBytes": 267361,
+    "increaseGzipBytes": 161926,
     "budgetGzipBytes": 307200,
     "budgetMet": true,
     "baselineResultsSha256": "c2d15d932741b91f6fa5184a7d8abfd8f6d2b5219eb042c24a697b9c16a2ac81",
-    "currentResultsSha256": "cfe6657e395c48a2622478fd142766ea3880da6a170dffadfe23cd40fe1cbaae",
-    "comparisonResultsSha256": "03baaf2b3a53a9ea7e76ebf4d713e4bcdda45767ad558de47cf02b78f7d611ea",
+    "currentResultsSha256": "073078cdd87648c77dbbfd2cb4cdedc0eb43168e5743a67af2b1e6d2f9c6ab04",
+    "comparisonResultsSha256": "85bd91d390d8f1f6a088645fc5c3c917c93cbc79c34a8540c7e202106c6d784c",
     "rendererBundleComparisonNote": "This complete journey measurement is distinct from the 100,738-byte named renderer entry-and-chunks figure above, which is not a before/after full JavaScript delta."
+  },
+  "backendStage08Triage": {
+    "status": "CI test failed; baseline classification is unconfirmed",
+    "workflowRun": 38852705042,
+    "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
+    "runner": "Ubuntu 24.04, Node 24",
+    "suiteResult": { "passed": 6, "failed": 1, "total": 7 },
+    "failingTest": "a 5x clock settles through a restart and advances beyond EV02 while preserving the unresolved EV01 rank result",
+    "testLocation": "packages/sim/test/stage08.test.ts:458",
+    "failure": "RepositoryError: The stored save schema cannot be migrated safely.",
+    "stack": "SqliteRepository.getStateFromRow (repository.ts:345) → transaction (:613) → commitSystemTransition (:534) → GameApplicationService.persistSystemEvents (service.ts:1216) → settleClockTarget (:1336) → tickClock (:1394)",
+    "backendPackagesTreeId": "e1130d2da1ec585a873b7146e517100a7e6696b1",
+    "comparisonCommit": "7caa55bd18632967368c46fee40bb59fc96f5c31",
+    "backendTreeMatchesComparisonCommit": true,
+    "localTargetedRerun": "inconclusive: the existing test exceeded the 120-second bound in this CPU-limited environment and emitted no assertion result",
+    "classificationNote": "No backend source changes exist relative to the comparison commit; without a completed comparison test on that commit, this failure is not confirmed as a pre-existing baseline or as flaky."
   },
   "sourceCommit": "979f54d40f6884d3297e683cb02cc703f61d6e64",
   "workflowRun": {

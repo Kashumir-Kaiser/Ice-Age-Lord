@@ -1,0 +1,58 @@
+name: Package map visual review artifacts
+on:
+  workflow_dispatch:
+    inputs:
+      source_run:
+        description: Completed map-visual-matrix run ID
+        required: true
+        type: string
+      quality:
+        description: Capture quality
+        required: true
+        type: choice
+        options: [low, normal]
+      dpr:
+        description: Device pixel ratio
+        required: true
+        type: choice
+        options: ['1', '2']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  package-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+        working-directory: frontend
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ inputs.source_run }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pattern: map-*-${{ inputs.quality }}-dpr${{ inputs.dpr }}-*
+          path: /tmp/map-source-artifacts
+          merge-multiple: false
+      - name: Validate source and create review sheets
+        run: node scripts/ci/map-visual-review.mjs /tmp/map-source-artifacts /tmp/map-review '${{ inputs.quality }}' '${{ inputs.dpr }}' '${{ inputs.source_run }}'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-review-${{ inputs.quality }}-dpr${{ inputs.dpr }}-1366
+          path: /tmp/map-review/1366/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-review-${{ inputs.quality }}-dpr${{ inputs.dpr }}-1920
+          path: /tmp/map-review/1920/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-review-${{ inputs.quality }}-dpr${{ inputs.dpr }}-390
+          path: /tmp/map-review/390/
+          retention-days: 14
