@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "measured; target-device verification pending",
+  "status": "measured on hosted SwiftShader; dense frame gates remain unresolved; target-device verification pending",
   "latestIntegrationValidation": {
     "assetExport": {
       "status": "passed; repeat export byte-identical",
@@ -166,7 +166,7 @@
         "scopeNote": "Contact sheets cover all rows; parent review included selected sheets and representative raw frames, not individual inspection of every original. Acceptance is limited to captured scenes and does not accept target-device performance.",
         "appliesToSourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
         "coversCurrentMotionAndFootprintIndexChanges": false,
-        "currentSourceRerun": "pending"
+        "currentSourceRerun": "d612 workflow 38889534646 completed all four visual lanes successfully; separate scoped local review noted in latestSourceCheckpoint"
       },
       "latestCaptureBatch": {
         "status": "all lanes captured and verified; contact-sheet overview and selected raw-frame review accepted",
@@ -206,12 +206,12 @@
       "productionBuild": "passed; final build after frozen source; 2,282 modules transformed; 20.94 seconds",
       "geographyOnlyBrowserCapture": {
         "forest": {
-          "status": "captured and accepted at 1366\u00d7768, normal, DPR1",
+          "status": "captured and accepted at 1366×768, normal, DPR1",
           "file": "../../frontend/map-evidence/geo-final-1366-normal-dpr1/1366/local-forest-1366-normal-dpr1.png",
           "sha256": "755d1a6da60a5ac20006ae355a828becc80fc75b8dac8d5e0321df969ca7f31f"
         },
         "stone": {
-          "status": "captured and accepted at 1366\u00d7768, normal, DPR1",
+          "status": "captured and accepted at 1366×768, normal, DPR1",
           "file": "../../frontend/map-evidence/geo-final-1366-normal-dpr1/1366/local-stone-1366-normal-dpr1.png",
           "sha256": "4dc1e9a2a722a12cb4e049a45a4505cd19baa55280d6ca0cf40a951ee1f866ff"
         },
@@ -222,7 +222,7 @@
           "detailCrop": "../../frontend/map-evidence/shoreline-banks-final-1366-normal-dpr1/1366/local-water-1366-normal-dpr1-shore-detail.png",
           "detailCropSha256": "90388a96d79e1a8984fdbf21ea86f685b52abf4ce2f41deb5482036a94dcffd3",
           "scenarioMetadataSha256": "946fd6c6079bcd5bc499058c86a7e24dbbe51fe2bbd6dfaea24396f09470b65e",
-          "review": "replaced by accepted ICE-paint captures at 1366\u00d7768 and 390\u00d7844, normal quality, DPR1"
+          "review": "replaced by accepted ICE-paint captures at 1366×768 and 390×844, normal quality, DPR1"
         },
         "rememberedNightFog": {
           "status": "captured and accepted",
@@ -249,7 +249,7 @@
       "compiledRendererBundle": "../../frontend/dist/assets/MapRenderer-YNH9O17d.js",
       "compiledRendererBundleSha256": "f4dafcfcede6031ecf4db8eaeea47ae4c80f531cf34f38ed82ec0e9a1d08a3a1",
       "waterCaptures": {
-        "status": "accepted at 1366\u00d7768 and 390\u00d7844, normal quality, DPR1",
+        "status": "accepted at 1366×768 and 390×844, normal quality, DPR1",
         "desktop1366": {
           "file": "../../frontend/map-evidence/ice-paint-review-1366-390-normal-dpr1/1366/local-water-1366-normal-dpr1.png",
           "sha256": "01f366401440cf0fad12a89530257ae7f1021846cca7910f9243b2d95565cc89"
@@ -273,38 +273,35 @@
       "blocker": "RESOURCE_LEDGER_STAGE_05",
       "evidence": "MAP-25D-LIVE-TRANSFER-EVIDENCE.json"
     },
-    "scopeNote": "The current 437a heap and frame measurements are recorded below. Frame-budget misses and Intel UHD 620 validation remain open; the software-renderer results do not establish target-device performance.",
+    "scopeNote": "Historical integration fields retain their recorded source commits. The 437a heap and frame measurements are historical; latest frame measurements are from d612 in latestSourceCheckpoint. Saved-populated LIVE extraction and Intel UHD 620 validation remain pending.",
     "currentSourceVerification": {
-      "status": "focused local validation passed; current-source CI/browser matrix pending branch checkpoint",
-      "footprintIndex": {
-        "status": "integrated; preserves exact finite-geometry overlap behavior using a bounded spatial index",
-        "focusedTestFile": "frontend/tests/buildingFootprintIndex.test.mjs",
-        "focusedCasesPassed": 4,
-        "performanceImprovementClaimed": false
-      },
-      "ambientSnowAndFoliageSway": {
-        "status": "implemented; reduced-motion, planning, hidden/offscreen, and Canvas2D fallback behavior covered by focused tests",
-        "focusedTestFile": "frontend/tests/mapEffects.test.mjs",
-        "focusedCasesPassed": 7,
-        "selectedFrameReview": "parent accepted selected normal/reduced-motion frames; full-source matrix still pending",
-        "currentSightRequired": true,
-        "particleCapsSharedWithEmitterEffects": true,
-        "fallbackEffectsOff": true
-      },
-      "focusedSuitesPassed": 8,
+      "sourceCommit": "612046999bde5eaf6226b6d753e35f880291359e",
+      "sourceEquivalenceTests": "passed 3/3",
+      "fullFrontendTests": "passed; 35 test files",
       "typecheck": "passed",
-      "productionBuild": "passed; 2,283 modules transformed",
-      "currentSourceVisualMatrix": "pending; the accepted 876-row matrix is from 437a885 before ambient motion and spatial-index changes",
-      "freshCI": "pending checkpoint run",
-      "scopeNote": "Historical snapshot for source checkpoint 437a885acd4ffd765c33cb1ab82218c0c9ff84c1. Its pending CI and visual-matrix fields describe status at that checkpoint; latestCheckpoint below supersedes them with the d3295737 source run and published 388866ad checkpoint results."
+      "productionBuild": "passed",
+      "freshWorkflowRuns": {
+        "performance": 38889534615,
+        "visualMatrix": 38889534646,
+        "javascriptTransfer": 38889534590,
+        "rendering": 38889534662,
+        "backendRegression": 38889534595
+      },
+      "performanceGateStatus": "low dense-520 frame and normal dense-520/local frame gates remain unmet; other reported frame and pointer gates pass",
+      "renderingWorkflow": "86 passed, 5 skipped, 1 failed; isolated exact pause/resume test passed 1/1; 390px narrow QA capture passed 73/73 after CI timeout",
+      "backendWorkflow": "Stages 02-10 passed; bot archive assertion failed; no backend packages changed",
+      "targetDeviceVerified": false,
+      "sourceTree": "20c79342def32d4e9f8c823c844316325b6551aa",
+      "sourceTreeVerifiedAgainstGitHubCommit": true,
+      "note": "Historical integration fields above retain their original source provenance; current d612 results are in latestSourceCheckpoint."
     }
   },
   "currentIntegrationMemoryPlateau": {
-    "status": "passed for the measured software-renderer environment; target-device verification pending",
+    "status": "historical 437a measurement; no new memory plateau result recorded for d612; target-device verification pending",
     "workflow": "Map performance evidence",
     "runId": 38851076469,
     "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
-    "scope": "Chromium headless, 1366\u00d7768, DPR 1; same warmed territory endpoint; two identical 20-return/pan cycles; exposed garbage collection before heap measurements.",
+    "scope": "Chromium headless, 1366×768, DPR 1; same warmed territory endpoint; two identical 20-return/pan cycles; exposed garbage collection before heap measurements.",
     "heapBudgetBytes": 10485760,
     "qualities": {
       "low": {
@@ -332,11 +329,18 @@
     "limitations": "Decoded and renderer GPU byte values are estimates, not driver VRAM measurements. Retained metric records reached 82; heap growth remains below the configured gate, but metric-history retention still merits review."
   },
   "currentIntegrationFramePerformance": {
-    "status": "data collection passed; configured performance gates are not all met",
+    "status": "latest d612 run collected; explicit gates remain partially unmet; target-device verification pending",
     "workflow": "Map performance evidence",
-    "runId": 38852705039,
-    "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
-    "scope": "Chromium headless with SwiftShader, 1366\u00d7768, DPR 1; five fixtures, three 60-second runs each. Target hardware was not verified.",
+    "runId": 38889534615,
+    "sourceCommit": "612046999bde5eaf6226b6d753e35f880291359e",
+    "scope": "Hosted Chromium headless SwiftShader, AMD EPYC 9V45; five fixtures, three 60-second runs each. Not Intel UHD 620.",
+    "fixtureOrder": [
+      "fresh",
+      "populated",
+      "dense-520",
+      "local",
+      "world-1023"
+    ],
     "frameIntervalP95BudgetMs": 40,
     "pointerFeedbackP95BudgetMs": 100,
     "normalFrameIntervalP95BudgetMs": 20,
@@ -344,81 +348,79 @@
     "runsPerFixture": 3,
     "measuredSecondsPerRun": 60,
     "lowArtifact": {
-      "id": 12026596598,
-      "sha256": "23d79caf5dfacd5f5420fd76d9e3804494803e2513096d2fe3809bc80b391e82"
+      "id": 12042161719
     },
     "normalArtifact": {
-      "id": 12026825644,
-      "sha256": "a849ca379ce10c67408b71f16458ac51f836e71b4fb826fc3f30bfb8d6f7c9fc"
+      "id": 12041832974
     },
     "fixtures": {
       "low": {
         "fresh": {
-          "intervalP95Ms": 33.9,
-          "pointerP95Ms": 33.9,
+          "intervalP95Ms": 33.4,
+          "pointerP95Ms": 33.5,
           "frameBudgetMet": true,
           "pointerBudgetMet": true
         },
         "populatedDemoDrafts": {
-          "intervalP95Ms": 48.1,
-          "pointerP95Ms": 48.8,
-          "frameBudgetMet": false,
+          "intervalP95Ms": 33.5,
+          "pointerP95Ms": 33.6,
+          "frameBudgetMet": true,
           "pointerBudgetMet": true
         },
         "dense520": {
-          "intervalP95Ms": 167.4,
-          "pointerP95Ms": 154.8,
-          "frameBudgetMet": false,
-          "pointerBudgetMet": false
-        },
-        "local": {
-          "intervalP95Ms": 111.5,
-          "pointerP95Ms": 51.1,
+          "intervalP95Ms": 116.4,
+          "pointerP95Ms": 65.3,
           "frameBudgetMet": false,
           "pointerBudgetMet": true
         },
+        "local": {
+          "intervalP95Ms": 33.6,
+          "pointerP95Ms": 33.8,
+          "frameBudgetMet": true,
+          "pointerBudgetMet": true
+        },
         "world1023": {
-          "intervalP95Ms": 66.8,
-          "pointerP95Ms": 42.0,
-          "frameBudgetMet": false,
+          "intervalP95Ms": 33.7,
+          "pointerP95Ms": 33.9,
+          "frameBudgetMet": true,
           "pointerBudgetMet": true
         }
       },
       "normal": {
         "fresh": {
           "intervalP95Ms": 16.8,
-          "pointerP95Ms": 19.7,
+          "pointerP95Ms": 20.0,
           "frameBudgetMet": true,
           "pointerBudgetMet": true
         },
         "populatedDemoDrafts": {
-          "intervalP95Ms": 17.7,
-          "pointerP95Ms": 22.4,
+          "intervalP95Ms": 17.1,
+          "pointerP95Ms": 21.5,
           "frameBudgetMet": true,
           "pointerBudgetMet": true
         },
         "dense520": {
-          "intervalP95Ms": 116.4,
-          "pointerP95Ms": 78.7,
+          "intervalP95Ms": 116.5,
+          "pointerP95Ms": 72.8,
           "frameBudgetMet": false,
-          "pointerBudgetMet": false
+          "pointerBudgetMet": true
         },
         "local": {
-          "intervalP95Ms": 33.3,
-          "pointerP95Ms": 33.3,
+          "intervalP95Ms": 28.3,
+          "pointerP95Ms": 33.1,
           "frameBudgetMet": false,
           "pointerBudgetMet": true
         },
         "world1023": {
-          "intervalP95Ms": 80.1,
-          "pointerP95Ms": 22.4,
-          "frameBudgetMet": false,
+          "intervalP95Ms": 18.0,
+          "pointerP95Ms": 24.7,
+          "frameBudgetMet": true,
           "pointerBudgetMet": true
         }
       }
     },
     "targetDeviceVerified": false,
-    "interpretation": "Low-quality interval budget misses: populatedDemoDrafts, dense520, local, world1023. Normal-quality interval misses: dense520, local, world1023. Dense520 also misses pointer feedback at both qualities."
+    "interpretation": "Low frame gate misses dense-520 only; normal frame gate misses dense-520 and local. Pointer gates pass in both qualities, with dense-520 normal at 72.8 ms against 75 ms. Dense frame p95 remains about 116 ms at both qualities, effectively unchanged from d329; no frame-budget improvement is demonstrated."
   },
   "fullJourneyJavaScriptTransfer": {
     "status": "passed the configured gzip transfer budget",
@@ -452,7 +454,7 @@
     "failingTest": "a 5x clock settles through a restart and advances beyond EV02 while preserving the unresolved EV01 rank result",
     "testLocation": "packages/sim/test/stage08.test.ts:458",
     "failure": "RepositoryError: The stored save schema cannot be migrated safely.",
-    "stack": "SqliteRepository.getStateFromRow (repository.ts:345) \u2192 transaction (:613) \u2192 commitSystemTransition (:534) \u2192 GameApplicationService.persistSystemEvents (service.ts:1216) \u2192 settleClockTarget (:1336) \u2192 tickClock (:1394)",
+    "stack": "SqliteRepository.getStateFromRow (repository.ts:345) → transaction (:613) → commitSystemTransition (:534) → GameApplicationService.persistSystemEvents (service.ts:1216) → settleClockTarget (:1336) → tickClock (:1394)",
     "backendPackagesTreeId": "e1130d2da1ec585a873b7146e517100a7e6696b1",
     "comparisonCommit": "7caa55bd18632967368c46fee40bb59fc96f5c31",
     "backendTreeMatchesComparisonCommit": true,
@@ -812,106 +814,32 @@
   },
   "latestCheckpoint": {
     "branch": "codex/map-25d-overhaul",
-    "commit": "388866ad934d9aa99eaa07052a9660e6ceacd170",
-    "tree": "2aced52b4f4baeef5f77a0a60342e887c48fd4db",
-    "runtimeSourceCommit": "d3295737ec35e5728fd4fdc6c90b9cfe55fdc58b",
-    "runtimeSourceTree": "748b3220d1810bad69c6ff4e70c86645cdb0907e",
+    "commit": "612046999bde5eaf6226b6d753e35f880291359e",
+    "tree": "20c79342def32d4e9f8c823c844316325b6551aa",
+    "runtimeSourceCommit": "612046999bde5eaf6226b6d753e35f880291359e",
     "sourceChangesAfterRuntimeCheckpoint": [
-      ".github/workflows/map-visual-review.yml",
-      "docs/implementation/MAP-25D-MOTION-VISUAL-PROOF.json",
-      "docs/implementation/map-visual-review/motion-proof/*.png"
+      "docs/implementation/MAP-25D-HANDOFF.md",
+      "docs/implementation/MAP-25D-PERFORMANCE-STATUS.json"
     ],
     "backendPackagesChanged": false,
     "proof": {
-      "manifest": "MAP-25D-MOTION-VISUAL-PROOF.json",
-      "images": 6,
-      "allManifestSha256Verified": true,
-      "treeMatchedLocalBeforeRemoteRefUpdate": true
+      "sourceEquivalenceTests": "passed 3/3",
+      "fullFrontendTests": "passed; 35 test files",
+      "productionBuild": "passed"
     },
     "workflowRuns": {
-      "transfer": {
-        "id": 38857829699,
-        "sourceCommit": "d3295737ec35e5728fd4fdc6c90b9cfe55fdc58b",
-        "status": "success",
-        "baselineGzipBytes": 105435,
-        "currentGzipBytes": 269273,
-        "increaseGzipBytes": 163838,
-        "budgetGzipBytes": 307200,
-        "budgetMet": true
-      },
-      "visualMatrix": {
-        "id": 38857829718,
-        "sourceCommit": "d3295737ec35e5728fd4fdc6c90b9cfe55fdc58b",
-        "status": "success",
-        "lanes": 4,
-        "rowsPerLane": 219,
-        "rowsTotal": 876,
-        "rowsPerViewportPerLane": 73,
-        "viewports": [
-          {
-            "width": 1366,
-            "height": 768
-          },
-          {
-            "width": 1920,
-            "height": 1080
-          },
-          {
-            "width": 390,
-            "height": 844
-          }
-        ],
-        "visualReview": "accepted (contact-sheet overview and selected raw frames; see MAP-25D-VISUAL-MATRIX-FINAL-REVIEW.json)",
-        "artifacts": [
-          12028790330,
-          12028340871,
-          12028251142,
-          12028700594
-        ]
-      },
-      "rendering": {
-        "id": 38857829724,
-        "sourceCommit": "d3295737ec35e5728fd4fdc6c90b9cfe55fdc58b",
-        "status": "success",
-        "unitTestsPassed": 135,
-        "playwrightCommandCompleted": true,
-        "interactionJourney": "passed"
-      },
       "performance": {
-        "id": 38857829688,
-        "sourceCommit": "d3295737ec35e5728fd4fdc6c90b9cfe55fdc58b",
-        "status": "success",
+        "id": 38889534615,
+        "status": "success; diagnostics collected, thresholds evaluated separately",
+        "sourceCommit": "612046999bde5eaf6226b6d753e35f880291359e",
+        "artifactIds": {
+          "low": 12042161719,
+          "normal": 12041832974
+        },
+        "environment": "Hosted Chromium headless SwiftShader, AMD EPYC 9V45",
+        "targetDeviceVerified": false,
         "runsPerFixture": 3,
         "secondsPerRun": 60,
-        "targetDeviceVerified": false,
-        "lowFrameIntervalP95Ms": [
-          33.4,
-          33.5,
-          116.4,
-          37.8,
-          34.1
-        ],
-        "lowPointerP95Ms": [
-          33.6,
-          33.6,
-          87.1,
-          38.8,
-          34.2
-        ],
-        "normalFrameIntervalP95Ms": [
-          32.4,
-          36.9,
-          177.6,
-          43.4,
-          38.1
-        ],
-        "normalPointerP95Ms": [
-          49.4,
-          54.8,
-          169.9,
-          64.9,
-          55.0
-        ],
         "fixtureOrder": [
           "fresh",
           "populated",
@@ -919,94 +847,257 @@
           "local",
           "world-1023"
         ],
-        "lowFrameGateMs": 40,
-        "lowPointerGateMs": 100,
-        "normalFrameGateMs": 20,
-        "normalPointerGateMs": 75,
+        "gatesMs": {
+          "lowFrameIntervalP95": 40,
+          "lowPointerFeedbackP95": 100,
+          "normalFrameIntervalP95": 20,
+          "normalPointerFeedbackP95": 75
+        },
+        "lowFrameIntervalP95Ms": [
+          33.4,
+          33.5,
+          116.4,
+          33.6,
+          33.7
+        ],
+        "lowPointerFeedbackP95Ms": [
+          33.5,
+          33.6,
+          65.3,
+          33.8,
+          33.9
+        ],
+        "normalFrameIntervalP95Ms": [
+          16.8,
+          17.1,
+          116.5,
+          28.3,
+          18.0
+        ],
+        "normalPointerFeedbackP95Ms": [
+          20.0,
+          21.5,
+          72.8,
+          33.1,
+          24.7
+        ],
+        "lowFrameGateMisses": [
+          "dense-520"
+        ],
+        "lowPointerGateMisses": [],
         "normalFrameGateMisses": [
+          "dense-520",
+          "local"
+        ],
+        "normalPointerGateMisses": [],
+        "interpretation": "Dense frame-interval result remains essentially unchanged from the d329 run (116.4 ms low and normal previously). Current SwiftShader gates do not show a dense-scene improvement; target-device acceptance is unavailable."
+      },
+      "visualMatrix": {
+        "id": 38889534646,
+        "status": "success",
+        "lanesPassed": 4
+      },
+      "javascriptTransfer": {
+        "id": 38889534590,
+        "status": "success; transfer-budget workflow passed",
+        "artifactTotalsRecorded": false
+      },
+      "rendering": {
+        "id": 38889534662,
+        "status": "completed with a timing-sensitive test failure",
+        "unitTestsPassed": 86,
+        "unitTestsSkipped": 5,
+        "playwrightPassed": 0,
+        "playwrightFailed": 1,
+        "playwrightSkipped": 0,
+        "failure": "map-rendering.spec.ts hidden/offscreen pause-resume assertion expected visibleFrame to advance but both values were 7 after scroll.",
+        "isolatedRerun": "Exact test passed 1/1 with system Chromium; this supports timing sensitivity but does not prove the CI miss has no product impact.",
+        "mapQaCapture": "390x844 capture timed out after 60 seconds at readyMap with pendingTextures=2, frames=144, queue=0, errors=0. Narrow local system-Chromium MAP_QA_VIEWPORTS=390 capture passed 73/73 deterministic scenarios."
+      },
+      "backendRegression": {
+        "id": 38889534595,
+        "status": "failure",
+        "stages02Through10": "passed",
+        "botTests": "8/9 passed",
+        "failure": "Existing activity-receipt lossless archive assertion; later suites skipped. No backend packages changed."
+      }
+    },
+    "freshRunsOnPublishedCheckpoint": {
+      "performanceRun": 38889534615,
+      "visualMatrixRun": 38889534646,
+      "transferRun": 38889534590,
+      "renderingRun": 38889534662,
+      "backendRegressionRun": 38889534595,
+      "status": "all listed workflows completed"
+    },
+    "limitations": [
+      "No Intel UHD 620 or equivalent target hardware was available.",
+      "The performance CI workflow completed successfully, but the explicit frame gates remain missed for dense-520 (low and normal) and local (normal).",
+      "Transfer workflow passed; its current numerical totals were not recorded here.",
+      "One CI pause/resume browser assertion was timing-sensitive and passed its exact isolated rerun; a separate narrow mobile QA capture also passed after its CI capture timed out.",
+      "RESOURCE_LEDGER_STAGE_05 blocks authoritative populated LIVE extraction."
+    ],
+    "broadVisualReviewStatus": "four current visual-matrix lanes passed; scoped local capture review did not identify an obvious sprite issue",
+    "noActiveCheckpointWorkflows": true,
+    "blockers": [
+      "Target Intel UHD 620 validation unavailable.",
+      "Low dense-520 frame-interval p95 is 116.4 ms against 40 ms; normal dense-520 is 116.5 ms and local is 28.3 ms against 20 ms.",
+      "RESOURCE_LEDGER_STAGE_05 blocks authoritative populated LIVE extraction.",
+      "Backend bots activity-receipt archive assertion failed after stages 02–10."
+    ],
+    "runtimeSourceTree": "20c79342def32d4e9f8c823c844316325b6551aa"
+  },
+  "latestSourceCheckpoint": {
+    "branch": "codex/map-25d-overhaul",
+    "commit": "612046999bde5eaf6226b6d753e35f880291359e",
+    "tree": "20c79342def32d4e9f8c823c844316325b6551aa",
+    "runtimeChanges": [
+      "frontend/src/rendering/DepthSlices.ts",
+      "frontend/tests/mapDepthSlices.test.mjs"
+    ],
+    "changeDescription": "Reuse per-slice derived values and preserve output equivalence with the prior algorithm.",
+    "verification": {
+      "focusedEquivalenceTests": "passed 3/3",
+      "fullFrontendTests": "passed; 35 test files",
+      "typecheck": "passed",
+      "productionBuild": "passed",
+      "gitDiffCheck": "passed"
+    },
+    "workflowRuns": {
+      "performance": {
+        "id": 38889534615,
+        "status": "success; diagnostics collected, thresholds evaluated separately",
+        "sourceCommit": "612046999bde5eaf6226b6d753e35f880291359e",
+        "artifactIds": {
+          "low": 12042161719,
+          "normal": 12041832974
+        },
+        "environment": "Hosted Chromium headless SwiftShader, AMD EPYC 9V45",
+        "targetDeviceVerified": false,
+        "runsPerFixture": 3,
+        "secondsPerRun": 60,
+        "fixtureOrder": [
           "fresh",
           "populated",
           "dense-520",
           "local",
           "world-1023"
         ],
-        "normalPointerGateMisses": [
-          "dense-520"
+        "gatesMs": {
+          "lowFrameIntervalP95": 40,
+          "lowPointerFeedbackP95": 100,
+          "normalFrameIntervalP95": 20,
+          "normalPointerFeedbackP95": 75
+        },
+        "lowFrameIntervalP95Ms": [
+          33.4,
+          33.5,
+          116.4,
+          33.6,
+          33.7
         ],
-        "dense520LowFrameIntervalP95Ms": 116.4,
-        "dense520NormalFrameIntervalP95Ms": 177.6,
+        "lowPointerFeedbackP95Ms": [
+          33.5,
+          33.6,
+          65.3,
+          33.8,
+          33.9
+        ],
+        "normalFrameIntervalP95Ms": [
+          16.8,
+          17.1,
+          116.5,
+          28.3,
+          18.0
+        ],
+        "normalPointerFeedbackP95Ms": [
+          20.0,
+          21.5,
+          72.8,
+          33.1,
+          24.7
+        ],
         "lowFrameGateMisses": [
           "dense-520"
-        ]
-      },
-      "memory": {
-        "artifacts": [
-          12028385487,
-          12028770902
         ],
-        "lowHeapGrowthLastTwoCyclesBytes": 856420,
-        "normalHeapGrowthLastTwoCyclesBytes": 864816,
-        "gateBytes": 10485760,
-        "plateauVerified": true,
-        "targetDeviceVerified": false
+        "lowPointerGateMisses": [],
+        "normalFrameGateMisses": [
+          "dense-520",
+          "local"
+        ],
+        "normalPointerGateMisses": [],
+        "interpretation": "Dense frame-interval result remains essentially unchanged from the d329 run (116.4 ms low and normal previously). Current SwiftShader gates do not show a dense-scene improvement; target-device acceptance is unavailable."
       },
-      "backendJourneys": {
-        "id": 38857829835,
-        "sourceCommit": "d3295737ec35e5728fd4fdc6c90b9cfe55fdc58b",
+      "visualMatrix": {
+        "id": 38889534646,
+        "status": "success",
+        "lanesPassed": 4
+      },
+      "javascriptTransfer": {
+        "id": 38889534590,
+        "status": "success; transfer-budget workflow passed",
+        "artifactTotalsRecorded": false
+      },
+      "rendering": {
+        "id": 38889534662,
+        "status": "completed with a timing-sensitive test failure",
+        "playwrightPassed": 0,
+        "playwrightFailed": 1,
+        "playwrightSkipped": 0,
+        "failure": "map-rendering.spec.ts hidden/offscreen pause-resume assertion expected visibleFrame to advance but both values were 7 after scroll.",
+        "isolatedRerun": "Exact test passed 1/1 with system Chromium; this supports timing sensitivity but does not prove the CI miss has no product impact.",
+        "mapQaCapture": "390x844 capture timed out after 60 seconds at readyMap with pendingTextures=2, frames=144, queue=0, errors=0. Narrow local system-Chromium MAP_QA_VIEWPORTS=390 capture passed 73/73 deterministic scenarios.",
+        "playwright": {
+          "passed": 86,
+          "skipped": 5,
+          "failed": 1,
+          "status": "one timing-sensitive assertion failed"
+        }
+      },
+      "backendRegression": {
+        "id": 38889534595,
         "status": "failure",
         "stages02Through10": "passed",
-        "failingAssertion": "all committed activity receipts remain in the lossless archive after the recent tail rolls over",
-        "laterStressStorageApiSuites": "skipped"
+        "botTests": "8/9 passed",
+        "failure": "Existing activity-receipt lossless archive assertion; later suites skipped. No backend packages changed."
       }
     },
-    "freshRunsOnPublishedCheckpoint": {
-      "regressionAndReleaseJourneys": 38883598771,
-      "status": "completed",
-      "visualReviewPackaging": 38883598900,
-      "visualReviewPackagingStatus": "success",
-      "reviewArtifacts": [
-        12038049255,
-        12038482069,
-        12038134121,
-        12038955520,
-        12038735884,
-        12038945377,
-        12039025617,
-        12039210170,
-        12038209682,
-        12037909679,
-        12038472803,
-        12038114161
+    "shortDiagnostic": {
+      "framesPerRun": 11,
+      "denseRenderP95MsBeforeAfter": [
+        184.3,
+        138.8
       ],
-      "broadVisualReviewStatus": "accepted",
-      "regressionAndReleaseJourneysStatus": "failure",
-      "regressionAndReleaseJourneysFailure": "backend bots archive activity-receipt assertion; frontend job skipped after backend failure",
-      "conclusion": "regression workflow failed backend bots archive assertion"
+      "denseIntervalP95MsBeforeAfter": [
+        2599,
+        2434
+      ],
+      "interpretation": "Very noisy and not a gate result."
+    },
+    "localLoafInvestigation": {
+      "warmup": "completed",
+      "scriptP95Ms": {
+        "normal": 230,
+        "low": 268
+      },
+      "renderPhaseP95Ms": {
+        "normal": 206,
+        "low": 224
+      },
+      "styleLayoutP95Ms": {
+        "normal": 10,
+        "low": 6
+      },
+      "attribution": "MapRenderer bundle only; no function-level attribution. Host was heavily overscheduled; not causal evidence."
     },
     "limitations": [
-      "Performance measurements used hosted Chromium headless SwiftShader, not target Intel UHD 620 hardware.",
-      "Normal frame-interval p95 misses its 20 ms gate in all five fixtures; normal pointer feedback misses its 75 ms gate only in dense-520.",
-      "The 876-row matrix received scoped contact-sheet overview acceptance and selected raw-frame review; see MAP-25D-VISUAL-MATRIX-FINAL-REVIEW.json.",
-      "The backend bots archive receipt assertion failed; this does not involve changed backend package code."
+      "No Intel UHD 620 or equivalent target hardware was available.",
+      "The performance CI workflow completed successfully, but the explicit frame gates remain missed for dense-520 (low and normal) and local (normal).",
+      "Transfer workflow passed; its current numerical totals were not recorded here.",
+      "One CI pause/resume browser assertion was timing-sensitive and passed its exact isolated rerun; a separate narrow mobile QA capture also passed after its CI capture timed out.",
+      "RESOURCE_LEDGER_STAGE_05 blocks authoritative populated LIVE extraction."
     ],
-    "broadVisualReviewStatus": "accepted",
-    "broadVisualReview": {
-      "record": "MAP-25D-VISUAL-MATRIX-FINAL-REVIEW.json",
-      "captureRun": 38857829718,
-      "reviewPackagingRun": 38883598900,
-      "contactSheetsReviewed": 52,
-      "captureRows": 876,
-      "bundles": 12,
-      "representativeRawSha256Verified": 48,
-      "blockingVisualIssues": 0,
-      "scope": "Contact-sheet overview plus selected raw-frame checks; individual captures were not each inspected."
-    },
-    "noActiveCheckpointWorkflows": true,
-    "blockers": [
-      "Target Intel UHD 620 performance validation unavailable.",
-      "Normal frame-interval p95 misses its 20 ms budget in all five fixtures; low dense-520 misses its 40 ms budget.",
-      "Backend bots archive assertion fails on both source d3295737 and published checkpoint; later backend suites skip.",
-      "RESOURCE_LEDGER_STAGE_05 still blocks authoritative populated LIVE extraction."
-    ]
+    "backendPackagesChanged": false,
+    "noActiveCheckpointWorkflows": true
   }
 }
