@@ -4,9 +4,11 @@ import {readFileSync} from 'node:fs';
 import sharp from 'sharp';
 import {exportDepthSlices} from '../scripts/export-depth-slices.mjs';
 import {projectDepthNodes} from '../src/rendering/DepthSlices.ts';
+import {projectBuildings} from '../src/rendering/BuildingGeometry.ts';
 import {depthOrder} from '../src/rendering/DepthOrder.ts';
 import {pickStack} from '../src/rendering/MapPicking.ts';
 import {artPolygon} from '../src/rendering/SpriteRegistration.ts';
+import {intersects} from '../src/rendering/DepthOrder.ts';
 const manifest=JSON.parse(readFileSync(new URL('../../assets/manifest.json',import.meta.url)));
 const joints=JSON.parse(readFileSync(new URL('../../assets/map-depth-slices.json',import.meta.url)));
 test('wall and gate depth cuts reconstruct every source pixel and extruded atlas frame',async()=>{
@@ -42,5 +44,33 @@ test('architectural slices keep one logical entity, stable ground extents, depth
    const ids=depthOrder([...nodes,unit]).objects.map(n=>n.id);assert.ok(ids.indexOf('wall:slice:0')<ids.indexOf('unit'));assert.ok(ids.indexOf('unit')<ids.indexOf('wall:slice:2'));
   }
   assert.equal(JSON.stringify(b),before,'depth slices never mutate a footprint or entity');
+ }
+});
+
+test('depth-node allocation reduction preserves the previous projection output exactly',()=>{
+ const previous=(buildings,project,scale,size,cull=true,lods,planning=false,projected)=>
+  (projected??projectBuildings(buildings,project,scale,size,false,lods)).flatMap(b=>{
+   const parts=planning||b.lod==='regional'?undefined:b.asset.mapDepthSlices?.[b.orientation];
+   if(!parts?.length)return cull&&!intersects(b.bounds,{minX:-16,minY:-16,maxX:size.width+16,maxY:size.height+16})?[]:[{...b,entityId:b.id,slice:undefined}];
+   const turned=b.orientation==='east'||b.orientation==='west';
+   return parts.flatMap(slice=>{
+    const polygon=artPolygon(slice.hull,b.rect),bounds={minX:Math.min(...polygon.map(p=>p.x)),maxX:Math.max(...polygon.map(p=>p.x)),minY:Math.min(...polygon.map(p=>p.y)),maxY:Math.max(...polygon.map(p=>p.y))};
+    if(cull&&!intersects(bounds,{minX:-16,minY:-16,maxX:size.width+16,maxY:size.height+16}))return [];
+    const footprint={...b.footprint},span=turned?footprint.maxY-footprint.minY:footprint.maxX-footprint.minX;
+    if(turned){footprint.minY=b.point.y+slice.range[0]*span;footprint.maxY=b.point.y+slice.range[1]*span;}
+    else{footprint.minX=b.point.x+slice.range[0]*span;footprint.maxX=b.point.x+slice.range[1]*span;}
+    const depth=project({x:(footprint.minX+footprint.maxX)/2,y:(footprint.minY+footprint.maxY)/2}).y;
+    return [{...b,id:b.id+':slice:'+slice.id,entityId:b.id,slice,bounds,footprint,depth}];
+   });
+  });
+ const assets=manifest.assets.filter(asset=>asset.mapDepthSlices),buildings=[];
+ for(const asset of assets)for(const orientation of ['north','east','south','west'])buildings.push({id:asset.assetId+':'+orientation,name:asset.name,point:{x:13,y:-29},asset,assetId:asset.assetId,orientation,footprint:{widthM:asset.compatiblePhysicalFootprint.widthM,depthM:asset.compatiblePhysicalFootprint.depthM},selected:false,active:false,draft:false});
+ const plain=manifest.assets.find(asset=>!asset.mapDepthSlices);if(plain)buildings.push({id:'plain',name:plain.name,point:{x:-31,y:45},asset:plain,assetId:plain.assetId,orientation:'west',footprint:{widthM:plain.compatiblePhysicalFootprint.widthM,depthM:plain.compatiblePhysicalFootprint.depthM},selected:false,active:false,draft:false});
+ const size={width:600,height:480};
+ for(const scale of [.001,.2,3,15])for(const pan of [[0,0],[350,-170],[-710,95]])for(const cull of [false,true])for(const planning of [false,true]){
+  const project=p=>({x:300+pan[0]+scale*1.3*(p.x+p.y),y:240+pan[1]+scale*.7*(p.x-p.y)}),lods=new Map();
+  const projected=projectBuildings(buildings,project,scale,size,true,lods);
+  assert.deepEqual(projectDepthNodes(buildings,project,scale,size,cull,lods,planning,projected),previous(buildings,project,scale,size,cull,lods,planning,projected),`scale=${scale}, pan=${pan}, cull=${cull}, planning=${planning}`);
+  assert.deepEqual(projectDepthNodes(buildings,project,scale,size,cull,lods,planning),previous(buildings,project,scale,size,cull,lods,planning),`unprojected scale=${scale}, pan=${pan}, cull=${cull}, planning=${planning}`);
  }
 });
