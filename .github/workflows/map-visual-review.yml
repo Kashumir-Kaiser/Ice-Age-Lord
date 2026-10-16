@@ -12,18 +12,6 @@ on:
         required: false
         type: string
         default: '38852705161'
-      quality:
-        description: Capture quality
-        required: false
-        type: choice
-        options: [all, low, normal]
-        default: all
-      dpr:
-        description: Device pixel ratio
-        required: false
-        type: choice
-        options: [all, '1', '2']
-        default: all
 permissions:
   contents: read
   actions: read
@@ -31,7 +19,6 @@ jobs:
   package-review:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: github.event_name == 'push' || ((inputs.quality == 'all' || inputs.quality == matrix.quality) && (inputs.dpr == 'all' || inputs.dpr == matrix.dpr))
     strategy:
       fail-fast: false
       matrix:
