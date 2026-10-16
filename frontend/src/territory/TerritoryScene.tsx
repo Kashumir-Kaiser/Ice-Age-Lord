@@ -15,7 +15,7 @@ import { rectPolygon } from '../rendering/BuildingGeometry';
 import {projectDepthNodes} from '../rendering/DepthSlices';
 import type {SceneLOD} from '../rendering/mapStyle';
 import { depthOrder } from '../rendering/DepthOrder';
-import { cameraOverlayPromotionActive, cameraOverlayTransform, removeLostTouchPointer, setCameraOverlayGestureActive } from '../rendering/transientCamera';
+import { cameraOverlayTransform } from '../rendering/transientCamera';
 import { footprintHeatRelation, legalPlacementOrientations, nextPlacementOrientation, snapPlanningPoint, validatePlacement } from './placement';
 import { fitWorldBounds, isoToWorld, screenToWorld, worldToIso, worldToScreen, zoomAtScreenPoint, MIN_TERRITORY_ZOOM } from './projection';
 import type { TerritoryCamera, WorldPoint } from './projection';
@@ -102,13 +102,11 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
   const activeDefinition=placementDefinitions.find(def=>def.id===placingId)??null;
   const visiblePlacementDefinitions=placementDefinitions.filter(definition=>!definition.qaOnly||artQaEnabled);
   const activeCamera=camera??{x:origin.x+10,y:origin.y+5,zoom:.7};
-  const transient=useRef(activeCamera),lastCameraCommit=useRef(0),wheelCommit=useRef<ReturnType<typeof setTimeout>|null>(null),wheelActive=useRef(false);
+  const transient=useRef(activeCamera),lastCameraCommit=useRef(0),wheelCommit=useRef<ReturnType<typeof setTimeout>|null>(null);
   useLayoutEffect(()=>{transient.current=activeCamera;svgRef.current?.querySelector('.territory-camera-overlay')?.removeAttribute('transform');},[activeCamera.x,activeCamera.y,activeCamera.zoom,size.width,size.height]);
-  const updateCameraOverlayPromotion=(commit:boolean)=>setCameraOverlayGestureActive(svgRef.current?.querySelector('.territory-camera-overlay')??null,cameraOverlayPromotionActive({pan:Boolean(gesture.current?.moved),pinch:Boolean(pinch.current),wheel:wheelActive.current,commit}));
-  useEffect(()=>()=>{if(wheelCommit.current)clearTimeout(wheelCommit.current);wheelActive.current=false;updateCameraOverlayPromotion(true);},[]);
+  useEffect(()=>()=>{if(wheelCommit.current)clearTimeout(wheelCommit.current);},[]);
   const presentCamera=(next:TerritoryCamera,commit=false)=>{
     transient.current=next;
-    updateCameraOverlayPromotion(commit);
     svgRef.current?.querySelector('.territory-camera-overlay')?.setAttribute('transform',cameraOverlayTransform(activeCamera,next,size,'territory'));
     rootRef.current?.dispatchEvent(new CustomEvent('map-camera',{detail:{...next,interacting:!commit&&Boolean(gesture.current||pinch.current)}}));
     if(commit||(!gesture.current&&!pinch.current&&performance.now()-lastCameraCommit.current>=100)){lastCameraCommit.current=performance.now();onCameraChange(next);}
@@ -319,7 +317,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
       const rect=svgRef.current?.getBoundingClientRect();if(!rect)return;
       const point=followPlayer?{x:size.width/2,y:size.height/2}:{x:event.clientX-rect.left,y:event.clientY-rect.top};
       const zoom=transient.current.zoom*Math.exp(-Math.max(-480,Math.min(480,event.deltaY))*.0014);
-      event.preventDefault();wheelActive.current=true;presentCamera(zoomAtScreenPoint(transient.current,point,size,zoom,PX_PER_ISO_METRE));if(wheelCommit.current)clearTimeout(wheelCommit.current);wheelCommit.current=setTimeout(()=>{wheelActive.current=false;wheelCommit.current=null;presentCamera(transient.current,true);},120);
+      event.preventDefault();presentCamera(zoomAtScreenPoint(transient.current,point,size,zoom,PX_PER_ISO_METRE));if(wheelCommit.current)clearTimeout(wheelCommit.current);wheelCommit.current=setTimeout(()=>presentCamera(transient.current,true),120);
     };
     node.addEventListener('wheel',onWheel,{passive:false});return()=>node.removeEventListener('wheel',onWheel);
   },[camera,activeCamera,size,onCameraChange,followPlayer]);
@@ -442,7 +440,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
       data-map-qa-fixture-count={readyTerritoryQaFixture?expectedTerritoryFixtureCount:undefined}>
       <MapCanvas snapshot={renderSnapshot} label="Địa hình và công trình lãnh địa. Dùng danh sách công trình hoặc điều khiển mặt bằng để chọn."/>
       <svg ref={svgRef} className="territory-scene-svg" viewBox={`0 0 ${size.width} ${size.height}`} role="img" aria-label="Lãnh địa theo phối cảnh isometric cố định. Kéo để di chuyển, cuộn để thu phóng, dùng phím mũi tên để điều hướng."
-        tabIndex={0} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={()=>{presentCamera(transient.current,true);gesture.current=null;pinch.current=null;touches.current.clear();ignoreClick.current=true;setTimeout(()=>{ignoreClick.current=false;},0);}} onLostPointerCapture={event=>{removeLostTouchPointer(touches.current,event.pointerId);if(gesture.current?.pointerId===event.pointerId){presentCamera(transient.current,true);gesture.current=null;}else if(pinch.current?.ids.includes(event.pointerId)){presentCamera(transient.current,true);pinch.current=null;gesture.current=null;touches.current.clear();ignoreClick.current=true;window.setTimeout(()=>{ignoreClick.current=false;},0);}}} onClickCapture={captureSelection} onClick={canvasClick} onKeyDown={keyDown}>
+        tabIndex={0} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={()=>{presentCamera(transient.current,true);gesture.current=null;pinch.current=null;touches.current.clear();ignoreClick.current=true;setTimeout(()=>{ignoreClick.current=false;},0);}} onLostPointerCapture={event=>{if(gesture.current?.pointerId===event.pointerId){presentCamera(transient.current,true);gesture.current=null;}}} onClickCapture={captureSelection} onClick={canvasClick} onKeyDown={keyDown}>
         <g className="territory-camera-overlay">
         {displayedRadius>0&&<ellipse cx={firePoint.x} cy={firePoint.y} rx={heatRx} ry={heatRy} fill="none" stroke="#efbf7f" strokeOpacity=".78" strokeWidth="1.6" strokeDasharray="7 6" pointerEvents="none"/>}
         {(showGrid||effectiveMode==='planning')&&gridLines.map(line=>{const a=worldToScreen(line.from,activeCamera,size,PX_PER_ISO_METRE),b=worldToScreen(line.to,activeCamera,size,PX_PER_ISO_METRE);return <line key={line.key} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={line.major?'#c7d8d3':'#a6c1bd'} strokeOpacity={line.major?.13:.06} strokeWidth={line.major?1:.7} pointerEvents="none"/>;})}

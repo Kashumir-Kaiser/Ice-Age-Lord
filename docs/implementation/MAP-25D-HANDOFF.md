@@ -104,21 +104,10 @@ Source optimization `b0edab2c4cb00cc92a4c7ecf85663a217f3cc3f5` skips the separat
 
 Low dense-520 interval p95 remains 116.4 ms against its 40 ms gate; normal dense-520 is 116.4 ms and local is 29.3 ms against the 20 ms gate. Low local is 37.3 ms against 40 ms. All pointer p95 values pass (100 ms low, 75 ms normal). The renderer reports `targetDeviceVerified=false`: hosted headless Chromium/SwiftShader cannot validate Intel UHD 620 performance. Visual, rendering, and JavaScript-transfer workflows passed. The backend regression workflow failed the unrelated activity-receipt archive assertion; its frontend job was skipped.
 
-## Hosted benchmark diagnosis — run 38909177744
+## Compositor promotion experiment — run 38914021024
 
-Both quality jobs completed successfully and uploaded `map-performance-low` and `map-performance-normal`. These are hosted headless Chromium/SwiftShader diagnostics, not Intel UHD 620 validation; `targetDeviceVerified` remains false. The table shows medians across the three runs for each fixture. Interval p95 budgets are 40 ms low and 20 ms normal.
+Commit `44837c0dd05cd4927e3f863ae3d271d28d0d1ace` added CSS `will-change` promotion for transient camera gestures. The 3×60-second hosted headless Chromium/SwiftShader run showed low dense-520 interval p95 rising from 116.3 to 133.8 ms and pointer p95 from 91.8 to 125.3 ms; low local interval p95 rose from 39.7 to 47.2 ms. This regressed both low dense and local, with dense pointer feedback also crossing its 100 ms budget. Normal dense-520 interval p95 changed from 116.6 to 116.4 ms, which is not a meaningful improvement; normal local moved from 31.4 to 28.7 ms but remains over its 20 ms budget. Render-work p95 for dense-520 was 19.5→19.3 ms low and 19.4→14.9 ms normal. The compositor-promotion change was therefore removed; its four source/test files are restored to their exact versions at `9f5751b9fc7faedf9034f950f894d7014f3bd1c4`.
 
-| Quality | Fixture | Interval p95 | Gate |
-| --- | --- | ---: | --- |
-| Low | Fresh | 33.5 ms | Pass |
-| Low | Populated | 33.5 ms | Pass |
-| Low | Dense-520 | 116.3 ms | Miss |
-| Low | Local | 39.7 ms | Pass |
-| Low | World-1023 | 37.9 ms | Pass |
-| Normal | Fresh | 19.7 ms | Pass |
-| Normal | Populated | 23.3 ms | Miss |
-| Normal | Dense-520 | 116.6 ms | Miss |
-| Normal | Local | 31.4 ms | Miss |
-| Normal | World-1023 | 26.4 ms | Miss |
+The post-experiment dense-520 phase medians were low pan 176 samples/125.7 ms p95 and zoom 46/137.2 ms, normal pan 344/72.2 ms and zoom 48/116.6 ms; selection had zero samples for both. Fixture-wide LongTask overlap was 24,968 ms/222 intervals low and 22,341 ms/377 intervals normal per run; phase-specific overlap is not available. LoAF observation was supported with zero dense-520 overlaps.
 
-For dense-520, low pan had 248 samples at 91.8 ms p95 and zoom had 48 at 116.4 ms; normal pan had 248 at 98.2 ms and zoom had 49 at 116.6 ms. Selection had zero samples in both qualities. Fixture-wide LongTask overlap was about 23.9 seconds across 296 low and 297 normal overlapping intervals per run; phase-specific overlap is not recorded. LoAF observation was supported, with zero dense-520 overlaps in both qualities. The visual, rendering, and JavaScript-transfer workflows passed. The unrelated backend regression failed the activity-receipt archive assertion, so its frontend job was skipped.
+Memory jobs passed at low and normal quality (artifacts `12051532854` and `12052058654`). All four visual quality/DPR lanes passed; metadata artifacts are `12051273295`, `12052306491`, `12051573084`, and `12052087160`. Rendering and JavaScript-transfer workflows passed. The unrelated backend regression failed its activity-receipt archive assertion and skipped its frontend job. These hosted diagnostics do not verify Intel UHD 620; `targetDeviceVerified` remains false.

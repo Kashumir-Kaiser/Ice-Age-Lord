@@ -8,7 +8,6 @@ import { depthOrder } from '../src/rendering/DepthOrder.ts';
 import { projectBuildings, rectPolygon } from '../src/rendering/BuildingGeometry.ts';
 import { AdaptiveQuality, chooseLOD } from '../src/rendering/mapStyle.ts';
 import { worldToScreen, screenToWorld, zoomAtScreenPoint } from '../src/territory/projection.ts';
-import { cameraOverlayPromotionActive, removeLostTouchPointer, setCameraOverlayGestureActive } from '../src/rendering/transientCamera.ts';
 import { validateMapExport } from '../scripts/validate-map-assets.mjs';
 const manifest=JSON.parse(readFileSync(new URL('../../assets/manifest.json',import.meta.url),'utf8'));
 const asset=manifest.assets.find(a=>a.assetId==='lord-house-damaged');
@@ -20,33 +19,6 @@ test('CSS pointer offsets, DPR-independent projection, negative coordinates, res
   const picked=screenToWorld(css,camera,viewport);near(picked.x,world.x);near(picked.y,world.y);
   const next=zoomAtScreenPoint(camera,screen,viewport,zoom===3?.002:3),again=screenToWorld(screen,next,viewport);near(again.x,world.x);near(again.y,world.y);assert.ok(dpr>0);
  }
-});
-test('camera overlay promotion covers wheel debounce and clears on commits and lost-capture cancellation',()=>{
- const classes=new Set(),node={classList:{toggle(name,active){if(active)classes.add(name);else classes.delete(name);}}};
- const update=state=>setCameraOverlayGestureActive(node,cameraOverlayPromotionActive(state));
- update({pan:false,pinch:false,wheel:true,commit:false});
- assert.deepEqual([...classes],['territory-camera-overlay--gesture']);
- update({pan:false,pinch:false,wheel:true,commit:true});
- assert.deepEqual([...classes],['territory-camera-overlay--gesture'],'wheel promotion survives the transform burst commit');
- update({pan:false,pinch:false,wheel:false,commit:true});
- assert.deepEqual([...classes],[],'debounced wheel completion clears promotion');
- update({pan:true,pinch:false,wheel:false,commit:true});
- assert.deepEqual([...classes],[],'lost pan capture commits and clears promotion');
- update({pan:false,pinch:true,wheel:false,commit:false});
- assert.deepEqual([...classes],['territory-camera-overlay--gesture'],'lost pinch capture keeps promotion while the pinch state remains active');
- update({pan:false,pinch:true,wheel:false,commit:true});
- assert.deepEqual([...classes],[],'lost capture commits and clears promotion before pinch state is discarded');
- update({pan:false,pinch:false,wheel:false,commit:true});
- assert.deepEqual([...classes],[],'cleared pinch state cannot leave a promoted layer behind');
- setCameraOverlayGestureActive(null,false);
-});
-test('lost touch pointer IDs cannot seed a later pinch with stale coordinates',()=>{
- const touches=new Map([[41,{x:14,y:25}]]);
- removeLostTouchPointer(touches,41);
- touches.set(42,{x:100,y:120});
- assert.deepEqual([...touches],[[42,{x:100,y:120}]],'the first touch after capture loss starts a fresh single-pointer gesture');
- touches.set(43,{x:160,y:190});
- assert.deepEqual([...touches.keys()],[42,43],'only subsequent live pointers can form the next pinch');
 });
 test('physical sprite scaling is linear without clamps; trim and art state preserve registered ground point',()=>{
  const ground={x:181,y:271};const a=spriteRect(asset,ground,3),b=spriteRect(asset,ground,6),tiny=spriteRect(asset,ground,.003);

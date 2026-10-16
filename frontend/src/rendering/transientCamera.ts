@@ -7,12 +7,3 @@ export function cameraOverlayTransform(previous:TerritoryCamera,next:TerritoryCa
  else {const scale=viewport.height*next.zoom/172;offset={x:(previous.x-next.x)*scale,y:(previous.y-next.y)*scale};}
  return `translate(${viewport.width/2*(1-ratio)+offset.x} ${viewport.height/2*(1-ratio)+offset.y}) scale(${ratio})`;
 }
-export function setCameraOverlayGestureActive(node:Pick<SVGElement,'classList'>|null,active:boolean):void {
- node?.classList.toggle('territory-camera-overlay--gesture',active);
-}
-export function cameraOverlayPromotionActive(state:{pan:boolean;pinch:boolean;wheel:boolean;commit:boolean}):boolean {
- return state.wheel||(!state.commit&&(state.pan||state.pinch));
-}
-export function removeLostTouchPointer<T>(touches:Map<number,T>,pointerId:number):void {
- touches.delete(pointerId);
-}

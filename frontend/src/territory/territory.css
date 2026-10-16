@@ -21,7 +21,6 @@
 .territory-stage{height:clamp(440px,61vh,690px);min-height:400px;position:relative;overflow:hidden;border:1px solid rgba(163,198,196,.28);border-radius:10px;background:#153440;box-shadow:inset 0 0 45px rgba(5,16,23,.32);-webkit-user-select:none;user-select:none;-webkit-user-drag:none}
 .territory-stage *{-webkit-user-select:none;user-select:none;-webkit-user-drag:none}
 .territory-scene-svg{width:100%;height:100%;display:block;touch-action:none;cursor:grab;outline:none}
-.territory-camera-overlay--gesture{will-change:transform}
 .territory-scene-svg:active{cursor:grabbing}
 .territory-scene-svg:focus-visible{box-shadow:inset 0 0 0 2px #e5c28a}
 .territory-building{outline:none}
