@@ -2,7 +2,7 @@ name: Map performance evidence
 on:
   push:
     branches: ['codex/map-25d-overhaul']
-    paths: ['frontend/src/rendering/**', 'frontend/scripts/map-benchmark.mjs', 'frontend/scripts/map-memory.mjs', 'frontend/scripts/map-browser.mjs', 'frontend/scripts/map-fixture-server.mjs', '.github/workflows/map-performance.yml']
+    paths: ['frontend/src/rendering/**', 'frontend/src/territory/**', 'frontend/scripts/map-benchmark.mjs', 'frontend/scripts/map-memory.mjs', 'frontend/scripts/map-browser.mjs', 'frontend/scripts/map-fixture-server.mjs', '.github/workflows/map-performance.yml']
   workflow_dispatch:
 permissions:
   contents: read
