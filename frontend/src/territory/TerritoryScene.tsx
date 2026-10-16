@@ -16,6 +16,7 @@ import {projectDepthNodes} from '../rendering/DepthSlices';
 import type {SceneLOD} from '../rendering/mapStyle';
 import { depthOrder } from '../rendering/DepthOrder';
 import { cameraOverlayTransform } from '../rendering/transientCamera';
+import { PointerRectCache, pointerLocalPoint } from './pointerRectCache';
 import { footprintHeatRelation, legalPlacementOrientations, nextPlacementOrientation, snapPlanningPoint, validatePlacement } from './placement';
 import { fitWorldBounds, isoToWorld, screenToWorld, worldToIso, worldToScreen, zoomAtScreenPoint, MIN_TERRITORY_ZOOM } from './projection';
 import type { TerritoryCamera, WorldPoint } from './projection';
@@ -70,6 +71,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
   const showPlayerMarker = playerMarkerVisible || followPlayer;
   const rootRef=useRef<HTMLDivElement>(null);
   const svgRef=useRef<SVGSVGElement>(null);
+  const pointerRectCache=useRef(new PointerRectCache());
   const gesture=useRef<PanGesture|null>(null);
   const touches=useRef(new Map<number,{x:number;y:number}>());
   const pinch=useRef<{ids:[number,number];distance:number;anchor:WorldPoint;origin:TerritoryCamera}|null>(null);
@@ -104,7 +106,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
   const activeCamera=camera??{x:origin.x+10,y:origin.y+5,zoom:.7};
   const transient=useRef(activeCamera),lastCameraCommit=useRef(0),wheelCommit=useRef<ReturnType<typeof setTimeout>|null>(null);
   useLayoutEffect(()=>{transient.current=activeCamera;svgRef.current?.querySelector('.territory-camera-overlay')?.removeAttribute('transform');},[activeCamera.x,activeCamera.y,activeCamera.zoom,size.width,size.height]);
-  useEffect(()=>()=>{if(wheelCommit.current)clearTimeout(wheelCommit.current);},[]);
+  useEffect(()=>()=>{if(wheelCommit.current)clearTimeout(wheelCommit.current);pointerRectCache.current.release();},[]);
   const presentCamera=(next:TerritoryCamera,commit=false)=>{
     transient.current=next;
     svgRef.current?.querySelector('.territory-camera-overlay')?.setAttribute('transform',cameraOverlayTransform(activeCamera,next,size,'territory'));
@@ -115,8 +117,16 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
 
   useEffect(()=>{
     const node=rootRef.current;if(!node)return;
-    const observer=new ResizeObserver(entries=>{const box=entries[0]?.contentRect;if(box?.width&&box.height)setSize({width:box.width,height:box.height});});
-    observer.observe(node);return()=>observer.disconnect();
+    const svg=svgRef.current;
+    const observer=new ResizeObserver(entries=>{
+      pointerRectCache.current.invalidate();
+      const box=entries.find(entry=>entry.target===node)?.contentRect;
+      if(box?.width&&box.height)setSize({width:box.width,height:box.height});
+    });
+    observer.observe(node);if(svg)observer.observe(svg);
+    const invalidate=()=>pointerRectCache.current.invalidate();
+    window.addEventListener('scroll',invalidate,true);window.addEventListener('resize',invalidate);
+    return()=>{observer.disconnect();window.removeEventListener('scroll',invalidate,true);window.removeEventListener('resize',invalidate);};
   },[]);
   useEffect(()=>{
     const node=rootRef.current;if(!node)return;
@@ -228,13 +238,17 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
     document.addEventListener('keydown',onPlacementKeyDown,true);
     return()=>document.removeEventListener('keydown',onPlacementKeyDown,true);
   },[activeDefinition,cancelPlacement,rotatePlacement]);
-  const localPointer=(event:ReactPointerEvent<SVGSVGElement>)=>{const rect=event.currentTarget.getBoundingClientRect();return {x:event.clientX-rect.left,y:event.clientY-rect.top};};
+  const localPointer=(event:ReactPointerEvent<SVGSVGElement>,captured=false)=>pointerLocalPoint(
+    {x:event.clientX,y:event.clientY},
+    pointerRectCache.current.resolve(()=>event.currentTarget.getBoundingClientRect(),captured),
+  );
   const pointerDown=(event:ReactPointerEvent<SVGSVGElement>)=>{
     if(event.button!==0&&event.pointerType!=='touch')return;
     const target=event.target;
     const playerMarker=target instanceof Element&&Boolean(target.closest('.territory-player-marker'));
     if(target instanceof Element&&target.closest('button,input,select,[role="button"]')&&!target.closest('.territory-building')&&!playerMarker)return;
-    const point=localPointer(event);
+    pointerRectCache.current.capture(event.currentTarget.getBoundingClientRect());
+    const point=localPointer(event,true);
     if(event.pointerType==='touch'){
       touches.current.set(event.pointerId,point);
       if(touches.current.size>=2){const [[first,a],[second,b]]=Array.from(touches.current);const center={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
@@ -247,7 +261,10 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
     try{event.currentTarget.setPointerCapture(event.pointerId);}catch{ /* Pointer may already be released by the browser. */ }
   };
   const pointerMove=(event:ReactPointerEvent<SVGSVGElement>)=>{
-    const point=localPointer(event);
+    const activePinch=pinch.current;
+    const activeGesture=gesture.current;
+    const captured=Boolean(activePinch?.ids.includes(event.pointerId)||activeGesture?.pointerId===event.pointerId);
+    const point=localPointer(event,captured);
     if(touches.current.has(event.pointerId))touches.current.set(event.pointerId,point);
     if(pinch.current){const p=pinch.current,a=touches.current.get(p.ids[0]),b=touches.current.get(p.ids[1]);if(!a||!b)return;
       const center={x:(a.x+b.x)/2,y:(a.y+b.y)/2},zoom=Math.max(MIN_TERRITORY_ZOOM,Math.min(3,p.origin.zoom*Math.hypot(a.x-b.x,a.y-b.y)/p.distance)),anchor=worldToIso(p.anchor);
@@ -264,22 +281,34 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
   };
   const pointerUp=(event:ReactPointerEvent<SVGSVGElement>)=>{
     touches.current.delete(event.pointerId);
-    if(pinch.current){presentCamera(transient.current,true);pinch.current=null;ignoreClick.current=true;
+    if(pinch.current?.ids.includes(event.pointerId)){presentCamera(transient.current,true);pinch.current=null;ignoreClick.current=true;
       if(touches.current.size===1){const [id,p]=Array.from(touches.current)[0];gesture.current={pointerId:id,x:p.x,y:p.y,origin:transient.current,moved:true,playerMarker:false};}
-      else gesture.current=null;
+      else {gesture.current=null;pointerRectCache.current.release();}
       try{if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId);}catch{}
       setTimeout(()=>{ignoreClick.current=false;},0);return;
     }
     const activeGesture=gesture.current;
-    if(activeGesture?.pointerId===event.pointerId&&activeGesture.moved){ignoreClick.current=true;window.setTimeout(()=>{ignoreClick.current=false;},0);}
-    else if(activeGesture?.pointerId===event.pointerId&&activeGesture.playerMarker){
-      ignoreClick.current=true;
-      onOpenPlayerProfile();
-      window.setTimeout(()=>{ignoreClick.current=false;},0);
+    if(activeGesture?.pointerId===event.pointerId){
+      if(activeGesture.moved){ignoreClick.current=true;window.setTimeout(()=>{ignoreClick.current=false;},0);}
+      else if(activeGesture.playerMarker){
+        ignoreClick.current=true;
+        onOpenPlayerProfile();
+        window.setTimeout(()=>{ignoreClick.current=false;},0);
+      }
+      if(activeGesture.moved)presentCamera(transient.current,true);
+      gesture.current=null;pointerRectCache.current.release();
     }
-    if(activeGesture?.moved)presentCamera(transient.current,true);
-    gesture.current=null;
     try{if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId);}catch{ /* already released */ }
+  };
+  const pointerCancel=()=>{
+    presentCamera(transient.current,true);gesture.current=null;pinch.current=null;touches.current.clear();pointerRectCache.current.release();ignoreClick.current=true;
+    setTimeout(()=>{ignoreClick.current=false;},0);
+  };
+  const lostPointerCapture=(event:ReactPointerEvent<SVGSVGElement>)=>{
+    const lostGesture=gesture.current?.pointerId===event.pointerId;
+    const lostPinch=pinch.current?.ids.includes(event.pointerId)??false;
+    if(!lostGesture&&!lostPinch)return;
+    presentCamera(transient.current,true);gesture.current=null;pinch.current=null;touches.current.clear();pointerRectCache.current.release();
   };
   const canvasClick=(event:React.MouseEvent<SVGSVGElement>)=>{
     if(ignoreClick.current)return;
@@ -440,7 +469,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
       data-map-qa-fixture-count={readyTerritoryQaFixture?expectedTerritoryFixtureCount:undefined}>
       <MapCanvas snapshot={renderSnapshot} label="Địa hình và công trình lãnh địa. Dùng danh sách công trình hoặc điều khiển mặt bằng để chọn."/>
       <svg ref={svgRef} className="territory-scene-svg" viewBox={`0 0 ${size.width} ${size.height}`} role="img" aria-label="Lãnh địa theo phối cảnh isometric cố định. Kéo để di chuyển, cuộn để thu phóng, dùng phím mũi tên để điều hướng."
-        tabIndex={0} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={()=>{presentCamera(transient.current,true);gesture.current=null;pinch.current=null;touches.current.clear();ignoreClick.current=true;setTimeout(()=>{ignoreClick.current=false;},0);}} onLostPointerCapture={event=>{if(gesture.current?.pointerId===event.pointerId){presentCamera(transient.current,true);gesture.current=null;}}} onClickCapture={captureSelection} onClick={canvasClick} onKeyDown={keyDown}>
+        tabIndex={0} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerCancel} onLostPointerCapture={lostPointerCapture} onClickCapture={captureSelection} onClick={canvasClick} onKeyDown={keyDown}>
         <g className="territory-camera-overlay">
         {displayedRadius>0&&<ellipse cx={firePoint.x} cy={firePoint.y} rx={heatRx} ry={heatRy} fill="none" stroke="#efbf7f" strokeOpacity=".78" strokeWidth="1.6" strokeDasharray="7 6" pointerEvents="none"/>}
         {(showGrid||effectiveMode==='planning')&&gridLines.map(line=>{const a=worldToScreen(line.from,activeCamera,size,PX_PER_ISO_METRE),b=worldToScreen(line.to,activeCamera,size,PX_PER_ISO_METRE);return <line key={line.key} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={line.major?'#c7d8d3':'#a6c1bd'} strokeOpacity={line.major?.13:.06} strokeWidth={line.major?1:.7} pointerEvents="none"/>;})}
