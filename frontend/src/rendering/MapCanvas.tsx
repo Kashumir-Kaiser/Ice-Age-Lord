@@ -19,7 +19,7 @@ export default function MapCanvas({snapshot,label}:Props){
     const configure=()=>current?.configure(preference.current,reduced.matches);
     const visibility=()=>current?.setHidden(document.hidden);
     const hostVisibility=(entries:IntersectionObserverEntry[])=>{hostVisible=Boolean(entries[0]?.isIntersecting&&entries[0].intersectionRatio>0);current?.setHostVisible(hostVisible);};
-    const cameraChange=(event:Event)=>{const next=(event as CustomEvent<MapSnapshot['camera']&{interacting?:boolean}>).detail;current?.setCameraGesture(Boolean(next.interacting));current?.update({...latest.current,camera:{x:next.x,y:next.y,zoom:next.zoom}});};
+    const cameraChange=(event:Event)=>{const next=(event as CustomEvent<MapSnapshot['camera']&{interacting?:boolean}>).detail;current?.setCameraGesture(Boolean(next.interacting));current?.updateCamera({x:next.x,y:next.y,zoom:next.zoom});};
     const parent=node.parentElement;parent?.addEventListener('map-camera',cameraChange);
     const observer=new ResizeObserver(entries=>{const b=entries[0]?.contentRect;if(b?.width&&b.height)current?.resize({width:b.width,height:b.height});});observer.observe(node);
     const intersection=typeof IntersectionObserver==='undefined'?null:new IntersectionObserver(hostVisibility,{threshold:0});intersection?.observe(node);

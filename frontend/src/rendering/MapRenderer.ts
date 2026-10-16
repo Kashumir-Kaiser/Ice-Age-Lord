@@ -6,6 +6,7 @@ import { TerrainChunkCache } from './TerrainChunkCache.ts';
 import type { TerrainChunk } from './TerrainChunkCache.ts';
 import { AssetTextureCache, exportPath } from './AssetTextureCache.ts';
 import { MapMetrics } from './MapMetrics.ts';
+import { cameraOnlySnapshot, terrainInputsChanged } from './CameraUpdate.ts';
 import { MapEffects, ambientSnowDraws, foliageSwayOffset, rootAnchoredSwayMatrix, selectSwayingConiferIds, sightIntersectsViewport } from './MapEffects.ts';
 import type {EffectParticleDraw} from './MapEffects.ts';
 import { flameFrame, flameRect, flameKey } from './FlamePresentation.ts';
@@ -119,10 +120,11 @@ export class MapRenderer {
     this.clearSprites();this.clearParticleSprites();this.effectsGraphics.destroy();this.particleLayer.destroy({children:false});this.stage.destroy({children:true,texture:false,textureSource:false});
     this.app?.destroy(false,{children:false,texture:false,textureSource:false});this.app=null;this.effectsGraphics=new Graphics();this.particleLayer=new Container();this.stage=new Container();void this.init(true);
   };
+  updateCamera(camera:MapSnapshot['camera']):void{if(this.destroyed)return;this.snapshot=cameraOnlySnapshot(this.snapshot,camera);this.invalidate();}
   update(snapshot:MapSnapshot):void{
     if(this.destroyed)return;
     let rebuilt=false;
-    if(snapshot.identity!==this.snapshot.identity||JSON.stringify([snapshot.visualIdentity,snapshot.modeledInfill,snapshot.compact,snapshot.geography,snapshot.regions])!==JSON.stringify([this.snapshot.visualIdentity,this.snapshot.modeledInfill,this.snapshot.compact,this.snapshot.geography,this.snapshot.regions])){
+    if(snapshot.identity!==this.snapshot.identity||terrainInputsChanged(this.snapshot,snapshot)){
       this.terrain.destroy();this.sampler=new TerrainSampler(snapshot.visualIdentity??snapshot.identity,snapshot.geography,snapshot.regions,snapshot.modeledInfill);this.terrain=new TerrainChunkCache(this.sampler,QUALITY[this.quality].terrainBytes,QUALITY[this.quality].textureSize,()=>this.invalidate());this.level=undefined;
       rebuilt=true;
     }
