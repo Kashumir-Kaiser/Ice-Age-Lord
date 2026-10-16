@@ -191,7 +191,8 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
     return pa.y-pb.y||a.id.localeCompare(b.id);
   }),[settlement.buildings,origin.x,origin.y,activeCamera,size.width,size.height,manifest,settlement.fireLevel]);
   const visibleDrafts=useMemo(()=>drafts.filter(draft=>onScreen({x:origin.x+draft.x,y:origin.y+draft.y})),[drafts,origin.x,origin.y,activeCamera,size.width,size.height]);
-  const visibleQa=useMemo(()=>denseQa&&effectiveMode==='planning'?denseFixture.filter(item=>onScreen({x:origin.x+item.x,y:origin.y+item.y})):[],[denseQa,effectiveMode,denseFixture,origin.x,origin.y,activeCamera,size.width,size.height]);
+  const visibleQa=useMemo(()=>denseQa?denseFixture.filter(item=>onScreen({x:origin.x+item.x,y:origin.y+item.y})):[],[denseQa,denseFixture,origin.x,origin.y,activeCamera,size.width,size.height]);
+  const renderedQa=useMemo(()=>effectiveMode==='planning'?visibleQa:[],[effectiveMode,visibleQa]);
   const scale=PX_PER_ISO_METRE*activeCamera.zoom;
   const firePoint=worldToScreen(origin,activeCamera,size,PX_PER_ISO_METRE);
   const playerPoint=worldToScreen(playerPosition,activeCamera,size,PX_PER_ISO_METRE);
@@ -490,7 +491,7 @@ export default function TerritoryScene({ mode='demo', visualIdentity, terrainReg
             {selected&&building&&<circle cx={worldToScreen(item.point,activeCamera,size).x} cy={worldToScreen(item.point,activeCamera,size).y} r="18" fill="none" stroke="#ffe0a4" strokeOpacity=".76" strokeDasharray="3 4" pointerEvents="none"/>}
           </g>;
         })}
-        {denseQa&&visibleQa.map(item=><BuildingSprite geometryOnly qaFixture key={item.id} id={item.id} name="Fixture QA" asset={findAsset(manifest,item.assetId)} assetId={item.assetId} point={{x:origin.x+item.x,y:origin.y+item.y}} footprint={item.footprint} orientation={item.orientation} camera={activeCamera} viewport={size} mode={effectiveMode} selected={false} faded={false} draft/>) }
+        {denseQa&&renderedQa.map(item=><BuildingSprite geometryOnly qaFixture key={item.id} id={item.id} name="Fixture QA" asset={findAsset(manifest,item.assetId)} assetId={item.assetId} point={{x:origin.x+item.x,y:origin.y+item.y}} footprint={item.footprint} orientation={item.orientation} camera={activeCamera} viewport={size} mode={effectiveMode} selected={false} faded={false} draft/>) }
         {artQaOutline&&<polygon data-art-qa-footprint data-art-qa-orientation={artQaPreview?.orientation} points={artQaOutline} fill="none" stroke="#e4ba7f" strokeWidth="1.2" strokeDasharray="4 4" pointerEvents="none" aria-hidden="true"/>}
         {activeDefinition&&<BuildingSprite geometryOnly id="placement-ghost" name={activeDefinition.name} asset={findAsset(manifest,activeDefinition.assetId)} assetId={activeDefinition.assetId} point={snapPlanningPoint(currentPlacementPoint)} footprint={activeDefinition.footprint} orientation={placingOrientation} camera={activeCamera} viewport={size} mode="planning" selected={false} faded={false} draft blocked={Boolean(validation?.blockers.length)}/>}
         {showPlayerMarker&&<g className="territory-player-marker" transform={`translate(${playerPoint.x} ${playerPoint.y})`} role="button" tabIndex={0} aria-label={`${playerName} — mở hồ sơ người chơi`}
