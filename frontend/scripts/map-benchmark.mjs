@@ -3,6 +3,7 @@ import {gzipSync} from 'node:zlib';
 import {resolve} from 'node:path';
 import os from 'node:os';
 import {launchMapBrowser,openMap,navigateMap,readyMap} from './map-browser.mjs';
+import {formatBenchmarkSummaries} from './map-benchmark-summary.mjs';
 
 const seconds=Number(process.env.MAP_BENCH_SECONDS??60),runs=Number(process.env.MAP_BENCH_RUNS??3),warmup=Number(process.env.MAP_BENCH_WARMUP??10);
 const browser=await launchMapBrowser(),results=[];
@@ -60,6 +61,8 @@ try{
 }finally{
  const summary=['fresh','populated','dense-520','local','world-1023'].map(fixture=>{const samples=results.filter(r=>r.fixture===fixture);return {fixture,completedRuns:samples.length,medianIntervalP95:percentile(samples.map(r=>r.interval.p95).filter(Number.isFinite),.5),medianPointerP95:percentile(samples.map(r=>r.pointerFeedback.p95).filter(Number.isFinite),.5)};});
  const rendererBundles=readdirSync(resolve('dist/assets')).filter(name=>/^(MapRenderer|MapCanvas|terrain\.worker|WebGLRenderer|RenderTargetSystem|Texture)/.test(name)&&name.endsWith('.js')).map(name=>{const bytes=readFileSync(resolve('dist/assets',name));return {name,bytes:bytes.length,gzipBytes:gzipSync(bytes).length};});
- writeFileSync(resolve(output,'results.json'),JSON.stringify({environment:{node:process.version,platform:os.platform(),cpu:os.cpus()[0]?.model,cpuCount:os.cpus().length,ramBytes:os.totalmem(),browser:'Chromium headless',viewport:{width:1366,height:768},dpr:1,targetDeviceVerified:false},rendererBundles,rendererBundleScope:'Named renderer entry and split chunks; not a complete before/after JS delta.',rendererGzipBytes:rendererBundles.reduce((sum,b)=>sum+b.gzipBytes,0),summary,results},null,2));await browser.close();
+ writeFileSync(resolve(output,'results.json'),JSON.stringify({environment:{node:process.version,platform:os.platform(),cpu:os.cpus()[0]?.model,cpuCount:os.cpus().length,ramBytes:os.totalmem(),browser:'Chromium headless',viewport:{width:1366,height:768},dpr:1,targetDeviceVerified:false},rendererBundles,rendererBundleScope:'Named renderer entry and split chunks; not a complete before/after JS delta.',rendererGzipBytes:rendererBundles.reduce((sum,b)=>sum+b.gzipBytes,0),summary,results},null,2));
+ for(const line of formatBenchmarkSummaries(results))console.log(line);
+ await browser.close();
 }
 console.log('Headless measurements are diagnostics, not validation of Intel UHD 620 GPU performance.');
