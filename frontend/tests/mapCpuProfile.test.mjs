@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {summarizeCpuProfile} from '../scripts/map-cpu-profile-summary.mjs';
+import {mapCpuFrame,summarizeCpuProfile} from '../scripts/map-cpu-profile-summary.mjs';
 
 test('CPU profile summary aggregates samples by function URL and keeps stack context',()=>{
  const summary=summarizeCpuProfile({
@@ -26,4 +26,26 @@ test('CPU profile summary aggregates samples by function URL and keeps stack con
 test('CPU profile summary tolerates empty and malformed profiles',()=>{
  assert.deepEqual(summarizeCpuProfile(null),{sampleCount:0,profiledMs:0,topFunctions:[],topStacks:[]});
  assert.deepEqual(summarizeCpuProfile({nodes:[{id:1}],samples:[9],timeDeltas:[500]}),{sampleCount:0,profiledMs:0,topFunctions:[],topStacks:[]});
+});
+
+test('CPU profile frames map through job-only sourcemaps and retain compiled locations',()=>{
+ const map={
+  version:3,
+  file:'MapRenderer-test.js',
+  sources:['../../src/rendering/MapRenderer.ts'],
+  names:['drawTerrain'],
+  mappings:'AAAAA',
+ };
+ const frame=mapCpuFrame({functionName:'Oe',url:'http://localhost/assets/MapRenderer-test.js',lineNumber:0,columnNumber:0},new Map([['MapRenderer-test.js',map]]));
+ assert.deepEqual(frame,{
+  functionName:'drawTerrain',
+  url:'src/rendering/MapRenderer.ts',
+  lineNumber:0,
+  columnNumber:0,
+  compiled:{functionName:'Oe',url:'http://localhost/assets/MapRenderer-test.js',lineNumber:0,columnNumber:0},
+ });
+ const summary=summarizeCpuProfile({nodes:[{id:1,callFrame:{functionName:'Oe',url:'http://localhost/assets/MapRenderer-test.js',lineNumber:0,columnNumber:0}}],samples:[1],timeDeltas:[1000]},{sourceMaps:new Map([['MapRenderer-test.js',map]])});
+ assert.equal(summary.topFunctions[0].functionName,'drawTerrain');
+ assert.equal(summary.topFunctions[0].url,'src/rendering/MapRenderer.ts');
+ assert.equal(summary.topFunctions[0].contexts[0].frames[0].compiled.functionName,'Oe');
 });

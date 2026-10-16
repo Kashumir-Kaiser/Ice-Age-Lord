@@ -101,7 +101,7 @@ jobs:
         with:
           node-version: '24'
       - run: npm ci --no-audit --no-fund
-      - run: npm run assets:map && npm run build
+      - run: npm run assets:map && npm run build -- --sourcemap
         env:
           VITE_GAME_MODE: demo
       - run: npx playwright install --with-deps chromium
