@@ -249,7 +249,9 @@ Item icons may use a more legible three-quarter view than their physical world e
 
 ## 7. Survival Fire artwork is a separate, data-driven asset family
 
-The detailed Survival Fire evolution is **not a universal style rule**. This document governs its ink rendering language and the mandatory separation of object layers, but it deliberately does not prescribe progression levels, stage names, upgrade costs, exact footprints, height, or effect strengths. These facts belong to source-verified game definitions and registered assets.
+The Survival Fire is the settlement's existential anchor and a major visual progression case. Where the active game source and registered assets define a new stage, its physical silhouette, spatial mass, and materials must change; a brighter flame or larger VFX alone is not a structural upgrade. The `fireProgression` entries in `assets/manifest.json` map the registered art masters across levels 1–5, 6–10, 11–15, 16–20, 21–25, and 26–30. Treat those mappings as asset associations, not as authority for upgrade costs, fuel use, heat radius, or unregistered forms.
+
+This art bible governs the Fire's ink rendering language and mandatory separation of object layers. Canonical stage forms, exact footprints, height, and effect strengths come from source-verified game definitions and registered assets.
 
 Every visually distinct Fire stage is represented by **its own master artwork and export directory**, with independent `body`, `base`, `upper`, `shadow`, `icon`, and separately switchable `vfx` artwork. The frontend reads stage-to-asset associations from `assets/manifest.json` rather than interpolating one drawing into another or using the art README as application data. A structural change must affect silhouette, spatial mass, materials and supported functionality, not just flame size, color or particle count.
 
