@@ -207,3 +207,19 @@ test('benchmark attributes Long Tasks, LoAF scripts and pointermove dispatch by 
   selection:{count:0,p50:null,p95:null,p99:null,max:null},
  }});
 });
+
+test('dense benchmark result logs current renderer object and texture counters',()=>{
+ const counters={drawCalls:42,visible:87,total:520,textureBytes:123456,terrainBytes:78901,effectSprites:12};
+ const [line]=formatBenchmarkSummaries([{
+  quality:'normal',fixture:'dense-520',run:1,
+  interval:{p50:16,p95:33,p99:50},metrics:{renderMs:[4,6],...counters},
+  pointerFeedback:{p50:20,p95:40},
+ }]);
+ const result=JSON.parse(line.slice('MAP_BENCH_RESULT '.length));
+ for(const [key,value] of Object.entries(counters))assert.equal(result[key],value);
+ assert.equal(result.renderMs.p95,6);
+ assert.deepEqual(formatBenchmarkSummaries([{
+  quality:'normal',fixture:'local',run:1,interval:{p50:16,p95:33,p99:50},
+  metrics:{renderMs:[4,6],...counters},pointerFeedback:{p50:20,p95:40},
+ }])[0].includes('"drawCalls"'),false,'other fixture logs stay unchanged');
+});

@@ -96,7 +96,7 @@ export function formatIntervalDiagnostics(result){
 
 export function formatBenchmarkResult(result){
  const metric=(values)=>({p50:percentile(values,.5),p95:percentile(values,.95),p99:percentile(values,.99)});
- return {
+ const formatted={
   quality:result.quality,
   fixture:result.fixture,
   run:result.run,
@@ -105,6 +105,12 @@ export function formatBenchmarkResult(result){
   renderMs:metric(result.metrics?.renderMs??[]),
   pointerFeedback:result.pointerFeedback,
  };
+ // Report the latest rendered scene state for the dense fixture without changing the gate formulas.
+ if(result.fixture==='dense-520'){
+  for(const key of ['drawCalls','visible','total','textureBytes','terrainBytes','effectSprites'])
+   if(result.metrics&&Object.hasOwn(result.metrics,key))formatted[key]=result.metrics[key];
+ }
+ return formatted;
 }
 
 export function formatBenchmarkSummaries(results){
