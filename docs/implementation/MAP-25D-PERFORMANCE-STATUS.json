@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "measured on hosted SwiftShader; dense frame gates remain unresolved; target-device verification pending",
+  "status": "latest branch-head evidence recorded for 908e14e; visual and render validation passed, frontend E2E failed, and warmed performance diagnostics completed with frame-budget misses",
   "latestIntegrationValidation": {
     "assetExport": {
       "status": "passed; repeat export byte-identical",
@@ -296,131 +296,262 @@
       "note": "Historical integration fields above retain their original source provenance; current d612 results are in latestSourceCheckpoint."
     }
   },
-  "currentIntegrationMemoryPlateau": {
-    "status": "historical 437a measurement; no new memory plateau result recorded for d612; target-device verification pending",
-    "workflow": "Map performance evidence",
-    "runId": 38851076469,
-    "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
-    "scope": "Chromium headless, 1366×768, DPR 1; same warmed territory endpoint; two identical 20-return/pan cycles; exposed garbage collection before heap measurements.",
-    "heapBudgetBytes": 10485760,
-    "qualities": {
-      "low": {
-        "heapGrowthLastTwoCyclesBytes": 721358,
-        "pending": 0,
-        "activeMaps": 1,
-        "activeLoops": 0,
-        "canvasCount": 1,
-        "retainedMetricRecords": 82,
-        "plateauVerified": true
-      },
-      "normal": {
-        "heapGrowthLastTwoCyclesBytes": 873684,
-        "pending": 0,
-        "activeMaps": 1,
-        "activeLoops": 0,
-        "canvasCount": 1,
-        "retainedMetricRecords": 82,
-        "plateauVerified": true
-      }
+  "currentIntegrationMemoryPlateau": [
+    {
+      "quality": "low",
+      "artifactId": 12094644652,
+      "heapGrowthLastTwoCyclesBytes": 4636550,
+      "budgetBytes": 10485760,
+      "plateauVerified": true,
+      "pending": 0,
+      "targetDeviceVerified": false
     },
-    "targetDeviceVerified": false,
-    "lowResultSha256": "3d50f7471c2fb36a205b9b3bde9b5c1bbc2b8c5e4088fa38f002e63c27fc60d4",
-    "normalResultSha256": "892fb3b426c93f752c35a14d247aae55d2846f5449f486fdd09668a9d6dc76af",
-    "limitations": "Decoded and renderer GPU byte values are estimates, not driver VRAM measurements. Retained metric records reached 82; heap growth remains below the configured gate, but metric-history retention still merits review."
-  },
+    {
+      "quality": "normal",
+      "artifactId": 12094419909,
+      "heapGrowthLastTwoCyclesBytes": 4713716,
+      "budgetBytes": 10485760,
+      "plateauVerified": true,
+      "pending": 0,
+      "targetDeviceVerified": false
+    }
+  ],
   "currentIntegrationFramePerformance": {
-    "status": "latest d612 run collected; explicit gates remain partially unmet; target-device verification pending",
-    "workflow": "Map performance evidence",
-    "runId": 38889534615,
-    "sourceCommit": "612046999bde5eaf6226b6d753e35f880291359e",
-    "scope": "Hosted Chromium headless SwiftShader, AMD EPYC 9V45; five fixtures, three 60-second runs each. Not Intel UHD 620.",
-    "fixtureOrder": [
-      "fresh",
-      "populated",
-      "dense-520",
-      "local",
-      "world-1023"
-    ],
-    "frameIntervalP95BudgetMs": 40,
-    "pointerFeedbackP95BudgetMs": 100,
-    "normalFrameIntervalP95BudgetMs": 20,
-    "normalPointerFeedbackP95BudgetMs": 75,
-    "runsPerFixture": 3,
-    "measuredSecondsPerRun": 60,
-    "lowArtifact": {
-      "id": 12042161719
-    },
-    "normalArtifact": {
-      "id": 12041832974
-    },
-    "fixtures": {
-      "low": {
-        "fresh": {
-          "intervalP95Ms": 33.4,
-          "pointerP95Ms": 33.5,
-          "frameBudgetMet": true,
-          "pointerBudgetMet": true
-        },
-        "populatedDemoDrafts": {
-          "intervalP95Ms": 33.5,
-          "pointerP95Ms": 33.6,
-          "frameBudgetMet": true,
-          "pointerBudgetMet": true
-        },
-        "dense520": {
-          "intervalP95Ms": 116.4,
-          "pointerP95Ms": 65.3,
-          "frameBudgetMet": false,
-          "pointerBudgetMet": true
-        },
-        "local": {
-          "intervalP95Ms": 33.6,
-          "pointerP95Ms": 33.8,
-          "frameBudgetMet": true,
-          "pointerBudgetMet": true
-        },
-        "world1023": {
-          "intervalP95Ms": 33.7,
-          "pointerP95Ms": 33.9,
-          "frameBudgetMet": true,
-          "pointerBudgetMet": true
-        }
+    "sourceCommit": "908e14e555e5bf52f9fe5ee94361589dee09bc3b",
+    "runId": 39016609626,
+    "qualityResults": [
+      {
+        "quality": "low",
+        "scenarios": [
+          {
+            "name": "fresh",
+            "frameIntervalMs": {
+              "p50": 33.3,
+              "p95": 33.5,
+              "p99": 36.7,
+              "worst": 51.3
+            },
+            "pointerFeedbackMs": {
+              "p50": 32.9,
+              "p95": 33.8,
+              "p99": 37.3,
+              "worst": 57.8
+            },
+            "selectionFeedbackMs": {
+              "successfulSamples": 30,
+              "p50": 34,
+              "p95": 36,
+              "p99": 39.8,
+              "worst": 39.8
+            }
+          },
+          {
+            "name": "populated",
+            "frameIntervalMs": {
+              "p50": 33.3,
+              "p95": 36.6,
+              "p99": 48.5,
+              "worst": 52.3
+            },
+            "pointerFeedbackMs": {
+              "p50": 32.6,
+              "p95": 40.8,
+              "p99": 48.8,
+              "worst": 50.2
+            },
+            "selectionFeedbackMs": {
+              "successfulSamples": 30,
+              "p50": 34.6,
+              "p95": 36.6,
+              "p99": 37.3,
+              "worst": 37.3
+            }
+          },
+          {
+            "name": "dense-520",
+            "frameIntervalMs": {
+              "p50": 126.7,
+              "p95": 146.6,
+              "p99": 150.6,
+              "worst": 152.9
+            },
+            "pointerFeedbackMs": {
+              "p50": 125.2,
+              "p95": 139.6,
+              "p99": 164.8,
+              "worst": 197.5
+            },
+            "selectionFeedbackMs": {
+              "successfulSamples": 0,
+              "p50": null,
+              "p95": null,
+              "p99": null,
+              "worst": null
+            }
+          },
+          {
+            "name": "local",
+            "frameIntervalMs": {
+              "p50": 33.4,
+              "p95": 48.2,
+              "p99": 51.9,
+              "worst": 64.9
+            },
+            "pointerFeedbackMs": {
+              "p50": 34.8,
+              "p95": 50.3,
+              "p99": 58.4,
+              "worst": 83.4
+            },
+            "selectionFeedbackMs": {
+              "successfulSamples": 40,
+              "p50": 43,
+              "p95": 58.6,
+              "p99": 83.4,
+              "worst": 83.4
+            }
+          },
+          {
+            "name": "world-1023",
+            "frameIntervalMs": {
+              "p50": 33.3,
+              "p95": 40.1,
+              "p99": 107.1,
+              "worst": 120.4
+            },
+            "pointerFeedbackMs": {
+              "p50": 32.3,
+              "p95": 39.4,
+              "p99": 51.1,
+              "worst": 66.4
+            },
+            "selectionFeedbackMs": {
+              "successfulSamples": 20,
+              "p50": 34.8,
+              "p95": 37.9,
+              "p99": 37.9,
+              "worst": 37.9
+            }
+          }
+        ]
       },
-      "normal": {
-        "fresh": {
-          "intervalP95Ms": 16.8,
-          "pointerP95Ms": 20.0,
-          "frameBudgetMet": true,
-          "pointerBudgetMet": true
-        },
-        "populatedDemoDrafts": {
-          "intervalP95Ms": 17.1,
-          "pointerP95Ms": 21.5,
-          "frameBudgetMet": true,
-          "pointerBudgetMet": true
-        },
-        "dense520": {
-          "intervalP95Ms": 116.5,
-          "pointerP95Ms": 72.8,
-          "frameBudgetMet": false,
-          "pointerBudgetMet": true
-        },
-        "local": {
-          "intervalP95Ms": 28.3,
-          "pointerP95Ms": 33.1,
-          "frameBudgetMet": false,
-          "pointerBudgetMet": true
-        },
-        "world1023": {
-          "intervalP95Ms": 18.0,
-          "pointerP95Ms": 24.7,
-          "frameBudgetMet": true,
-          "pointerBudgetMet": true
-        }
+      {
+        "quality": "normal",
+        "scenarios": [
+          {
+            "name": "fresh",
+            "frameIntervalMs": {
+              "p50": 26,
+              "p95": 33.1,
+              "p99": 41.3,
+              "worst": 67.6
+            },
+            "pointerFeedbackMs": {
+              "p50": 27.2,
+              "p95": 40.7,
+              "p99": 57.5,
+              "worst": 63.1
+            },
+            "selectionFeedbackMs": {
+              "successfulSamples": 21,
+              "p50": 56.3,
+              "p95": 60.2,
+              "p99": 63.1,
+              "worst": 63.1
+            }
+          },
+          {
+            "name": "populated",
+            "frameIntervalMs": {
+              "p50": 30.4,
+              "p95": 38.5,
+              "p99": 48.3,
+              "worst": 73.5
+            },
+            "pointerFeedbackMs": {
+              "p50": 32.5,
+              "p95": 47.9,
+              "p99": 64.9,
+              "worst": 70.4
+            },
+            "selectionFeedbackMs": {
+              "successfulSamples": 21,
+              "p50": 63.6,
+              "p95": 67.4,
+              "p99": 68.9,
+              "worst": 68.9
+            }
+          },
+          {
+            "name": "dense-520",
+            "frameIntervalMs": {
+              "p50": 155.7,
+              "p95": 198.5,
+              "p99": 210.2,
+              "worst": 212.8
+            },
+            "pointerFeedbackMs": {
+              "p50": 153.6,
+              "p95": 185.6,
+              "p99": 211.2,
+              "worst": 227
+            },
+            "selectionFeedbackMs": {
+              "successfulSamples": 0,
+              "p50": null,
+              "p95": null,
+              "p99": null,
+              "worst": null
+            }
+          },
+          {
+            "name": "local",
+            "frameIntervalMs": {
+              "p50": 28.8,
+              "p95": 43.4,
+              "p99": 49.1,
+              "worst": 72.5
+            },
+            "pointerFeedbackMs": {
+              "p50": 36.2,
+              "p95": 66.3,
+              "p99": 75.5,
+              "worst": 82.6
+            },
+            "selectionFeedbackMs": {
+              "successfulSamples": 39,
+              "p50": 67.3,
+              "p95": 79,
+              "p99": 81.4,
+              "worst": 81.4
+            }
+          },
+          {
+            "name": "world-1023",
+            "frameIntervalMs": {
+              "p50": 29.3,
+              "p95": 38.9,
+              "p99": 112,
+              "worst": 138.8
+            },
+            "pointerFeedbackMs": {
+              "p50": 30.4,
+              "p95": 51.5,
+              "p99": 60,
+              "worst": 79.2
+            },
+            "selectionFeedbackMs": {
+              "successfulSamples": 20,
+              "p50": 56.4,
+              "p95": 76.6,
+              "p99": 76.6,
+              "worst": 76.6
+            }
+          }
+        ]
       }
-    },
-    "targetDeviceVerified": false,
-    "interpretation": "Low frame gate misses dense-520 only; normal frame gate misses dense-520 and local. Pointer gates pass in both qualities, with dense-520 normal at 72.8 ms against 75 ms. Dense frame p95 remains about 116 ms at both qualities, effectively unchanged from d329; no frame-budget improvement is demonstrated."
+    ],
+    "interpretation": "At low quality, frame-interval p95 exceeds 40 ms in dense-520 (146.6), local (48.2), and world-1023 (40.1); dense-520 pointer-feedback p95 is 139.6 ms against 100 ms. At normal quality, frame-interval p95 exceeds 20 ms in all five fixtures (33.1–198.5); dense-520 pointer-feedback p95 is 185.6 ms against 75 ms. Dense-520 produced zero successful selection samples at both qualities, so selection percentiles are unavailable there."
   },
   "fullJourneyJavaScriptTransfer": {
     "status": "passed the configured gzip transfer budget",
@@ -461,26 +592,36 @@
     "localTargetedRerun": "inconclusive: the existing test exceeded the 120-second bound in this CPU-limited environment and emitted no assertion result",
     "classificationNote": "No backend source changes exist relative to the comparison commit; without a completed comparison test on that commit, this failure is not confirmed as a pre-existing baseline or as flaky."
   },
-  "sourceCommit": "979f54d40f6884d3297e683cb02cc703f61d6e64",
+  "sourceCommit": "908e14e555e5bf52f9fe5ee94361589dee09bc3b",
   "workflowRun": {
-    "id": 38791953178,
+    "id": 39016609626,
     "branch": "codex/map-25d-overhaul",
+    "sourceCommit": "908e14e555e5bf52f9fe5ee94361589dee09bc3b",
+    "status": "completed; both benchmark quality lanes and memory checks succeeded; acceptance budgets evaluated separately",
     "artifacts": [
       {
         "name": "map-performance-low",
-        "id": 12002320538
+        "id": 12096010042
       },
       {
         "name": "map-performance-normal",
-        "id": 12001936311
+        "id": 12095841280
       },
       {
         "name": "map-memory-low",
-        "id": 12000078430
+        "id": 12094644652
       },
       {
         "name": "map-memory-normal",
-        "id": 12000782145
+        "id": 12094419909
+      },
+      {
+        "name": "map-cpu-profile-dense-520-pan",
+        "id": 12094599597
+      },
+      {
+        "name": "map-trace-dense-520-pan",
+        "id": 12094952925
       }
     ]
   },
@@ -498,17 +639,15 @@
         "height": 768
       },
       "devicePixelRatio": 1,
-      "renderer": "ANGLE (Google, Vulkan 1.3.0, SwiftShader Device (Subzero))",
+      "renderer": "ANGLE/SwiftShader software rendering",
       "targetDeviceVerified": false,
       "lowRunner": {
-        "cpu": "AMD EPYC 7763 64-Core Processor",
-        "cpuCount": 4,
-        "ramBytes": 16766414848
+        "cpu": "AMD EPYC 7763",
+        "cpuCount": 4
       },
       "normalRunner": {
-        "cpu": "AMD EPYC 9V45 96-Core Processor",
-        "cpuCount": 4,
-        "ramBytes": 16766414848
+        "cpu": "AMD EPYC 7763",
+        "cpuCount": 4
       }
     }
   },
@@ -534,123 +673,113 @@
       "scenarios": [
         {
           "name": "fresh",
-          "renderCpuMs": {
-            "p50": 0.6,
-            "p95": 1.0,
-            "p99": 4.8
-          },
           "frameIntervalMs": {
             "p50": 33.3,
             "p95": 33.5,
-            "p99": 36.7
+            "p99": 36.7,
+            "worst": 51.3
           },
           "pointerFeedbackMs": {
-            "p50": 33.0,
-            "p95": 33.9
+            "p50": 32.9,
+            "p95": 33.8,
+            "p99": 37.3,
+            "worst": 57.8
           },
-          "drawCalls": 2,
-          "textureBytes": 16070629,
-          "decodedBytes": 22092960,
-          "visible": 42,
-          "total": 42,
-          "frameBudgetMet": true,
-          "pointerBudgetMet": true
+          "selectionFeedbackMs": {
+            "successfulSamples": 30,
+            "p50": 34,
+            "p95": 36,
+            "p99": 39.8,
+            "worst": 39.8
+          }
         },
         {
           "name": "populated",
-          "renderCpuMs": {
-            "p50": 0.7,
-            "p95": 1.2,
-            "p99": 5.0
-          },
           "frameIntervalMs": {
             "p50": 33.3,
-            "p95": 36.8,
-            "p99": 49.2
+            "p95": 36.6,
+            "p99": 48.5,
+            "worst": 52.3
           },
           "pointerFeedbackMs": {
             "p50": 32.6,
-            "p95": 45.0
+            "p95": 40.8,
+            "p99": 48.8,
+            "worst": 50.2
           },
-          "drawCalls": 2,
-          "textureBytes": 15849445,
-          "decodedBytes": 21871776,
-          "visible": 53,
-          "total": 53,
-          "frameBudgetMet": true,
-          "pointerBudgetMet": true
+          "selectionFeedbackMs": {
+            "successfulSamples": 30,
+            "p50": 34.6,
+            "p95": 36.6,
+            "p99": 37.3,
+            "worst": 37.3
+          }
         },
         {
           "name": "dense-520",
-          "renderCpuMs": {
-            "p50": 7.8,
-            "p95": 23.7,
-            "p99": 29.5
-          },
           "frameIntervalMs": {
-            "p50": 140.2,
-            "p95": 166.7,
-            "p99": 183.2
+            "p50": 126.7,
+            "p95": 146.6,
+            "p99": 150.6,
+            "worst": 152.9
           },
           "pointerFeedbackMs": {
-            "p50": 135.4,
-            "p95": 154.4
+            "p50": 125.2,
+            "p95": 139.6,
+            "p99": 164.8,
+            "worst": 197.5
           },
-          "drawCalls": 2,
-          "textureBytes": 17946925,
-          "decodedBytes": 26328552,
-          "visible": 649,
-          "total": 653,
-          "frameBudgetMet": false,
-          "pointerBudgetMet": false
+          "selectionFeedbackMs": {
+            "successfulSamples": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null,
+            "worst": null
+          }
         },
         {
           "name": "local",
-          "renderCpuMs": {
-            "p50": 0.7,
-            "p95": 1.6,
-            "p99": 6.0
-          },
           "frameIntervalMs": {
-            "p50": 36.3,
-            "p95": 110.8,
-            "p99": 115.8
+            "p50": 33.4,
+            "p95": 48.2,
+            "p99": 51.9,
+            "worst": 64.9
           },
           "pointerFeedbackMs": {
-            "p50": 35.2,
-            "p95": 50.8
+            "p50": 34.8,
+            "p95": 50.3,
+            "p99": 58.4,
+            "worst": 83.4
           },
-          "drawCalls": 1,
-          "textureBytes": 12807528,
-          "decodedBytes": 17703936,
-          "visible": 90,
-          "total": 90,
-          "frameBudgetMet": false,
-          "pointerBudgetMet": true
+          "selectionFeedbackMs": {
+            "successfulSamples": 40,
+            "p50": 43,
+            "p95": 58.6,
+            "p99": 83.4,
+            "worst": 83.4
+          }
         },
         {
           "name": "world-1023",
-          "renderCpuMs": {
-            "p50": 0.3,
-            "p95": 0.9,
-            "p99": 2.2
-          },
           "frameIntervalMs": {
-            "p50": 33.6,
-            "p95": 66.7,
-            "p99": 83.5
+            "p50": 33.3,
+            "p95": 40.1,
+            "p99": 107.1,
+            "worst": 120.4
           },
           "pointerFeedbackMs": {
-            "p50": 32.4,
-            "p95": 41.3
+            "p50": 32.3,
+            "p95": 39.4,
+            "p99": 51.1,
+            "worst": 66.4
           },
-          "drawCalls": 1,
-          "textureBytes": 4282728,
-          "decodedBytes": 5242880,
-          "visible": 0,
-          "total": 0,
-          "frameBudgetMet": false,
-          "pointerBudgetMet": true
+          "selectionFeedbackMs": {
+            "successfulSamples": 20,
+            "p50": 34.8,
+            "p95": 37.9,
+            "p99": 37.9,
+            "worst": 37.9
+          }
         }
       ]
     },
@@ -659,123 +788,113 @@
       "scenarios": [
         {
           "name": "fresh",
-          "renderCpuMs": {
-            "p50": 0.6,
-            "p95": 0.9,
-            "p99": 2.9
-          },
           "frameIntervalMs": {
-            "p50": 16.7,
-            "p95": 16.8,
-            "p99": 19.0
+            "p50": 26,
+            "p95": 33.1,
+            "p99": 41.3,
+            "worst": 67.6
           },
           "pointerFeedbackMs": {
-            "p50": 16.7,
-            "p95": 19.2
+            "p50": 27.2,
+            "p95": 40.7,
+            "p99": 57.5,
+            "worst": 63.1
           },
-          "drawCalls": 3,
-          "textureBytes": 51085469,
-          "decodedBytes": 75195736,
-          "visible": 42,
-          "total": 42,
-          "frameBudgetMet": true,
-          "pointerBudgetMet": true
+          "selectionFeedbackMs": {
+            "successfulSamples": 21,
+            "p50": 56.3,
+            "p95": 60.2,
+            "p99": 63.1,
+            "worst": 63.1
+          }
         },
         {
           "name": "populated",
-          "renderCpuMs": {
-            "p50": 0.7,
-            "p95": 1.1,
-            "p99": 3.0
-          },
           "frameIntervalMs": {
-            "p50": 16.7,
-            "p95": 17.5,
-            "p99": 20.9
+            "p50": 30.4,
+            "p95": 38.5,
+            "p99": 48.3,
+            "worst": 73.5
           },
           "pointerFeedbackMs": {
-            "p50": 16.7,
-            "p95": 21.6
+            "p50": 32.5,
+            "p95": 47.9,
+            "p99": 64.9,
+            "worst": 70.4
           },
-          "drawCalls": 3,
-          "textureBytes": 50864285,
-          "decodedBytes": 74974552,
-          "visible": 62,
-          "total": 62,
-          "frameBudgetMet": true,
-          "pointerBudgetMet": true
+          "selectionFeedbackMs": {
+            "successfulSamples": 21,
+            "p50": 63.6,
+            "p95": 67.4,
+            "p99": 68.9,
+            "worst": 68.9
+          }
         },
         {
           "name": "dense-520",
-          "renderCpuMs": {
-            "p50": 4.4,
-            "p95": 15.8,
-            "p99": 19.4
-          },
           "frameIntervalMs": {
-            "p50": 57.4,
-            "p95": 116.4,
-            "p99": 116.7
+            "p50": 155.7,
+            "p95": 198.5,
+            "p99": 210.2,
+            "worst": 212.8
           },
           "pointerFeedbackMs": {
-            "p50": 56.0,
-            "p95": 73.0
+            "p50": 153.6,
+            "p95": 185.6,
+            "p99": 211.2,
+            "worst": 227
           },
-          "drawCalls": 2,
-          "textureBytes": 45450693,
-          "decodedBytes": 78998144,
-          "visible": 635,
-          "total": 639,
-          "frameBudgetMet": false,
-          "pointerBudgetMet": true
+          "selectionFeedbackMs": {
+            "successfulSamples": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null,
+            "worst": null
+          }
         },
         {
           "name": "local",
-          "renderCpuMs": {
-            "p50": 0.5,
-            "p95": 1.0,
-            "p99": 3.2
-          },
           "frameIntervalMs": {
-            "p50": 17.9,
-            "p95": 33.3,
-            "p99": 115.8
+            "p50": 28.8,
+            "p95": 43.4,
+            "p99": 49.1,
+            "worst": 72.5
           },
           "pointerFeedbackMs": {
-            "p50": 18.1,
-            "p95": 33.2
+            "p50": 36.2,
+            "p95": 66.3,
+            "p99": 75.5,
+            "worst": 82.6
           },
-          "drawCalls": 1,
-          "textureBytes": 22244712,
-          "decodedBytes": 42083328,
-          "visible": 90,
-          "total": 90,
-          "frameBudgetMet": false,
-          "pointerBudgetMet": true
+          "selectionFeedbackMs": {
+            "successfulSamples": 39,
+            "p50": 67.3,
+            "p95": 79,
+            "p99": 81.4,
+            "worst": 81.4
+          }
         },
         {
           "name": "world-1023",
-          "renderCpuMs": {
-            "p50": 0.3,
-            "p95": 0.9,
-            "p99": 1.7
-          },
           "frameIntervalMs": {
-            "p50": 16.7,
-            "p95": 69.7,
-            "p99": 115.1
+            "p50": 29.3,
+            "p95": 38.9,
+            "p99": 112,
+            "worst": 138.8
           },
           "pointerFeedbackMs": {
-            "p50": 16.7,
-            "p95": 21.0
+            "p50": 30.4,
+            "p95": 51.5,
+            "p99": 60,
+            "worst": 79.2
           },
-          "drawCalls": 1,
-          "textureBytes": 11098472,
-          "decodedBytes": 25165824,
-          "visible": 0,
-          "total": 0,
-          "frameBudgetMet": false,
-          "pointerBudgetMet": true
+          "selectionFeedbackMs": {
+            "successfulSamples": 20,
+            "p50": 56.4,
+            "p95": 76.6,
+            "p99": 76.6,
+            "worst": 76.6
+          }
         }
       ]
     }
@@ -783,34 +902,28 @@
   "memoryPlateau": [
     {
       "quality": "low",
-      "artifactId": 12000078430,
-      "heapGrowthLastTwoCyclesBytes": 837636,
+      "artifactId": 12094644652,
+      "heapGrowthLastTwoCyclesBytes": 4636550,
       "budgetBytes": 10485760,
       "plateauVerified": true,
       "pending": 0,
-      "activeMaps": 1,
-      "activeLoops": 0,
-      "canvasCount": 1,
       "targetDeviceVerified": false
     },
     {
       "quality": "normal",
-      "artifactId": 12000782145,
-      "heapGrowthLastTwoCyclesBytes": 825128,
+      "artifactId": 12094419909,
+      "heapGrowthLastTwoCyclesBytes": 4713716,
       "budgetBytes": 10485760,
       "plateauVerified": true,
       "pending": 0,
-      "activeMaps": 1,
-      "activeLoops": 0,
-      "canvasCount": 1,
       "targetDeviceVerified": false
     }
   ],
   "interpretation": {
-    "misses": "The p95 end-to-end frame interval misses the configured budget in dense-520, local, and world-1023 at both quality settings. Dense-520 low also misses the 100 ms pointer-feedback budget; dense-520 normal meets the 75 ms pointer-feedback budget. Fresh and populated meet both budgets at both settings.",
-    "cpuAndRendererLimit": "The measured synchronous JavaScript render-call p95 is below 40 ms low and 20 ms normal in every scenario, including dense-520. In local and world-1023, the much longer frame intervals occur alongside render-call p95 below 2 ms. This establishes that the interval delays are outside the measured JavaScript render-call duration; this headless SwiftShader run does not attribute them to a specific browser, scheduling, graphics-driver, or GPU cause.",
-    "memoryLimit": "Both Chromium heap growth checks pass the 10 MiB plateau gate. Renderer texture/decoded byte estimates are included for context; these are not driver VRAM measurements.",
-    "targetDevice": "Intel UHD 620 validation remains outstanding. No production optimization or quality change is justified by this artifact alone; changes must preserve scene semantics and show measured end-to-end benefit on relevant hardware."
+    "misses": "At low quality, frame-interval p95 exceeds 40 ms in dense-520 (146.6), local (48.2), and world-1023 (40.1); dense-520 pointer-feedback p95 is 139.6 ms against 100 ms. At normal quality, frame-interval p95 exceeds 20 ms in all five fixtures (33.1–198.5); dense-520 pointer-feedback p95 is 185.6 ms against 75 ms. Dense-520 produced zero successful selection samples at both qualities, so selection percentiles are unavailable there.",
+    "cpuAndRendererLimit": "Renderer render-call percentiles are not included in the sampling summary used for this branch-head record. Frame interval and pointer feedback are end-to-end browser measurements; this headless SwiftShader run does not attribute the delays to a specific browser, scheduling, graphics-driver, or GPU cause.",
+    "memoryLimit": "Both Chromium heap growth checks pass the 10 MiB plateau gate. Renderer texture/decoded byte estimates are not driver VRAM measurements.",
+    "targetDevice": "Intel UHD 620 or equivalent target-device validation remains outstanding; this hosted headless Chromium run used software rendering."
   },
   "latestCheckpoint": {
     "branch": "codex/map-25d-overhaul",
@@ -872,10 +985,10 @@
           17.1,
           116.5,
           28.3,
-          18.0
+          18
         ],
         "normalPointerFeedbackP95Ms": [
-          20.0,
+          20,
           21.5,
           72.8,
           33.1,
@@ -1008,10 +1121,10 @@
           17.1,
           116.5,
           28.3,
-          18.0
+          18
         ],
         "normalPointerFeedbackP95Ms": [
-          20.0,
+          20,
           21.5,
           72.8,
           33.1,
@@ -1099,5 +1212,343 @@
     ],
     "backendPackagesChanged": false,
     "noActiveCheckpointWorkflows": true
+  },
+  "historicalResultsAtRun387919": [
+    {
+      "quality": "low",
+      "scenarios": [
+        {
+          "name": "fresh",
+          "renderCpuMs": {
+            "p50": 0.6,
+            "p95": 1,
+            "p99": 4.8
+          },
+          "frameIntervalMs": {
+            "p50": 33.3,
+            "p95": 33.5,
+            "p99": 36.7
+          },
+          "pointerFeedbackMs": {
+            "p50": 33,
+            "p95": 33.9
+          },
+          "drawCalls": 2,
+          "textureBytes": 16070629,
+          "decodedBytes": 22092960,
+          "visible": 42,
+          "total": 42,
+          "frameBudgetMet": true,
+          "pointerBudgetMet": true
+        },
+        {
+          "name": "populated",
+          "renderCpuMs": {
+            "p50": 0.7,
+            "p95": 1.2,
+            "p99": 5
+          },
+          "frameIntervalMs": {
+            "p50": 33.3,
+            "p95": 36.8,
+            "p99": 49.2
+          },
+          "pointerFeedbackMs": {
+            "p50": 32.6,
+            "p95": 45
+          },
+          "drawCalls": 2,
+          "textureBytes": 15849445,
+          "decodedBytes": 21871776,
+          "visible": 53,
+          "total": 53,
+          "frameBudgetMet": true,
+          "pointerBudgetMet": true
+        },
+        {
+          "name": "dense-520",
+          "renderCpuMs": {
+            "p50": 7.8,
+            "p95": 23.7,
+            "p99": 29.5
+          },
+          "frameIntervalMs": {
+            "p50": 140.2,
+            "p95": 166.7,
+            "p99": 183.2
+          },
+          "pointerFeedbackMs": {
+            "p50": 135.4,
+            "p95": 154.4
+          },
+          "drawCalls": 2,
+          "textureBytes": 17946925,
+          "decodedBytes": 26328552,
+          "visible": 649,
+          "total": 653,
+          "frameBudgetMet": false,
+          "pointerBudgetMet": false
+        },
+        {
+          "name": "local",
+          "renderCpuMs": {
+            "p50": 0.7,
+            "p95": 1.6,
+            "p99": 6
+          },
+          "frameIntervalMs": {
+            "p50": 36.3,
+            "p95": 110.8,
+            "p99": 115.8
+          },
+          "pointerFeedbackMs": {
+            "p50": 35.2,
+            "p95": 50.8
+          },
+          "drawCalls": 1,
+          "textureBytes": 12807528,
+          "decodedBytes": 17703936,
+          "visible": 90,
+          "total": 90,
+          "frameBudgetMet": false,
+          "pointerBudgetMet": true
+        },
+        {
+          "name": "world-1023",
+          "renderCpuMs": {
+            "p50": 0.3,
+            "p95": 0.9,
+            "p99": 2.2
+          },
+          "frameIntervalMs": {
+            "p50": 33.6,
+            "p95": 66.7,
+            "p99": 83.5
+          },
+          "pointerFeedbackMs": {
+            "p50": 32.4,
+            "p95": 41.3
+          },
+          "drawCalls": 1,
+          "textureBytes": 4282728,
+          "decodedBytes": 5242880,
+          "visible": 0,
+          "total": 0,
+          "frameBudgetMet": false,
+          "pointerBudgetMet": true
+        }
+      ]
+    },
+    {
+      "quality": "normal",
+      "scenarios": [
+        {
+          "name": "fresh",
+          "renderCpuMs": {
+            "p50": 0.6,
+            "p95": 0.9,
+            "p99": 2.9
+          },
+          "frameIntervalMs": {
+            "p50": 16.7,
+            "p95": 16.8,
+            "p99": 19
+          },
+          "pointerFeedbackMs": {
+            "p50": 16.7,
+            "p95": 19.2
+          },
+          "drawCalls": 3,
+          "textureBytes": 51085469,
+          "decodedBytes": 75195736,
+          "visible": 42,
+          "total": 42,
+          "frameBudgetMet": true,
+          "pointerBudgetMet": true
+        },
+        {
+          "name": "populated",
+          "renderCpuMs": {
+            "p50": 0.7,
+            "p95": 1.1,
+            "p99": 3
+          },
+          "frameIntervalMs": {
+            "p50": 16.7,
+            "p95": 17.5,
+            "p99": 20.9
+          },
+          "pointerFeedbackMs": {
+            "p50": 16.7,
+            "p95": 21.6
+          },
+          "drawCalls": 3,
+          "textureBytes": 50864285,
+          "decodedBytes": 74974552,
+          "visible": 62,
+          "total": 62,
+          "frameBudgetMet": true,
+          "pointerBudgetMet": true
+        },
+        {
+          "name": "dense-520",
+          "renderCpuMs": {
+            "p50": 4.4,
+            "p95": 15.8,
+            "p99": 19.4
+          },
+          "frameIntervalMs": {
+            "p50": 57.4,
+            "p95": 116.4,
+            "p99": 116.7
+          },
+          "pointerFeedbackMs": {
+            "p50": 56,
+            "p95": 73
+          },
+          "drawCalls": 2,
+          "textureBytes": 45450693,
+          "decodedBytes": 78998144,
+          "visible": 635,
+          "total": 639,
+          "frameBudgetMet": false,
+          "pointerBudgetMet": true
+        },
+        {
+          "name": "local",
+          "renderCpuMs": {
+            "p50": 0.5,
+            "p95": 1,
+            "p99": 3.2
+          },
+          "frameIntervalMs": {
+            "p50": 17.9,
+            "p95": 33.3,
+            "p99": 115.8
+          },
+          "pointerFeedbackMs": {
+            "p50": 18.1,
+            "p95": 33.2
+          },
+          "drawCalls": 1,
+          "textureBytes": 22244712,
+          "decodedBytes": 42083328,
+          "visible": 90,
+          "total": 90,
+          "frameBudgetMet": false,
+          "pointerBudgetMet": true
+        },
+        {
+          "name": "world-1023",
+          "renderCpuMs": {
+            "p50": 0.3,
+            "p95": 0.9,
+            "p99": 1.7
+          },
+          "frameIntervalMs": {
+            "p50": 16.7,
+            "p95": 69.7,
+            "p99": 115.1
+          },
+          "pointerFeedbackMs": {
+            "p50": 16.7,
+            "p95": 21
+          },
+          "drawCalls": 1,
+          "textureBytes": 11098472,
+          "decodedBytes": 25165824,
+          "visible": 0,
+          "total": 0,
+          "frameBudgetMet": false,
+          "pointerBudgetMet": true
+        }
+      ]
+    }
+  ],
+  "latestBranchHeadEvidence": {
+    "sourceCommit": "908e14e555e5bf52f9fe5ee94361589dee09bc3b",
+    "branch": "codex/map-25d-overhaul",
+    "performance": {
+      "run": 39016609626,
+      "url": "https://github.com/Kashumir-Kaiser/Ice-Age-Lord/actions/runs/39016609626",
+      "status": "completed; both benchmark and memory qualities succeeded",
+      "artifactIds": {
+        "low": 12096010042,
+        "normal": 12095841280,
+        "memoryLow": 12094644652,
+        "memoryNormal": 12094419909,
+        "cpuProfile": 12094599597,
+        "trace": 12094952925
+      },
+      "runsPerFixture": 3,
+      "secondsPerRun": 60,
+      "warmupSecondsPerRun": 10,
+      "fixtureOrder": [
+        "fresh",
+        "populated",
+        "dense-520",
+        "local",
+        "world-1023"
+      ],
+      "targetDeviceVerified": false
+    },
+    "rendering": {
+      "run": 39016609624,
+      "url": "https://github.com/Kashumir-Kaiser/Ice-Age-Lord/actions/runs/39016609624",
+      "status": "passed",
+      "build": "passed",
+      "unitTests": "passed",
+      "mapJourneys": "passed",
+      "captures": "passed",
+      "benchmarkHarness": "passed"
+    },
+    "visualMatrix": {
+      "run": 39016609638,
+      "url": "https://github.com/Kashumir-Kaiser/Ice-Age-Lord/actions/runs/39016609638",
+      "status": "passed",
+      "lanesPassed": 4,
+      "laneMatrix": [
+        "normal DPR1",
+        "normal DPR2",
+        "low DPR1",
+        "low DPR2"
+      ]
+    },
+    "backendAndFrontend": {
+      "run": 39016609706,
+      "url": "https://github.com/Kashumir-Kaiser/Ice-Age-Lord/actions/runs/39016609706",
+      "sourceCommit": "908e14e555e5bf52f9fe5ee94361589dee09bc3b",
+      "backend": "passed stages02-10 and bot suites",
+      "frontendBuild": "passed",
+      "frontendUnitTests": "passed",
+      "playwright": {
+        "passed": 99,
+        "failed": 12,
+        "skipped": 5,
+        "status": "failed"
+      },
+      "failureNames": [
+        "Chromium live-api server-owned clock/Tomb reload",
+        "Chromium map visual baselines",
+        "Chromium Stage07 timed combat",
+        "Chromium Stage09 all-nine screens",
+        "Chromium Stage09 expedition/search save API",
+        "Chromium Stage09 switching saves",
+        "mobile live-api server-owned clock/Tomb reload",
+        "mobile late-art map rendering",
+        "mobile Stage07 timed combat",
+        "mobile Stage09 all-nine screens",
+        "mobile Stage09 expedition/search save API",
+        "mobile Stage09 switching saves"
+      ],
+      "diagnostic": "Stage09 failures included missing `Ngày 1 · 07:00` while the visible notice remained `Đang tạo clean game trên API…`.",
+      "artifactId": 12094974631
+    },
+    "remainingBlockers": [
+      "Intel UHD 620/equivalent target-device verification unavailable",
+      "frame-interval and pointer-feedback budget misses recorded in results",
+      "RESOURCE_LEDGER_STAGE_05 blocks authoritative populated LIVE extraction",
+      "12 frontend E2E failures in run 39016609706"
+    ]
   }
 }
