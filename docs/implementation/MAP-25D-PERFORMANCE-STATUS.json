@@ -1421,24 +1421,26 @@
       "method": "continuous pan; differs from later pan/zoom/selection phased harness",
       "panP95Ms": {
         "low": [
-          33.5,
-          36.6,
-          146.6,
-          48.2,
-          40.1
+          33.9,
+          47.9,
+          141.8,
+          50.1,
+          39.1
         ],
         "normal": [
-          33.1,
-          38.5,
-          198.5,
+          36.4,
           43.4,
-          38.9
+          189.2,
+          45.9,
+          37.1
         ]
       },
       "artifactIds": {
         "low": 12096010042,
         "normal": 12095841280
-      }
+      },
+      "panPercentileConvention": "Per-run floor(n*p), then median of three run-level percentiles; freshly extracted by perf agent.",
+      "cpuNote": "Both artifact summaries report EPYC 7763; physical runner identity is not guaranteed."
     },
     "crossRunComparison": "The runners differ among 607, 908, and 31a; the 908 continuous-pan run also differs from later phased pan/zoom/selection runs. Keep results as separate evidence and make no causal performance claim from the differences.",
     "remainingBlockers": [
@@ -1543,8 +1545,8 @@
           "name": "fresh",
           "frameIntervalMs": {
             "p50": 33.3,
-            "p95": 33.5,
-            "p99": 36.7,
+            "p95": 33.9,
+            "p99": 40,
             "worst": 51.3
           },
           "pointerFeedbackMs": {
@@ -1559,14 +1561,15 @@
             "p95": 36,
             "p99": 39.8,
             "worst": 39.8
-          }
+          },
+          "frameIntervalMetric": "pan-only re-extraction"
         },
         {
           "name": "populated",
           "frameIntervalMs": {
-            "p50": 33.3,
-            "p95": 36.6,
-            "p99": 48.5,
+            "p50": 33.4,
+            "p95": 47.9,
+            "p99": 49.1,
             "worst": 52.3
           },
           "pointerFeedbackMs": {
@@ -1581,13 +1584,14 @@
             "p95": 36.6,
             "p99": 37.3,
             "worst": 37.3
-          }
+          },
+          "frameIntervalMetric": "pan-only re-extraction"
         },
         {
           "name": "dense-520",
           "frameIntervalMs": {
             "p50": 126.7,
-            "p95": 146.6,
+            "p95": 141.8,
             "p99": 150.6,
             "worst": 152.9
           },
@@ -1603,14 +1607,15 @@
             "p95": null,
             "p99": null,
             "worst": null
-          }
+          },
+          "frameIntervalMetric": "pan-only re-extraction"
         },
         {
           "name": "local",
           "frameIntervalMs": {
-            "p50": 33.4,
-            "p95": 48.2,
-            "p99": 51.9,
+            "p50": 35.8,
+            "p95": 50.1,
+            "p99": 53.6,
             "worst": 64.9
           },
           "pointerFeedbackMs": {
@@ -1625,15 +1630,16 @@
             "p95": 58.6,
             "p99": 83.4,
             "worst": 83.4
-          }
+          },
+          "frameIntervalMetric": "pan-only re-extraction"
         },
         {
           "name": "world-1023",
           "frameIntervalMs": {
-            "p50": 33.3,
-            "p95": 40.1,
-            "p99": 107.1,
-            "worst": 120.4
+            "p50": 33.2,
+            "p95": 39.1,
+            "p99": 42.3,
+            "worst": 52.4
           },
           "pointerFeedbackMs": {
             "p50": 32.3,
@@ -1647,7 +1653,8 @@
             "p95": 37.9,
             "p99": 37.9,
             "worst": 37.9
-          }
+          },
+          "frameIntervalMetric": "pan-only re-extraction"
         }
       ]
     },
@@ -1657,10 +1664,10 @@
         {
           "name": "fresh",
           "frameIntervalMs": {
-            "p50": 26,
-            "p95": 33.1,
-            "p99": 41.3,
-            "worst": 67.6
+            "p50": 27,
+            "p95": 36.4,
+            "p99": 49.6,
+            "worst": 66
           },
           "pointerFeedbackMs": {
             "p50": 27.2,
@@ -1674,14 +1681,15 @@
             "p95": 60.2,
             "p99": 63.1,
             "worst": 63.1
-          }
+          },
+          "frameIntervalMetric": "pan-only re-extraction"
         },
         {
           "name": "populated",
           "frameIntervalMs": {
-            "p50": 30.4,
-            "p95": 38.5,
-            "p99": 48.3,
+            "p50": 32.4,
+            "p95": 43.4,
+            "p99": 61.2,
             "worst": 73.5
           },
           "pointerFeedbackMs": {
@@ -1696,14 +1704,15 @@
             "p95": 67.4,
             "p99": 68.9,
             "worst": 68.9
-          }
+          },
+          "frameIntervalMetric": "pan-only re-extraction"
         },
         {
           "name": "dense-520",
           "frameIntervalMs": {
-            "p50": 155.7,
-            "p95": 198.5,
-            "p99": 210.2,
+            "p50": 156,
+            "p95": 189.2,
+            "p99": 203.2,
             "worst": 212.8
           },
           "pointerFeedbackMs": {
@@ -1718,14 +1727,15 @@
             "p95": null,
             "p99": null,
             "worst": null
-          }
+          },
+          "frameIntervalMetric": "pan-only re-extraction"
         },
         {
           "name": "local",
           "frameIntervalMs": {
-            "p50": 28.8,
-            "p95": 43.4,
-            "p99": 49.1,
+            "p50": 36.2,
+            "p95": 45.9,
+            "p99": 55.8,
             "worst": 72.5
           },
           "pointerFeedbackMs": {
@@ -1740,15 +1750,16 @@
             "p95": 79,
             "p99": 81.4,
             "worst": 81.4
-          }
+          },
+          "frameIntervalMetric": "pan-only re-extraction"
         },
         {
           "name": "world-1023",
           "frameIntervalMs": {
-            "p50": 29.3,
-            "p95": 38.9,
-            "p99": 112,
-            "worst": 138.8
+            "p50": 30.3,
+            "p95": 37.1,
+            "p99": 39.7,
+            "worst": 41.9
           },
           "pointerFeedbackMs": {
             "p50": 30.4,
@@ -1762,7 +1773,8 @@
             "p95": 76.6,
             "p99": 76.6,
             "worst": 76.6
-          }
+          },
+          "frameIntervalMetric": "pan-only re-extraction"
         }
       ]
     }
@@ -2408,5 +2420,107 @@
     ],
     "backendPackagesChanged": false,
     "noActiveCheckpointWorkflows": true
-  }
+  },
+  "historicalResultsAt908EarlierPercentileSummary": [
+    {
+      "quality": "low",
+      "scenarios": [
+        {
+          "name": "fresh",
+          "frameIntervalMs": {
+            "p50": 33.3,
+            "p95": 33.5,
+            "p99": 36.7,
+            "worst": 51.3
+          }
+        },
+        {
+          "name": "populated",
+          "frameIntervalMs": {
+            "p50": 33.3,
+            "p95": 36.6,
+            "p99": 48.5,
+            "worst": 52.3
+          }
+        },
+        {
+          "name": "dense-520",
+          "frameIntervalMs": {
+            "p50": 126.7,
+            "p95": 146.6,
+            "p99": 150.6,
+            "worst": 152.9
+          }
+        },
+        {
+          "name": "local",
+          "frameIntervalMs": {
+            "p50": 33.4,
+            "p95": 48.2,
+            "p99": 51.9,
+            "worst": 64.9
+          }
+        },
+        {
+          "name": "world-1023",
+          "frameIntervalMs": {
+            "p50": 33.3,
+            "p95": 40.1,
+            "p99": 107.1,
+            "worst": 120.4
+          }
+        }
+      ]
+    },
+    {
+      "quality": "normal",
+      "scenarios": [
+        {
+          "name": "fresh",
+          "frameIntervalMs": {
+            "p50": 26,
+            "p95": 33.1,
+            "p99": 41.3,
+            "worst": 67.6
+          }
+        },
+        {
+          "name": "populated",
+          "frameIntervalMs": {
+            "p50": 30.4,
+            "p95": 38.5,
+            "p99": 48.3,
+            "worst": 73.5
+          }
+        },
+        {
+          "name": "dense-520",
+          "frameIntervalMs": {
+            "p50": 155.7,
+            "p95": 198.5,
+            "p99": 210.2,
+            "worst": 212.8
+          }
+        },
+        {
+          "name": "local",
+          "frameIntervalMs": {
+            "p50": 28.8,
+            "p95": 43.4,
+            "p99": 49.1,
+            "worst": 72.5
+          }
+        },
+        {
+          "name": "world-1023",
+          "frameIntervalMs": {
+            "p50": 29.3,
+            "p95": 38.9,
+            "p99": 112,
+            "worst": 138.8
+          }
+        }
+      ]
+    }
+  ]
 }
