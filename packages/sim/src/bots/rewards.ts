@@ -21,6 +21,7 @@ export function awardBotRankedEventRewards(
   eventId: string,
   rows: readonly RankedBotRewardRow[],
   at: number,
+  saveId = input.saveSeed,
 ): BotPopulationState {
   if (input.generationProfile !== 'P0_ACTIVE') return input;
   const inAdvance = isBotPopulationAdvanceInProgress(input);
@@ -29,12 +30,17 @@ export function awardBotRankedEventRewards(
   const changed = new Map<number, { cold: BotColdRecord[]; offsets: Set<number> }>();
   const receipts: BotRewardReceipt[] = [...population.rewardReceipts];
   const knownReceiptIds = new Set(receipts.map(receipt => receipt.id));
+  let remainsChests = population.remainsChests;
 
   for (const row of rows) {
     const botId = row.playerId;
     if (!botId.startsWith('RC-') && !botId.startsWith('BOT-P0-')) continue;
-    const receiptId = `${eventId}:${botId}:REWARD`;
-    if (knownReceiptIds.has(receiptId)) continue;
+    const receiptId = `${saveId}:${eventId}:${botId}:${row.rewardBandId}:REWARD`;
+    // Saves created before rewards were scoped to a save used this shorter
+    // identity. Treat it as the same entitlement during replay so an upgrade
+    // cannot mint a second copy under the new receipt format.
+    const legacyReceiptId = `${eventId}:${botId}:REWARD`;
+    if (knownReceiptIds.has(receiptId) || knownReceiptIds.has(legacyReceiptId)) continue;
     const ordinal = ordinalFromId(botId);
     if (ordinal === null || ordinal > population.botCount) throw new Error(`BOT_EVENT_REWARD_BOT_UNKNOWN:${botId}`);
     const chunkIndex = Math.floor((ordinal - 1) / population.chunkSize);
@@ -62,9 +68,30 @@ export function awardBotRankedEventRewards(
       awardedAtElapsedMs: at,
       ruleVersion: BOT_EVENT_REWARD_RULE_VERSION,
     }));
-    const cold: BotColdRecord = { ...source, eventInventory: [...source.eventInventory, ...inventory] };
-    group.cold[offset] = cold;
-    group.offsets.add(offset);
+    if (source.lord.lifeState === 'dead') {
+      const deathEventId = source.lord.deathRecord?.deathEventId;
+      const chestIndex = remainsChests.findIndex(chest => chest.botId === botId && chest.deathEventId === deathEventId);
+      if (chestIndex < 0) throw new Error(`BOT_EVENT_REWARD_REMAINS_MISSING:${botId}`);
+      const chest = remainsChests[chestIndex]!;
+      const rewardItems = inventory.map(item => ({
+        instanceId: item.instanceId,
+        itemTemplateId: item.itemTemplateId,
+        quantity: item.quantity,
+        rewardReceiptId: item.rewardReceiptId,
+        sourceId: null,
+      }));
+      remainsChests = remainsChests.map((candidate, index) => index !== chestIndex ? candidate : {
+        ...chest,
+        inventoryItems: [...chest.inventoryItems, ...rewardItems].sort((a, b) => a.instanceId < b.instanceId ? -1 : a.instanceId > b.instanceId ? 1 : 0),
+        // A posthumous reward can arrive after the original remains were claimed.
+        // Reopen the same cache with only the newly delivered items.
+        ...(chest.state === 'claimed' ? { state: 'unclaimed' as const, claimedById: null } : {}),
+      });
+    } else {
+      const cold: BotColdRecord = { ...source, eventInventory: [...source.eventInventory, ...inventory] };
+      group.cold[offset] = cold;
+      group.offsets.add(offset);
+    }
     receipts.push({
       id: receiptId,
       eventId,
@@ -85,6 +112,7 @@ export function awardBotRankedEventRewards(
       })),
     });
     knownReceiptIds.add(receiptId);
+    knownReceiptIds.add(legacyReceiptId);
   }
 
   for (const [chunkIndex, group] of changed) {
@@ -96,7 +124,7 @@ export function awardBotRankedEventRewards(
     chunks[chunkIndex] = { ...materialized, chunkSha256: botChunkHash(materialized) };
     markBotPopulationChunkChanged(population);
   }
-  population = { ...population, rewardReceipts: receipts };
+  population = { ...population, rewardReceipts: receipts, remainsChests };
   return inAdvance ? population : finishBotPopulationAdvance(population)!;
 }
 
@@ -105,6 +133,7 @@ export function awardBotOpeningRankRewards(
   input: BotPopulationState,
   rows: readonly RankedBotRewardRow[],
   at: number,
+  saveId = input.saveSeed,
 ): BotPopulationState {
-  return awardBotRankedEventRewards(input, 'EV01-OPENING-LEVEL', rows, at);
+  return awardBotRankedEventRewards(input, 'EV01-OPENING-LEVEL', rows, at, saveId);
 }

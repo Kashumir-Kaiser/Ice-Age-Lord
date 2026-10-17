@@ -2,71 +2,55 @@
 
 Updated 2026-10-13.
 
-## Current implementation
+## Completed behavior
 
-The bot runtime now includes versioned, deterministic survival and resource accounting; lord fate separate from residents and troops; finite water preparation; regional storm hazards; casualty cause ledgers; talent-adjusted combat and construction; persistent blueprints, chests, structures and territory levels; and a regional barter market. Bot saves migrate prospectively, and the benchmark accepts a horizon-independent seed and reports 24h, 48h, 144h and 168h checkpoints.
+- Every bot now owns a separate 100-HP normal-human lord. Personal food, water and cold exposure advance independently of resident and troop counts. Fatal hits and deprivation settle through one idempotent death path; only actual lord death removes the owner from the active scheduler, removes structures and transfers held resources/blueprints into one non-respawning remains chest.
+- Direct player contact and bot raids resolve actual personal attacks separately from troop attrition. An exposed lord can attempt a persisted, ordinary-speed route using finite carried food and water; failed or unavailable escape remains an encounter. A lord can be killed while the entire army survives.
+- EV01 freezes its source-qualified top-100 standings and settles bot rewards once under save/event/participant/reward identities. Committed food and medicine use their actual handlers; unsupported reward slots retain explicit blockers. EV19's implemented player choice reward settles and claims Krona once across reload and retry.
+- Bots and players share fixed chest ownership and deterministic loot receipts. Blueprint discovery, learning, construction, escrow and trade use saved item identities and real balances. Water uses finite stock and conversion. Emergency listings only pay after a real qualified buyer transfers funds.
+- The map now pools SVG marker and settlement-object nodes by stable entity keys. Promotion binds current saved structures and cohorts; demotion resets slots and releases listeners. The opening board retains its sorted 100-row cap and persisted ID-to-rank index.
+- Bot migrations initialize missing personal owners as living, without converting historical resident or troop losses into lord deaths or granting past exposure/supplies. They rebuild active-lord and ranking indexes, refresh integrity hashes and restore scheduler wakes.
 
-The implementation uses named bot overlays where the active source package has no executable rule. The water and winter-storm overlays are `BOT-FROZEN-WATER-LORD-SURVIVAL-1.0` and `BOT-REGIONAL-WINTER-STORM-1.0`; they are design rules, not claims about source canon. T+144h remains the opening board's close. T+168h is a separate simulation checkpoint.
-
-The ranked opening contract now delivers food and medicine to bots, applies food at its award timestamp, and records applied/consumed quantities. Players can consume MEAT/BREAD reward stacks. Reward slots without an executable item contract remain frozen with a precise blocker and can be retried by their original slot ID if a handler becomes available. The current compiled content still blocks resource bags, ranked reward chests, recruitment scrolls, reward weapons and power hearts.
-
-Bot exploration owns finite chests before opening and persists a deterministic loot receipt. A fixed world chest shares ownership with the player's chest state. Blueprint discovery produces an owned item that can be learned or listed; it is not automatically added to the learned list. Bot-to-bot listings escrow the item and transfer actual food or potable water from a qualified buyer. At Krona Gate, the live inventory market displays visible bot listings, compatibility and blockers, and exposes the purchase command when the player has a usable BREAD stack. The player purchase adapter supports `BP-BOT-WALL` paid with food. Defense currently uses passive structure modifiers in the shared settlement resolver; towers do not launch independent attacks.
-
-## Focused verification completed on this checkout
+## Focused checks
 
 | Check | Result |
 |---|---|
-| `node --experimental-strip-types packages/sim/test/botEconomy.integration.test.ts` | Passed: 27 tests in 6.3s. Covers 1s/3s/5s/irregular/large fixed-point integration, source exhaustion and caps, water and fatal exposure boundaries, durable casualty causes and migration, talent modifiers, defenses, territory, blueprint ownership, bot market food/water settlement, shared chest ownership and reward use. |
-| `node --experimental-strip-types packages/sim/test/openingRewardHandlers.test.ts` | Passed: 3 tests in 4.6s. Covers exact T+144h qualification, frozen settlement at T+168h, MEAT consumption and resumption of a previously blocked slot when its handler is available. |
-| `node --experimental-strip-types packages/storage/test/botReplay.integration.test.ts` | Passed: 2 tests in 10.6s. A 16-bot, 10-minute replay matches across one-shot, 3s, 5s, irregular and SQLite reload paths; SQLite startup migration preserves save revision and event history. |
-| `node --experimental-strip-types --test --test-name-pattern='a player buys a bot blueprint' packages/sim/test/stage08.test.ts` | Passed: 1 focused player market test in 0.7s. |
-| `node --experimental-strip-types --test packages/api/test/bots.test.ts` | Passed: 1 API test file in 15.9s. |
-| `npm run content:coverage:stage08` | Passed in 1.2s; regenerated the report with EV01 marked as an executable ranked board. |
-| `git diff --check` | Passed after code, UI and documentation edits. |
-| [GitHub Actions frontend validation](https://github.com/Kashumir-Kaiser/Ice-Age-Lord/actions/runs/38358710683) | Passed on commit `1c62270`: `npm run build` (TypeScript and Vite) and `npm test` (45/45 tests). The first CI run caught a missing `botMarketListings` field in the E2E player-view fixture; the fixture was fixed before this passing run. |
+| `timeout 30s node --experimental-strip-types --test-reporter=spec packages/sim/test/botEconomy.integration.test.ts` | Passed 27/27 in 4.96s. Covers fixed-point conservation, survival boundaries, resident extinction, water, rewards, defense, chests, blueprints, market, and legacy route migration. |
+| `timeout 30s node --experimental-strip-types --test-reporter=spec packages/sim/test/botOwnerIntegration.test.ts packages/sim/test/botLordSurvival.test.ts` | Passed 7/7 in 6.65s. Covers empty settlements, personal HP/death, remains, reload, and routed escape. |
+| `timeout 30s npm run test:bot-domain` | Passed all four domain files in 11.80s, including opening ranking and event settlement/reload coverage. |
+| `git diff --check` | Passed after the implementation edits. |
+| GitHub Actions `Focused frontend checks` | Pending for the current commit. TypeScript/TSX, Vite production build, and existing frontend smoke tests must be reported from this workflow; no local frontend build or test was run. |
 
-The frontend toolchain was unavailable in this checkout because `frontend/node_modules` and the root TypeScript, Vite and JSX binaries are absent. GitHub Actions provided the frontend compile and unit-test verification above. The passing run does not include a browser E2E or visual viewport check.
+The cohort diagnostic is `npm run diagnose:bots-survival`. It uses the production scheduler and virtual time, checks the standard 1,023-bot roster, records alive/dead totals, tier and condition mortality, cause counts, and concise death traces. The final three-seed run completed in 14.238 seconds under the 120-second cap.
 
-The full `npm run test:bots` and multi-day Stage 08 suite were not run, as the supplied prompt excludes those expensive suites from the initial focused schedule. The Stage 08 multi-day test had previously been interrupted after approximately 4h37m and is not a pass.
+## Measured calibration results
 
-## Long-run results and limits
+These are simulation observations for `cal-tune-1`, `cal-tune-2`, and `cal-tune-3`, not predictions about real-world survival. The three 1,023-bot rosters contributed 3,069 bot-time observations at each checkpoint. Every measured death in these seeds was caused by cold exposure. No additional deaths occurred between day 3 and day 7.
 
-The current P0 acceptance run used a fresh 1,023-bot roster, seed `bot-p0-acceptance-2026`, and actual advancement through 168 hours. It completed in 67.421 seconds, below the 180-second cap, and passed `verifyBotPopulation`. Every checkpoint retained 1,023 active settlements and living lords. EV01 settled once at exactly T+144h with 100 rows and remained frozen at T+168h; snapshot hash `7db3df53f34abaf39b05665b0df6b506d33ed194f8f08cc85bb050457496cb71`.
-
-| Hour | Active settlements / living lords | Residents | Recorded resident/troop losses | Cumulative loss causes | Opening board |
-|---:|---:|---:|---:|---|---|
-| 24 | 1,023 / 1,023 | 18,234 | 1,110 | battle 1,004; wildlife 106 | not published |
-| 48 | 1,023 / 1,023 | 17,537 | 1,807 | battle 1,698; wildlife 109 | open, 100 rows |
-| 144 | 1,023 / 1,023 | 17,460 | 1,884 | battle 1,770; wildlife 114 | settled, 100 rows and 100 bot reward receipts |
-| 168 | 1,023 / 1,023 | 17,454 | 1,890 | starvation 5; battle 1,770; wildlife 115 | frozen at 100 rows |
-
-No lord was eliminated in this seed. By grade, living lords were S/A/B/C/D 2/51/205/358/407. Recorded resident/troop losses by grade and talent kind were:
-
-| Grade and kind | Roster | Living lords at 168h | Resident/troop losses |
+| Checkpoint | Alive | Dead | Mortality |
 |---|---:|---:|---:|
-| S combat | 1 | 1 | 0 |
-| S production | 1 | 1 | 4 |
-| A combat | 24 | 24 | 30 |
-| A production | 27 | 27 | 32 |
-| B combat | 93 | 93 | 185 |
-| B production | 112 | 112 | 141 |
-| C combat | 172 | 172 | 452 |
-| C production | 186 | 186 | 243 |
-| D combat | 221 | 221 | 565 |
-| D production | 186 | 186 | 238 |
+| Day 1 | 2,896 / 3,069 | 173 / 3,069 | 5.64% |
+| Day 3 | 2,737 / 3,069 | 332 / 3,069 | 10.82% |
+| Day 7 | 2,737 / 3,069 | 332 / 3,069 | 10.82% |
 
-By 168h, bots had applied 1,630 opening food items to food stock; 163 opening reward slots remained blocked by compiled-content gaps. The simulation recorded 60 completed blueprint trades (662 food and 67,000 mL water paid), 401 opened finite chests, 191 active defensive structures, and territory levels 2/3 across all settlements (930 at level 2, 93 at level 3). These are observations from this seed, not cross-seed guarantees. The two S specialists were both explicitly present and survived; their one-bot-per-kind samples are too small for a talent-wide mortality claim.
+| Tier (roster per seed) | Day 1 deaths / rate | Day 3 and 7 deaths / rate |
+|---|---:|---:|
+| S (2) | 0 / 6 · 0.00% | 0 / 6 · 0.00% |
+| A (51) | 8 / 153 · 5.23% | 18 / 153 · 11.76% |
+| B (205) | 36 / 615 · 5.85% | 68 / 615 · 11.06% |
+| C (358) | 54 / 1,074 · 5.03% | 108 / 1,074 · 10.06% |
+| D (407) | 75 / 1,221 · 6.14% | 138 / 1,221 · 11.30% |
 
-Performance: initialization 739ms, advancement 66,496ms, integrity verification 163ms, peak RSS 750 MiB and heap 508 MiB. The run completed 29,895 actions, 74,622 integrated bot segments and 133,620 planner expansions.
+At day 3/7, deaths among resource-stressed lords were 269/476 (56.51%); post-battle lords were 63/753 (8.37%); safe lords were 0/1,840. No bot had a recorded faction-support delivery. Within the resource-stressed group, mortality was A 13/32, B 52/93, C 91/158 and D 113/193. Across these three seeds D had greater aggregate mortality than B and C, while individual-seed and tier ordering varied; the six S-tier observations are too small to support a tier-wide survival claim.
 
-The three earlier 32-bot diagnostics used seeds `bot-balance-01`, `bot-balance-02` and `bot-balance-03` on the prior implementation. All 32 settlement actors remained active. Residents / combined recorded deaths were 572/60, 551/73 and 562/75. Each roster used S/A/B/C/D counts 2/4/8/9/9 and the runs lacked lord-fate or cause ledgers. They remain historical diagnostics, not current-checkout validation. No 10k/100k stress run was started.
+Example causal trace: `BOT-P0-0020` (D, seed `cal-tune-3`) died from cold at day 0.494 with 16 residents and 3 troops still present, no food/water/firewood stock, and no active keep/hearth. `RC-010` (B, seed `cal-tune-1`) died at day 0.492 with the same empty-store/no-shelter pattern. The death path records 15 micro-HP preceding the lethal cold boundary, not a troop or population threshold.
 
-## Remaining compiled-content blockers
+## Real limitations
 
-- EV01 is the only executable participant-ranked bot board. EV02–EV29 have no participant-scoped score and settlement contracts for bots; player event objectives and calendar entries do not provide those contracts.
-- The active reward contract names resource bags, silver/black-iron reward chests, recruitment scrolls, several weapon slots and power hearts, but the repository has no complete matching contents, item effects or choice pools for them. These entitlements remain pending with explicit blockers; they are not silently replaced or claimed as usable.
-- The source has no shared potable-water market currency or player conversion path. Bot barter supports water; player purchases support food only.
-- Bot structures provide passive defense values. There is no source-backed staffed tower, ammunition or autonomous attack contract.
-- Bot-only blueprint templates are versioned overlays. Only the wall blueprint has a player construction adapter; the other bot blueprints cannot be sold to the player.
+- Only EV01 has an executable participant-ranked bot settlement. EV19's current handler is a player choice/Krona claim; the source-described faction/rank board and other event-contract entries are not executable bot boards. No future board or generic rank score is invented.
+- The compiled opening reward payload still contains blocked resource bags, ranked chests, recruitment scrolls, weapon choices and power hearts because their matching contents/effects are absent. EV01 pays only handlers with actual effects.
+- Bot factions and faction aid are not defined by the active bot/content contract. The support resolver accepts an explicit, recipient-bound delivery, but no ordinary bot AI currently creates such a delivery; calibration therefore reports `supported: 0`. Existing operational keeps/hearths and finite fuel affect cold exposure through their actual structures and stores.
+- Bot buildings supply passive defense values. The source does not define staffed tower attacks, ammunition or autonomous garrison fire. Only the wall blueprint has a player construction adapter, and the player market has no potable-water payment path.
+- The three-seed calibration shows no further mortality after day 3 in these runs. That is a measured plateau, not a guarantee for other seeds or developed states.
 
-See the [system guide](ENEMY-BOT-SYSTEM.md) for the supported boundary and overlays. The current-checkout 168h P0 run verifies one deterministic seed; it does not establish cross-seed balance or population-wide mortality rates. Reward-content blockers remain listed above; the frontend build and 45 unit tests passed in the linked GitHub Actions run.
+See the [system guide](ENEMY-BOT-SYSTEM.md) for rules and overlays. The uploaded completion prompt was instructions for this work; it was not added to the repository.

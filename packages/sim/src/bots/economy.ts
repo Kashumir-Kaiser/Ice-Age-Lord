@@ -1,21 +1,27 @@
-import type { BotActionReceipt, BotBlueprintItem, BotCargoKey, BotColdRecord, BotMarketListing, BotMarketTransaction, BotOwnedChest, BotPlanState, BotResourceKey, BotSearchSource, BotSharedWildlifeStock, BotStateChunk, BotStructureInstance, BotTalentGrade, BotTalentKind, BotWorkKind, CoordinateMm, FieldChest, GameState, WorldDefinition } from '../../../contracts/src/index.ts';
+import type { BotActionReceipt, BotBlueprintItem, BotCargoKey, BotColdRecord, BotMarketListing, BotMarketTransaction, BotOwnedChest, BotPlanState, BotResourceKey, BotSearchSource, BotSharedWildlifeStock, BotStateChunk, BotStructureInstance, BotTalentGrade, BotTalentKind, BotWorkKind, ColdEnvironment, CoordinateMm, FieldChest, GameState, WorldDefinition } from '../../../contracts/src/index.ts';
 import { canonicalStateHash, randomIntFromFields } from '../hash.ts';
 import { playerLevelThreshold } from '../stage07.ts';
-import { OPENING_LEVEL_BOARD_ID, OPENING_LEVEL_CLOSES_AT_MS, OPENING_LEVEL_DISPLAY_DELAY_MS, OPENING_LEVEL_OPENS_AT_MS, rankOpeningLevelCompletions } from '../openingRanking.ts';
-import { resolveSquadCasualty } from '../combat.ts';
-import { deterministicChestOutcome } from '../chestLoot.ts';
-import { BOT_COMBAT_RULE_VERSION, botCohortPower, botHomeCohortCounts, botMovementCohortCounts, botSettlementDefensePermille, resolveBotBattle, resolveBotSettlementBattle } from './combat.ts';
-import { BOT_BLUEPRINT_BY_ID, BOT_BLUEPRINT_LOOT_RULES, BOT_BLUEPRINT_RULES_VERSION } from './blueprints.ts';
+import { OPENING_LEVEL_BOARD_ID, OPENING_LEVEL_CLOSES_AT_MS, OPENING_LEVEL_DISPLAY_DELAY_MS, OPENING_LEVEL_OPENS_AT_MS, openingRankIndex, rankOpeningLevelCompletions } from '../openingRanking.ts';
+import { personalCombatProfileForUnit, resolvePersonalAttack, resolveSquadCasualty, type PersonalCombatProfile } from '../combat.ts';
+import { coldLoadRateMicroPerMinute } from '../cold.ts';
+import { OPENING_FIRE_EFFECTIVE_TEMPERATURE_C, OPENING_WEATHER_RECORD } from '../../../content/src/openingEnvironment.ts';
+import { deterministicChestOutcome, deterministicLegacyFieldChestOutcome } from '../chestLoot.ts';
+import { CHEST_LOOT_RULE_VERSION } from '../../../content/src/chestLoot.ts';
+import { BOT_COMBAT_RULE_VERSION, BOT_IRON_WEAPON_POWER, botCohortPower, botHomeCohortCounts, botMovementCohortCounts, botSettlementDefensePermille, resolveBotBattle, resolveBotSettlementBattle } from './combat.ts';
+import { BOT_BLUEPRINT_BY_ID, BOT_BLUEPRINT_RULES_VERSION } from './blueprints.ts';
 import { chooseBotDecision, spendableBotResources, BOT_WORK_CODE, BOT_WORK_FROM_CODE } from './planner.ts';
-import { BOT_ACTIVITY_XP_RULE_VERSION, BOT_CHEST_RULE_VERSION, BOT_EQUIPMENT_RULE_VERSION, BOT_EVENT_REWARD_RULE_VERSION, BOT_HUNT_RULE_VERSION, BOT_LOCAL_ICE_STOCK_ML, BOT_LORD_COLD_FATAL_MS, BOT_LORD_DEHYDRATION_FATAL_MS, BOT_LORD_STARVATION_FATAL_MS, BOT_MICRO, BOT_RECOVERY_RULE_VERSION, BOT_REPAIR_RULE_VERSION, BOT_SHARED_WILDLIFE_RULE_VERSION, BOT_SIMULATION_RULE_VERSION, BOT_SURVIVAL_RULE_VERSION, BOT_UPKEEP_UNITS_PER_PERSON_HOUR, BOT_WATER_CAPACITY_ML, BOT_WATER_ML_PER_PERSON_PER_DAY, BOT_WATER_PREPARATION_FIREWOOD_UNITS, BOT_WATER_PREPARATION_YIELD_ML, appendBotActionReceipt, botConstructionPermille, botTalentXpMultiplierPermille, botRowHash, finishBotPopulationAdvance, heapifyBotScheduler, hydrateBotHotArrays, isBotPopulationAdvanceInProgress, markBotPopulationChunkChanged, markBotSharedWildlifeChanged, popBotScheduler, prepareBotPopulationMutation, pushBotScheduler, serializeBotHotArrays, botChunkHash } from './state.ts';
+import { BOT_ACTIVITY_XP_RULE_VERSION, BOT_CHEST_RULE_VERSION, BOT_EQUIPMENT_RULE_VERSION, BOT_EVENT_REWARD_RULE_VERSION, BOT_HUNT_RULE_VERSION, BOT_LOCAL_ICE_STOCK_ML, BOT_LORD_COLD_FATAL_MS, BOT_LORD_DEHYDRATION_FATAL_MS, BOT_LORD_STARVATION_FATAL_MS, BOT_MICRO, BOT_RECOVERY_RULE_VERSION, BOT_REPAIR_RULE_VERSION, BOT_SHARED_WILDLIFE_RULE_VERSION, BOT_SIMULATION_RULE_VERSION, BOT_SURVIVAL_RULE_VERSION, BOT_UPKEEP_UNITS_PER_PERSON_HOUR, BOT_WATER_CAPACITY_ML, BOT_WATER_ML_PER_PERSON_PER_DAY, BOT_WATER_PREPARATION_FIREWOOD_UNITS, BOT_WATER_PREPARATION_YIELD_ML, appendBotActionReceipt, botConstructionPermille, botTalentXpMultiplierPermille, botRowHash, botPopulationRoot, computeBotChunkWake, finishBotPopulationAdvance, heapifyBotScheduler, hydrateBotHotArrays, isBotPopulationAdvanceInProgress, markBotPopulationChunkChanged, markBotSharedWildlifeChanged, popBotScheduler, prepareBotPopulationMutation, pushBotScheduler, serializeBotHotArrays, botChunkHash } from './state.ts';
 import { botArmyPosition } from './movement.ts';
+import { planRoute } from '../spatial.ts';
 import type { BotPopulationState } from '../../../contracts/src/index.ts';
 import type { MutableBotHotArrays } from './state.ts';
 import { BOT_MARKET_ACCESS_RADIUS_MM, BOT_MARKET_LISTING_DURATION_MS, BOT_MARKET_MAX_LISTINGS_PER_BOT, BOT_MARKET_MAX_REPRICES, BOT_MARKET_REPRICE_INTERVAL_MS, BOT_MARKET_RULE_VERSION, botMarketAsk } from './market.ts';
 import { botTerritoryCapacityPermille, botTerritoryHousingBonus, botTerritoryUpgradeFor, BOT_TERRITORY_RULE_VERSION } from './territory.ts';
-import { BOT_WEATHER_MAX_COLD_EXPOSURE_MS, BOT_WEATHER_RULE_VERSION, botWeatherFuelDemand, nextBotWeatherStormAt } from './weather.ts';
+import { BOT_WEATHER_RULE_VERSION, BOT_WEATHER_STORM_DURATION_MS, botWeatherFuelDemand, botWeatherStormActiveAt, botWeatherStormStartsAt, nextBotWeatherBoundaryAt } from './weather.ts';
+import { BOT_LORD_ESCAPE_RULE_VERSION, BOT_LORD_RULE_VERSION, botLordRetreatArrivalAt, integrateBotLord, damageBotLord } from './lord.ts';
 
 export const BOT_ECONOMY_RULE_VERSION = 'BOT-FINITE-ECONOMY-1.0';
+export const BOT_LORD_PLAYER_ATTACK_RULE_VERSION = 'BOT-LORD-PERSONAL-ASSASSINATION-1.1';
 export { BOT_ACTIVITY_XP_RULE_VERSION };
 export const BOT_GATHER_RATES_UNITS_PER_HOUR = { food: 4.5, wood: 3.6, firewood: 2.4, stone: 2.8, ore: 1.4 } as const;
 export const BOT_BUILDING_OUTPUT_UNITS_PER_WORKER_HOUR = { farmFood: 6, millWood: 4.2, quarryStone: 3.2, workshopOre: 1.2 } as const;
@@ -181,17 +187,24 @@ function productionRates(cold: BotColdRecord, chunk: BotNumericRows, offset: num
   const farms = chunk.farmCount[offset]!;
   const mills = chunk.millCount[offset]!;
   const quarries = chunk.quarryCount[offset]!;
-  const gatherFood = workers.gatherFood * BOT_GATHER_RATES_UNITS_PER_HOUR.food;
-  const farmFood = workers.farmers * BOT_BUILDING_OUTPUT_UNITS_PER_WORKER_HOUR.farmFood;
-  const gatherWood = workers.gatherWood * BOT_GATHER_RATES_UNITS_PER_HOUR.wood + workers.millWorkers * BOT_BUILDING_OUTPUT_UNITS_PER_WORKER_HOUR.millWood;
-  const gatherFirewood = workers.gatherWood * BOT_GATHER_RATES_UNITS_PER_HOUR.firewood;
-  const gatherStone = workers.gatherStone * BOT_GATHER_RATES_UNITS_PER_HOUR.stone + workers.quarryWorkers * BOT_BUILDING_OUTPUT_UNITS_PER_WORKER_HOUR.quarryStone;
-  const gatherOre = workers.gatherOre * BOT_GATHER_RATES_UNITS_PER_HOUR.ore + workers.smiths * BOT_BUILDING_OUTPUT_UNITS_PER_WORKER_HOUR.workshopOre;
   const population = chunk.population[offset]!;
+  const settlementLord = Number(cold.lord.lifeState === 'alive' && cold.lord.location === 'settlement');
+  const ownerAction = cold.lord.lifeState === 'alive' && cold.lord.location === 'settlement' && cold.currentPlan?.ownerSelfService
+    ? cold.currentPlan.action : null;
+  const soloFoodGatherer = Number(ownerAction === 'gather_food');
+  const soloWoodGatherer = Number(ownerAction === 'gather_wood');
+  const soloStoneGatherer = Number(ownerAction === 'gather_stone');
+  const soloOreGatherer = Number(ownerAction === 'gather_ore');
+  const gatherFood = (workers.gatherFood + soloFoodGatherer) * BOT_GATHER_RATES_UNITS_PER_HOUR.food;
+  const farmFood = workers.farmers * BOT_BUILDING_OUTPUT_UNITS_PER_WORKER_HOUR.farmFood;
+  const gatherWood = (workers.gatherWood + soloWoodGatherer) * BOT_GATHER_RATES_UNITS_PER_HOUR.wood + workers.millWorkers * BOT_BUILDING_OUTPUT_UNITS_PER_WORKER_HOUR.millWood;
+  const gatherFirewood = (workers.gatherWood + soloWoodGatherer) * BOT_GATHER_RATES_UNITS_PER_HOUR.firewood;
+  const gatherStone = (workers.gatherStone + soloStoneGatherer) * BOT_GATHER_RATES_UNITS_PER_HOUR.stone + workers.quarryWorkers * BOT_BUILDING_OUTPUT_UNITS_PER_WORKER_HOUR.quarryStone;
+  const gatherOre = (workers.gatherOre + soloOreGatherer) * BOT_GATHER_RATES_UNITS_PER_HOUR.ore + workers.smiths * BOT_BUILDING_OUTPUT_UNITS_PER_WORKER_HOUR.workshopOre;
   return {
     foodProduced: perHourToMicroPerSecond(gatherFood + farmFood),
     foodHarvested: perHourToMicroPerSecond(gatherFood + farmFood),
-    foodConsumed: perHourToMicroPerSecond(population * BOT_UPKEEP_UNITS_PER_PERSON_HOUR.food),
+    foodConsumed: perHourToMicroPerSecond((population + settlementLord) * BOT_UPKEEP_UNITS_PER_PERSON_HOUR.food),
     woodProduced: perHourToMicroPerSecond(gatherWood),
     woodHarvested: perHourToMicroPerSecond(gatherWood),
     stoneProduced: perHourToMicroPerSecond(gatherStone),
@@ -200,7 +213,7 @@ function productionRates(cold: BotColdRecord, chunk: BotNumericRows, offset: num
     oreHarvested: perHourToMicroPerSecond(gatherOre),
     firewoodProduced: perHourToMicroPerSecond(gatherFirewood),
     firewoodHarvested: perHourToMicroPerSecond(gatherFirewood),
-    firewoodConsumed: perHourToMicroPerSecond(population * BOT_UPKEEP_UNITS_PER_PERSON_HOUR.firewood),
+    firewoodConsumed: perHourToMicroPerSecond((population + settlementLord) * BOT_UPKEEP_UNITS_PER_PERSON_HOUR.firewood),
   };
 }
 
@@ -311,12 +324,20 @@ function nextBotSurvivalBoundary(cold: BotColdRecord, chunk: BotNumericRows, hot
     hot.firewoodNodeRemainder[offset]!, rates.woodHarvested, hot.woodNodeRemainder[offset]!);
   if (woodlandMs !== null) durations.push(woodlandMs);
   const population = hot.population[offset]!;
-  const dailyWaterNeed = population * BOT_WATER_ML_PER_PERSON_PER_DAY;
-  if (population > 0 && dailyWaterNeed > 0) {
+  const dailyWaterNeed = (population + Number(cold.lord.lifeState === 'alive' && cold.lord.location === 'settlement')) * BOT_WATER_ML_PER_PERSON_PER_DAY;
+  if (dailyWaterNeed > 0) {
     const waterDepletedMs = cold.potableWaterMl > 0
       ? Math.max(1, Math.ceil((cold.potableWaterMl * 86_400_000 - cold.waterConsumptionRemainder) / dailyWaterNeed))
       : 0;
     durations.push(waterDepletedMs + Math.max(1, 24 * 60 * 60_000 - cold.dehydrationExposureMs));
+  }
+  const retreatArrivalAt = botLordRetreatArrivalAt(cold.lord);
+  if (retreatArrivalAt !== null && retreatArrivalAt > from) durations.push(retreatArrivalAt - from);
+  if (cold.lord.lifeState === 'alive' && cold.lord.location !== 'settlement') {
+    const foodUntilDepleted = cold.lord.carriedFoodMicro * 20 - cold.lord.carriedFoodConsumptionRemainder;
+    if (foodUntilDepleted > 0) durations.push(foodUntilDepleted);
+    const waterUntilDepleted = Math.ceil((cold.lord.carriedWaterMicro * 216 - cold.lord.carriedWaterConsumptionRemainder) / 5);
+    if (waterUntilDepleted > 0) durations.push(waterUntilDepleted);
   }
   if (durations.length === 0) return null;
   return from + Math.min(...durations);
@@ -335,9 +356,19 @@ function reconcileArmyMovement(cold: BotColdRecord, lostAwayMembers: ReadonlyMap
   return { ...cold, armyMovement: { ...movement, unitCount, cohortMemberCounts } };
 }
 
+function reconcileScoutMovement(cold: BotColdRecord): BotColdRecord {
+  const movement = cold.armyMovement;
+  if (!movement || movement.unitKind !== 'scout') return cold;
+  const availableScouts = cold.workforce.scouts;
+  if (availableScouts <= 0) return { ...cold, armyMovement: null };
+  if (movement.unitCount <= availableScouts) return cold;
+  return { ...cold, armyMovement: { ...movement, unitCount: availableScouts } };
+}
+
 function consumeBotWater(cold: BotColdRecord, population: number, durationMs: number): { cold: BotColdRecord; dehydrationMs: number } {
-  if (durationMs <= 0 || population <= 0) return { cold: { ...cold, dehydrationExposureMs: 0 }, dehydrationMs: 0 };
-  const dailyNeed = population * BOT_WATER_ML_PER_PERSON_PER_DAY;
+  const consumers = population + Number(cold.lord.lifeState === 'alive' && cold.lord.location === 'settlement');
+  if (durationMs <= 0 || consumers <= 0) return { cold: { ...cold, dehydrationExposureMs: 0 }, dehydrationMs: 0 };
+  const dailyNeed = consumers * BOT_WATER_ML_PER_PERSON_PER_DAY;
   const numerator = BigInt(dailyNeed) * BigInt(durationMs) + BigInt(cold.waterConsumptionRemainder);
   const demandMl = Number(numerator / 86_400_000n);
   const remainder = Number(numerator % 86_400_000n);
@@ -352,29 +383,118 @@ function consumeBotWater(cold: BotColdRecord, population: number, durationMs: nu
   };
 }
 
-function updateLordFate(cold: BotColdRecord, from: number, starvationMs: number, dehydrationMs: number, coldMs: number): BotColdRecord {
-  if (cold.lordFate.status !== 'active') return cold;
-  const starvation = starvationMs > 0 ? Math.min(BOT_LORD_STARVATION_FATAL_MS, cold.lordStarvationExposureMs + starvationMs) : 0;
-  const dehydration = dehydrationMs > 0 ? Math.min(BOT_LORD_DEHYDRATION_FATAL_MS, cold.lordDehydrationExposureMs + dehydrationMs) : 0;
-  const chill = coldMs > 0 ? Math.min(BOT_LORD_COLD_FATAL_MS, cold.lordColdExposureMs + coldMs) : 0;
-  const candidates = [
-    starvation >= BOT_LORD_STARVATION_FATAL_MS ? { at: from + Math.max(0, BOT_LORD_STARVATION_FATAL_MS - cold.lordStarvationExposureMs), cause: 'starvation' as const } : null,
-    dehydration >= BOT_LORD_DEHYDRATION_FATAL_MS ? { at: from + Math.max(0, BOT_LORD_DEHYDRATION_FATAL_MS - cold.lordDehydrationExposureMs), cause: 'dehydration' as const } : null,
-    chill >= BOT_LORD_COLD_FATAL_MS ? { at: from + Math.max(0, BOT_LORD_COLD_FATAL_MS - cold.lordColdExposureMs), cause: 'cold' as const } : null,
-  ].filter((value): value is NonNullable<typeof value> => value !== null)
-    .sort((a, b) => a.at - b.at || (a.cause < b.cause ? -1 : a.cause > b.cause ? 1 : 0));
-  const first = candidates[0];
+function consumeCarriedLordSupplies(lordInput: BotColdRecord['lord'], durationMs: number): {
+  lord: BotColdRecord['lord']; foodCoveragePermille: number; waterCoveragePermille: number;
+  foodShortfallMs: number; waterShortfallMs: number;
+} {
+  if (durationMs <= 0 || lordInput.lifeState !== 'alive') return {
+    lord: lordInput, foodCoveragePermille: 1_000, waterCoveragePermille: 1_000, foodShortfallMs: 0, waterShortfallMs: 0,
+  };
+  const foodNumerator = BigInt(durationMs) + BigInt(lordInput.carriedFoodConsumptionRemainder);
+  const foodDemandMicro = Number(foodNumerator / 20n);
+  const foodRemainder = Number(foodNumerator % 20n);
+  const foodServedMicro = Math.min(lordInput.carriedFoodMicro, foodDemandMicro);
+  const foodServedMs = Math.min(durationMs, Math.max(0, lordInput.carriedFoodMicro * 20 - lordInput.carriedFoodConsumptionRemainder));
+  const waterNumerator = BigInt(durationMs) * 5n + BigInt(lordInput.carriedWaterConsumptionRemainder);
+  const waterDemandMicro = Number(waterNumerator / 216n);
+  const waterRemainder = Number(waterNumerator % 216n);
+  const waterServedMicro = Math.min(lordInput.carriedWaterMicro, waterDemandMicro);
+  const waterServedMs = Math.min(durationMs, Math.max(0,
+    Math.floor((lordInput.carriedWaterMicro * 216 - lordInput.carriedWaterConsumptionRemainder) / 5)));
   return {
-    ...cold,
-    lordStarvationExposureMs: starvation,
-    lordDehydrationExposureMs: dehydration,
-    lordColdExposureMs: chill,
-    ...(first ? { lordFate: { status: 'dead' as const, changedAtElapsedMs: first.at,
-      cause: first.cause, triggerId: cold.currentPlan?.actionId ?? `BOT-SURVIVAL:${first.cause}:${first.at}` } } : {}),
+    lord: { ...lordInput,
+      carriedFoodMicro: lordInput.carriedFoodMicro - foodServedMicro,
+      carriedWaterMicro: lordInput.carriedWaterMicro - waterServedMicro,
+      carriedFoodConsumptionRemainder: foodRemainder,
+      carriedWaterConsumptionRemainder: waterRemainder,
+    },
+    foodCoveragePermille: Math.floor(foodServedMs * 1_000 / durationMs),
+    waterCoveragePermille: Math.floor(waterServedMs * 1_000 / durationMs),
+    foodShortfallMs: durationMs - foodServedMs,
+    waterShortfallMs: durationMs - waterServedMs,
   };
 }
 
-function updateExposure(cold: BotColdRecord, hot: ReturnType<typeof hydrateBotHotArrays>, offset: number, from: number, starvationMs: number, dehydrationMs: number, coldMs: number): { cold: BotColdRecord; starvationDeaths: number; dehydrationDeaths: number; coldDeaths: number; lordDied: boolean } {
+function lordColdLoadRate(cold: BotColdRecord, hot: ReturnType<typeof hydrateBotHotArrays>, offset: number,
+  durationMs: number, coldMs: number, environment: ColdEnvironment | null, stormActive: boolean): number {
+  if (cold.lord.lifeState !== 'alive' || durationMs <= 0) return 0;
+  const outdoor = environment ?? { ...OPENING_WEATHER_RECORD, shelter: 1 };
+  const weather = stormActive ? { ...outdoor, apparentTemperatureC: outdoor.apparentTemperatureC - 15,
+    windKph: outdoor.windKph + 20, wetness: Math.max(0.5, outdoor.wetness) } : outdoor;
+  const atHome = cold.lord.location === 'settlement';
+  const nearStructure = (blueprintId: string, radiusMm: number) => cold.structures.some(structure => structure.blueprintId === blueprintId
+    && structure.status === 'active' && Math.hypot(structure.anchor.xMm - cold.lord.position.xMm,
+      structure.anchor.yMm - cold.lord.position.yMm) <= radiusMm);
+  const shelter = atHome && nearStructure('BP-BOT-KEEP', 20_000) ? Math.max(1, weather.shelter) : 1;
+  const hearthNearby = atHome && nearStructure('BP-BOT-HEARTH', 25_000);
+  const hearthFuel = hearthNearby && hot.firewoodMicro[offset]! > 0;
+  const uncoveredMs = hearthNearby ? coldMs : durationMs;
+  if (uncoveredMs <= 0) return 0;
+  const activityFactor = cold.lord.activity === 'resting' ? 0.7
+    : cold.lord.activity === 'working' || cold.lord.activity === 'travelling' || cold.lord.activity === 'retreating' ? 1.3 : 1;
+  const coldRate = coldLoadRateMicroPerMinute({
+    ...weather,
+    apparentTemperatureC: weather.apparentTemperatureC + (hearthFuel ? OPENING_FIRE_EFFECTIVE_TEMPERATURE_C : 0),
+    activityFactor,
+    shelter,
+  });
+  return Math.floor(coldRate * uncoveredMs / durationMs);
+}
+
+const BOT_WORKFORCE_KEYS = ['gatherFood', 'gatherWood', 'gatherStone', 'gatherOre', 'farmers', 'millWorkers',
+  'quarryWorkers', 'smiths', 'builders', 'scouts', 'guards', 'recruiters'] as const;
+
+function primaryWorkforceRole(action: BotWorkKind | ''): typeof BOT_WORKFORCE_KEYS[number] | null {
+  if (action === 'gather_food') return 'gatherFood';
+  if (action === 'gather_wood') return 'gatherWood';
+  if (action === 'gather_stone') return 'gatherStone';
+  if (action === 'gather_ore') return 'gatherOre';
+  if (['construct', 'repair', 'prepare_water', 'learn_blueprint', 'open_chest', 'list_blueprint', 'upgrade_territory', 'deliver', 'recover'].includes(action)) return 'builders';
+  if (action === 'recruit') return 'recruiters';
+  if (['search', 'scout', 'raid', 'hunt'].includes(action)) return 'scouts';
+  if (action === 'equip') return 'smiths';
+  return null;
+}
+
+function workforceForSurvivors(cold: BotColdRecord, availableWorkers: number): BotColdRecord['workforce'] {
+  const current = cold.workforce;
+  if (Object.values(current).reduce((sum, value) => sum + value, 0) <= availableWorkers) return current;
+  const primary = primaryWorkforceRole(cold.currentPlan?.action ?? '');
+  const ordered = [...(primary ? [primary] : []), ...BOT_WORKFORCE_KEYS.filter(key => key !== primary)];
+  const workforce = Object.fromEntries(BOT_WORKFORCE_KEYS.map(key => [key, 0])) as BotColdRecord['workforce'];
+  let remaining = availableWorkers;
+  for (const key of ordered) {
+    const kept = Math.min(current[key], remaining);
+    workforce[key] = kept;
+    remaining -= kept;
+  }
+  return workforce;
+}
+
+function workersForPlan(action: string, workforce: BotColdRecord['workforce']): number {
+  const role = primaryWorkforceRole(action);
+  return role ? workforce[role] : Object.values(workforce).reduce((sum, value) => sum + value, 0);
+}
+
+function synchronizePlanWorkforce(cold: BotColdRecord, hot: ReturnType<typeof hydrateBotHotArrays>, offset: number,
+  at: number, grade: BotTalentGrade, kind: BotTalentKind): BotColdRecord {
+  const plan = cold.currentPlan;
+  if (!plan) return cold;
+  const ownerWorkers = plan.ownerSelfService && cold.lord.lifeState === 'alive' && cold.lord.location === 'settlement' ? 1 : 0;
+  const available = ownerWorkers || workersForPlan(plan.action, cold.workforce);
+  if (available >= plan.workersAssigned) return cold;
+  const changedPlan = { ...plan, workersAssigned: available };
+  if (['construct', 'repair', 'equip', 'prepare_water', 'learn_blueprint', 'open_chest', 'list_blueprint', 'upgrade_territory'].includes(plan.action)) {
+    const remainingWork = Math.max(0, hot.workRequired[offset]! - hot.workProgress[offset]!);
+    const duration = available > 0
+      ? Math.ceil(remainingWork * 1_000 / (available * botConstructionPermille(grade, kind)))
+      : 0;
+    changedPlan.completesAtElapsedMs = at + duration;
+  }
+  return { ...cold, currentPlan: changedPlan };
+}
+
+function updateExposure(cold: BotColdRecord, hot: ReturnType<typeof hydrateBotHotArrays>, offset: number, from: number, durationMs: number, starvationMs: number, dehydrationMs: number, coldMs: number, environment: ColdEnvironment | null = null, stormActive = false): { cold: BotColdRecord; starvationDeaths: number; dehydrationDeaths: number; coldDeaths: number; lordDied: boolean } {
   let starvationExposureMs = starvationMs > 0 ? cold.starvationExposureMs + starvationMs : 0;
   let dehydrationExposureMs = dehydrationMs > 0 ? cold.dehydrationExposureMs + dehydrationMs : 0;
   let coldExposureMs = coldMs > 0 ? cold.coldExposureMs + coldMs : 0;
@@ -415,19 +535,51 @@ function updateExposure(cold: BotColdRecord, hot: ReturnType<typeof hydrateBotHo
     hot.armySize[offset] = armySize;
     hot.workers[offset] = Math.min(hot.workers[offset]!, Math.max(0, population - armySize));
   }
-  const lordUpdated = updateLordFate({ ...cold, starvationExposureMs, coldExposureMs, dehydrationExposureMs }, from, starvationMs, dehydrationMs, coldMs);
-  const exposureChanged = starvationExposureMs !== cold.starvationExposureMs || dehydrationExposureMs !== cold.dehydrationExposureMs
+  const workforce = workforceForSurvivors(cold, hot.workers[offset]!);
+  const foodCoveragePermille = durationMs > 0 ? Math.max(0, Math.min(1_000, Math.floor((durationMs - starvationMs) * 1_000 / durationMs))) : 1_000;
+  const waterCoveragePermille = durationMs > 0 ? Math.max(0, Math.min(1_000, Math.floor((durationMs - dehydrationMs) * 1_000 / durationMs))) : 1_000;
+  const awayFromSettlement = cold.lord.location !== 'settlement';
+  const carried = awayFromSettlement ? consumeCarriedLordSupplies(cold.lord, durationMs) : null;
+  const lordFoodCoveragePermille = carried?.foodCoveragePermille ?? foodCoveragePermille;
+  const lordWaterCoveragePermille = carried?.waterCoveragePermille ?? waterCoveragePermille;
+  const coldLoadRateMicroPerMinute = lordColdLoadRate(cold, hot, offset, durationMs, coldMs, environment, stormActive);
+  const lordInput = carried ? { ...cold.lord,
+    carriedFoodMicro: carried.lord.carriedFoodMicro,
+    carriedWaterMicro: carried.lord.carriedWaterMicro,
+    carriedFoodConsumptionRemainder: carried.lord.carriedFoodConsumptionRemainder,
+    carriedWaterConsumptionRemainder: carried.lord.carriedWaterConsumptionRemainder,
+  } : cold.lord;
+  const lordResult = cold.lord.lifeState === 'alive' ? integrateBotLord(lordInput, {
+    fromElapsedMs: cold.lord.lastIntegratedAtElapsedMs, toElapsedMs: cold.lord.lastIntegratedAtElapsedMs + durationMs,
+    foodCoveragePermille: lordFoodCoveragePermille, waterCoveragePermille: lordWaterCoveragePermille, coldLoadRateMicroPerMinute,
+    resting: cold.lord.activity === 'resting',
+  }) : { lord: cold.lord, death: cold.lord.deathRecord };
+  const fateCause = lordResult.death?.primaryCause === 'water_deprivation' ? 'dehydration'
+    : lordResult.death?.primaryCause === 'food_deprivation' ? 'starvation' : lordResult.death?.primaryCause === 'cold' ? 'cold' : 'battle_capture';
+  const lordUpdated = {
+    ...cold, workforce, starvationExposureMs, coldExposureMs, dehydrationExposureMs,
+    lordStarvationExposureMs: Math.min(BOT_LORD_STARVATION_FATAL_MS, cold.lordStarvationExposureMs + (carried?.foodShortfallMs ?? starvationMs)),
+    lordDehydrationExposureMs: Math.min(BOT_LORD_DEHYDRATION_FATAL_MS, cold.lordDehydrationExposureMs + (carried?.waterShortfallMs ?? dehydrationMs)),
+    lordColdExposureMs: Math.min(BOT_LORD_COLD_FATAL_MS, cold.lordColdExposureMs + coldMs),
+    lord: lordResult.lord,
+    ...(lordResult.death ? { lordFate: { status: 'dead' as const, changedAtElapsedMs: lordResult.death.atElapsedMs,
+      cause: fateCause, triggerId: lordResult.death.deathEventId } } : {}),
+  };
+  const exposureChanged = workforce !== cold.workforce || starvationExposureMs !== cold.starvationExposureMs || dehydrationExposureMs !== cold.dehydrationExposureMs
     || coldExposureMs !== cold.coldExposureMs || lordUpdated.lordStarvationExposureMs !== cold.lordStarvationExposureMs
     || lordUpdated.lordDehydrationExposureMs !== cold.lordDehydrationExposureMs || lordUpdated.lordColdExposureMs !== cold.lordColdExposureMs
-    || lordUpdated.lordFate.status !== cold.lordFate.status;
+    || lordUpdated.lordFate.status !== cold.lordFate.status || lordUpdated.lord.hpMicro !== cold.lord.hpMicro
+    || lordUpdated.lord.lastIntegratedAtElapsedMs !== cold.lord.lastIntegratedAtElapsedMs
+    || lordUpdated.lord.foodShortfallMs !== cold.lord.foodShortfallMs || lordUpdated.lord.waterShortfallMs !== cold.lord.waterShortfallMs
+    || lordUpdated.lord.coldLoadMicro !== cold.lord.coldLoadMicro;
   const coldChanged = exposureChanged || cohorts !== cold.cohorts;
   const updatedCold = coldChanged ? { ...lordUpdated, starvationExposureMs, dehydrationExposureMs, coldExposureMs, cohorts } : cold;
   return {
-    cold: reconcileArmyMovement(updatedCold),
+    cold: reconcileScoutMovement(reconcileArmyMovement(updatedCold)),
     starvationDeaths,
     dehydrationDeaths,
     coldDeaths,
-    lordDied: cold.lordFate.status === 'active' && updatedCold.lordFate.status === 'dead',
+    lordDied: cold.lord.lifeState === 'alive' && updatedCold.lord.lifeState === 'dead',
   };
 }
 
@@ -458,6 +610,8 @@ function storeFillMs(balance: number, cap: number, qProduction: number, qConsump
 }
 
 function nextBotWake(cold: BotColdRecord, chunk: BotNumericRows, offset: number, now: number): number {
+  if (cold.lord.retreatRoute) return Math.max(now + 1, botLordRetreatArrivalAt(cold.lord) ?? nextLattice(now, cold.decisionPhaseMs));
+  if (cold.lord.activity === 'encounter') return now + BOT_LORD_ENCOUNTER_RECHECK_MS;
   const plan = cold.currentPlan;
   let next = plan?.completesAtElapsedMs ?? nextLattice(now, cold.decisionPhaseMs);
   const rates = productionRates(cold, chunk, offset);
@@ -480,7 +634,7 @@ function nextBotWake(cold: BotColdRecord, chunk: BotNumericRows, offset: number,
   const effectiveFuelZero = chunk.firewoodMicro[offset]! > 0 ? earliestThresholdMs(chunk.firewoodMicro[offset]!, rates.firewoodProduced, rates.firewoodConsumed, firewoodRemainder) : null;
   const starvationBoundary = chunk.foodMicro[offset]! <= 0 ? now + Math.max(1, BOT_STARVATION_LOSS_INTERVAL_MS - cold.starvationExposureMs) : null;
   const coldBoundary = chunk.firewoodMicro[offset]! <= 0 ? now + Math.max(1, BOT_COLD_LOSS_INTERVAL_MS - cold.coldExposureMs) : null;
-  const waterNeedPerDay = chunk.population[offset]! * BOT_WATER_ML_PER_PERSON_PER_DAY;
+  const waterNeedPerDay = (chunk.population[offset]! + Number(cold.lord.lifeState === 'alive' && cold.lord.location === 'settlement')) * BOT_WATER_ML_PER_PERSON_PER_DAY;
   const waterZeroMs = waterNeedPerDay > 0 && cold.potableWaterMl > 0
     ? Math.max(1, Math.ceil((cold.potableWaterMl * 86_400_000 - cold.waterConsumptionRemainder) / waterNeedPerDay)) : null;
   const dehydrationBoundary = cold.potableWaterMl === 0
@@ -491,6 +645,14 @@ function nextBotWake(cold: BotColdRecord, chunk: BotNumericRows, offset: number,
   if (coldBoundary !== null) thresholds.push(coldBoundary);
   if (waterZeroMs !== null) thresholds.push(now + waterZeroMs);
   if (dehydrationBoundary !== null) thresholds.push(dehydrationBoundary);
+  const retreatArrivalAt = botLordRetreatArrivalAt(cold.lord);
+  if (retreatArrivalAt !== null && retreatArrivalAt > now) thresholds.push(retreatArrivalAt);
+  if (cold.lord.lifeState === 'alive' && cold.lord.location !== 'settlement') {
+    const foodUntilDepleted = cold.lord.carriedFoodMicro * 20 - cold.lord.carriedFoodConsumptionRemainder;
+    if (foodUntilDepleted > 0) thresholds.push(now + foodUntilDepleted);
+    const waterUntilDepleted = Math.ceil((cold.lord.carriedWaterMicro * 216 - cold.lord.carriedWaterConsumptionRemainder) / 5);
+    if (waterUntilDepleted > 0) thresholds.push(now + waterUntilDepleted);
+  }
   next = Math.min(next, ...thresholds);
   const movement = cold.armyMovement;
   if (movement && (movement.status === 'outbound' || movement.status === 'returning') && movement.arrivesAtElapsedMs > now) next = Math.min(next, movement.arrivesAtElapsedMs);
@@ -617,25 +779,6 @@ function addReceipt(cold: BotColdRecord, plan: BotPlanState, at: number, result:
   return appendBotActionReceipt(cold, receipt);
 }
 
-function chooseBlueprint(cold: BotColdRecord, plan: BotPlanState, populationSeed: string): { id: string | null; duplicate: boolean; drawIndex: number } {
-  const source = cold.searchSources.find(item => item.id === plan.targetId && item.discovered && item.remainingActions > 0);
-  if (!source) return { id: null, duplicate: false, drawIndex: 0 };
-  const candidates = source.eligibleBlueprintIds.flatMap(id => {
-    const lootRule = BOT_BLUEPRINT_LOOT_RULES.find(rule => rule.blueprintId === id);
-    if (!lootRule || !lootRule.candidates.includes(source.kind)) return [];
-    return [{ id, weight: lootRule.baseWeight }];
-  }).sort((a, b) => compareId(a.id, b.id));
-  const totalWeight = candidates.reduce((sum, row) => sum + row.weight, 0);
-  if (totalWeight <= 0) return { id: null, duplicate: false, drawIndex: 0 };
-  const drawIndex = 0;
-  const roll = randomIntFromFields([populationSeed, cold.botId, plan.actionId, BOT_BLUEPRINT_RULES_VERSION, String(drawIndex)], 0, totalWeight - 1).value;
-  let cumulative = 0;
-  const selected = candidates.find(row => { cumulative += row.weight; return roll < cumulative; });
-  if (!selected) return { id: null, duplicate: false, drawIndex };
-  return { id: selected.id, duplicate: cold.blueprintIds.includes(selected.id)
-    || cold.blueprintItems.some(item => item.blueprintId === selected.id && item.status !== 'sold'), drawIndex };
-}
-
 function chooseLegalAnchor(cold: BotColdRecord, actionOrdinal: number, blueprintId: string, saveSeed: string): { anchor: CoordinateMm; orientation: 0 | 90 | 180 | 270; layoutSeed: string } {
   const width = blueprintId === 'BP-BOT-KEEP' ? 12_000 : 8_000;
   const depth = width;
@@ -665,7 +808,11 @@ function startBotDecision(population: BotPopulationState, hot: ReturnType<typeof
     throw new Error(`BOT_PLAN_RESERVED_UNAFFORDABLE:${cold.botId}:${decision.plan.actionId}`);
   }
   const plan = decision.plan;
-  const nextCold: BotColdRecord = { ...cold, currentPlan: plan, nextActionOrdinal: cold.nextActionOrdinal + 1, workforce: decision.workforce };
+  const ownerSelfService = plan.ownerSelfService === true && cold.lord.lifeState === 'alive' && cold.lord.location === 'settlement' && plan.workersAssigned > 0
+    && !['search', 'scout', 'raid', 'hunt'].includes(plan.action);
+  const nextCold: BotColdRecord = { ...cold, currentPlan: plan, nextActionOrdinal: cold.nextActionOrdinal + 1,
+    workforce: decision.workforce,
+    lord: ownerSelfService ? { ...cold.lord, activity: 'working' } : cold.lord };
   if (plan.action === 'raid') {
     const target = cold.knownTargets.find(item => item.id === plan.targetId);
     if (!target || target.id === cold.botId) throw new Error(`BOT_RAID_TARGET_NOT_KNOWN:${cold.botId}:${plan.targetId}`);
@@ -802,7 +949,6 @@ function applyBotCasualties(coldInput: BotColdRecord, hot: ReturnType<typeof hyd
   hot.population[offset] = Math.max(hot.armySize[offset]!, hot.population[offset]! - applied);
   hot.workers[offset] = Math.min(hot.workers[offset]!, Math.max(0, hot.population[offset]! - hot.armySize[offset]!));
   hot.deathCount[offset] += applied;
-  if (hot.population[offset] === 0) hot.alive[offset] = 0;
   const living = cohorts.reduce((sum, cohort) => sum + cohort.livingCount, 0);
   const averageHealth = living === 0 ? 0 : Math.round(cohorts.reduce((sum, cohort) => sum + cohort.livingCount * cohort.healthPerMember / Math.max(1, cohort.maxHealthPerMember), 0) * 1_000 / living);
   hot.armyHealthPermille[offset] = averageHealth;
@@ -848,6 +994,125 @@ function cancelBotMarketListings(population: BotPopulationState, coldInput: BotC
   })) };
 }
 
+/** HP-zero terminal transaction. It is safe to call at each authoritative row commit. */
+function finalizeLordDeath(populationInput: BotPopulationState, coldInput: BotColdRecord,
+  hot: ReturnType<typeof hydrateBotHotArrays>, offset: number, at: number): { population: BotPopulationState; cold: BotColdRecord; events: BotSimulationEvent[] } {
+  const death = coldInput.lord.deathRecord;
+  if (coldInput.lord.lifeState !== 'dead' || !death) return { population: populationInput, cold: coldInput, events: [] };
+  if (death.legacyMigration) return { population: populationInput, cold: coldInput, events: [] };
+  const activeLordOrdinals = (populationInput.activeLordOrdinals ?? populationInput.chunks.flatMap(chunk => chunk.cold.flatMap((row, rowOffset) =>
+    row.lord?.lifeState === 'alive' ? [chunk.firstOrdinal + rowOffset] : []))).filter(ordinal => ordinal !== coldInput.ordinal);
+  const livingLordCount = Math.max(0, populationInput.livingLordCount - Number(populationInput.activeLordOrdinals?.includes(coldInput.ordinal) ?? true));
+  const existing = populationInput.remainsChests.find(chest => chest.botId === coldInput.botId && chest.deathEventId === death.deathEventId);
+  if (existing) return { population: { ...populationInput, activeLordOrdinals, livingLordCount }, cold: coldInput, events: [] };
+
+  const released = cancelBotMarketListings(populationInput, coldInput, at, 'lord_eliminated');
+  let population = released.population;
+  let cold = released.cold;
+  const events = [...released.events];
+  if (cold.currentPlan) {
+    const interrupted = preemptPlan(cold, hot, offset, death.atElapsedMs, 'LORD_ELIMINATED');
+    cold = interrupted.cold;
+    if (interrupted.event) events.push(interrupted.event);
+  }
+
+  const resourceMicro: Record<BotResourceKey, number> = {
+    food: hot.foodMicro[offset]! + cold.carriedCargo.food * BOT_MICRO + cold.lord.carriedFoodMicro,
+    wood: hot.woodMicro[offset]! + cold.carriedCargo.wood * BOT_MICRO,
+    stone: hot.stoneMicro[offset]! + cold.carriedCargo.stone * BOT_MICRO,
+    ore: hot.oreMicro[offset]! + cold.carriedCargo.ore * BOT_MICRO,
+  };
+  const firewoodMicro = hot.firewoodMicro[offset]! + cold.carriedCargo.firewood * BOT_MICRO;
+  const waterMl = cold.potableWaterMl + Math.floor(cold.lord.carriedWaterMicro / 1_000);
+  const inventoryItems = [
+    ...cold.inventoryItems.map(item => ({ instanceId: item.instanceId, itemTemplateId: item.itemTemplateId,
+      quantity: item.quantity, rewardReceiptId: null, sourceId: item.sourceId })),
+    ...cold.eventInventory.filter(item => item.quantity > 0).map(item => ({ instanceId: item.instanceId,
+      itemTemplateId: item.itemTemplateId, quantity: item.quantity, rewardReceiptId: item.rewardReceiptId, sourceId: null })),
+  ].sort((a, b) => compareId(a.instanceId, b.instanceId));
+  const blueprintItems = cold.blueprintItems.filter(item => item.status === 'owned').slice().sort((a, b) => compareId(a.instanceId, b.instanceId));
+  const ownedChests = cold.ownedChests.filter(item => item.status === 'owned').slice().sort((a, b) => compareId(a.chestId, b.chestId));
+  const chest = {
+    id: `BOT-REMAINS:${death.deathEventId}`,
+    deathEventId: death.deathEventId,
+    botId: cold.botId,
+    position: { ...death.position },
+    createdAtElapsedMs: death.atElapsedMs,
+    resourceMicro,
+    waterMl,
+    firewoodMicro,
+    inventoryItems,
+    blueprintItems,
+    ownedChests,
+    state: 'unclaimed' as const,
+    claimedById: null,
+  };
+
+  hot.alive[offset] = 0;
+  hot.nextWakeAtElapsedMs[offset] = Number.MAX_SAFE_INTEGER;
+  for (const key of ['food', 'wood', 'stone', 'ore'] as const) {
+    hot[`${key}Micro` as 'foodMicro' | 'woodMicro' | 'stoneMicro' | 'oreMicro'][offset] = 0;
+    hot[`reserved${key[0]!.toUpperCase()}${key.slice(1)}Micro` as 'reservedFoodMicro' | 'reservedWoodMicro' | 'reservedStoneMicro' | 'reservedOreMicro'][offset] = 0;
+  }
+  hot.firewoodMicro[offset] = 0;
+  hot.reservedFoodMicro[offset] = 0;
+  hot.reservedWoodMicro[offset] = 0;
+  hot.reservedStoneMicro[offset] = 0;
+  hot.reservedOreMicro[offset] = 0;
+  hot.buildingCount[offset] = 0;
+  hot.farmCount[offset] = 0;
+  hot.millCount[offset] = 0;
+  hot.quarryCount[offset] = 0;
+  hot.barracksCount[offset] = 0;
+  hot.wallCount[offset] = 0;
+  hot.workKind[offset] = 0;
+  hot.assignedWorkers[offset] = 0;
+  hot.workProgress[offset] = 0;
+  hot.workRequired[offset] = 0;
+  const zeroWorkforce: BotColdRecord['workforce'] = { gatherFood: 0, gatherWood: 0, gatherStone: 0, gatherOre: 0,
+    farmers: 0, millWorkers: 0, quarryWorkers: 0, smiths: 0, builders: 0, scouts: 0, guards: 0, recruiters: 0 };
+  cold = {
+    ...cold,
+    lordFate: { status: 'dead', changedAtElapsedMs: death.atElapsedMs,
+      cause: death.primaryCause === 'food_deprivation' ? 'starvation'
+        : death.primaryCause === 'water_deprivation' ? 'dehydration' : death.primaryCause,
+      triggerId: death.deathEventId },
+    currentPlan: null,
+    armyMovement: null,
+    workforce: zeroWorkforce,
+    structures: [],
+    blueprintIds: [],
+    blueprintItems: [],
+    inventoryItems: [],
+    eventInventory: [],
+    ownedChests: [],
+    potableWaterMl: 0,
+    waterConsumptionRemainder: 0,
+    carriedCargo: { food: 0, wood: 0, stone: 0, ore: 0, firewood: 0 },
+    lord: { ...cold.lord,
+      position: { ...death.position },
+      location: death.position.xMm === cold.position.xMm && death.position.yMm === cold.position.yMm ? 'settlement' : 'field',
+      activity: 'resting', activeEncounterId: null, retreatDestination: null, retreatRoute: null,
+      retreatDistanceMm: 0, retreatProgressMm: 0, retreatStartedAtElapsedMs: null,
+      retreatSpeedMmPerHour: 0, retreatTravelRemainder: 0,
+      retreatThreatActorId: null, retreatThreatPosition: null,
+      encounterThreatActorId: null, encounterThreatPosition: null,
+      carriedFoodMicro: 0, carriedWaterMicro: 0 },
+  };
+  population = { ...population,
+    activeLordOrdinals,
+    livingLordCount,
+    remainsChests: [...population.remainsChests, chest],
+  };
+  events.push({ type: 'bot_lord_death_finalized', occurredAtElapsedMs: death.atElapsedMs, payload: {
+    botId: cold.botId, lordId: cold.lord.id, deathEventId: death.deathEventId, cause: death.primaryCause,
+    chestId: chest.id, resourceMicro, waterMl, firewoodMicro, inventoryItemCount: inventoryItems.length,
+    blueprintItemCount: blueprintItems.length, removedStructureCount: coldInput.structures.length,
+    ruleVersion: BOT_LORD_RULE_VERSION,
+  } });
+  return { population, cold, events };
+}
+
 type MarketSettlementResult = {
   population: BotPopulationState;
   sellerCold: BotColdRecord;
@@ -866,6 +1131,7 @@ function settleBotMarketListing(
   sellerColdInput: BotColdRecord,
   listingId: string,
   at: number,
+  environment: ColdEnvironment | null = null,
 ): MarketSettlementResult {
   let population = populationInput;
   let sellerCold = sellerColdInput;
@@ -882,9 +1148,14 @@ function settleBotMarketListing(
   const sellerPosition = sellerCold.position;
   const radiusSquared = BOT_MARKET_ACCESS_RADIUS_MM * BOT_MARKET_ACCESS_RADIUS_MM;
   const possible: { chunk: BotStateChunk; offset: number; distanceSquared: number; botId: string; paymentHave: number }[] = [];
-  for (const chunk of population.chunks) for (let offset = 0; offset < chunk.count; offset += 1) {
+  const activeLordOrdinals = population.activeLordOrdinals ?? population.chunks.flatMap(chunk => chunk.cold.flatMap((cold, offset) =>
+    cold.lord.lifeState === 'alive' ? [chunk.firstOrdinal + offset] : []));
+  for (const ordinal of activeLordOrdinals) {
+    const reference = botChunkAtOrdinal(population, ordinal);
+    if (!reference) continue;
+    const { chunk, offset } = reference;
     const cold = chunk.index === currentChunk.index ? currentColdRows[offset]! : chunk.cold[offset]!;
-    if (!cold || cold.botId === sellerCold.botId || cold.lordFate.status !== 'active'
+    if (!cold || cold.botId === sellerCold.botId || cold.lord.lifeState !== 'alive'
       || (chunk.index === currentChunk.index ? currentHot.alive[offset] : chunk.alive[offset]) === 0) continue;
     if (cold.blueprintIds.includes(listing.blueprintId)
       || cold.blueprintItems.some(item => item.blueprintId === listing.blueprintId && item.status !== 'sold')
@@ -894,7 +1165,7 @@ function settleBotMarketListing(
     const have = chunk.index === currentChunk.index ? currentHot : chunk;
     const balance = botMarketResourceHave(have, cold, offset, listing.paymentResource);
     const populationCount = chunk.index === currentChunk.index ? currentHot.population[offset]! : chunk.population[offset]!;
-    if (balance - botMarketReserveUnits(populationCount, listing.paymentResource) < listing.askAmount) continue;
+    if (balance - botMarketReserveUnits(populationCount + Number(cold.lord.lifeState === 'alive' && cold.lord.location === 'settlement'), listing.paymentResource) < listing.askAmount) continue;
     const sellerCapacity = botMarketResourceCapacity(sellerCold, listing.paymentResource);
     const sellerHave = listing.paymentResource === 'food' ? Math.floor(currentHot.foodMicro[sellerOffset]! / BOT_MICRO) : sellerCold.potableWaterMl;
     if (sellerCapacity - sellerHave < listing.askAmount) continue;
@@ -915,7 +1186,7 @@ function settleBotMarketListing(
     let buyerCold = coldRows[offset]!;
     const grade = (['S', 'A', 'B', 'C', 'D'] as const)[chunk.talentGrades[offset]!]!;
     const kind = (['combat', 'production'] as const)[chunk.talentKinds[offset]!]!;
-    const integrated = integrateBot(buyerCold, hot, hot, offset, at, grade, kind, population.saveSeed);
+    const integrated = integrateBot(buyerCold, hot, hot, offset, at, grade, kind, population.saveSeed, environment);
     buyerCold = integrated.cold;
     events.push(...integrated.events);
     if (buyerCold.lordFate.status !== 'active') {
@@ -936,7 +1207,7 @@ function settleBotMarketListing(
     if (hot.alive[offset] === 0 || buyerCold.lordFate.status !== 'active') continue;
     const buyerPopulation = hot.population[offset]!;
     const buyerHave = botMarketResourceHave(hot, buyerCold, offset, listing.paymentResource);
-    if (buyerHave - botMarketReserveUnits(buyerPopulation, listing.paymentResource) < listing.askAmount) continue;
+    if (buyerHave - botMarketReserveUnits(buyerPopulation + Number(buyerCold.lord.lifeState === 'alive' && buyerCold.lord.location === 'settlement'), listing.paymentResource) < listing.askAmount) continue;
     const sellerCapacity = botMarketResourceCapacity(sellerCold, listing.paymentResource);
     const sellerHave = listing.paymentResource === 'food' ? Math.floor(currentHot.foodMicro[sellerOffset]! / BOT_MICRO) : sellerCold.potableWaterMl;
     if (sellerCapacity - sellerHave < listing.askAmount) continue;
@@ -1010,6 +1281,7 @@ function advanceSellerMarketListings(
   sellerOffset: number,
   coldInput: BotColdRecord,
   at: number,
+  environment: ColdEnvironment | null = null,
 ): MarketSettlementResult {
   let population = populationInput;
   let sellerCold = coldInput;
@@ -1047,7 +1319,7 @@ function advanceSellerMarketListings(
       listingId, sellerBotId: sellerCold.botId, askAmount: repriced.askAmount, paymentResource: repriced.paymentResource,
       repriceCount: repriced.repriceCount, ruleVersion: BOT_MARKET_RULE_VERSION,
     } });
-    const settled = settleBotMarketListing(population, chunk, hot, coldRows, sellerOffset, sellerCold, listingId, at);
+    const settled = settleBotMarketListing(population, chunk, hot, coldRows, sellerOffset, sellerCold, listingId, at, environment);
     population = settled.population;
     sellerCold = settled.sellerCold;
     for (const offset of settled.localChangedOffsets) localChangedOffsets.add(offset);
@@ -1063,6 +1335,7 @@ export function settleBotMarketListingForPlayer(
   populationInput: BotPopulationState,
   listingId: string,
   at: number,
+  environment: ColdEnvironment | null = null,
 ): { population: BotPopulationState | null; listing: BotMarketListing | null; code: string | null; events: BotSimulationEvent[] } {
   const sourceListing = populationInput.marketListings.find(item => item.id === listingId && item.status === 'active');
   if (!sourceListing) return { population: null, listing: null, code: 'BOT_MARKET_LISTING_NOT_AVAILABLE', events: [] };
@@ -1081,7 +1354,7 @@ export function settleBotMarketListingForPlayer(
   if (!sellerCold || hot.alive[sellerOffset] === 0 || sellerCold.lordFate.status !== 'active') {
     return { population: null, listing: sourceListing, code: 'BOT_MARKET_SELLER_UNAVAILABLE', events: [] };
   }
-  const integrated = integrateBot(sellerCold, hot, hot, sellerOffset, at, sellerGrade, sellerKind, population.saveSeed);
+  const integrated = integrateBot(sellerCold, hot, hot, sellerOffset, at, sellerGrade, sellerKind, population.saveSeed, environment);
   sellerCold = integrated.cold;
   if (hot.alive[sellerOffset] === 0 || sellerCold.lordFate.status !== 'active') {
     return { population: null, listing: sourceListing, code: 'BOT_MARKET_SELLER_UNAVAILABLE', events: integrated.events };
@@ -1134,18 +1407,7 @@ export function settleBotMarketListingForPlayer(
   ] };
 }
 
-function regionalChest(seed: string, cold: BotColdRecord, source: BotSearchSource, actionId: string): FieldChest {
-  const grades: readonly FieldChest['grade'][] = ['Mộc', 'Thanh Đồng', 'Bạch Ngân', 'Hoàng Kim', 'Hạo Nguyệt'];
-  const roll = randomIntFromFields([seed, cold.botId, source.id, actionId, BOT_CHEST_RULE_VERSION, 'rarity'], 0, grades.length - 1).value;
-  return {
-    id: `${source.id}:CHEST`, cacheId: source.id, chestType: 'field', eventId: null, grade: grades[roll]!,
-    position: source.position, ring: 'BOT-REGIONAL-OVERLAY', accessStatement: 'Finite bot regional chest source.',
-    lootCommitment: canonicalStateHash([seed, cold.botId, source.id, actionId, BOT_CHEST_RULE_VERSION, 'loot']),
-    source: { path: BOT_CHEST_RULE_VERSION, heading: 'Finite regional chest overlay', recordId: source.id },
-  };
-}
-
-/** Claims the same world chest ledger used by the player, or creates one unique finite regional chest. */
+/** Claims one physical world chest through the lifecycle ledger shared with the player. */
 export function acquireBotChest(
   state: Pick<GameState, 'fieldChestStates'>,
   world: WorldDefinition | undefined,
@@ -1155,28 +1417,23 @@ export function acquireBotChest(
   seed: string,
   at: number,
 ): { cold: BotColdRecord; result: 'discovered' | 'duplicate' | 'depleted' | 'blocked'; event: BotSimulationEvent | null } {
-  if (coldInput.ownedChests.some(chest => chest.fieldChestId === (source.fieldChestId ?? null) && source.fieldChestId !== undefined)) {
+  if (!source.fieldChestId || source.kind !== 'field_cache') return { cold: coldInput, result: 'blocked', event: null };
+  if (coldInput.ownedChests.some(chest => chest.fieldChestId === source.fieldChestId)) {
     return { cold: coldInput, result: 'duplicate', event: null };
   }
-  let sourceChest: FieldChest;
-  if (source.fieldChestId) {
-    if (!world) return { cold: coldInput, result: 'blocked', event: null };
-    const found = world.fieldChests.find(chest => chest.id === source.fieldChestId && chest.chestType === 'field');
-    const runtime = state.fieldChestStates.find(chest => chest.chestId === source.fieldChestId);
-    if (!found || !runtime || runtime.state !== 'unopened' || runtime.custody !== 'world') {
-      return { cold: coldInput, result: 'depleted', event: null };
-    }
-    sourceChest = found;
-    state.fieldChestStates = state.fieldChestStates.map(chest => chest.chestId !== source.fieldChestId ? chest : {
-      ...chest, custody: 'carried', claimedById: coldInput.botId, carrierId: coldInput.botId,
-    });
-  } else {
-    sourceChest = regionalChest(seed, coldInput, source, actionId);
+  if (!world) return { cold: coldInput, result: 'blocked', event: null };
+  const sourceChest = world.fieldChests.find(chest => chest.id === source.fieldChestId && chest.chestType === 'field');
+  const runtime = state.fieldChestStates.find(chest => chest.chestId === source.fieldChestId);
+  if (!sourceChest || !runtime || runtime.state !== 'unopened' || runtime.custody !== 'world') {
+    return { cold: coldInput, result: 'depleted', event: null };
   }
+  state.fieldChestStates = state.fieldChestStates.map(chest => chest.chestId !== source.fieldChestId ? chest : {
+    ...chest, custody: 'carried', claimedById: coldInput.botId, carrierId: coldInput.botId,
+  });
   const owned: BotOwnedChest = {
-    chestId: sourceChest.id, fieldChestId: source.fieldChestId ?? null, sourceId: source.id,
+    chestId: sourceChest.id, fieldChestId: source.fieldChestId, sourceId: source.id,
     chestType: sourceChest.chestType, eventId: sourceChest.eventId, grade: sourceChest.grade,
-    lootCommitment: sourceChest.lootCommitment, acquiredAtElapsedMs: at, status: 'owned',
+    lootCommitment: sourceChest.lootCommitment, acquiredAtElapsedMs: at, status: 'owned', lootRuleVersion: CHEST_LOOT_RULE_VERSION,
     openedAtElapsedMs: null, lootReceiptId: null, lootOutcome: null, ruleVersion: BOT_CHEST_RULE_VERSION,
   };
   return {
@@ -1209,14 +1466,24 @@ export function openBotChest(
       return { cold: coldInput, result: 'blocked', events: [] };
     }
     chest = found;
-  } else {
+  } else if (owned.chestType === 'field' && owned.eventId === null && owned.lootRuleVersion !== CHEST_LOOT_RULE_VERSION) {
+    // Only already-owned legacy records may use the former regional chest identity.
+    // New acquisitions require a real world field chest and pin the current loot table.
     const source = coldInput.searchSources.find(candidate => candidate.id === owned.sourceId);
-    if (!source) return { cold: coldInput, result: 'blocked', events: [] };
-    chest = { ...regionalChest(state.seed, coldInput, source, `${owned.chestId}:OPEN`), id: owned.chestId,
-      grade: owned.grade, lootCommitment: owned.lootCommitment };
+    chest = { id: owned.chestId, cacheId: owned.sourceId, chestType: 'field', eventId: null, grade: owned.grade,
+      position: source?.position ?? coldInput.position, ring: 'BOT-LEGACY-REGIONAL-CHEST',
+      accessStatement: 'Previously claimed regional chest.', lootCommitment: owned.lootCommitment,
+      source: { path: 'BOT-CHEST-LEGACY-1.0', heading: 'Previously claimed regional chest', recordId: owned.sourceId } };
+  } else {
+    return { cold: coldInput, result: 'blocked', events: [{ type: 'bot_chest_blocked', occurredAtElapsedMs: at,
+      payload: { botId: coldInput.botId, chestId, blocker: 'WORLD_CHEST_REFERENCE_MISSING', ruleVersion: BOT_CHEST_RULE_VERSION } }] };
   }
   let outcome: ReturnType<typeof deterministicChestOutcome>;
-  try { outcome = deterministicChestOutcome(state.seed, chest); }
+  try {
+    outcome = owned.lootRuleVersion === CHEST_LOOT_RULE_VERSION
+      ? deterministicChestOutcome(state.seed, chest)
+      : deterministicLegacyFieldChestOutcome(state.seed, chest);
+  }
   catch { return { cold: coldInput, result: 'blocked', events: [{ type: 'bot_chest_blocked', occurredAtElapsedMs: at,
     payload: { botId: coldInput.botId, chestId, blocker: 'CHEST_LOOT_TABLE_NOT_COMPILED', ruleVersion: BOT_CHEST_RULE_VERSION } }] }; }
   let cold = { ...coldInput, inventoryItems: [...coldInput.inventoryItems] };
@@ -1241,10 +1508,20 @@ export function openBotChest(
       cold.localIceRemainingMl += acceptedMl;
       const overflowLitres = Math.ceil((requestedMl - acceptedMl) / 1_000);
       addItem(reward.templateId, overflowLitres, ':OVERFLOW');
+    } else if (BOT_BLUEPRINT_BY_ID.has(reward.templateId)) {
+      for (let quantityIndex = 0; quantityIndex < reward.quantity; quantityIndex += 1) {
+        const instanceId = `${owned.chestId}:LOOT:${reward.templateId}:${quantityIndex}`;
+        if (cold.blueprintItems.some(item => item.instanceId === instanceId)) continue;
+        cold.blueprintItems.push({
+          instanceId, blueprintId: reward.templateId, sourceId: owned.chestId,
+          acquiredAtElapsedMs: at, status: 'owned', resolvedAtElapsedMs: null, transactionId: null,
+          ruleVersion: BOT_BLUEPRINT_RULES_VERSION,
+        });
+      }
     } else addItem(reward.templateId, reward.quantity);
   }
   const lootOutcome = outcome.rewardStacks.map(item => ({ itemTemplateId: item.templateId, quantity: item.quantity }));
-  const lootReceiptId = `${owned.chestId}:OPEN:${BOT_CHEST_RULE_VERSION}`;
+  const lootReceiptId = `${owned.chestId}:OPEN:${outcome.ruleVersion}`;
   cold.ownedChests = cold.ownedChests.map(item => item.chestId !== owned.chestId ? item : {
     ...item, status: 'opened', openedAtElapsedMs: at, lootReceiptId, lootOutcome,
   });
@@ -1347,6 +1624,288 @@ function playerUnitPower(state: GameState, unitId: string): number {
   }, 0);
   const healthFactor = unit.health ? Math.max(0, Math.min(1, unit.health.current / Math.max(1, unit.health.max))) : 1;
   return Math.max(1, Math.floor((25 + unit.level * 8 + Number(attributes.STR ?? 0) * 3 + Number(attributes.DEX ?? 0) * 2 + weaponPower) * healthFactor));
+}
+
+export function botLordAttackApproachPermille(target: BotColdRecord, livingDefenders: number, attackerPerception: number): number {
+  if (!Number.isSafeInteger(livingDefenders) || livingDefenders < 0 || !Number.isFinite(attackerPerception)) {
+    throw new Error('BOT_LORD_APPROACH_INPUT_INVALID');
+  }
+  const activeGuards = target.cohorts.filter(cohort => cohort.order === 'defend' && cohort.livingCount > 0)
+    .reduce((sum, cohort) => sum + cohort.livingCount, 0);
+  const effectiveDefenders = Math.min(livingDefenders, activeGuards);
+  const wallDefense = botSettlementDefensePermille(target);
+  return Math.max(80, Math.min(900,
+    760 + Math.round((attackerPerception - target.lord.attributes.PER) * 8)
+      - effectiveDefenders * 70 - Math.floor(wallDefense / 5)));
+}
+
+function botLordCombatProfile(lord: BotColdRecord['lord']): PersonalCombatProfile {
+  const armed = lord.equipmentTemplateIds.includes('BOT-WEAPON-IRON-1.0');
+  const armored = lord.equipmentTemplateIds.includes('BOT-IRON-ARMOR-1.0');
+  return {
+    actorId: lord.id, attributes: lord.attributes, weaponDamage: armed ? 6 : 0, weaponCondition: 1,
+    armor: armored ? 2 : 0, rangeMm: 2_000,
+  };
+}
+
+const BOT_LORD_ESCAPE_FOOD_HOURS = 24;
+const BOT_LORD_ESCAPE_MIN_SEPARATION_MM = 4_000;
+const BOT_LORD_ESCAPE_BASE_CHANCE_PERMILLE = 300;
+const BOT_LORD_ENCOUNTER_RECHECK_MS = 5 * 60_000;
+
+function botLordEscapeChancePermille(lord: BotColdRecord['lord'], livingDefenders: number): number {
+  const missingHealth = Math.max(0, lord.maxHpMicro - lord.hpMicro);
+  const injuryBonus = Math.floor(missingHealth * 350 / lord.maxHpMicro);
+  return Math.max(100, Math.min(850, BOT_LORD_ESCAPE_BASE_CHANCE_PERMILLE + injuryBonus + (livingDefenders === 0 ? 150 : 0)));
+}
+
+function continueBotLordEncounter(
+  coldInput: BotColdRecord,
+  hot: ReturnType<typeof hydrateBotHotArrays>,
+  offset: number,
+  at: number,
+  encounterId: string,
+  threatActorId: string,
+  threatPosition: CoordinateMm,
+): { cold: BotColdRecord; events: BotSimulationEvent[] } {
+  let cold = coldInput;
+  const events: BotSimulationEvent[] = [];
+  if (cold.currentPlan) {
+    const interrupted = preemptPlan(cold, hot, offset, at, 'LORD_PERSONAL_ENCOUNTER');
+    cold = interrupted.cold;
+    if (interrupted.event) events.push(interrupted.event);
+  }
+  return { cold: { ...cold, lord: { ...cold.lord, activity: 'encounter', activeEncounterId: encounterId,
+    encounterThreatActorId: threatActorId, encounterThreatPosition: { ...threatPosition } } }, events };
+}
+
+function beginBotLordEscape(
+  coldInput: BotColdRecord,
+  hot: ReturnType<typeof hydrateBotHotArrays>,
+  offset: number,
+  world: WorldDefinition | undefined,
+  at: number,
+  encounterId: string,
+  threatActorId: string,
+  threatPosition: CoordinateMm,
+  livingDefenders: number,
+  seed: string,
+): { cold: BotColdRecord; events: BotSimulationEvent[] } {
+  let cold = coldInput;
+  const events: BotSimulationEvent[] = [];
+  if (cold.lord.lifeState !== 'alive') return { cold, events };
+  const lord = cold.lord;
+  const chancePermille = botLordEscapeChancePermille(lord, livingDefenders);
+  const draw = randomIntFromFields([seed, encounterId, lord.id, BOT_LORD_ESCAPE_RULE_VERSION, 'attempt'], 0, 999).value;
+  if (lord.retreatRoute) return { cold, events };
+  if (draw >= chancePermille || !world) return continueBotLordEncounter(cold, hot, offset, at, encounterId, threatActorId, threatPosition);
+
+  const destinations = [
+    ...cold.searchSources.filter(source => source.discovered).map(source => ({ id: source.id, position: source.position })),
+    ...cold.knownTargets.map(target => ({ id: target.id, position: target.position })),
+  ].filter(destination => destination.id !== threatActorId)
+    .filter(destination => Number.isSafeInteger(destination.position.xMm) && Number.isSafeInteger(destination.position.yMm))
+    .filter(destination => {
+      const currentThreatDistance = Math.hypot(lord.position.xMm - threatPosition.xMm, lord.position.yMm - threatPosition.yMm);
+      const destinationThreatDistance = Math.hypot(destination.position.xMm - threatPosition.xMm, destination.position.yMm - threatPosition.yMm);
+      return destinationThreatDistance >= Math.max(BOT_LORD_ESCAPE_MIN_SEPARATION_MM,
+        currentThreatDistance + BOT_LORD_ESCAPE_MIN_SEPARATION_MM);
+    })
+    .sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  const reachable = destinations.flatMap(destination => {
+    const route = planRoute(world, lord.position, destination.position);
+    return route && route.distanceMm > 0 && route.points.length >= 2
+      ? [{ destination, route }]
+      : [];
+  }).sort((a, b) => a.route.distanceMm - b.route.distanceMm
+    || (a.destination.id < b.destination.id ? -1 : a.destination.id > b.destination.id ? 1 : 0));
+  const selected = reachable[0];
+  if (!selected) return continueBotLordEncounter(cold, hot, offset, at, encounterId, threatActorId, threatPosition);
+
+  if (cold.currentPlan) {
+    const interrupted = preemptPlan(cold, hot, offset, at, 'LORD_RETREATING');
+    cold = interrupted.cold;
+    if (interrupted.event) events.push(interrupted.event);
+  }
+  let carriedFoodMicro = cold.lord.carriedFoodMicro;
+  let foodTakenMicro = 0;
+  if (cold.lord.location === 'settlement') {
+    const residentReserveMicro = hot.population[offset]! * BOT_LORD_ESCAPE_FOOD_HOURS
+      * BOT_UPKEEP_UNITS_PER_PERSON_HOUR.food * BOT_MICRO;
+    const targetCarryFoodMicro = BOT_LORD_ESCAPE_FOOD_HOURS * BOT_UPKEEP_UNITS_PER_PERSON_HOUR.food * BOT_MICRO;
+    let need = Math.max(0, targetCarryFoodMicro - carriedFoodMicro);
+    const fromStore = Math.min(need, Math.max(0, hot.foodMicro[offset]! - residentReserveMicro));
+    hot.foodMicro[offset]! -= fromStore;
+    need -= fromStore;
+    foodTakenMicro += fromStore;
+    carriedFoodMicro += fromStore;
+    const fromCargo = Math.min(need, cold.carriedCargo.food * BOT_MICRO);
+    cold = { ...cold, carriedCargo: { ...cold.carriedCargo, food: cold.carriedCargo.food - fromCargo / BOT_MICRO } };
+    carriedFoodMicro += fromCargo;
+    foodTakenMicro += fromCargo;
+
+    const residentWaterReserveMl = hot.population[offset]! * BOT_WATER_ML_PER_PERSON_PER_DAY;
+    const neededWaterMicro = BOT_WATER_ML_PER_PERSON_PER_DAY * 1_000;
+    const remainingWaterNeedMicro = Math.max(0, neededWaterMicro - cold.lord.carriedWaterMicro);
+    const waterAvailableMicro = Math.max(0, cold.potableWaterMl - residentWaterReserveMl) * 1_000;
+    const waterTakenMicro = Math.min(remainingWaterNeedMicro, waterAvailableMicro);
+    cold = { ...cold, potableWaterMl: cold.potableWaterMl - Math.floor(waterTakenMicro / 1_000) };
+    cold.lord = { ...cold.lord, carriedWaterMicro: cold.lord.carriedWaterMicro + waterTakenMicro };
+  }
+
+  const speedMmPerHour = Math.floor(world.navigationOverlay.walkSpeedMmPerHour
+    * ((carriedFoodMicro > 0 || cold.lord.carriedWaterMicro > 0) ? world.navigationOverlay.loadedSpeedPermille : 1_000) / 1_000);
+  if (!Number.isSafeInteger(speedMmPerHour) || speedMmPerHour <= 0) {
+    return continueBotLordEncounter(cold, hot, offset, at, encounterId, threatActorId, threatPosition);
+  }
+  const destination = { ...selected.destination.position };
+  cold.lord = {
+    ...cold.lord, lifeState: 'alive', activity: 'retreating', location: 'retreating',
+    encounterThreatActorId: null, encounterThreatPosition: null,
+    activeEncounterId: encounterId, retreatDestination: destination,
+    retreatRoute: selected.route.points.map(point => ({ ...point })),
+    retreatDistanceMm: Math.round(selected.route.distanceMm), retreatProgressMm: 0,
+    retreatStartedAtElapsedMs: at, retreatSpeedMmPerHour: speedMmPerHour, retreatTravelRemainder: 0,
+    retreatThreatActorId: threatActorId, retreatThreatPosition: { ...threatPosition },
+    carriedFoodMicro,
+  };
+  events.push({ type: 'bot_lord_escape_started', occurredAtElapsedMs: at, payload: {
+    botId: cold.botId, lordId: cold.lord.id, encounterId, threatActorId,
+    destinationId: selected.destination.id, from: lord.position, destination,
+    routePoints: cold.lord.retreatRoute, distanceMm: cold.lord.retreatDistanceMm,
+    speedMmPerHour, carriedFoodMicro, carriedWaterMicro: cold.lord.carriedWaterMicro,
+    foodTakenMicro, chancePermille, draw, routeUncertainty: selected.route.uncertainty,
+    ruleVersion: BOT_LORD_ESCAPE_RULE_VERSION,
+  } });
+  return { cold, events };
+}
+
+function findBotRow(population: BotPopulationState, botId: string): { chunkIndex: number; offset: number; chunk: BotStateChunk; cold: BotColdRecord } | null {
+  for (let chunkIndex = 0; chunkIndex < population.chunks.length; chunkIndex += 1) {
+    const chunk = population.chunks[chunkIndex]!;
+    const offset = chunk.cold.findIndex(row => row.botId === botId);
+    if (offset >= 0) return { chunkIndex, offset, chunk, cold: chunk.cold[offset]! };
+  }
+  return null;
+}
+
+function persistBotRowMutation(populationInput: BotPopulationState, found: NonNullable<ReturnType<typeof findBotRow>>,
+  hot: ReturnType<typeof hydrateBotHotArrays>, cold: BotColdRecord, at: number): BotPopulationState {
+  hot.nextWakeAtElapsedMs[found.offset] = hot.alive[found.offset] === 0
+    ? Number.MAX_SAFE_INTEGER : Math.max(at + 1, nextBotWake(cold, hot, found.offset, at));
+  const coldRows = found.chunk.cold.slice();
+  coldRows[found.offset] = cold;
+  let serialized = serializeBotHotArrays({ ...found.chunk, cold: coldRows }, hot);
+  const rowSha256 = serialized.rowSha256.slice();
+  rowSha256[found.offset] = botRowHash(serialized, found.offset);
+  serialized = { ...serialized, rowSha256 };
+  const chunk = { ...serialized, chunkSha256: botChunkHash(serialized) };
+  const chunks = populationInput.chunks.slice();
+  chunks[found.chunkIndex] = chunk;
+  const schedulerHeap = heapifyBotScheduler(chunks.map(current => {
+    const wake = computeBotChunkWake(current);
+    return { atElapsedMs: wake.atElapsedMs, chunkIndex: current.index, botOrdinal: wake.botOrdinal };
+  }));
+  return { ...populationInput, chunks, schedulerHeap, chunkRootSha256: botPopulationRoot(chunks) };
+}
+
+export function botLordAttackAvailability(state: GameState, world: WorldDefinition, actorIds: readonly string[], targetId: string): { code: string | null; message: string } {
+  const population = state.botPopulation;
+  const found = population ? findBotRow(population, targetId) : null;
+  if (!found) return { code: 'BOT_LORD_TARGET_UNKNOWN', message: 'The selected owner-lord does not exist in this simulation.' };
+  if (found.cold.lord.lifeState !== 'alive') return { code: 'BOT_LORD_ALREADY_DEAD', message: 'This owner-lord is already dead.' };
+  const known = state.playerKnowledge.knownBotIds.includes(targetId) || state.playerKnowledge.inspectedBotId === targetId;
+  const seen = state.playerKnowledge.lastSeenBotById[targetId];
+  if (!known || !seen) return { code: 'BOT_LORD_NOT_DISCOVERED', message: 'Inspect the rival owner-lord before attempting a personal attack.' };
+  if (actorIds.length !== 1) return { code: 'BOT_LORD_PERSONAL_ATTACK_REQUIRES_ONE_ACTOR', message: 'Choose one armed unit for a personal attack.' };
+  const profile = personalCombatProfileForUnit(state, actorIds[0]!);
+  if (!profile) return { code: 'BOT_LORD_ATTACKER_NOT_READY', message: 'Choose a living, equipped unit that is free to fight.' };
+  const unit = state.ownedUnits.find(candidate => candidate.id === profile.actorId)!;
+  const hot = hydrateBotHotArrays(found.chunk);
+  const grade = (['S', 'A', 'B', 'C', 'D'] as const)[found.chunk.talentGrades[found.offset]!]!;
+  const kind = (['combat', 'production'] as const)[found.chunk.talentKinds[found.offset]!]!;
+  const projected = integrateBot(found.cold, hot, hot, found.offset, state.simElapsedMs, grade, kind,
+    population!.saveSeed, state.survival.environment).cold;
+  if (projected.lord.lifeState !== 'alive') return { code: 'BOT_LORD_ALREADY_DEAD', message: 'The owner-lord will not survive to the attack boundary.' };
+  const distance = Math.hypot(unit.position!.xMm - projected.lord.position.xMm, unit.position!.yMm - projected.lord.position.yMm);
+  if (distance > profile.rangeMm) return { code: 'BOT_LORD_OUT_OF_REACH', message: 'Move the armed unit within weapon range of the owner-lord.' };
+  return { code: null, message: 'The armed unit can attempt a personal attack on the known owner-lord.' };
+}
+
+export function attackBotLordFromPlayer(stateInput: GameState, world: WorldDefinition, actorIds: readonly string[], targetId: string, commandId: string): { state: GameState; code: string | null; message: string; events: BotSimulationEvent[] } {
+  const availability = botLordAttackAvailability(stateInput, world, actorIds, targetId);
+  if (availability.code) return { state: stateInput, code: availability.code, message: availability.message, events: [] };
+  let population = stateInput.botPopulation!;
+  const found = findBotRow(population, targetId)!;
+  const actorId = actorIds[0]!;
+  const attacker = personalCombatProfileForUnit(stateInput, actorId)!;
+  const unit = stateInput.ownedUnits.find(candidate => candidate.id === actorId)!;
+  const hot = hydrateBotHotArrays(found.chunk);
+  const grade = (['S', 'A', 'B', 'C', 'D'] as const)[found.chunk.talentGrades[found.offset]!]!;
+  const kind = (['combat', 'production'] as const)[found.chunk.talentKinds[found.offset]!]!;
+  const integrated = integrateBot(found.cold, hot, hot, found.offset, stateInput.simElapsedMs, grade, kind,
+    population.saveSeed, stateInput.survival.environment);
+  let cold = integrated.cold;
+  const events = [...integrated.events];
+  let resultMessage = '';
+  if (cold.lord.lifeState === 'dead') {
+    const finalized = finalizeLordDeath(population, cold, hot, found.offset, stateInput.simElapsedMs);
+    population = finalized.population;
+    cold = finalized.cold;
+    events.push(...finalized.events);
+    resultMessage = 'The owner-lord died before the attack could reach them.';
+    population = persistBotRowMutation(population, found, hot, cold, stateInput.simElapsedMs);
+    return { state: { ...stateInput, botPopulation: population }, code: null, message: resultMessage, events };
+  }
+  const distance = Math.hypot(unit.position!.xMm - cold.lord.position.xMm, unit.position!.yMm - cold.lord.position.yMm);
+  if (distance > attacker.rangeMm) {
+    events.push({ type: 'bot_lord_player_approach_out_of_reach', occurredAtElapsedMs: stateInput.simElapsedMs,
+      payload: { botId: targetId, attackerId: actorId, distanceMm: Math.round(distance), lordPosition: cold.lord.position,
+        ruleVersion: BOT_LORD_PLAYER_ATTACK_RULE_VERSION } });
+    population = persistBotRowMutation(population, found, hot, cold, stateInput.simElapsedMs);
+    return { state: { ...stateInput, botPopulation: population }, code: null,
+      message: 'The owner-lord moved out of reach before the attack arrived.', events };
+  }
+  const armyCount = hot.armySize[found.offset]!;
+  const approachPermille = botLordAttackApproachPermille(cold, armyCount, attacker.attributes.PER ?? 0);
+  const approachDraw = randomIntFromFields([population.saveSeed, commandId, BOT_LORD_PLAYER_ATTACK_RULE_VERSION, targetId, 'approach'], 0, 999).value;
+  if (approachDraw >= approachPermille) {
+    events.push({ type: 'bot_lord_player_approach_intercepted', occurredAtElapsedMs: stateInput.simElapsedMs,
+      payload: { botId: targetId, attackerId: actorId, livingDefenders: armyCount, approachPermille,
+        draw: approachDraw, ruleVersion: BOT_LORD_PLAYER_ATTACK_RULE_VERSION } });
+    population = persistBotRowMutation(population, found, hot, cold, stateInput.simElapsedMs);
+    return { state: { ...stateInput, botPopulation: population }, code: null,
+      message: 'The owner-lord’s defenders detected and stopped the approach.', events };
+  }
+  const encounterId = `${BOT_LORD_PLAYER_ATTACK_RULE_VERSION}:${commandId}:0`;
+  const hpBefore = cold.lord.hpMicro;
+  const attack = resolvePersonalAttack(stateInput.seed, encounterId, attacker, botLordCombatProfile(cold.lord), distance);
+  if (attack.hit && attack.damage > 0) cold = { ...cold,
+    lord: damageBotLord(cold.lord, attack.damage, 'combat', stateInput.simElapsedMs, encounterId) };
+  events.push({
+    type: 'bot_lord_player_personal_attack', occurredAtElapsedMs: stateInput.simElapsedMs,
+    payload: { botId: targetId, lordId: cold.lord.id, attackerId: actorId, encounterId, approached: true,
+      hit: attack.hit, damage: attack.damage, hpBefore, hpAfter: cold.lord.hpMicro,
+      livingDefenders: armyCount, approachPermille, hitChance: attack.hitChance, drawIndex: attack.drawIndex,
+      ruleVersion: BOT_LORD_PLAYER_ATTACK_RULE_VERSION },
+  });
+  if (cold.lord.lifeState === 'alive') {
+    const escape = beginBotLordEscape(cold, hot, found.offset, world, stateInput.simElapsedMs, encounterId,
+      actorId, unit.position!, armyCount, population.saveSeed);
+    cold = escape.cold;
+    events.push(...escape.events);
+  }
+  if (cold.lord.lifeState === 'dead') {
+    const finalized = finalizeLordDeath(population, cold, hot, found.offset, stateInput.simElapsedMs);
+    population = finalized.population;
+    cold = finalized.cold;
+    events.push(...finalized.events);
+  }
+  population = persistBotRowMutation(population, found, hot, cold, stateInput.simElapsedMs);
+  const nextState = { ...stateInput, botPopulation: population };
+  return { state: nextState, code: null,
+    message: cold.lord.lifeState === 'dead' ? 'The personal attack defeated the owner-lord.'
+      : attack.hit ? 'The personal attack resolved against the owner-lord.' : 'The owner-lord evaded the personal attack.', events };
 }
 
 function retreatingArmy(coldInput: BotColdRecord, targetPosition: CoordinateMm, at: number): BotColdRecord {
@@ -1458,6 +2017,8 @@ function raidBotSettlement(
   targetId: string,
   plan: BotPlanState,
   at: number,
+  environment: ColdEnvironment | null = null,
+  world?: WorldDefinition,
 ): { population: BotPopulationState; cold: BotColdRecord; result: BotActionReceipt['result']; casualties: number; enemyCasualties: number; drawIndex: number; localChangedOffsets: number[]; events: BotSimulationEvent[] } {
   const ordinal = botOrdinalFromId(targetId);
   const targetRef = ordinal === null || ordinal > populationInput.botCount ? null : botChunkAtOrdinal(populationInput, ordinal);
@@ -1473,7 +2034,7 @@ function raidBotSettlement(
   const targetColdRows = sameChunk ? currentColdRows : targetWorking!.coldRows;
   const targetGrade = (['S', 'A', 'B', 'C', 'D'] as const)[targetChunk.talentGrades[targetOffset]!]!;
   const targetKind = (['combat', 'production'] as const)[targetChunk.talentKinds[targetOffset]!]!;
-  const integrated = integrateBot(targetColdRows[targetOffset]!, targetHot, targetHot, targetOffset, at, targetGrade, targetKind, populationInput.saveSeed);
+  const integrated = integrateBot(targetColdRows[targetOffset]!, targetHot, targetHot, targetOffset, at, targetGrade, targetKind, populationInput.saveSeed, environment);
   let targetCold = integrated.cold;
   let populationAfter = populationInput;
   targetColdRows[targetOffset] = targetCold;
@@ -1496,10 +2057,14 @@ function raidBotSettlement(
   const attackerGrade = (['S', 'A', 'B', 'C', 'D'] as const)[currentHot.talentGrades[attackerOffset]!]!;
   const attackerKind = (['combat', 'production'] as const)[currentHot.talentKinds[attackerOffset]!]!;
   const defensePermille = botSettlementDefensePermille(targetCold);
-  const battle = resolveBotSettlementBattle(populationInput.saveSeed, plan.actionId,
-    { power: Math.max(1, botCohortPower(attackerInput, attackerGrade, attackerKind, attackerCounts)), memberCount: attackerMembers, defensePermille: 0 },
-    { power: defenderMembers > 0 ? Math.max(1, botCohortPower(targetCold, targetGrade, targetKind, defenderCounts)) : 1,
-      memberCount: defenderMembers, defensePermille }, defensePermille);
+  const battle = defenderMembers === 0
+    ? { winner: 'attacker' as const, attackerLosses: 0, defenderLosses: 0,
+      attackerPower: Math.max(1, botCohortPower(attackerInput, attackerGrade, attackerKind, attackerCounts)),
+      defenderPower: 0, attackerLossPermille: 0, defenderLossPermille: 0, drawIndex: 0 }
+    : resolveBotSettlementBattle(populationInput.saveSeed, plan.actionId,
+      { power: Math.max(1, botCohortPower(attackerInput, attackerGrade, attackerKind, attackerCounts)), memberCount: attackerMembers, defensePermille: 0 },
+      { power: Math.max(1, botCohortPower(targetCold, targetGrade, targetKind, defenderCounts)),
+        memberCount: defenderMembers, defensePermille }, defensePermille);
   const attackerResult = applyBotCasualties(attackerInput, currentHot, attackerOffset, battle.attackerLosses,
     woundHealthForLoss(battle.attackerLossPermille), attackerCounts, true);
   const targetResult = applyBotCasualties(targetCold, targetHot, targetOffset, battle.defenderLosses,
@@ -1507,53 +2072,58 @@ function raidBotSettlement(
   targetCold = targetResult.cold;
   const structureDamage = battle.winner === 'attacker' ? raidDamagedStructure(targetCold, targetHot, targetOffset, at) : { cold: targetCold, event: null };
   targetCold = structureDamage.cold;
-  let fateEvent: BotSimulationEvent | null = null;
-  const keepDestroyed = targetCold.structures.some(structure => structure.blueprintId === 'BP-BOT-KEEP' && structure.status === 'destroyed');
-  if (battle.winner === 'attacker' && keepDestroyed && targetCold.lordFate.status === 'active') {
-    targetCold = { ...targetCold, lordFate: { status: 'captured', changedAtElapsedMs: at,
-      cause: 'battle_capture', triggerId: plan.actionId } };
-    targetHot.alive[targetOffset] = 0;
-    targetHot.nextWakeAtElapsedMs[targetOffset] = Number.MAX_SAFE_INTEGER;
-    const preempted = preemptPlan(targetCold, targetChunk, targetHot, targetOffset, at, 'LORD_CAPTURED');
-    targetCold = { ...preempted.cold, armyMovement: null };
-    if (preempted.event) integrated.events.push(preempted.event);
-    fateEvent = { type: 'bot_lord_captured', occurredAtElapsedMs: at, payload: {
-      botId: targetCold.botId, captorId: attackerInput.botId, cause: 'battle_capture', triggerId: plan.actionId,
-      ruleVersion: BOT_COMBAT_RULE_VERSION,
-    } };
+  const personalEvents: BotSimulationEvent[] = [];
+  const survivingMovement = attackerResult.cold.armyMovement?.unitKind === 'army'
+    ? botMovementCohortCounts(attackerResult.cold, attackerResult.cold.armyMovement)
+    : new Map<string, number>();
+  if (targetCold.lord.lifeState === 'alive' && [...survivingMovement.values()].some(count => count > 0)) {
+    const raider = [...survivingMovement.keys()].sort(compareId)
+      .map(id => attackerResult.cold.cohorts.find(cohort => cohort.id === id))
+      .find(cohort => cohort && cohort.livingCount > 0);
+    const reachedDistance = Math.hypot(movement.to.xMm - targetCold.lord.position.xMm, movement.to.yMm - targetCold.lord.position.yMm);
+    if (raider && reachedDistance <= 2_000) {
+      const raiderProfile: PersonalCombatProfile = {
+        actorId: `${attackerInput.botId}:RAIDER:${plan.actionId}:${raider.id}`,
+        attributes: { STR: 10, VIT: 10, DEX: 10, INT: 10, SPI: 10, WIL: 10, PER: 10, PRE: 10, LUK: 10 },
+        weaponDamage: raider.equipmentTemplateIds.includes('BOT-WEAPON-IRON-1.0') ? BOT_IRON_WEAPON_POWER : 0,
+        weaponCondition: 1, armor: 0, rangeMm: 2_000,
+      };
+      const remainingDefenders = targetCold.cohorts.reduce((sum, cohort) => sum + cohort.livingCount, 0);
+      const approachPermille = botLordAttackApproachPermille(targetCold, remainingDefenders, raiderProfile.attributes.PER!);
+      const approachDraw = randomIntFromFields([populationInput.saveSeed, plan.actionId, BOT_COMBAT_RULE_VERSION,
+        targetCold.botId, 'lord-approach'], 0, 999).value;
+      if (approachDraw < approachPermille) {
+        const encounterId = `${BOT_COMBAT_RULE_VERSION}:${plan.actionId}:LORD`;
+        const attack = resolvePersonalAttack(populationInput.saveSeed, encounterId, raiderProfile,
+          botLordCombatProfile(targetCold.lord), reachedDistance);
+        if (attack.hit && attack.damage > 0) targetCold = { ...targetCold,
+          lord: damageBotLord(targetCold.lord, attack.damage, 'combat', at, encounterId) };
+        personalEvents.push({ type: 'bot_lord_raided_personal_attack', occurredAtElapsedMs: at, payload: {
+          botId: targetCold.botId, attackerId: attackerInput.botId, lordId: targetCold.lord.id,
+          encounterId, hit: attack.hit, damage: attack.damage, hpBefore: targetResult.cold.lord.hpMicro,
+          hpAfter: targetCold.lord.hpMicro, livingDefenders: remainingDefenders, approachPermille,
+          approachDraw, hitChance: attack.hitChance, ruleVersion: BOT_COMBAT_RULE_VERSION,
+        } });
+        if (targetCold.lord.lifeState === 'alive') {
+          const escape = beginBotLordEscape(targetCold, targetHot, targetOffset, world, at, encounterId,
+            attackerInput.botId, movement.to, remainingDefenders, populationInput.saveSeed);
+          targetCold = escape.cold;
+          personalEvents.push(...escape.events);
+        }
+      } else personalEvents.push({ type: 'bot_lord_raided_approach_intercepted', occurredAtElapsedMs: at, payload: {
+        botId: targetCold.botId, attackerId: attackerInput.botId, livingDefenders: remainingDefenders,
+        approachPermille, approachDraw, ruleVersion: BOT_COMBAT_RULE_VERSION,
+      } });
+    }
   }
-  if (targetHot.population[targetOffset] === 0 && targetCold.lordFate.status === 'active') {
-    targetCold = { ...targetCold, lordFate: { status: 'dispossessed', changedAtElapsedMs: at,
-      cause: 'territory_loss', triggerId: plan.actionId } };
-    targetHot.alive[targetOffset] = 0;
-    targetHot.nextWakeAtElapsedMs[targetOffset] = Number.MAX_SAFE_INTEGER;
-    const preempted = preemptPlan(targetCold, targetChunk, targetHot, targetOffset, at, 'SETTLEMENT_DEFEATED');
-    targetCold = { ...preempted.cold, armyMovement: null };
-    if (preempted.event) integrated.events.push(preempted.event);
-    integrated.events.push({ type: 'bot_lord_dispossessed', occurredAtElapsedMs: at, payload: {
-      botId: targetCold.botId, cause: 'territory_loss', triggerId: plan.actionId, ruleVersion: BOT_COMBAT_RULE_VERSION,
-    } });
+  if (targetCold.lord.lifeState === 'dead') {
+    const finalized = finalizeLordDeath(populationAfter, targetCold, targetHot, targetOffset, at);
+    populationAfter = finalized.population;
+    targetCold = finalized.cold;
+    integrated.events.push(...finalized.events);
   }
   targetColdRows[targetOffset] = targetCold;
   if (targetHot.alive[targetOffset] !== 0 && targetHot.nextWakeAtElapsedMs[targetOffset]! > at) targetHot.nextWakeAtElapsedMs[targetOffset] = at + 1;
-  if (targetHot.population[targetOffset] === 0) {
-    targetHot.alive[targetOffset] = 0;
-    targetHot.nextWakeAtElapsedMs[targetOffset] = Number.MAX_SAFE_INTEGER;
-    if (targetCold.currentPlan) {
-      const preempted = preemptPlan(targetCold, targetChunk, targetHot, targetOffset, at, 'SETTLEMENT_DEFEATED');
-      targetCold = { ...preempted.cold, armyMovement: null };
-      if (preempted.event) integrated.events.push(preempted.event);
-      targetColdRows[targetOffset] = targetCold;
-    }
-  }
-  if (targetCold.lordFate.status !== 'active') {
-    const released = cancelBotMarketListings(populationAfter, targetCold, at,
-      targetCold.lordFate.status === 'captured' ? 'captured' : targetCold.lordFate.status === 'dispossessed' ? 'dispossessed' : 'lord_eliminated');
-    populationAfter = released.population;
-    targetCold = released.cold;
-    targetColdRows[targetOffset] = targetCold;
-    integrated.events.push(...released.events);
-  }
   let cold = attackerResult.cold;
   let loot: Record<BotResourceKey, number> = { food: 0, wood: 0, stone: 0, ore: 0 };
   if (battle.winner === 'attacker') {
@@ -1582,7 +2152,7 @@ function raidBotSettlement(
       attackerLosses: attackerResult.applied, defenderLosses: targetResult.applied, defenderMembers, defensePermille, loot,
       ruleVersion: BOT_COMBAT_RULE_VERSION, drawIndex: battle.drawIndex } },
     ...(structureDamage.event ? [structureDamage.event] : []),
-    ...(fateEvent ? [fateEvent] : []),
+    ...personalEvents,
   ];
   return { ...persisted, cold, result, casualties: attackerResult.applied, enemyCasualties: targetResult.applied, drawIndex: battle.drawIndex, events };
 }
@@ -1628,7 +2198,7 @@ export function completePlan(population: BotPopulationState, chunk: BotStateChun
         listingId, sellerBotId: cold.botId, blueprintItemInstanceId: item.instanceId, blueprintId: item.blueprintId,
         paymentResource, askAmount: listing.askAmount, expiresAtElapsedMs: listing.expiresAtElapsedMs, ruleVersion: BOT_MARKET_RULE_VERSION,
       } });
-      const settlement = settleBotMarketListing(updatedPopulation, chunk, hot, coldRows, offset, cold, listingId, at);
+      const settlement = settleBotMarketListing(updatedPopulation, chunk, hot, coldRows, offset, cold, listingId, at, state.survival.environment);
       updatedPopulation = settlement.population;
       cold = settlement.sellerCold;
       localChangedOffsets = settlement.localChangedOffsets;
@@ -1725,8 +2295,6 @@ export function completePlan(population: BotPopulationState, chunk: BotStateChun
     else {
       cold.potableWaterMl += prepared;
       cold.localIceRemainingMl -= prepared;
-      cold.dehydrationExposureMs = 0;
-      cold.lordDehydrationExposureMs = 0;
       discovered = true;
       events.push({ type: 'bot_water_prepared', occurredAtElapsedMs: at, payload: {
         botId: cold.botId, actionId: plan.actionId, waterPreparedMl: prepared,
@@ -1773,23 +2341,12 @@ export function completePlan(population: BotPopulationState, chunk: BotStateChun
       if (acquired.event) events.push(acquired.event);
     }
     else {
-      const draw = chooseBlueprint(cold, plan, population.saveSeed);
-      drawIndex = draw.drawIndex;
-      cold.searchSources = cold.searchSources.map(item => item.id === source.id ? { ...item, remainingActions: item.remainingActions - 1 } : item);
-      if (draw.id === null) result = 'depleted';
-      else if (draw.duplicate) result = 'duplicate';
-      else {
-        const item = { instanceId: `${plan.actionId}:BLUEPRINT`, blueprintId: draw.id, sourceId: source.id,
-          acquiredAtElapsedMs: at, status: 'owned' as const, resolvedAtElapsedMs: null, transactionId: null,
-          ruleVersion: BOT_BLUEPRINT_RULES_VERSION };
-        cold.blueprintItems = [...cold.blueprintItems, item];
-        discovered = true;
-        result = 'discovered';
-        events.push({ type: 'bot_blueprint_acquired', occurredAtElapsedMs: at, payload: {
-          botId: cold.botId, actionId: plan.actionId, sourceId: source.id, itemInstanceId: item.instanceId,
-          blueprintId: draw.id, ruleVersion: BOT_BLUEPRINT_RULES_VERSION, drawIndex,
-        } });
-      }
+      cold.searchSources = cold.searchSources.map(item => item.id === source.id ? { ...item, remainingActions: 0 } : item);
+      const acquired = acquireBotChest(state, world, cold, source, plan.actionId, population.saveSeed, at);
+      cold = acquired.cold;
+      result = acquired.result;
+      discovered = result === 'discovered';
+      if (acquired.event) events.push(acquired.event);
     }
   } else if (plan.action === 'scout') {
     const source = cold.searchSources.find(item => item.id === plan.targetId && item.contactTargetId && item.remainingActions > 0);
@@ -1880,7 +2437,8 @@ export function completePlan(population: BotPopulationState, chunk: BotStateChun
       drawIndex = raid.drawIndex;
       events.push(...raid.events);
     } else {
-      const raid = raidBotSettlement(population, chunk, hot, coldRows, offset, cold, knownTarget.id, plan, at);
+      const raid = raidBotSettlement(population, chunk, hot, coldRows, offset, cold, knownTarget.id, plan, at,
+        state.survival.environment, world);
       cold = raid.cold;
       updatedPopulation = raid.population;
       localChangedOffsets = raid.localChangedOffsets;
@@ -1907,17 +2465,6 @@ export function completePlan(population: BotPopulationState, chunk: BotStateChun
 
   if (plan.action === 'scout' || plan.action === 'search' || plan.action === 'hunt') cold.armyMovement = returnScoutParty(cold, at).armyMovement;
 
-  if (hot.population[offset] === 0 && cold.lordFate.status === 'active') {
-    cold = { ...cold, lordFate: { status: 'dispossessed', changedAtElapsedMs: at, cause: 'territory_loss', triggerId: plan.actionId }, armyMovement: null };
-    hot.alive[offset] = 0;
-    events.push({ type: 'bot_lord_dispossessed', occurredAtElapsedMs: at, payload: {
-      botId: cold.botId, cause: 'territory_loss', triggerId: plan.actionId, ruleVersion: BOT_COMBAT_RULE_VERSION,
-    } });
-    const released = cancelBotMarketListings(updatedPopulation, cold, at, 'dispossessed');
-    updatedPopulation = released.population;
-    cold = released.cold;
-    events.push(...released.events);
-  }
 
   const shouldCharge = result === 'completed' || result === 'discovered' || result === 'duplicate'
     || (plan.action === 'raid' && ['depleted', 'retreated', 'defeated'].includes(result));
@@ -1960,15 +2507,12 @@ export function completePlan(population: BotPopulationState, chunk: BotStateChun
     : item);
   receiptCold.structures = finishedStructures;
   receiptCold.currentPlan = null;
+  if (receiptCold.lord.activity === 'working') receiptCold.lord = { ...receiptCold.lord, activity: 'resting' };
   hot.actionCount[offset] += 1;
   hot.workKind[offset] = 0;
   hot.assignedWorkers[offset] = 0;
   hot.workProgress[offset] = 0;
   hot.workRequired[offset] = 0;
-  if (hot.population[offset]! === 0) {
-    hot.alive[offset] = 0;
-    hot.nextWakeAtElapsedMs[offset] = Number.MAX_SAFE_INTEGER;
-  }
   const completionPayload = {
     botId: cold.botId, actionId: plan.actionId, action: plan.action, targetId: plan.targetId, result,
     resourceDelta: delta, baseXpAwarded: baseXp, talentXpMultiplierPermille, xpAwarded: xp, levelBefore: levelResult.before, levelAfter: hot.levels[offset]!, completionAtElapsedMs: hot.completionAtElapsedMs[offset] || null,
@@ -1979,7 +2523,7 @@ export function completePlan(population: BotPopulationState, chunk: BotStateChun
   return { cold: receiptCold, population: updatedPopulation, localChangedOffsets, externallyChangedChunkIndices, events, xpCrossed: levelResult.crossed };
 }
 
-function preemptPlan(coldInput: BotColdRecord, chunk: BotStateChunk, hot: ReturnType<typeof hydrateBotHotArrays>, offset: number, at: number, reason: string): { cold: BotColdRecord; event: BotSimulationEvent | null } {
+function preemptPlan(coldInput: BotColdRecord, hot: ReturnType<typeof hydrateBotHotArrays>, offset: number, at: number, reason: string): { cold: BotColdRecord; event: BotSimulationEvent | null } {
   const plan = coldInput.currentPlan;
   if (!plan) return { cold: coldInput, event: null };
   const cold = addReceipt(coldInput, plan, at, 'blocked', { food: 0, wood: 0, stone: 0, ore: 0 }, 0);
@@ -2035,86 +2579,62 @@ function nextFoodRewardAt(cold: BotColdRecord, after: number, through: number): 
 
 function applyRegionalWeatherStorm(
   coldInput: BotColdRecord,
-  chunk: BotNumericRows,
   hot: ReturnType<typeof hydrateBotHotArrays>,
   offset: number,
   at: number,
 ): { cold: BotColdRecord; events: BotSimulationEvent[] } {
-  if (hot.alive[offset] === 0 || coldInput.lordFate.status !== 'active') return { cold: coldInput, events: [] };
+  if (hot.alive[offset] === 0 || coldInput.lord.lifeState !== 'alive') return { cold: coldInput, events: [] };
   const demand = botWeatherFuelDemand(coldInput);
   const burnedMicro = Math.min(hot.firewoodMicro[offset]!, demand * BOT_MICRO);
   hot.firewoodMicro[offset] -= burnedMicro;
-  const missingUnits = demand - burnedMicro / BOT_MICRO;
-  const coldExposureMs = missingUnits > 0 ? Math.ceil(BOT_WEATHER_MAX_COLD_EXPOSURE_MS * missingUnits / demand) : 0;
   const weatherEventId = `${coldInput.regionId}:WEATHER:${at}`;
-  let cold = coldInput;
-  const events: BotSimulationEvent[] = [];
-  if (coldExposureMs > 0) {
-    const exposure = updateExposure(cold, hot, offset, at, 0, 0, coldExposureMs);
-    cold = recordBotCasualties(exposure.cold, 'regionalBlizzard', exposure.coldDeaths);
-    if (exposure.coldDeaths > 0) events.push({ type: 'bot_population_lost', occurredAtElapsedMs: at, payload: {
-      botId: cold.botId, count: exposure.coldDeaths, cause: 'regional_blizzard', remainingPopulation: hot.population[offset], weatherEventId,
-    } });
-    if (exposure.lordDied) {
-      hot.alive[offset] = 0;
-      const preempted = preemptPlan(cold, chunk as BotStateChunk, hot, offset, at, 'LORD_ELIMINATED');
-      cold = { ...preempted.cold, armyMovement: null };
-      if (preempted.event) events.push(preempted.event);
-      events.push({ type: 'bot_lord_eliminated', occurredAtElapsedMs: cold.lordFate.changedAtElapsedMs!, payload: {
-        botId: cold.botId, fate: 'dead', cause: cold.lordFate.cause, triggerId: weatherEventId,
-        residentsRemaining: hot.population[offset], ruleVersion: BOT_WEATHER_RULE_VERSION,
-      } });
-    }
-  }
-  if (hot.population[offset] === 0) {
-    hot.alive[offset] = 0;
-    hot.nextWakeAtElapsedMs[offset] = Number.MAX_SAFE_INTEGER;
-    if (cold.lordFate.status === 'active') cold = { ...cold, lordFate: {
-      status: 'dispossessed', changedAtElapsedMs: at, cause: 'settlement_abandoned', triggerId: weatherEventId,
-    } };
-    const preempted = preemptPlan(cold, chunk as BotStateChunk, hot, offset, at, 'SETTLEMENT_DEFEATED');
-    cold = { ...preempted.cold, armyMovement: null };
-    if (preempted.event) events.push(preempted.event);
-    events.push({ type: 'bot_settlement_defeated', occurredAtElapsedMs: at, payload: {
-      botId: cold.botId, population: 0, armySize: hot.armySize[offset], cause: 'regional_blizzard', weatherEventId,
-    } });
-  }
-  events.push({ type: 'bot_weather_hazard', occurredAtElapsedMs: at, payload: {
-    botId: cold.botId, weatherEventId, fuelDemandUnits: demand, fuelBurnedUnits: burnedMicro / BOT_MICRO,
-    coldExposureMs, civilianDeaths: events.filter(event => event.type === 'bot_population_lost').reduce((sum, event) => sum + Number(event.payload.count ?? 0), 0),
-    shelterActive: demand < 8, ruleVersion: BOT_WEATHER_RULE_VERSION,
-  } });
-  return { cold, events };
+  const shelterActive = coldInput.structures.some(structure => structure.blueprintId === 'BP-BOT-KEEP' && structure.status === 'active');
+  return { cold: coldInput, events: [{ type: 'bot_weather_hazard', occurredAtElapsedMs: at, payload: {
+    botId: coldInput.botId, weatherEventId, fuelDemandUnits: demand, fuelBurnedUnits: burnedMicro / BOT_MICRO,
+    stormDurationMs: BOT_WEATHER_STORM_DURATION_MS, coldExposureMs: 0, civilianDeaths: 0,
+    shelterActive, ruleVersion: BOT_WEATHER_RULE_VERSION,
+  } }] };
 }
 
-export function integrateBot(coldInput: BotColdRecord, chunk: BotNumericRows, hot: ReturnType<typeof hydrateBotHotArrays>, offset: number, at: number, grade: BotTalentGrade, kind: BotTalentKind, saveSeed = ''): { cold: BotColdRecord; events: BotSimulationEvent[] } {
+function snapshotHotRow(hot: ReturnType<typeof hydrateBotHotArrays>, offset: number): Record<string, number> {
+  const snapshot: Record<string, number> = {};
+  for (const key of Object.keys(hot) as (keyof MutableBotHotArrays)[]) snapshot[key] = hot[key][offset]!;
+  return snapshot;
+}
+
+function restoreHotRow(hot: ReturnType<typeof hydrateBotHotArrays>, offset: number, snapshot: Readonly<Record<string, number>>): void {
+  for (const key of Object.keys(snapshot) as (keyof MutableBotHotArrays)[]) hot[key][offset] = snapshot[key]!;
+}
+
+export function integrateBot(coldInput: BotColdRecord, chunk: BotNumericRows, hot: ReturnType<typeof hydrateBotHotArrays>, offset: number, at: number, grade: BotTalentGrade, kind: BotTalentKind, saveSeed = '', environment: ColdEnvironment | null = null): { cold: BotColdRecord; events: BotSimulationEvent[] } {
   const from = hot.lastIntegratedAtElapsedMs[offset]!;
   const duration = at - from;
   if (duration < 0) throw new Error('BOT_TIME_MOVED_BACKWARDS');
   const events: BotSimulationEvent[] = [];
   let cold = redeemBotEventFood(coldInput, hot, offset, from, events);
   const weatherSeed = saveSeed || `BOT-WEATHER-SEED:${cold.botId || cold.regionId}`;
-  const stormAt = nextBotWeatherStormAt(weatherSeed, cold, from, at);
-  if (stormAt !== null && stormAt < at) {
-    const beforeStorm = integrateBot(cold, chunk, hot, offset, stormAt, grade, kind, weatherSeed);
-    const afterStorm = integrateBot(beforeStorm.cold, chunk, hot, offset, at, grade, kind, weatherSeed);
+  const weatherBoundary = nextBotWeatherBoundaryAt(weatherSeed, cold, from, at);
+  if (weatherBoundary !== null && weatherBoundary < at) {
+    const beforeStorm = integrateBot(cold, chunk, hot, offset, weatherBoundary, grade, kind, weatherSeed, environment);
+    const afterStorm = integrateBot(beforeStorm.cold, chunk, hot, offset, at, grade, kind, weatherSeed, environment);
     return { cold: afterStorm.cold, events: [...events, ...beforeStorm.events, ...afterStorm.events] };
   }
   const survivalBoundary = nextBotSurvivalBoundary(cold, chunk, hot, offset, from);
   if (survivalBoundary !== null && survivalBoundary < at) {
-    const beforeBoundary = integrateBot(cold, chunk, hot, offset, survivalBoundary, grade, kind, weatherSeed);
-    const afterBoundary = integrateBot(beforeBoundary.cold, chunk, hot, offset, at, grade, kind, weatherSeed);
+    const beforeBoundary = integrateBot(cold, chunk, hot, offset, survivalBoundary, grade, kind, weatherSeed, environment);
+    const afterBoundary = integrateBot(beforeBoundary.cold, chunk, hot, offset, at, grade, kind, weatherSeed, environment);
     return { cold: afterBoundary.cold, events: [...beforeBoundary.events, ...afterBoundary.events] };
   }
   const rewardBoundary = nextFoodRewardAt(cold, from, at);
   if (duration > 0 && rewardBoundary !== null) {
     // Lazy integration must stop where the supply becomes available, then resume
     // with that supply in stock so later exposure cannot be charged before it.
-    const beforeReward = integrateBot(cold, chunk, hot, offset, rewardBoundary, grade, kind, weatherSeed);
-    const afterReward = integrateBot(beforeReward.cold, chunk, hot, offset, at, grade, kind, weatherSeed);
+    const beforeReward = integrateBot(cold, chunk, hot, offset, rewardBoundary, grade, kind, weatherSeed, environment);
+    const afterReward = integrateBot(beforeReward.cold, chunk, hot, offset, at, grade, kind, weatherSeed, environment);
     return { cold: afterReward.cold, events: [...events, ...beforeReward.events, ...afterReward.events] };
   }
   if (duration > 0) {
+    const hotBeforeIntegration = snapshotHotRow(hot, offset);
     const rates = productionRates(cold, chunk, offset);
     const foodBefore = hot.foodMicro[offset]!;
     const fuelBefore = hot.firewoodMicro[offset]!;
@@ -2131,8 +2651,15 @@ export function integrateBot(coldInput: BotColdRecord, chunk: BotNumericRows, ho
     const coldMs = hot.firewoodMicro[offset]! === 0
       ? exposureDuring(fuelBefore, fuelProduction, rates.firewoodConsumed, fuelCarry, duration) : 0;
     const water = consumeBotWater(cold, hot.population[offset]!, duration);
-    const exposure = updateExposure(water.cold, hot, offset, from, starvationMs, water.dehydrationMs, coldMs);
-    cold = recordBotCasualties(exposure.cold, 'starvation', exposure.starvationDeaths);
+    const stormActive = botWeatherStormActiveAt(weatherSeed, cold, from);
+    const exposure = updateExposure(water.cold, hot, offset, from, duration, starvationMs, water.dehydrationMs, coldMs, environment, stormActive);
+    if (exposure.lordDied && exposure.cold.lord.deathRecord && exposure.cold.lord.deathRecord.atElapsedMs < at) {
+      restoreHotRow(hot, offset, hotBeforeIntegration);
+      const exact = integrateBot(cold, chunk, hot, offset, exposure.cold.lord.deathRecord.atElapsedMs, grade, kind, weatherSeed, environment);
+      return { cold: exact.cold, events: [...events, ...exact.events] };
+    }
+    cold = synchronizePlanWorkforce(exposure.cold, hot, offset, at, grade, kind);
+    cold = recordBotCasualties(cold, 'starvation', exposure.starvationDeaths);
     cold = recordBotCasualties(cold, 'dehydration', exposure.dehydrationDeaths);
     cold = recordBotCasualties(cold, 'fuelExhaustion', exposure.coldDeaths);
     if (exposure.starvationDeaths > 0) events.push({ type: 'bot_population_lost', occurredAtElapsedMs: at, payload: { botId: cold.botId, count: exposure.starvationDeaths, cause: 'starvation', remainingPopulation: hot.population[offset] } });
@@ -2140,7 +2667,7 @@ export function integrateBot(coldInput: BotColdRecord, chunk: BotNumericRows, ho
     if (exposure.coldDeaths > 0) events.push({ type: 'bot_population_lost', occurredAtElapsedMs: at, payload: { botId: cold.botId, count: exposure.coldDeaths, cause: 'fuel_exhaustion', remainingPopulation: hot.population[offset] } });
     if (exposure.lordDied) {
       hot.alive[offset] = 0;
-      const preempted = preemptPlan(cold, chunk, hot, offset, at, 'LORD_ELIMINATED');
+      const preempted = preemptPlan(cold, hot, offset, at, 'LORD_ELIMINATED');
       cold = { ...preempted.cold, armyMovement: null };
       if (preempted.event) events.push(preempted.event);
       events.push({ type: 'bot_lord_eliminated', occurredAtElapsedMs: cold.lordFate.changedAtElapsedMs!, payload: {
@@ -2148,21 +2675,10 @@ export function integrateBot(coldInput: BotColdRecord, chunk: BotNumericRows, ho
         residentsRemaining: hot.population[offset], ruleVersion: BOT_SURVIVAL_RULE_VERSION,
       } });
     }
-    if (hot.population[offset] === 0) {
-      hot.alive[offset] = 0;
-      if (cold.lordFate.status === 'active') cold = { ...cold, lordFate: {
-        status: 'dispossessed', changedAtElapsedMs: at, cause: 'settlement_abandoned',
-        triggerId: cold.currentPlan?.actionId ?? `BOT-POPULATION-EXHAUSTED:${cold.botId}:${at}`,
-      } };
-      const preempted = preemptPlan(cold, chunk, hot, offset, at, 'SETTLEMENT_DEFEATED');
-      cold = { ...preempted.cold, armyMovement: null };
-      if (preempted.event) events.push(preempted.event);
-      events.push({ type: 'bot_settlement_defeated', occurredAtElapsedMs: at, payload: { botId: cold.botId, population: 0, armySize: hot.armySize[offset] } });
-    }
     hot.lastIntegratedAtElapsedMs[offset] = at;
   }
-  if (stormAt === at) {
-    const storm = applyRegionalWeatherStorm(cold, chunk, hot, offset, at);
+  if (botWeatherStormStartsAt(weatherSeed, cold, at)) {
+    const storm = applyRegionalWeatherStorm(cold, hot, offset, at);
     cold = storm.cold;
     events.push(...storm.events);
   }
@@ -2177,6 +2693,7 @@ function boundaryReason(cold: BotColdRecord, chunk: BotNumericRows, offset: numb
   if (plan.action === 'gather_wood' && chunk.woodNodeMicro[offset]! <= 0) return 'FINITE_WOOD_NODE_DEPLETED';
   if (plan.action === 'gather_stone' && chunk.stoneNodeMicro[offset]! <= 0) return 'FINITE_STONE_NODE_DEPLETED';
   if (plan.action === 'gather_ore' && chunk.oreNodeMicro[offset]! <= 0) return 'FINITE_ORE_NODE_DEPLETED';
+  if (plan.workersAssigned <= 0 && !(plan.ownerSelfService && cold.lord.lifeState === 'alive' && cold.lord.location === 'settlement')) return 'WORKFORCE_DEPLETED';
   if (plan.action === 'gather_food' && chunk.foodMicro[offset]! >= botResourceCapacityUnits('food', cold.territoryLevel) * BOT_MICRO) return 'FOOD_STORAGE_FULL';
   if (plan.action === 'gather_wood' && chunk.woodMicro[offset]! >= botResourceCapacityUnits('wood', cold.territoryLevel) * BOT_MICRO) return 'WOOD_STORAGE_FULL';
   if (plan.action === 'gather_stone' && chunk.stoneMicro[offset]! >= botResourceCapacityUnits('stone', cold.territoryLevel) * BOT_MICRO) return 'STONE_STORAGE_FULL';
@@ -2188,6 +2705,22 @@ function boundaryReason(cold: BotColdRecord, chunk: BotNumericRows, offset: numb
 function nextLattice(at: number, phase: number): number {
   const delta = (phase - at % 3_000 + 3_000) % 3_000;
   return at + (delta === 0 ? 3_000 : delta);
+}
+
+function botLordThreatStillPresent(state: GameState, lord: BotColdRecord['lord'], at: number): boolean {
+  const threatId = lord.encounterThreatActorId;
+  if (!threatId) return false;
+  const unit = state.ownedUnits.find(candidate => candidate.id === threatId);
+  if (unit) {
+    if (unit.health && unit.health.current <= 0) return false;
+    const position = unit.position ?? (unit.location.kind === 'field' ? unit.location.coordinate : null);
+    return Boolean(position && Math.hypot(position.xMm - lord.position.xMm, position.yMm - lord.position.yMm) <= 2_000);
+  }
+  const bot = state.botPopulation ? findBotRow(state.botPopulation, threatId) : null;
+  const movement = bot?.cold.armyMovement;
+  if (!bot || !movement || movement.unitKind !== 'army' || movement.unitCount <= 0) return false;
+  const position = botArmyPosition(movement, at);
+  return Math.hypot(position.xMm - lord.position.xMm, position.yMm - lord.position.yMm) <= 2_000;
 }
 
 function runBotBoundary(state: GameState, population: BotPopulationState, chunk: BotStateChunk, at: number, world?: WorldDefinition): { chunk: BotStateChunk; population: BotPopulationState; events: BotSimulationEvent[]; expansions: number; externallyChangedChunkIndices: number[] } {
@@ -2205,19 +2738,28 @@ function runBotBoundary(state: GameState, population: BotPopulationState, chunk:
     const grade = (['S', 'A', 'B', 'C', 'D'] as const)[chunk.talentGrades[offset]!]!;
     const kind = (['combat', 'production'] as const)[chunk.talentKinds[offset]!]!;
     let cold = coldRows[offset]!;
-    const integrated = integrateBot(cold, hot, hot, offset, at, grade, kind, evolvingPopulation.saveSeed);
+    const integrated = integrateBot(cold, hot, hot, offset, at, grade, kind, evolvingPopulation.saveSeed, state.survival.environment);
     events.push(...integrated.events);
     cold = settleArmyMovement(integrated.cold, hot, offset, at, events);
-    const market = advanceSellerMarketListings(evolvingPopulation, chunk, hot, coldRows, offset, cold, at);
+    const market = advanceSellerMarketListings(evolvingPopulation, chunk, hot, coldRows, offset, cold, at, state.survival.environment);
     evolvingPopulation = market.population;
     cold = market.sellerCold;
     for (const changedOffset of market.localChangedOffsets) locallyChangedOffsets.add(changedOffset);
     for (const changedIndex of market.externallyChangedChunkIndices) externallyChangedChunkIndices.add(changedIndex);
     events.push(...market.events);
+    const finalized = finalizeLordDeath(evolvingPopulation, cold, hot, offset, at);
+    evolvingPopulation = finalized.population;
+    cold = finalized.cold;
+    events.push(...finalized.events);
+    if (cold.lord.lifeState === 'alive' && cold.lord.activity === 'encounter'
+      && !botLordThreatStillPresent(state, cold.lord, at)) {
+      cold = { ...cold, lord: { ...cold.lord, activeEncounterId: null, encounterThreatActorId: null,
+        encounterThreatPosition: null, activity: cold.lord.location === 'settlement' ? 'at_settlement' : 'resting' } };
+    }
     const prior = cold.currentPlan;
     const preemptReason = boundaryReason(cold, hot, offset);
     if (preemptReason) {
-      const interrupted = preemptPlan(cold, chunk, hot, offset, at, preemptReason);
+      const interrupted = preemptPlan(cold, hot, offset, at, preemptReason);
       cold = returnScoutParty(interrupted.cold, at);
       if (interrupted.cold.armyMovement?.unitKind === 'army' && interrupted.cold.armyMovement.status !== 'returning') {
         cold = retreatingArmy(interrupted.cold, botArmyPosition(interrupted.cold.armyMovement, at), at);
@@ -2236,9 +2778,15 @@ function runBotBoundary(state: GameState, population: BotPopulationState, chunk:
       completedPlan = true;
     }
     coldRows[offset] = cold;
-    if (hot.alive[offset] !== 0 && cold.armyMovement?.status === 'returning') {
+    if (hot.alive[offset] !== 0 && cold.lord.retreatRoute) {
+      const arrivalAt = botLordRetreatArrivalAt(cold.lord);
+      hot.nextWakeAtElapsedMs[offset] = Math.max(at + 1, arrivalAt ?? nextLattice(at, cold.decisionPhaseMs));
+    } else if (hot.alive[offset] !== 0 && cold.lord.activity === 'encounter') {
+      hot.nextWakeAtElapsedMs[offset] = at + BOT_LORD_ENCOUNTER_RECHECK_MS;
+    } else if (hot.alive[offset] !== 0 && cold.armyMovement?.status === 'returning') {
       hot.nextWakeAtElapsedMs[offset] = Math.max(at + 1, cold.armyMovement.arrivesAtElapsedMs);
-    } else if (hot.alive[offset] !== 0 && !cold.currentPlan) {
+    } else if (hot.alive[offset] !== 0 && !cold.currentPlan && cold.lord.activity !== 'encounter'
+      && !(cold.lord.location !== 'settlement' && hot.workers[offset] === 0)) {
       if (completedPlan) hot.nextWakeAtElapsedMs[offset] = nextSellerMarketWake(evolvingPopulation, cold, at, nextLattice(at, cold.decisionPhaseMs));
       else {
         const planned = startBotDecision(evolvingPopulation, hot, offset, cold, grade, kind, at);
@@ -2316,7 +2864,8 @@ function buildOpeningBoardSnapshot(state: GameState, population: BotPopulationSt
       : botReceiptCounts.get(row.playerId) ?? 0,
   }));
   const revision = population.publicRevision + 1;
-  const snapshotBase = { boardId: OPENING_LEVEL_BOARD_ID, revision, asOfSimMs: at, observedThroughSimMs, status: final ? 'settled' as const : 'open' as const, rows };
+  const snapshotBase = { boardId: OPENING_LEVEL_BOARD_ID, revision, asOfSimMs: at, observedThroughSimMs,
+    status: final ? 'settled' as const : 'open' as const, rows, rankById: openingRankIndex(rows) };
   const snapshot = { ...snapshotBase, snapshotSha256: canonicalStateHash(snapshotBase) };
   return {
     ...population,
@@ -2388,7 +2937,8 @@ export function projectedBotResources(chunk: BotStateChunk, offset: number, cold
  * A currently scheduled preparation batch is credited only at its committed completion boundary.
  */
 export function projectedBotWaterMl(cold: BotColdRecord, population: number, from: number, targetAt: number): number {
-  if (targetAt <= from || cold.lordFate.status !== 'active' || population <= 0) return cold.potableWaterMl;
+  if (targetAt <= from || cold.lordFate.status !== 'active' && cold.lord.lifeState !== 'alive'
+    || population + Number(cold.lord.lifeState === 'alive' && cold.lord.location === 'settlement') <= 0) return cold.potableWaterMl;
   let water = cold.potableWaterMl;
   let remainder = cold.waterConsumptionRemainder;
   let cursor = from;

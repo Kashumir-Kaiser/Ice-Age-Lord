@@ -6,11 +6,12 @@ import { deterministicChestOutcome } from '../src/chestLoot.ts';
 import { BOT_RESOURCE_CAP_UNITS, BOT_STARVATION_LOSS_INTERVAL_MS, acquireBotChest, botResourceCapacityUnits, completePlan, integrateBot, integrateBotResourceBalances, openBotChest, projectedBotWaterMl } from '../src/bots/economy.ts';
 import { botCohortPower, botHomeCohortCounts, botMovementCohortCounts, botSettlementDefensePermille, resolveBotSettlementBattle } from '../src/bots/combat.ts';
 import { chooseBotDecision } from '../src/bots/planner.ts';
-import { botChunkHash, botPopulationNeedsMigration, botPopulationRoot, botRowHash, botCombatPermille, botConstructionPermille, botTalentXpMultiplierPermille, BOT_BLUEPRINT_RULE_VERSION, BOT_EVENT_REWARD_RULE_VERSION, BOT_MICRO, hydrateBotHotArrays, migrateBotPopulation, serializeBotHotArrays, verifyBotPopulation } from '../src/bots/state.ts';
+import { botChunkHash, botPopulationNeedsMigration, botPopulationRoot, botRowHash, botCombatPermille, botConstructionPermille, botTalentXpMultiplierPermille, BOT_BLUEPRINT_RULE_VERSION, BOT_EVENT_REWARD_RULE_VERSION, BOT_MICRO, BOT_SIMULATION_RULE_VERSION, BOT_PLANNER_RULE_VERSION, BOT_UPKEEP_UNITS_PER_PERSON_HOUR, hydrateBotHotArrays, migrateBotPopulation, serializeBotHotArrays, verifyBotPopulation } from '../src/bots/state.ts';
 import { generateBotPopulation } from '../src/bots/generation.ts';
 import { nextBotWeatherStormAt } from '../src/bots/weather.ts';
 import { awardBotOpeningRankRewards } from '../src/bots/rewards.ts';
 import { BOT_MARKET_ACCESS_RADIUS_MM, botMarketAsk } from '../src/bots/market.ts';
+import { createBotLord } from '../src/bots/lord.ts';
 
 type ResourceValues = {
   food: number;
@@ -40,7 +41,9 @@ function setup(initial: ResourceValues, population = 20, gathering = { food: 0, 
   const cold = { workforce: {
     gatherFood: gathering.food, gatherWood: gathering.wood, gatherStone: gathering.stone, gatherOre: gathering.ore,
     farmers: 0, millWorkers: 0, quarryWorkers: 0, smiths: 0, builders: 0, scouts: 0, guards: 0, recruiters: 0,
-  }, lordFate: { status: 'active', changedAtElapsedMs: null, cause: null, triggerId: null },
+  }, botId: 'BOT-P0-TEST', ordinal: 1, position: { xMm: 0, yMm: 0, sourceZMetres: 0 },
+    lord: createBotLord('BOT-P0-TEST', { xMm: 0, yMm: 0, sourceZMetres: 0 }),
+    lordFate: { status: 'active', changedAtElapsedMs: null, cause: null, triggerId: null },
     potableWaterMl: 500_000, localIceRemainingMl: 2_000_000, waterConsumptionRemainder: 0,
     dehydrationExposureMs: 0, lordStarvationExposureMs: 0, lordDehydrationExposureMs: 0, lordColdExposureMs: 0,
     starvationExposureMs: 0, coldExposureMs: 0, cohorts: [], structures: [], eventInventory: [], searchSources: [],
@@ -57,6 +60,9 @@ function integrate(initial: ResourceValues, segments: number[], population = 20,
 
 const empty: ResourceValues = { food: 0, foodNode: 0, wood: 0, woodland: 1_000 * BOT_MICRO, firewood: 0,
   stone: 0, stoneNode: 0, ore: 0, oreNode: 0 };
+const marketFixtureState = { survival: { environment: null } } as never;
+const warmEnvironment = { apparentTemperatureC: 20, windKph: 0, wetness: 0, activityFactor: 1 as const,
+  insulation: 1, shelter: 1 };
 
 test('fuel and food conservation agree across 1s, 3s, 5s, irregular and large segments', () => {
   const total = 15_000;
@@ -72,8 +78,10 @@ test('fuel and food conservation agree across 1s, 3s, 5s, irregular and large se
     assert.equal(oneSegment[field][0], irregular[field][0], field);
   }
   assert.equal(oneSegment.woodNodeMicro[0]! + oneSegment.firewoodMicro[0]!
-    + oneSegment.woodMicro[0]! + 6_255,
-  empty.woodland, 'woodland debit is credited to fuel/log stocks, less upkeep');
+    + oneSegment.woodMicro[0]! + 6_255
+    + Math.round(BOT_UPKEEP_UNITS_PER_PERSON_HOUR.firewood * BOT_MICRO / 3_600) * total / 1_000,
+  empty.woodland,
+  'woodland debit is credited to fuel/log stocks, resident upkeep and separate owner-lord upkeep');
   assert.equal(oneSegment.foodMicro[0]! + oneSegment.foodNodeMicro[0]!, empty.foodNode, 'food remains conserved');
 });
 
@@ -150,8 +158,9 @@ test('full storage does not consume woodland for discarded overflow', () => {
     ore: BOT_RESOURCE_CAP_UNITS.ore * BOT_MICRO };
   const one = integrate(full, [60_000], 0);
   const many = integrate(full, Array.from({ length: 60 }, () => 1_000), 0);
-  assert.equal(one.woodNodeMicro[0], full.woodland);
-  assert.equal(many.woodNodeMicro[0], full.woodland);
+  const lordFuelUpkeep = Math.round(BOT_UPKEEP_UNITS_PER_PERSON_HOUR.firewood * BOT_MICRO / 3_600) * 60;
+  assert.equal(one.woodNodeMicro[0], full.woodland - lordFuelUpkeep);
+  assert.equal(many.woodNodeMicro[0], full.woodland - lordFuelUpkeep);
   assert.equal(one.firewoodMicro[0], full.firewood);
   assert.equal(one.woodMicro[0], full.wood);
   assert.equal(one.firewoodMicro[0], many.firewoodMicro[0]);
@@ -163,7 +172,7 @@ test('upkeep may refill available storage without debiting more than delivered p
     firewood: BOT_RESOURCE_CAP_UNITS.firewood * BOT_MICRO, food: BOT_RESOURCE_CAP_UNITS.food * BOT_MICRO - 100_000 };
   const one = integrate(nearFull, [60_000], 20, { food: 10, wood: 10, stone: 0, ore: 0 });
   const many = integrate(nearFull, Array.from({ length: 60 }, () => 1_000), 20, { food: 10, wood: 10, stone: 0, ore: 0 });
-  assert.equal(one.foodMicro[0], nearFull.food + (nearFull.foodNode - one.foodNodeMicro[0]!) - 60_000,
+  assert.equal(one.foodMicro[0], nearFull.food + (nearFull.foodNode - one.foodNodeMicro[0]!) - 63_000,
     'food production and upkeep net to the stored amount');
   assert.equal(one.foodMicro[0], many.foodMicro[0]);
   assert.equal(one.firewoodMicro[0], many.firewoodMicro[0]);
@@ -172,8 +181,14 @@ test('upkeep may refill available storage without debiting more than delivered p
 
 test('finite shared woodland and zero-stock recovery preserve the same segment result', () => {
   const tinyWoodland: ResourceValues = { ...empty, woodland: 2 };
-  const one = integrate(tinyWoodland, [5_000], 0);
-  const many = integrate(tinyWoodland, [1_000, 1_000, 1_000, 1_000, 1_000], 0);
+  const noOwnerIntegration = (segments: number[]) => {
+    const fixture = setup(tinyWoodland, 0);
+    fixture.cold = { ...fixture.cold, lord: { ...fixture.cold.lord, location: 'field' } };
+    for (const milliseconds of segments) integrateBotResourceBalances(fixture.cold, fixture.chunk, fixture.hot, 0, milliseconds);
+    return fixture.hot;
+  };
+  const one = noOwnerIntegration([5_000]);
+  const many = noOwnerIntegration([1_000, 1_000, 1_000, 1_000, 1_000]);
   assert.equal(one.woodNodeMicro[0], 0);
   assert.equal(one.firewoodMicro[0]! + one.woodMicro[0]!, 2, 'each woodland micro-unit is credited once');
   assert.equal(one.firewoodMicro[0], many.firewoodMicro[0]);
@@ -192,7 +207,8 @@ test('long advances split at finite food and woodland exhaustion before charging
     let at = 0;
     for (const part of segments) {
       at += part;
-      cold = integrateBot(cold, fixture.chunk, fixture.hot, 0, at, 'A', 'production').cold;
+      cold = integrateBot(cold, fixture.chunk, fixture.hot, 0, at, 'A', 'production', '', warmEnvironment).cold;
+      if (cold.lord.lifeState === 'dead') break;
     }
     return { cold, hot: fixture.hot };
   };
@@ -218,11 +234,11 @@ test('long advances split at finite food and woodland exhaustion before charging
 
 test('a depleted food node only adds starvation exposure after the final segment supply is consumed', () => {
   const hour = 60 * 60_000;
-  const fixture = setup({ ...empty, foodNode: 4.5 * BOT_MICRO }, 25,
+  const fixture = setup({ ...empty, foodNode: 4.5 * BOT_MICRO }, 24,
     { food: 1, wood: 0, stone: 0, ore: 0 });
   const cold = { ...fixture.cold, botId: 'BOT-P0-0010', starvationExposureMs: 0, coldExposureMs: 0,
     cohorts: [], structures: [], currentPlan: null, eventInventory: [] } as unknown as BotColdRecord;
-  const result = integrateBot(cold, fixture.chunk, fixture.hot, 0, hour, 'S', 'production');
+  const result = integrateBot(cold, fixture.chunk, fixture.hot, 0, hour, 'S', 'production', '', warmEnvironment);
   assert.equal(fixture.hot.foodNodeMicro[0], 0);
   assert.equal(fixture.hot.foodMicro[0], 0, 'production exactly covers upkeep through source exhaustion');
   assert.equal(fixture.hot.deathCount[0], 0);
@@ -233,27 +249,29 @@ test('a stocked lord survives quiet time and projected preparation enters at its
   const day = 24 * 60 * 60_000;
   const fixture = setup({ ...empty, food: 1_000 * BOT_MICRO, firewood: 1_000 * BOT_MICRO }, 10);
   const cold = { ...fixture.cold, botId: 'BOT-P0-0010' } as BotColdRecord;
-  const survived = integrateBot(cold, fixture.chunk, fixture.hot, 0, day, 'A', 'production');
+  const survived = integrateBot(cold, fixture.chunk, fixture.hot, 0, day, 'A', 'production', '', warmEnvironment);
   assert.equal(survived.cold.lordFate.status, 'active');
   assert.equal(fixture.hot.alive[0], 1);
   assert.equal(fixture.hot.deathCount[0], 0);
 
   const planCold = { ...cold, potableWaterMl: 0, localIceRemainingMl: 100_000,
     currentPlan: { action: 'prepare_water', completesAtElapsedMs: 2 * 60 * 60_000 } } as BotColdRecord;
-  assert.equal(projectedBotWaterMl(planCold, 10, 0, 6 * 60 * 60_000), 46_666,
-    'a 50L batch is credited after two hours, then four hours of household use is charged');
+  assert.equal(projectedBotWaterMl(planCold, 10, 0, 6 * 60 * 60_000), 46_333,
+    'a 50L batch is credited after two hours, then four hours of resident and owner use is charged');
 });
 
 test('dehydration can eliminate the lord while civilians and army remain', () => {
   const hour = 60 * 60_000;
   const fixture = setup({ ...empty, food: 1_000 * BOT_MICRO, firewood: 1_000 * BOT_MICRO }, 10);
   const cold = { ...fixture.cold, botId: 'BOT-P0-0010', potableWaterMl: 0 } as BotColdRecord;
-  const result = integrateBot(cold, fixture.chunk, fixture.hot, 0, 72 * hour, 'S', 'combat');
+  const result = integrateBot(cold, fixture.chunk, fixture.hot, 0, 72 * hour, 'S', 'combat', '', warmEnvironment);
   assert.equal(result.cold.lordFate.status, 'dead');
   assert.equal(result.cold.lordFate.cause, 'dehydration');
-  assert.equal(result.cold.lordFate.changedAtElapsedMs, 72 * hour);
-  assert.equal(result.cold.lordFate.triggerId, 'BOT-SURVIVAL:dehydration:259200000');
-  assert.equal(fixture.hot.population[0], 7, 'population exposure advances per elapsed day');
+  assert.ok(result.cold.lordFate.changedAtElapsedMs! > 36 * hour && result.cold.lordFate.changedAtElapsedMs! < 72 * hour,
+    'personal dehydration damage crosses the 36-hour band and reaches zero HP before day three');
+  assert.equal(result.cold.lordFate.triggerId, result.cold.lord.deathRecord?.deathEventId);
+  assert.ok(fixture.hot.population[0]! < 10 && fixture.hot.population[0]! > 0,
+    'resident dehydration casualties accrue independently until the personal death boundary');
   assert.ok(fixture.hot.armySize[0]! > 0, 'lord death does not imply an army wipe');
   assert.equal(fixture.hot.alive[0], 0, 'an eliminated lord stops scheduling actions');
   assert.equal(result.cold.casualtiesByCause.dehydration, 3, 'resident losses retain their durable cause');
@@ -296,7 +314,7 @@ test('survival casualties reconcile the persisted detachment sent on an active r
   assert.deepEqual(result.cold.armyMovement?.cohortMemberCounts, [{ cohortId: cohort.id, memberCount: 4 }]);
 });
 
-test('a settlement defeat clears an orphaned scout movement', () => {
+test('resident extinction leaves the owner active and clears a scout with no surviving workers', () => {
   const fixture = setup(empty, 1, { food: 0, wood: 0, stone: 0, ore: 0 });
   fixture.hot.armySize[0] = 0;
   fixture.hot.workers[0] = 1;
@@ -307,8 +325,10 @@ test('a settlement defeat clears an orphaned scout movement', () => {
       from: { xMm: 0, yMm: 0 }, to: { xMm: 10, yMm: 0 }, startedAtElapsedMs: 0, arrivesAtElapsedMs: 7_200_000, status: 'outbound' },
   } as unknown as BotColdRecord;
 
-  const result = integrateBot(cold, fixture.chunk, fixture.hot, 0, 60 * 60_000, 'S', 'combat');
-  assert.equal(fixture.hot.alive[0], 0);
+  const result = integrateBot(cold, fixture.chunk, fixture.hot, 0, 1, 'S', 'combat');
+  assert.equal(fixture.hot.population[0], 0);
+  assert.equal(fixture.hot.alive[0], 1, 'the settlement owner has an independent life state');
+  assert.equal(result.cold.lord.lifeState, 'alive');
   assert.equal(result.cold.armyMovement, null);
 });
 
@@ -426,6 +446,11 @@ test('rank reward settlement keeps source-blocked slots and delivers only usable
   assert.equal(delivered[0]!.appliedQuantity, 0);
   assert.equal(delivered[0]!.consumedQuantity, 0);
   assert.deepEqual(awardBotOpeningRankRewards(settled, rows, 144 * 60 * 60_000), settled, 'reward replay is idempotent');
+
+  const legacyReceiptId = `EV01-OPENING-LEVEL:${bot.botId}:REWARD`;
+  const legacy = { ...settled, rewardReceipts: [{ ...receipt, id: legacyReceiptId }] };
+  assert.deepEqual(awardBotOpeningRankRewards(legacy, rows, 144 * 60 * 60_000), legacy,
+    'a save using the pre-save-scoped receipt identity cannot mint a second entitlement');
 });
 
 test('away cohorts do not contribute to home defense power', () => {
@@ -516,7 +541,7 @@ test('nearby market settlement transfers an escrowed blueprint and real food onc
     const ask = botMarketAsk(item.blueprintId, 'food', 0);
     const sellerBefore = hot.foodMicro[sellerIndex]!;
     const buyerBefore = hot.foodMicro[buyerIndex]!;
-    const committed = completePlan(population, chunk, hot, coldRows, sellerIndex, coldRows[sellerIndex]!, 'A', {} as never, 0);
+    const committed = completePlan(population, chunk, hot, coldRows, sellerIndex, coldRows[sellerIndex]!, 'A', marketFixtureState, 0);
     return { committed, coldRows, hot, sellerIndex, buyerIndex, ask, sellerBefore, buyerBefore, radius: Math.hypot(
       coldRows[buyerIndex]!.position.xMm - seller.position.xMm, coldRows[buyerIndex]!.position.yMm - seller.position.yMm) };
   };
@@ -564,7 +589,7 @@ test('water barter picks the nearest eligible buyer with stable identity tie-bre
   const ask = botMarketAsk(item.blueprintId, 'water', 0);
   const firstBefore = coldRows[buyerIndex]!.potableWaterMl;
   const secondBefore = coldRows[secondBuyerIndex]!.potableWaterMl;
-  const result = completePlan(population, chunk, hot, coldRows, sellerIndex, coldRows[sellerIndex]!, 'A', {} as never, 0);
+  const result = completePlan(population, chunk, hot, coldRows, sellerIndex, coldRows[sellerIndex]!, 'A', marketFixtureState, 0);
   assert.equal(result.population.marketTransactions.length, 1);
   assert.equal(result.population.marketTransactions[0]!.paymentResource, 'water');
   assert.equal(result.population.marketTransactions[0]!.buyerBotId, coldRows[buyerIndex]!.botId);
@@ -582,11 +607,12 @@ test('one fixed world chest cannot be claimed twice; its committed loot opens on
     chestId: item.id, state: 'unopened' as const, openedAtElapsedMs: null, discovery: 'hidden' as const,
     discoveredAtElapsedMs: null, signalId: null, custody: 'world' as const, claimedById: null, carrierId: null, lootOutcome: null,
   })) } as never;
-  const source = { ...first.searchSources.find(item => item.kind === 'field_cache')!, fieldChestId: chest.id };
+  const source = { id: `${first.botId}:TEST-FIELD-CACHE`, kind: 'field_cache' as const,
+    position: chest.position, remainingActions: 1, eligibleBlueprintIds: [], discovered: true, fieldChestId: chest.id };
   const acquired = acquireBotChest(state, ACTIVE_WORLD_PACKAGE, first, source, 'first-search', population.saveSeed, 1_000);
   assert.equal(acquired.result, 'discovered');
   assert.equal(acquired.cold.ownedChests[0]!.fieldChestId, chest.id);
-  const secondSource = { ...second.searchSources.find(item => item.kind === 'field_cache')!, fieldChestId: chest.id };
+  const secondSource = { ...source, id: `${second.botId}:TEST-FIELD-CACHE` };
   assert.equal(acquireBotChest(state, ACTIVE_WORLD_PACKAGE, second, secondSource, 'second-search', population.saveSeed, 2_000).result, 'depleted');
 
   const fixture = setup({ ...empty, food: 100 * BOT_MICRO, firewood: 100 * BOT_MICRO }, 10);
@@ -667,8 +693,8 @@ test('legacy zero-unit scout routes are canceled and their reservations released
 
   const migrated = migrateBotPopulation(legacy);
   verifyBotPopulation(migrated);
-  assert.equal(migrated.rulesVersion, 'BOT-AUTHORITATIVE-SIM-1.11');
-  assert.equal(migrated.plannerRuleVersion, 'BOT-UTILITY-GOALS-1.7');
+  assert.equal(migrated.rulesVersion, BOT_SIMULATION_RULE_VERSION);
+  assert.equal(migrated.plannerRuleVersion, BOT_PLANNER_RULE_VERSION);
   assert.equal(migrated.chunks[0]!.cold[0]!.armyMovement, null);
   assert.equal(migrated.chunks[0]!.cold[0]!.currentPlan, null);
   assert.equal(migrated.chunks[0]!.reservedFoodMicro[0], 0);

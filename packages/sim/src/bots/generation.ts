@@ -1,15 +1,16 @@
 import type { BotActionReceipt, BotColdRecord, BotPopulationState, BotSearchSource, BotSharedWildlifeStock, BotStateChunk, BotTalentGrade, BotTalentKind, BotUnitCohort, BotStructureInstance, CoordinateMm, WorldDefinition } from '../../../contracts/src/index.ts';
 import { canonicalStateHash, hash64, randomIntFromFields } from '../hash.ts';
 import { OPENING_LEVEL_CLOSES_AT_MS, OPENING_LEVEL_OPENS_AT_MS, OPENING_LEVEL_RIVALS } from '../openingRanking.ts';
-import { BOT_ACTION_RECEIPT_ARCHIVE_VERSION, BOT_ACTIVITY_XP_RULE_VERSION, BOT_BLUEPRINT_RULE_VERSION, BOT_CHUNK_SIZE, BOT_EQUIPMENT_RULE_VERSION, BOT_EVENT_REWARD_RULE_VERSION, BOT_GENERATION_VERSION, BOT_HUNT_RULE_VERSION, BOT_KIND_CODE, BOT_MARKET_RULE_VERSION, BOT_MICRO, BOT_PLANNER_RULE_VERSION, BOT_RECOVERY_RULE_VERSION, BOT_REPAIR_RULE_VERSION, BOT_SHARED_WILDLIFE_RULE_VERSION, BOT_SIMULATION_RULE_VERSION, BOT_SURVIVAL_RULE_VERSION, BOT_TALENT_RULE_VERSION, BOT_TALENT_XP_RULE_VERSION, botChunkHash, botPopulationRoot, botRowHash, botSharedWildlifeRoot, computeBotChunkWake, heapifyBotScheduler } from './state.ts';
+import { BOT_ACTION_RECEIPT_ARCHIVE_VERSION, BOT_ACTIVITY_XP_RULE_VERSION, BOT_BLUEPRINT_RULE_VERSION, BOT_CHUNK_SIZE, BOT_EQUIPMENT_RULE_VERSION, BOT_EVENT_REWARD_RULE_VERSION, BOT_GENERATION_VERSION, BOT_HUNT_RULE_VERSION, BOT_KIND_CODE, BOT_LORD_RULE_VERSION, BOT_MARKET_RULE_VERSION, BOT_MICRO, BOT_PLANNER_RULE_VERSION, BOT_RECOVERY_RULE_VERSION, BOT_REPAIR_RULE_VERSION, BOT_SHARED_WILDLIFE_RULE_VERSION, BOT_SIMULATION_RULE_VERSION, BOT_SURVIVAL_RULE_VERSION, BOT_TALENT_RULE_VERSION, BOT_TALENT_XP_RULE_VERSION, botChunkHash, botPopulationRoot, botRowHash, botSharedWildlifeRoot, computeBotChunkWake, heapifyBotScheduler } from './state.ts';
 import { BOT_TERRITORY_RULE_VERSION } from './territory.ts';
 import { BOT_WEATHER_RULE_VERSION } from './weather.ts';
+import { createBotLord } from './lord.ts';
 
 export const BOT_P0_COUNT = 1_023;
 export const BOT_P0_PARTICIPANTS = BOT_P0_COUNT + 1;
 export const BOT_TALENT_QUOTAS: Readonly<Record<BotTalentGrade, number>> = { S: 2, A: 51, B: 205, C: 358, D: 407 };
 export const BOT_TYPE_QUOTAS = { combat: 512, production: 511 } as const;
-export const BOT_GENERATION_RULES_VERSION = 'BOT-NEW-SAVE-OVERLAY-P0-1.3';
+export const BOT_GENERATION_RULES_VERSION = 'BOT-NEW-SAVE-OVERLAY-P0-1.4';
 export const BOT_PLAYER_RAID_PROTECTION_MS = 144 * 60 * 60_000;
 
 const gradeCode: Readonly<Record<BotTalentGrade, number>> = { S: 0, A: 1, B: 2, C: 3, D: 4 };
@@ -153,40 +154,33 @@ function starterCohort(botId: string, ordinal: number, position: CoordinateMm, c
 }
 
 function sources(seed: string, regionId: string, botId: string, position: CoordinateMm, world: WorldDefinition): BotSearchSource[] {
-  const offsets = [[520_000, 0], [-510_000, 100_000], [0, 620_000], [120_000, -700_000]] as const;
-  const kinds = ['field_cache', 'ruin', 'wildlife_track', 'survey_site'] as const;
-  return offsets.map(([x, y], index) => {
-    const localPosition = { xMm: position.xMm + x, yMm: position.yMm + y, sourceZMetres: position.sourceZMetres ?? 0 };
-    const chest = index === 0 ? world.fieldChests.filter(item => item.chestType === 'field')
-      .map(item => ({ item, distance: Math.sqrt(distanceSquared(item.position, position)) }))
-      .filter(row => row.distance <= 12_000_000)
-      .sort((a, b) => a.distance - b.distance || compareAscii(a.item.id, b.item.id))[0]?.item : undefined;
-    const sourcePosition = chest?.position ?? localPosition;
-    const wildlife = index === 2;
-    const cellX = Math.floor(sourcePosition.xMm / CONTACT_INDEX_CELL_MM);
-    const cellY = Math.floor(sourcePosition.yMm / CONTACT_INDEX_CELL_MM);
-    const sharedStockId = wildlife ? `BOT-WILDLIFE-${cellX}-${cellY}` : undefined;
-    const nodePosition = wildlife ? {
+  const nearbyChests = world.fieldChests.filter(item => item.chestType === 'field')
+    .map(item => ({ item, distance: Math.sqrt(distanceSquared(item.position, position)) }))
+    .filter(row => row.distance <= 12_000_000)
+    .sort((a, b) => a.distance - b.distance || compareAscii(a.item.id, b.item.id))
+    .slice(0, 4);
+  const chestSources: BotSearchSource[] = nearbyChests.map(({ item }, index) => ({
+    id: `${botId}-SRC-CHEST-${String(index + 1).padStart(2, '0')}`,
+    kind: 'field_cache', position: item.position, remainingActions: 1,
+    eligibleBlueprintIds: [], discovered: true, fieldChestId: item.id,
+  }));
+
+  const wildlifeOffset = [0, 620_000] as const;
+  const sourcePosition = { xMm: position.xMm + wildlifeOffset[0], yMm: position.yMm + wildlifeOffset[1], sourceZMetres: position.sourceZMetres ?? 0 };
+  const cellX = Math.floor(sourcePosition.xMm / CONTACT_INDEX_CELL_MM);
+  const cellY = Math.floor(sourcePosition.yMm / CONTACT_INDEX_CELL_MM);
+  const sharedStockId = `BOT-WILDLIFE-${cellX}-${cellY}`;
+  const wildlifeSource: BotSearchSource = {
+    id: `${botId}-SRC-WILDLIFE`, kind: 'wildlife_track', position: {
       xMm: cellX * CONTACT_INDEX_CELL_MM + Math.floor(CONTACT_INDEX_CELL_MM / 2),
       yMm: cellY * CONTACT_INDEX_CELL_MM + Math.floor(CONTACT_INDEX_CELL_MM / 2),
       sourceZMetres: sourcePosition.sourceZMetres,
-    } : sourcePosition;
-    return {
-      id: `${botId}-SRC-${String(index + 1).padStart(2, '0')}`,
-      kind: kinds[index]!,
-      position: nodePosition,
-      remainingActions: wildlife
-        ? randomIntFromFields([seed, BOT_GENERATION_VERSION, sharedStockId!, 'finite-prey-stock'], 2, 5).value
-        : index === 0 ? 1 : randomIntFromFields([seed, BOT_GENERATION_VERSION, regionId, botId, 'finite-search-stock', String(index)], 2, 5).value,
-      eligibleBlueprintIds: ['BP-BOT-FARM', 'BP-BOT-WOOD-MILL', 'BP-BOT-QUARRY', 'BP-BOT-BARRACKS', 'BP-BOT-WATCHTOWER', 'BP-BOT-WALL', 'BP-BOT-INFIRMARY', 'BP-BOT-WORKSHOP'],
-      discovered: true,
-      ...(wildlife ? {
-        sharedStockId,
-        wildlifeDangerPermille: randomIntFromFields([seed, BOT_GENERATION_VERSION, sharedStockId!, 'wildlife-danger'], 250, 1_000).value,
-      } : {}),
-      ...(chest ? { fieldChestId: chest.id } : {}),
-    };
-  });
+    },
+    remainingActions: randomIntFromFields([seed, BOT_GENERATION_VERSION, sharedStockId, 'finite-prey-stock'], 2, 5).value,
+    eligibleBlueprintIds: [], discovered: true, sharedStockId,
+    wildlifeDangerPermille: randomIntFromFields([seed, BOT_GENERATION_VERSION, sharedStockId, 'wildlife-danger'], 250, 1_000).value,
+  };
+  return [...chestSources, wildlifeSource];
 }
 
 function makeColdRecord(seed: string, ordinal: number, position: CoordinateMm, regionId: string, grade: BotTalentGrade, kind: BotTalentKind, world: WorldDefinition): BotColdRecord {
@@ -203,6 +197,7 @@ function makeColdRecord(seed: string, ordinal: number, position: CoordinateMm, r
     position,
     oldAffinity: fixed?.affinity ?? (kind === 'combat' ? 'HUNTER' : 'BUILDER'),
     lordFate: { status: 'active', changedAtElapsedMs: null, cause: null, triggerId: null },
+    lord: createBotLord(botId, position),
     casualtiesByCause: { starvation: 0, dehydration: 0, fuelExhaustion: 0, regionalBlizzard: 0, battle: 0, wildlife: 0, unattributed: 0 },
     aggressionPermille: randomIntFromFields([seed, BOT_GENERATION_VERSION, regionId, botId, 'aggression'], 550, 1_350).value,
     riskTolerancePermille: randomIntFromFields([seed, BOT_GENERATION_VERSION, regionId, botId, 'risk'], 450, 1_250).value,
@@ -435,6 +430,7 @@ export function generateBotPopulation(
     weatherRuleVersion: BOT_WEATHER_RULE_VERSION,
     territoryRuleVersion: BOT_TERRITORY_RULE_VERSION,
     marketRuleVersion: BOT_MARKET_RULE_VERSION,
+    lordRuleVersion: BOT_LORD_RULE_VERSION,
     rulesOverlayVersion: BOT_GENERATION_RULES_VERSION,
     quotas,
     populationSize: botCount,
@@ -466,17 +462,21 @@ export function generateBotPopulation(
     weatherRuleVersion: BOT_WEATHER_RULE_VERSION,
     territoryRuleVersion: BOT_TERRITORY_RULE_VERSION,
     marketRuleVersion: BOT_MARKET_RULE_VERSION,
+    lordRuleVersion: BOT_LORD_RULE_VERSION,
     saveSeed: seed,
     rulesetSha256,
     totalParticipants: botCount + 1,
     botCount,
+    livingLordCount: botCount,
     chunkSize: BOT_CHUNK_SIZE,
     generatedAtElapsedMs: 0,
     playerRaidProtectionEndsAtElapsedMs: BOT_PLAYER_RAID_PROTECTION_MS,
     chunks,
+    activeLordOrdinals: Array.from({ length: botCount }, (_, index) => index + 1),
     chunkRootSha256: botPopulationRoot(chunks),
     sharedWildlifeStocks: [...wildlifeStocks.values()].sort((a, b) => compareAscii(a.id, b.id)),
     sharedWildlifeRootSha256: '',
+    remainsChests: [],
     schedulerHeap,
     publicRevision: 0,
     lastPublicSnapshotAtElapsedMs: 0,

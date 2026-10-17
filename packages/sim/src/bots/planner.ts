@@ -75,12 +75,14 @@ export function spendableBotResources(chunk: BotPlannerRows, offset: number): Re
 
 function goalsFor(cold: BotColdRecord, chunk: BotPlannerRows, offset: number, grade: BotTalentGrade, kind: BotTalentKind, resources: Record<BotResourceKey, number>, at: number): Goal[] {
   const population = chunk.population[offset]!;
+  const ownerAtSettlement = cold.lord.lifeState === 'alive' && cold.lord.location === 'settlement';
+  const consumers = population + Number(ownerAtSettlement);
   const roster = chunk.armySize[offset]!;
   const food = chunk.foodMicro[offset]! / BOT_MICRO;
   const fuel = chunk.firewoodMicro[offset]! / BOT_MICRO;
-  const foodDays = food / Math.max(0.01, population * 0.18 * 24);
-  const fuelDays = fuel / Math.max(0.01, population * 0.075 * 24);
-  const waterDays = cold.potableWaterMl / Math.max(1, population * 2_000);
+  const foodDays = food / Math.max(0.01, consumers * BOT_UPKEEP_UNITS_PER_PERSON_HOUR.food * 24);
+  const fuelDays = fuel / Math.max(0.01, consumers * BOT_UPKEEP_UNITS_PER_PERSON_HOUR.firewood * 24);
+  const waterDays = cold.potableWaterMl / Math.max(1, consumers * 2_000);
   const goals: Goal[] = [];
   const cargoTotal = Object.values(cold.carriedCargo).reduce((sum, value) => sum + value, 0);
   const deliverable = (['food', 'wood', 'stone', 'ore', 'firewood'] as const).some(resource => {
@@ -90,18 +92,20 @@ function goalsFor(cold: BotColdRecord, chunk: BotPlannerRows, offset: number, gr
     return cold.carriedCargo[resource] > 0 && balance < cap;
   });
   if (cargoTotal > 0 && deliverable) goals.push({ id: 'supply', utility: 700, action: 'deliver', targetId: null, cost: { food: 0, wood: 0, stone: 0, ore: 0 }, workHours: 0.5 });
-  if (population > 0 && foodDays < 2.25) goals.push({ id: 'survive', utility: 1_200 - Math.floor(foodDays * 120), action: 'gather_food', targetId: null, cost: { food: 0, wood: 0, stone: 0, ore: 0 }, workHours: 4 });
-  if (population > 0 && fuelDays < 1.75 && chunk.woodNodeMicro[offset]! > 0) goals.push({ id: 'survive', utility: 1_100 - Math.floor(fuelDays * 140), action: 'gather_wood', targetId: null, cost: { food: 0, wood: 0, stone: 0, ore: 0 }, workHours: 4 });
-  const waterWorkforce = workforceFor('prepare_water', chunk.workers[offset]!, roster, kind, chunk, offset, cold, true).assigned;
+  const selfWorkAvailable = chunk.workers[offset]! === 0 && ownerAtSettlement;
+  if (consumers > 0 && foodDays < 2.25) goals.push({ id: 'survive', utility: 1_200 - Math.floor(foodDays * 120), action: 'gather_food', targetId: null, cost: { food: 0, wood: 0, stone: 0, ore: 0 }, workHours: 4 });
+  if (consumers > 0 && fuelDays < 1.75 && chunk.woodNodeMicro[offset]! > 0) goals.push({ id: 'survive', utility: 1_100 - Math.floor(fuelDays * 140), action: 'gather_wood', targetId: null, cost: { food: 0, wood: 0, stone: 0, ore: 0 }, workHours: 4 });
+  const staffedWaterWorkforce = workforceFor('prepare_water', chunk.workers[offset]!, roster, kind, chunk, offset, cold, true).assigned;
+  const waterWorkforce = staffedWaterWorkforce || Number(selfWorkAvailable);
   const waterWorkMs = Math.ceil(4 * 3_600_000 * 1_000 / Math.max(1, waterWorkforce * botConstructionPermille(grade, kind)));
   const preparationFuelNeed = BOT_WATER_PREPARATION_FIREWOOD_UNITS
-    + Math.ceil(population * BOT_UPKEEP_UNITS_PER_PERSON_HOUR.firewood * waterWorkMs / 3_600_000);
-  if (population > 0 && waterDays < 3 && cold.localIceRemainingMl > 0 && fuel >= preparationFuelNeed && waterWorkforce > 0) goals.push({
+    + Math.ceil(consumers * BOT_UPKEEP_UNITS_PER_PERSON_HOUR.firewood * waterWorkMs / 3_600_000);
+  if (consumers > 0 && waterDays < 3 && cold.localIceRemainingMl > 0 && fuel >= preparationFuelNeed && waterWorkforce > 0) goals.push({
     id: 'survive', utility: 1_180 - Math.floor(waterDays * 100), action: 'prepare_water', targetId: `${cold.botId}:LOCAL-ICE`,
     cost: { food: 0, wood: 0, stone: 0, ore: 0 }, workHours: 4,
   });
 
-  const thresholds: Record<BotResourceKey, number> = { food: Math.floor(population * 0.18 * 24 * 2.25), wood: 130, stone: 100, ore: 35 };
+  const thresholds: Record<BotResourceKey, number> = { food: Math.floor(consumers * BOT_UPKEEP_UNITS_PER_PERSON_HOUR.food * 24 * 2.25), wood: 130, stone: 100, ore: 35 };
   for (const resource of ['food', 'wood', 'stone', 'ore'] as const) {
     if (resource === 'wood' && chunk.woodNodeMicro[offset]! === 0) continue;
     const ratio = resources[resource] / Math.max(1, thresholds[resource]);
@@ -220,8 +224,7 @@ function goalsFor(cold: BotColdRecord, chunk: BotPlannerRows, offset: number, gr
   const sources = cold.searchSources.filter(source => source.discovered && source.remainingActions > 0)
     .slice().sort((a, b) => a.remainingActions - b.remainingActions || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const availableScouts = workforceFor('scout', chunk.workers[offset]!, roster, kind, chunk, offset, cold).workforce.scouts;
-  const searchSource = sources.find(source => source.eligibleBlueprintIds.some(id => !cold.blueprintIds.includes(id)
-    && !cold.blueprintItems.some(item => item.blueprintId === id && item.status !== 'sold')));
+  const searchSource = sources.find(source => source.kind === 'field_cache' && source.fieldChestId !== undefined);
   if (searchSource && resources.food >= 3 && availableScouts > 0) goals.push({
     id: 'discover', utility: 420 + (kind === 'production' ? 20 : 0) + Math.min(40, cold.blueprintIds.length * 2)
       + Math.min(260, Math.max(0, Math.floor((at - latestActionAt(cold, 'search')) / (12 * 60 * 60_000)) * 90)),
@@ -294,7 +297,7 @@ function goalsFor(cold: BotColdRecord, chunk: BotPlannerRows, offset: number, gr
     goals.push({ id: 'supply', utility: foodUtility + (kind === 'combat' ? 25 : 0) - Math.floor(danger / 8), action: 'hunt', targetId: prey.id,
       cost: { food: 0, wood: 0, stone: 0, ore: 0 }, workHours: 2 + Math.ceil(distanceMm / 3_500_000 * 2) + danger / 1_000 });
   }
-  if (chunk.workers[offset] === 0 && roster === 0) goals.push({ id: 'survive', utility: 2_000, action: 'recover', targetId: null, cost: { food: 0, wood: 0, stone: 0, ore: 0 }, workHours: 6 });
+  if (chunk.workers[offset] === 0 && roster === 0 && !selfWorkAvailable) goals.push({ id: 'survive', utility: 2_000, action: 'recover', targetId: null, cost: { food: 0, wood: 0, stone: 0, ore: 0 }, workHours: 6 });
   return goals;
 }
 
@@ -356,18 +359,23 @@ export function chooseBotDecision(cold: BotColdRecord, chunk: BotPlannerRows, of
   const ordinal = cold.nextActionOrdinal + 1;
   const actionId = `${cold.botId}:ACT:${String(ordinal).padStart(8, '0')}`;
   const currentPopulation = chunk.population[offset]!;
+  const currentConsumers = currentPopulation + Number(cold.lord.lifeState === 'alive' && cold.lord.location === 'settlement');
   const emergency = chosen.action === 'prepare_water' || chosen.action === 'list_blueprint'
-    || chosen.action === 'gather_food' && chunk.foodMicro[offset]! / BOT_MICRO / Math.max(0.01, currentPopulation * 0.18 * 24) < 2.25
-    || chosen.action === 'gather_wood' && chunk.firewoodMicro[offset]! / BOT_MICRO / Math.max(0.01, currentPopulation * 0.075 * 24) < 1.75;
+    || chosen.action === 'gather_food' && chunk.foodMicro[offset]! / BOT_MICRO / Math.max(0.01, currentConsumers * BOT_UPKEEP_UNITS_PER_PERSON_HOUR.food * 24) < 2.25
+    || chosen.action === 'gather_wood' && chunk.firewoodMicro[offset]! / BOT_MICRO / Math.max(0.01, currentConsumers * 0.075 * 24) < 1.75;
   const assignment = workforceFor(chosen.action, chunk.workers[offset]!, chunk.armySize[offset]!, kind, chunk, offset, cold, emergency);
   const blueprint = chosen.action === 'construct' ? BOT_BLUEPRINT_BY_ID.get(chosen.targetId ?? '') : null;
   const workHours = blueprint?.workerHours ?? chosen.workHours;
-  const workerWork = chosen.action === 'construct' ? assignment.workforce.builders
+  const staffedWork = chosen.action === 'construct' ? assignment.workforce.builders
     : chosen.action === 'recruit' ? assignment.workforce.recruiters
       : chosen.action === 'deliver' ? assignment.workforce.builders
       : ['search', 'scout', 'raid', 'hunt'].includes(chosen.action) ? assignment.workforce.scouts
         : chosen.action === 'equip' ? assignment.workforce.smiths
         : ['construct', 'repair', 'prepare_water', 'learn_blueprint', 'open_chest', 'list_blueprint', 'upgrade_territory'].includes(chosen.action) ? assignment.workforce.builders : assignment.assigned;
+  const ownerSelfService = chunk.workers[offset] === 0 && cold.lord.lifeState === 'alive' && cold.lord.location === 'settlement'
+    && ['gather_food', 'gather_wood', 'gather_stone', 'gather_ore', 'construct', 'repair', 'prepare_water', 'learn_blueprint',
+      'open_chest', 'list_blueprint', 'upgrade_territory', 'recruit', 'recover', 'equip', 'deliver'].includes(chosen.action);
+  const workerWork = staffedWork || Number(ownerSelfService);
   const constructionPermille = botConstructionPermille(grade, kind);
   const workRequired = chosen.action === 'construct' ? Math.max(1, Math.round(workHours * 3_600_000)) : Math.max(1, Math.round(workHours * 3_600_000));
   const duration = ['construct', 'repair', 'equip', 'prepare_water', 'learn_blueprint', 'open_chest', 'list_blueprint', 'upgrade_territory'].includes(chosen.action)
@@ -390,10 +398,11 @@ export function chooseBotDecision(cold: BotColdRecord, chunk: BotPlannerRows, of
         : chosen.action.startsWith('gather_') ? `replenish ${RESOURCE_FOR_ACTION[chosen.action as keyof typeof RESOURCE_FOR_ACTION]}` : chosen.action;
   return {
     plan: { goal: chosen.id, action: chosen.action, actionId, startedAtElapsedMs: at, completesAtElapsedMs, targetId: chosen.targetId,
-      ...(chosen.paymentResource ? { marketPaymentResource: chosen.paymentResource } : {}), workersAssigned: workerWork, reserved,
+      ...(chosen.paymentResource ? { marketPaymentResource: chosen.paymentResource } : {}), ownerSelfService, workersAssigned: workerWork, reserved,
       startingResourcesMicro: { food: chunk.foodMicro[offset]!, wood: chunk.woodMicro[offset]!, stone: chunk.stoneMicro[offset]!, ore: chunk.oreMicro[offset]! }, expectedOutcome },
     workCode: BOT_WORK_CODE[chosen.action],
-    assignedWorkers: workerWork,
+    // The owner can perform one solo action without being counted as a resident worker.
+    assignedWorkers: ownerSelfService ? 0 : workerWork,
     workRequired,
     reservedMicro: { food: reserved.food * BOT_MICRO, wood: reserved.wood * BOT_MICRO, stone: reserved.stone * BOT_MICRO, ore: reserved.ore * BOT_MICRO },
     workforce: assignment.workforce,

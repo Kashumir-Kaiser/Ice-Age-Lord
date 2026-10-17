@@ -7,7 +7,7 @@ import {
   OPENING_LEVEL_BOARD_ID, OPENING_LEVEL_CLOSES_AT_MS, OPENING_LEVEL_OPENS_AT_MS,
   OPENING_LEVEL_QUALIFYING_LEVEL, OPENING_LEVEL_REWARD_CONTRACT, OPENING_RIVAL_SIMULATION_VERSION, OPENING_LEVEL_RIVALS,
   forecastOpeningRival, openingLevelRewardBand, openingRivalStartingResources,
-  rankOpeningLevelCompletions, visibleOpeningLevelRows,
+  openingRankedRowById, rankOpeningLevelCompletions, visibleOpeningLevelRows,
 } from './openingRanking.ts';
 import { playerLevelThreshold } from './stage07.ts';
 import { BOT_SIMULATION_RULE_VERSION } from './bots/state.ts';
@@ -22,6 +22,7 @@ export const Q08_CARAVAN_ID = 'CARAVAN-LL01-01';
 export const KRONA_CURRENCY_ID = 'KRONA';
 export const Q08_REWARD_CONTRACT = 'RW-LL01-08';
 export const OPENING_RANK_CLAIM_KEY = `${OPENING_LEVEL_BOARD_ID}|LI_LAN|${OPENING_LEVEL_REWARD_CONTRACT}`;
+function openingRankClaimKey(state: Pick<GameState, 'saveId'>): string { return `${state.saveId}:${OPENING_RANK_CLAIM_KEY}`; }
 
 const OPENING_REWARD_HANDLERS = new Set(['MEAT', 'BREAD', 'BASIC_MEDICINE']);
 const OPENING_REWARD_BLOCKERS: Readonly<Record<string, string>> = {
@@ -50,6 +51,10 @@ export const Q08_ROUTE_ID = 'ROUTE-TRADE-LL01-A';
 export const MARKET_BREAD_OFFER_ID = 'MARKET-LL01-046-BREAD-01';
 export const CARAVAN_SALT_AUCTION_ID = 'AUCTION-LL01-08-SALT-01';
 export const CARAVAN_SALT_CARGO_ID = 'CARGO-CARAVAN-LL01-01-SALT';
+
+function rankMap(rows: readonly { playerId: string; rank: number }[]): Record<string, number> {
+  return Object.fromEntries(rows.map(row => [row.playerId, row.rank]));
+}
 
 const HOUR_MS = 3_600_000;
 const INTERACTION_RANGE_MM = 12_000;
@@ -386,7 +391,7 @@ export function buyBotMarketListing(state: GameState, world: WorldDefinition, li
   container.stacks = stack.quantity === listing.askAmount
     ? container.stacks.filter(item => item.itemId !== itemId)
     : container.stacks.map(item => item.itemId !== itemId ? item : { ...item, quantity: item.quantity - listing.askAmount });
-  const settled = settleBotMarketListingForPlayer(next.botPopulation!, listingId, state.simElapsedMs);
+  const settled = settleBotMarketListingForPlayer(next.botPopulation!, listingId, state.simElapsedMs, state.survival.environment);
   if (settled.code || !settled.population) return unchanged(state, settled.code ?? 'BOT_MARKET_SETTLEMENT_FAILED', 'The seller could not settle this listing at the current boundary.');
   next.botPopulation = settled.population;
   next.construction.unlockedBlueprintIds = [...new Set([...next.construction.unlockedBlueprintIds, adapter])].sort();
@@ -785,24 +790,31 @@ export function verifyStage08State(state: GameState): void {
   }
   for (const snapshot of state.stage08.rankSnapshots) {
     if (snapshot.boardId === OPENING_LEVEL_BOARD_ID) {
+      const expectedRankById = rankMap(snapshot.rows);
       const expectedHash = canonicalStateHash({
         boardId: snapshot.boardId,
         sourceContract: snapshot.sourceContract,
         settledAtElapsedMs: snapshot.settledAtElapsedMs,
         rows: snapshot.rows,
+        rankById: snapshot.rankById,
       });
-      if (snapshot.status !== 'settled' || snapshot.reasonCode !== null || snapshot.snapshotSha256 !== expectedHash) throw new Error('OPENING_RANK_SNAPSHOT_HASH_INVARIANT');
+      if (snapshot.status !== 'settled' || snapshot.reasonCode !== null
+        || canonicalStateHash(snapshot.rankById) !== canonicalStateHash(expectedRankById)
+        || snapshot.rows.some((row, index) => row.rank !== index + 1)
+        || snapshot.snapshotSha256 !== expectedHash) throw new Error('OPENING_RANK_SNAPSHOT_HASH_INVARIANT');
     }
   }
-  const openingClaimed = rewardClaimReceipts.includes(OPENING_RANK_CLAIM_KEY);
+  const claimKey = openingRankClaimKey(state);
+  const openingClaimed = rewardClaimReceipts.includes(claimKey) || rewardClaimReceipts.includes(OPENING_RANK_CLAIM_KEY);
   const openingSnapshot = state.stage08.rankSnapshots.find(snapshot => snapshot.boardId === OPENING_LEVEL_BOARD_ID && snapshot.status === 'settled');
-  const openingPlayerRow = openingSnapshot?.rows.find(row => row.playerId === state.player.id);
+  const openingPlayerRow = openingSnapshot ? openingRankedRowById(openingSnapshot.rows, openingSnapshot.rankById, state.player.id) : null;
   const deliveredStacks = state.inventory.containers.flatMap(container => container.stacks);
   const openingRewardItems = openingPlayerRow?.rewardItems ?? [];
   if (openingClaimed && !openingPlayerRow) throw new Error('OPENING_RANK_CLAIM_RECEIPT_INVARIANT');
   for (const item of openingRewardItems) {
     const matches = deliveredStacks.filter(stack => stack.itemId === item.instanceId);
-    const slotClaimed = rewardClaimReceipts.includes(`${OPENING_RANK_CLAIM_KEY}|SLOT|${item.instanceId}`);
+    const slotClaimed = rewardClaimReceipts.includes(`${claimKey}|SLOT|${item.instanceId}`)
+      || rewardClaimReceipts.includes(`${OPENING_RANK_CLAIM_KEY}|SLOT|${item.instanceId}`);
     const currentlyDeliverable = item.status === 'committed' || openingRewardBlocker(item.itemTemplateId) === null;
     if (slotClaimed && currentlyDeliverable
       && (matches.length !== 1 || matches[0]?.templateId !== item.itemTemplateId || matches[0]?.quantity !== item.quantity)) {
@@ -811,7 +823,8 @@ export function verifyStage08State(state: GameState): void {
     if ((!slotClaimed || !currentlyDeliverable) && matches.length > 0) throw new Error('OPENING_RANK_REWARD_PREMATURE_MINT_INVARIANT');
   }
   if (openingClaimed && openingRewardItems.some(item => !(item.status === 'committed' || openingRewardBlocker(item.itemTemplateId) === null)
-    || !rewardClaimReceipts.includes(`${OPENING_RANK_CLAIM_KEY}|SLOT|${item.instanceId}`))) throw new Error('OPENING_RANK_CLAIM_INCOMPLETE');
+    || !(rewardClaimReceipts.includes(`${claimKey}|SLOT|${item.instanceId}`)
+      || rewardClaimReceipts.includes(`${OPENING_RANK_CLAIM_KEY}|SLOT|${item.instanceId}`)))) throw new Error('OPENING_RANK_CLAIM_INCOMPLETE');
 }
 
 function playerOpeningCompletionAt(state: GameState): number | null {
@@ -860,7 +873,10 @@ export function openingBoardView(state: GameState) {
   const frozenRows = frozen?.status === 'settled' ? frozen.rows.map(row => ({
     playerId: row.playerId, playerName: row.playerName, rank: row.rank, level: row.level, completionAtElapsedMs: row.completionAtElapsedMs,
   })) : [];
-  const playerRow = frozen?.rows.find(row => row.playerId === state.player.id);
+  const liveRankById = state.botPopulation ? populationSnapshot?.rankById ?? {} : rankMap(liveRows);
+  const frozenRankById = frozen?.rankById ?? {};
+  const rankById = closed ? frozenRankById : liveRankById;
+  const playerRow = frozen ? openingRankedRowById(frozen.rows, frozen.rankById, state.player.id) : null;
   return {
     boardId: OPENING_LEVEL_BOARD_ID,
     status,
@@ -868,8 +884,9 @@ export function openingBoardView(state: GameState) {
     closesAtElapsedMs: OPENING_LEVEL_CLOSES_AT_MS,
     displayDelayMs: 3 * 60_000,
     rows: closed ? frozenRows : liveRows,
+    rankById,
     rewardClaimStatus: !playerRow ? 'unavailable' as const
-      : state.stage08.rewardClaimReceipts.includes(OPENING_RANK_CLAIM_KEY) ? 'claimed' as const : 'pending' as const,
+      : state.stage08.rewardClaimReceipts.includes(openingRankClaimKey(state)) || state.stage08.rewardClaimReceipts.includes(OPENING_RANK_CLAIM_KEY) ? 'claimed' as const : 'pending' as const,
   };
 }
 
@@ -877,9 +894,10 @@ export function claimOpeningLevelReward(state: GameState, commandId: string, boa
   if (boardId !== OPENING_LEVEL_BOARD_ID) return unchanged(state, 'OPENING_REWARD_BOARD_UNKNOWN', 'That fixed reward board is not available.');
   const snapshot = state.stage08.rankSnapshots.find(item => item.boardId === boardId && item.status === 'settled');
   if (!snapshot) return unchanged(state, 'OPENING_REWARD_NOT_SETTLED', 'The opening board must finish settlement before its reward can be claimed.');
-  const row = snapshot.rows.find(item => item.playerId === state.player.id);
+  const row = openingRankedRowById(snapshot.rows, snapshot.rankById, state.player.id);
   if (!row) return unchanged(state, 'OPENING_REWARD_NOT_EARNED', 'This save has no qualifying row on the frozen opening board.');
-  if (state.stage08.rewardClaimReceipts.includes(OPENING_RANK_CLAIM_KEY)) return unchanged(state, 'OPENING_REWARD_ALREADY_CLAIMED', 'This frozen reward contract has already been claimed.');
+  const claimKey = openingRankClaimKey(state);
+  if (state.stage08.rewardClaimReceipts.includes(claimKey) || state.stage08.rewardClaimReceipts.includes(OPENING_RANK_CLAIM_KEY)) return unchanged(state, 'OPENING_REWARD_ALREADY_CLAIMED', 'This frozen reward contract has already been claimed.');
   const deliveredIds = new Set(state.inventory.containers.flatMap(container => container.stacks.map(stack => stack.itemId)));
   const currentlyDeliverable = (item: typeof row.rewardItems[number]): boolean => item.status === 'committed' || openingRewardBlocker(item.itemTemplateId) === null;
   const deliverable = row.rewardItems.filter(item => currentlyDeliverable(item) && !deliveredIds.has(item.instanceId));
@@ -909,11 +927,11 @@ export function claimOpeningLevelReward(state: GameState, commandId: string, boa
       provenance: 'campaign_fixed' as const,
     }))],
   });
-  const slotReceipts = batch.map(item => `${OPENING_RANK_CLAIM_KEY}|SLOT|${item.instanceId}`);
+  const slotReceipts = batch.map(item => `${claimKey}|SLOT|${item.instanceId}`);
   next.stage08.rewardClaimReceipts = [...next.stage08.rewardClaimReceipts, ...slotReceipts];
   const allResolved = row.rewardItems.every(item => currentlyDeliverable(item)
     && (deliveredIds.has(item.instanceId) || batch.some(delivered => delivered.instanceId === item.instanceId)));
-  if (allResolved) next.stage08.rewardClaimReceipts = [...next.stage08.rewardClaimReceipts, OPENING_RANK_CLAIM_KEY];
+  if (allResolved) next.stage08.rewardClaimReceipts = [...next.stage08.rewardClaimReceipts, claimKey];
   return {
     state: next,
     events: [emit('opening_rank_reward_claimed', state.simElapsedMs, {
@@ -963,9 +981,10 @@ export function settleOpeningLevelRank(state: GameState, at: number): Omit<Comma
       claimReceiptId: null,
     };
   });
+  const rankById = rankMap(rows);
   if (state.botPopulation) {
     const materialized = flushBotPopulationChunks(state.botPopulation)!;
-    state.botPopulation = awardBotOpeningRankRewards(materialized, rows, at);
+    state.botPopulation = awardBotOpeningRankRewards(materialized, rows, at, state.saveId);
   }
   const snapshot = {
     boardId: OPENING_LEVEL_BOARD_ID,
@@ -974,7 +993,8 @@ export function settleOpeningLevelRank(state: GameState, at: number): Omit<Comma
     sourceContract,
     reasonCode: null,
     rows,
-    snapshotSha256: canonicalStateHash({ boardId: OPENING_LEVEL_BOARD_ID, sourceContract, settledAtElapsedMs: at, rows }),
+    rankById,
+    snapshotSha256: canonicalStateHash({ boardId: OPENING_LEVEL_BOARD_ID, sourceContract, settledAtElapsedMs: at, rows, rankById }),
   };
   state.stage08.rankSnapshots = [...state.stage08.rankSnapshots, snapshot];
   return emit('event_rank_settled', at, {

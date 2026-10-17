@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { Dispatch, PointerEvent as ReactPointerEvent, SetStateAction } from 'react';
 import { Compass, Eye, EyeOff, Globe2, Layers3, LocateFixed, Maximize2, Minus, Moon, Mountain, Plus, Snowflake, Sun, ThermometerSun, TreePine } from 'lucide-react';
 import { dayOverlayOpacity, dayPhase, fireForm, formatClock, formatDistance, heatRadiusM, shouldEnterWorldMap, shouldReturnToLocalMap } from './mapModel';
@@ -9,6 +9,8 @@ import type { ScreenCluster } from './map/clusterMarkers';
 import { BASE_VIEW_HEIGHT_M, MAX_ZOOM, MIN_LOCAL_ZOOM, WORLD_HALF_SPAN_M, fitCircle, mapToScreen, scaleBar, screenToMap, viewBox, viewSize, worldToMap, zoomAtScreenPoint } from './map/camera';
 import type { CameraView, Rect, SharedMapCamera } from './map/camera';
 import { FogDefinitions, MapEntityGlyph } from './map/MapLayers';
+import { bindSvgEntityMarkerEvents, createSvgEntityMarkerPool, updateSvgEntityMarkerPool } from './map/SvgEntityMarkerPool';
+import type { PooledEntityMarker, SvgEntityMarkerPool } from './map/SvgEntityMarkerPool';
 import './map-refinement.css';
 import MapCanvas from './rendering/MapCanvas';
 import { explorationSnapshot, permittedEntities } from './rendering/MapSceneAdapter';
@@ -71,6 +73,10 @@ export default function MapScene({
   const unique = useId().replace(/[^a-zA-Z0-9]/g, '') || 'map';
   const rootRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const entityMarkerRootRef = useRef<SVGGElement>(null);
+  const entityMarkerPoolRef = useRef<SvgEntityMarkerPool | null>(null);
+  const onSelectEntityRef = useRef(onSelectEntity);
+  onSelectEntityRef.current = onSelectEntity;
   const pointers = useRef(new Map<number, PointerPoint>());
   const gesture = useRef<Gesture | null>(null);
   const ignoreNextClick = useRef(false);
@@ -78,6 +84,22 @@ export default function MapScene({
   const [labels, setLabels] = useState(true);
   const [layers, setLayers] = useState<LayerState>({ buildings: true, resources: true, discoveries: true });
   const [clusterMembers, setClusterMembers] = useState<string[] | null>(null);
+
+  useLayoutEffect(() => {
+    const root = entityMarkerRootRef.current;
+    if (!root) return;
+    const pool = createSvgEntityMarkerPool(root);
+    entityMarkerPoolRef.current = pool;
+    const unbind = bindSvgEntityMarkerEvents(root, ref => {
+      onSelectEntityRef.current(ref);
+      setClusterMembers(null);
+    });
+    return () => {
+      unbind();
+      root.replaceChildren();
+      entityMarkerPoolRef.current = null;
+    };
+  }, []);
 
   const minutes = Math.floor((clockSeconds % 86400) / 60);
   const phase = dayPhase(minutes);
@@ -170,6 +192,25 @@ export default function MapScene({
   const scaleDistance = scaleMeasure.distance;
   const scaleWidth = scaleMeasure.pixels;
   const allLayers = filteredEntities;
+
+  useLayoutEffect(() => {
+    const pool = entityMarkerPoolRef.current;
+    if (!pool || mapQaFixture) return;
+    const selectedKey = selectedEntity ? `${selectedEntity.type}:${selectedEntity.id}` : '';
+    const markers: PooledEntityMarker[] = clustered.flatMap(marker => marker.type === 'marker' ? [{
+      entity: marker.value,
+      worldX: marker.worldX,
+      worldY: marker.worldY,
+      screenX: marker.x,
+      screenY: marker.y,
+      selected: sameEntityRef(marker.value.ref, selectedEntity),
+      scale,
+      labelVisible: labels && visibleLabelIds.has(marker.id),
+      label: marker.value.knowledge === 'remembered' || !marker.value.currentSight
+        ? `Vị trí đã biết lần cuối: ${marker.value.name}` : `Kiểm tra ${marker.value.name}`,
+    }] : []);
+    updateSvgEntityMarkerPool(pool, markers, selectedKey, size.width / 2, size.height / 2);
+  }, [clustered, selectedEntity, scale, labels, visibleLabelIds, size.width, size.height, mapQaFixture]);
 
   const withZoom = (next: CameraView, oldZoom = transientCamera.current.zoom, commit=false) => {
     transientCamera.current=next;
@@ -342,7 +383,7 @@ export default function MapScene({
 
   const keyDown = (event: React.KeyboardEvent<SVGSVGElement>) => {
     const target = event.target;
-    if (target instanceof Element && target.closest('input,textarea,select,[contenteditable="true"]')) return;
+    if (target instanceof Element && target.closest('input,textarea,select,[contenteditable="true"],[role="button"]')) return;
     const step = viewHeight * .12;
     if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'ArrowDown') {
       event.preventDefault();
@@ -444,14 +485,16 @@ export default function MapScene({
           x1={marker.leader!.from.x} y1={marker.leader!.from.y}
           x2={marker.leader!.to.x} y2={marker.leader!.to.y}
           className="map-callout-leader" pointerEvents="none"/>)}
-        {clustered.map(marker => marker.type === 'cluster' ? <g key={marker.id} className={'map-cluster' + (marker.memberIds.includes(selectedText) ? ' is-selected' : '')}
+        {clustered.filter(marker => marker.type === 'cluster').map(marker => <g key={marker.id} className={'map-cluster' + (marker.memberIds.includes(selectedText) ? ' is-selected' : '')}
           transform={'translate(' + marker.worldX + ' ' + (-marker.worldY) + ') scale(' + scale + ')'} role="button" tabIndex={0}
           data-cluster-id={marker.id} aria-label={'Mở danh sách cụm có ' + marker.count + ' địa điểm'}
           onClick={() => clusterList(marker)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); clusterList(marker); } }}>
           <circle r="24" fill="#143a46" stroke={marker.memberIds.includes(selectedText) ? '#ffe0a4' : '#c4dad0'} strokeWidth="2.3"/>
           <circle r="29" fill="none" stroke="#f2d59c" strokeOpacity=".55" strokeDasharray="3 4" strokeWidth="1.3"/>
           <text y="5" textAnchor="middle" fontSize="15" fontWeight="800" fill="#fff0cd">×{marker.count}</text>
-        </g> : <g key={marker.id} transform={`translate(${marker.worldX - (marker.value.x ?? 0)} ${(marker.value.y ?? 0) - marker.worldY})`} className={'map-entity-marker' + (sameEntityRef(marker.value.ref, selectedEntity) ? ' is-selected' : '') + (marker.value.knowledge === 'remembered' ? ' is-remembered' : '')}
+        </g>)}
+        {!mapQaFixture && <g ref={entityMarkerRootRef} aria-label="Visible map entities"/>}
+        {mapQaFixture && clustered.map(marker => marker.type === 'marker' ? <g key={marker.id} transform={`translate(${marker.worldX - (marker.value.x ?? 0)} ${(marker.value.y ?? 0) - marker.worldY})`} className={'map-entity-marker' + (sameEntityRef(marker.value.ref, selectedEntity) ? ' is-selected' : '') + (marker.value.knowledge === 'remembered' ? ' is-remembered' : '')}
           role="button" tabIndex={0} data-entity-id={marker.value.ref.id} data-entity-type={marker.value.ref.type} data-knowledge={marker.value.knowledge}
           data-current-sight={mapQaFixture?Number(Boolean(marker.value.currentSight)):undefined}
           aria-label={labelFor(marker.value)} onClick={() => { onSelectEntity(marker.value.ref); setClusterMembers(null); }}
@@ -459,7 +502,7 @@ export default function MapScene({
           <MapEntityGlyph entity={marker.value} scale={scale} selected={sameEntityRef(marker.value.ref, selectedEntity)} remembered={marker.value.knowledge === 'remembered' || !marker.value.currentSight}/>
           <circle transform={'translate(' + marker.value.x + ' ' + (-(marker.value.y ?? 0)) + ')'} r={24 * scale} fill="transparent" pointerEvents="all"/>
           {labels && visibleLabelIds.has(marker.id) && <text transform={'translate(' + marker.value.x + ' ' + (-(marker.value.y ?? 0)) + ') scale(' + scale + ')'} y="38" textAnchor="middle" fontSize="11" fill="#e5efea" stroke="#091d27" strokeWidth="2.5" paintOrder="stroke">{marker.value.label}</text>}
-        </g>)}
+        </g>) : null)}
         {followPlayer && <g className="map-player-marker" transform={`translate(${playerMapPoint.x} ${playerMapPoint.y}) scale(${scale})`}
           role="button" tabIndex={0} aria-label={`${playerName} — mở hồ sơ người chơi`} onClick={onOpenPlayerProfile}
           onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onOpenPlayerProfile(); } }}>

@@ -790,6 +790,8 @@ export type BotPlanState = {
   targetId: Id | null;
   /** Set only for a blueprint listing action; a saved plan keeps its payment currency stable across reloads. */
   marketPaymentResource?: 'food' | 'water';
+  /** The living lord is doing this work because no resident workers are available. */
+  ownerSelfService?: boolean;
   workersAssigned: number;
   reserved: Record<BotResourceKey, number>;
   startingResourcesMicro: Record<BotResourceKey, number>;
@@ -881,6 +883,8 @@ export type BotOwnedChest = {
   openedAtElapsedMs: number | null;
   lootReceiptId: Id | null;
   lootOutcome: readonly { itemTemplateId: Id; quantity: number }[] | null;
+  /** Loot table pinned when the chest was acquired; absent on legacy unopened chests. */
+  lootRuleVersion?: Id;
   ruleVersion: Id;
 };
 export type BotInventoryItem = {
@@ -930,8 +934,94 @@ export type BotKnownTarget = { id: Id; kind: 'bot' | 'player'; position: Coordin
 export type BotLordFate = {
   status: 'active' | 'dead' | 'captured' | 'dispossessed';
   changedAtElapsedMs: number | null;
-  cause: 'starvation' | 'dehydration' | 'cold' | 'battle_capture' | 'territory_loss' | 'settlement_abandoned' | null;
+  cause: 'starvation' | 'dehydration' | 'cold' | 'combat' | 'battle_capture' | 'territory_loss' | 'settlement_abandoned' | null;
   triggerId: Id | null;
+};
+export type BotLordDamageCause = 'combat' | 'food_deprivation' | 'water_deprivation' | 'cold';
+export type BotLordDeathRecord = {
+  deathEventId: Id;
+  atElapsedMs: number;
+  primaryCause: BotLordDamageCause;
+  contributors: readonly BotLordDamageCause[];
+  precedingHpMicro: number;
+  position: CoordinateMm;
+  foodShortfallMs: number;
+  waterShortfallMs: number;
+  coldLoadMicro: number;
+  carriedFoodMicro: number;
+  carriedWaterMicro: number;
+  carriedFoodConsumptionRemainder: number;
+  carriedWaterConsumptionRemainder: number;
+  supportProviderId: Id | null;
+  shelterStructureId: Id | null;
+  /** Present only when preserving a pre-HP legacy terminal state during migration. */
+  legacyMigration?: true;
+};
+export type BotLordActor = {
+  id: Id;
+  ownerId: Id;
+  profileVersion: 'BOT-NORMAL-HUMAN-LORD-1.0';
+  lifeState: 'alive' | 'dead';
+  hpMicro: number;
+  maxHpMicro: number;
+  attributes: Readonly<Record<'STR' | 'VIT' | 'DEX' | 'INT' | 'SPI' | 'WIL' | 'PER' | 'PRE' | 'LUK', number>>;
+  position: CoordinateMm;
+  location: 'settlement' | 'travelling' | 'encounter' | 'retreating' | 'field';
+  activity: 'at_settlement' | 'travelling' | 'encounter' | 'retreating' | 'resting' | 'working';
+  foodShortfallMs: number;
+  waterShortfallMs: number;
+  coldLoadMicro: number;
+  foodShortfallRemainder: number;
+  waterShortfallRemainder: number;
+  foodDamageRemainder: number;
+  waterDamageRemainder: number;
+  coldLoadRemainder: number;
+  coldDamageRemainder: number;
+  healingRemainder: number;
+  carriedFoodMicro: number;
+  carriedWaterMicro: number;
+  equipmentTemplateIds: readonly Id[];
+  lastIntegratedAtElapsedMs: number;
+  activeEncounterId: Id | null;
+  encounterThreatActorId: Id | null;
+  encounterThreatPosition: CoordinateMm | null;
+  retreatDestination: CoordinateMm | null;
+  /** Persisted route for a real, ordinary-speed personal disengagement. */
+  retreatRoute: readonly CoordinateMm[] | null;
+  retreatDistanceMm: number;
+  retreatProgressMm: number;
+  retreatStartedAtElapsedMs: number | null;
+  retreatSpeedMmPerHour: number;
+  retreatTravelRemainder: number;
+  retreatThreatActorId: Id | null;
+  retreatThreatPosition: CoordinateMm | null;
+  supportProviderId: Id | null;
+  shelterStructureId: Id | null;
+  deathRecord: BotLordDeathRecord | null;
+};
+export type BotRemainsItem = {
+  instanceId: Id;
+  itemTemplateId: Id;
+  quantity: number;
+  rewardReceiptId: Id | null;
+  sourceId: Id | null;
+};
+export type BotRemainsChest = {
+  id: Id;
+  deathEventId: Id;
+  botId: Id;
+  position: CoordinateMm;
+  createdAtElapsedMs: number;
+  resourceMicro: Readonly<Record<BotResourceKey, number>>;
+  /** Potable water in millilitres, held as a separate finite resource balance. */
+  waterMl: number;
+  firewoodMicro: number;
+  inventoryItems: readonly BotRemainsItem[];
+  blueprintItems: readonly BotBlueprintItem[];
+  /** Unopened carried chests stay actual chest assets with their original deterministic commitments. */
+  ownedChests: readonly BotOwnedChest[];
+  state: 'unclaimed' | 'claimed';
+  claimedById: Id | null;
 };
 export type BotArmyMovement = {
   orderId: Id;
@@ -978,6 +1068,8 @@ export type BotColdRecord = {
   oldAffinity: string;
   /** Lord state is independent of civilian population and army counts. */
   lordFate: BotLordFate;
+  /** The sole personal HP/death actor. `lordFate` remains a territory disposition projection. */
+  lord: BotLordActor;
   /** Durable resident and troop loss counts by cause; legacy losses remain unattributed. */
   casualtiesByCause: BotCasualtyLedger;
   aggressionPermille: number;
@@ -1101,6 +1193,8 @@ export type BotPopulationState = {
   weatherRuleVersion: Id;
   territoryRuleVersion: Id;
   marketRuleVersion: Id;
+  lordRuleVersion: Id;
+  livingLordCount: number;
   saveSeed: string;
   rulesetSha256: string;
   totalParticipants: number;
@@ -1112,6 +1206,9 @@ export type BotPopulationState = {
   chunkRootSha256: string;
   sharedWildlifeStocks: readonly BotSharedWildlifeStock[];
   sharedWildlifeRootSha256: string;
+  remainsChests: readonly BotRemainsChest[];
+  /** Derived sorted ordinals for living lord actors; rebuilt on legacy-save migration. */
+  activeLordOrdinals?: readonly number[];
   /** Min-heap of next chunk wakes. Equal timestamps are ordered by chunk then bot ordinal. */
   schedulerHeap: readonly { atElapsedMs: number; chunkIndex: number; botOrdinal: number }[];
   publicRevision: number;
@@ -1167,6 +1264,7 @@ export type BotBoardSnapshot = {
   observedThroughSimMs: number;
   status: 'open' | 'settled';
   rows: readonly { botId: Id; displayName: string; rank: number; score: number; tieValue: number; receiptCount: number }[];
+  rankById: Readonly<Record<Id, number>>;
   snapshotSha256: string;
 };
 export type BotMapMarker = {
@@ -1200,9 +1298,10 @@ export type BotInspectionView = {
   territoryLevel: number | null;
   population: number | null;
   lordFate: BotLordFate | null;
+  lord: { alive: boolean; hp: number; maxHp: number; location: BotLordActor['location']; foodShortfallHours: number; waterShortfallHours: number; coldLoad: number; cause: BotLordDeathRecord['primaryCause'] | null } | null;
   potableWaterMl: number | null;
   resourceBalances: Readonly<Partial<Record<BotResourceKey, number>>> | null;
-  structures: readonly Pick<BotStructureInstance, 'id' | 'blueprintId' | 'anchor' | 'level' | 'status' | 'workCompleted' | 'workRequired' | 'repairWorkCompleted' | 'repairWorkRequired'>[] | null;
+  structures: readonly Pick<BotStructureInstance, 'id' | 'blueprintId' | 'anchor' | 'orientation' | 'footprintMm' | 'level' | 'status' | 'workCompleted' | 'workRequired' | 'repairWorkCompleted' | 'repairWorkRequired'>[] | null;
   army: readonly Pick<BotUnitCohort, 'id' | 'templateId' | 'livingCount' | 'level' | 'order' | 'location'>[] | null;
 };
 export type TombQueueEntry = {
