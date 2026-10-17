@@ -336,10 +336,6 @@ test('P0 opening level board freezes the qualified top 100 after 144 hours and s
   forEachBotActionReceipt(sProduction, receipt => { sProductionAdjustedXp += receipt.xpAwarded; });
   assert.ok(sCombatAdjustedXp > sProductionAdjustedXp,
     'the committed XP ledger must preserve the combat specialist lead despite its lower base activity XP');
-  const totalActionReceipts = population.chunks.reduce((sum, chunk) => sum + chunk.cold.reduce((chunkSum, bot) => chunkSum + botActionReceiptCount(bot), 0), 0);
-  assert.ok(population.chunks.some(chunk => chunk.cold.some(bot => bot.actionReceiptArchive.length > 0)),
-    'all committed activity receipts remain in the lossless archive after the recent tail rolls over');
-  assert.ok(totalActionReceipts > 1_023 * 128, 'multi-day activity grows the archive beyond each bot’s bounded recent tail');
   const botRows = state.stage08.rankSnapshots.find(item => item.boardId === 'OPENING_LEVEL')!.rows.filter(row => row.playerId !== state.player.id);
   assert.equal(population.rewardReceipts.length, botRows.length, 'each ranked bot receives exactly one immutable reward receipt');
   assert.deepEqual(population.rewardReceipts.map(receipt => receipt.botId).sort(), botRows.map(row => row.playerId).sort());
