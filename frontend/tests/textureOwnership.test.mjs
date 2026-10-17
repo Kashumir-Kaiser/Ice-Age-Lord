@@ -161,12 +161,12 @@ test('stalled shared image retries once, cancels the first request, and settles 
 
 
 test('pending readiness diagnostics expose attempt age and an overdue watchdog',async()=>{
- const OriginalImage=globalThis.Image,OriginalSetTimeout=globalThis.setTimeout,OriginalClearTimeout=globalThis.clearTimeout,OriginalNow=Date.now;
+ const OriginalImage=globalThis.Image,OriginalSetTimeout=globalThis.setTimeout,OriginalClearTimeout=globalThis.clearTimeout,OriginalNow=Date.now,OriginalPerformanceNow=performance.now;
  const images=[],timers=[];let now=1000;
  globalThis.Image=class {naturalWidth=16;naturalHeight=16;complete=false;onload=null;onerror=null;decoding='';_src='';constructor(){images.push(this);}set src(value){this._src=value;}get src(){return this._src;}};
  globalThis.setTimeout=(callback,delay)=>{const timer={callback,delay,cleared:false};timers.push(timer);return timer;};
  globalThis.clearTimeout=timer=>{if(timer)timer.cleared=true;};
- Date.now=()=>now;
+ Date.now=()=>now;performance.now=()=>now;
  const cache=new AssetTextureCache(()=>{},()=>{},1024);
  try{
   cache.registerEnvironment([{path:'/diagnostic.png',sha256:'diagnostic',width:16,height:16}]);
@@ -181,6 +181,6 @@ test('pending readiness diagnostics expose attempt age and an overdue watchdog',
   images[1].onload();await new Promise(setImmediate);
   assert.deepEqual(cache.readinessDiagnostics,[]);
  }finally{
-  cache.destroy();globalThis.Image=OriginalImage;globalThis.setTimeout=OriginalSetTimeout;globalThis.clearTimeout=OriginalClearTimeout;Date.now=OriginalNow;
+  cache.destroy();globalThis.Image=OriginalImage;globalThis.setTimeout=OriginalSetTimeout;globalThis.clearTimeout=OriginalClearTimeout;Date.now=OriginalNow;performance.now=OriginalPerformanceNow;
  }
 });
