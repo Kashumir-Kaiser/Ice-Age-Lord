@@ -46,6 +46,7 @@ export class MapRenderer {
   private architectureTextureStamp=0;
   // These generated render targets are separate from source images and stay under a fixed memory cap.
   private readonly architectureTextureLimit=16*1048576;
+  private readonly compositionForRender=createCompositionCache();
   private assets:AssetTextureCache;
   private terrain:TerrainChunkCache;
   private sampler:TerrainSampler;
@@ -245,7 +246,6 @@ export class MapRenderer {
     const distinctAssets=new Set(buildingObjects.map(b=>b.assetId)).size,environmentReserve=12*1048576;
     const preferDistrict=this.quality==='low'||distinctAssets*4*1048576+environmentReserve>this.assets.limit;
     const useAtlas=this.quality!=='low'&&distinctAssets*1048576+environmentReserve<=this.assets.limit;
-    const compositionForFrame=createCompositionCache();
     const propBounds={minX:bounds.minX-80,maxX:bounds.maxX+80,minY:bounds.minY-80,maxY:bounds.maxY+80};
     const worldProps=this.snapshot.mode==='planning'||this.snapshot.compact?[]:this.sampler.props(propBounds,1/scale).filter(p=>!this.buildingFootprints.overlaps({x:p.x,y:p.y,size:p.size}));
     const props:PropDraw[]=worldProps.map(p=>{
@@ -270,7 +270,7 @@ export class MapRenderer {
     }
     // Low quality omits the separate ground shadow pass; building layers and
     // depth slices below retain their authored silhouettes and painter order.
-    if(this.quality!=='low')for(const b of buildingObjects){const asset=b.asset!;this.assets.register(asset,useAtlas);for(const layer of compositionForFrame(asset,this.snapshot.mode,false,b.active,b.orientation))if(layer.role==='shadow'){
+    if(this.quality!=='low')for(const b of buildingObjects){const asset=b.asset!;this.assets.register(asset,useAtlas);for(const layer of this.compositionForRender(asset,this.snapshot.mode,false,b.active,b.orientation))if(layer.role==='shadow'){
       const exported=exportPath(asset,layer,preferDistrict?'district':'close'),path=(this.failures.has(exported)||this.failures.has(this.assets.url(exported)))?(asset.mapLayers?.[layer.role]??asset.layers[layer.role]??layer.path):exported;
       draws.push({id:b.id+':shadow',path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});
     }}
@@ -291,7 +291,7 @@ export class MapRenderer {
         const rect=flameRect(asset,b.rect),emitter=rect&&flame?{x:rect.x+rect.width*flame.anchor.x,y:rect.y+rect.height*flame.anchor.y}:b.ground;
         this.visibleEmitters.push({point:emitter,selected:b.selected});
       }
-      let layers=compositionForFrame(asset,this.snapshot.mode,occludes,b.active,b.orientation);
+      let layers=this.compositionForRender(asset,this.snapshot.mode,occludes,b.active,b.orientation);
       if(asset.composition==='architectural'&&this.snapshot.mode!=='planning'){
         let ready=true;
         for(const layer of layers.filter(l=>l.role==='base'||l.role==='upper')){
@@ -299,7 +299,7 @@ export class MapRenderer {
           if(!this.assets.acquire(path)||this.failures.has(path)||this.failures.has(this.assets.url(path)))ready=false;
         }
         // Missing architecture must retain one complete authored body, never a floating half.
-        if(!ready)layers=compositionForFrame({...asset,composition:'single-body'},this.snapshot.mode,occludes,b.active,b.orientation);
+        if(!ready)layers=this.compositionForRender({...asset,composition:'single-body'},this.snapshot.mode,occludes,b.active,b.orientation);
       }
       if(this.app&&!b.slice&&asset.composition==='architectural'&&this.snapshot.mode!=='planning'){
         const compositeLOD=preferDistrict||lod!=='close'?'district':'close';

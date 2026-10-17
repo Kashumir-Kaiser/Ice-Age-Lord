@@ -22,6 +22,13 @@ test('composition cache reuses only identical asset and render-state keys',()=>{
  assert.deepEqual(base,composition(house,'normal',false,false,'north'));
  assert.deepEqual(cache(house,'focus',true,false,'north'),composition(house,'focus',true,false,'north'));
 });
+test('renderer composition cache persists across render calls',()=>{
+ const renderer=readFileSync(new URL('../src/rendering/MapRenderer.ts',import.meta.url),'utf8');
+ assert.match(renderer,/private readonly compositionForRender=createCompositionCache\(\);/);
+ const renderBody=renderer.slice(renderer.indexOf('private render():void{'),renderer.indexOf('private architectureTextureKey('));
+ assert.doesNotMatch(renderBody,/createCompositionCache\(\)/);
+ assert.match(renderBody,/this\.compositionForRender\(/);
+});
 test('authored tower footing and shaft/roof reconstruct its original body without horizontal clipping',async()=>{
  for(const width of [384,192]){
   const png=role=>new Resvg(readFileSync(new URL('../public'+tower.layers[role],import.meta.url)),{fitTo:{mode:'width',value:width}}).render().asPng();
