@@ -145,7 +145,8 @@ function validateStage05State(candidate: GameState, world: WorldDefinition, base
       || (balance.dailyRemaining !== null && (!isSafeInt(balance.dailyRemaining) || balance.dailyRemaining > (resource.dailyQuota ?? 0)))) invalid('A resource balance is outside its source limits.');
     const harvests = candidate.spatial.harvestJobs.filter(job => job.resourceId === resource.id);
     const extracted = harvests.reduce((sum, job) => sum + job.extractedQuantity, 0);
-    if (resource.renewal === 'none' && balance.remaining + extracted !== resource.capacity) invalid('Finite resource extraction does not conserve the source balance.');
+    const openingBalance = baseline.spatial.resourceBalances.find(initial => initial.resourceId === resource.id)?.remaining;
+    if (resource.renewal === 'none' && (!isSafeInt(openingBalance) || balance.remaining + extracted !== openingBalance)) invalid('Finite resource extraction does not conserve the source balance.');
     const reserved = harvests.filter(job => job.status === 'active').reduce((sum, job) => sum + job.reservedQuantity, 0);
     if (balance.reserved !== reserved) invalid('Resource reservations do not match active harvest jobs.');
   }

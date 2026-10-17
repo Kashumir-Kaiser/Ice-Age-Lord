@@ -64,6 +64,8 @@ test('schema 2 saves migrate into the persistent spatial state without changing 
   assert.deepEqual(upgraded.spatial.searchJobs, []);
   assert.equal(upgraded.fieldChestStates.length, world.fieldChests.length);
   assert.deepEqual(upgraded.playerKnowledge.knownRouteIds, ['ROUTE-LL01-01', 'ROUTE-LL01-07', 'ROUTE-LL01-08']);
+  assert.equal(upgraded.spatial.resourceBalances.find(balance => balance.resourceId === 'RES-LL01-01')?.remaining, 780);
+  assert.equal(upgraded.spatial.resourceBalances.find(balance => balance.resourceId === 'RES-LL01-02')?.remaining, 1_240);
 });
 
 test('canonical T0 opening balances seed saves separately from derived capacity', () => {
