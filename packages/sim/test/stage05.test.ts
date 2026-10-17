@@ -143,8 +143,9 @@ test('starter wood and stone remain visible, reachable and sufficient across map
 });
 
 test('owned unit inventory containers survive save roundtrip and schema migration', () => {
-  const state = enqueueTombJob(freshState(), 'worker-production', 'UNIT-WORKER-1').state;
-  const workerId = state.ownedUnits[0].id;
+  const queued = enqueueTombJob(freshState(), 'worker-production', 'UNIT-WORKER-1').state;
+  const state = advanceTo(queued, queued.simElapsedMs + 20 * MINUTE_MS, {}, world).state;
+  const workerId = state.ownedUnits.find(unit => unit.id === 'UNIT-WORKER-1')!.id;
   const packId = `${UNIT_INVENTORY_CONTAINER_PREFIX}${workerId}`;
   assert.ok(state.inventory.containers.some(container => container.id === packId && container.kind === 'unit_inventory'));
 
