@@ -365,32 +365,38 @@ test('renderer combines document-hidden and offscreen gates, then resumes with i
  await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();await page.getByRole('button',{name:'Phóng to lãnh địa'}).click();
  const backend=await page.locator('[data-map-renderer]').getAttribute('data-map-renderer');test.skip(backend!=='webgl','Canvas2D has no animated flame loop to observe.');
  const host=page.locator('.map-render-host').first();await renderHostIntoView(page);
- const flameFrame=()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{flameFrame:number|null;activeLoops:number;frames:number}[]}).__mapMetrics.at(-1)!);
- await expect.poll(async()=>(await flameFrame()).flameFrame,{timeout:30000}).not.toBe(0);
- const visibleFrame=(await flameFrame()).flameFrame;
+ const flameState=()=>page.evaluate(()=>(window as unknown as {__mapMetrics:{flameFrame:number|null;flameSprites:number;activeLoops:number;frames:number}[]}).__mapMetrics.at(-1)!);
+ await expect.poll(async()=>{const state=await flameState();return state.flameSprites===1&&typeof state.flameFrame==='number';},{timeout:30000}).toBe(true);
+ const visibleFrame=(await flameState()).flameFrame;
+ expect(typeof visibleFrame).toBe('number');
+ await expect.poll(async()=>{const state=await flameState();return state.flameSprites===1&&typeof state.flameFrame==='number'&&state.flameFrame!==visibleFrame;},{timeout:10000}).toBe(true);
  await scrollMapHostOffscreen(page,host);
- await expect.poll(async()=>(await flameFrame()).activeLoops,{timeout:10000}).toBe(0);
- const pausedFrame=(await flameFrame()).flameFrame;await page.waitForTimeout(250);
- expect((await flameFrame()).flameFrame).toBe(pausedFrame);
- expect(visibleFrame).not.toBe(pausedFrame);
+ await expect.poll(async()=>(await flameState()).activeLoops,{timeout:10000}).toBe(0);
+ const pausedFrame=(await flameState()).flameFrame;
+ expect(typeof pausedFrame).toBe('number');
+ await page.waitForTimeout(250);
+ expect((await flameState()).flameFrame).toBe(pausedFrame);
  await page.evaluate(()=>{
   Object.defineProperty(document,'hidden',{configurable:true,value:true});
   Object.defineProperty(document,'visibilityState',{configurable:true,value:'hidden'});
   document.dispatchEvent(new Event('visibilitychange'));
  });
+ await expect.poll(async()=>(await flameState()).activeLoops,{timeout:10000}).toBe(0);
+ await page.waitForTimeout(250);
+ expect((await flameState()).flameFrame).toBe(pausedFrame);
  await renderHostIntoView(page);
  await expect.poll(()=>host.evaluate(node=>{const box=node.getBoundingClientRect();return box.bottom>0&&box.top<innerHeight;}),{timeout:10000}).toBe(true);
- await page.waitForTimeout(250);expect((await flameFrame()).flameFrame).toBe(pausedFrame);
- await expect.poll(async()=>(await flameFrame()).activeLoops,{timeout:10000}).toBe(0);
+ await page.waitForTimeout(250);expect((await flameState()).flameFrame).toBe(pausedFrame);
+ await expect.poll(async()=>(await flameState()).activeLoops,{timeout:10000}).toBe(0);
  await page.evaluate(()=>{
   delete (document as Document&{hidden?:boolean}).hidden;
   delete (document as Document&{visibilityState?:DocumentVisibilityState}).visibilityState;
   document.dispatchEvent(new Event('visibilitychange'));
  });
- await expect.poll(async()=>(await flameFrame()).activeLoops,{timeout:10000}).toBeGreaterThan(0);
- const resumedFrames=(await flameFrame()).frames;
- await expect.poll(async()=>(await flameFrame()).frames,{timeout:10000}).toBeGreaterThan(resumedFrames);
- await expect.poll(async()=>(await flameFrame()).flameFrame,{timeout:10000}).not.toBe(pausedFrame);
+ await expect.poll(async()=>(await flameState()).activeLoops,{timeout:10000}).toBeGreaterThan(0);
+ const resumedFrames=(await flameState()).frames;
+ await expect.poll(async()=>(await flameState()).frames,{timeout:10000}).toBeGreaterThan(resumedFrames);
+ await expect.poll(async()=>{const state=await flameState();return state.flameSprites===1&&typeof state.flameFrame==='number'&&state.flameFrame!==pausedFrame;},{timeout:10000}).toBe(true);
 });
 
 test('Canvas2D fallback retains its host observer and renders invalidation after returning onscreen',async({page})=>{
