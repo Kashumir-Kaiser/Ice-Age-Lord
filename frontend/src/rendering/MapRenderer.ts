@@ -12,8 +12,7 @@ import { MapEffects, ambientSnowDraws, foliageSwayOffset, rootAnchoredSwayMatrix
 import type {EffectParticleDraw} from './MapEffects.ts';
 import { flameFrame, flameRect, flameKey } from './FlamePresentation.ts';
 import { createCompositionCache, architecturalCompositePlan, qaArtLayerMetrics } from './SpriteRegistration.ts';
-import { createOcclusionCache } from './OcclusionCache.ts';
-import { pointInPolygon } from './MapPicking.ts';
+import { createOcclusionCache, pointInArtPolygon } from './OcclusionCache.ts';
 import { depthOrder } from './DepthOrder.ts';
 import {projectDepthNodes} from './DepthSlices.ts';
 import { projectBuildings } from './BuildingGeometry.ts';
@@ -281,7 +280,7 @@ export class MapRenderer {
     const drawBuilding=(b:typeof nodes[number])=>{
       const asset=b.asset!;this.assets.register(asset,useAtlas);const lod=b.lod;
       if(b.slice&&draws.some(d=>d.id===b.entityId+':body-fallback'))return;
-      const occludes=Boolean(target&&!b.selected&&this.occlusionCache.get(this.snapshot.buildings,selected!.id,selected!.point,b.id,()=>Boolean(b.depth>target.y&&b.rect.width>0&&b.rect.height>0&&pointInPolygon({x:(target.x-b.rect.x)/b.rect.width,y:(target.y-b.rect.y)/b.rect.height},b.slice?.hull??asset.occlusionRegion.upper))));
+      const occludes=Boolean(target&&!b.selected&&this.occlusionCache.get(this.snapshot.buildings,selected!.id,selected!.point,b.id,()=>Boolean(b.depth>target.y&&pointInArtPolygon(target,b.slice?.hull??asset.occlusionRegion.upper,b.rect))));
       if(lod==='regional'&&this.snapshot.mode!=='planning'){draws.push({id:b.id+':symbol',path:asset.layers.uiIcon!,...b.symbol,alpha:b.draft?.55:1});return;}
       const flame=asset.mapFlame,frame=flame?flameFrame(this.effects.time,flame.frames.length,flame.fps,this.reducedMotion):0;
       const key=flame?flameKey(flame.path,frame):null;

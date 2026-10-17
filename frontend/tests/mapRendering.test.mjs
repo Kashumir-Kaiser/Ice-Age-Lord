@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { spriteRect, referenceSize, artPolygon, composition, resolveOrientation, architecturalCompositePlan, qaArtLayerMetrics, createCompositionCache } from '../src/rendering/SpriteRegistration.ts';
 import { pointInPolygon, pointerCSS, pickStack, cyclePick } from '../src/rendering/MapPicking.ts';
-import { createOcclusionCache } from '../src/rendering/OcclusionCache.ts';
+import { createOcclusionCache, pointInArtPolygon } from '../src/rendering/OcclusionCache.ts';
 import { TerrainSampler, noise, chunkLevel } from '../src/rendering/TerrainSampler.ts';
 import { depthOrder } from '../src/rendering/DepthOrder.ts';
 import { projectBuildings, rectPolygon } from '../src/rendering/BuildingGeometry.ts';
@@ -23,7 +23,7 @@ test('selected-object occlusion cache preserves silhouette classification across
   const ground=project({x:0,y:0}),selected=project(target),rect={x:ground.x-50*zoom,y:ground.y-120*zoom,width:100*zoom,height:160*zoom};
   const depth=ground.y;
   const uncached=depth>selected.y&&pointInPolygon(selected,artPolygon(hull,rect));
-  const cached=cache.get(rows,'selected',target,'candidate',()=>{calculations++;return depth>selected.y&&rect.width>0&&rect.height>0&&pointInPolygon({x:(selected.x-rect.x)/rect.width,y:(selected.y-rect.y)/rect.height},hull);});
+  const cached=cache.get(rows,'selected',target,'candidate',()=>{calculations++;return depth>selected.y&&pointInArtPolygon(selected,hull,rect);});
   assert.equal(cached,uncached,'normalized hit test matches screen-space polygon behavior');
   return cached;
  };
@@ -36,6 +36,26 @@ test('selected-object occlusion cache preserves silhouette classification across
  const changedRows=[...rows];
  cache.get(changedRows,'other-selection',otherTarget,'candidate',()=>{calculations++;return true;});
  assert.equal(calculations,3,'building/asset snapshot identity change invalidates cached classifications');
+});
+
+
+test('allocation-free art hit test matches the original at inside, outside and epsilon-adjacent boundary points',()=>{
+ const hull=[[.1,.1],[.9,.1],[.9,.9],[.1,.9]];
+ for(const scale of [.25,1,4]){
+  const rect={x:37.125,y:-91.75,width:100*scale,height:160*scale};
+  const edgeX=rect.x+.1*rect.width,midY=rect.y+.5*rect.height;
+  const samples=[
+   {x:rect.x+.5*rect.width,y:midY},
+   {x:edgeX,y:midY},
+   {x:edgeX-0.5e-7,y:midY},
+   {x:edgeX-2e-7,y:midY},
+   {x:rect.x-.01*scale,y:midY}
+  ];
+  for(const point of samples){
+   const original=pointInPolygon(point,artPolygon(hull,rect));
+   assert.equal(pointInArtPolygon(point,hull,rect),original,'boundary sample agrees with allocating implementation at scale '+scale);
+  }
+ }
 });
 
 test('CSS pointer offsets, DPR-independent projection, negative coordinates, resize and anchored extreme zoom',()=>{
