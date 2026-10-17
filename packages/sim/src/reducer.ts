@@ -734,6 +734,9 @@ export function reduceCommand(
   }
 
   if (command.type === 'harvest') {
+    const idHash = canonicalStateHash({ saveId: state.saveId, commandId: command.commandId }).slice(0, 20).toUpperCase();
+    const validation = startHarvestJob(state, world, `HARVEST-${idHash}`, command.payload.actorId, command.payload.resourceId, command.payload.materialId, command.payload.quantity, command.payload.toolItemId);
+    if (!validation.job) return reject(state, command.commandId, validation.code ?? 'HARVEST_UNAVAILABLE', 'The actor cannot harvest this resource.', requestSha256);
     return reject(state, command.commandId, 'RESOURCE_LEDGER_STAGE_05', 'Resource extraction is unavailable until the authoritative balance ledger is implemented.', requestSha256);
   }
   if (command.type === 'cancel_spatial_job') {

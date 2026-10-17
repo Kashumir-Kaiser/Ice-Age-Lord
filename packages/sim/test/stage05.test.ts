@@ -78,13 +78,27 @@ test('canonical T0 opening balances seed saves separately from derived capacity'
   const availability = actionAvailability('harvest');
   assert.equal(availability.enabled, false);
   assert.equal(availability.reasonCode, 'RESOURCE_LEDGER_STAGE_05');
+  const starterWood = world.resources.find(resource => resource.id === 'RES-LL01-06')!;
+  state.player.position = starterWood.location;
+  state.player.location = { kind: 'field', coordinate: starterWood.location };
+  const carriedBag = state.inventory.containers.find(container => container.kind === 'carried_bag')!;
+  state.inventory = { containers: state.inventory.containers.map(container => container.id === carriedBag.id ? {
+    ...container,
+    stacks: [...container.stacks, { itemId: 'TEST-STARTER-AXE', templateId: 'STONE-AXE', quantity: 1, equipped: false, provenance: 'versioned_game_design' as const }],
+  } : container) };
   const harvest = command(state, 'blocked-harvest', 'harvest', {
-    actorId: state.player.id, resourceId: 'RES-LL01-01', materialId: 'WOOD', quantity: 1, toolItemId: 'NONE',
+    actorId: state.player.id, resourceId: starterWood.id, materialId: starterWood.materialId, quantity: 1, toolItemId: 'TEST-STARTER-AXE',
   });
   const result = reduceCommand(state, harvest, world);
   assert.equal(result.receipt.accepted, false);
   assert.equal(result.receipt.code, 'RESOURCE_LEDGER_STAGE_05');
-  assert.equal(result.state, state);
+  assert.equal(result.state.receipts.at(-1)?.commandId, 'blocked-harvest');
+  assert.equal(result.state.receipts.at(-1)?.receipt.code, 'RESOURCE_LEDGER_STAGE_05');
+  const stateWithoutReceipts = structuredClone(state);
+  stateWithoutReceipts.receipts = [];
+  const resultWithoutReceipts = structuredClone(result.state);
+  resultWithoutReceipts.receipts = [];
+  assert.deepEqual(resultWithoutReceipts, stateWithoutReceipts);
   for (const id of ['RES-LL01-01', 'RES-LL01-02']) {
     assert.equal(result.state.spatial.resourceBalances.find(balance => balance.resourceId === id)?.remaining,
       state.spatial.resourceBalances.find(balance => balance.resourceId === id)?.remaining);
