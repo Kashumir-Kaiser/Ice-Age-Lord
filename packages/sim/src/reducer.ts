@@ -734,22 +734,8 @@ export function reduceCommand(
   }
 
   if (command.type === 'harvest') {
-    const idHash = canonicalStateHash({ saveId: state.saveId, commandId: command.commandId }).slice(0, 20).toUpperCase();
-    const jobId = `HARVEST-${idHash}`;
-    const result = startHarvestJob(state, world, jobId, command.payload.actorId, command.payload.resourceId, command.payload.materialId, command.payload.quantity, command.payload.toolItemId);
-    if (!result.job) return reject(state, command.commandId, result.code ?? 'HARVEST_UNAVAILABLE', 'The actor cannot harvest this resource.', requestSha256);
-    const next = structuredClone(state);
-    next.spatial.harvestJobs = [...next.spatial.harvestJobs, result.job];
-    next.spatial.resourceBalances = next.spatial.resourceBalances.map(balance => balance.resourceId === result.job!.resourceId
-      ? { ...balance, reserved: balance.reserved + result.job!.reservedQuantity, lastSettledAtElapsedMs: state.simElapsedMs }
-      : balance);
-    next.jobs = [...next.jobs, { id: jobId, kind: 'resource_harvest', status: 'active', actorIds: [...result.job.actorIds], reservedItemIds: result.job.toolItemId === 'NONE' ? [] : [result.job.toolItemId], startedAtElapsedMs: state.simElapsedMs, completedAtElapsedMs: null }];
-    return acceptMutationMany(state, command, requestSha256, next, [{
-      type: 'harvest_job_started', occurredAtElapsedMs: state.simElapsedMs,
-      payload: { jobId, resourceId: result.job.resourceId, materialId: result.job.materialId, quantity: result.job.requestedQuantity },
-    }], 'HARVEST_STARTED', 'The harvest and return job was started.');
+    return reject(state, command.commandId, 'RESOURCE_LEDGER_STAGE_05', 'Resource extraction is unavailable until the authoritative balance ledger is implemented.', requestSha256);
   }
-
   if (command.type === 'cancel_spatial_job') {
     const result = cancelSpatialJob(state, command.payload.jobId, state.simElapsedMs);
     if (!result.event) return reject(state, command.commandId, result.code ?? 'SPATIAL_JOB_NOT_ACTIVE', 'The spatial job is unavailable.', requestSha256);
