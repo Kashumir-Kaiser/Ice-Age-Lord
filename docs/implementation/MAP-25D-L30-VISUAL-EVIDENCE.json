@@ -1,0 +1,283 @@
+{
+  "assetId": "lord-house-l30",
+  "status": "draft; limited 1366x768 DPR1 normal/planning/focus visual review accepted by parent; six alpha-metric captures recorded across 1366 and 390, but 390 visual review and other device/quality/art acceptance remain open",
+  "sourceCheckpoint": "fee5cc37edca4daa3d8780d467dea78d3d589ff1",
+  "source": {
+    "body": "assets/source/buildings/lord-house-l30.svg",
+    "sha256": "0fd805a84171288abf4730aca4c1e3663d1cbd479fcf6dd7a143ead650f3aac5",
+    "sourceUiBodyUnchanged": true,
+    "foundation": {
+      "path": "assets/source/map-buildings/lord-house-l30-foundation.png",
+      "sha256": "c8bcca06bda0c114e606c55e563cd0bf3092dc863da00595c3eb5d932c502b6a"
+    },
+    "upper": {
+      "path": "assets/source/map-buildings/lord-house-l30-upper.png",
+      "sha256": "cae5f5c011ee91c015a7d314f5ce093738ba0812b36008a3176c2cb2d3c3e3e2"
+    },
+    "sourceUiShadow": {
+      "path": "frontend/public/assets/buildings/lord-house-repaired/shadow.svg",
+      "sha256": "d6b5f7ac47d1ba061d3bdad12ee25da5e701d35488d905274599e0bc4b44a17c"
+    }
+  },
+  "registration": {
+    "orientation": "north",
+    "canvas": {
+      "width": 480,
+      "height": 400
+    },
+    "presentationScale": 1.22,
+    "groundAnchor": {
+      "x": 0.5,
+      "y": 0.72
+    },
+    "footprint": {
+      "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+      "widthM": 4,
+      "depthM": 4
+    },
+    "base": {
+      "scale": 0.78,
+      "contact": [
+        0.516,
+        0.56
+      ],
+      "target": [
+        240,
+        288
+      ],
+      "resize": [
+        374,
+        312
+      ],
+      "placement": [
+        47,
+        113
+      ],
+      "transparentOverflowPixels": 25
+    },
+    "upper": {
+      "scale": 0.86,
+      "contact": [
+        0.517,
+        0.905
+      ],
+      "target": [
+        240,
+        339
+      ],
+      "resize": [
+        413,
+        344
+      ],
+      "placement": [
+        26,
+        28
+      ]
+    },
+    "mapShadowCenter": [
+      240,
+      288
+    ],
+    "unsupportedPoseClaims": []
+  },
+  "implementation": {
+    "helper": "frontend/scripts/apply-authored-architecture.mjs",
+    "helperSha256": "f94eea6f4845a572ce6a9570dee3daebed8d552a1ec2c1004b5b27f9fb3de63e",
+    "containedPathByteIdentical": true,
+    "overflowPolicy": "Normalize alpha, require all nonzero alpha to remain in the logical canvas intersection, crop only transparent overflow, reject visible overflow/empty raster."
+  },
+  "captures": {
+    "command": "CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium MAP_QA_L30_ONLY=1 MAP_QA_VIEWPORTS=1366,390 MAP_QA_DIR=/tmp/l30-qa node scripts/map-qa.mjs",
+    "count": 6,
+    "records": [
+      {
+        "assetId": "lord-house-l30",
+        "orientation": "north",
+        "mode": "normal",
+        "viewport": "1366x768",
+        "dpr": 1,
+        "quality": "normal",
+        "backend": "webgl",
+        "pendingTextures": 0,
+        "qaArtLayers": {
+          "base": 1,
+          "upper": 1,
+          "body": null
+        },
+        "fullCapture": "/tmp/l30-qa/1366/architecture/progression/late-lord-house-l30-normal-1366-normal-dpr1.png",
+        "fullCaptureSha256": "954f41cc4811e2dafb72af98ad26a43add309311430083db4ca604a91015e241",
+        "tightCapture": "/tmp/l30-qa/1366/architecture/progression/late-lord-house-l30-normal-1366-normal-dpr1-detail.png",
+        "tightCaptureSha256": "d06afa0c50dff1d84c762c57200ef8dcf1b95838198f92352f47d9d5abb2a413"
+      },
+      {
+        "assetId": "lord-house-l30",
+        "orientation": "north",
+        "mode": "planning",
+        "viewport": "1366x768",
+        "dpr": 1,
+        "quality": "normal",
+        "backend": "webgl",
+        "pendingTextures": 0,
+        "qaArtLayers": {
+          "base": 1,
+          "upper": null,
+          "body": null
+        },
+        "fullCapture": "/tmp/l30-qa/1366/architecture/progression/late-lord-house-l30-planning-1366-normal-dpr1.png",
+        "fullCaptureSha256": "f201f51791270d112a48ce71d6c7dabd3feb09a0d7c09b146d74d840dbba102c",
+        "tightCapture": "/tmp/l30-qa/1366/architecture/progression/late-lord-house-l30-planning-1366-normal-dpr1-detail.png",
+        "tightCaptureSha256": "ea4b90f1ae3147ea09986c63546e2e9e30b0b4a57c2f0e01cf00e421da82530b"
+      },
+      {
+        "assetId": "lord-house-l30",
+        "orientation": "north",
+        "mode": "focus",
+        "viewport": "1366x768",
+        "dpr": 1,
+        "quality": "normal",
+        "backend": "webgl",
+        "pendingTextures": 0,
+        "qaArtLayers": {
+          "base": 1,
+          "upper": 0.22,
+          "body": null
+        },
+        "fullCapture": "/tmp/l30-qa/1366/architecture/progression/late-lord-house-l30-focus-1366-normal-dpr1.png",
+        "fullCaptureSha256": "a58e86c04b41e6f7646646ccc49442f9a91034fd1f630f605704d5050322a3d6",
+        "tightCapture": "/tmp/l30-qa/1366/architecture/progression/late-lord-house-l30-focus-1366-normal-dpr1-detail.png",
+        "tightCaptureSha256": "30ee093ba8eda6743b6840dd73750c25c9e720cf92d4995240bd22b1356cb9c4"
+      },
+      {
+        "assetId": "lord-house-l30",
+        "orientation": "north",
+        "mode": "normal",
+        "viewport": "390x844",
+        "dpr": 1,
+        "quality": "normal",
+        "backend": "webgl",
+        "pendingTextures": 0,
+        "qaArtLayers": {
+          "base": 1,
+          "upper": 1,
+          "body": null
+        },
+        "fullCapture": "/tmp/l30-qa/390/architecture/progression/late-lord-house-l30-normal-390-normal-dpr1.png",
+        "fullCaptureSha256": "f16dc709e0f6666a19d4c84b500a98b126625e8fe0cb6c1ef82699dd6ee1acb3"
+      },
+      {
+        "assetId": "lord-house-l30",
+        "orientation": "north",
+        "mode": "planning",
+        "viewport": "390x844",
+        "dpr": 1,
+        "quality": "normal",
+        "backend": "webgl",
+        "pendingTextures": 0,
+        "qaArtLayers": {
+          "base": 1,
+          "upper": null,
+          "body": null
+        },
+        "fullCapture": "/tmp/l30-qa/390/architecture/progression/late-lord-house-l30-planning-390-normal-dpr1.png",
+        "fullCaptureSha256": "ae4bd64a1320bae76d568ae14b084d737fdd1e84f83f001e13b441778c7d20b9"
+      },
+      {
+        "assetId": "lord-house-l30",
+        "orientation": "north",
+        "mode": "focus",
+        "viewport": "390x844",
+        "dpr": 1,
+        "quality": "normal",
+        "backend": "webgl",
+        "pendingTextures": 0,
+        "qaArtLayers": {
+          "base": 1,
+          "upper": 0.22,
+          "body": null
+        },
+        "fullCapture": "/tmp/l30-qa/390/architecture/progression/late-lord-house-l30-focus-390-normal-dpr1.png",
+        "fullCaptureSha256": "d3b9230db503a5ba61066158a8cb409a8a3a5aa41dd40d3a0d09eb3f4127ccad"
+      }
+    ],
+    "scenarioMetadata": "/tmp/l30-qa/scenarios.json"
+  },
+  "reproducibility": {
+    "firstExportDomain": "assets/manifest.json plus all .png/.svg/.json files under frontend/public/assets/map",
+    "firstExportFileCount": 1168,
+    "repeatExportFileCount": 1168,
+    "differingFiles": 0,
+    "postSyncFileCountIncludingPublicRuntimeManifest": 1169,
+    "publicRuntimeManifestFirstSyncSha256": "704245269bc40b52612accf96067ad417900f45631343f863ea4b43a9f4a53b2",
+    "publicRuntimeManifestAfterRepeatSha256": "704245269bc40b52612accf96067ad417900f45631343f863ea4b43a9f4a53b2",
+    "repairedHouseAuthoredPngs": [
+      {
+        "path": "/assets/map/buildings/lord-house-repaired/base-north-close.png",
+        "sha256": "445db97f511410b0d8910f3a2e275e41a1824f608f45295a8d42f645441b74ce",
+        "afterSha256": "445db97f511410b0d8910f3a2e275e41a1824f608f45295a8d42f645441b74ce",
+        "matches": true
+      },
+      {
+        "path": "/assets/map/buildings/lord-house-repaired/upper-north-close.png",
+        "sha256": "f529e18d00747b17614c834a256849cb85d1bf9e25884affd05cc9f1ab85bad9",
+        "afterSha256": "f529e18d00747b17614c834a256849cb85d1bf9e25884affd05cc9f1ab85bad9",
+        "matches": true
+      },
+      {
+        "path": "/assets/map/buildings/lord-house-repaired/body-layered-north-close.png",
+        "sha256": "93684de4c07f9b82a56e32bf982993297a221ae18b092cf48e02ed2c9f822295",
+        "afterSha256": "93684de4c07f9b82a56e32bf982993297a221ae18b092cf48e02ed2c9f822295",
+        "matches": true
+      },
+      {
+        "path": "/assets/map/buildings/lord-house-repaired/base-north-district.png",
+        "sha256": "db7f2043c1c5577d92ba9049f031d577c85664a9066031ca415a75c9dc552eac",
+        "afterSha256": "db7f2043c1c5577d92ba9049f031d577c85664a9066031ca415a75c9dc552eac",
+        "matches": true
+      },
+      {
+        "path": "/assets/map/buildings/lord-house-repaired/upper-north-district.png",
+        "sha256": "9844f7d8ff6ea5557605c3d96a2c0afecc53708943979dc9c262b6d1fe726dc3",
+        "afterSha256": "9844f7d8ff6ea5557605c3d96a2c0afecc53708943979dc9c262b6d1fe726dc3",
+        "matches": true
+      },
+      {
+        "path": "/assets/map/buildings/lord-house-repaired/body-layered-north-district.png",
+        "sha256": "8a9f56be88dbfbb16971b9ba6f1990196f2fac854ea1ddcda7aba096942f63a4",
+        "afterSha256": "8a9f56be88dbfbb16971b9ba6f1990196f2fac854ea1ddcda7aba096942f63a4",
+        "matches": true
+      }
+    ],
+    "repeatExportOutput": "Exported 746 registered map layers and 45 environment assets.",
+    "syncOutput": "Validated 103 structure assets, 37 item illustrations, and 12 unit illustrations."
+  },
+  "validation": {
+    "unitCommand": "npm test",
+    "unitOutput": "ℹ tests 111\nℹ pass 111\nℹ fail 0",
+    "typescriptCommand": "npx tsc --noEmit",
+    "typescriptExit": 0,
+    "viteBuildCommand": "npx vite build",
+    "viteBuildOutput": "✓ 2282 modules transformed.\n✓ built in 11.50s",
+    "coldTransfer": {
+      "command": "CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium MAP_COLD_DIR=/tmp/l30-cold-transfer node scripts/map-cold-transfer.mjs",
+      "buildIndexSha256": "02458bf3921be56a3ad5aa4cbada0a6785a658aaa19086cb28685e276fb1e2a3",
+      "scope": "Fresh demo overview to first territory readiness in new browser contexts; not saved-populated LIVE or target-device validation.",
+      "results": [
+        {
+          "quality": "low",
+          "coldMapBytes": 3470677,
+          "budgetBytes": 4194304,
+          "withinBudget": true,
+          "requestCount": 41
+        },
+        {
+          "quality": "normal",
+          "coldMapBytes": 4285444,
+          "budgetBytes": 8388608,
+          "withinBudget": true,
+          "requestCount": 38
+        }
+      ],
+      "fullRawResults": "/tmp/l30-cold-transfer/results.json"
+    }
+  }
+}

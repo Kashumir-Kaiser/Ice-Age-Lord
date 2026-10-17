@@ -1,0 +1,45 @@
+{
+  "schema": "map-25d-visual-review-v1",
+  "captureProvenance": "validated-production-dist-demo-read-only-visual-qa",
+  "assetId": "polar-farmhouse-l01",
+  "assetRevision": 5,
+  "viewport": {
+    "width": 1366,
+    "height": 768
+  },
+  "quality": "normal",
+  "dpr": 1,
+  "reviewStatus": "accepted-for-described-subset",
+  "reviewNotes": [
+    "Four authored compass poses were reviewed together; each pose remains distinct.",
+    "Planning mode keeps the ground pad solid. Focus mode fades the roof while the pad remains solid.",
+    "No horizontal crop or black rectangle was observed.",
+    "Review scope is limited to this desktop viewport and quality/DPR combination; the full matrix remains incomplete."
+  ],
+  "sourceHashes": {
+    "north": "83186bf6ec80dc68f0678dbdb1a700a95bcc561a6ea099e636227fb135f897f6",
+    "east": "6ef78778f2693b39272fcb823a74e6f0950d0c2a0b85bfc386f1ca1181350618",
+    "south": "22ca8d3aa24e343f2c95b077e8f2a09277b37b63f2fd98a189d058aedf61b010",
+    "west": "54bc64306a4b57173c41e27e3561a436d7a5822a95e26b87581e49be22103753"
+  },
+  "authoredSourceFiles": {
+    "north": "frontend/public/assets/buildings/polar-farmhouse-l01/body.svg",
+    "east": "assets/source/map-buildings/polar-farmhouse-l01-east.png",
+    "south": "assets/source/map-buildings/polar-farmhouse-l01-south.png",
+    "west": "assets/source/map-buildings/polar-farmhouse-l01-west.png"
+  },
+  "durableReviewImages": [
+    {
+      "file": "docs/implementation/map-visual-review/farmhouse-desktop-1366-normal-dpr1/pose-contact-sheet.png",
+      "sha256": "c52ee287291d0e2c7baa08faf6679f3d23d1c71ef6be07dc720eb495b4dbf628"
+    },
+    {
+      "file": "docs/implementation/map-visual-review/farmhouse-desktop-1366-normal-dpr1/planning.png",
+      "sha256": "d31a38c047c6352cdc9d0318c13ff76b0ad59729833e666ac52ea868891ca233"
+    },
+    {
+      "file": "docs/implementation/map-visual-review/farmhouse-desktop-1366-normal-dpr1/focus.png",
+      "sha256": "f40ae10a41440d8a92f469e19ccd8b1bf1e6e3089d6c389cac81edb0bea82426"
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+name: Map quality and DPR visual evidence
+on:
+  push:
+    branches: ['codex/map-25d-overhaul']
+    paths: ['frontend/**', 'assets/**', '.github/workflows/map-visual-matrix.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        quality: [low, normal]
+        dpr: [1, 2]
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - run: python scripts/restore-map-upload.py
+        working-directory: .
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run assets:map && npm run build
+        env:
+          VITE_GAME_MODE: demo
+      - run: npx playwright install --with-deps chromium
+      - name: Capture all three viewports with fixed reduced-motion state
+        run: node scripts/map-qa.mjs
+        env:
+          MAP_QA_QUALITY: '${{ matrix.quality }}'
+          MAP_QA_DPR: '${{ matrix.dpr }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-visual-${{ matrix.quality }}-dpr${{ matrix.dpr }}-1366
+          path: |
+            frontend/map-evidence/after/1366/
+            !frontend/map-evidence/after/1366/architecture/**
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-visual-${{ matrix.quality }}-dpr${{ matrix.dpr }}-1920
+          path: |
+            frontend/map-evidence/after/1920/
+            !frontend/map-evidence/after/1920/architecture/**
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-visual-${{ matrix.quality }}-dpr${{ matrix.dpr }}-390
+          path: |
+            frontend/map-evidence/after/390/
+            !frontend/map-evidence/after/390/architecture/**
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-architecture-${{ matrix.quality }}-dpr${{ matrix.dpr }}-1366
+          path: |
+            frontend/map-evidence/after/1366/architecture/
+            !frontend/map-evidence/after/1366/architecture/extended/**
+            !frontend/map-evidence/after/1366/architecture/prototypes/**
+            !frontend/map-evidence/after/1366/architecture/progression/**
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-architecture-${{ matrix.quality }}-dpr${{ matrix.dpr }}-1920
+          path: |
+            frontend/map-evidence/after/1920/architecture/
+            !frontend/map-evidence/after/1920/architecture/extended/**
+            !frontend/map-evidence/after/1920/architecture/prototypes/**
+            !frontend/map-evidence/after/1920/architecture/progression/**
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-architecture-${{ matrix.quality }}-dpr${{ matrix.dpr }}-390
+          path: |
+            frontend/map-evidence/after/390/architecture/
+            !frontend/map-evidence/after/390/architecture/extended/**
+            !frontend/map-evidence/after/390/architecture/prototypes/**
+            !frontend/map-evidence/after/390/architecture/progression/**
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-architecture-extra-${{ matrix.quality }}-dpr${{ matrix.dpr }}-1366
+          path: frontend/map-evidence/after/1366/architecture/extended/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-architecture-extra-${{ matrix.quality }}-dpr${{ matrix.dpr }}-1920
+          path: frontend/map-evidence/after/1920/architecture/extended/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-architecture-extra-${{ matrix.quality }}-dpr${{ matrix.dpr }}-390
+          path: frontend/map-evidence/after/390/architecture/extended/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-tower-art-${{ matrix.quality }}-dpr${{ matrix.dpr }}-1366
+          path: frontend/map-evidence/after/1366/architecture/prototypes/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-tower-art-${{ matrix.quality }}-dpr${{ matrix.dpr }}-1920
+          path: frontend/map-evidence/after/1920/architecture/prototypes/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-tower-art-${{ matrix.quality }}-dpr${{ matrix.dpr }}-390
+          path: frontend/map-evidence/after/390/architecture/prototypes/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-visual-${{ matrix.quality }}-dpr${{ matrix.dpr }}-metadata
+          path: |
+            frontend/map-evidence/after/qa-manifest.json
+            frontend/map-evidence/after/scenarios.json
+          retention-days: 14
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-progression-art-${{ matrix.quality }}-dpr${{ matrix.dpr }}-1366
+          path: frontend/map-evidence/after/1366/architecture/progression/
+          retention-days: 14
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-progression-art-${{ matrix.quality }}-dpr${{ matrix.dpr }}-1920
+          path: frontend/map-evidence/after/1920/architecture/progression/
+          retention-days: 14
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-progression-art-${{ matrix.quality }}-dpr${{ matrix.dpr }}-390
+          path: frontend/map-evidence/after/390/architecture/progression/
+          retention-days: 14

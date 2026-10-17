@@ -1,0 +1,12 @@
+{
+  "assets": [
+    {
+      "source": "assets/source/map-effects/flame-loop-sheet.png",
+      "sha256": "89c2e56cdfa8e2649011dd4c58ca7036ff54f2d0f2599c56a5a0079efd408e18",
+      "gitBlobSha": "635380077d38c36530082530c27e42f2cf757629",
+      "provider": "OpenAI ImageGen",
+      "created": "2026-10-14",
+      "status": "draft; sheet inspection and frame alignment required before runtime registration"
+    }
+  ]
+}

@@ -4,6 +4,20 @@ import type { WorldPoint } from './projection';
 export type PlacementValidation = { blockers: string[]; warnings: string[]; heat: 'inside' | 'partial' | 'outside' | 'off' };
 export type Bounds = { minX: number; maxX: number; minY: number; maxY: number };
 
+export const PLACEMENT_ORIENTATIONS: readonly LayoutDraft['orientation'][] = ['north', 'east', 'south', 'west'];
+
+export function legalPlacementOrientations(orientations?: readonly LayoutDraft['orientation'][] | null): LayoutDraft['orientation'][] {
+  const allowed = new Set(orientations ?? []);
+  return PLACEMENT_ORIENTATIONS.filter(orientation => allowed.has(orientation));
+}
+
+export function nextPlacementOrientation(current: LayoutDraft['orientation'], orientations?: readonly LayoutDraft['orientation'][] | null): LayoutDraft['orientation'] {
+  const allowed = legalPlacementOrientations(orientations);
+  if (allowed.length < 2) return current;
+  const index = allowed.indexOf(current);
+  return allowed[(index + 1) % allowed.length] ?? current;
+}
+
 export function orientedSize(footprint: FootprintView, orientation: LayoutDraft['orientation']) {
   return orientation === 'east' || orientation === 'west'
     ? { width: footprint.depthM, depth: footprint.widthM }

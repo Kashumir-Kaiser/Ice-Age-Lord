@@ -1,0 +1,1054 @@
+{
+  "schema": "map-visual-matrix-final-review-v1",
+  "source": {
+    "repository": "Kashumir-Kaiser/Ice-Age-Lord",
+    "branch": "codex/map-25d-overhaul",
+    "commit": "d3295737ec35e5728fd4fdc6c90b9cfe55fdc58b",
+    "captureWorkflowRun": 38857829718,
+    "captureArtifactHeadSha": "d3295737ec35e5728fd4fdc6c90b9cfe55fdc58b",
+    "manifestArtifacts": [
+      {
+        "id": 12028790330,
+        "name": "map-visual-normal-dpr1-metadata",
+        "sizeBytes": 45100,
+        "sha256": "1fc5258be1c2c9748d3418fe71e8a368388810820c4be5a05d05355252f52a5f",
+        "headSha": "d3295737ec35e5728fd4fdc6c90b9cfe55fdc58b"
+      },
+      {
+        "id": 12028700594,
+        "name": "map-visual-low-dpr2-metadata",
+        "sizeBytes": 44694,
+        "sha256": "0251f2d4ddd27392d416522fb2c4af69949f50d234d221de65181bc6dda4196c",
+        "headSha": "d3295737ec35e5728fd4fdc6c90b9cfe55fdc58b"
+      },
+      {
+        "id": 12028340871,
+        "name": "map-visual-normal-dpr2-metadata",
+        "sizeBytes": 42714,
+        "sha256": "03c88b7cd14d89673400935f510460dbe8cd7e1d62c58581fefa196747da1052",
+        "headSha": "d3295737ec35e5728fd4fdc6c90b9cfe55fdc58b"
+      },
+      {
+        "id": 12028251142,
+        "name": "map-visual-low-dpr1-metadata",
+        "sizeBytes": 44831,
+        "sha256": "3b6360cd51d139dba4b7e34a0313d60051551745636b6183699a26f6ff7eb436",
+        "headSha": "d3295737ec35e5728fd4fdc6c90b9cfe55fdc58b"
+      }
+    ]
+  },
+  "reviewPackaging": {
+    "workflowRun": 38883598900,
+    "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170",
+    "status": "success",
+    "artifactCount": 12,
+    "artifacts": [
+      {
+        "id": 12039210170,
+        "name": "map-review-normal-dpr1-1366",
+        "sizeBytes": 4733421,
+        "sha256": "eb927a7f46a8aef3cda4233139a518df9f5042bd609aa7905083d14d019618db",
+        "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+      },
+      {
+        "id": 12039025617,
+        "name": "map-review-normal-dpr1-390",
+        "sizeBytes": 12590972,
+        "sha256": "6d407ae0e4cec1c7a2a73702b484794ad3e94fa9321931e3766b0f4bf0b77c8e",
+        "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+      },
+      {
+        "id": 12038955520,
+        "name": "map-review-low-dpr2-390",
+        "sizeBytes": 11726096,
+        "sha256": "ab95ee5acae27e9f05df24917aef416999500298f9d4732b8a2de8e357731e2d",
+        "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+      },
+      {
+        "id": 12038945377,
+        "name": "map-review-low-dpr2-1920",
+        "sizeBytes": 12547917,
+        "sha256": "dbbe0eebc883b5342bda4ea46399e3afa5c6c129e5745a3c9ad527463e0824a0",
+        "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+      },
+      {
+        "id": 12038735884,
+        "name": "map-review-low-dpr2-1366",
+        "sizeBytes": 8237162,
+        "sha256": "c7ec3668653eb663649e8ff4c3a211a2b5e5d3a59f46a7e31b47fe90e5b99f1f",
+        "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+      },
+      {
+        "id": 12038482069,
+        "name": "map-review-low-dpr1-1366",
+        "sizeBytes": 4540536,
+        "sha256": "56ec342bbb3a7d7a8a25963f25c9fccc26f88e6294a0073154d6b517810c0e0a",
+        "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+      },
+      {
+        "id": 12038472803,
+        "name": "map-review-normal-dpr2-1366",
+        "sizeBytes": 8962348,
+        "sha256": "210dce9f09a0144dade50c375efd4a3a9e8a26fabcaa85c1a5eb593713c9c673",
+        "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+      },
+      {
+        "id": 12038209682,
+        "name": "map-review-normal-dpr1-1920",
+        "sizeBytes": 6494378,
+        "sha256": "503d9c2f3da445ff29674eafbd4a13594afe7e1b87946880a87f0eaf45a08099",
+        "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+      },
+      {
+        "id": 12038134121,
+        "name": "map-review-low-dpr1-1920",
+        "sizeBytes": 6112582,
+        "sha256": "55f25baa2d59cb539fcd98d962a4c2c93e929de34fdb589de62bb9d3b16dca13",
+        "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+      },
+      {
+        "id": 12038114161,
+        "name": "map-review-normal-dpr2-1920",
+        "sizeBytes": 14279239,
+        "sha256": "c0387f7a2a100dd9ee1b475042066caaa0aca751f9b84c72f3045807cc3f369f",
+        "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+      },
+      {
+        "id": 12038049255,
+        "name": "map-review-low-dpr1-390",
+        "sizeBytes": 11717067,
+        "sha256": "79fa9662fc4e0ec89ba89054a531cd33417c162b27c10cbbb8ca3fc2b5b0e367",
+        "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+      },
+      {
+        "id": 12037909679,
+        "name": "map-review-normal-dpr2-390",
+        "sizeBytes": 12722320,
+        "sha256": "9c829a008637e5cda7d39498a0a4696f808ee3505870191955042bfcd941c8b0",
+        "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+      }
+    ]
+  },
+  "matrix": {
+    "totalRows": 876,
+    "rowsPerLane": 219,
+    "expectedLanes": 4,
+    "completedLanes": 4,
+    "viewports": [
+      {
+        "width": 1366,
+        "height": 768
+      },
+      {
+        "width": 1920,
+        "height": 1080
+      },
+      {
+        "width": 390,
+        "height": 844
+      }
+    ],
+    "rowsPerViewportPerLane": 73,
+    "groupRows": {
+      "mapsFogGeography": 23,
+      "poses": 24,
+      "architecture": 26
+    },
+    "contactSheetImagesReviewed": 52,
+    "individualCapturePngsIndividuallyReviewed": false
+  },
+  "review": {
+    "status": "accepted",
+    "date": "2026-10-16",
+    "method": "The review agent inspected all 52 grouped contact-sheet images across the 12 lane/viewport bundles using overview composites. The parent reviewer independently inspected selected contact sheets and representative raw frames. This is a contact-sheet overview review; individual capture PNGs were not each examined.",
+    "observations": "No blocking visual issue was identified. The map, fog/geography states, directional building poses, and architecture variants remain visually consistent across the low/normal quality and DPR 1/2 lanes at the three captured viewports.",
+    "scopeLimit": "Acceptance covers the captured visual scenes and selected raw-frame details. It does not assess target-device performance or UHD hardware behavior.",
+    "representativeSha256Verified": true,
+    "lanes": {
+      "low-dpr1": {
+        "quality": "low",
+        "dpr": 1,
+        "sourceManifestArtifact": {
+          "id": 12028251142,
+          "name": "map-visual-low-dpr1-metadata",
+          "sizeBytes": 44831,
+          "sha256": "3b6360cd51d139dba4b7e34a0313d60051551745636b6183699a26f6ff7eb436",
+          "headSha": "d3295737ec35e5728fd4fdc6c90b9cfe55fdc58b"
+        },
+        "sourceCapture": {
+          "rows": 219,
+          "rowsByViewport": {
+            "390": 73,
+            "1366": 73,
+            "1920": 73
+          },
+          "status": "captured-pending-visual-review",
+          "reviewStatusAtCapture": "pending-parent-visual-review"
+        },
+        "reviewOutcome": "accepted",
+        "captures": {
+          "390": {
+            "reviewArtifact": {
+              "id": 12038049255,
+              "name": "map-review-low-dpr1-390",
+              "sizeBytes": 11717067,
+              "sha256": "79fa9662fc4e0ec89ba89054a531cd33417c162b27c10cbbb8ca3fc2b5b0e367",
+              "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+            },
+            "rows": 73,
+            "groups": {
+              "mapsFogGeography": 23,
+              "poses": 24,
+              "architecture": 26
+            },
+            "contactSheets": [
+              {
+                "file": "mapsFogGeography-part1.png",
+                "bytes": 2073949,
+                "group": "mapsFogGeography"
+              },
+              {
+                "file": "mapsFogGeography-part2.png",
+                "bytes": 1769153,
+                "group": "mapsFogGeography"
+              },
+              {
+                "file": "poses-part1.png",
+                "bytes": 1390339,
+                "group": "poses"
+              },
+              {
+                "file": "poses-part2.png",
+                "bytes": 1439850,
+                "group": "poses"
+              },
+              {
+                "file": "architecture-part1.png",
+                "bytes": 2205575,
+                "group": "architecture"
+              },
+              {
+                "file": "architecture-part2.png",
+                "bytes": 1763494,
+                "group": "architecture"
+              },
+              {
+                "file": "architecture-part3.png",
+                "bytes": 335187,
+                "group": "architecture"
+              }
+            ],
+            "representativeOriginals": [
+              {
+                "scenario": "farmhouse-north",
+                "filename": "farmhouse-north-390-low-dpr1.png",
+                "sha256": "3f4df1187e72ff041f7458f9de0bbfe67b6641bc4a4548769db4bdf507d31c47",
+                "bytes": 171193
+              },
+              {
+                "scenario": "dense-520",
+                "filename": "dense-520-390-low-dpr1.png",
+                "sha256": "ea52d9d18a4ab8bf1dbe2506266e5ddb6f3a90acb90a8815a6fef5f0e183fdf1",
+                "bytes": 245364
+              },
+              {
+                "scenario": "fallback",
+                "filename": "fallback-390-low-dpr1.png",
+                "sha256": "9b224cd1b5e661976e265232d42a584e6f6616b00bbe21ce145c1c4032bf5685",
+                "bytes": 193863
+              },
+              {
+                "scenario": "local-water",
+                "filename": "local-water-390-low-dpr1.png",
+                "sha256": "d98683c289bdfb0c4022a9f24ae69aa6ee7c34f09ae089593271cc2956a852ae",
+                "bytes": 224102
+              }
+            ],
+            "representativeChecksumsVerified": true
+          },
+          "1366": {
+            "reviewArtifact": {
+              "id": 12038482069,
+              "name": "map-review-low-dpr1-1366",
+              "sizeBytes": 4540536,
+              "sha256": "56ec342bbb3a7d7a8a25963f25c9fccc26f88e6294a0073154d6b517810c0e0a",
+              "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+            },
+            "rows": 73,
+            "groups": {
+              "mapsFogGeography": 23,
+              "poses": 24,
+              "architecture": 26
+            },
+            "contactSheets": [
+              {
+                "file": "mapsFogGeography.png",
+                "bytes": 897279,
+                "group": "mapsFogGeography"
+              },
+              {
+                "file": "poses.png",
+                "bytes": 596362,
+                "group": "poses"
+              },
+              {
+                "file": "architecture.png",
+                "bytes": 837045,
+                "group": "architecture"
+              }
+            ],
+            "representativeOriginals": [
+              {
+                "scenario": "farmhouse-north",
+                "filename": "farmhouse-north-1366-low-dpr1.png",
+                "sha256": "4c597bc3bc966cfbdc07de823e8242062c108d232c66db2265048fc84a10d264",
+                "bytes": 417467
+              },
+              {
+                "scenario": "dense-520",
+                "filename": "dense-520-1366-low-dpr1.png",
+                "sha256": "60784a6648dcc9e53d0ba3a2da39a0eb7689817999388e4f022e9d2b8414c968",
+                "bytes": 792009
+              },
+              {
+                "scenario": "fallback",
+                "filename": "fallback-1366-low-dpr1.png",
+                "sha256": "2858c339707a4b1d59802f084354ba37ef64f531f922e74f3990114a859b9b36",
+                "bytes": 476998
+              },
+              {
+                "scenario": "local-water",
+                "filename": "local-water-1366-low-dpr1.png",
+                "sha256": "bbb90b5fdf5a4bf4d03163b1a595aa294bcacb5a60bc5ecbd7ccbe3958cc118b",
+                "bytes": 586711
+              }
+            ],
+            "representativeChecksumsVerified": true
+          },
+          "1920": {
+            "reviewArtifact": {
+              "id": 12038134121,
+              "name": "map-review-low-dpr1-1920",
+              "sizeBytes": 6112582,
+              "sha256": "55f25baa2d59cb539fcd98d962a4c2c93e929de34fdb589de62bb9d3b16dca13",
+              "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+            },
+            "rows": 73,
+            "groups": {
+              "mapsFogGeography": 23,
+              "poses": 24,
+              "architecture": 26
+            },
+            "contactSheets": [
+              {
+                "file": "mapsFogGeography.png",
+                "bytes": 879485,
+                "group": "mapsFogGeography"
+              },
+              {
+                "file": "poses.png",
+                "bytes": 518508,
+                "group": "poses"
+              },
+              {
+                "file": "architecture.png",
+                "bytes": 747901,
+                "group": "architecture"
+              }
+            ],
+            "representativeOriginals": [
+              {
+                "scenario": "farmhouse-north",
+                "filename": "farmhouse-north-1920-low-dpr1.png",
+                "sha256": "0bc5f3cba70c0239e030e9940403237149a455e4ad381323259cda66124bd181",
+                "bytes": 691988
+              },
+              {
+                "scenario": "dense-520",
+                "filename": "dense-520-1920-low-dpr1.png",
+                "sha256": "d4d3a597b9827a2a9c2d3823dc096f40445d240d8a65c6fda5d2338800350ba1",
+                "bytes": 1479611
+              },
+              {
+                "scenario": "fallback",
+                "filename": "fallback-1920-low-dpr1.png",
+                "sha256": "2834f952b6cec2fd877273931dba7129e928f3c83b3515a0c101f02aefba737c",
+                "bytes": 780880
+              },
+              {
+                "scenario": "local-water",
+                "filename": "local-water-1920-low-dpr1.png",
+                "sha256": "f86aabb6833bc4154753ec4de6f937b6db9adff72a3cc293e80095867640a632",
+                "bytes": 1082670
+              }
+            ],
+            "representativeChecksumsVerified": true
+          }
+        }
+      },
+      "low-dpr2": {
+        "quality": "low",
+        "dpr": 2,
+        "sourceManifestArtifact": {
+          "id": 12028700594,
+          "name": "map-visual-low-dpr2-metadata",
+          "sizeBytes": 44694,
+          "sha256": "0251f2d4ddd27392d416522fb2c4af69949f50d234d221de65181bc6dda4196c",
+          "headSha": "d3295737ec35e5728fd4fdc6c90b9cfe55fdc58b"
+        },
+        "sourceCapture": {
+          "rows": 219,
+          "rowsByViewport": {
+            "390": 73,
+            "1366": 73,
+            "1920": 73
+          },
+          "status": "captured-pending-visual-review",
+          "reviewStatusAtCapture": "pending-parent-visual-review"
+        },
+        "reviewOutcome": "accepted",
+        "captures": {
+          "390": {
+            "reviewArtifact": {
+              "id": 12038955520,
+              "name": "map-review-low-dpr2-390",
+              "sizeBytes": 11726096,
+              "sha256": "ab95ee5acae27e9f05df24917aef416999500298f9d4732b8a2de8e357731e2d",
+              "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+            },
+            "rows": 73,
+            "groups": {
+              "mapsFogGeography": 23,
+              "poses": 24,
+              "architecture": 26
+            },
+            "contactSheets": [
+              {
+                "file": "mapsFogGeography-part1.png",
+                "bytes": 1794811,
+                "group": "mapsFogGeography"
+              },
+              {
+                "file": "mapsFogGeography-part2.png",
+                "bytes": 1531077,
+                "group": "mapsFogGeography"
+              },
+              {
+                "file": "poses-part1.png",
+                "bytes": 1214247,
+                "group": "poses"
+              },
+              {
+                "file": "poses-part2.png",
+                "bytes": 1263082,
+                "group": "poses"
+              },
+              {
+                "file": "architecture-part1.png",
+                "bytes": 1937149,
+                "group": "architecture"
+              },
+              {
+                "file": "architecture-part2.png",
+                "bytes": 1612892,
+                "group": "architecture"
+              },
+              {
+                "file": "architecture-part3.png",
+                "bytes": 308173,
+                "group": "architecture"
+              }
+            ],
+            "representativeOriginals": [
+              {
+                "scenario": "farmhouse-north",
+                "filename": "farmhouse-north-390-low-dpr2.png",
+                "sha256": "28c430b8a1be09038e6676ff3654c2993cee7f6b754a2bd5eb58b4c37737229b",
+                "bytes": 407352
+              },
+              {
+                "scenario": "dense-520",
+                "filename": "dense-520-390-low-dpr2.png",
+                "sha256": "9c01878ebc87aca506339ec06481bc35fb489ed991e421f50908d1ecfc3877c3",
+                "bytes": 625027
+              },
+              {
+                "scenario": "fallback",
+                "filename": "fallback-390-low-dpr2.png",
+                "sha256": "1e3acbeeda94dadb34c6e28bcb662aa0c0a5d9a6b9213d73a0a3b5e5d54142ac",
+                "bytes": 504052
+              },
+              {
+                "scenario": "local-water",
+                "filename": "local-water-390-low-dpr2.png",
+                "sha256": "296803e39ca392842191f54fc479a1b7920fd9064472118a48e5d54a51fa4dbb",
+                "bytes": 620409
+              }
+            ],
+            "representativeChecksumsVerified": true
+          },
+          "1366": {
+            "reviewArtifact": {
+              "id": 12038735884,
+              "name": "map-review-low-dpr2-1366",
+              "sizeBytes": 8237162,
+              "sha256": "c7ec3668653eb663649e8ff4c3a211a2b5e5d3a59f46a7e31b47fe90e5b99f1f",
+              "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+            },
+            "rows": 73,
+            "groups": {
+              "mapsFogGeography": 23,
+              "poses": 24,
+              "architecture": 26
+            },
+            "contactSheets": [
+              {
+                "file": "mapsFogGeography.png",
+                "bytes": 861131,
+                "group": "mapsFogGeography"
+              },
+              {
+                "file": "poses.png",
+                "bytes": 568813,
+                "group": "poses"
+              },
+              {
+                "file": "architecture.png",
+                "bytes": 808937,
+                "group": "architecture"
+              }
+            ],
+            "representativeOriginals": [
+              {
+                "scenario": "farmhouse-north",
+                "filename": "farmhouse-north-1366-low-dpr2.png",
+                "sha256": "cc9297d037fc6c010e92a227d33a3549f3aa87ccc8a955310a920411a067f088",
+                "bytes": 1064361
+              },
+              {
+                "scenario": "dense-520",
+                "filename": "dense-520-1366-low-dpr2.png",
+                "sha256": "6f1c901baeeed5691e136416918c65ce940d97f011e61986223d8a79a4a8d01f",
+                "bytes": 2209314
+              },
+              {
+                "scenario": "fallback",
+                "filename": "fallback-1366-low-dpr2.png",
+                "sha256": "34898742758951f501e1277146629794fd627fffb0a73990f5b76a412308a108",
+                "bytes": 1190378
+              },
+              {
+                "scenario": "local-water",
+                "filename": "local-water-1366-low-dpr2.png",
+                "sha256": "d0ecf07ed1096a780dc35d9734ac40e51d8f27cef37a5a80031b02688597dc8f",
+                "bytes": 1624772
+              }
+            ],
+            "representativeChecksumsVerified": true
+          },
+          "1920": {
+            "reviewArtifact": {
+              "id": 12038945377,
+              "name": "map-review-low-dpr2-1920",
+              "sizeBytes": 12547917,
+              "sha256": "dbbe0eebc883b5342bda4ea46399e3afa5c6c129e5745a3c9ad527463e0824a0",
+              "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+            },
+            "rows": 73,
+            "groups": {
+              "mapsFogGeography": 23,
+              "poses": 24,
+              "architecture": 26
+            },
+            "contactSheets": [
+              {
+                "file": "mapsFogGeography.png",
+                "bytes": 854586,
+                "group": "mapsFogGeography"
+              },
+              {
+                "file": "poses.png",
+                "bytes": 499847,
+                "group": "poses"
+              },
+              {
+                "file": "architecture.png",
+                "bytes": 762774,
+                "group": "architecture"
+              }
+            ],
+            "representativeOriginals": [
+              {
+                "scenario": "farmhouse-north",
+                "filename": "farmhouse-north-1920-low-dpr2.png",
+                "sha256": "567ffd83276e03d5ef2679f647bec49afa55caf11a16730999396309a4f1e6e7",
+                "bytes": 1639913
+              },
+              {
+                "scenario": "dense-520",
+                "filename": "dense-520-1920-low-dpr2.png",
+                "sha256": "5be6f5638bf17f5655ee0c26f98297c39933e952b64e81530dd9351d857b9bce",
+                "bytes": 4125568
+              },
+              {
+                "scenario": "fallback",
+                "filename": "fallback-1920-low-dpr2.png",
+                "sha256": "07aabb3fd93bd65a82b28fd30dac58bd0379d3af843744e28417e90c8ef50ef2",
+                "bytes": 1837441
+              },
+              {
+                "scenario": "local-water",
+                "filename": "local-water-1920-low-dpr2.png",
+                "sha256": "1f85f406cd100cea172ae3ed07fd6742fe583f5cb7f292f953bb3ac923a7425a",
+                "bytes": 2959753
+              }
+            ],
+            "representativeChecksumsVerified": true
+          }
+        }
+      },
+      "normal-dpr1": {
+        "quality": "normal",
+        "dpr": 1,
+        "sourceManifestArtifact": {
+          "id": 12028790330,
+          "name": "map-visual-normal-dpr1-metadata",
+          "sizeBytes": 45100,
+          "sha256": "1fc5258be1c2c9748d3418fe71e8a368388810820c4be5a05d05355252f52a5f",
+          "headSha": "d3295737ec35e5728fd4fdc6c90b9cfe55fdc58b"
+        },
+        "sourceCapture": {
+          "rows": 219,
+          "rowsByViewport": {
+            "390": 73,
+            "1366": 73,
+            "1920": 73
+          },
+          "status": "captured-pending-visual-review",
+          "reviewStatusAtCapture": "pending-parent-visual-review"
+        },
+        "reviewOutcome": "accepted",
+        "captures": {
+          "390": {
+            "reviewArtifact": {
+              "id": 12039025617,
+              "name": "map-review-normal-dpr1-390",
+              "sizeBytes": 12590972,
+              "sha256": "6d407ae0e4cec1c7a2a73702b484794ad3e94fa9321931e3766b0f4bf0b77c8e",
+              "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+            },
+            "rows": 73,
+            "groups": {
+              "mapsFogGeography": 23,
+              "poses": 24,
+              "architecture": 26
+            },
+            "contactSheets": [
+              {
+                "file": "mapsFogGeography-part1.png",
+                "bytes": 2226742,
+                "group": "mapsFogGeography"
+              },
+              {
+                "file": "mapsFogGeography-part2.png",
+                "bytes": 1836838,
+                "group": "mapsFogGeography"
+              },
+              {
+                "file": "poses-part1.png",
+                "bytes": 1514539,
+                "group": "poses"
+              },
+              {
+                "file": "poses-part2.png",
+                "bytes": 1568346,
+                "group": "poses"
+              },
+              {
+                "file": "architecture-part1.png",
+                "bytes": 2357596,
+                "group": "architecture"
+              },
+              {
+                "file": "architecture-part2.png",
+                "bytes": 1906441,
+                "group": "architecture"
+              },
+              {
+                "file": "architecture-part3.png",
+                "bytes": 361828,
+                "group": "architecture"
+              }
+            ],
+            "representativeOriginals": [
+              {
+                "scenario": "farmhouse-north",
+                "filename": "farmhouse-north-390-normal-dpr1.png",
+                "sha256": "3e385fed31e305356ff66bf8764336c0456dcecad564b6d32157322a6893ee79",
+                "bytes": 190147
+              },
+              {
+                "scenario": "dense-520",
+                "filename": "dense-520-390-normal-dpr1.png",
+                "sha256": "9c6eff8e1b5fa0dd90ed5718c25b49b463e9c7e90f4ade7d5f7e41824d0565a0",
+                "bytes": 264792
+              },
+              {
+                "scenario": "fallback",
+                "filename": "fallback-390-normal-dpr1.png",
+                "sha256": "f208121f3139923f873ac248c95cf315edd30110f830224bafc74a05abeb8654",
+                "bytes": 212956
+              },
+              {
+                "scenario": "local-water",
+                "filename": "local-water-390-normal-dpr1.png",
+                "sha256": "dc78f9d2bb519c009ff1aa0c290ea7e71d2da2a698a2a50655c8398a595e6586",
+                "bytes": 245698
+              }
+            ],
+            "representativeChecksumsVerified": true
+          },
+          "1366": {
+            "reviewArtifact": {
+              "id": 12039210170,
+              "name": "map-review-normal-dpr1-1366",
+              "sizeBytes": 4733421,
+              "sha256": "eb927a7f46a8aef3cda4233139a518df9f5042bd609aa7905083d14d019618db",
+              "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+            },
+            "rows": 73,
+            "groups": {
+              "mapsFogGeography": 23,
+              "poses": 24,
+              "architecture": 26
+            },
+            "contactSheets": [
+              {
+                "file": "mapsFogGeography.png",
+                "bytes": 911905,
+                "group": "mapsFogGeography"
+              },
+              {
+                "file": "poses.png",
+                "bytes": 613350,
+                "group": "poses"
+              },
+              {
+                "file": "architecture.png",
+                "bytes": 862799,
+                "group": "architecture"
+              }
+            ],
+            "representativeOriginals": [
+              {
+                "scenario": "farmhouse-north",
+                "filename": "farmhouse-north-1366-normal-dpr1.png",
+                "sha256": "d190192b0382cb0f6b7597cd1e85a52f17f74adc853056b1f613796555750a92",
+                "bytes": 443885
+              },
+              {
+                "scenario": "dense-520",
+                "filename": "dense-520-1366-normal-dpr1.png",
+                "sha256": "3988249fe6e4bf99d4132f8305153e13f846eb3f3d81ac7b114aaa40b1a6b49c",
+                "bytes": 823089
+              },
+              {
+                "scenario": "fallback",
+                "filename": "fallback-1366-normal-dpr1.png",
+                "sha256": "c59bcd3db7fa42e452b1452c3ffaac2247ad964e93c0e7a8ecb06538ad6a3792",
+                "bytes": 508586
+              },
+              {
+                "scenario": "local-water",
+                "filename": "local-water-1366-normal-dpr1.png",
+                "sha256": "460e79d901471ddb56099d9bcb1b77e440d4790f3c97c4bce986ead593e92099",
+                "bytes": 633088
+              }
+            ],
+            "representativeChecksumsVerified": true
+          },
+          "1920": {
+            "reviewArtifact": {
+              "id": 12038209682,
+              "name": "map-review-normal-dpr1-1920",
+              "sizeBytes": 6494378,
+              "sha256": "503d9c2f3da445ff29674eafbd4a13594afe7e1b87946880a87f0eaf45a08099",
+              "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+            },
+            "rows": 73,
+            "groups": {
+              "mapsFogGeography": 23,
+              "poses": 24,
+              "architecture": 26
+            },
+            "contactSheets": [
+              {
+                "file": "mapsFogGeography.png",
+                "bytes": 891308,
+                "group": "mapsFogGeography"
+              },
+              {
+                "file": "poses.png",
+                "bytes": 531602,
+                "group": "poses"
+              },
+              {
+                "file": "architecture.png",
+                "bytes": 779360,
+                "group": "architecture"
+              }
+            ],
+            "representativeOriginals": [
+              {
+                "scenario": "farmhouse-north",
+                "filename": "farmhouse-north-1920-normal-dpr1.png",
+                "sha256": "ebb73ec725a7b53c3d1a1d1ff88736e841e429243067a82a39f8ba4a860415cf",
+                "bytes": 748618
+              },
+              {
+                "scenario": "dense-520",
+                "filename": "dense-520-1920-normal-dpr1.png",
+                "sha256": "a95ff9d996475cf60b751e768b80cc69168c7ae8f59b9d4f918fbb8dda816af0",
+                "bytes": 1541814
+              },
+              {
+                "scenario": "fallback",
+                "filename": "fallback-1920-normal-dpr1.png",
+                "sha256": "1b639fa5852461679810ebaf3f833451e1a451229b5b2507166ec8da50095631",
+                "bytes": 862523
+              },
+              {
+                "scenario": "local-water",
+                "filename": "local-water-1920-normal-dpr1.png",
+                "sha256": "6f3ce690f3dd915cf04b3fea29546ffd66a818b50219577f257ef43858e5c161",
+                "bytes": 1206412
+              }
+            ],
+            "representativeChecksumsVerified": true
+          }
+        }
+      },
+      "normal-dpr2": {
+        "quality": "normal",
+        "dpr": 2,
+        "sourceManifestArtifact": {
+          "id": 12028340871,
+          "name": "map-visual-normal-dpr2-metadata",
+          "sizeBytes": 42714,
+          "sha256": "03c88b7cd14d89673400935f510460dbe8cd7e1d62c58581fefa196747da1052",
+          "headSha": "d3295737ec35e5728fd4fdc6c90b9cfe55fdc58b"
+        },
+        "sourceCapture": {
+          "rows": 219,
+          "rowsByViewport": {
+            "390": 73,
+            "1366": 73,
+            "1920": 73
+          },
+          "status": "captured-pending-visual-review",
+          "reviewStatusAtCapture": "pending-parent-visual-review"
+        },
+        "reviewOutcome": "accepted",
+        "captures": {
+          "390": {
+            "reviewArtifact": {
+              "id": 12037909679,
+              "name": "map-review-normal-dpr2-390",
+              "sizeBytes": 12722320,
+              "sha256": "9c829a008637e5cda7d39498a0a4696f808ee3505870191955042bfcd941c8b0",
+              "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+            },
+            "rows": 73,
+            "groups": {
+              "mapsFogGeography": 23,
+              "poses": 24,
+              "architecture": 26
+            },
+            "contactSheets": [
+              {
+                "file": "mapsFogGeography-part1.png",
+                "bytes": 1928631,
+                "group": "mapsFogGeography"
+              },
+              {
+                "file": "mapsFogGeography-part2.png",
+                "bytes": 1597633,
+                "group": "mapsFogGeography"
+              },
+              {
+                "file": "poses-part1.png",
+                "bytes": 1311564,
+                "group": "poses"
+              },
+              {
+                "file": "poses-part2.png",
+                "bytes": 1364056,
+                "group": "poses"
+              },
+              {
+                "file": "architecture-part1.png",
+                "bytes": 2062584,
+                "group": "architecture"
+              },
+              {
+                "file": "architecture-part2.png",
+                "bytes": 1730995,
+                "group": "architecture"
+              },
+              {
+                "file": "architecture-part3.png",
+                "bytes": 330187,
+                "group": "architecture"
+              }
+            ],
+            "representativeOriginals": [
+              {
+                "scenario": "farmhouse-north",
+                "filename": "farmhouse-north-390-normal-dpr2.png",
+                "sha256": "b8a15835209bd6dadbc39e756738e4dfe9d127d6842b10d1c9ad6aa22ab89d45",
+                "bytes": 482003
+              },
+              {
+                "scenario": "dense-520",
+                "filename": "dense-520-390-normal-dpr2.png",
+                "sha256": "2421a84b5d546685795f72fddfdab456195df74e05fc8307d8a2c187985b93d3",
+                "bytes": 714128
+              },
+              {
+                "scenario": "fallback",
+                "filename": "fallback-390-normal-dpr2.png",
+                "sha256": "0858e51425612edc9b665c6506416725a79a5d2778ce22ca37721088547e6443",
+                "bytes": 590195
+              },
+              {
+                "scenario": "local-water",
+                "filename": "local-water-390-normal-dpr2.png",
+                "sha256": "f2c194ec526fbdbffcc97eb7ca267f443de358bf1d5b99b52a911dcf67f01649",
+                "bytes": 702572
+              }
+            ],
+            "representativeChecksumsVerified": true
+          },
+          "1366": {
+            "reviewArtifact": {
+              "id": 12038472803,
+              "name": "map-review-normal-dpr2-1366",
+              "sizeBytes": 8962348,
+              "sha256": "210dce9f09a0144dade50c375efd4a3a9e8a26fabcaa85c1a5eb593713c9c673",
+              "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+            },
+            "rows": 73,
+            "groups": {
+              "mapsFogGeography": 23,
+              "poses": 24,
+              "architecture": 26
+            },
+            "contactSheets": [
+              {
+                "file": "mapsFogGeography.png",
+                "bytes": 877578,
+                "group": "mapsFogGeography"
+              },
+              {
+                "file": "poses.png",
+                "bytes": 589657,
+                "group": "poses"
+              },
+              {
+                "file": "architecture.png",
+                "bytes": 838351,
+                "group": "architecture"
+              }
+            ],
+            "representativeOriginals": [
+              {
+                "scenario": "farmhouse-north",
+                "filename": "farmhouse-north-1366-normal-dpr2.png",
+                "sha256": "abaaeecbc38400b22df65dab5d4b147191b156148f14576b8bfc5fd852a4ee4f",
+                "bytes": 1166894
+              },
+              {
+                "scenario": "dense-520",
+                "filename": "dense-520-1366-normal-dpr2.png",
+                "sha256": "b8cc4eb3f6dcee3a2ecd6748bf7dcc4a3e6bd3e4ad53a8fa05505dcf9ca09b37",
+                "bytes": 2432979
+              },
+              {
+                "scenario": "fallback",
+                "filename": "fallback-1366-normal-dpr2.png",
+                "sha256": "9bfa072230726645f61e1c7c95ed6200cd4fc172bdacc52959ae8702e8bb5bd6",
+                "bytes": 1338837
+              },
+              {
+                "scenario": "local-water",
+                "filename": "local-water-1366-normal-dpr2.png",
+                "sha256": "28d8f954f6fcb424b1b4089d103654b9b6d6fd1a38c22f274e9d85551c6b27e5",
+                "bytes": 1804822
+              }
+            ],
+            "representativeChecksumsVerified": true
+          },
+          "1920": {
+            "reviewArtifact": {
+              "id": 12038114161,
+              "name": "map-review-normal-dpr2-1920",
+              "sizeBytes": 14279239,
+              "sha256": "c0387f7a2a100dd9ee1b475042066caaa0aca751f9b84c72f3045807cc3f369f",
+              "headSha": "388866ad934d9aa99eaa07052a9660e6ceacd170"
+            },
+            "rows": 73,
+            "groups": {
+              "mapsFogGeography": 23,
+              "poses": 24,
+              "architecture": 26
+            },
+            "contactSheets": [
+              {
+                "file": "mapsFogGeography.png",
+                "bytes": 870422,
+                "group": "mapsFogGeography"
+              },
+              {
+                "file": "poses.png",
+                "bytes": 517219,
+                "group": "poses"
+              },
+              {
+                "file": "architecture.png",
+                "bytes": 792480,
+                "group": "architecture"
+              }
+            ],
+            "representativeOriginals": [
+              {
+                "scenario": "farmhouse-north",
+                "filename": "farmhouse-north-1920-normal-dpr2.png",
+                "sha256": "153070444cfcd523e39ee92894197f6e767f1121116c589a4f5118a6aa0f5683",
+                "bytes": 1871399
+              },
+              {
+                "scenario": "dense-520",
+                "filename": "dense-520-1920-normal-dpr2.png",
+                "sha256": "33d1154086cfd21b61e04cef562d5f4b6251ca73bb357cecb857a7ae0e77d9f2",
+                "bytes": 4762584
+              },
+              {
+                "scenario": "fallback",
+                "filename": "fallback-1920-normal-dpr2.png",
+                "sha256": "12792756b2c3f821a5f330cbcd8bc8202b8025951570d33e517de9aab64cd1ad",
+                "bytes": 2166274
+              },
+              {
+                "scenario": "local-water",
+                "filename": "local-water-1920-normal-dpr2.png",
+                "sha256": "ae6eeecec15e15acd1e749042c22f18ff1f423e765156473c2e68510068b71e2",
+                "bytes": 3422988
+              }
+            ],
+            "representativeChecksumsVerified": true
+          }
+        }
+      }
+    }
+  }
+}

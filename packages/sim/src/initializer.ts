@@ -211,7 +211,7 @@ export function createNewGame(options: NewGameOptions, world: WorldDefinition): 
       harvestJobs: empty,
       resourceBalances: world.resources.map(resource => ({
         resourceId: resource.id,
-        remaining: resource.capacity,
+        remaining: resource.openingBalance ?? resource.capacity,
         reserved: 0,
         materialId: resource.materialId,
         unit: resource.unit,

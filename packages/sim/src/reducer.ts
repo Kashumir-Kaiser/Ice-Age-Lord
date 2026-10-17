@@ -107,7 +107,7 @@ export function actionAvailability(type: CommandType): ActionAvailability {
   if (type === 'inspect_entity') return { actionId: type, enabled: true, reasonCode: null, requirements: ['The entity must already be known to the player.'] };
   if (type === 'inspect_starter_container') return { actionId: type, enabled: true, reasonCode: null, requirements: ['The container must be in reach and belong to the player.'] };
   if (type === 'inspect_career_card') return { actionId: type, enabled: true, reasonCode: null, requirements: ['The sealed opening card must still be available.'] };
-  if (type === 'move' || type === 'search' || type === 'harvest' || type === 'cancel_travel' || type === 'cancel_spatial_job' || type === 'transfer_item' || type === 'open_cache') {
+  if (type === 'move' || type === 'search' || type === 'cancel_travel' || type === 'cancel_spatial_job' || type === 'transfer_item' || type === 'open_cache') {
     return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
   }
   if (type === 'split_stack' || type === 'merge_stacks' || type === 'consume_item' || type === 'activate_career_card' || type === 'revive' || type === 'butcher_corpse' || type === 'equip' || type === 'unequip_item' || type === 'attack' || type === 'retreat') return { actionId: type, enabled: true, reasonCode: null, requirements: [] };
@@ -769,21 +769,10 @@ export function reduceCommand(
 
   if (command.type === 'harvest') {
     const idHash = canonicalStateHash({ saveId: state.saveId, commandId: command.commandId }).slice(0, 20).toUpperCase();
-    const jobId = `HARVEST-${idHash}`;
-    const result = startHarvestJob(state, world, jobId, command.payload.actorId, command.payload.resourceId, command.payload.materialId, command.payload.quantity, command.payload.toolItemId);
-    if (!result.job) return reject(state, command.commandId, result.code ?? 'HARVEST_UNAVAILABLE', 'The actor cannot harvest this resource.', requestSha256);
-    const next = structuredClone(state);
-    next.spatial.harvestJobs = [...next.spatial.harvestJobs, result.job];
-    next.spatial.resourceBalances = next.spatial.resourceBalances.map(balance => balance.resourceId === result.job!.resourceId
-      ? { ...balance, reserved: balance.reserved + result.job!.reservedQuantity, lastSettledAtElapsedMs: state.simElapsedMs }
-      : balance);
-    next.jobs = [...next.jobs, { id: jobId, kind: 'resource_harvest', status: 'active', actorIds: [...result.job.actorIds], reservedItemIds: result.job.toolItemId === 'NONE' ? [] : [result.job.toolItemId], startedAtElapsedMs: state.simElapsedMs, completedAtElapsedMs: null }];
-    return acceptMutationMany(state, command, requestSha256, next, [{
-      type: 'harvest_job_started', occurredAtElapsedMs: state.simElapsedMs,
-      payload: { jobId, resourceId: result.job.resourceId, materialId: result.job.materialId, quantity: result.job.requestedQuantity },
-    }], 'HARVEST_STARTED', 'The harvest and return job was started.');
+    const validation = startHarvestJob(state, world, `HARVEST-${idHash}`, command.payload.actorId, command.payload.resourceId, command.payload.materialId, command.payload.quantity, command.payload.toolItemId);
+    if (!validation.job) return reject(state, command.commandId, validation.code ?? 'HARVEST_UNAVAILABLE', 'The actor cannot harvest this resource.', requestSha256);
+    return reject(state, command.commandId, 'RESOURCE_LEDGER_STAGE_05', 'Resource extraction is unavailable until the authoritative balance ledger is implemented.', requestSha256);
   }
-
   if (command.type === 'cancel_spatial_job') {
     const result = cancelSpatialJob(state, command.payload.jobId, state.simElapsedMs);
     if (!result.event) return reject(state, command.commandId, result.code ?? 'SPATIAL_JOB_NOT_ACTIVE', 'The spatial job is unavailable.', requestSha256);

@@ -18,7 +18,7 @@ async function capture(viewport,screen,name,setup,{scrollToTop=true}={}){
     if(!file.startsWith(dist+sep)||!existsSync(file)){await route.fulfill({status:404,body:'Not found'});return;}
     await route.fulfill({status:200,contentType:mime[extname(file)]??'application/octet-stream',body:readFileSync(file)});
   });
-  await page.goto('http://local.preview/');
+  await page.goto('http://local.preview/?mode=demo&mapQA=1');
   const menu=page.getByRole('button',{name:'Mở điều hướng'});
   if(await menu.isVisible())await menu.click();
   await page.getByRole('navigation',{name:'Các mục giao diện'}).getByRole('button',{name:screen}).click();
@@ -62,7 +62,7 @@ await capture({width:1280,height:900},/Lãnh địa/,'placement-near-heat-edge-d
 for(const viewport of [{width:1280,height:900},{width:390,height:844}]){
   const suffix=viewport.width<500?'mobile':'desktop';
   await capture(viewport,/Lãnh địa/,`overlapping-towers-${suffix}.png`,async page=>{
-    await page.getByRole('button',{name:/Thử bố trí Tháp cao/}).click();
+    await page.getByRole('button',{name:/Thử bố trí Tháp Canh/}).click();
     const stage=page.locator('.territory-scene-svg');
     const box=await stage.boundingBox();
     await stage.click({position:{x:box.width*.53,y:box.height*.52}});
@@ -71,7 +71,7 @@ for(const viewport of [{width:1280,height:900},{width:390,height:844}]){
   });
 }
 await capture({width:1280,height:900},/Lãnh địa/,'placement-preview-desktop.png',async page=>{
-  await page.getByRole('button',{name:/Thử bố trí Tháp cao/}).click();
+  await page.getByRole('button',{name:/Thử bố trí Tháp Canh/}).click();
 });
 await capture({width:390,height:844},/Lãnh địa/,'dense-qa-mobile.png',async page=>{
   await page.locator('.territory-calibration > summary').click();

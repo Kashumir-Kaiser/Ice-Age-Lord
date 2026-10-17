@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Hand-authored deterministic particle source; no baked background or weather state. -->
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <g stroke="#dce9e8" stroke-width="3.2" opacity=".9">
+      <path d="M32 10v44M12.95 21l38.1 22M12.95 43l38.1-22"/>
+      <path d="m32 18-5 5m5-5 5 5m-5 18-5-5m5 5 5-5M19.9 25l7 .2m-7-.2 2.6 6.5m22.6-6.5-7 .2m7-.2-2.6 6.5M19.9 39l7-.2m-7 .2 2.6-6.5m22.6 6.5-7-.2m7 .2-2.6-6.5M32 10l-3 4m3-4 3 4m-3 40-3-4m3 4 3-4"/>
+    </g>
+    <circle cx="32" cy="32" r="3.1" fill="#f0f5f2" opacity=".95"/>
+  </g>
+</svg>

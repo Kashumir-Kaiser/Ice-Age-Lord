@@ -1,0 +1,227 @@
+{
+  "assetId": "lord-house-l30",
+  "status": "draft; limited normal/planning/focus visual review at 1366x768 DPR1 accepted by parent; remaining viewport/device/overall artwork gates are open",
+  "checkpointParent": "fee5cc37edca4daa3d8780d467dea78d3d589ff1",
+  "generatedMasterCountSinceCheckpoint": 0,
+  "generation": {
+    "tool": "image_gen.imagegen",
+    "promptBrief": "Two generated north-pose map-only composition masters for lord-house-l30: one low stone foundation/plinth and one upper/facade layer, intended to compose around the unchanged original body. These are provenance summaries; exact image-generation prompt strings were not present in the handoff received for saving.",
+    "outputs": [
+      {
+        "path": "assets/source/map-buildings/lord-house-l30-foundation.png",
+        "toolOutputPath": "/workspace/generated_images/exec-4e4b1d47-5539-4341-804b-96a8270b1f39.png",
+        "copiedByteForByte": true,
+        "sha256": "c8bcca06bda0c114e606c55e563cd0bf3092dc863da00595c3eb5d932c502b6a",
+        "gitBlob": "90d51c81a331afde1801c9bdf31d9564b27c5b7b",
+        "format": "PNG RGBA",
+        "width": 1374,
+        "height": 1145,
+        "hasTransparency": true,
+        "outsideCanvasTransparent": true
+      },
+      {
+        "path": "assets/source/map-buildings/lord-house-l30-upper.png",
+        "toolOutputPath": "/workspace/generated_images/exec-1f3111d6-0dfb-4990-be78-2f690787693b.png",
+        "copiedByteForByte": true,
+        "sha256": "cae5f5c011ee91c015a7d314f5ce093738ba0812b36008a3176c2cb2d3c3e3e2",
+        "gitBlob": "7e868a1267d7bdb70ae2ef78d1e0614931698e36",
+        "format": "PNG RGBA",
+        "width": 1374,
+        "height": 1145,
+        "hasTransparency": true,
+        "outsideCanvasTransparent": true
+      }
+    ]
+  },
+  "masterByteHashesVerifiedAtCheckpoint": true,
+  "originalSource": {
+    "path": "assets/source/buildings/lord-house-l30.svg",
+    "sha256": "0fd805a84171288abf4730aca4c1e3663d1cbd479fcf6dd7a143ead650f3aac5",
+    "logicalCanvas": {
+      "width": 480,
+      "height": 400
+    },
+    "presentationScale": 1.22,
+    "orientation": "north",
+    "groundAnchor": {
+      "x": 0.5,
+      "y": 0.82
+    },
+    "compatiblePhysicalFootprint": {
+      "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+      "widthM": 4,
+      "depthM": 4
+    },
+    "bodyChanged": false
+  },
+  "registration": {
+    "registered": true,
+    "exported": true,
+    "visualAcceptance": "Limited parent acceptance of normal/planning/focus at 1366x768 DPR1 only; six alpha metrics recorded at 1366 and 390; 390 visual review and broader acceptance remain open.",
+    "orientation": "north",
+    "logicalCanvas": {
+      "width": 480,
+      "height": 400
+    },
+    "presentationScale": 1.22,
+    "groundAnchor": {
+      "x": 0.5,
+      "y": 0.72
+    },
+    "footprint": {
+      "assumptionId": "ART-ONLY-PREVIEW-FOOTPRINT-V1",
+      "widthM": 4,
+      "depthM": 4
+    },
+    "layers": {
+      "base": {
+        "source": "assets/source/map-buildings/lord-house-l30-foundation.png",
+        "scale": 0.78,
+        "contact": [
+          0.516,
+          0.56
+        ],
+        "target": [
+          240,
+          288
+        ],
+        "fullSourceResize": [
+          374,
+          312
+        ],
+        "placement": [
+          47,
+          113
+        ],
+        "transparentBottomOverflow": 25
+      },
+      "upper": {
+        "source": "assets/source/map-buildings/lord-house-l30-upper.png",
+        "scale": 0.86,
+        "contact": [
+          0.517,
+          0.905
+        ],
+        "target": [
+          240,
+          339
+        ],
+        "fullSourceResize": [
+          413,
+          344
+        ],
+        "placement": [
+          26,
+          28
+        ]
+      }
+    },
+    "exports": [
+      {
+        "role": "base",
+        "lod": "close",
+        "orientation": "north",
+        "path": "/assets/map/buildings/lord-house-l30/base-north-close.png",
+        "sha256": "57ebb19bdced882a24d3e1ed813cbea3e7a9a731b1d6a12861419d34b54cd17d",
+        "width": 264,
+        "height": 140,
+        "trim": {
+          "x": 75,
+          "y": 202.5,
+          "width": 330,
+          "height": 175
+        }
+      },
+      {
+        "role": "upper",
+        "lod": "close",
+        "orientation": "north",
+        "path": "/assets/map/buildings/lord-house-l30/upper-north-close.png",
+        "sha256": "c3d3f4563d36fab24df0c789030854ad981dd4aaf19e7fc53197152a305f8268",
+        "width": 251,
+        "height": 264,
+        "trim": {
+          "x": 82.5,
+          "y": 31.25,
+          "width": 313.75,
+          "height": 330
+        }
+      },
+      {
+        "role": "body",
+        "lod": "close",
+        "orientation": "north",
+        "path": "/assets/map/buildings/lord-house-l30/body-layered-north-close.png",
+        "sha256": "d2b54de5e96557b3e09c9f0e46b33f66a08bb609f42ca2351e64c65a4b73409f",
+        "width": 264,
+        "height": 277,
+        "trim": {
+          "x": 75,
+          "y": 31.25,
+          "width": 330,
+          "height": 346.25
+        }
+      },
+      {
+        "role": "base",
+        "lod": "district",
+        "orientation": "north",
+        "path": "/assets/map/buildings/lord-house-l30/base-north-district.png",
+        "sha256": "a9f10070f75a4dc7121eac9da4938a6f26fa15fed6c72edba24e0f85dbc83284",
+        "width": 136,
+        "height": 74,
+        "trim": {
+          "x": 70,
+          "y": 197.5,
+          "width": 340,
+          "height": 185
+        }
+      },
+      {
+        "role": "upper",
+        "lod": "district",
+        "orientation": "north",
+        "path": "/assets/map/buildings/lord-house-l30/upper-north-district.png",
+        "sha256": "e4d2623408d30aded11cd0d6402f12761275ec75bd7f44f9fbd3d979c5285263",
+        "width": 130,
+        "height": 135,
+        "trim": {
+          "x": 77.5,
+          "y": 30,
+          "width": 325,
+          "height": 337.5
+        }
+      },
+      {
+        "role": "body",
+        "lod": "district",
+        "orientation": "north",
+        "path": "/assets/map/buildings/lord-house-l30/body-layered-north-district.png",
+        "sha256": "aad68a8da0e28e5f2526995788b7c433d30750ebd6b18b1fec7ef6c338828fce",
+        "width": 136,
+        "height": 141,
+        "trim": {
+          "x": 70,
+          "y": 30,
+          "width": 340,
+          "height": 352.5
+        }
+      }
+    ]
+  },
+  "unchangedSourceAndUi": {
+    "body": "assets/source/buildings/lord-house-l30.svg",
+    "bodySha256": "0fd805a84171288abf4730aca4c1e3663d1cbd479fcf6dd7a143ead650f3aac5",
+    "sourceShadow": "frontend/public/assets/buildings/lord-house-repaired/shadow.svg",
+    "sourceShadowSha256": "d6b5f7ac47d1ba061d3bdad12ee25da5e701d35488d905274599e0bc4b44a17c"
+  },
+  "nextStep": "Export the north-only map derivatives and review normal, planning, and focus scene captures before accepting the draft art.",
+  "visualEvidence": "docs/implementation/MAP-25D-L30-VISUAL-EVIDENCE.json",
+  "originalTransferVerification": {
+    "checkpoint": "fee5cc37edca4daa3d8780d467dea78d3d589ff1",
+    "largeBlobToolInitiallyHung": true,
+    "firstTransferBatchHadHashMismatch": true,
+    "resolution": "Required 80-part SHA preflight completed before originals checkpoint; both raw master hashes verified.",
+    "generatedMasterCountSinceVerifiedCheckpoint": 0
+  }
+}

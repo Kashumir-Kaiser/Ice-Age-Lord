@@ -1,0 +1,147 @@
+# Map 2.5D handoff — current status
+
+Development continues on `codex/map-25d-overhaul`; `main` is unchanged. This checkpoint adds north-only map layers for the canonical Tomb building, a vector body fallback, and alpha-safe handling for the filtered SVG ground shadow. The original UI/source art, map anchor, 480×400 logical canvas, and canonical 6×5 m footprint remain unchanged.
+
+## Existing map work
+
+The map uses Pixi/WebGL with a Canvas fallback and a versioned bounded texture cache. Existing work includes terrain materials and props, authored wall/gate/watchtower/elemental poses, four damaged-house poses, and repaired-house/L30 north layers. Their implementation and review details remain in the existing evidence documents.
+
+## Tomb assets and registration
+
+Two transparent 1374×1145 PNG masters are preserved byte-for-byte:
+
+- `assets/source/map-buildings/tomb-entry-foundation.png` — SHA-256 `41ff6a54954cd648918fe21982d7756b70cf034c16316046dee94b1f74d8f4e0`, Git blob `92f4db1bd9ad935f213db9cef26173223a5e5cf9`, 847,665 bytes. This is the complete map-only snowy low pad with steps; the grave markers belong to the upper layer.
+- `assets/source/map-buildings/tomb-entry-upper.png` — SHA-256 `f716d1ca5d2ade50c3b31f0c35fe4c2bf73b2e6a300fee35a2907ac64a374564`, Git blob `ff1586e0f1e4b91212579bc2c8f1eb6a788f2653`, 1,680,999 bytes. This is an idle, unlit upper layer without an emitter.
+
+The registration is north-only at presentation scale 1.27 with the existing anchor `(0.5, 0.72)`. The base candidate uses scale 0.95, contact `(0.52, 0.70)`, target `(240, 288)`; the upper uses scale 0.85, contact `(0.517, 0.905)`, target `(240, 337)`. Original source/UI SVG hashes are retained in [`MAP-25D-TOMB-LAYERS.json`](MAP-25D-TOMB-LAYERS.json). The source body SHA-256 is `4f84f3ac007c803be6c86cd4a08fa8696ec2eed3489b13e48faa367664ab719a`; public base, upper, and shadow SVG hashes are respectively `853bec96e340eb4f4aab54de5468593e4cd848542092f95a4837e8334a8112ec`, `dbd45c5e615f46beb8abe5faefcf1b755a6945efa355a63ea598c67614d06be3`, and `dac4789801d2e8c951484a28174cfae94266615428f350f26b0961ded5d8bf26`.
+
+The generated path-only SVG is a body fallback for PNG rendering of the registered composite. Filtered SVG ground shadows decode through transparent Canvas2D and remain as Pixi `CanvasSource`; this prevents an opaque black quad while keeping one RGBA source reservation. PNG handling is unchanged. The corrected desktop fallback at 1366×768, DPR1, default auto quality shows transparent terrain, a coherent grounded idle crypt, and no open flames. In the 706×467 review crop, pixel `(200,70)` changed from `[0,0,0]` to `[181,198,200]`.
+
+## Review and verification
+
+Normal, planning, and focus scenes are accepted for north orientation and the canonical footprint at 1366×768 and 390×844, DPR1, normal quality. The pad is coherent, cups are unlit, walls are not visibly chopped, planning shows the base alone, and focus keeps the base at alpha 1 while fading the upper to 0.22. At 390px, one zoom-out step after preview initialization shows the full cross. Desktop fallback is accepted at 1366×768, DPR1, default auto quality; the effective quality was not captured. Mobile fallback screenshots and other DPR, quality, or orientation settings are not accepted. Normal-raster scenes remain accepted at normal quality. Review evidence and ephemeral capture paths are documented in [`MAP-25D-TOMB-VISUAL-EVIDENCE.json`](MAP-25D-TOMB-VISUAL-EVIDENCE.json).
+
+First and repeat exporter/sync runs matched 1,178 files with zero changes, additions, or removals; twelve prior repaired-house/L30 PNGs remained byte-identical. The frontend unit suite passed 114/114 with zero skips or failures. Focused Playwright passed 4/4; layered and fallback desktop/mobile journeys each passed 2/2. Production build, typecheck, and cache canvas disposal checks passed.
+
+The fresh-demo map-asset cold transfer met both configured budgets: low quality 3,551,112/4,194,304 bytes across 43 matching requests, and normal quality 4,572,273/8,388,608 bytes across 41 matching requests. These totals include only `/assets/manifest.json` and `/assets/map/**` response bodies; they exclude HTML, JavaScript, CSS, fonts, and UI/splash assets. This does not measure saved-populated LIVE mode or target hardware. Exact transfer scope and build hashes are recorded in [`MAP-25D-HTTP-PERFORMANCE-EVIDENCE.json`](MAP-25D-HTTP-PERFORMANCE-EVIDENCE.json).
+
+A gold shape or overlay is visible in the native-background QA capture, but it is not part of Tomb source artwork. Its exact identity is unresolved, and no art changes are based on it.
+
+## Remaining work
+
+The 876-row integration matrix at the earlier source checkpoint passed scoped contact-sheet overview review with selected raw-frame checks; the complete capture set was not inspected one image at a time. Its measurements showed low quality missing dense-520 and normal quality missing all five fixtures. The newer d612 performance results below supersede those frame measurements. Saved-populated LIVE transfer extraction is blocked by `RESOURCE_LEDGER_STAGE_05`. Intel UHD 620 validation is unavailable. The backend regression run also fails the activity-receipt archive assertion described below; no backend package changed in this checkpoint.
+
+## Current integration — scoped review complete; performance and backend gates remain
+
+The farmhouse foundation master is preserved in the branch. The current integration adds four-pose farmhouse base/upper composition while retaining every original whole-body pose, removes redundant calibration fixtures from the ordinary demonstration placement palette, constrains draft rotation to declared legal orientations, and adds explicitly labeled populated/overlap/geography/fog QA scenarios. Its footprint remains an art-only 4×3 m assumption, not canonical gameplay placement data.
+
+Three transparent SVG effect sources and a versioned shared atlas add ember/smoke frames and a dormant snow texture. Particles require an existing confirmed active visible emitter. No weather state is invented. The stable map host observes viewport intersection and combines it with document visibility to pause rendering; unknown host visibility permits static rendering without animation.
+
+The final asset export and sync passed, and a repeat export matched across 1,235 map source/generated files, including both manifests. All 1,054 previously tracked map PNGs remain byte-identical to the prior checkpoint except for the two intended farmhouse atlas updates. The frontend suite passed all 123 cases across two runs: 122 passed in the full run, and its one local HTTP fixture case passed separately with no skip. Typecheck and the production build passed.
+
+The final local production dist passed a complete low/normal LIVE save, authenticated `inspect_entity`, reload, render, and pan flow against a temporary SQLite API. Revision 1 advanced to revision 2 for the real inspect command; the canonical domain hash `907aca737e5026d811a25e8bd2e6728e9c7ea2616c0a9adb83c8832c125717bf` remained identical before/after reload and through both low- and normal-quality render/pan checks. The LiveApp retained all three API territory building references, rendered with WebGL, and exposed zero QA fixture attributes. Four visible world entities had API positions; house and tomb linked-site positions were unavailable, while the fire remained anchored to the API territory origin. Low transferred 2,986,115 wire bytes across 37 requests (23 unique map files); normal transferred 2,406,796 bytes across 21 requests (21 unique files). Each quality loaded the same gzip manifest at 110,706 bytes. These counts include render and pan requests. This remains a clean-save baseline, not a populated gallery: `RESOURCE_LEDGER_STAGE_05` blocks authoritative harvest extraction, and no data was injected. The run used only a local production dist and ephemeral SQLite/loopback API, not production credentials or target hardware. Fingerprints and full scope are in [`MAP-25D-LIVE-TRANSFER-EVIDENCE.json`](MAP-25D-LIVE-TRANSFER-EVIDENCE.json).
+
+A scoped visual review accepted the farmhouse four-pose contact sheet and planning/focus desktop frames at 1366×768, DPR 1, normal quality. The full foundation pad remains in planning; focus retains the complete roof silhouette while fading the upper layer; the reviewed frames show no horizontal cut or black rectangle. The capture hashes and source hashes are recorded in [`MAP-25D-FARMHOUSE-VISUAL-REVIEW.json`](MAP-25D-FARMHOUSE-VISUAL-REVIEW.json), with the three durable images in `map-visual-review/farmhouse-desktop-1366-normal-dpr1/`. That farmhouse-specific review covers only those frames; the broader 876-row matrix has a separate scoped acceptance record below.
+
+Ten focused production-browser checks pass at desktop scope: normal-demo palette; wall/gate upright-pose previews; overlapping-symbol selection; static DEMO QA fixture metadata; fog metadata; hidden/offscreen renderer pause/resume; Canvas2D fallback; repaired/damaged house architecture; layered Tomb rendering; and visible-active-fire/reduced-motion behavior. A separate LIVE query regression also passes. The 437a rendering workflow passed its interaction suite, production build, capture step, benchmark harness, and artifact upload: 87 Playwright tests passed, 5 were skipped, and none failed. A later final-source local production build and focused motion/geometry checks also passed. The earlier rendering workflow `38857829724` passed 135/135 unit tests and the browser interaction journey at its own source checkpoint; current d612 results are recorded in the published depth-slice section below. All 876 visual rows are captured across 1366×768, 1920×1080, and 390×844 at four quality/DPR lanes. The final review accepted all 52 contact sheets and selected raw frames; the reviewer did not inspect all 876 originals individually. This visual acceptance does not establish target-device performance. Saved-populated LIVE transfer remains blocked by `RESOURCE_LEDGER_STAGE_05`; the clean-save LIVE baseline is now measured end to end. The preceding Tomb acceptance applies only to its recorded earlier checkpoint. Current frame measurements miss several configured budgets. Do not promote software-renderer results to target-hardware acceptance or merge/deploy this branch.
+
+The broad rendering CI workflow at historical source checkpoint `437a885` passed: 87 Playwright tests passed, 5 skipped, none failed; npm test, production build, capture step, benchmark harness, and artifact upload passed. Its earlier visual record is [`MAP-25D-VISUAL-MATRIX-REVIEW.json`](MAP-25D-VISUAL-MATRIX-REVIEW.json). The current-source 876-row review is recorded separately in [`MAP-25D-VISUAL-MATRIX-FINAL-REVIEW.json`](MAP-25D-VISUAL-MATRIX-FINAL-REVIEW.json).
+
+A separate 22.4-second watchtower readiness check passed for north/east/south/west at 390×844, low quality, DPR2. Each pose was focused and visible on WebGL with zero queued or pending textures and zero renderer errors. This records QA readiness for that combination, not broad visual acceptance; the exact diagnostics are linked in the performance status.
+
+A separate Stage 08 CI run failed one existing clock/restart test with `RepositoryError: The stored save schema cannot be migrated safely.` The backend package tree matches comparison checkpoint `7caa55b`, but the bounded local rerun produced no test result, so the failure is not classified as pre-existing or flaky. This does not involve map source; details are recorded in [`MAP-25D-PERFORMANCE-STATUS.json`](MAP-25D-PERFORMANCE-STATUS.json).
+
+The geography-only DEMO fixture correction projects synthetic known-region markers at authored forest, stone, and water anchors without mutating discovery IDs or saved state. The water QA camera centers the authored ice shoreline; the remembered stone disc now uses the same world-space Y sign as `MODELED-STONE-01`, while night current-sight remains false. Deterministic shoreline banks match the authored edge. The earlier geography/model/render test set passed 5/5, and its production TypeScript check and build passed. Forest, stone, remembered-night, and latest water captures have been reviewed and accepted in their stated viewport scopes. Test provenance and build status are recorded in [`MAP-25D-PERFORMANCE-STATUS.json`](MAP-25D-PERFORMANCE-STATUS.json).
+
+The approved ice-edge paint update applies a smooth ICE-only source-over blend while retaining the prior soft-light treatment for other terrain materials; it changes visual paint without changing terrain weights, geometry, heat, or discovery. The focused six-file terrain/geography/render suite, TypeScript check, and production build pass. Desktop 1366×768 and 390×844 captures at normal quality, DPR1 are accepted: the painted ice/snow transition reads clearly with native-scale shoreline banks, without a hard outline or black artifact. Capture hashes and QA edge measurements are in [`MAP-25D-PERFORMANCE-STATUS.json`](MAP-25D-PERFORMANCE-STATUS.json).
+
+The latest source adds deterministic visual-only ambient snow clipped to current-sight geometry and bounded root-anchored conifer sway. Snow freezes and sway stops under reduced motion; both effects are off in Canvas2D fallback, planning, and hidden/offscreen states. A footprint spatial index replaces repeated per-prop scans while preserving the existing strict rotated-footprint clearance behavior for finite scene geometry; no frame improvement is claimed before measurement. Eight focused suites, TypeScript checking, and the final production build passed (2,283 modules). Selected normal/reduced-motion frames were accepted, and the current-source full matrix received scoped visual acceptance; see the final review record. Dense-scene performance gates remain open as measured below.
+
+The 437a CI heap-plateau checks pass the 10 MiB growth gate over two repeated return/pan cycles: 721,358 bytes at low quality and 873,684 bytes at normal quality. Frame collection also completed, but the budgets did not all pass. At low quality, populated demo drafts, dense-520, local, and world-1023 miss the frame-interval gate; dense-520 also misses pointer feedback. At normal quality, dense-520, local, and world-1023 miss the frame-interval gate, and dense-520 misses pointer feedback. Retained metric-history records reached 82; Intel UHD 620 verification remains outstanding. Exact percentiles, thresholds, raw artifact hashes, and provenance are in [`MAP-25D-PERFORMANCE-STATUS.json`](MAP-25D-PERFORMANCE-STATUS.json).
+
+A separate full-journey JavaScript comparison passed its 307,200-byte gzip increase budget: 105,435 bytes at baseline commit `2de4ece` and 267,361 bytes at source checkpoint `437a885`, an increase of 161,926 bytes. Each is one identical run summing the 11 unique JavaScript responses requested across demo territory, local, and world map journeys, including UI/shared/worker code; these are single measurements, not medians. This is distinct from an earlier 100,738-byte named renderer entry-and-chunks measurement. It does not change the frame-budget misses or establish target-device performance. Exact run and artifact hashes are in [`MAP-25D-PERFORMANCE-STATUS.json`](MAP-25D-PERFORMANCE-STATUS.json).
+
+## Published motion-proof checkpoint and fresh CI
+
+The motion-proof checkpoint is published on `codex/map-25d-overhaul` at commit `388866ad934d9aa99eaa07052a9660e6ceacd170` (tree `2aced52b4f4baeef5f77a0a60342e887c48fd4db`), directly after runtime source checkpoint `d3295737ec35e5728fd4fdc6c90b9cfe55fdc58b`. Its tree adds six PNGs and [`MAP-25D-MOTION-VISUAL-PROOF.json`](MAP-25D-MOTION-VISUAL-PROOF.json), plus the visual-review workflow default/fallback update to fresh matrix run `38857829718`. All six PNG SHA-256 values match the manifest, and the GitHub tree matched the staged local tree before the branch ref advanced. No backend package or frontend runtime source changed after `d329573`.
+
+The proof is scoped to the local forest DEMO fixture, WebGL, desktop 1366×768 at DPR1. The overview pair records normal ambient effects at 16 sprites with one active loop and reduced motion at zero loops with identical frames. The close pair shows the selected conifer candidate changing across frames; telemetry records 297 visible props, zero effect sprites, one active loop, no queued work, and frames 429→497. The unit contract asserts reduced motion, a 1.5 CSS-pixel sway cap, and an invariant registered root point. The images and exact values are indexed in the proof JSON; this does not establish acceptance across fallback, mobile, planning, or all quality/DPR combinations.
+
+Fresh source CI for `d329573` completed transfer (`38857829699`), visual capture (`38857829718`), rendering (`38857829724`), and performance (`38857829688`) successfully. Transfer increased gzip JavaScript from 105,435 to 269,273 bytes, a 163,838-byte increase under the 307,200-byte budget. Rendering passed 135/135 unit tests and the browser interaction journey. The four visual lanes captured 219 rows each, 876 total across 1366×768, 1920×1080, and 390×844; the fresh matrix has now received contact-sheet overview acceptance plus selected raw-frame review; 52 contact sheets covered 876 capture rows, and 48 representative raw image checksums were verified. Individual captures were not each inspected. The review record is [`MAP-25D-VISUAL-MATRIX-FINAL-REVIEW.json`](MAP-25D-VISUAL-MATRIX-FINAL-REVIEW.json). The published-checkpoint packaging run `38883598900` completed successfully and produced 12 review packs covering all four quality/DPR lanes and three viewports. The contact-sheet overview review found no blocking issue; selected raw-frame checks were accepted. This is a scoped overview review and does not claim individual inspection of all 876 original captures. Its evidence and artifact hashes are in [`MAP-25D-VISUAL-MATRIX-FINAL-REVIEW.json`](MAP-25D-VISUAL-MATRIX-FINAL-REVIEW.json).
+
+The 3×60-second performance medians were collected on hosted headless SwiftShader, not Intel UHD 620. Fixture order is fresh, populated, dense-520, local, world-1023. Low frame-interval p95 values were 33.4, 33.5, 116.4, 37.8, and 34.1 ms against a 40 ms gate; dense-520 misses. Low pointer p95 values were 33.6, 33.6, 87.1, 38.8, and 34.2 ms against 100 ms; all pass. Normal frame-interval p95 values were 32.4, 36.9, 177.6, 43.4, and 38.1 ms against 20 ms; all miss. Normal pointer p95 values were 49.4, 54.8, 169.9, 64.9, and 55.0 ms against 75 ms; dense-520 misses. Heap growth over the last two cycles was 856,420 bytes low and 864,816 bytes normal against the 10 MiB gate, with plateau verified.
+
+The backend regression workflow (`38857829835`) passed stages 02–10, then failed the bot assertion that all committed activity receipts remain in the lossless archive after recent-tail rollover; later stress, storage, and API suites were skipped. This checkpoint contains no backend package changes. The fresh branch regression run `38883598771` completed with the same backend bots archive activity-receipt assertion failure; the frontend job was skipped after the backend failure. Both branch runs are complete, with no active checkpoint workflows. These results do not constitute target-device performance acceptance, and the dense-scene frame-budget work remains open. Full checkpoint CI details are in [`MAP-25D-PERFORMANCE-STATUS.json`](MAP-25D-PERFORMANCE-STATUS.json).
+
+## Published depth-slice allocation checkpoint and fresh CI
+
+The depth-slice allocation change and its exact-output equivalence tests are published at source commit `612046999bde5eaf6226b6d753e35f880291359e`. The code change is limited to `frontend/src/rendering/DepthSlices.ts` and `frontend/tests/mapDepthSlices.test.mjs`. The focused equivalence tests passed 3/3, the complete frontend test command passed all 35 test files, TypeScript checking and the production build passed, and `git diff --check` was clean. The unit tests cover manifest slices and pan/scale cases against the previous algorithm.
+
+Fresh performance run `38889534615` collected three 60-second medians per fixture on hosted headless Chromium with SwiftShader (AMD EPYC 9V45; `targetDeviceVerified=false`). Fixture order is fresh, populated, dense-520, local, world-1023. Low-quality frame-interval p95 values were 33.4, 33.5, 116.4, 33.6, and 33.7 ms against a 40 ms gate; only dense-520 misses. Low-quality pointer p95 values were 33.5, 33.6, 65.3, 33.8, and 33.9 ms against 100 ms; all pass. Normal-quality frame-interval p95 values were 16.8, 17.1, 116.5, 28.3, and 18.0 ms against a 20 ms gate; dense-520 and local miss. Normal pointer p95 values were 20.0, 21.5, 72.8, 33.1, and 24.7 ms against 75 ms; all pass, with dense-520 close to the limit. The dense interval result is effectively unchanged from the earlier d329 run (116.4 ms normal, 116.4 ms low), so this checkpoint does not demonstrate a dense-scene frame-budget improvement. The earlier short same-host diagnostic used only 11 frames and was highly noisy; its render p95 moved from 184.3 to 138.8 ms while interval p95 moved from about 2,599 to 2,434 ms. It is not acceptance evidence.
+
+An additional warmed local LoAF sample reported script p95 of about 230 ms normal and 268 ms low, render phase of 206/224 ms, and style/layout of 10/6 ms. Attribution identified the MapRenderer bundle but no specific function; the host was heavily overscheduled. These measurements do not establish a causal hotspot or justify a broader optimization. The current artifact remains software-renderer evidence only; target Intel UHD 620 validation is unavailable.
+
+Fresh visual matrix workflow `38889534646` passed all four lanes. Transfer-budget workflow `38889534590` also passed; its current artifact byte totals were not recorded in this checkpoint. Rendering workflow `38889534662` had one timing-sensitive Playwright failure: the hidden/offscreen pause test saw the visible frame remain at 7 after resume. An isolated rerun of that exact test passed 1/1 with system Chromium. Its separate 390×844 QA capture timed out after 60 seconds with two pending textures despite 144 frames, an empty queue, and no renderer errors; a narrowed local 390×844 capture then passed all 73 deterministic scenarios. This does not establish a source rendering defect, and the motion code was unchanged. The backend regression workflow `38889534595` passed stages 02–10 but failed the separate bot activity-receipt archive assertion (8/9 bot tests passed); later suites were skipped and no backend packages changed.
+
+The focused local review found no obvious sprite issue in the inspected captures. Populated LIVE extraction remains blocked by `RESOURCE_LEDGER_STAGE_05`, target-device validation remains outstanding, and the dense-scene interval gates remain open. Full run IDs, thresholds, caveats, and current blockers are in [`MAP-25D-PERFORMANCE-STATUS.json`](MAP-25D-PERFORMANCE-STATUS.json).
+
+## Latest performance handoff — run 38904002622
+
+Source optimization `b0edab2c4cb00cc92a4c7ecf85663a217f3cc3f5` skips the separate building-shadow pass at low quality and reuses the building projection output loop; reporter-only commit `2bc8c072788e5e59b9e76a7ad76b0898f7616611` prints per-run metrics to CI logs without changing sampling or gates. The following are medians across three 60-second runs per fixture; each tuple gives p50/p95/p99 for frame interval and render work, then p50/p95 for pointer feedback (ms).
+
+| Quality | Fixture | Interval p50/p95/p99 | Render ms p50/p95/p99 | Pointer p50/p95 |
+| --- | --- | --- | --- | --- |
+| Low | Fresh | 33.3 / 33.4 / 33.8 | 0.7 / 1.0 / 1.9 | 32.9 / 33.5 |
+| Low | Populated | 33.3 / 33.5 / 33.7 | 0.8 / 1.1 / 2.4 | 32.9 / 33.6 |
+| Low | Dense-520 | 63.3 / 116.4 / 116.6 | 4.6 / 15.3 / 19.5 | 61.8 / 71.1 |
+| Low | Local | 33.3 / 37.3 / 39.7 | 0.7 / 1.0 / 1.7 | 30.4 / 38.3 |
+| Low | World-1023 | 33.3 / 34.1 / 68.1 | 0.3 / 0.7 / 1.2 | 32.7 / 33.9 |
+| Normal | Fresh | 16.7 / 16.9 / 19.7 | 0.8 / 1.1 / 1.9 | 16.7 / 20.2 |
+| Normal | Populated | 16.7 / 18.5 / 23.3 | 0.9 / 1.3 / 2.7 | 16.7 / 23.6 |
+| Normal | Dense-520 | 58.9 / 116.4 / 116.7 | 4.4 / 16.0 / 19.8 | 58.0 / 74.0 |
+| Normal | Local | 16.7 / 29.3 / 32.8 | 0.8 / 1.1 / 1.5 | 18.4 / 32.9 |
+| Normal | World-1023 | 16.7 / 19.2 / 28.5 | 0.3 / 0.5 / 1.6 | 16.7 / 26.3 |
+
+Low dense-520 interval p95 remains 116.4 ms against its 40 ms gate; normal dense-520 is 116.4 ms and local is 29.3 ms against the 20 ms gate. Low local is 37.3 ms against 40 ms. All pointer p95 values pass (100 ms low, 75 ms normal). The renderer reports `targetDeviceVerified=false`: hosted headless Chromium/SwiftShader cannot validate Intel UHD 620 performance. Visual, rendering, and JavaScript-transfer workflows passed. The backend regression workflow failed the unrelated activity-receipt archive assertion; its frontend job was skipped.
+
+## Hosted benchmark diagnosis — run 38909177744
+
+Both quality jobs completed successfully and uploaded `map-performance-low` and `map-performance-normal`. These are hosted headless Chromium/SwiftShader diagnostics, not Intel UHD 620 validation; `targetDeviceVerified` remains false. The table shows medians across the three runs for each fixture. Interval p95 budgets are 40 ms low and 20 ms normal.
+
+| Quality | Fixture | Interval p95 | Gate |
+| --- | --- | ---: | --- |
+| Low | Fresh | 33.5 ms | Pass |
+| Low | Populated | 33.5 ms | Pass |
+| Low | Dense-520 | 116.3 ms | Miss |
+| Low | Local | 39.7 ms | Pass |
+| Low | World-1023 | 37.9 ms | Pass |
+| Normal | Fresh | 19.7 ms | Pass |
+| Normal | Populated | 23.3 ms | Miss |
+| Normal | Dense-520 | 116.6 ms | Miss |
+| Normal | Local | 31.4 ms | Miss |
+| Normal | World-1023 | 26.4 ms | Miss |
+
+For dense-520, low pan had 248 samples at 91.8 ms p95 and zoom had 48 at 116.4 ms; normal pan had 248 at 98.2 ms and zoom had 49 at 116.6 ms. Selection had zero samples in both qualities. Fixture-wide LongTask overlap was about 23.9 seconds across 296 low and 297 normal overlapping intervals per run; phase-specific overlap is not recorded. LoAF observation was supported, with zero dense-520 overlaps in both qualities. The visual, rendering, and JavaScript-transfer workflows passed. The unrelated backend regression failed the activity-receipt archive assertion, so its frontend job was skipped.
+
+## Building snapshot memoization comparison — run 38927004015
+
+This corrected run tests the building snapshot identity optimization at source head `836ac8934daccdbbaab841cf36aa9360f6ad0aa9`, against base run `38925332782` at `985575c31478b7d5440946a954ff98043d4ec417`. The base contains the same pointer-rectangle cache and performance path filter, with the wheel experiment reverted. Results are three-run medians on hosted headless Chromium/SwiftShader, not Intel UHD 620 validation; `targetDeviceVerified=false`.
+
+| Quality | Fixture | Interval p95 base → current | Gate |
+| --- | --- | ---: | --- |
+| Low | Fresh | 33.5 → 33.5 ms | Pass |
+| Low | Populated | 33.5 → 35.3 ms | Pass |
+| Low | Dense-520 | 116.4 → 134.8 ms | Miss |
+| Low | Local | 33.6 → 48.0 ms | Miss |
+| Low | World-1023 | 33.5 → 40.1 ms | Miss |
+| Normal | Fresh | 19.0 → 34.8 ms | Miss |
+| Normal | Populated | 21.6 → 39.3 ms | Miss |
+| Normal | Dense-520 | 116.6 → 184.0 ms | Miss |
+| Normal | Local | 31.5 → 45.4 ms | Miss |
+| Normal | World-1023 | 26.8 → 41.6 ms | Miss |
+
+The low dense pan/zoom p95 values were 126.4/149.9 ms (177/42 samples); normal was 185.0/169.5 ms (137/41). Selection had zero measured samples in dense-520. Low dense render-work p95 was 20.2 ms and pointer p95 124 ms; normal was 27.9 ms and 174.6 ms. Low local interval p95 was 48.0 ms and normal local 45.4 ms. The normal and low runs both show broad interval slowdown relative to their same-period base, so this run does not demonstrate an improvement from snapshot memoization. Hosted execution varies substantially; these comparisons are diagnostic and do not establish target-device behavior.
+
+The existing observer reported fixture-wide LongTask overlap of about 24.7 seconds/219 intervals low and 25.7 seconds/178 intervals normal for dense-520. LoAF overlap was zero in the low median and about one 34 ms entry in normal. Visual, rendering, and JavaScript-transfer workflows passed. The backend regression failed the unrelated bot activity-receipt archive assertion; the Intel UHD 620 remains unverified.
+
+The next instrumentation-only checkpoint adds page-wide RAF intervals aligned to the pan/zoom/selection windows and retains supported LoAF script/timestamp attribution. It does not alter the benchmark sampling loop or acceptance gates; its results are pending a fresh run.

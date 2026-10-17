@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import {
   AlertCircle, ArrowRight, Bell, CalendarDays, CheckCircle2, Eye, Flame, Hammer, Map as MapIcon,
@@ -15,6 +15,8 @@ import { entityRefKey, GameApiError, HttpGameClient } from './live/HttpGameClien
 import { SaveResponseScopeGate } from './live/saveScope';
 import { LIVE_SCREENS, type LiveScreen } from './live/screens';
 import TerritoryScene from './territory/TerritoryScene';
+import MapCanvas from './rendering/MapCanvas';
+import { liveExplorationSnapshot, liveTerrainRegions } from './rendering/MapSceneAdapter';
 import { territorySceneFromApi } from './live/territoryAdapter';
 import type { EntityRef as DemoEntityRef, LayoutDraft } from './game/GameClient';
 import type { TerritoryCamera } from './territory/projection';
@@ -238,6 +240,7 @@ function LiveApp() {
   const [saves, setSaves] = useState<readonly SaveSummary[]>([]);
   const [slotName, setSlotName] = useState('Lãnh Địa Mới');
   const [view, setView] = useState<PlayerView | null>(null);
+  const territorySettlement = useMemo(() => view ? territorySceneFromApi(view) : null, [view?.territory, view?.visibleMap]);
   const [events, setEvents] = useState<readonly PlayerEvent[]>([]);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const eventSequenceRef = useRef(0);
@@ -801,11 +804,6 @@ function LiveApp() {
     const harvestActorBusy = view.spatial.movementOrders.some(order => order.status === 'active' && order.actorIds.includes(harvestActorId))
       || view.spatial.searchJobs.some(job => job.status === 'active' && job.actorIds.includes(harvestActorId))
       || view.spatial.harvestJobs.some(job => job.status === 'active' && job.actorIds.includes(harvestActorId));
-    const featurePoint = (position: CoordinateMm) => point(position);
-    const featureRandom = (seed: number) => {
-      const value = Math.sin(seed * 127.19 + 81.37) * 43_758.5453;
-      return value - Math.floor(value);
-    };
     const selectedCorpseId = selectedEntity?.ref.type === 'corpse' ? selectedEntity.ref.id : null;
     const selectedCorpse = view.corpses?.find(corpse => corpse.id === selectedCorpseId);
     const selectedCombatTarget = view.combat?.target && view.combat.target.id === selectedCombatTargetId ? view.combat.target : null;
@@ -901,38 +899,20 @@ function LiveApp() {
             setFeedback({ kind: 'idle', text: `Search area center selected · ${coordinate.xMm}, ${coordinate.yMm} mm.` });
           } else previewCoordinateDestination(coordinate);
         }}>
+          <MapCanvas snapshot={liveExplorationSnapshot(view,center,horizontalSpanMm/1000,spanMm/1000)} label="Known frozen geography; use the map markers and destination controls to navigate."/>
           <div className="live-map-crosshair" aria-hidden="true" />
           <svg className="live-map-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            <defs><mask id="live-map-unknown" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
+              <rect width="100" height="100" fill="white"/>
+              {[...view.visibleMap.exploredGeometry.flatMap(a=>a.radiusMm!==undefined&&a.points[0]?[{center:a.points[0],radiusMm:a.radiusMm}]:[]),...view.visibleMap.currentSight].map((a,i)=>{const p=point(a.center);return <ellipse key={i} cx={p.x} cy={p.y} rx={a.radiusMm/horizontalSpanMm*100} ry={a.radiusMm/spanMm*100} fill="black"/>;})}
+              {view.visibleMap.visibleGeometry.filter(g=>g.kind==='polygon').map(g=><polygon key={g.id} points={toPolyline(g.points)} fill="black"/>)}
+            </mask></defs>
+            <rect width="100" height="100" fill="#233d4b" opacity=".96" mask="url(#live-map-unknown)"/>
+
             {view.visibleMap.heatOverlays.map((heat, index) => {
               const centerPoint = point(heat.center);
               return <ellipse key={`heat-${index}`} className="live-map-heat" cx={centerPoint.x} cy={centerPoint.y}
                 rx={heat.radiusMm / horizontalSpanMm * 100} ry={heat.radiusMm / spanMm * 100} />;
-            })}
-            {view.visibleMap.resourceFeatures.map(feature => {
-              const centerPoint = featurePoint(feature.position);
-              const rx = feature.footprintMm.widthMm / horizontalSpanMm * 50;
-              const ry = feature.footprintMm.depthMm / spanMm * 50;
-              const channelRatio = (channel: string) => feature.channels.find(item => item.channel === channel)?.remainingRatio ?? 1;
-              const groundcover = channelRatio('groundcover');
-              const channel = feature.terrainKind === 'forest' ? 'canopy'
-                : feature.terrainKind === 'outcrop' ? 'rock_mass'
-                  : feature.terrainKind === 'salvage' ? 'salvage'
-                    : feature.terrainKind === 'frozen_water' ? 'ice'
-                      : feature.terrainKind === 'coal_seam' ? 'seam' : 'salt';
-              const countRatio = channelRatio(channel);
-              const visibleCount = Math.ceil(feature.visualElementCount * Math.max(0, countRatio));
-              return <g key={feature.id} className={`live-map-resource-feature live-map-resource-feature--${feature.terrainKind}`}>
-                <ellipse cx={centerPoint.x} cy={centerPoint.y} rx={rx} ry={ry} opacity={.08 + .32 * countRatio} />
-                {feature.terrainKind === 'forest' && <ellipse className="live-map-resource-groundcover" cx={centerPoint.x} cy={centerPoint.y} rx={rx * .82} ry={ry * .82} opacity={.12 + .22 * groundcover} />}
-                {Array.from({ length: visibleCount }, (_, index) => {
-                  const angle = featureRandom(index + feature.id.length * 11) * Math.PI * 2;
-                  const radius = Math.sqrt(.035 + featureRandom(index * 7 + feature.id.length * 31) * .93);
-                  const x = centerPoint.x + Math.cos(angle) * rx * radius;
-                  const y = centerPoint.y + Math.sin(angle) * ry * radius;
-                  const scale = .45 + .55 * countRatio;
-                  return <circle key={index} className="live-map-resource-element" cx={x} cy={y} r={.38 * scale} />;
-                })}
-              </g>;
             })}
             {view.visibleMap.exploredGeometry.map(area => {
               const centerPoint = area.points[0];
@@ -1342,7 +1322,7 @@ function LiveApp() {
     }
 
     if (screen === 'territory') {
-      const settlement = territorySceneFromApi(view);
+      const settlement = territorySettlement!;
       const territorySelection = territoryRef(selectedRef);
       return <div className="live-section-stack">
         <section className="live-panel">
@@ -1353,6 +1333,8 @@ function LiveApp() {
           <p className="live-muted">Bố cục isometric và artwork dùng chung với bản xem thử. Vị trí, trạng thái, cấp và lựa chọn đều đọc từ PlayerView của lượt lưu đang mở.</p>
           <TerritoryScene
             mode="live"
+            visualIdentity={view.saveId}
+            terrainRegions={liveTerrainRegions(view)}
             playerMarkerVisible
             settlement={settlement}
             placementDefinitions={[]}

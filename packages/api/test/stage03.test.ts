@@ -330,3 +330,38 @@ test('process death around commit recovers either the complete old or complete n
     } finally { recovered.close(); }
   }
 });
+
+test('backup import preserves untouched RES-02 opening stock after rejected harvest', async t => {
+  const fixture = await makeFixture();
+  t.after(fixture.close);
+  const token = await authenticate(fixture);
+  const created = await createSave(fixture, token, 'Stone opening stock');
+  const saveId = created.save.saveId;
+  const before = fixture.service.loadSave(saveId).state;
+  const stoneBalance = before.spatial.resourceBalances.find(balance => balance.resourceId === 'RES-LL01-02')!;
+  assert.equal(stoneBalance.remaining, 1_240);
+
+  const command = {
+    schemaVersion: 1,
+    saveId,
+    commandId: 'reject-unobserved-stone-harvest',
+    expectedRevision: before.revision,
+    type: 'harvest' as const,
+    payload: { actorId: before.player.id, resourceId: 'RES-LL01-02', materialId: 'STONE', quantity: 1, toolItemId: 'missing-tool' },
+  };
+  await assert.rejects(() => fixture.service.executeCommand(saveId, command), { code: 'INVALID_COMMAND' });
+  const rejected = fixture.service.getCommand(saveId, command.commandId);
+  assert.equal(rejected.receipt.accepted, false);
+  assert.equal(rejected.receipt.code, 'RESOURCE_NOT_ACCESSIBLE');
+  const afterRejectedHarvest = fixture.service.loadSave(saveId).state;
+  assert.equal(afterRejectedHarvest.receipts.at(-1)?.receipt.code, 'RESOURCE_NOT_ACCESSIBLE');
+  const beforeWithoutReceipts = structuredClone(before);
+  beforeWithoutReceipts.receipts = [];
+  const afterWithoutReceipts = structuredClone(afterRejectedHarvest);
+  afterWithoutReceipts.receipts = [];
+  assert.deepEqual(afterWithoutReceipts, beforeWithoutReceipts);
+
+  const imported = fixture.service.importBackup(fixture.service.exportBackup(saveId), 'Stone opening stock copy');
+  const restored = fixture.service.loadSave(imported.save.saveId).state;
+  assert.equal(restored.spatial.resourceBalances.find(balance => balance.resourceId === 'RES-LL01-02')?.remaining, 1_240);
+});

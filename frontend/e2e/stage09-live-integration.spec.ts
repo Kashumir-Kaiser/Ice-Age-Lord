@@ -1,5 +1,15 @@
 import { expect, test } from '@playwright/test';
 
+async function expectWithLiveNotice(page: import('@playwright/test').Page, assertion: () => Promise<void>) {
+  try {
+    await assertion();
+  } catch (error) {
+    const notices = await page.locator('.live-notice, [role="alert"]').allInnerTexts();
+    const detail = [...new Set(notices.map(text => text.trim()).filter(Boolean))].join(' | ') || '(no visible notice)';
+    throw new Error(`Original assertion failed: ${error instanceof Error ? error.message : String(error)}\nVisible save feedback: ${detail}`);
+  }
+}
+
 const screens = ['Tổng quan', 'Nhân vật', 'Lãnh địa', 'Bản đồ', 'Kho vật phẩm', 'Quân lực', 'Công trình', 'Sự kiện', 'Nhật ký'];
 
 async function connectAndCreate(page: import('@playwright/test').Page, slotName: string) {
@@ -13,7 +23,7 @@ async function connectAndCreate(page: import('@playwright/test').Page, slotName:
   await expect(page.getByRole('heading', { name: 'Chọn hoặc tạo lượt lưu' })).toBeVisible();
   await page.getByLabel('Tên lượt lưu mới').fill(slotName);
   await page.getByRole('button', { name: 'Tạo lượt chơi sạch' }).click();
-  await expect(page.getByText('Ngày 1 · 07:00')).toBeVisible();
+  await expectWithLiveNotice(page, () => expect(page.getByText('Ngày 1 · 07:00')).toBeVisible());
 }
 
 test('all nine live screens remain on one server-owned save projection at release viewports', async ({ page }, testInfo) => {
@@ -57,11 +67,9 @@ test('all nine live screens remain on one server-owned save projection at releas
         await expect(fireSprite).toBeVisible();
         await expect(page.getByRole('button', { name: 'Mặt bằng' })).toHaveCount(0);
         await expect(page.locator('.territory-build-tray')).toHaveCount(0);
-        const artwork = fireSprite.locator('image').first();
-        await expect(artwork).toBeVisible();
-        const assetPath = await artwork.getAttribute('href');
-        expect(assetPath).toMatch(/^\/assets\//);
-        expect(await page.evaluate(async path => path ? (await fetch(path)).ok : false, assetPath)).toBe(true);
+        await expect(fireSprite).toHaveAttribute('data-asset-id','survival-fire-l01');
+        await expect(page.locator('.territory-stage .map-render-canvas')).toBeVisible();
+        await expect(page.locator('.territory-stage [data-map-renderer]')).toHaveAttribute('data-map-renderer',/webgl|canvas2d/);
       }
       const horizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
       expect(horizontalOverflow, `unexpected horizontal page overflow at ${viewport.width}×${viewport.height} on ${screen}`).toBe(false);

@@ -1,0 +1,27 @@
+{
+  "generator": "OpenAI ImageGen",
+  "referenceSource": "assets/source/buildings/lord-house-repaired.svg",
+  "referenceSourceSha256": "e7588350010fe8f04b5ca5b31294d0706d1e47840b36135a941e87c4c59ead2a",
+  "purpose": "Missing architectural map-only layers; preserve the original master and UI art. North-pose review supports limited draft acceptance: normal composition is coherent, planning shows the foundation only, and focus retains the base at opacity 1 while the upper fades to 0.22. Other poses and broader artistic acceptance remain open.",
+  "entries": [
+    {
+      "role": "base",
+      "source": "assets/source/map-buildings/lord-house-repaired-foundation.png",
+      "sha256": "9e62b3cbbfc118b7caeb3126e8131f56bb608d55220e2a2a0cbff12756772881",
+      "gitBlobSha": "1d965e91b2fae319e08bf1ba4a929acd79fb9036",
+      "bytes": 672162,
+      "generatedAtUtc": "2026-10-15T07:44:11.595284+00:00",
+      "instruction": "Extract and complete only a low stone footing and threshold in the same transparent framing; remove upper house, fence and stacks. Upper layer pending."
+    },
+    {
+      "role": "upper",
+      "source": "assets/source/map-buildings/lord-house-repaired-upper.png",
+      "sha256": "86fdf1520f88145ca77ed833e256700858e3fab26cb5d96c59407bdba85bc32e",
+      "gitBlobSha": "5d017326b09bcdf23d3f56d8547185f98a3d6f70",
+      "bytes": 1375326,
+      "generatedAtUtc": "2026-10-15T07:47:04.768036+00:00",
+      "instruction": "Preserve the complete timber house, roof/chimney and whole ancillary fence/stacks. Remove low stone footing, steps and snow ground. No smoke or emitted effects. Match the original reference and separate base guide."
+    }
+  ],
+  "status": "limited-north-only-draft-acceptance"
+}

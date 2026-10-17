@@ -222,7 +222,8 @@ test('command validation and reducers reject client-owned outcomes and unsupport
   assert.equal(canonicalStateHash(deniedReplay.state), canonicalStateHash(denied.state));
   const reusedId = { ...harvest, payload: { ...harvest.payload, resourceId: 'RES-LL01-02', materialId: 'STONE' } };
   assert.equal(reduceCommand(denied.state, reusedId, world).receipt.code, 'COMMAND_ID_REUSED');
-  assert.equal(actionAvailability('harvest').enabled, true);
+  assert.equal(actionAvailability('harvest').enabled, false);
+  assert.equal(actionAvailability('harvest').reasonCode, 'RESOURCE_LEDGER_STAGE_05');
   assert.equal(actionAvailability('inspect_entity').enabled, true);
 
   const clientInventory = { ...harvest, payload: { ...harvest.payload, inventory: { wood: 999 } } };

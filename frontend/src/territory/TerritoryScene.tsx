@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { Dispatch, PointerEvent as ReactPointerEvent, SetStateAction } from 'react';
 import { AlertTriangle, Compass, Eye, EyeOff, Flame, Grid3X3, LocateFixed, Maximize2, Minus, Plus, RotateCw, Search, Snowflake, ThermometerSun, X } from 'lucide-react';
 import type { EntityRef, LayoutDraft, PlayerView, SettlementBuildingView, SettlementPlacementDefinition, SettlementView } from '../game/GameClient';
@@ -6,16 +6,30 @@ import type { AssetManifest } from '../assets/assetRegistry';
 import { findAsset, loadAssetManifest, resolveSettlementAssetId } from '../assets/assetRegistry';
 import BuildingSprite, { type ReadabilityMode } from './BuildingSprite';
 import './territory.css';
-import { footprintHeatRelation, snapPlanningPoint, validatePlacement } from './placement';
-import { fitWorldBounds, isoToWorld, screenToWorld, worldToIso, worldToScreen, zoomAtScreenPoint } from './projection';
+import MapCanvas from '../rendering/MapCanvas';
+import { composeTerritoryBuildings, territoryBuildings, territorySnapshot, type MapSnapshot } from '../rendering/MapSceneAdapter';
+import { spriteRect, artPolygon } from '../rendering/SpriteRegistration';
+import type { Orientation } from '../rendering/SpriteRegistration';
+import { pointInPolygon, pickStack, cyclePick, pointerCSS } from '../rendering/MapPicking';
+import { rectPolygon } from '../rendering/BuildingGeometry';
+import {projectDepthNodes} from '../rendering/DepthSlices';
+import type {SceneLOD} from '../rendering/mapStyle';
+import { depthOrder } from '../rendering/DepthOrder';
+import { cameraOverlayTransform } from '../rendering/transientCamera';
+import { PointerRectCache, pointerLocalPoint } from './pointerRectCache';
+import { footprintHeatRelation, legalPlacementOrientations, nextPlacementOrientation, snapPlanningPoint, validatePlacement } from './placement';
+import { fitWorldBounds, isoToWorld, screenToWorld, worldToIso, worldToScreen, zoomAtScreenPoint, MIN_TERRITORY_ZOOM } from './projection';
 import type { TerritoryCamera, WorldPoint } from './projection';
 
 const PX_PER_ISO_METRE = 3;
 const ORIENTATION_LABEL:Record<LayoutDraft['orientation'],string>={north:'Bắc',east:'Đông',south:'Nam',west:'Tây'};
+const ORIENTATIONS:readonly Orientation[]=['north','east','south','west'];
 const fixtureFootprint = { kind:'rectangle' as const, widthM:2, depthM:2, provenance:'frontend-fixture' as const, assumptionId:'TERRITORY-QA-V1', note:'Kích thước giả định cho fixture QA.' };
 type PanGesture = { pointerId:number; x:number; y:number; origin:TerritoryCamera; moved:boolean; playerMarker:boolean };
 type Props = {
   mode?: 'demo' | 'live';
+  visualIdentity?:string;
+  terrainRegions?:MapSnapshot['regions'];
   playerMarkerVisible?: boolean;
   settlement: SettlementView;
   placementDefinitions: PlayerView['placementDefinitions'];
@@ -52,13 +66,18 @@ function worldBounds(camera:TerritoryCamera,width:number,height:number):{minX:nu
   return {minX:Math.min(...points.map(p=>p.x)),maxX:Math.max(...points.map(p=>p.x)),minY:Math.min(...points.map(p=>p.y)),maxY:Math.max(...points.map(p=>p.y))};
 }
 
-export default function TerritoryScene({ mode='demo', playerMarkerVisible=false, settlement, placementDefinitions, camera, onCameraChange, drafts, onDraftsChange, selectedRef, onSelectEntity, focusedBuildingId, onFocusHandled, readability, onReadabilityChange, playerName, playerPosition, followPlayer, onFollowPlayerChange, onOpenPlayerProfile }:Props) {
+export default function TerritoryScene({ mode='demo', visualIdentity, terrainRegions, playerMarkerVisible=false, settlement, placementDefinitions, camera, onCameraChange, drafts, onDraftsChange, selectedRef, onSelectEntity, focusedBuildingId, onFocusHandled, readability, onReadabilityChange, playerName, playerPosition, followPlayer, onFollowPlayerChange, onOpenPlayerProfile }:Props) {
   const liveApi = mode === 'live';
   const showPlayerMarker = playerMarkerVisible || followPlayer;
   const rootRef=useRef<HTMLDivElement>(null);
   const svgRef=useRef<SVGSVGElement>(null);
+  const pointerRectCache=useRef(new PointerRectCache());
   const gesture=useRef<PanGesture|null>(null);
+  const touches=useRef(new Map<number,{x:number;y:number}>());
+  const pinch=useRef<{ids:[number,number];distance:number;anchor:WorldPoint;origin:TerritoryCamera}|null>(null);
   const ignoreClick=useRef(false);
+  const lastPick=useRef<{point:WorldPoint;ids:string[]}|null>(null);
+  const buildingLODs=useRef(new Map<string,SceneLOD>());
   const nextDraft=useRef(1);
   const [size,setSize]=useState({width:0,height:0});
   const [manifest,setManifest]=useState<AssetManifest|null>(null);
@@ -70,19 +89,44 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
   const [heatPreview,setHeatPreview]=useState<'actual'|'2500'|'25000'|'off'>('actual');
   const [calibrationOpen,setCalibrationOpen]=useState(false);
   const [calibrationAssetId,setCalibrationAssetId]=useState('fixture-tall-tower');
+  const [qaArtOrientation,setQaArtOrientation]=useState<Orientation>('north');
   const [denseQa,setDenseQa]=useState(false);
+  const [showCalibrationArt,setShowCalibrationArt]=useState(false);
+  const artQaEnabled=!liveApi&&new URLSearchParams(location.search).get('mapQA')==='1';
+  const requestedTerritoryFixture=artQaEnabled?new URLSearchParams(location.search).get('mapFixture'):null;
+  const territoryQaFixture=requestedTerritoryFixture==='populated12'||requestedTerritoryFixture==='overlap'?requestedTerritoryFixture:null;
   const [message,setMessage]=useState('');
+  const [showGrid,setShowGrid]=useState(false);
   const origin=settlement.worldOrigin;
   const actualRadius=settlement.fireActive?settlement.heatRadiusM:0;
   const displayedRadius=heatPreview==='actual'?actualRadius:heatPreview==='off'?0:Number(heatPreview);
   const effectiveMode:ReadabilityMode=placingId?'planning':readability;
   const activeDefinition=placementDefinitions.find(def=>def.id===placingId)??null;
+  const visiblePlacementDefinitions=placementDefinitions.filter(definition=>!definition.qaOnly||artQaEnabled);
   const activeCamera=camera??{x:origin.x+10,y:origin.y+5,zoom:.7};
+  const transient=useRef(activeCamera),lastCameraCommit=useRef(0),wheelCommit=useRef<ReturnType<typeof setTimeout>|null>(null);
+  useLayoutEffect(()=>{transient.current=activeCamera;svgRef.current?.querySelector('.territory-camera-overlay')?.removeAttribute('transform');},[activeCamera.x,activeCamera.y,activeCamera.zoom,size.width,size.height]);
+  useEffect(()=>()=>{if(wheelCommit.current)clearTimeout(wheelCommit.current);pointerRectCache.current.release();},[]);
+  const presentCamera=(next:TerritoryCamera,commit=false,dispatchRenderer=true)=>{
+    transient.current=next;
+    svgRef.current?.querySelector('.territory-camera-overlay')?.setAttribute('transform',cameraOverlayTransform(activeCamera,next,size,'territory'));
+    if(dispatchRenderer)rootRef.current?.dispatchEvent(new CustomEvent('map-camera',{detail:{...next,interacting:!commit&&Boolean(gesture.current||pinch.current)}}));
+    if(commit||(!gesture.current&&!pinch.current&&performance.now()-lastCameraCommit.current>=100)){lastCameraCommit.current=performance.now();onCameraChange(next);}
+  };
+
 
   useEffect(()=>{
     const node=rootRef.current;if(!node)return;
-    const observer=new ResizeObserver(entries=>{const box=entries[0]?.contentRect;if(box?.width&&box.height)setSize({width:box.width,height:box.height});});
-    observer.observe(node);return()=>observer.disconnect();
+    const svg=svgRef.current;
+    const observer=new ResizeObserver(entries=>{
+      pointerRectCache.current.invalidate();
+      const box=entries.find(entry=>entry.target===node)?.contentRect;
+      if(box?.width&&box.height)setSize({width:box.width,height:box.height});
+    });
+    observer.observe(node);if(svg)observer.observe(svg);
+    const invalidate=()=>pointerRectCache.current.invalidate();
+    window.addEventListener('scroll',invalidate,true);window.addEventListener('resize',invalidate);
+    return()=>{observer.disconnect();window.removeEventListener('scroll',invalidate,true);window.removeEventListener('resize',invalidate);};
   },[]);
   useEffect(()=>{
     const node=rootRef.current;if(!node)return;
@@ -140,14 +184,16 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
     if((endY-startY)/step<220)for(let y=startY;y<=endY;y+=step)result.push({key:`y${y}`,from:{x:bounds.minX-step,y},to:{x:bounds.maxX+step,y},major:y%(step*5)===0});
     return result;
   },[bounds,step]);
-  const onScreen=(point:WorldPoint,margin=140)=>{const p=worldToScreen(point,activeCamera,size,PX_PER_ISO_METRE);return p.x>=-margin&&p.y>=-margin&&p.x<=size.width+margin&&p.y<=size.height+margin;};
-  const visibleBuildings=useMemo(()=>settlement.buildings.filter(building=>onScreen({x:origin.x+building.x,y:origin.y+building.y})).slice().sort((a,b)=>{
+  const onScreen=(point:WorldPoint,margin=140,asset?:ReturnType<typeof findAsset>)=>{const p=worldToScreen(point,activeCamera,size,PX_PER_ISO_METRE);if(asset){const r=spriteRect(asset,p,3*activeCamera.zoom);return r.x+r.width>=0&&r.y+r.height>=0&&r.x<=size.width&&r.y<=size.height;}return p.x>=-margin&&p.y>=-margin&&p.x<=size.width+margin&&p.y<=size.height+margin;};
+  const visibleBuildings=useMemo(()=>settlement.buildings.filter(building=>onScreen({x:origin.x+building.x,y:origin.y+building.y},0,findAsset(manifest,resolveSettlementAssetId(manifest,building.assetId,settlement.fireLevel,building.ref.id===settlement.fireRef.id,building.visualState,building.level)))).slice().sort((a,b)=>{
     const pa=worldToScreen({x:origin.x+a.x,y:origin.y+a.y},activeCamera,size,PX_PER_ISO_METRE);
     const pb=worldToScreen({x:origin.x+b.x,y:origin.y+b.y},activeCamera,size,PX_PER_ISO_METRE);
     return pa.y-pb.y||a.id.localeCompare(b.id);
-  }),[settlement.buildings,origin.x,origin.y,activeCamera,size.width,size.height]);
+  }),[settlement.buildings,origin.x,origin.y,activeCamera,size.width,size.height,manifest,settlement.fireLevel]);
   const visibleDrafts=useMemo(()=>drafts.filter(draft=>onScreen({x:origin.x+draft.x,y:origin.y+draft.y})),[drafts,origin.x,origin.y,activeCamera,size.width,size.height]);
   const visibleQa=useMemo(()=>denseQa?denseFixture.filter(item=>onScreen({x:origin.x+item.x,y:origin.y+item.y})):[],[denseQa,denseFixture,origin.x,origin.y,activeCamera,size.width,size.height]);
+  const densePerformanceFixture=artQaEnabled&&requestedTerritoryFixture==='dense-520';
+  const renderedQa=useMemo(()=>densePerformanceFixture&&effectiveMode!=='planning'?[]:visibleQa,[densePerformanceFixture,effectiveMode,visibleQa]);
   const scale=PX_PER_ISO_METRE*activeCamera.zoom;
   const firePoint=worldToScreen(origin,activeCamera,size,PX_PER_ISO_METRE);
   const playerPoint=worldToScreen(playerPosition,activeCamera,size,PX_PER_ISO_METRE);
@@ -161,25 +207,23 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
   const validation=activeDefinition?validatePlacement({point:ghostWorld?{x:ghostWorld.x-origin.x,y:ghostWorld.y-origin.y}:{x:0,y:0},footprint:activeDefinition.footprint,orientation:placingOrientation,heatRadiusM:actualRadius,heatActive:settlement.fireActive,existing:[...settlement.buildings,...drafts]}):null;
   const currentPlacementPoint=ghostWorld??{x:origin.x,y:origin.y};
   const currentPlacementLocal={x:currentPlacementPoint.x-origin.x,y:currentPlacementPoint.y-origin.y};
-  const orientationCycle:LayoutDraft['orientation'][]=['north','east','south','west'];
-
   const focusWorld=(point:WorldPoint,zoom=Math.max(.72,activeCamera.zoom))=>{if(followPlayer)onFollowPlayerChange(false);onCameraChange(previous=>({...(previous??activeCamera),x:point.x,y:point.y,zoom}));};
   const fitFire=()=>{if(followPlayer)onFollowPlayerChange(false);onCameraChange(fitWorldBounds(heatBoundary(origin,Math.max(actualRadius,8)),size,110,PX_PER_ISO_METRE));};
   const fitBuildings=()=>{if(followPlayer)onFollowPlayerChange(false);onCameraChange(fitWorldBounds(settlement.buildings.flatMap(building=>pointsForBuilding(building,origin)),size,110,PX_PER_ISO_METRE));};
-  const fitHeat=()=>{if(followPlayer)onFollowPlayerChange(false);onCameraChange(fitWorldBounds(heatBoundary(origin,Math.max(displayedRadius,1)),size,110,PX_PER_ISO_METRE));};
+  const fitHeat=()=>{if(followPlayer)onFollowPlayerChange(false);onCameraChange(fitWorldBounds(heatBoundary(origin,Math.max(displayedRadius,1)),size,Math.min(110,size.width*.15,size.height*.15),PX_PER_ISO_METRE));};
   const focusBuilding=(building:SettlementBuildingView)=>{
     onSelectEntity(building.ref);
     focusWorld({x:origin.x+building.x,y:origin.y+building.y},Math.max(.8,activeCamera.zoom));
   };
   const startPlacement=(definition:SettlementPlacementDefinition)=>{
-    setPlacingId(definition.id);setPlacingOrientation('north');setGhostWorld({x:activeCamera.x,y:activeCamera.y});
+    const initialOrientation=legalPlacementOrientations(definition.orientations)[0]??'north';
+    setPlacingId(definition.id);setPlacingOrientation(initialOrientation);setGhostWorld({x:activeCamera.x,y:activeCamera.y});
     setMessage(`Thử bố trí: ${definition.name}. Bản nháp không tạo công trình.`);
   };
   const cancelPlacement=()=>{setPlacingId(null);setGhostWorld(null);setMessage('Đã hủy chế độ thử bố trí.');};
   const rotatePlacement=()=>{
-    const allowed=orientationCycle.filter(orientation=>activeDefinition?.orientations.includes(orientation));
-    if(allowed.length<2)return;
-    setPlacingOrientation(previous=>allowed[(allowed.indexOf(previous)+1)%allowed.length]??allowed[0]);
+    if(!activeDefinition)return;
+    setPlacingOrientation(previous=>nextPlacementOrientation(previous,activeDefinition.orientations));
   };
   useEffect(()=>{
     if(!activeDefinition)return;
@@ -196,36 +240,77 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
     document.addEventListener('keydown',onPlacementKeyDown,true);
     return()=>document.removeEventListener('keydown',onPlacementKeyDown,true);
   },[activeDefinition,cancelPlacement,rotatePlacement]);
-  const localPointer=(event:ReactPointerEvent<SVGSVGElement>)=>{const rect=event.currentTarget.getBoundingClientRect();return {x:event.clientX-rect.left,y:event.clientY-rect.top};};
+  const localPointer=(event:ReactPointerEvent<SVGSVGElement>,captured=false)=>pointerLocalPoint(
+    {x:event.clientX,y:event.clientY},
+    pointerRectCache.current.resolve(()=>event.currentTarget.getBoundingClientRect(),captured),
+  );
   const pointerDown=(event:ReactPointerEvent<SVGSVGElement>)=>{
     if(event.button!==0&&event.pointerType!=='touch')return;
     const target=event.target;
     const playerMarker=target instanceof Element&&Boolean(target.closest('.territory-player-marker'));
     if(target instanceof Element&&target.closest('button,input,select,[role="button"]')&&!target.closest('.territory-building')&&!playerMarker)return;
-    if(target instanceof Element&&target.closest('.territory-building')&&!activeDefinition)return;
-    const point=localPointer(event);gesture.current={pointerId:event.pointerId,x:point.x,y:point.y,origin:activeCamera,moved:false,playerMarker};
+    pointerRectCache.current.capture(event.currentTarget.getBoundingClientRect());
+    const point=localPointer(event,true);
+    if(event.pointerType==='touch'){
+      touches.current.set(event.pointerId,point);
+      if(touches.current.size>=2){const [[first,a],[second,b]]=Array.from(touches.current);const center={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+        pinch.current={ids:[first,second],distance:Math.max(1,Math.hypot(a.x-b.x,a.y-b.y)),anchor:screenToWorld(center,transient.current,size),origin:transient.current};
+        gesture.current=null;ignoreClick.current=true;if(activeDefinition)cancelPlacement();
+        try{event.currentTarget.setPointerCapture(event.pointerId);}catch{}return;
+      }
+    }
+    gesture.current={pointerId:event.pointerId,x:point.x,y:point.y,origin:transient.current,moved:false,playerMarker};
     try{event.currentTarget.setPointerCapture(event.pointerId);}catch{ /* Pointer may already be released by the browser. */ }
   };
   const pointerMove=(event:ReactPointerEvent<SVGSVGElement>)=>{
-    const point=localPointer(event);
-    if(activeDefinition)setGhostWorld(screenToWorld(point,activeCamera,size,PX_PER_ISO_METRE));
+    const activePinch=pinch.current;
+    const activeGesture=gesture.current;
+    const captured=Boolean(activePinch?.ids.includes(event.pointerId)||activeGesture?.pointerId===event.pointerId);
+    const point=localPointer(event,captured);
+    if(touches.current.has(event.pointerId))touches.current.set(event.pointerId,point);
+    if(pinch.current){const p=pinch.current,a=touches.current.get(p.ids[0]),b=touches.current.get(p.ids[1]);if(!a||!b)return;
+      const center={x:(a.x+b.x)/2,y:(a.y+b.y)/2},zoom=Math.max(MIN_TERRITORY_ZOOM,Math.min(3,p.origin.zoom*Math.hypot(a.x-b.x,a.y-b.y)/p.distance)),anchor=worldToIso(p.anchor);
+      if(followPlayer)onFollowPlayerChange(false);
+      presentCamera({...isoToWorld({x:anchor.x-(center.x-size.width/2)/(3*zoom),y:anchor.y-(center.y-size.height/2)/(3*zoom)}),zoom});return;
+    }
+    if(activeDefinition)setGhostWorld(screenToWorld(point,transient.current,size,PX_PER_ISO_METRE));
     const current=gesture.current;if(!current||current.pointerId!==event.pointerId)return;
     const dx=point.x-current.x,dy=point.y-current.y;
-    if(!current.moved&&Math.hypot(dx,dy)<5)return;
+    if(!current.moved&&Math.hypot(dx,dy)<6)return;
     if(!current.moved&&followPlayer)onFollowPlayerChange(false);
     current.moved=true;
-    onCameraChange(()=>({...screenToWorld({x:size.width/2-dx,y:size.height/2-dy},current.origin,size,PX_PER_ISO_METRE),zoom:current.origin.zoom}));
+    presentCamera({...screenToWorld({x:size.width/2-dx,y:size.height/2-dy},current.origin,size,PX_PER_ISO_METRE),zoom:current.origin.zoom});
   };
   const pointerUp=(event:ReactPointerEvent<SVGSVGElement>)=>{
-    const activeGesture=gesture.current;
-    if(activeGesture?.pointerId===event.pointerId&&activeGesture.moved){ignoreClick.current=true;window.setTimeout(()=>{ignoreClick.current=false;},0);}
-    else if(activeGesture?.pointerId===event.pointerId&&activeGesture.playerMarker){
-      ignoreClick.current=true;
-      onOpenPlayerProfile();
-      window.setTimeout(()=>{ignoreClick.current=false;},0);
+    touches.current.delete(event.pointerId);
+    if(pinch.current?.ids.includes(event.pointerId)){presentCamera(transient.current,true);pinch.current=null;ignoreClick.current=true;
+      if(touches.current.size===1){const [id,p]=Array.from(touches.current)[0];gesture.current={pointerId:id,x:p.x,y:p.y,origin:transient.current,moved:true,playerMarker:false};}
+      else {gesture.current=null;pointerRectCache.current.release();}
+      try{if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId);}catch{}
+      setTimeout(()=>{ignoreClick.current=false;},0);return;
     }
-    gesture.current=null;
+    const activeGesture=gesture.current;
+    if(activeGesture?.pointerId===event.pointerId){
+      if(activeGesture.moved){ignoreClick.current=true;window.setTimeout(()=>{ignoreClick.current=false;},0);}
+      else if(activeGesture.playerMarker){
+        ignoreClick.current=true;
+        onOpenPlayerProfile();
+        window.setTimeout(()=>{ignoreClick.current=false;},0);
+      }
+      if(activeGesture.moved)presentCamera(transient.current,true);
+      gesture.current=null;pointerRectCache.current.release();
+    }
     try{if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId);}catch{ /* already released */ }
+  };
+  const pointerCancel=()=>{
+    presentCamera(transient.current,true);gesture.current=null;pinch.current=null;touches.current.clear();pointerRectCache.current.release();ignoreClick.current=true;
+    setTimeout(()=>{ignoreClick.current=false;},0);
+  };
+  const lostPointerCapture=(event:ReactPointerEvent<SVGSVGElement>)=>{
+    const lostGesture=gesture.current?.pointerId===event.pointerId;
+    const lostPinch=pinch.current?.ids.includes(event.pointerId)??false;
+    if(!lostGesture&&!lostPinch)return;
+    presentCamera(transient.current,true);gesture.current=null;pinch.current=null;touches.current.clear();pointerRectCache.current.release();
   };
   const canvasClick=(event:React.MouseEvent<SVGSVGElement>)=>{
     if(ignoreClick.current)return;
@@ -233,7 +318,7 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
     if(event.target instanceof Element&&event.target.closest('.territory-building')&&!activeDefinition)return;
     if(!activeDefinition)return;
     const rect=event.currentTarget.getBoundingClientRect();
-    const world=screenToWorld({x:event.clientX-rect.left,y:event.clientY-rect.top},activeCamera,size,PX_PER_ISO_METRE);
+    const world=screenToWorld({x:event.clientX-rect.left,y:event.clientY-rect.top},transient.current,size,PX_PER_ISO_METRE);
     const local=snapPlanningPoint({x:world.x-origin.x,y:world.y-origin.y});
     const item:LayoutDraft={id:`draft-${nextDraft.current++}`,definitionId:activeDefinition.id,assetId:activeDefinition.assetId,x:local.x,y:local.y,orientation:placingOrientation,footprint:activeDefinition.footprint};
     onDraftsChange(previous=>[...previous,item]);
@@ -247,6 +332,8 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
       const dx=event.key==='ArrowLeft'?-amount:event.key==='ArrowRight'?amount:0;
       const dy=event.key==='ArrowUp'?-amount:event.key==='ArrowDown'?amount:0;
       onCameraChange(previous=>{const current=previous??activeCamera;return {...screenToWorld({x:size.width/2-dx,y:size.height/2-dy},current,size,PX_PER_ISO_METRE),zoom:current.zoom};});
+    }else if(event.key.toLowerCase()==='p'){
+      event.preventDefault();onReadabilityChange(readability==='planning'?'normal':'planning');
     }else if(event.key==='+'||event.key==='='){
       event.preventDefault();onCameraChange(previous=>zoomAtScreenPoint(previous??activeCamera,{x:size.width/2,y:size.height/2},size,(previous??activeCamera).zoom*1.2,PX_PER_ISO_METRE));
     }else if(event.key==='-'){
@@ -260,8 +347,8 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
       if(!(target instanceof Element)||!target.closest('.territory-scene-svg')||target.closest('button,input,select'))return;
       const rect=svgRef.current?.getBoundingClientRect();if(!rect)return;
       const point=followPlayer?{x:size.width/2,y:size.height/2}:{x:event.clientX-rect.left,y:event.clientY-rect.top};
-      const zoom=(camera??activeCamera).zoom*Math.exp(-Math.max(-480,Math.min(480,event.deltaY))*.0014);
-      event.preventDefault();onCameraChange(previous=>zoomAtScreenPoint(previous??activeCamera,point,size,zoom,PX_PER_ISO_METRE));
+      const zoom=transient.current.zoom*Math.exp(-Math.max(-480,Math.min(480,event.deltaY))*.0014);
+      event.preventDefault();presentCamera(zoomAtScreenPoint(transient.current,point,size,zoom,PX_PER_ISO_METRE));if(wheelCommit.current)clearTimeout(wheelCommit.current);wheelCommit.current=setTimeout(()=>presentCamera(transient.current,true,false),120);
     };
     node.addEventListener('wheel',onWheel,{passive:false});return()=>node.removeEventListener('wheel',onWheel);
   },[camera,activeCamera,size,onCameraChange,followPlayer]);
@@ -281,15 +368,95 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
   };
   const assetIds=manifest?.assets.map(asset=>asset.assetId)??[];
   const selectedCalibrationAsset=findAsset(manifest,calibrationAssetId);
+  const calibrationNativeOrientation=ORIENTATIONS.find(orientation=>orientation===selectedCalibrationAsset?.orientation)??'north';
+  const qaArtOrientations=selectedCalibrationAsset?ORIENTATIONS.filter(orientation=>orientation===selectedCalibrationAsset.orientation||Boolean(selectedCalibrationAsset.orientationViews?.[orientation])):[];
+  const activeQaArtOrientation:Orientation=qaArtOrientations.includes(qaArtOrientation)?qaArtOrientation:calibrationNativeOrientation;
+  useEffect(()=>{setQaArtOrientation(calibrationNativeOrientation);},[calibrationAssetId,calibrationNativeOrientation]);
   const densityLabel=activeCamera.zoom<.035?'Toàn cảnh · bố cục tổng thể':activeCamera.zoom<.16?'Khu vực · biểu tượng gọn':'Cận cảnh · công trình';
   const fireNorth=worldToScreen({x:origin.x,y:origin.y+Math.max(actualRadius,10)},activeCamera,size,PX_PER_ISO_METRE);
   const buildingLayer=[...visibleBuildings.map(building=>({id:building.id,name:building.name,assetId:building.assetId,level:building.level,visualState:building.visualState,point:{x:origin.x+building.x,y:origin.y+building.y},footprint:building.footprint,orientation:building.orientation,ref:building.ref,draft:false,blocked:false})),
     ...visibleDrafts.map(draft=>({id:draft.id,name:placementDefinitions.find(def=>def.id===draft.definitionId)?.name??'Bản nháp',assetId:draft.assetId,level:undefined,visualState:undefined,point:{x:origin.x+draft.x,y:origin.y+draft.y},footprint:draft.footprint,orientation:draft.orientation,ref:null,draft:true,blocked:validatePlacement({point:{x:draft.x,y:draft.y},footprint:draft.footprint,orientation:draft.orientation,heatRadiusM:actualRadius,heatActive:settlement.fireActive,existing:[...settlement.buildings,...drafts],ignoreId:draft.id}).blockers.length>0}))];
 
+  const selectedGround=settlement.buildings.find(b=>b.ref.id===selectedRef?.id);
+  const isOccluder=(point:WorldPoint,asset:ReturnType<typeof findAsset>,selected:boolean)=>{
+    if(!asset||selected||!selectedGround)return false;
+    const target=worldToScreen({x:origin.x+selectedGround.x,y:origin.y+selectedGround.y},activeCamera,size);
+    const ground=worldToScreen(point,activeCamera,size);
+    return ground.y>target.y&&pointInPolygon(target,artPolygon(asset.occlusionRegion.upper,spriteRect(asset,ground,scale)));
+  };
+  const renderDrafts=useMemo(()=>[...drafts,...(denseQa?denseFixture:[]),...(activeDefinition?[{id:'placement-ghost',definitionId:activeDefinition.id,assetId:activeDefinition.assetId,x:currentPlacementLocal.x,y:currentPlacementLocal.y,footprint:activeDefinition.footprint,orientation:placingOrientation}]:[])],[drafts,denseQa,denseFixture,activeDefinition,currentPlacementLocal.x,currentPlacementLocal.y,placingOrientation]);
+  const baseRenderBuildings=useMemo(()=>territoryBuildings(settlement,manifest,selectedRef?.id??null,renderDrafts),[settlement,manifest,selectedRef?.id,renderDrafts]);
+  const qaStaticBuildings=useMemo(()=>{
+    if(!manifest||!territoryQaFixture)return [];
+    const assets=['lord-house-damaged','polar-farmhouse-l01','opening-palisade-wall','opening-timber-gate','watchtower-preview','elemental-tower-preview'] as const;
+    const specs=territoryQaFixture==='overlap'
+      ? [
+          {assetId:'opening-palisade-wall',x:0,y:0,orientation:'north' as const},
+          {assetId:'opening-timber-gate',x:1,y:0,orientation:'north' as const},
+          {assetId:'watchtower-preview',x:.4,y:.5,orientation:'north' as const},
+        ]
+      : Array.from({length:12},(_,index)=>({assetId:assets[index%assets.length]!,x:((index%4)-1.5)*28,y:(Math.floor(index/4)-1)*32,orientation:(['north','east','south','west'] as const)[index%4]!}));
+    return specs.flatMap((spec,index)=>{
+      const asset=findAsset(manifest,spec.assetId);
+      if(!asset)return [];
+      return [{
+        id:`map-qa-static-${index+1}`,name:'Hình minh họa QA',asset,assetId:spec.assetId,
+        point:{x:origin.x+spec.x,y:origin.y+spec.y},orientation:spec.orientation,
+        footprint:asset.compatiblePhysicalFootprint??fixtureFootprint,
+        selected:false,active:false,draft:false,fixture:true,
+      }];
+    });
+  },[manifest,territoryQaFixture,origin.x,origin.y]);
+  const expectedTerritoryFixtureCount=territoryQaFixture==='populated12'?12:territoryQaFixture==='overlap'?3:0;
+  const readyTerritoryQaFixture=expectedTerritoryFixtureCount>0&&qaStaticBuildings.length===expectedTerritoryFixtureCount?territoryQaFixture:null;
+  const qaArtPreview=useMemo(()=>{
+    // Render-only QA: no placement definition, command or saved entity.
+    const asset=artQaEnabled&&showCalibrationArt?selectedCalibrationAsset:null;
+    return asset?{
+      id:'qa-art-preview',name:'Hình ảnh kiểm tra',asset,assetId:asset.assetId,
+      point:{x:origin.x+4,y:origin.y-2},orientation:activeQaArtOrientation,
+      footprint:asset.compatiblePhysicalFootprint??fixtureFootprint,
+      selected:false,active:false,draft:false,fixture:true,
+    }:null;
+  },[artQaEnabled,showCalibrationArt,selectedCalibrationAsset,activeQaArtOrientation,origin.x,origin.y]);
+  const renderBuildings=useMemo(()=>composeTerritoryBuildings(baseRenderBuildings,qaStaticBuildings,qaArtPreview),[baseRenderBuildings,qaStaticBuildings,qaArtPreview]);
+  const renderSnapshot=useMemo(()=>{
+    const snapshot=territorySnapshot(settlement,manifest,activeCamera,effectiveMode,selectedRef?.id??null,[],{visualIdentity,modeledInfill:!liveApi,regions:terrainRegions},renderBuildings);
+    return {...snapshot,buildingLODs:buildingLODs.current};
+  },[settlement,manifest,activeCamera,effectiveMode,selectedRef?.id,visualIdentity,terrainRegions,liveApi,renderBuildings]);
+  const artQaPreview=renderSnapshot.buildings.find(b=>b.id==='qa-art-preview'&&b.fixture);
+  const artQaOutline=artQaPreview?[[-1,-1],[1,-1],[1,1],[-1,1]].map(([x,y])=>{
+    const turned=artQaPreview.orientation==='east'||artQaPreview.orientation==='west';
+    const w=turned?artQaPreview.footprint.depthM:artQaPreview.footprint.widthM,d=turned?artQaPreview.footprint.widthM:artQaPreview.footprint.depthM;
+    const point=worldToScreen({x:artQaPreview.point.x+x*w/2,y:artQaPreview.point.y+y*d/2},activeCamera,size);
+    return `${point.x},${point.y}`;
+  }).join(' '):undefined;
+  const captureSelection=(event:React.MouseEvent<SVGSVGElement>)=>{
+    if(ignoreClick.current){ignoreClick.current=false;event.preventDefault();event.stopPropagation();return;}
+    if(activeDefinition||event.detail===0||event.target instanceof Element&&event.target.closest('.territory-player-marker'))return;
+    const point=pointerCSS({x:event.clientX,y:event.clientY},event.currentTarget.getBoundingClientRect(),size);
+    const order=depthOrder(projectDepthNodes(renderSnapshot.buildings,p=>worldToScreen(p,transient.current,size),3*transient.current.zoom,size,true,buildingLODs.current,effectiveMode==='planning')).objects;
+    const focused=order.find(b=>b.selected);
+    const stack=pickStack(point,order.map(b=>{
+      const f=b.footprint;
+      const ground=[{x:f.minX,y:f.minY},{x:f.maxX,y:f.minY},{x:f.maxX,y:f.maxY},{x:f.minX,y:f.maxY}].map(p=>worldToScreen(p,transient.current,size));
+      const faded=effectiveMode==='focus'&&focused&&!b.selected&&b.depth>focused.ground.y&&pointInPolygon(focused.ground,artPolygon(b.slice?.hull??b.asset!.occlusionRegion.upper,b.rect));
+      const regional=b.lod==='regional'&&effectiveMode!=='planning';
+      return {id:b.entityId,ground,silhouette:regional?rectPolygon(b.symbol):faded?[]:artPolygon(b.slice?.hull??b.asset!.hitPolygon??b.asset!.artFootprint,b.rect),silhouettes:regional||faded||b.slice?[]:[artPolygon(b.asset!.occlusionRegion.upper,b.rect)],selectable:!b.draft&&!b.fixture};
+    }),effectiveMode==='planning');
+    if(!stack.length)return;
+    const previous=lastPick.current,repeated=previous&&Math.hypot(previous.point.x-point.x,previous.point.y-point.y)<6&&previous.ids.join('|')===stack.join('|');
+    const selected=settlement.buildings.find(b=>b.ref.id===selectedRef?.id)?.id??null;
+    const id=repeated||event.altKey?cyclePick(stack,selected):stack[0];
+    const building=settlement.buildings.find(b=>b.id===id);
+    if(building){event.preventDefault();event.stopPropagation();lastPick.current={point,ids:stack};onSelectEntity(building.ref);}
+  };
+
   return <section className="territory-scene-shell" aria-label="Bố cục lãnh địa">
     <div className="territory-toolbar">
       <div className="territory-toolbar-title"><span className="territory-eyebrow"><Snowflake size={14}/> LÃNH ĐỊA</span><strong>{densityLabel}</strong></div>
       <div className="territory-camera-actions" role="group" aria-label="Khung nhìn lãnh địa">
+        <button onClick={()=>setShowGrid(value=>!value)} aria-pressed={showGrid}><Grid3X3 size={15}/> Lưới</button>
         {followPlayer&&<button className="territory-follow-button" aria-pressed="true" onClick={()=>onFollowPlayerChange(false)}><LocateFixed size={15}/> Theo dõi {playerName} · Mở khóa</button>}
         <button onClick={fitFire} title="Về lửa trại"><Flame size={15}/> Về lửa trại</button>
         <button onClick={fitHeat} title="Toàn bộ vùng nhiệt"><ThermometerSun size={15}/> Toàn bộ vùng nhiệt</button>
@@ -304,14 +471,15 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
       <span><Compass size={14}/> Bao phủ nền: {actualInside} trong · {actualPartial} giao cắt · {actualOutside} ngoài · luật chưa xác định</span>
       {!liveApi&&<label className="territory-heat-preview">Xem thử vùng nhiệt <select aria-label="Xem thử vùng nhiệt" value={heatPreview} onChange={event=>setHeatPreview(event.target.value as typeof heatPreview)}><option value="actual">Nguồn thực tế</option><option value="2500">2.5 km · minh họa</option><option value="25000">25 km · minh họa</option><option value="off">Tắt · minh họa</option></select></label>}
     </div>
-    <div className="territory-stage" ref={rootRef}>
+    <div className="territory-stage" ref={rootRef}
+      data-map-qa-fixture={readyTerritoryQaFixture??undefined}
+      data-map-qa-fixture-count={readyTerritoryQaFixture?expectedTerritoryFixtureCount:undefined}>
+      <MapCanvas snapshot={renderSnapshot} label="Địa hình và công trình lãnh địa. Dùng danh sách công trình hoặc điều khiển mặt bằng để chọn."/>
       <svg ref={svgRef} className="territory-scene-svg" viewBox={`0 0 ${size.width} ${size.height}`} role="img" aria-label="Lãnh địa theo phối cảnh isometric cố định. Kéo để di chuyển, cuộn để thu phóng, dùng phím mũi tên để điều hướng."
-        tabIndex={0} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={()=>{gesture.current=null;}} onClickCapture={event=>{if(ignoreClick.current){ignoreClick.current=false;event.preventDefault();event.stopPropagation();}}} onClick={canvasClick} onKeyDown={keyDown}>
-        <defs><linearGradient id="territory-ground" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#294855"/><stop offset=".58" stopColor="#173541"/><stop offset="1" stopColor="#102a36"/></linearGradient><radialGradient id="territory-warm"><stop stopColor="#edae65" stopOpacity=".22"/><stop offset="1" stopColor="#edae65" stopOpacity="0"/></radialGradient></defs>
-        <rect width={size.width} height={size.height} fill="url(#territory-ground)" pointerEvents="none"/>
-        <path d={`M0 ${size.height*.75} Q${size.width*.26} ${size.height*.5} ${size.width*.52} ${size.height*.74} T${size.width} ${size.height*.62}V${size.height}H0Z`} fill="#a9c1bd" opacity=".045" pointerEvents="none"/>
-        {displayedRadius>0&&<ellipse cx={firePoint.x} cy={firePoint.y} rx={heatRx} ry={heatRy} fill="url(#territory-warm)" stroke="#efbf7f" strokeOpacity=".78" strokeWidth="1.6" strokeDasharray="7 6" pointerEvents="none"/>}
-        {gridLines.map(line=>{const a=worldToScreen(line.from,activeCamera,size,PX_PER_ISO_METRE),b=worldToScreen(line.to,activeCamera,size,PX_PER_ISO_METRE);return <line key={line.key} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={line.major?'#c7d8d3':'#a6c1bd'} strokeOpacity={line.major?.13:.06} strokeWidth={line.major?1:.7} pointerEvents="none"/>;})}
+        tabIndex={0} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerCancel} onLostPointerCapture={lostPointerCapture} onClickCapture={captureSelection} onClick={canvasClick} onKeyDown={keyDown}>
+        <g className="territory-camera-overlay">
+        {displayedRadius>0&&<ellipse cx={firePoint.x} cy={firePoint.y} rx={heatRx} ry={heatRy} fill="none" stroke="#efbf7f" strokeOpacity=".78" strokeWidth="1.6" strokeDasharray="7 6" pointerEvents="none"/>}
+        {(showGrid||effectiveMode==='planning')&&gridLines.map(line=>{const a=worldToScreen(line.from,activeCamera,size,PX_PER_ISO_METRE),b=worldToScreen(line.to,activeCamera,size,PX_PER_ISO_METRE);return <line key={line.key} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={line.major?'#c7d8d3':'#a6c1bd'} strokeOpacity={line.major?.13:.06} strokeWidth={line.major?1:.7} pointerEvents="none"/>;})}
         {buildingLayer.map(item=>{
           const isFire=Boolean(item.ref?.id===settlement.fireRef.id);
           const resolvedArtId=resolveSettlementAssetId(manifest,item.assetId,settlement.fireLevel,isFire,item.visualState,item.level);
@@ -319,14 +487,14 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
           const inHeat=footprintHeatRelation({x:item.point.x-origin.x,y:item.point.y-origin.y},item.footprint,item.orientation,actualRadius,settlement.fireActive);
           const building=settlement.buildings.find(candidate=>candidate.id===item.id);
           return <g key={item.id}>
-            <BuildingSprite id={item.id} name={item.name} asset={findAsset(manifest,resolvedArtId)} assetId={resolvedArtId} activeEffect={isFire&&settlement.fireActive} point={item.point} footprint={item.footprint} orientation={item.orientation} camera={activeCamera} viewport={size} mode={effectiveMode} selected={selected} faded={readability==='focus'&&Boolean(selectedRef)&&!selected} draft={item.draft} blocked={item.blocked} onSelect={item.ref?()=>{onSelectEntity(item.ref!);}:undefined}/>
+            <BuildingSprite geometryOnly lods={buildingLODs.current} id={item.id} name={item.name} asset={findAsset(manifest,resolvedArtId)} assetId={resolvedArtId} activeEffect={isFire&&settlement.fireActive} point={item.point} footprint={item.footprint} orientation={item.orientation} camera={activeCamera} viewport={size} mode={effectiveMode} selected={selected} faded={readability==='focus'&&isOccluder(item.point,findAsset(manifest,resolvedArtId),selected)} draft={item.draft} blocked={item.blocked} onSelect={item.ref?()=>{onSelectEntity(item.ref!);}:undefined}/>
             {activeCamera.zoom>.28&&inHeat!=='inside'&&item.ref&&<text x={worldToScreen(item.point,activeCamera,size).x} y={worldToScreen(item.point,activeCamera,size).y+18} className="territory-heat-state" textAnchor="middle" pointerEvents="none">{inHeat==='partial'?'Nhiệt giao cắt':'Ngoài nhiệt'}</text>}
             {selected&&building&&<circle cx={worldToScreen(item.point,activeCamera,size).x} cy={worldToScreen(item.point,activeCamera,size).y} r="18" fill="none" stroke="#ffe0a4" strokeOpacity=".76" strokeDasharray="3 4" pointerEvents="none"/>}
           </g>;
         })}
-        {denseQa&&visibleQa.map(item=><BuildingSprite key={item.id} id={item.id} name="Fixture QA" asset={findAsset(manifest,item.assetId)} assetId={item.assetId} point={{x:origin.x+item.x,y:origin.y+item.y}} footprint={item.footprint} orientation={item.orientation} camera={activeCamera} viewport={size} mode={effectiveMode} selected={false} faded={false} draft/>) }
-        {activeDefinition&&<BuildingSprite id="placement-ghost" name={activeDefinition.name} asset={findAsset(manifest,activeDefinition.assetId)} assetId={activeDefinition.assetId} point={snapPlanningPoint(currentPlacementPoint)} footprint={activeDefinition.footprint} orientation={placingOrientation} camera={activeCamera} viewport={size} mode="planning" selected={false} faded={false} draft blocked={Boolean(validation?.blockers.length)}/>}
-        {displayedRadius>0&&<circle cx={firePoint.x} cy={firePoint.y} r="11" fill="#db8c56" stroke="#ffe0ac" strokeWidth="2" pointerEvents="none"/>}
+        {denseQa&&renderedQa.map(item=><BuildingSprite geometryOnly qaFixture key={item.id} id={item.id} name="Fixture QA" asset={findAsset(manifest,item.assetId)} assetId={item.assetId} point={{x:origin.x+item.x,y:origin.y+item.y}} footprint={item.footprint} orientation={item.orientation} camera={activeCamera} viewport={size} mode={effectiveMode} selected={false} faded={false} draft/>) }
+        {artQaOutline&&<polygon data-art-qa-footprint data-art-qa-orientation={artQaPreview?.orientation} points={artQaOutline} fill="none" stroke="#e4ba7f" strokeWidth="1.2" strokeDasharray="4 4" pointerEvents="none" aria-hidden="true"/>}
+        {activeDefinition&&<BuildingSprite geometryOnly id="placement-ghost" name={activeDefinition.name} asset={findAsset(manifest,activeDefinition.assetId)} assetId={activeDefinition.assetId} point={snapPlanningPoint(currentPlacementPoint)} footprint={activeDefinition.footprint} orientation={placingOrientation} camera={activeCamera} viewport={size} mode="planning" selected={false} faded={false} draft blocked={Boolean(validation?.blockers.length)}/>}
         {showPlayerMarker&&<g className="territory-player-marker" transform={`translate(${playerPoint.x} ${playerPoint.y})`} role="button" tabIndex={0} aria-label={`${playerName} — mở hồ sơ người chơi`}
           onClick={onOpenPlayerProfile}
           onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();onOpenPlayerProfile();}}}>
@@ -335,6 +503,7 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
           <circle cy="-3.5" r="3.5" fill="#f4d39b"/><path d="M-6.5 7c.7-5 3.6-7.2 6.5-7.2S5.8 2 6.5 7" fill="#7fc0bd" stroke="#e0ece1" strokeWidth="1.2" strokeLinecap="round"/>
         </g>}
         <g className="territory-north" transform={`translate(${Math.min(size.width-35,Math.max(25,fireNorth.x))} ${Math.min(size.height-30,Math.max(35,fireNorth.y))}) rotate(63.435)`} pointerEvents="none"><path d="M0 14V-13m0 0-6 8m6-8 6 8" stroke="#d5e2d9" strokeWidth="2"/><text x="0" y="-20" textAnchor="middle">N</text></g>
+        </g>
       </svg>
       <div className="territory-stage-tools"><button aria-pressed={readability==='normal'} onClick={()=>onReadabilityChange('normal')}>Bình thường</button><button aria-pressed={readability==='focus'} onClick={()=>onReadabilityChange(readability==='focus'?'normal':'focus')}><Eye size={14}/> Làm mờ phần che</button>{!liveApi&&<button aria-pressed={readability==='planning'} onClick={()=>onReadabilityChange(readability==='planning'?'normal':'planning')}><Grid3X3 size={14}/> Mặt bằng</button>}</div>
       <div className="territory-scale"><span style={{width:Math.max(12,Math.min(110,scalePixels))}}/><b>{scaleDistance>=1000?`${scaleDistance/1000} km`:`${scaleDistance} m`}</b></div>
@@ -352,15 +521,15 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
     <div className="territory-workbench">
       {!liveApi&&<section className="panel territory-build-tray">
         <div className="territory-section-heading"><div><span className="eyebrow">BỐ TRÍ MINH HỌA</span><h3>Công trình</h3></div>{placingId&&<button className="text-button" onClick={cancelPlacement}><X size={14}/> Hủy</button>}</div>
-        <div className="territory-definition-grid">{placementDefinitions.map(definition=>{
+        <div className="territory-definition-grid">{visiblePlacementDefinitions.map(definition=>{
           const artwork=findAsset(manifest,definition.assetId);
           return <article className={`territory-definition${placingId===definition.id?' is-active':''}`} key={definition.id}>
-            <img src={artwork?.layers.body??artwork?.layers.uiIcon??'/assets/buildings/lord-house-damaged/icon.svg'} alt=""/>
+            <img src={artwork?.layers.uiIcon??artwork?.layers.body??'/assets/buildings/lord-house-damaged/icon.svg'} alt=""/>
             <div><strong>{definition.name}</strong><small>{definition.footprint.widthM} × {definition.footprint.depthM} m · kích thước minh họa</small><small>Chi phí: chưa xác định</small></div>
             <button onClick={()=>startPlacement(definition)} aria-label={`Thử bố trí ${definition.name}`}>Đặt thử</button>
           </article>;
         })}</div>
-        {placingId&&<div className="territory-placement-controls"><span><b>{activeDefinition?.name}</b> · hướng {ORIENTATION_LABEL[placingOrientation]} · lưới 1 m</span><button onClick={rotatePlacement} disabled={(activeDefinition?.orientations.length??0)<2}><RotateCw size={15}/> Xoay 90° <kbd>R</kbd></button><button onClick={cancelPlacement}><X size={15}/> Hủy</button></div>}
+        {placingId&&<div className="territory-placement-controls"><span><b>{activeDefinition?.name}</b> · hướng {ORIENTATION_LABEL[placingOrientation]} · lưới 1 m</span><button onClick={rotatePlacement} disabled={legalPlacementOrientations(activeDefinition?.orientations).length<2}><RotateCw size={15}/> Xoay 90° <kbd>R</kbd></button><button onClick={cancelPlacement}><X size={15}/> Hủy</button></div>}
         <p className="territory-fixture-note"><AlertTriangle size={14}/> Mặt bằng và chi phí vật liệu đang được hoàn thiện. Vùng nhiệt không tự quyết định quyền xây.</p>
       </section>}
       <section className="panel territory-instance-panel">
@@ -371,12 +540,16 @@ export default function TerritoryScene({ mode='demo', playerMarkerVisible=false,
           const artwork=findAsset(manifest,resolveSettlementAssetId(manifest,building.assetId,settlement.fireLevel,building.ref.id===settlement.fireRef.id,building.visualState,building.level));
           return <div className={`territory-instance${selected?' is-selected':''}`} key={building.id} role="listitem"><button className="territory-instance-main" onClick={()=>focusBuilding(building)}><span className="territory-instance-icon"><img src={artwork?.layers.body??artwork?.layers.uiIcon??'/assets/buildings/survival-fire-l01/icon.svg'} alt=""/></span><span><b>{building.name}</b><small>{building.x>=0?'+':''}{building.x}, {building.y>=0?'+':''}{building.y} m · {heat==='inside'?'Trong nhiệt':heat==='partial'?'Giao cắt':'Ngoài nhiệt'}</small></span><LocateFixed size={15}/></button><button className="territory-instance-focus" onClick={()=>{focusBuilding(building);setMessage(`Đang xem ${building.name}; vị trí nguồn không đổi.`);}}>Đến</button><small className="territory-instance-state">{building.state} · kích thước mặt bằng tạm tính</small></div>;
         })}{filteredBuildings.length===0&&<p className="muted-text">Không có công trình khớp bộ lọc.</p>}</div>
-        {!liveApi&&drafts.length>0&&<div className="territory-draft-list"><div><b>Bố trí đang xem trước</b><button className="text-button" onClick={()=>{onDraftsChange([]);setMessage('Xóa bố trí xem trước.');}}>Xóa tất cả</button></div>{drafts.map(draft=>{const validation=validatePlacement({point:{x:draft.x,y:draft.y},footprint:draft.footprint,orientation:draft.orientation,heatRadiusM:actualRadius,heatActive:settlement.fireActive,existing:[...settlement.buildings,...drafts],ignoreId:draft.id});const definitionName=placementDefinitions.find(item=>item.id===draft.definitionId)?.name??'Công trình';return <div key={draft.id}><span>{definitionName} · ({draft.x}, {draft.y}) m · {validation.blockers.length?'bị cản trở':'có thể đặt'}</span><button aria-label={`Xoay ${definitionName}`} onClick={()=>onDraftsChange(previous=>previous.map(item=>item.id===draft.id?{...item,orientation:orientationCycle[(orientationCycle.indexOf(item.orientation)+1)%orientationCycle.length]}:item))}><RotateCw size={14}/></button><button aria-label={`Xóa ${definitionName}`} onClick={()=>onDraftsChange(previous=>previous.filter(item=>item.id!==draft.id))}><X size={14}/></button></div>;})}</div>}
+        {!liveApi&&drafts.length>0&&<div className="territory-draft-list"><div><b>Bố trí đang xem trước</b><button className="text-button" onClick={()=>{onDraftsChange([]);setMessage('Xóa bố trí xem trước.');}}>Xóa tất cả</button></div>{drafts.map(draft=>{const validation=validatePlacement({point:{x:draft.x,y:draft.y},footprint:draft.footprint,orientation:draft.orientation,heatRadiusM:actualRadius,heatActive:settlement.fireActive,existing:[...settlement.buildings,...drafts],ignoreId:draft.id});const definition=placementDefinitions.find(item=>item.id===draft.definitionId);const definitionName=definition?.name??'Công trình';const allowedOrientations=legalPlacementOrientations(definition?.orientations);return <div key={draft.id}><span>{definitionName} · ({draft.x}, {draft.y}) m · {validation.blockers.length?'bị cản trở':'có thể đặt'}</span><button aria-label={`Xoay ${definitionName}`} disabled={allowedOrientations.length<2} onClick={()=>onDraftsChange(previous=>previous.map(item=>item.id===draft.id?{...item,orientation:nextPlacementOrientation(item.orientation,definition?.orientations)}:item))}><RotateCw size={14}/></button><button aria-label={`Xóa ${definitionName}`} onClick={()=>onDraftsChange(previous=>previous.filter(item=>item.id!==draft.id))}><X size={14}/></button></div>;})}</div>}
       </section>
     </div>
     {!liveApi&&<details className="panel territory-calibration" open={calibrationOpen} onToggle={event=>setCalibrationOpen(event.currentTarget.open)}><summary><span><EyeOff size={15}/> Hiệu chỉnh hình minh họa</span><small>Chỉ thay đổi cách hiển thị</small></summary>
       <div className="territory-calibration-body"><div className="territory-calibration-preview"><svg viewBox="0 0 240 200" aria-label="Hiệu chỉnh vị trí hình ảnh"><defs><pattern id="asset-cal-grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#86a6aa" strokeOpacity=".25"/></pattern></defs><rect width="240" height="200" fill="#102a37"/><rect width="240" height="200" fill="url(#asset-cal-grid)"/><image href={selectedCalibrationAsset?.layers.shadow??''} width="240" height="200"/><image href={selectedCalibrationAsset?.layers.base??''} width="240" height="200"/><image href={selectedCalibrationAsset?.layers.upper??''} width="240" height="200"/><line x1="120" y1="0" x2="120" y2="200" stroke="#e4ba7f" strokeDasharray="3 4"/><line x1="0" y1="164" x2="240" y2="164" stroke="#e4ba7f" strokeDasharray="3 4"/><circle cx="120" cy="164" r="5" fill="#ffd897"/></svg><span>Lưới · điểm neo · lớp hình ảnh</span></div>
-        <div className="territory-calibration-info"><label>Hình minh họa <select value={calibrationAssetId} onChange={event=>setCalibrationAssetId(event.target.value)}>{assetIds.map(id=><option key={id}>{id}</option>)}</select></label><p>Điểm neo: {selectedCalibrationAsset?`${Math.round(selectedCalibrationAsset.groundAnchor.x*100)}%, ${Math.round(selectedCalibrationAsset.groundAnchor.y*100)}%`:'mặc định'} · khung 240 × 200</p><p>Vùng chọn, che khuất và kích thước hiển thị được căn chỉnh riêng trong thư viện hình ảnh.</p><label className="territory-qa-toggle"><input type="checkbox" checked={denseQa} onChange={event=>setDenseQa(event.target.checked)}/> Hiện 520 công trình minh họa</label><button className="text-button" onClick={frameDenseQa}>Xem nhóm công trình minh họa</button><span>Đang hiển thị {visibleQa.length} / {denseQa?520:0} công trình minh họa.</span><span>{manifestError?'Không tải được thư viện hình ảnh; dùng hình thay thế.':`Đã tải ${manifest?.assets.length??0} hình ảnh.`}</span></div>
+        <div className="territory-calibration-info"><label>Hình minh họa <select aria-label="Hình minh họa" value={calibrationAssetId} onChange={event=>setCalibrationAssetId(event.target.value)}>{assetIds.map(id=><option key={id}>{id}</option>)}</select></label>{artQaEnabled&&<button className="text-button" disabled={!selectedCalibrationAsset} onClick={()=>{
+          setShowCalibrationArt(previous=>!previous);setPlacingId(null);onReadabilityChange('normal');
+          if(followPlayer)onFollowPlayerChange(false);
+          onCameraChange({x:origin.x+4,y:origin.y-2,zoom:3});
+        }}>{showCalibrationArt?'Ẩn hình kiểm tra trên bản đồ':'Xem hình kiểm tra trên bản đồ'}</button>}{artQaEnabled&&showCalibrationArt&&qaArtOrientations.length>1&&<label>Hướng hình kiểm tra <select aria-label="Hướng hình kiểm tra" value={activeQaArtOrientation} onChange={event=>setQaArtOrientation(event.target.value as Orientation)}>{qaArtOrientations.map(orientation=><option key={orientation} value={orientation}>{ORIENTATION_LABEL[orientation]}</option>)}</select></label>}<p>Điểm neo: {selectedCalibrationAsset?`${Math.round(selectedCalibrationAsset.groundAnchor.x*100)}%, ${Math.round(selectedCalibrationAsset.groundAnchor.y*100)}%`:'mặc định'} · khung 240 × 200</p><p>Vùng chọn, che khuất và kích thước hiển thị được căn chỉnh riêng trong thư viện hình ảnh.</p><label className="territory-qa-toggle"><input type="checkbox" checked={denseQa} onChange={event=>setDenseQa(event.target.checked)}/> Hiện 520 công trình minh họa</label><button className="text-button" onClick={frameDenseQa}>Xem nhóm công trình minh họa</button><span>Đang hiển thị {visibleQa.length} / {denseQa?520:0} công trình minh họa.</span><span>{manifestError?'Không tải được thư viện hình ảnh; dùng hình thay thế.':`Đã tải ${manifest?.assets.length??0} hình ảnh.`}</span></div>
       </div>
     </details>}
     <div className="territory-accessible-status" role="status" aria-live="polite">{message||(liveApi?'Vị trí, trạng thái và artwork lấy từ save đang chọn. Điều khiển camera không thay đổi mô phỏng.':'Bản xem thử chỉ hiển thị vị trí và bố trí; không thực hiện lệnh trong thế giới.')}</div>

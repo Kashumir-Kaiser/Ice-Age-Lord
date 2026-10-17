@@ -1,0 +1,42 @@
+{
+  "assetId": "supply-crate",
+  "sourceHeadAtCapture": "2f102bb5d23371adde842276c1e5f64ef4297682",
+  "viewport": {"width": 1366, "height": 768, "dpr": 1},
+  "orientation": "north",
+  "physicalFootprint": {"assumptionId": "TERRITORY-FOOTPRINTS-V1", "widthM": 3, "depthM": 3},
+  "groundAnchor": {"x": 0.5, "y": 0.72},
+  "unchangedSources": {
+    "bodySha256": "c2001f0cf6efa768c19e5cfb39cca4d4a8d5ac53f68a01badba02ed2f3a427c1",
+    "uiShadowSha256": "178d3233df73ca286ce0f5945e046a1df09e2e37c858fa992cb7cb460a7134db"
+  },
+  "normal": {
+    "capture": "/tmp/supply-crate-updated-normal-1366-normal-dpr1.png",
+    "tightCrop": "/tmp/supply-crate-updated-normal-tight.png",
+    "backend": "webgl",
+    "errors": [],
+    "queued": 0,
+    "pendingTextures": 0,
+    "qaArtLayers": {"body": 1, "base": null, "upper": null},
+    "crateRequests": ["assets/map/buildings/supply-crate/atlas-close.png", "assets/map/buildings/supply-crate/atlas-district.png"]
+  },
+  "planning": {
+    "capture": "/tmp/supply-crate-updated-planning-1366-normal-dpr1.png",
+    "tightCrop": "/tmp/supply-crate-updated-planning-tight.png",
+    "backend": "webgl",
+    "errors": [],
+    "queued": 0,
+    "pendingTextures": 0,
+    "qaArtLayers": {"body": null, "base": 1, "upper": null},
+    "crateRequests": ["assets/map/buildings/supply-crate/atlas-close.png", "assets/map/buildings/supply-crate/atlas-district.png"]
+  },
+  "checks": {
+    "groundRegistrationTests": {"passed": 6, "failed": 0},
+    "fullFrontendUnitTests": {"passed": 105, "failed": 0, "skipped": 0},
+    "productionBuild": "passed before test-only assertion adjustment; runtime source unchanged by that adjustment",
+    "visualScope": "Two QA preview states at 1366x768 DPR1; not a desktop/mobile browser matrix or target-device validation."
+  },
+  "paintedContact": {
+    "sourceProbeMedianY": 341,
+    "interpretation": "Painterly snow contact lies 13.5% inside the projected physical front edge and remains inside the projected 3x3 m footprint at zooms 0.16, 0.7, and 3."
+  }
+}

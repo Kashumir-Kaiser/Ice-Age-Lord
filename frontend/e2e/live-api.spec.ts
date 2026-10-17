@@ -1,5 +1,15 @@
 import { expect, test } from '@playwright/test';
 
+async function expectWithLiveNotice(page: import('@playwright/test').Page, assertion: () => Promise<void>) {
+  try {
+    await assertion();
+  } catch (error) {
+    const notices = await page.locator('.live-notice, [role="alert"]').allInnerTexts();
+    const detail = [...new Set(notices.map(text => text.trim()).filter(Boolean))].join(' | ') || '(no visible notice)';
+    throw new Error(`Original assertion failed: ${error instanceof Error ? error.message : String(error)}\nVisible save feedback: ${detail}`);
+  }
+}
+
 test('Chromium runs the server-owned clock, completes a Tomb job once, and recovers it after reload', async ({ page }) => {
   const ownerKey = process.env.ILL_TEST_OWNER_KEY;
   expect(ownerKey, 'CI must provide the ephemeral Stage 04 owner key').toBeTruthy();
@@ -14,8 +24,8 @@ test('Chromium runs the server-owned clock, completes a Tomb job once, and recov
   const slotName = 'Chromium ' + crypto.randomUUID();
   await page.getByLabel('Tên lượt lưu mới').fill(slotName);
   await page.getByRole('button', { name: 'Tạo lượt chơi sạch' }).click();
-  await expect(page.getByText(/Clean game đã được tạo và commit/)).toBeVisible();
-  await expect(page.getByText('Ngày 1 · 07:00')).toBeVisible();
+  await expectWithLiveNotice(page, () => expect(page.getByText(/Clean game đã được tạo và commit/)).toBeVisible());
+  await expectWithLiveNotice(page, () => expect(page.getByText('Ngày 1 · 07:00')).toBeVisible());
 
   await page.getByRole('navigation', { name: 'Màn hình game' })
     .getByRole('button', { name: /^Công trình(?: Trạng thái API)?$/ }).click();

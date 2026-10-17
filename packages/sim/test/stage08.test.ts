@@ -43,6 +43,24 @@ function elapsedFromSource(value: string): number {
   return Number(match[1]) * HOUR_MS;
 }
 
+test('biomass renewal system receipts are projected without resource details', () => {
+  const service = Object.create(GameApplicationService.prototype) as GameApplicationService;
+  const projected = (service as unknown as {
+    projectSystemPlayerEvent: (event: { sequence: number; type: string; occurredAtElapsedMs: number; payload: Record<string, unknown> }, eventId: string, state: GameState) => {
+      sequence: number; eventId: string; type: string; category: string; title: string; text: string;
+    };
+  }).projectSystemPlayerEvent({
+    sequence: 1, type: 'resource_biomass_regenerated', occurredAtElapsedMs: 24 * HOUR_MS,
+    payload: { resourceId: 'hidden-resource', quantity: 1979 },
+  }, 'daily-renewal', freshState());
+
+  assert.equal(projected.type, 'resource_biomass_regenerated');
+  assert.equal(projected.category, 'logistics');
+  assert.equal(projected.text, 'A renewable resource has regrown.');
+  assert.equal(JSON.stringify(projected).includes('hidden-resource'), false);
+  assert.equal('payload' in projected, false);
+});
+
 function isolatedEventState(eventId: string, elapsed: number, status: ScheduledEventState['status'] = 'scheduled'): GameState {
   const state = freshState();
   state.botPopulation = null;

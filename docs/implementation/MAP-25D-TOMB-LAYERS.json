@@ -1,0 +1,99 @@
+{
+  "status": "registered north-only draft; normal raster scenes accepted at DPR1; desktop fallback visual accepted at 1366x768 DPR1",
+  "sourceSvgSha256": "4f84f3ac007c803be6c86cd4a08fa8696ec2eed3489b13e48faa367664ab719a",
+  "canonicalFootprint": {
+    "id": "TERRITORY-FOOTPRINTS-V1",
+    "widthMeters": 6,
+    "depthMeters": 5,
+    "unchanged": true
+  },
+  "asset": {
+    "id": "tomb-entry",
+    "layers": "north-only",
+    "canvas": [
+      480,
+      400
+    ],
+    "presentationScale": 1.27,
+    "groundAnchor": [
+      0.5,
+      0.72
+    ],
+    "uiShadowSha256": "dac4789801d2e8c951484a28174cfae94266615428f350f26b0961ded5d8bf26",
+    "sourceUiSha256": {
+      "sourceBody": "4f84f3ac007c803be6c86cd4a08fa8696ec2eed3489b13e48faa367664ab719a",
+      "publicBase": "853bec96e340eb4f4aab54de5468593e4cd848542092f95a4837e8334a8112ec",
+      "publicBody": "4f84f3ac007c803be6c86cd4a08fa8696ec2eed3489b13e48faa367664ab719a",
+      "publicUpper": "dbd45c5e615f46beb8abe5faefcf1b755a6945efa355a63ea598c67614d06be3",
+      "publicShadow": "dac4789801d2e8c951484a28174cfae94266615428f350f26b0961ded5d8bf26"
+    },
+    "masters": [
+      {
+        "role": "foundation",
+        "path": "assets/source/map-buildings/tomb-entry-foundation.png",
+        "sha256": "41ff6a54954cd648918fe21982d7756b70cf034c16316046dee94b1f74d8f4e0",
+        "gitBlob": "92f4db1bd9ad935f213db9cef26173223a5e5cf9",
+        "bytes": 847665,
+        "dimensions": [
+          1374,
+          1145
+        ],
+        "format": "PNG RGBA",
+        "generationSummary": "Complete map-only snowy low pad with steps; grave markers belong to the upper layer."
+      },
+      {
+        "role": "upper",
+        "path": "assets/source/map-buildings/tomb-entry-upper.png",
+        "sha256": "f716d1ca5d2ade50c3b31f0c35fe4c2bf73b2e6a300fee35a2907ac64a374564",
+        "gitBlob": "ff1586e0f1e4b91212579bc2c8f1eb6a788f2653",
+        "bytes": 1680999,
+        "dimensions": [
+          1374,
+          1145
+        ],
+        "format": "PNG RGBA",
+        "variant": "idle, unlit; no emitter",
+        "generationSummary": "Map-only upper crypt layer adapted to the original north-facing body, with cups unlit."
+      }
+    ]
+  },
+  "review": {
+    "masterCountSinceVerifiedCheckpoint": 2,
+    "manualBoundaryCut": "rejected",
+    "reason": "The candidate split produced jagged rectangular gaps in the planning foundation around retained grave markers.",
+    "registration": {
+      "orientation": "north-only; canonical 6x5 footprint, existing anchor and 480x400 logical canvas retained",
+      "base": {"scale": 0.95, "contact": [0.52, 0.70], "target": [240, 288]},
+      "upper": {"scale": 0.85, "contact": [0.517, 0.905], "target": [240, 337]}
+    },
+    "temporaryPreviewFallback": {
+      "method": "Generated from the actual registered 240x200 composite using a 128-color RGB palette while retaining exact downsampled alpha.",
+      "status": "temporary path-only SVG body fallback; filtered SVG shadow is rasterized through transparent Canvas2D into one retained CanvasSource",
+      "sceneReview": "accepted at 1366x768 DPR1 normal quality; no mobile fallback visual review",
+      "tests": "114/114 unit tests; focused Playwright 4/4; production build and typecheck passed; cache canvas disposal verified"
+    },
+    "validation": {
+      "firstAndRepeatExportSync": {
+        "filesCompared": 1178,
+        "changed": 0,
+        "added": 0,
+        "removed": 0,
+        "domains": "map PNG/SVG/JSON, both manifests, authored architecture, and static body configuration",
+        "priorRepairedAndL30PngsByteIdentical": 12
+      },
+      "frontendUnit": "114 passed, 0 skipped, 0 failed",
+      "productionBuild": "passed",
+      "focusedSuites": "3 suites passed",
+      "tombQa": "Six captures succeeded at 1366px and 390px viewports.",
+      "visualAcceptance": "Normal/planning/focus scenes accepted at 1366x768 and 390x844, DPR1 normal quality only. Corrected desktop fallback accepted at 1366x768, DPR1 default auto quality; effective quality was not captured.",
+      "layeredBrowser": "Desktop and mobile E2E passed (2/2) after changing test source loading to filesystem input.",
+      "fallbackBrowser": "Desktop/mobile E2E passed; focused PNG-failure Playwright passed 4/4. Corrected desktop fallback accepted at 1366x768, DPR1 default auto quality; effective quality was not captured."
+    },
+    "rejectedExperiments": [
+      "A flame clip cut through architecture pixels and was removed.",
+      "PNG image embedding in SVG was removed; exported PNG layers remain the fallback preview path."
+    ],
+    "visualAcceptance": "limited normal-raster plus desktop fallback acceptance at north orientation, 6x5m footprint, DPR1 normal quality; no mobile fallback screenshot or other DPR/quality/orientation acceptance",
+    "statusNote": "The original foundation and upper masters remain unchanged and are verified by their SHA-256 and Git blob hashes above. Exporter and sync repeatability matched 1,178 files with no changes, additions, or removals; 12 previously repaired-house/L30 PNGs remained byte-identical. The 114-case frontend suite, focused browser checks, production build, typecheck, and cache canvas disposal check passed. Normal/planning/focus scenes are accepted at north orientation, canonical 6x5m footprint, 1366x768 and 390x844, DPR1 normal quality. Desktop fallback is accepted at 1366x768 DPR1 default auto quality; effective quality was not captured. The mobile fallback screenshot and other DPR/quality settings are not reviewed. Filtered SVG ground shadow uses transparent Canvas2D decoding retained as Pixi CanvasSource; one RGBA reservation remains and the PNG pipeline is unchanged. A gold shape/overlay is visible in the native-background QA capture and is not part of Tomb source artwork; its exact identity remains unresolved, and no art change is based on it."
+  }
+}

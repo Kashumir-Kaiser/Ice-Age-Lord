@@ -1,0 +1,70 @@
+name: Package map visual review artifacts
+on:
+  push:
+    branches: ['codex/map-25d-overhaul']
+    paths:
+      - '.github/workflows/map-visual-review.yml'
+      - 'scripts/ci/map-visual-review.mjs'
+  workflow_dispatch:
+    inputs:
+      source_run:
+        description: Completed map-visual-matrix run ID
+        required: false
+        type: string
+        default: '38857829718'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  package-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - quality: low
+            dpr: '1'
+          - quality: low
+            dpr: '2'
+          - quality: normal
+            dpr: '1'
+          - quality: normal
+            dpr: '2'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+        working-directory: frontend
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ inputs.source_run || '38857829718' }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pattern: map-*-${{ matrix.quality }}-dpr${{ matrix.dpr }}-*
+          path: /tmp/map-source-artifacts
+          merge-multiple: false
+      - name: Validate source and create review sheets
+        run: node scripts/ci/map-visual-review.mjs /tmp/map-source-artifacts /tmp/map-review "$MAP_REVIEW_QUALITY" "$MAP_REVIEW_DPR" "$MAP_REVIEW_SOURCE_RUN"
+        env:
+          MAP_REVIEW_QUALITY: ${{ matrix.quality }}
+          MAP_REVIEW_DPR: ${{ matrix.dpr }}
+          MAP_REVIEW_SOURCE_RUN: ${{ inputs.source_run || '38857829718' }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-review-${{ matrix.quality }}-dpr${{ matrix.dpr }}-1366
+          path: /tmp/map-review/1366/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-review-${{ matrix.quality }}-dpr${{ matrix.dpr }}-1920
+          path: /tmp/map-review/1920/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-review-${{ matrix.quality }}-dpr${{ matrix.dpr }}-390
+          path: /tmp/map-review/390/
+          retention-days: 14

@@ -102,6 +102,7 @@ export type SettlementPlacementDefinition = {
   footprint: FootprintView;
   orientations: readonly ('north' | 'east' | 'south' | 'west')[];
   status: 'fixture-only';
+  qaOnly?: true;
 };
 export type LayoutDraft = {
   id: string;

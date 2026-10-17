@@ -58,7 +58,9 @@ export const OPENING_OBSERVED: readonly FogDisc[] = [{x:0,y:0,clear:58,fade:108}
 /** Fixed fixture memory. These observations are distinct from the light preview below. */
 export const DEMO_EXPLORED: readonly FogDisc[] = [
   ...OPENING_OBSERVED,
-  {x:-31,y:52,clear:22,fade:48},
+  // DEMO remembered stone resource MODELED-STONE-01 uses world coordinates
+  // (-31,-52); FogDefinitions performs the single world-to-SVG Y inversion.
+  {x:-31,y:-52,clear:22,fade:48},
 ];
 export function visibilityDiscs(minutes:number,level:number,fireActive=true):readonly FogDisc[] {
   const phase=dayPhase(minutes),radius=heatRadiusM(level,fireActive);

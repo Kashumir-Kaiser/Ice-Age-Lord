@@ -137,6 +137,8 @@ export type WorldResource = {
   materialName: string;
   unit: string;
   capacity: number;
+  /** Source-backed amount available at clean T0; omitted when no fixed opening stock is authored. */
+  openingBalance?: number;
   capacityBasis: { areaUnit: 'hectare' | 'square_metre'; unitsPerArea: number; densityPermille: number; richnessPermille: number };
   location: CoordinateMm;
   siteId: Id | null;

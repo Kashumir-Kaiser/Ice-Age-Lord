@@ -1,0 +1,11 @@
+import {chromium} from '@playwright/test';
+import {readFileSync,existsSync} from 'node:fs';
+import {resolve,extname} from 'node:path';
+const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/chromium',args:['--no-sandbox','--disable-dev-shm-usage']});
+const page=await browser.newPage({viewport:{width:1366,height:768},reducedMotion:'reduce'});
+page.on('pageerror',e=>console.log('ERROR',String(e)));page.on('console',m=>{if(m.type()==='error')console.log('console',m.text());});
+const root=resolve('dist'),mime={'.js':'text/javascript','.html':'text/html','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.css':'text/css','.json':'application/json'};
+await page.route('**/*',async route=>{const path=new URL(route.request().url()).pathname;const file=resolve(root,path==='/'?'index.html':path.slice(1));await route.fulfill(existsSync(file)?{status:200,contentType:mime[extname(file)],body:readFileSync(file)}:{status:404,body:'missing'});});
+await page.goto('http://local.test/?mode=demo&mapQA=1');await page.waitForSelector('.app-shell');await page.getByRole('navigation').getByRole('button',{name:'Lãnh địa',exact:true}).click();await page.waitForTimeout(5000);
+console.log(await page.evaluate(()=>({metrics:window.__mapMetrics,lines:document.querySelectorAll('.territory-scene-svg line').length,canvas:document.querySelector('[data-map-renderer]')?.dataset.mapRenderer,images:Array.from(document.querySelectorAll('.territory-building image')).map(x=>x.getAttribute('href')),dom:document.querySelector('.territory-scene-svg')?.outerHTML.slice(0,1200)})));
+await page.screenshot({path:'/tmp/25d-debug.png'});await browser.close();

@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "label": "LOCAL persisted LIVE fixture",
+  "scope": "Actual LiveApp against a temporary SQLite HTTP API, served from the production frontend dist over local gzip-capable HTTP.",
+  "sourceContext": {
+    "baseCommit": "c7fa24b7320e23fc310ff083109f45fcf16f84a6",
+    "sha256": "ea687299b65929a1114131cad19a481972fce64fe92701fe37d03ba5c86e561f",
+    "fileCount": 1752,
+    "scope": [
+      "package.json",
+      "frontend/package.json",
+      "frontend/package-lock.json",
+      "frontend/vite.config.ts",
+      "frontend/scripts/map-live-transfer.mjs",
+      "frontend/src",
+      "frontend/public/assets",
+      "packages/api/src",
+      "packages/storage/src",
+      "packages/sim/src",
+      "packages/contracts/src",
+      "packages/content/src"
+    ]
+  },
+  "productionDist": {
+    "sha256": "999ed313d7961149e2b1ed44d9e7463ca2417ff2509a51bc0a0bc304df8a3e6f",
+    "fileCount": 1655,
+    "indexHtmlSha256": "04f2fcbfc2c019061d0d71c41a3500b4ac994e402736d92231650400a10846ae",
+    "manifestSha256": "21104723fc38e7f0fd86b8a54bf714b355122eb915255abf85dad5aa6c4d7494",
+    "manifestBytesDecoded": 1304049,
+    "manifestBytesGzip": 110706,
+    "manifestAssetEntries": 103
+  },
+  "liveSaveFlow": {
+    "revisionBeforeReload": 1,
+    "revisionAfterReload": 2,
+    "committedCommand": "inspect_entity via the visible LiveApp map and authenticated API",
+    "visibleWorldEntityCount": 4,
+    "visibleWorldEntityRefs": [
+      "site:SITE-LL01-000",
+      "resource:RES-LL01-06",
+      "resource:RES-LL01-07",
+      "corpse:CORPSE-STAGE07-ROOK-01"
+    ],
+    "visibleWorldEntitiesHavePositions": true,
+    "territoryBuildingCount": 3,
+    "territoryBuildingRefs": [
+      "LL-BLD-HOUSE-01",
+      "LL-BLD-FIRE-01",
+      "LL-BLD-TOMB-01"
+    ],
+    "territoryBuildingsHaveDirectPositions": true,
+    "associatedSitePositionKnownFor": [
+      "LL-BLD-FIRE-01"
+    ],
+    "associatedSitePositionUnavailableFor": [
+      "LL-BLD-HOUSE-01",
+      "LL-BLD-TOMB-01"
+    ],
+    "renderedBuildingIdsLowAndNormal": [
+      "LL-BLD-TOMB-01",
+      "SITE-LL01-000",
+      "LL-BLD-HOUSE-01"
+    ],
+    "renderer": "webgl",
+    "qaFixtureAttributes": 0,
+    "syntheticMapEntitiesOrBuildingsInjected": false,
+    "stateIntegrityRuns": {
+      "combinedRun": {
+        "initialSaveRevision": 1,
+        "revisionBeforeReloadAfterInspectEntity": 2,
+        "revisionAfterReload": 2,
+        "domainStateSha256BeforeReloadAtRevision2": "907aca737e5026d811a25e8bd2e6728e9c7ea2616c0a9adb83c8832c125717bf",
+        "domainStateSha256AfterReloadAtRevision2": "907aca737e5026d811a25e8bd2e6728e9c7ea2616c0a9adb83c8832c125717bf",
+        "domainStateSha256AfterLowAndNormalRenderPan": "907aca737e5026d811a25e8bd2e6728e9c7ea2616c0a9adb83c8832c125717bf",
+        "unchangedAcrossReload": true,
+        "unchangedThroughRenderAndPan": true,
+        "transferMeasurementCompletedInThisRun": true
+      },
+      "priorSeparatedRuns": {
+        "supersededByCombinedRun": true,
+        "note": "Earlier separate transfer and reload-integrity results are retained only as historical record; the combined run above now covers both in one session."
+      },
+      "rawHarnessOutputRetained": false,
+      "evidenceProvenance": "Sanitized fields and hashes recorded from the successful harness stdout; full per-request stdout was not retained."
+    }
+  },
+  "assetTransfers": {
+    "method": "Final production dist over local HTTP with gzip-capable text responses and identity binary responses; temporary authenticated SQLite API; fresh browser contexts; territory render and 24 px pan at each quality.",
+    "qualityPreferenceSetBeforeInitialPageLoad": true,
+    "rendererAssetSelection": {
+      "low": "District exports selected by the low quality path.",
+      "normal": "Atlas exports selected when the normal quality budget permits them."
+    },
+    "low": {
+      "mapAssetRequestCount": 37,
+      "uniqueMapAssetFiles": 23,
+      "mapAssetWireBytes": 2986115,
+      "manifestRequestCount": 2,
+      "manifestWireBytesPerRequest": 110706,
+      "manifestEncoding": "gzip"
+    },
+    "normal": {
+      "mapAssetRequestCount": 21,
+      "uniqueMapAssetFiles": 21,
+      "mapAssetWireBytes": 2406796,
+      "manifestRequestCount": 1,
+      "manifestWireBytesPerRequest": 110706,
+      "manifestEncoding": "gzip"
+    },
+    "manifestSha256": "21104723fc38e7f0fd86b8a54bf714b355122eb915255abf85dad5aa6c4d7494",
+    "scopeNote": "Counts include all requests during territory rendering and the post-render pan. Repeated requests count toward total wire bytes; unique files are reported separately. Low follows the district-export path and transfers more bytes than normal in this clean-save scenario. These local observations do not guarantee bandwidth or target-device performance."
+  },
+  "populationStatus": {
+    "status": "baseline-only",
+    "blockerCode": "RESOURCE_LEDGER_STAGE_05",
+    "message": "Authoritative harvest extraction is unavailable. No material, building, or map entity data was injected; this run does not represent a populated-save gallery."
+  },
+  "validation": {
+    "productionDistServedOverLocalHttp": true,
+    "temporarySqliteApiAndAuthenticatedLiveFlow": true,
+    "externalNetworkOrProductionCredentialsUsed": false,
+    "domainStateUnchangedAcrossReload": true,
+    "domainStateUnchangedByRenderAndPanInSeparateRun": true,
+    "transferAndReloadHashesCollectedInOneRun": true,
+    "scriptSyntaxCheck": "passed",
+    "liveQueryRegression": {
+      "status": "passed",
+      "scope": "Single Chromium LIVE route regression with ?mode=live&mapQA=1&mapFixture=1023.",
+      "assertions": [
+        "LiveApp retained actual API site references.",
+        "No QA fixture attributes or injected fixture entities appeared in the projected map."
+      ],
+      "durationSeconds": 21.5
+    },
+    "bufferedApiProxyReloadCloseRegression": {
+      "status": "passed",
+      "scope": "Isolated local HTTP endpoints and Playwright route.fetch proxy; a real local request was held across page reload, then routes drained before context close.",
+      "unexpectedProxyErrors": 0,
+      "externalNetworkOrProductionCredentialsUsed": false
+    },
+    "successfulCombinedRunExitCode": 0
+  },
+  "limitations": [
+    "Measures a local browser and temporary SQLite fixture, not production or target hardware.",
+    "The clean-save baseline was persisted and reopened through LiveApp; populated resource extraction and a genuinely populated material-building save remain blocked by RESOURCE_LEDGER_STAGE_05.",
+    "Summary values were transcribed from successful harness stdout; the full raw JSON and per-request response list were not retained."
+  ]
+}

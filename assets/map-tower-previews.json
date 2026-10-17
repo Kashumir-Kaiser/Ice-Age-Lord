@@ -1,0 +1,4 @@
+[
+  {"assetId":"watchtower-preview","name":"Tháp Canh · mẫu ảnh","source":"assets/source/map-buildings/watchtower-north.png","contact":{"x":0.52,"y":0.86},"footprintSpan":0.40},
+  {"assetId":"elemental-tower-preview","name":"Tháp Nguyên Tố · mẫu ảnh","source":"assets/source/map-buildings/elemental-tower-north.png","contact":{"x":0.51,"y":0.89},"footprintSpan":0.43}
+]

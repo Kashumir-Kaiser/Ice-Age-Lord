@@ -22,6 +22,7 @@ import { CHEST_LOOT_RULE_VERSION, lootTableForChest } from '../../content/src/ch
 import { advanceTo, coldLoadRateMicroPerMinute, DAY_MS, HOUR_MS, MINUTE_MS, nextMidnightAfter, TOMB_STANDARD_BLUEPRINT_ID, TOMB_STANDARD_DURATION_MS, TOMB_STANDARD_RECIPE_ID, type StopCondition } from '../../sim/src/time.ts';
 import { RepositoryError, SqliteRepository } from '../../storage/src/repository.ts';
 import { ApiProblem, fromRepositoryError } from './errors.ts';
+import { bindCalendarReceipts } from './calendarReceipts.ts';
 
 const ownerId = 'local-owner';
 const MAX_BACKUP_ROWS = 10_000;
@@ -149,7 +150,8 @@ function validateStage05State(candidate: GameState, world: WorldDefinition, base
       || (balance.dailyRemaining !== null && (!isSafeInt(balance.dailyRemaining) || balance.dailyRemaining > (resource.dailyQuota ?? 0)))) invalid('A resource balance is outside its source limits.');
     const harvests = candidate.spatial.harvestJobs.filter(job => job.resourceId === resource.id);
     const extracted = harvests.reduce((sum, job) => sum + job.extractedQuantity, 0);
-    if (resource.renewal === 'none' && balance.remaining + extracted !== resource.capacity) invalid('Finite resource extraction does not conserve the source balance.');
+    const openingBalance = baseline.spatial.resourceBalances.find(initial => initial.resourceId === resource.id)?.remaining;
+    if (resource.renewal === 'none' && (!isSafeInt(openingBalance) || balance.remaining + extracted !== openingBalance)) invalid('Finite resource extraction does not conserve the source balance.');
     const reserved = harvests.filter(job => job.status === 'active').reduce((sum, job) => sum + job.reservedQuantity, 0);
     if (balance.reserved !== reserved) invalid('Resource reservations do not match active harvest jobs.');
   }
@@ -211,6 +213,15 @@ function validateStage05State(candidate: GameState, world: WorldDefinition, base
   if (candidate.playerKnowledge.knownSiteIds.some(id => !knownSites.has(id))
     || candidate.playerKnowledge.knownResourceIds.some(id => !knownResources.has(id))
     || candidate.playerKnowledge.knownRouteIds.some(id => !knownRoutes.has(id))) invalid('Known map identities are not present in the compiled world.');
+  // Shared world chests can be carried by a bot without becoming player-known.
+  // Cross-check private custody against the persisted bot ownership ledger;
+  // accepting arbitrary carried chests would weaken backup conservation.
+  const botChestOwners = new Map<string, {botId:string; chest:NonNullable<GameState['botPopulation']>['chunks'][number]['cold'][number]['ownedChests'][number]}>();
+  for (const chunk of candidate.botPopulation?.chunks ?? []) for (const bot of chunk.cold) for (const chest of bot.ownedChests) {
+    if (!chest.fieldChestId) continue;
+    if (botChestOwners.has(chest.fieldChestId)) invalid('A world chest has multiple bot owners.');
+    botChestOwners.set(chest.fieldChestId, {botId:bot.botId,chest});
+  }
   const chestStates = new Map(candidate.fieldChestStates.map(chest => [chest.chestId, chest]));
   if (candidate.fieldChestStates.length !== world.fieldChests.length || chestStates.size !== world.fieldChests.length
     || candidate.fieldChestStates.some(chest => {
@@ -218,13 +229,22 @@ function validateStage05State(candidate: GameState, world: WorldDefinition, base
       if (!source || !knownChests.has(chest.chestId) || !['hidden', 'signal', 'identified'].includes(chest.discovery)) return true;
       if (chest.discovery === 'hidden' && (chest.discoveredAtElapsedMs !== null || chest.signalId !== null)) return true;
       if (chest.discovery !== 'hidden' && (!isSafeInt(chest.discoveredAtElapsedMs) || chest.discoveredAtElapsedMs > candidate.simElapsedMs)) return true;
-      if (chest.state === 'unopened') return chest.openedAtElapsedMs !== null || chest.custody !== 'world'
-        || chest.claimedById !== null || chest.lootOutcome != null;
+      const botOwner = botChestOwners.get(chest.chestId);
+      if (chest.state === 'unopened') {
+        if (chest.openedAtElapsedMs !== null || chest.lootOutcome != null) return true;
+        if (chest.custody === 'world') return chest.claimedById !== null || chest.carrierId !== null || botOwner !== undefined;
+        return chest.custody !== 'carried' || !botOwner || botOwner.chest.status !== 'owned'
+          || botOwner.botId !== chest.claimedById || botOwner.botId !== chest.carrierId
+          || botOwner.chest.acquiredAtElapsedMs > candidate.simElapsedMs;
+      }
       if (chest.state !== 'opened' || chest.custody !== 'opened' || !isSafeInt(chest.openedAtElapsedMs)
         || chest.openedAtElapsedMs > candidate.simElapsedMs || !isNonEmptyString(chest.claimedById)
         || !isRecord(chest.lootOutcome) || chest.lootOutcome.ruleVersion !== CHEST_LOOT_RULE_VERSION
         || !Array.isArray(chest.lootOutcome.rewardStacks)) return true;
       const outcome = deterministicChestOutcome(candidate.seed, source);
+      if (botOwner && (botOwner.botId !== chest.claimedById || chest.carrierId !== null
+        || botOwner.chest.status !== 'opened' || botOwner.chest.openedAtElapsedMs !== chest.openedAtElapsedMs
+        || canonicalStateHash(botOwner.chest.lootOutcome) !== canonicalStateHash(outcome.rewardStacks.map(stack => ({itemTemplateId:stack.templateId,quantity:stack.quantity}))))) return true;
       return canonicalStateHash(chest.lootOutcome) !== canonicalStateHash(outcome)
         || !outcome.rewardStacks.every(stack => stack.quantity > 0 && stack.itemId.startsWith(`CHEST-ITEM-${source.id}-`));
     })) invalid('Field chest discovery, one-time opening, or committed loot outcome is invalid.');
@@ -820,7 +840,7 @@ function validateBackupEvent(value: unknown, index: number, saveId: string, rece
     'harvest_job_started', 'harvest_arrived_at_workfront', 'resource_extracted', 'harvest_work_completed',
     'harvest_job_blocked', 'harvest_cargo_returned', 'harvest_job_cancelled', 'inventory_item_transferred',
     'inventory_stack_split', 'inventory_stacks_merged', 'inventory_food_consumed',
-    'resource_daily_quotas_reset', 'career_activated', 'corpse_revived', 'corpse_butchered',
+    'resource_daily_quotas_reset', 'resource_biomass_regenerated', 'career_activated', 'corpse_revived', 'corpse_butchered',
     'unit_equipment_changed', 'unit_equipment_removed', 'xp_awarded',
     'combat_encounter_started', 'combat_retreat_ordered', 'combat_turn_settled', 'combat_encounter_won',
     'combat_encounter_retreated', 'combat_unit_defeated', 'bot_raid_player_attack',
@@ -1212,10 +1232,8 @@ export class GameApplicationService {
       saveId,
       transition: state => {
         const result = transition(state);
-        return {
-          state: result.state,
-          events: result.events.map((event, index) => ({ ...event, sequence: state.lastEventSequence + index + 1 })),
-        };
+        const events = result.events.map((event, index) => ({ ...event, sequence: state.lastEventSequence + index + 1 }));
+        return { state: bindCalendarReceipts(result.state, events), events };
       },
       projectPlayerEvent: (event, eventId) => this.projectSystemPlayerEvent(event, eventId),
     });
@@ -1872,6 +1890,7 @@ export class GameApplicationService {
       heater_service_started: { category: 'production', title: 'Heater fuel cycle started', text: 'One WOOD is reserved for 20 minutes of heat service (+15–20°C in a room up to 30 m²). The territory-wide cold model is unchanged.' },
       heater_service_completed: { category: 'production', title: 'Heater fuel cycle completed', text: 'The reserved WOOD was consumed once and the local 20-minute heat service ended.' },
       resource_daily_quotas_reset: { category: 'logistics', title: 'Daily resource quotas reset', text: 'Daily source quotas reset at the world midnight boundary.' },
+      resource_biomass_regenerated: { category: 'logistics', title: 'Renewable resource regrown', text: 'A renewable resource has regrown.' },
       caravan_departed: { category: 'quest', title: 'Torven’s caravan departed', text: 'The source scheduled convoy left the checkpoint for the old trade-road bridge.' },
       caravan_distress_opened: { category: 'quest', title: 'Caravan distress reported', text: 'Torven’s caravan is waiting at the bridge. Its fixed response window is now open.' },
       quest_accepted: { category: 'quest', title: 'Caravan request accepted', text: 'Torven’s fixed rescue and escort request is now active.' },

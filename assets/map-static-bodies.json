@@ -1,0 +1,37 @@
+{
+  "lord-house-repaired": {
+    "reason": "The preserved illustration includes chimney smoke, but the house DTO supplies no working emitter. Remove only that smoke from map presentation; preserve the original UI/source artwork.",
+    "removePolygons": [
+      [
+        [
+          278,
+          0
+        ],
+        [
+          340,
+          0
+        ],
+        [
+          340,
+          70
+        ],
+        [
+          309,
+          74
+        ],
+        [
+          291,
+          73
+        ],
+        [
+          283,
+          77
+        ],
+        [
+          278,
+          76
+        ]
+      ]
+    ]
+  }
+}

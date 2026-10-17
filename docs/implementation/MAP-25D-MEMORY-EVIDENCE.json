@@ -1,0 +1,82 @@
+{
+  "commit": "3a79ed9ef1c3f34bfc9fc2a70b95fbec4b6e575e",
+  "run": 38540785817,
+  "scope": "Two equal twenty-return/pan cycles per quality, settled endpoint and explicit Chrome CDP full GC; precise JS heap. Renderer byte estimates are separate from heap. Actual target GPU remains unverified.",
+  "budgetBytes": 10485760,
+  "qualities": [
+    {
+      "quality": "low",
+      "samples": [
+        {
+          "cycle": 0,
+          "heapBytes": 8971344,
+          "activeMaps": 1,
+          "activeLoops": 0,
+          "decodedBytes": 11407360,
+          "gpuBytes": 5647173,
+          "pending": 0,
+          "canvasCount": 1
+        },
+        {
+          "cycle": 1,
+          "heapBytes": 11851248,
+          "activeMaps": 1,
+          "activeLoops": 0,
+          "decodedBytes": 9048064,
+          "gpuBytes": 5647173,
+          "pending": 0,
+          "canvasCount": 1
+        },
+        {
+          "cycle": 2,
+          "heapBytes": 12695740,
+          "activeMaps": 1,
+          "activeLoops": 0,
+          "decodedBytes": 9048064,
+          "gpuBytes": 5647173,
+          "pending": 0,
+          "canvasCount": 1
+        }
+      ],
+      "growthBytes": 844492,
+      "withinBudget": true
+    },
+    {
+      "quality": "normal",
+      "samples": [
+        {
+          "cycle": 0,
+          "heapBytes": 8970557,
+          "activeMaps": 1,
+          "activeLoops": 0,
+          "decodedBytes": 39628800,
+          "gpuBytes": 16567109,
+          "pending": 0,
+          "canvasCount": 1
+        },
+        {
+          "cycle": 1,
+          "heapBytes": 11772587,
+          "activeMaps": 1,
+          "activeLoops": 0,
+          "decodedBytes": 30191616,
+          "gpuBytes": 16567109,
+          "pending": 0,
+          "canvasCount": 1
+        },
+        {
+          "cycle": 2,
+          "heapBytes": 12582079,
+          "activeMaps": 1,
+          "activeLoops": 0,
+          "decodedBytes": 30191616,
+          "gpuBytes": 16567109,
+          "pending": 0,
+          "canvasCount": 1
+        }
+      ],
+      "growthBytes": 809492,
+      "withinBudget": true
+    }
+  ]
+}

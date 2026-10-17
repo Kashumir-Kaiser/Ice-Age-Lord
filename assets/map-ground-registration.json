@@ -1,0 +1,22 @@
+{
+  "tomb-entry": {
+    "anchor": {"x": 0.5, "y": 0.72},
+    "reason": "The authored Tomb art footprint and planning foundation share a center at (240,288). Register that preserved center to the world anchor and derive a map-only contact shadow from the unchanged 6 by 5 metre footprint."
+  },
+  "lord-house-damaged": {
+    "anchor": {"x": 0.5, "y": 0.72},
+    "reason": "The four authored poses share the registered 480 by 400 art-footprint center at (240,288); their painted front contacts stay near the preserved front point. Register that unchanged composition to the world anchor and derive a map-only shadow from the unchanged 4 by 4 metre footprint."
+  },
+  "lord-house-repaired": {
+    "anchor": {"x": 0.5, "y": 0.72},
+    "reason": "The authored ground diamond and planning foundation center at (240,288), not the legacy (240,328). Align the map anchor to that preserved registration and derive its contact shadow from the unchanged 4 by 4 metre footprint."
+  },
+  "lord-house-l30": {
+    "anchor": {"x": 0.5, "y": 0.72},
+    "reason": "The north-only map-authored plinth and planning foundation register around (240,288). Preserve the original 480 by 400 body/UI composition and ART-ONLY 4 by 4 metre preview footprint; derive only a map-only contact shadow."
+  },
+  "supply-crate": {
+    "anchor": {"x": 0.5, "y": 0.72},
+    "reason": "The authored body footprint and planning foundation center at (240,288). Register that preserved center to the world anchor and derive a map-only contact shadow from the unchanged 3 by 3 metre footprint; retain the original source/UI shadow and its painterly snow overhang."
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "scope": "Scoped WebGL visual proof for demo-only local forest motion at 1366x768, DPR 1, normal quality.",
+  "source": {
+    "commit": "20c4b2ef95a58ef2232931152e519ab8d5a92db8",
+    "mapRendererSha256": "0739b0fba013d75263a290cee067313e7d512c00d9facb7c33056d45bb875108",
+    "mapEffectsSha256": "a524b62fea2411cfed7b2a845084fc7ae8823c464a838b36d1e60f8a3d9b9207",
+    "unitTestSha256": "048f82466f5885690e203817a8f2e0d2263a0f7cb2ee4a2072299b5d07ba7a0d"
+  },
+  "scene": {
+    "fixture": "local-forest",
+    "provenance": "demo-qa-known-geography-fixture",
+    "knownCount": 4,
+    "phase": "day",
+    "renderer": "webgl",
+    "hostCssPixels": {
+      "width": 732,
+      "height": 456.75
+    },
+    "overviewCamera": {
+      "mode": "local",
+      "xKm": 4.7,
+      "yKm": 6.8,
+      "zoom": 0.0344
+    },
+    "closeCamera": {
+      "mode": "local",
+      "xKm": 4.7,
+      "yKm": 6.8,
+      "zoom": 0.8285442989544756
+    }
+  },
+  "ambientMotion": {
+    "captureIntervalMs": 1200,
+    "normal": {
+      "effectSprites": 16,
+      "activeLoops": 1,
+      "frames": [
+        115,
+        157
+      ],
+      "images": [
+        {
+          "file": "map-visual-review/motion-proof/forest-normal-overview-t0.png",
+          "sha256": "74f050881723c9378856938823914c6e81b0ee29470dd255fad69e650489fc9e"
+        },
+        {
+          "file": "map-visual-review/motion-proof/forest-normal-overview-t1200ms.png",
+          "sha256": "33d4566cf74080ac70b1a04b44f28ec9c5c035a31ee8fc79e22e93ca726d638b"
+        }
+      ],
+      "pixelDiffNote": "The full host pair differs at 15 pixels; this includes the map clock and sparse visual changes, so the count alone does not isolate snowfall."
+    },
+    "reduced": {
+      "effectSprites": 16,
+      "activeLoops": 0,
+      "frames": [
+        22,
+        22
+      ],
+      "t0AndT1200msIdentical": true,
+      "sha256": "6be53780671a6fd86ebb11a3146b407973c00f513c45b6d3df13b8f98acf7ecf",
+      "image": "map-visual-review/motion-proof/forest-reduced-overview.png"
+    }
+  },
+  "treeSway": {
+    "captureIntervalMs": 1200,
+    "metrics": {
+      "visible": 297,
+      "effectSprites": 0,
+      "activeLoops": 1,
+      "queued": 0,
+      "pendingTextures": 0,
+      "frames": [
+        429,
+        497
+      ]
+    },
+    "samplerPrediction": {
+      "visualIdentity": "LL01",
+      "forestAnchorKm": [
+        4.7,
+        -6.8
+      ],
+      "metresPerCssPixel": 0.4545,
+      "queriedProps": 297,
+      "conifers": 234,
+      "hashSelectedSwayCandidates": 10,
+      "reviewTargetScreenPx": [
+        416.69,
+        194.88
+      ],
+      "reviewCropHostPx": {
+        "left": 398,
+        "top": 157,
+        "width": 40,
+        "height": 42
+      },
+      "changedPixelBoundsHostPx": {
+        "left": 401,
+        "top": 165,
+        "right": 431,
+        "bottom": 196
+      }
+    },
+    "images": [
+      {
+        "file": "map-visual-review/motion-proof/forest-sway-close-t0.png",
+        "sha256": "1003056e81a994a16b36fb1d6764ac4492a8488101c6d5633f8ab16575766c14"
+      },
+      {
+        "file": "map-visual-review/motion-proof/forest-sway-close-t1200ms.png",
+        "sha256": "171f18b0a86893feb6bade7d02cab7dede25ea38164f30637799144a97d1a551"
+      },
+      {
+        "file": "map-visual-review/motion-proof/forest-sway-candidate-pair.png",
+        "sha256": "4ae24cc3e6e1e942d648582dbb1811e98bd0b2b51710b74c6ade729bf646f189"
+      }
+    ],
+    "rootAnchorEvidence": "The paired crop shows canopy change on the deterministic sampler-selected conifer. Exact root anchoring is asserted by the matrix invariant test; this visual pair is not a pixel-precise root-track measurement."
+  },
+  "unitContract": {
+    "testFile": "../../frontend/tests/mapEffects.test.mjs",
+    "testName": "tree sway selection is stable, conifer-only and quality-capped; matrix keeps the root fixed",
+    "assertions": [
+      "Reduced motion returns zero sway offset.",
+      "Enabled sway remains within 1.5 CSS pixels.",
+      "The registered 94% root point is invariant under the sway matrix."
+    ]
+  },
+  "limitations": [
+    "This proof covers only the demo-only local-forest fixture, WebGL, desktop 1366x768, DPR 1, normal quality.",
+    "The overview pair verifies a static reduced-motion frame with ambient sprites retained; the close pair verifies a visible conifer sway candidate. It does not claim motion acceptance across fallback, planning, mobile, or all matrix configurations.",
+    "No internal prop identifier is exposed in DOM, accessibility data, or window telemetry."
+  ]
+}

@@ -496,8 +496,12 @@ function parseResources(file03: string, sites: readonly WorldSite[]): { resource
     if (!feature || !material) throw new Error(`WORLD_RESOURCE_PROFILE_MISSING:${id}`);
     const expectedQuantity = id === 'RES-LL01-01' ? '780' : id === 'RES-LL01-02' ? '1.240' : id === 'RES-LL01-03' ? '20.000' : id === 'RES-LL01-04' ? '430' : '14';
     if (!row[2].includes(expectedQuantity)) throw new Error(`WORLD_RESOURCE_CAPACITY_SOURCE_MISMATCH:${id}`);
+    // Appendix 3.K.7 fixes these as opening quantities at T0. Keep them separate
+    // from geometry-derived capacity; the source does not define a forest stock cap.
+    const openingBalance = id === 'RES-LL01-01' ? 780 : id === 'RES-LL01-02' ? 1_240 : undefined;
     return {
       ...resourceFromFeature(feature, material, row[2]),
+      ...(openingBalance === undefined ? {} : { openingBalance }),
       source: { path: 'references/canonical/LORD-DND-03.md', heading: '3.K.7 Resources', recordId: id },
     };
   });

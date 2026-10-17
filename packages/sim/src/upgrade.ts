@@ -90,7 +90,7 @@ function migrateV2ToV3(candidate: Record<string, any>, world: WorldDefinition): 
   const orders = candidate.travel?.orders ?? [];
   const resourceBalances = candidate.spatial?.resourceBalances ?? world.resources.map(resource => ({
     resourceId: resource.id,
-    remaining: resource.capacity,
+    remaining: resource.openingBalance ?? resource.capacity,
     reserved: 0,
     materialId: resource.materialId,
     unit: resource.unit,
@@ -167,7 +167,7 @@ function migrateV3ToV4(candidate: Record<string, any>, world: WorldDefinition): 
     const prior = oldBalances.get(resource.id);
     if (!prior) return {
       resourceId: resource.id,
-      remaining: resource.capacity,
+      remaining: resource.openingBalance ?? resource.capacity,
       reserved: 0,
       materialId: resource.materialId,
       unit: resource.unit,
@@ -177,11 +177,12 @@ function migrateV3ToV4(candidate: Record<string, any>, world: WorldDefinition): 
       dailyResetAtElapsedMs: resource.dailyQuota === null ? null : nextMidnightAfter(elapsed),
       amountKnowledge: 'unknown',
     };
-    const oldCap = legacyCapacity[resource.id] ?? resource.capacity;
-    const alreadyHarvested = Math.max(0, oldCap - Number(prior.remaining));
+    const initialBalance = resource.openingBalance ?? resource.capacity;
+    const priorInitialBalance = legacyCapacity[resource.id] ?? initialBalance;
+    const alreadyHarvested = Math.max(0, priorInitialBalance - Number(prior.remaining));
     return {
       ...prior,
-      remaining: Math.max(0, Math.min(resource.capacity, resource.capacity - alreadyHarvested)),
+      remaining: Math.max(0, Math.min(initialBalance, initialBalance - alreadyHarvested)),
       materialId: resource.materialId,
       unit: resource.unit,
       dailyRemaining: resource.dailyQuota === null ? null

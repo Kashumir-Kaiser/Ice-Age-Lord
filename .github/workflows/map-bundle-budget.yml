@@ -1,0 +1,57 @@
+name: Map JavaScript transfer comparison
+on:
+  push:
+    branches: ['codex/map-25d-overhaul']
+    paths: ['frontend/**', 'assets/map-building-views.json', '.github/workflows/map-bundle-budget.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: 2de4ece02b5c00dea647b98bac0ffdb787690616
+          path: .map-baseline
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: python scripts/restore-map-upload.py
+      - run: npm ci --no-audit --no-fund && npm run assets:map && npm run build
+        working-directory: frontend
+        env:
+          VITE_GAME_MODE: demo
+      - run: npm ci --no-audit --no-fund && npm run build
+        working-directory: .map-baseline/frontend
+        env:
+          VITE_GAME_MODE: demo
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: node scripts/map-js-transfer.mjs
+        working-directory: frontend
+      - run: node scripts/map-js-transfer.mjs
+        working-directory: frontend
+        env:
+          MAP_DIST: ../.map-baseline/frontend/dist
+          MAP_JS_REPORT: map-evidence/bundle/baseline.json
+      - name: Compare complete requested JavaScript against pre-overhaul baseline
+        working-directory: frontend
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const before=JSON.parse(readFileSync('map-evidence/bundle/baseline.json'));
+          const after=JSON.parse(readFileSync('map-evidence/bundle/current.json'));
+          const addedGzipBytes=after.gzipBytes-before.gzipBytes,budgetBytes=300*1024;
+          const report={baselineCommit:'2de4ece02b5c00dea647b98bac0ffdb787690616',before,after,addedGzipBytes,budgetBytes,withinBudget:addedGzipBytes<=budgetBytes,scope:'Complete requested frontend JavaScript delta for identical map-opening journeys; includes any other UI changes since the baseline. Not a named-renderer-chunk estimate.'};
+          writeFileSync('map-evidence/bundle/results.json',JSON.stringify(report,null,2));
+          if(!report.withinBudget)throw new Error('Added map-journey JavaScript exceeds 300 KiB gzip; investigate results.json');
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-javascript-comparison
+          path: frontend/map-evidence/bundle/
+          retention-days: 14

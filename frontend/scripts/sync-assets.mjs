@@ -1,6 +1,7 @@
-import { copyFileSync, existsSync, readFileSync, mkdirSync } from 'node:fs';
+import { copyFileSync, existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { validateMapAssets } from './validate-map-assets.mjs';
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const manifestPath = resolve(repo, 'assets/manifest.json');
@@ -29,7 +30,7 @@ for (const asset of manifest.assets) {
   if (asset.referenceSource && !existsSync(resolve(repo, referenceFile(asset.referenceSource)))) {
     throw new Error(`Missing concept reference for ${asset.assetId}: ${asset.referenceSource}`);
   }
-  const registeredPaths = [...Object.values(asset.layers), ...Object.values(asset.lodVariants).flatMap(lod => Object.values(lod))];
+  const registeredPaths = [...Object.values(asset.layers), ...Object.values(asset.mapLayers??{}), ...Object.values(asset.lodVariants).flatMap(lod => Object.values(lod))];
   for (const layer of new Set(registeredPaths)) {
     if (typeof layer !== 'string') continue;
     const output = resolve(repo, `frontend/public${layer}`);
@@ -78,6 +79,8 @@ for (const illustration of [...(manifest.itemArt ?? []), ...(manifest.unitArt ??
   mkdirSync(dirname(output), { recursive: true });
   copyFileSync(source, output);
 }
+validateMapAssets(manifest);
 mkdirSync(dirname(publicManifest), { recursive: true });
-copyFileSync(manifestPath, publicManifest);
+// Preserve every field; serving pretty authoring whitespace wastes cold-transfer bytes.
+writeFileSync(publicManifest, JSON.stringify(manifest)+'\n');
 console.log(`Validated ${manifest.assets.length} structure assets, ${(manifest.itemArt ?? []).length} item illustrations, and ${(manifest.unitArt ?? []).length} unit illustrations.`);

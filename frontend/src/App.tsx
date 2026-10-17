@@ -7,6 +7,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import MapScene from './MapScene';
+import { mapQaInitialState, requestedMapQaFixture } from './rendering/mapFixtures';
 import { INITIAL_CLOCK_SECONDS, speedMultiplier, advanceDisplayClock, displayClock, displayDay, customMultiplier, displayUpdateIntervalMs } from './demoClock';
 import type { ClockSpeed } from './demoClock';
 import ItemArt from './ItemArt';
@@ -310,6 +311,7 @@ function Journal({ entries }: {entries:PlayerView['journal']}) {
   </div>;
 }
 export default function App() {
+  const [qaInitial]=useState(()=>mapQaInitialState(INITIAL_CAMERA,INITIAL_CLOCK_SECONDS,requestedMapQaFixture()));
   const [screen,setScreen]=useState<Screen>('overview');
   const [sidebarOpen,setSidebarOpen]=useState(false);
   const [notificationOpen,setNotificationOpen]=useState(false);
@@ -318,7 +320,7 @@ export default function App() {
   const [playerView,setPlayerView]=useState<PlayerView>(()=>demoGameClient.getPlayerView());
   const [selection,setSelection]=useState<EntityRef|null>({type:'site',id:'SITE-LL01-000'});
   const [inspectorOpen,setInspectorOpen]=useState(true);
-  const [camera,setCamera]=useState<SharedMapCamera>(INITIAL_CAMERA);
+  const [camera,setCamera]=useState<SharedMapCamera>(qaInitial.camera);
   const [territoryCamera,setTerritoryCamera]=useState<TerritoryCamera|null>(null);
   const [layoutDrafts,setLayoutDrafts]=useState<LayoutDraft[]>([]);
   const [territoryFocusId,setTerritoryFocusId]=useState<string|null>(null);
@@ -328,7 +330,7 @@ export default function App() {
   const [sourceAtlas,setSourceAtlas]=useState(false);
   const [showHeat,setShowHeat]=useState(true);
   const [showExploration,setShowExploration]=useState(true);
-  const [clockSeconds,setClockSeconds]=useState(INITIAL_CLOCK_SECONDS);
+  const [clockSeconds,setClockSeconds]=useState(qaInitial.clockSeconds);
   const [speed,setSpeed]=useState<ClockSpeed>('Frozen');
   const [customSpeed,setCustomSpeed]=useState(10);
   const multiplier=speedMultiplier(speed,customSpeed);

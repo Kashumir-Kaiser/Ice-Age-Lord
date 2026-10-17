@@ -1,0 +1,117 @@
+name: Map rendering validation
+on:
+  push:
+    branches: [work, main, 'codex/**']
+    paths: ['frontend/**', 'assets/**', '.github/workflows/map-rendering.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      VITE_GAME_MODE: demo
+      PLAYWRIGHT_PREVIEW: '1'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore checkpoint artwork when this push contains a transfer
+        run: python scripts/restore-map-upload.py
+        working-directory: .
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run assets:map
+      - run: npm run build
+      - run: npm test
+      - run: npx playwright install --with-deps chromium
+      - name: Map interaction journeys
+        run: npm run test:e2e -- e2e/map-rendering.spec.ts e2e/territory.spec.ts e2e/map.spec.ts --grep-invert 'visual baselines'
+      - name: Capture maps for review
+        if: always() && !cancelled()
+        run: node scripts/map-qa.mjs
+      - name: Verify benchmark harness
+        env:
+          MAP_BENCH_SECONDS: '5'
+          MAP_BENCH_RUNS: '1'
+          MAP_BENCH_WARMUP: '1'
+        run: node scripts/map-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-captures
+          path: frontend/map-evidence/after/
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-benchmark-diagnostics
+          path: frontend/map-evidence/benchmark/
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-interaction-failures
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 7
+
+  recover-original-art:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore hash-verified checkpoint masters
+        run: python scripts/restore-map-upload.py
+      - name: Package exact committed map art for continuation
+        run: |
+          paths=(assets/source/terrain frontend/public/assets/map assets/manifest.json frontend/public/assets/manifest.json)
+          if test -d assets/source/map-buildings; then paths+=(assets/source/map-buildings); fi
+          if test -d assets/source/map-effects; then paths+=(assets/source/map-effects); fi
+          tar -czf /tmp/map-originals.tar.gz "${paths[@]}"
+          split -b 20M -d /tmp/map-originals.tar.gz /tmp/map-originals.part
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-originals-00
+          path: /tmp/map-originals.part00
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-originals-01
+          path: /tmp/map-originals.part01
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-originals-02
+          path: /tmp/map-originals.part02
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-originals-03
+          path: /tmp/map-originals.part03
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-originals-04
+          path: /tmp/map-originals.part04
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-originals-05
+          path: /tmp/map-originals.part05
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-originals-06
+          path: /tmp/map-originals.part06
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-originals-07
+          path: /tmp/map-originals.part07
+          retention-days: 7

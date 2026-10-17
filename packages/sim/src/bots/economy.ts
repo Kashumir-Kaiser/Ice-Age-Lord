@@ -2332,6 +2332,14 @@ export function completePlan(population: BotPopulationState, chunk: BotStateChun
     const source = cold.searchSources.find(item => item.id === plan.targetId && item.discovered && item.remainingActions > 0);
     if (!source) result = 'depleted';
     else if (!cold.armyMovement || cold.armyMovement.unitKind !== 'scout' || cold.armyMovement.status !== 'surveying') result = 'blocked';
+    else if (source.kind === 'field_cache') {
+      cold.searchSources = cold.searchSources.map(item => item.id === source.id ? { ...item, remainingActions: 0 } : item);
+      const acquired = acquireBotChest(state, world, cold, source, plan.actionId, population.saveSeed, at);
+      cold = acquired.cold;
+      result = acquired.result;
+      discovered = result === 'discovered';
+      if (acquired.event) events.push(acquired.event);
+    }
     else {
       cold.searchSources = cold.searchSources.map(item => item.id === source.id ? { ...item, remainingActions: 0 } : item);
       const acquired = acquireBotChest(state, world, cold, source, plan.actionId, population.saveSeed, at);

@@ -1,0 +1,165 @@
+{
+  "sourceCommit": "43471fb9581a2bd0f8f05594186f906c35ebec44",
+  "runId": 38554261195,
+  "scope": "Thirty corrected 60-second warmed CI runs after transparent raster cropping; shared headless software rendering, not target laptop acceptance. Different runner CPUs prevent isolating the crop effect.",
+  "quality": {
+    "low": {
+      "environment": {
+        "node": "v24.21.0",
+        "platform": "linux",
+        "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+        "cpuCount": 2,
+        "ramBytes": 8322932736,
+        "browser": "Chromium headless",
+        "viewport": {
+          "width": 1366,
+          "height": 768
+        },
+        "dpr": 1,
+        "targetDeviceVerified": false
+      },
+      "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "summary": [
+        {
+          "fixture": "fresh",
+          "completedRuns": 3,
+          "medianIntervalP95": 43.29999999998836,
+          "medianPointerP95": 56.39999999999418
+        },
+        {
+          "fixture": "populated",
+          "completedRuns": 3,
+          "medianIntervalP95": 44,
+          "medianPointerP95": 73.5
+        },
+        {
+          "fixture": "dense-520",
+          "completedRuns": 3,
+          "medianIntervalP95": 186.5,
+          "medianPointerP95": 179.79999999993015
+        },
+        {
+          "fixture": "local",
+          "completedRuns": 3,
+          "medianIntervalP95": 104.5,
+          "medianPointerP95": 79.69999999995343
+        },
+        {
+          "fixture": "world-1023",
+          "completedRuns": 3,
+          "medianIntervalP95": 83.5,
+          "medianPointerP95": 66.5
+        }
+      ],
+      "coldTransferByFixture": {
+        "fresh": [
+          3528955,
+          3528955,
+          3528955
+        ],
+        "populated": [
+          5756013,
+          5756013,
+          5756013
+        ],
+        "dense-520": [
+          3654398,
+          3654398,
+          3654398
+        ],
+        "local": [
+          3446340,
+          3446340,
+          3446340
+        ],
+        "world-1023": [
+          3751985,
+          3751985,
+          3751985
+        ]
+      }
+    },
+    "normal": {
+      "environment": {
+        "node": "v24.21.0",
+        "platform": "linux",
+        "cpu": "AMD EPYC 9V45 96-Core Processor",
+        "cpuCount": 2,
+        "ramBytes": 8323969024,
+        "browser": "Chromium headless",
+        "viewport": {
+          "width": 1366,
+          "height": 768
+        },
+        "dpr": 1,
+        "targetDeviceVerified": false
+      },
+      "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "summary": [
+        {
+          "fixture": "fresh",
+          "completedRuns": 3,
+          "medianIntervalP95": 25.900000000023283,
+          "medianPointerP95": 42.600000000034925
+        },
+        {
+          "fixture": "populated",
+          "completedRuns": 3,
+          "medianIntervalP95": 29.599999999976717,
+          "medianPointerP95": 49.90000000002328
+        },
+        {
+          "fixture": "dense-520",
+          "completedRuns": 3,
+          "medianIntervalP95": 132.39999999990687,
+          "medianPointerP95": 128.90000000002328
+        },
+        {
+          "fixture": "local",
+          "completedRuns": 3,
+          "medianIntervalP95": 98.70000000018626,
+          "medianPointerP95": 51.5999999998603
+        },
+        {
+          "fixture": "world-1023",
+          "completedRuns": 3,
+          "medianIntervalP95": 112.5,
+          "medianPointerP95": 44
+        }
+      ],
+      "coldTransferByFixture": {
+        "fresh": [
+          4314635,
+          4314635,
+          4314635
+        ],
+        "populated": [
+          4314635,
+          4314635,
+          4314635
+        ],
+        "dense-520": [
+          4594625,
+          4594625,
+          4594625
+        ],
+        "local": [
+          3446340,
+          3446340,
+          3446340
+        ],
+        "world-1023": [
+          3751985,
+          3751985,
+          3751985
+        ]
+      }
+    }
+  },
+  "limitations": [
+    "Several frame and dense-pointer budgets remain unmet.",
+    "Prepared populated transfer includes placement interactions and is not saved-populated first-view evidence.",
+    "Target Intel UHD 620 device remains unverified.",
+    "This checkpoint precedes painted flame and architectural depth-slice integration."
+  ]
+}

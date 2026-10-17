@@ -1,0 +1,127 @@
+{
+  "title": "Damaged house map visual evidence",
+  "assetId": "lord-house-damaged",
+  "capture": {
+    "viewport": {
+      "width": 1366,
+      "height": 768
+    },
+    "dpr": 1,
+    "quality": "normal",
+    "browser": "Chromium",
+    "renderer": "built app",
+    "sourceCommit": "5fc3141608b0a0e0474c1cd6ffcf8460001222fc",
+    "qaCodeState": "uncommitted-at-capture",
+    "qaCodeDiffSha256": "ffcbaab361992527d60a1141a8eb15cd95c703b505e5884f2b305be2f70f8ba0"
+  },
+  "registeredSourceHashesVerified": {
+    "north": "a5714e0eff939f59cda691e28f8135b2bd4c0093e253ead73455a6199fea693b",
+    "east": "df2a428f4a45b91d4d8424b090f482df78be0156186cd5bc4c6fcb9e9fa24acf",
+    "south": "472d3ad46294630c6b4eb0833af030a85fd5d9106188cf92641d5b9c99096565",
+    "west": "db1d986530e6a4b91c255ff3ba84e96177dff2cb471892bc9bd541de7251a619"
+  },
+  "scenes": [
+    {
+      "label": "north",
+      "orientation": "north",
+      "mode": "normal",
+      "layers": {
+        "base": 1,
+        "upper": 1,
+        "body": null
+      },
+      "outlinePresent": true,
+      "source": "/assets/buildings/lord-house-damaged/body.svg",
+      "sourceSha256": "a5714e0eff939f59cda691e28f8135b2bd4c0093e253ead73455a6199fea693b",
+      "capture": "1366/architecture/damaged-house/damaged-house-north-1366-normal-dpr1.png"
+    },
+    {
+      "label": "east",
+      "orientation": "east",
+      "mode": "normal",
+      "layers": {
+        "base": 1,
+        "upper": 1,
+        "body": null
+      },
+      "outlinePresent": true,
+      "source": "assets/source/map-buildings/lord-house-damaged-east.png",
+      "sourceSha256": "df2a428f4a45b91d4d8424b090f482df78be0156186cd5bc4c6fcb9e9fa24acf",
+      "capture": "1366/architecture/damaged-house/damaged-house-east-1366-normal-dpr1.png"
+    },
+    {
+      "label": "south",
+      "orientation": "south",
+      "mode": "normal",
+      "layers": {
+        "base": 1,
+        "upper": 1,
+        "body": null
+      },
+      "outlinePresent": true,
+      "source": "assets/source/map-buildings/lord-house-damaged-south.png",
+      "sourceSha256": "472d3ad46294630c6b4eb0833af030a85fd5d9106188cf92641d5b9c99096565",
+      "capture": "1366/architecture/damaged-house/damaged-house-south-1366-normal-dpr1.png"
+    },
+    {
+      "label": "west",
+      "orientation": "west",
+      "mode": "normal",
+      "layers": {
+        "base": 1,
+        "upper": 1,
+        "body": null
+      },
+      "outlinePresent": true,
+      "source": "assets/source/map-buildings/lord-house-damaged-west.png",
+      "sourceSha256": "db1d986530e6a4b91c255ff3ba84e96177dff2cb471892bc9bd541de7251a619",
+      "capture": "1366/architecture/damaged-house/damaged-house-west-1366-normal-dpr1.png"
+    },
+    {
+      "label": "north-planning",
+      "orientation": "north",
+      "mode": "planning",
+      "layers": {
+        "base": 1,
+        "upper": null,
+        "body": null
+      },
+      "outlinePresent": true,
+      "source": "/assets/buildings/lord-house-damaged/body.svg",
+      "sourceSha256": "a5714e0eff939f59cda691e28f8135b2bd4c0093e253ead73455a6199fea693b",
+      "capture": "1366/architecture/damaged-house/damaged-house-north-planning-1366-normal-dpr1.png"
+    },
+    {
+      "label": "north-focus",
+      "orientation": "north",
+      "mode": "focus",
+      "layers": {
+        "base": 1,
+        "upper": 0.22,
+        "body": null
+      },
+      "outlinePresent": true,
+      "source": "/assets/buildings/lord-house-damaged/body.svg",
+      "sourceSha256": "a5714e0eff939f59cda691e28f8135b2bd4c0093e253ead73455a6199fea693b",
+      "capture": "1366/architecture/damaged-house/damaged-house-north-focus-1366-normal-dpr1.png"
+    }
+  ],
+  "review": {
+    "status": "limited acceptance",
+    "reviewer": "parent visual review",
+    "scope": "1366\u00d7768 at DPR 1 only",
+    "findings": [
+      "Four normal poses are visibly distinct and opaque with no obvious seams at reviewed scale.",
+      "Planning shows the base only.",
+      "Focus retains the base at alpha 1 and fades the upper to 0.22."
+    ],
+    "limits": [
+      "Does not establish dense-scene performance or target-device behavior.",
+      "Does not establish saved populated LIVE-mode behavior."
+    ]
+  },
+  "ephemeralArtifacts": {
+    "directory": "/tmp/map-qa-damaged-actual/1366/architecture/damaged-house/",
+    "note": "Local capture images and detail crops are ephemeral and are not included in this repository. Scene records above identify the capture filenames."
+  }
+}
