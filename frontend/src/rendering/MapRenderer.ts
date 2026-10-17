@@ -186,7 +186,7 @@ export class MapRenderer {
       const start=performance.now(),generated=this.terrain.process();
       if(this.dirty||generated||active||this.previousLevel!==undefined){
         const interval=this.lastFrame?time-this.lastFrame:0;
-        this.dirty=false;this.effects.update((time-this.previous)/1000,this.reducedMotion,active);this.render();this.metrics.frame(start);this.lastFrame=time;rendered=true;
+        this.dirty=false;this.effects.update((time-this.previous)/1000,this.reducedMotion,active,QUALITY[this.quality].particles>0);this.render();this.metrics.frame(start);this.lastFrame=time;rendered=true;
         if(interval>0)this.setQuality(this.adaptive.update(interval,Math.min(interval,1000),this.preference==='auto'?undefined:this.preference));
         else this.adaptive.resetObservation();
       }
@@ -337,7 +337,7 @@ export class MapRenderer {
     };
     for(const id of this.depthIds){const b=visibleById.get(id);if(!b)continue;while(propIndex<sortedProps.length&&sortedProps[propIndex].depth<=b.depth)draws.push(sortedProps[propIndex++]);drawBuilding(b);}while(propIndex<sortedProps.length)draws.push(sortedProps[propIndex++]);
     const allowedEffects=Boolean(this.app)&&(this.snapshot.mode==='normal'||this.snapshot.mode==='focus')&&!this.hidden&&this.hostVisibility==='visible';
-    const snow=allowedEffects&&snowVisible&&this.mapEffects?ambientSnowDraws(currentSight,this.project,this.inverse,this.size,this.quality==='low'?8:16,this.reducedMotion||!this.app?0:this.effects.time,this.snapshot.visualIdentity??this.snapshot.identity,this.mapEffects.path):[];
+    const snow=allowedEffects&&snowVisible&&this.mapEffects?ambientSnowDraws(currentSight,this.project,this.inverse,this.size,QUALITY[this.quality].snowParticles,this.reducedMotion||!this.app?0:this.effects.time,this.snapshot.visualIdentity??this.snapshot.identity,this.mapEffects.path):[];
     this.visibleAmbient=animate&&snow.some(draw=>Boolean(this.assets.acquire(draw.key)));
     const particleLimit=Math.max(0,QUALITY[this.quality].particles-snow.length);
     this.effectDraws=[...snow,...(allowedEffects?this.effects.draws(this.visibleEmitters.map(({point})=>point),this.mapEffects,particleLimit,this.reducedMotion,this.scale()):[])];

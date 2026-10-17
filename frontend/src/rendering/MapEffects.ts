@@ -1,4 +1,5 @@
 import type { MapEffectsAtlas } from '../assets/assetRegistry.ts';
+import { QUALITY } from './mapStyle.ts';
 
 export type ParticleKind='ember'|'smoke';
 export type MapParticle={x:number;y:number;life:number;vx:number;vy:number;kind:ParticleKind;variant:number};
@@ -66,7 +67,7 @@ export function ambientSnowDraws(
 export type FoliageCandidate={id:string;kind:string};
 /** Stable, sparse conifer selection with a hard quality-dependent sprite cap. */
 export function selectSwayingConiferIds(props:readonly FoliageCandidate[],quality:'low'|'normal'):Set<string>{
-  const limit=quality==='low'?4:12;
+  const limit=QUALITY[quality].swayingConifers;
   return new Set(props.filter(prop=>prop.kind==='conifer'&&hash(prop.id)%10===0)
     .sort((a,b)=>hash(a.id)-hash(b.id)||a.id.localeCompare(b.id)).slice(0,limit).map(prop=>prop.id));
 }
@@ -98,9 +99,10 @@ export class MapEffects {
     x:((i*17)%31)-15,y:-(i*13%50),life:(i*37%100)/100,vx:(i%3-1)*2,
     vy:i%5===0?-3-i%3:-9-(i%5),kind:i%5===0?'smoke':'ember',variant:i,
   }));}
-  update(delta:number,reducedMotion:boolean,active:boolean):void {
+  update(delta:number,reducedMotion:boolean,active:boolean,updateParticles=true):void {
     if(reducedMotion||!active)return;
     const step=Math.min(Math.max(delta,0),.05);this.time+=step;
+    if(!updateParticles)return;
     for(const p of this.particles){p.x+=p.vx*step;p.y+=p.vy*step;p.life+=step*.35;if(p.life>=1){p.life=0;p.y=0;p.x=((p.variant*7)%21)-10;}}
   }
   light(reducedMotion:boolean):number{return reducedMotion?1:1+Math.sin(this.time*2.1)*.04+Math.sin(this.time*3.7)*.02;}

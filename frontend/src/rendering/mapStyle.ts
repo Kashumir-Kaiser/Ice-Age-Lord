@@ -8,8 +8,8 @@ export const MAP_PALETTE = Object.freeze({
 });
 export type Quality = 'low' | 'normal';
 export const QUALITY = Object.freeze({
-  low: { fps: 30, dpr: 1, terrainBytes: 32 * 1048576, totalBytes: 96 * 1048576, particles: 60, textureSize: 256, queue: 48 },
-  normal: { fps: 60, dpr: 1.5, terrainBytes: 64 * 1048576, totalBytes: 192 * 1048576, particles: 180, textureSize: 512, queue: 64 },
+  low: { fps: 30, dpr: 1, terrainBytes: 32 * 1048576, totalBytes: 96 * 1048576, particles: 0, snowParticles: 0, swayingConifers: 0, textureSize: 256, queue: 48 },
+  normal: { fps: 60, dpr: 1.5, terrainBytes: 64 * 1048576, totalBytes: 192 * 1048576, particles: 180, snowParticles: 16, swayingConifers: 12, textureSize: 512, queue: 64 },
 });
 export type SceneLOD = 'close' | 'district' | 'regional';
 export function chooseLOD(span: number, previous?: SceneLOD): SceneLOD {

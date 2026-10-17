@@ -5,6 +5,7 @@ import sharp from 'sharp';
 import {MapEffects,ambientSnowDraws,foliageSwayOffset,mapEffectFrameKey,mapEffectSnowKey,rootAnchoredSwayMatrix,selectSwayingConiferIds,sightIntersectsViewport} from '../src/rendering/MapEffects.ts';
 import {AssetTextureCache} from '../src/rendering/AssetTextureCache.ts';
 import {validateMapEffectsAtlas} from '../scripts/validate-map-assets.mjs';
+import {QUALITY} from '../src/rendering/mapStyle.ts';
 
 const root=new URL('../../',import.meta.url);
 const manifest=JSON.parse(readFileSync(new URL('assets/manifest.json',root),'utf8'));
@@ -59,8 +60,8 @@ test('effect cache registers all atlas regions as views of one versioned image',
 
 test('particle draws are deterministic and globally capped across all confirmed emitters',()=>{
  const first=new MapEffects(180),second=new MapEffects(180),emitters=Array.from({length:30},(_,i)=>({x:i*9,y:-i*3}));
- const low=first.draws(emitters,atlas,60,false,1),normal=first.draws(emitters,atlas,180,false,1);
- assert.equal(low.length,60);assert.equal(normal.length,180);
+ const low=first.draws(emitters,atlas,QUALITY.low.particles,false,1),normal=first.draws(emitters,atlas,QUALITY.normal.particles,false,1);
+ assert.equal(low.length,0,'low quality disables ember and smoke draws');assert.equal(normal.length,180);
  assert.deepEqual(normal,second.draws(emitters,atlas,180,false,1));
  assert.ok(normal.every(draw=>draw.width>=2&&draw.width<=14&&draw.alpha<=.8));
  assert.equal(first.draws([],atlas,180,false,1).length,0,'no confirmed active emitters means no particle work');
@@ -73,6 +74,8 @@ test('inactive and reduced-motion effects freeze their visual clock and select s
  effects.update(.05,false,true);assert.equal(effects.time,.05);
  const before=effects.particles.map(p=>({...p}));effects.update(.05,true,true);
  assert.deepEqual(effects.particles,before,'reduced motion freezes particle positions and life');
+ effects.update(.05,false,true,false);assert.equal(effects.time,.1,'the fire presentation clock keeps advancing while low-quality particles are disabled');
+ assert.deepEqual(effects.particles,before,'disabled particle simulation leaves particle state untouched');
  const draws=effects.draws(emitter,atlas,60,true,1);
  assert.ok(draws.every(draw=>draw.key.endsWith('-0')),'reduced motion displays only first authored frame');
 });
@@ -80,15 +83,16 @@ test('inactive and reduced-motion effects freeze their visual clock and select s
 test('ambient snow is deterministic, small, current-sight clipped, and shares the global particle budget',()=>{
  const sight=[{x:100,y:100,radius:80}],identity=(point)=>point,viewport={width:200,height:200};
  assert.equal(ambientSnowDraws([],identity,identity,viewport,8,1,'scene',atlas.path).length,0,'missing current sight disables ambient snow');
- const low=ambientSnowDraws(sight,identity,identity,viewport,8,2,'scene',atlas.path),normal=ambientSnowDraws(sight,identity,identity,viewport,16,2,'scene',atlas.path);
- assert.deepEqual(normal,ambientSnowDraws(sight,identity,identity,viewport,16,2,'scene',atlas.path));
- assert.ok(low.length>0&&normal.length>0);
- assert.ok(low.length<=8&&normal.length<=16);
+ const low=ambientSnowDraws(sight,identity,identity,viewport,QUALITY.low.snowParticles,2,'scene',atlas.path),normal=ambientSnowDraws(sight,identity,identity,viewport,QUALITY.normal.snowParticles,2,'scene',atlas.path);
+ assert.equal(low.length,0,'low quality disables ambient snow draws');
+ assert.deepEqual(normal,ambientSnowDraws(sight,identity,identity,viewport,QUALITY.normal.snowParticles,2,'scene',atlas.path));
+ assert.ok(normal.length>0);
+ assert.ok(normal.length<=QUALITY.normal.snowParticles);
  assert.ok(normal.every(draw=>draw.key===mapEffectSnowKey(atlas.path)&&draw.width>=1&&draw.width<=2&&draw.alpha>=.1&&draw.alpha<=.2&&Math.hypot(draw.x-100,draw.y-100)<=80));
  const emitters=Array.from({length:30},(_,i)=>({x:i,y:i}));
- const fire=new MapEffects(180).draws(emitters,atlas,180-normal.length,false,1),lowFire=new MapEffects(60).draws(emitters,atlas,60-low.length,false,1);
- assert.ok(fire.length+normal.length<=180,'ambient and emitter particles share the normal-quality cap');
- assert.ok(lowFire.length+low.length<=60,'ambient and emitter particles share the low-quality cap');
+ const fire=new MapEffects(180).draws(emitters,atlas,QUALITY.normal.particles-normal.length,false,1),lowFire=new MapEffects(60).draws(emitters,atlas,QUALITY.low.particles-low.length,false,1);
+ assert.ok(fire.length+normal.length<=QUALITY.normal.particles,'ambient and emitter particles share the normal-quality cap');
+ assert.equal(lowFire.length+low.length,0,'low quality disables ambient and emitter particle output');
 });
 
 test('current-sight scheduling uses exact viewport geometry and does not treat absent sight as visible',()=>{
@@ -102,7 +106,7 @@ test('current-sight scheduling uses exact viewport geometry and does not treat a
 test('tree sway selection is stable, conifer-only and quality-capped; matrix keeps the root fixed',()=>{
  const props=Array.from({length:200},(_,i)=>({id:`tree-${i}`,kind:i%5===0?'bare':'conifer'}));
  const low=selectSwayingConiferIds(props,'low'),normal=selectSwayingConiferIds(props,'normal');
- assert.ok(low.size<=4&&normal.size<=12);
+ assert.equal(low.size,0,'low quality disables foliage sway');assert.ok(normal.size>0&&normal.size<=QUALITY.normal.swayingConifers);
  assert.deepEqual([...normal],[...selectSwayingConiferIds([...props].reverse(),'normal')]);
  assert.ok([...normal].every(id=>props.find(prop=>prop.id===id)?.kind==='conifer'));
  assert.equal(foliageSwayOffset('tree-1',4,false),0,'reduced motion and fallback hold the pose');
