@@ -162,10 +162,9 @@ Remaining blockers are target-device verification on Intel UHD 620 or equivalent
 
 ## Headed target-device benchmark mode — 2026-10-17
 
-Source head: `57df4134436b1c715e44c534e37f6222e2866d92`. The benchmark now supports an explicit local headed Chromium mode while preserving headless CI defaults. To measure normal quality from the repository root in a logged-in desktop session, install dependencies once and run:
+Source head: `57df4134436b1c715e44c534e37f6222e2866d92`. The benchmark now supports an explicit local headed Chromium mode while preserving headless CI defaults. Install dependencies once from the repository root with `cd frontend && npm ci`. Then, from the repository root in a logged-in desktop session, run the normal-quality matrix:
 
 ```sh
-cd frontend && npm ci
 cd frontend && MAP_BENCH_HEADLESS=false npm run benchmark:maps
 ```
 
