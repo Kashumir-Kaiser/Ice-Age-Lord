@@ -1,6 +1,11 @@
 const percentile=(values,p)=>values.length?values.slice().sort((a,b)=>a-b)[Math.min(values.length-1,Math.floor(values.length*p))]:null;
 const rounded=value=>Math.round(value*10)/10;
 
+export function formatFeedbackMetrics(values=[]){
+ const samples=values.filter(Number.isFinite);
+ return {p50:percentile(samples,.5),p95:percentile(samples,.95),p99:percentile(samples,.99),worst:samples.length?Math.max(...samples):null};
+}
+
 export function formatIntervalMetrics(metrics={}){
  const summarize=values=>({p50:percentile(values,.5),p95:percentile(values,.95),p99:percentile(values,.99),worst:values.length?Math.max(...values):null});
  const measured=(metrics.intervalSamples??[]).map(sample=>sample.duration).filter(Number.isFinite);

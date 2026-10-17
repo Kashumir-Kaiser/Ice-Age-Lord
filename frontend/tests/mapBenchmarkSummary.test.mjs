@@ -1,7 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {formatBenchmarkSummaries,formatIntervalDiagnostics,formatIntervalMetrics,formatPageRafDiagnostics,formatRendererRafDiagnostics,formatSlowFrameAttribution,formatLongTaskAttributionByPhase,formatLongAnimationFrameScriptsByPhase,formatPointerMoveDispatchByPhase} from '../scripts/map-benchmark-summary.mjs';
+import {formatBenchmarkSummaries,formatIntervalDiagnostics,formatIntervalMetrics,formatPageRafDiagnostics,formatRendererRafDiagnostics,formatSlowFrameAttribution,formatLongTaskAttributionByPhase,formatLongAnimationFrameScriptsByPhase,formatPointerMoveDispatchByPhase,formatFeedbackMetrics} from '../scripts/map-benchmark-summary.mjs';
 import {MapMetrics} from '../src/rendering/MapMetrics.ts';
+
+test('pointer feedback reports p50, p95, p99 and worst with the existing percentile convention',()=>{
+ assert.deepEqual(formatFeedbackMetrics([4,1,3,2]),{p50:3,p95:4,p99:4,worst:4});
+ assert.deepEqual(formatFeedbackMetrics([]),{p50:null,p95:null,p99:null,worst:null});
+ assert.deepEqual(formatFeedbackMetrics([Number.NaN,8,2]),{p50:8,p95:8,p99:8,worst:8});
+});
 
 test('benchmark summary lines expose frame, render and pointer percentiles per run',()=>{
  const lines=formatBenchmarkSummaries([{
@@ -10,7 +16,7 @@ test('benchmark summary lines expose frame, render and pointer percentiles per r
   diagnostics:{intervalByPhase:{pan:{count:0,p95:null},zoom:{count:0,p95:null},selection:{count:0,p95:null}},longTaskOverlap:{supported:false,intervals:0,overlapMs:0},longAnimationFrameOverlap:{supported:false,intervals:0,overlapMs:0}},
   diagnostics:{intervalByPhase:{pan:{count:0,p95:null},zoom:{count:0,p95:null},selection:{count:0,p95:null}},longTaskOverlap:{supported:false,intervals:0,overlapMs:0},longAnimationFrameOverlap:{supported:false,intervals:0,overlapMs:0}},
   metrics:{renderMs:[5,1,3,2,4]},
-  pointerFeedback:{p50:18,p95:45},
+  pointerFeedback:{p50:18,p95:45,p99:50,worst:55},
  }]);
 
  assert.deepEqual(lines,[`MAP_BENCH_RESULT ${JSON.stringify({
@@ -18,7 +24,7 @@ test('benchmark summary lines expose frame, render and pointer percentiles per r
   interval:{p50:16,p95:41,p99:90},
   diagnostics:{intervalByPhase:{pan:{count:0,p95:null},zoom:{count:0,p95:null},selection:{count:0,p95:null}},longTaskOverlap:{supported:false,intervals:0,overlapMs:0},longAnimationFrameOverlap:{supported:false,intervals:0,overlapMs:0}},
   renderMs:{p50:3,p95:5,p99:5},
-  pointerFeedback:{p50:18,p95:45},
+  pointerFeedback:{p50:18,p95:45,p99:50,worst:55},
  })}`]);
 });
 
