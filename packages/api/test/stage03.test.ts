@@ -347,7 +347,7 @@ test('backup import preserves untouched RES-02 opening stock after rejected harv
     commandId: 'reject-unobserved-stone-harvest',
     expectedRevision: before.revision,
     type: 'harvest',
-    payload: { actorId: before.player.id, resourceId: 'RES-LL01-02', materialId: 'STONE', quantity: 1, toolItemId: 'missing-tool' },
+    payload: { actorId: before.ownedUnits.find(unit => !before.travel.orders.some(order => order.status === 'active' && order.actorIds.includes(unit.id)))?.id ?? before.player.id, resourceId: 'RES-LL01-02', materialId: 'STONE', quantity: 1, toolItemId: 'missing-tool' },
   });
   assert.equal(rejected.receipt.accepted, false);
   assert.equal(rejected.receipt.code, 'RESOURCE_NOT_ACCESSIBLE');
