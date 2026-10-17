@@ -8,9 +8,15 @@ export function formatFeedbackMetrics(values=[]){
 
 export function formatIntervalMetrics(metrics={}){
  const summarize=values=>({p50:percentile(values,.5),p95:percentile(values,.95),p99:percentile(values,.99),worst:values.length?Math.max(...values):null});
- const measured=(metrics.intervalSamples??[]).map(sample=>sample.duration).filter(Number.isFinite);
+ const samples=metrics.intervalSamples??[];
+ const measured=samples.map(sample=>sample.duration).filter(Number.isFinite);
+ const intervalByPhase=Object.fromEntries(['pan','zoom','selection'].map(phase=>{
+  const values=samples.filter(sample=>sample.phase===phase&&Number.isFinite(sample.duration)).map(sample=>sample.duration);
+  return [phase,{count:values.length,...summarize(values)}];
+ }));
+ const panInterval=Object.fromEntries(['p50','p95','p99','worst'].map(key=>[key,intervalByPhase.pan[key]]));
  const lifetime=(metrics.intervalMs??[]).filter(Number.isFinite);
- return {interval:summarize(measured),lifetimeInterval:summarize(lifetime)};
+ return {interval:summarize(measured),panInterval,intervalByPhase,lifetimeInterval:summarize(lifetime)};
 }
 
 export function formatPageRafDiagnostics(samples=[],dropped=0){
@@ -117,6 +123,12 @@ export function formatBenchmarkResult(result){
   renderMs:metric(result.metrics?.renderMs??[]),
   pointerFeedback:result.pointerFeedback,
  };
+ if(result.panInterval){
+  formatted.panInterval=result.panInterval;
+  formatted.intervalByPhase=result.intervalByPhase;
+  formatted.intervalBudgetMetric='panInterval';
+  formatted.pointerFeedbackPhase='unspecified';
+ }
  if(result.lifetimeInterval)formatted.lifetimeInterval=result.lifetimeInterval;
  if(result.interactionCounts)formatted.interactionCounts=result.interactionCounts;
  if(result.selectionFeedback)formatted.selectionFeedback=result.selectionFeedback;

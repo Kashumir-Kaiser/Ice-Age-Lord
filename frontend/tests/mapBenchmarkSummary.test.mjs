@@ -267,3 +267,31 @@ test('warmed interval percentiles exclude the pre-window gap and retain in-windo
  assert.deepEqual(result.interval,formatted.interval);
  assert.deepEqual(result.lifetimeInterval,formatted.lifetimeInterval);
 });
+
+test('pan interval budget percentiles are isolated from zoom and selection outliers',()=>{
+ const pan=[10,20,30].map(duration=>({start:0,end:duration,duration,phase:'pan'}));
+ const zoom=[100,120].map(duration=>({start:0,end:duration,duration,phase:'zoom'}));
+ const selection=[200,240].map(duration=>({start:0,end:duration,duration,phase:'selection'}));
+ const base=formatIntervalMetrics({intervalSamples:[...pan,...zoom,...selection],intervalMs:[10,20,30,100,120,200,240]});
+ const extended=formatIntervalMetrics({intervalSamples:[...pan,...zoom,...selection,
+  {start:0,end:10000,duration:10000,phase:'zoom'},
+  {start:0,end:50000,duration:50000,phase:'selection'},
+ ],intervalMs:[10,20,30,100,120,200,240,10000,50000]});
+ assert.deepEqual(base.panInterval,{p50:20,p95:30,p99:30,worst:30});
+ assert.deepEqual(extended.panInterval,base.panInterval,'non-pan intervals cannot change the pan budget metric');
+ assert.notDeepEqual(extended.interval,base.interval,'aggregate interval remains available and reflects every phase');
+ assert.deepEqual(extended.intervalByPhase.pan,{count:3,p50:20,p95:30,p99:30,worst:30});
+ assert.deepEqual(extended.intervalByPhase.zoom,{count:3,p50:120,p95:10000,p99:10000,worst:10000});
+ assert.deepEqual(extended.intervalByPhase.selection,{count:3,p50:240,p95:50000,p99:50000,worst:50000});
+ const [line]=formatBenchmarkSummaries([{
+  quality:'low',fixture:'local',run:0,interval:extended.interval,panInterval:extended.panInterval,
+  intervalByPhase:extended.intervalByPhase,lifetimeInterval:extended.lifetimeInterval,
+  metrics:{renderMs:[],intervalSamples:[...pan,...zoom,...selection]},pointerFeedback:{p50:25,p95:40,p99:50,worst:55},
+ }]);
+ const result=JSON.parse(line.slice('MAP_BENCH_RESULT '.length));
+ assert.equal(result.intervalBudgetMetric,'panInterval');
+ assert.equal(result.pointerFeedbackPhase,'unspecified','pointer latency samples are not event/frame phase-attributed');
+ assert.deepEqual(result.panInterval,base.panInterval);
+ assert.deepEqual(result.intervalByPhase,extended.intervalByPhase);
+ assert.deepEqual(result.interval,extended.interval,'aggregate interval remains backward compatible');
+});
