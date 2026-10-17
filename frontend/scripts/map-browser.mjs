@@ -3,7 +3,14 @@ import { resolve } from 'node:path';
 import {startMapFixtureServer} from './map-fixture-server.mjs';
 
 const dist=resolve(process.env.MAP_DIST??'dist');
-export function launchMapBrowser(){return chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox','--disable-dev-shm-usage','--enable-precise-memory-info','--js-flags=--expose-gc']});}
+export async function launchMapBrowser({headless=true}={}) {
+ try {
+  return await chromium.launch({headless,executablePath:process.env.CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox','--disable-dev-shm-usage','--enable-precise-memory-info','--js-flags=--expose-gc']});
+ } catch(error) {
+  if(!headless)throw new Error('Unable to launch headed Chromium for local map benchmarking. MAP_BENCH_HEADLESS=false requires an available desktop display and Chromium system dependencies.',{cause:error});
+  throw error;
+ }
+}
 export async function navigateMap(page,name){
  const menu=page.getByRole('button',{name:'Mở điều hướng'});if(await menu.isVisible())await menu.click();
  await page.getByRole('navigation',{name:'Các mục giao diện'}).getByRole('button',{name,exact:true}).click();

@@ -295,3 +295,17 @@ test('pan interval budget percentiles are isolated from zoom and selection outli
  assert.deepEqual(result.intervalByPhase,extended.intervalByPhase);
  assert.deepEqual(result.interval,extended.interval,'aggregate interval remains backward compatible');
 });
+
+
+test('benchmark summary records the measured WebGL adapter and verification result',()=>{
+ const gpuInfo={vendor:'Intel Inc.',renderer:'Intel(R) UHD Graphics 620',vendorSource:'unmasked',rendererSource:'unmasked'};
+ const [line]=formatBenchmarkSummaries([{
+  quality:'normal',fixture:'fresh',run:0,interval:{p50:16,p95:17,p99:20,worst:22},
+  metrics:{renderMs:[]},pointerFeedback:{p50:16,p95:17},gpu:gpuInfo.renderer,gpuInfo,headless:false,targetDeviceVerified:true,
+ }]);
+ const result=JSON.parse(line.slice('MAP_BENCH_RESULT '.length));
+ assert.equal(result.gpu,'Intel(R) UHD Graphics 620');
+ assert.deepEqual(result.gpuInfo,gpuInfo);
+ assert.equal(result.headless,false);
+ assert.equal(result.targetDeviceVerified,true);
+});

@@ -129,6 +129,7 @@ export function formatBenchmarkResult(result){
   formatted.intervalBudgetMetric='panInterval';
   formatted.pointerFeedbackPhase='unspecified';
  }
+ if(result.gpuInfo){formatted.gpu=result.gpu??result.gpuInfo.renderer??null;formatted.gpuInfo=result.gpuInfo;formatted.headless=result.headless;formatted.targetDeviceVerified=result.targetDeviceVerified===true;}
  if(result.lifetimeInterval)formatted.lifetimeInterval=result.lifetimeInterval;
  if(result.interactionCounts)formatted.interactionCounts=result.interactionCounts;
  if(result.selectionFeedback)formatted.selectionFeedback=result.selectionFeedback;
