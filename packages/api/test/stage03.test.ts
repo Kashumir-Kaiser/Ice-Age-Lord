@@ -341,18 +341,20 @@ test('backup import preserves untouched RES-02 opening stock after rejected harv
   const stoneBalance = before.spatial.resourceBalances.find(balance => balance.resourceId === 'RES-LL01-02')!;
   assert.equal(stoneBalance.remaining, 1_240);
 
-  const rejected = await fixture.service.executeCommand(saveId, {
+  const command = {
     schemaVersion: 1,
     saveId,
     commandId: 'reject-unobserved-stone-harvest',
     expectedRevision: before.revision,
-    type: 'harvest',
-    payload: { actorId: before.ownedUnits.find(unit => !before.travel.orders.some(order => order.status === 'active' && order.actorIds.includes(unit.id)))?.id ?? before.player.id, resourceId: 'RES-LL01-02', materialId: 'STONE', quantity: 1, toolItemId: 'missing-tool' },
-  });
+    type: 'harvest' as const,
+    payload: { actorId: before.player.id, resourceId: 'RES-LL01-02', materialId: 'STONE', quantity: 1, toolItemId: 'missing-tool' },
+  };
+  await assert.rejects(() => fixture.service.executeCommand(saveId, command), { code: 'INVALID_COMMAND' });
+  const rejected = fixture.service.getCommand(saveId, command.commandId);
   assert.equal(rejected.receipt.accepted, false);
-  assert.equal(rejected.receipt.code, 'ACTOR_ALREADY_TRAVELLING');
+  assert.equal(rejected.receipt.code, 'RESOURCE_NOT_ACCESSIBLE');
   const afterRejectedHarvest = fixture.service.loadSave(saveId).state;
-  assert.equal(afterRejectedHarvest.receipts.at(-1)?.receipt.code, 'ACTOR_ALREADY_TRAVELLING');
+  assert.equal(afterRejectedHarvest.receipts.at(-1)?.receipt.code, 'RESOURCE_NOT_ACCESSIBLE');
   const beforeWithoutReceipts = structuredClone(before);
   beforeWithoutReceipts.receipts = [];
   const afterWithoutReceipts = structuredClone(afterRejectedHarvest);
