@@ -1,6 +1,13 @@
 const percentile=(values,p)=>values.length?values.slice().sort((a,b)=>a-b)[Math.min(values.length-1,Math.floor(values.length*p))]:null;
 const rounded=value=>Math.round(value*10)/10;
 
+export function formatIntervalMetrics(metrics={}){
+ const summarize=values=>({p50:percentile(values,.5),p95:percentile(values,.95),p99:percentile(values,.99),worst:values.length?Math.max(...values):null});
+ const measured=(metrics.intervalSamples??[]).map(sample=>sample.duration).filter(Number.isFinite);
+ const lifetime=(metrics.intervalMs??[]).filter(Number.isFinite);
+ return {interval:summarize(measured),lifetimeInterval:summarize(lifetime)};
+}
+
 export function formatPageRafDiagnostics(samples=[],dropped=0){
  const valid=samples.filter(sample=>['pan','zoom','selection'].includes(sample.phase)&&Number.isFinite(sample.start)&&Number.isFinite(sample.end)&&Number.isFinite(sample.duration)&&sample.end>sample.start&&sample.duration>=0);
  const summarize=rows=>({count:rows.length,p50:percentile(rows.map(row=>row.duration),.5),p95:percentile(rows.map(row=>row.duration),.95),p99:percentile(rows.map(row=>row.duration),.99),max:rows.length?Math.max(...rows.map(row=>row.duration)):null});
@@ -105,6 +112,7 @@ export function formatBenchmarkResult(result){
   renderMs:metric(result.metrics?.renderMs??[]),
   pointerFeedback:result.pointerFeedback,
  };
+ if(result.lifetimeInterval)formatted.lifetimeInterval=result.lifetimeInterval;
  if(result.interactionCounts)formatted.interactionCounts=result.interactionCounts;
  if(result.selectionFeedback)formatted.selectionFeedback=result.selectionFeedback;
  // Report the latest rendered scene state for the dense fixture without changing the gate formulas.

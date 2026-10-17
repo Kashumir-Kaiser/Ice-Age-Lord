@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {formatBenchmarkSummaries,formatIntervalDiagnostics,formatPageRafDiagnostics,formatRendererRafDiagnostics,formatSlowFrameAttribution,formatLongTaskAttributionByPhase,formatLongAnimationFrameScriptsByPhase,formatPointerMoveDispatchByPhase} from '../scripts/map-benchmark-summary.mjs';
+import {formatBenchmarkSummaries,formatIntervalDiagnostics,formatIntervalMetrics,formatPageRafDiagnostics,formatRendererRafDiagnostics,formatSlowFrameAttribution,formatLongTaskAttributionByPhase,formatLongAnimationFrameScriptsByPhase,formatPointerMoveDispatchByPhase} from '../scripts/map-benchmark-summary.mjs';
 import {MapMetrics} from '../src/rendering/MapMetrics.ts';
 
 test('benchmark summary lines expose frame, render and pointer percentiles per run',()=>{
@@ -235,4 +235,29 @@ test('dense benchmark result logs current renderer object and texture counters',
   quality:'normal',fixture:'local',run:1,interval:{p50:16,p95:33,p99:50},
   metrics:{renderMs:[4,6],...counters},pointerFeedback:{p50:20,p95:40},
  }])[0].includes('"drawCalls"'),false,'other fixture logs stay unchanged');
+});
+
+
+test('warmed interval percentiles exclude the pre-window gap and retain in-window hitches separately from lifetime cadence',()=>{
+ const metrics=new MapMetrics(true);
+ metrics.frame(10);
+ metrics.data.sampleStartMs=100;
+ metrics.data.phaseTransitions=[{at:100,phase:'pan'}];
+ metrics.frame(500); // The 490ms interval began before measurement and is excluded from the warmed sample.
+ let time=500;
+ for(const duration of [...Array(18).fill(16),250,250]){time+=duration;metrics.frame(time);}
+ metrics.data.sampleEndMs=time+1;
+ metrics.frame(time+5); // Trailing interval is outside the measurement window.
+ const formatted=formatIntervalMetrics(metrics.data);
+ assert.equal(metrics.data.intervalMs[0],490,'lifetime cadence retains the pre-window hitch');
+ assert.equal(formatted.interval.p95,250,'warmed p95 keeps the in-window 250ms hitches');
+ assert.equal(formatted.interval.worst,250);
+ assert.equal(formatted.lifetimeInterval.worst,490);
+ const [line]=formatBenchmarkSummaries([{
+  quality:'normal',fixture:'dense-520',run:0,interval:formatted.interval,lifetimeInterval:formatted.lifetimeInterval,
+  metrics:{renderMs:[],intervalSamples:metrics.data.intervalSamples},pointerFeedback:{p50:null,p95:null},
+ }]);
+ const result=JSON.parse(line.slice('MAP_BENCH_RESULT '.length));
+ assert.deepEqual(result.interval,formatted.interval);
+ assert.deepEqual(result.lifetimeInterval,formatted.lifetimeInterval);
 });

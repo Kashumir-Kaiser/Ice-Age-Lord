@@ -3,7 +3,7 @@ import {gzipSync} from 'node:zlib';
 import {resolve} from 'node:path';
 import os from 'node:os';
 import {launchMapBrowser,openMap,navigateMap,readyMap} from './map-browser.mjs';
-import {formatBenchmarkSummaries,formatPageRafDiagnostics} from './map-benchmark-summary.mjs';
+import {formatBenchmarkSummaries,formatPageRafDiagnostics,formatIntervalMetrics} from './map-benchmark-summary.mjs';
 
 const seconds=Number(process.env.MAP_BENCH_SECONDS??60),runs=Number(process.env.MAP_BENCH_RUNS??3),warmup=Number(process.env.MAP_BENCH_WARMUP??10);
 const browser=await launchMapBrowser(),results=[];
@@ -41,7 +41,7 @@ try{
    requestAnimationFrame(rafHeartbeat);
    const send=(type,dx,dy)=>node.dispatchEvent(new PointerEvent(type,{bubbles:true,pointerId:41,pointerType:'mouse',button:0,clientX:x+dx,clientY:y+dy}));
    const sendPointerMove=(dx,dy,phase)=>{const dispatchStart=performance.now();node.dispatchEvent(new PointerEvent('pointermove',{bubbles:true,pointerId:41,pointerType:'mouse',button:0,clientX:x+dx,clientY:y+dy}));const dispatchEnd=performance.now();if(pointerMoveSamples.length<20000)pointerMoveSamples.push({start:dispatchStart,end:dispatchEnd,duration:dispatchEnd-dispatchStart,phase});else pointerMoveDropped++;};
-   const metrics=window.__mapMetrics.at(-1);metrics.renderMs=[];metrics.intervalMs=[];metrics.intervalSamples=[];metrics.rendererRafSamples=[];metrics.sampleStartMs=start;metrics.sampleEndMs=null;metrics.phaseTransitions=[{at:start,phase:activePhase}];
+   const metrics=window.__mapMetrics.at(-1);metrics.renderMs=[];metrics.intervalSamples=[];metrics.rendererRafSamples=[];metrics.sampleStartMs=start;metrics.sampleEndMs=null;metrics.phaseTransitions=[{at:start,phase:activePhase}];
    send('pointerdown',0,0);
    await new Promise(resolve=>{
     const step=()=>{
@@ -66,7 +66,8 @@ try{
   },seconds);
   const {metrics,longTasks,longAnimationFrames,observerDropped}=await page.evaluate(()=>{const state=window.__mapBenchObserverState;if(state)for(const {observer,type,key,serialize,append} of state.observers)for(const entry of observer.takeRecords())append(key,serialize(type,entry),type==='longtask'?10000:1000);return {metrics:window.__mapMetrics.at(-1),longTasks:state?.longTasks??[],longAnimationFrames:state?.longAnimationFrames??[],observerDropped:state?.dropped??{}};});
   const gpu=await page.evaluate(()=>{const canvas=document.querySelector('.map-render-canvas');const gl=canvas.getContext('webgl2')||canvas.getContext('webgl');if(!gl)return null;const ext=gl.getExtension('WEBGL_debug_renderer_info');return ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER);});
-  results.push({fixture,run,quality,seconds,warmup,gpu,metrics,coldTransfer,longTasks,longAnimationFrames,observerDropped,observerSupport,pageRafDiagnostics:formatPageRafDiagnostics(interactions.pageRafSamples,interactions.pageRafDropped),pointerMoveSamples:interactions.pointerMoveSamples,pointerMoveDropped:interactions.pointerMoveDropped,interactionCounts:interactions.counts,segments:interactions.segments,pointerFeedback:{p50:percentile(interactions.feedback,.5),p95:percentile(interactions.feedback,.95)},selectionFeedback:{successfulSamples:interactions.selectionFeedback.length,p50:percentile(interactions.selectionFeedback,.5),p95:percentile(interactions.selectionFeedback,.95)},interval:{p50:percentile(metrics.intervalMs,.5),p95:percentile(metrics.intervalMs,.95),p99:percentile(metrics.intervalMs,.99),worst:metrics.intervalMs.length?Math.max(...metrics.intervalMs):null},visibleMarkers:await page.locator('.map-entity-marker,.map-cluster').count()});
+  const intervalMetrics=formatIntervalMetrics(metrics);
+  results.push({fixture,run,quality,seconds,warmup,gpu,metrics,coldTransfer,longTasks,longAnimationFrames,observerDropped,observerSupport,pageRafDiagnostics:formatPageRafDiagnostics(interactions.pageRafSamples,interactions.pageRafDropped),pointerMoveSamples:interactions.pointerMoveSamples,pointerMoveDropped:interactions.pointerMoveDropped,interactionCounts:interactions.counts,segments:interactions.segments,pointerFeedback:{p50:percentile(interactions.feedback,.5),p95:percentile(interactions.feedback,.95)},selectionFeedback:{successfulSamples:interactions.selectionFeedback.length,p50:percentile(interactions.selectionFeedback,.5),p95:percentile(interactions.selectionFeedback,.95)},interval:intervalMetrics.interval,lifetimeInterval:intervalMetrics.lifetimeInterval,visibleMarkers:await page.locator('.map-entity-marker,.map-cluster').count()});
   await page.close();console.log(`Measured ${fixture} run ${run+1}/${runs}`);
  }
 }finally{
