@@ -34,11 +34,11 @@ test('benchmark summary keeps unavailable selection explicit and reports latency
   quality:'low',fixture:'dense-520',run:0,
   interval:{p50:16,p95:40,p99:90},metrics:{renderMs:[1]},pointerFeedback:{p50:20,p95:35},
   interactionCounts:{pan:100,zoom:12,selection:0,selectionAttempts:40,selectionUnavailable:40},
-  selectionFeedback:{successfulSamples:0,p50:null,p95:null},
+  selectionFeedback:{successfulSamples:0,p50:null,p95:null,p99:null,worst:null},
  }]);
  const result=JSON.parse(line.slice('MAP_BENCH_RESULT '.length));
  assert.deepEqual(result.interactionCounts,{pan:100,zoom:12,selection:0,selectionAttempts:40,selectionUnavailable:40});
- assert.deepEqual(result.selectionFeedback,{successfulSamples:0,p50:null,p95:null});
+ assert.deepEqual(result.selectionFeedback,{successfulSamples:0,p50:null,p95:null,p99:null,worst:null});
 });
 
 test('benchmark summary handles empty metric samples',()=>{
