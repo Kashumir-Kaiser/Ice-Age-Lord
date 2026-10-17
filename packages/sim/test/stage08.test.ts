@@ -43,6 +43,24 @@ function elapsedFromSource(value: string): number {
   return Number(match[1]) * HOUR_MS;
 }
 
+test('daily resource renewal system receipts are projected without resource details', () => {
+  const service = new GameApplicationService({} as SqliteRepository, world, { timersEnabled: false });
+  const projected = (service as unknown as {
+    projectSystemPlayerEvent: (event: { sequence: number; type: string; occurredAtElapsedMs: number; payload: Record<string, unknown> }, eventId: string, state: GameState) => {
+      sequence: number; eventId: string; type: string; category: string; title: string; text: string;
+    };
+  }).projectSystemPlayerEvent({
+    sequence: 1, type: 'resource_daily_quotas_reset', occurredAtElapsedMs: 24 * HOUR_MS,
+    payload: { resourceId: 'hidden-resource', remaining: 123 },
+  }, 'daily-renewal', freshState());
+
+  assert.equal(projected.type, 'resource_daily_quotas_reset');
+  assert.equal(projected.category, 'world');
+  assert.equal(projected.text, 'Daily gathering limits have reset.');
+  assert.equal(JSON.stringify(projected).includes('hidden-resource'), false);
+  assert.equal('payload' in projected, false);
+});
+
 function isolatedEventState(eventId: string, elapsed: number, status: ScheduledEventState['status'] = 'scheduled'): GameState {
   const state = freshState();
   state.botPopulation = null;

@@ -1815,6 +1815,7 @@ export class GameApplicationService {
       world_sunset: { category: 'time', title: 'Mặt trời lặn', text: 'Ánh sáng ngày chuyển sang chạng vạng.' },
       world_night_started: { category: 'time', title: 'Bắt đầu ban đêm', text: 'Chạng vạng kết thúc lúc 17:00.' },
       world_dawn: { category: 'time', title: 'Bình minh', text: 'Ngày mới bắt đầu lúc 07:00.' },
+      resource_daily_quotas_reset: { category: 'world', title: 'Resource quotas renewed', text: 'Daily gathering limits have reset.' },
       opening_protection_expired: { category: 'survival', title: 'Hết thời hạn bảo hộ mở đầu', text: 'Bảo hộ mở đầu đã hết hạn sau 144 giờ mô phỏng.' },
       opening_protection_started: { category: 'survival', title: 'Bảo hộ mở đầu đã bắt đầu', text: 'EV00-SAFE-FIRE bảo vệ lãnh địa trong 144 giờ mô phỏng.' },
       cold_warning_changed: { category: 'survival', title: 'Mức tải lạnh đã đổi', text: `ColdLoad: ${String(event.payload.coldLoad)}.` },
