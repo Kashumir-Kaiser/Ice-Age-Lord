@@ -13,7 +13,7 @@ import type {EffectParticleDraw} from './MapEffects.ts';
 import { flameFrame, flameRect, flameKey } from './FlamePresentation.ts';
 import { createCompositionCache, architecturalCompositePlan, qaArtLayerMetrics } from './SpriteRegistration.ts';
 import { pointInTransformedPolygon } from './MapPicking.ts';
-import { depthOrder } from './DepthOrder.ts';
+import { depthOrder, sortPropDraws } from './DepthOrder.ts';
 import {projectDepthNodes} from './DepthSlices.ts';
 import { projectBuildings } from './BuildingGeometry.ts';
 import { BuildingFootprintIndex } from './BuildingFootprintIndex.ts';
@@ -84,9 +84,11 @@ export class MapRenderer {
   private depthProjection:MapSnapshot['projection']|null=null;
   private depthPlanning=false;
   private depthIds:string[]=[];
+  private qaDraftOrientations:MapMetrics['data']['qaDraftOrientations']=[];
   readonly metrics:MapMetrics;
   constructor(private canvas:HTMLCanvasElement,snapshot:MapSnapshot,private status:(backend:string)=>void,enabledMetrics=false,environment:readonly {path:string;sha256:string;width:number;height:number}[]=[],private readonly mapEffects?:MapEffectsAtlas){
     this.snapshot=snapshot;this.snapshotSource=snapshot;this.metrics=new MapMetrics(enabledMetrics);
+    this.updateQADraftOrientations(snapshot);
     this.buildingFootprints=new BuildingFootprintIndex(snapshot.buildings);
     this.sampler=new TerrainSampler(snapshot.visualIdentity??snapshot.identity,snapshot.geography,snapshot.regions,snapshot.modeledInfill);
     this.terrain=new TerrainChunkCache(this.sampler,QUALITY.normal.terrainBytes,QUALITY.normal.textureSize,()=>this.invalidate());
@@ -140,7 +142,11 @@ export class MapRenderer {
       rebuilt=true;
     }
     if(rebuilt||snapshot.buildings!==this.snapshot.buildings){this.updateContacts(snapshot);this.buildingFootprints=new BuildingFootprintIndex(snapshot.buildings);const ids=new Set(snapshot.buildings.map(b=>b.id)),lods=snapshot.buildingLODs??this.lod;for(const id of lods.keys())if(!ids.has(id))lods.delete(id);}
+    if(snapshot.buildings!==this.snapshot.buildings)this.updateQADraftOrientations(snapshot);
     this.snapshot=snapshot;this.snapshotSource=snapshot;this.invalidate();
+  }
+  private updateQADraftOrientations(snapshot:MapSnapshot):void {
+    this.qaDraftOrientations=this.metrics.enabled?snapshot.buildings.filter(building=>building.draft).map(({id,assetId,orientation})=>({id,assetId,orientation})):[];
   }
   private updateContacts(snapshot:MapSnapshot):void {
     const contacts=snapshot.buildings.filter(b=>!b.draft&&!b.fixture&&b.asset).map(b=>{const turned=b.orientation==='east'||b.orientation==='west';return {id:b.id,x:b.point.x,y:b.point.y,width:turned?b.footprint.depthM:b.footprint.widthM,depth:turned?b.footprint.widthM:b.footprint.depthM};});
@@ -275,7 +281,7 @@ export class MapRenderer {
       draws.push({id:b.id+':shadow',path,...b.rect,alpha:layer.alpha*(b.draft?.55:1)});
     }}
     // Architectural order from the partial order is preserved; props are inserted by their ground depths.
-    let propIndex=0;const sortedProps=props.sort((a,b)=>a.depth-b.depth||a.id.localeCompare(b.id));
+    let propIndex=0;const sortedProps=sortPropDraws(props);
     const drawBuilding=(b:typeof nodes[number])=>{
       const asset=b.asset!;this.assets.register(asset,useAtlas);const lod=b.lod;
       if(b.slice&&draws.some(d=>d.id===b.entityId+':body-fallback'))return;
@@ -351,7 +357,7 @@ export class MapRenderer {
     m.effectSprites=this.effectDraws.length;
     let terrainGPUBytes=0;for(const texture of this.chunkTextures.values())terrainGPUBytes+=texture.source.width*texture.source.height*4;
     m.textureBytes=this.app?this.assets.gpuBytes+terrainGPUBytes+this.architectureTextureBytes+this.renderTargetBytes():0;
-    m.decodedBytes=this.assets.bytes+this.terrain.bytes+this.terrain.scratchBytes;m.terrainBytes=terrainGPUBytes;this.refreshReadinessMetrics();m.qaDraftOrientations=this.metrics.enabled?this.snapshot.buildings.filter(building=>building.draft).map(({id,assetId,orientation})=>({id,assetId,orientation})):[];m.visible=buildingObjects.length+props.length;m.total=this.snapshot.buildings.length+worldProps.length;
+    m.decodedBytes=this.assets.bytes+this.terrain.bytes+this.terrain.scratchBytes;m.terrainBytes=terrainGPUBytes;this.refreshReadinessMetrics();m.qaDraftOrientations=this.qaDraftOrientations;m.visible=buildingObjects.length+props.length;m.total=this.snapshot.buildings.length+worldProps.length;
     m.quality=this.quality;m.terrainLevel=this.level;m.visibleTerrainChunks=chunkCoverage(bounds,this.level);m.prefetchChunks=prefetched;
   }
   refreshReadinessMetrics():void{const metrics=this.metrics.data;metrics.queued=this.terrain.pending;metrics.pendingTextures=this.assets.pending+this.assets.deferred;metrics.pendingTextureDetails=this.metrics.enabled?this.assets.readinessDiagnostics:[];}

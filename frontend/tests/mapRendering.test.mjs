@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { spriteRect, referenceSize, artPolygon, composition, resolveOrientation, architecturalCompositePlan, qaArtLayerMetrics, createCompositionCache } from '../src/rendering/SpriteRegistration.ts';
 import { pointInPolygon, pointInTransformedPolygon, pointerCSS, pickStack, cyclePick } from '../src/rendering/MapPicking.ts';
 import { TerrainSampler, noise, chunkLevel } from '../src/rendering/TerrainSampler.ts';
-import { depthOrder } from '../src/rendering/DepthOrder.ts';
+import { depthOrder, sortPropDraws } from '../src/rendering/DepthOrder.ts';
 import { projectBuildings, rectPolygon } from '../src/rendering/BuildingGeometry.ts';
 import { AdaptiveQuality, chooseLOD } from '../src/rendering/mapStyle.ts';
 import { composeTerritoryBuildings, territoryBuildings, territorySnapshot } from '../src/rendering/MapSceneAdapter.ts';
@@ -103,6 +103,7 @@ test('terrain/decor determinism, negative chunks, shared edges and varying viewp
  for(const [x,y] of points)assert.deepEqual(a.sample(x,y),b.sample(x,y));
  for(const boundary of [-64,0,64]){near(noise(boundary/110,17/110,a.seed),noise(boundary/110,17/110,b.seed));}
  const small=a.props({minX:0,maxX:300,minY:-300,maxY:0},.3),large=b.props({minX:-300,maxX:600,minY:-600,maxY:300},.3);
+ assert.deepEqual(small.map(p=>p.id),[...small].sort((left,right)=>left.id.localeCompare(right.id)).map(p=>p.id),'TerrainSampler supplies painter-stable ID order');
  for(const prop of small)assert.deepEqual(prop,large.find(p=>p.id===prop.id));
  assert.notEqual(a.seed,new TerrainSampler('world-B').seed,'visual seed derives from the world/save identity');
  const live=new TerrainSampler('save-A',undefined,[],false);assert.equal(live.forestAt(305,-75),0,'demo modeled infill cannot invent LIVE terrain');
@@ -140,6 +141,13 @@ test('distant symbols and picking share their 12 CSS pixel bounds and hysteresis
  const item={id:tiny.id,ground:[],silhouette:rectPolygon(tiny.symbol),selectable:true};assert.deepEqual(pickStack({x:65,y:49},[item],false),['house']);assert.deepEqual(pickStack({x:67,y:49},[item],false),[]);assert.deepEqual(pickStack({x:65,y:49},[item],true),[]);
  const edge=13/16;assert.equal(projectBuildings([building],project,edge,size,true,states)[0].lod,'regional');assert.equal(projectBuildings([building],project,edge,size,true,states)[0].lod,'regional','a second caller observes the same hysteresis');
  assert.equal(projectBuildings([building],project,15/16,size,true,states)[0].lod,'district');
+});
+test('stable prop depth sorting preserves TerrainSampler painter ties',()=>{
+ const sampled=new TerrainSampler('prop-painter-order').props({minX:0,maxX:360,minY:-360,maxY:0},.3);
+ assert.ok(sampled.length>2,'fixture should include enough deterministic props to exercise ties');
+ const input=sampled.map((prop,index)=>({id:'prop:'+prop.id,depth:index%3,source:prop}));
+ const expected=input.slice().sort((left,right)=>left.depth-right.depth||left.id.localeCompare(right.id));
+ assert.deepEqual(sortPropDraws(input).map(item=>item.id),expected.map(item=>item.id),'stable depth-only sorting must match prior depth-plus-ID painter order');
 });
 test('overlap order uses footprint relations with stable IDs and spatial neighbor work',()=>{
  const object=(id,x,y,w=2,d=2,depth=0)=>({id,depth,bounds:{minX:0,maxX:100,minY:0,maxY:100},footprint:{minX:x-w/2,maxX:x+w/2,minY:y-d/2,maxY:y+d/2}});

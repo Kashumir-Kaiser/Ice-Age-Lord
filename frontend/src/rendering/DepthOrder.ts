@@ -1,5 +1,10 @@
 export type Bounds = {minX:number;minY:number;maxX:number;maxY:number};
 export type DepthObject = {id:string;depth:number;bounds:Bounds;footprint:Bounds};
+
+/** Sort already-stable prop input by ground depth; modern JS sort preserves painter ties. */
+export function sortPropDraws<T extends {depth:number}>(props:T[]):T[] {
+  return props.sort((a,b)=>a.depth-b.depth);
+}
 export const intersects=(a:Bounds,b:Bounds)=>a.minX<=b.maxX&&a.maxX>=b.minX&&a.minY<=b.maxY&&a.maxY>=b.minY;
 /** Spatial broad phase: only projected neighbors enter pairwise comparisons. */
 export function depthOrder<T extends DepthObject>(objects: readonly T[]): {objects:T[];cycles:string[];comparisons:number} {
