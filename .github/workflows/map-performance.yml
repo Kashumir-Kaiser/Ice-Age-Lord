@@ -2,7 +2,7 @@ name: Map performance evidence
 on:
   push:
     branches: ['codex/map-25d-overhaul']
-    paths: ['frontend/src/rendering/**', 'frontend/src/territory/**', 'frontend/src/LiveApp.tsx', 'frontend/src/live/**', 'frontend/scripts/map-benchmark.mjs', 'frontend/scripts/map-memory.mjs', 'frontend/scripts/map-browser.mjs', 'frontend/scripts/map-fixture-server.mjs', 'frontend/scripts/map-cpu-profile.mjs', 'frontend/scripts/map-cpu-profile-summary.mjs', 'frontend/scripts/map-trace-dense-pan.mjs', '.github/workflows/map-performance.yml']
+    paths: ['frontend/src/rendering/**', 'frontend/src/territory/**', 'frontend/src/LiveApp.tsx', 'frontend/src/live/**', 'frontend/scripts/map-benchmark.mjs', 'frontend/scripts/map-benchmark-summary.mjs', 'frontend/scripts/map-memory.mjs', 'frontend/scripts/map-browser.mjs', 'frontend/scripts/map-fixture-server.mjs', 'frontend/scripts/map-cpu-profile.mjs', 'frontend/scripts/map-cpu-profile-summary.mjs', 'frontend/scripts/map-trace-dense-pan.mjs', '.github/workflows/map-performance.yml']
   workflow_dispatch:
     inputs:
       profile_dense_pan:
