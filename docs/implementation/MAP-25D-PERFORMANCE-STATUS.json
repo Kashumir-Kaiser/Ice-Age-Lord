@@ -2,299 +2,29 @@
   "schemaVersion": 1,
   "status": "pan-only frame interval gates now use phase-filtered samples; final validation completed with budget misses, target-device verification pending, and frontend E2E failures",
   "latestIntegrationValidation": {
-    "assetExport": {
-      "status": "passed; repeat export byte-identical",
-      "mapSourceAndGeneratedFilesCompared": 1233,
-      "manifestsCompared": 2,
-      "totalFilesCompared": 1235,
-      "previouslyTrackedMapPngsCompared": 1054,
-      "previouslyTrackedMapPngsIntentionallyChanged": 2
-    },
-    "unitTests": {
-      "status": "all 123 cases passed across two runs",
-      "fullRunPassed": 122,
-      "fullRunFailed": 0,
-      "fullRunEnvironmentLimitedSkipped": 1,
-      "separatelyExecutedSkippedCasePassed": 1
-    },
+    "sourceCommit": "31a963f000d62921d529b1686e7d9865d41e8613",
+    "runtimeSourceCommit": "607932af0c5ea90e85f507675eb44246cae2ed1d",
+    "sourceChanges": [
+      "frontend/scripts/map-benchmark-summary.mjs",
+      "frontend/scripts/map-benchmark.mjs",
+      "frontend/tests/mapBenchmarkSummary.test.mjs"
+    ],
+    "build": "passed",
+    "unitTests": "passed including pan-only percentile regression",
     "typecheck": "passed",
-    "productionBuild": "passed",
-    "liveBaselineIntegrity": {
-      "status": "passed on the final local production dist",
-      "qualityModes": [
-        "low",
-        "normal"
-      ],
-      "realApiTerritoryBuildingReferencesPreserved": 3,
-      "lowAndNormalLiveViewsRenderedWithoutQaOnlyAttributes": true,
-      "qaOnlyAttributesPresent": 0,
-      "domainHashUnchangedDuringPostReloadMapViewAndPan": true,
-      "preReloadDomainHashCompared": true,
-      "focusedLiveQueryRegression": "passed in a separate targeted browser run",
-      "separateRevision2ReloadHashCheck": "passed; before/after reload hashes matched; this was separate from the complete transfer run",
-      "latestCombinedTransferAttempt": "passed; actual temporary SQLite API and production-dist LiveApp save/reopen/render/pan flow",
-      "proxyCloseSmokeCheck": "passed separately with a real HTTP request and no proxy errors",
-      "localBaselineMapAssetWireBytes": {
-        "low": {
-          "requests": 37,
-          "uniqueFiles": 23,
-          "bytes": 2986115
-        },
-        "normal": {
-          "requests": 21,
-          "uniqueFiles": 21,
-          "bytes": 2406796
-        }
-      },
-      "gzipManifestBytesPerRequest": 110706,
-      "savedPopulatedAssetTransferMeasured": false,
-      "populationBlocker": "RESOURCE_LEDGER_STAGE_05",
-      "evidence": "MAP-25D-LIVE-TRANSFER-EVIDENCE.json",
-      "visibleWorldEntityCount": 4,
-      "visibleWorldEntitiesHaveApiPositions": true,
-      "houseAndTombLinkedSitePositionsAvailable": false,
-      "survivalFireProjection": "anchored to API territory origin by existing LiveApp behavior",
-      "domainStateSha256": "907aca737e5026d811a25e8bd2e6728e9c7ea2616c0a9adb83c8832c125717bf",
-      "domainStateRevisionBeforeInspectEntity": 1,
-      "domainStateRevisionBeforeReload": 2,
-      "domainStateRevisionAfterReload": 2,
-      "domainHashUnchangedBeforeAndAfterReload": true,
-      "domainHashUnchangedThroughLowAndNormalRenderPan": true,
-      "previousSeparateRunMapAssetWireBytes": {
-        "low": {
-          "requests": 39,
-          "uniqueFiles": 24,
-          "bytes": 3226903
-        },
-        "normal": {
-          "requests": 22,
-          "uniqueFiles": 22,
-          "bytes": 2467797
-        }
-      },
-      "sourceFingerprint": "ea687299b65929a1114131cad19a481972fce64fe92701fe37d03ba5c86e561f",
-      "productionDistFingerprint": "999ed313d7961149e2b1ed44d9e7463ca2417ff2509a51bc0a0bc304df8a3e6f"
-    },
-    "browserVisualReview": {
-      "status": "latest rendering CI workflow passed; 876-row visual matrix accepted at contact-sheet and selected-raw review scope",
-      "ciInteractionValidation": {
-        "workflowRun": 38852705019,
-        "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
-        "playwright": {
-          "passed": 87,
-          "skipped": 5,
-          "failed": 0,
-          "duration": "2.4 minutes",
-          "status": "passed"
-        },
-        "npmTest": "passed",
-        "productionBuild": "passed",
-        "captureStep": "passed",
-        "benchmarkHarness": "passed",
-        "artifactUploads": "passed",
-        "overallWorkflow": "passed"
-      },
-      "watchtower390LowDpr2Readiness": {
-        "status": "passed; four-pose renderer readiness diagnostics only",
-        "durationSeconds": 22.4,
-        "viewport": {
-          "width": 390,
-          "height": 844
-        },
-        "quality": "low",
-        "devicePixelRatio": 2,
-        "orientations": [
-          "north",
-          "east",
-          "south",
-          "west"
-        ],
-        "allFocusedAndVisible": true,
-        "backend": "webgl",
-        "queuedTextures": 0,
-        "pendingTextures": 0,
-        "errors": 0,
-        "proof": "../../frontend/map-evidence/watchtower-390-low-dpr2-readiness/readiness.json",
-        "proofSha256": "faf937f2c969890acda216ecd3e51cc96c7e5ee74defec432be262ccc5e22ecd",
-        "scopeNote": "Confirms readiness diagnostics and saved frames for this one viewport/quality/DPR combination; it does not accept the full visual matrix."
-      },
-      "passedJourneys": [
-        "ordinary demo placement palette",
-        "wall and gate upright-pose previews",
-        "overlapping distant-symbol selection",
-        "static DEMO QA fixture metadata",
-        "visible-active-fire animation, reduced motion, and planning suppression",
-        "offscreen/document-hidden renderer pause and resume",
-        "known-entity fog metadata",
-        "Canvas2D fallback",
-        "repaired/damaged house architecture",
-        "layered Tomb rendering"
-      ],
-      "journeySuiteStatus": "focused-subset-only",
-      "acceptedScope": {
-        "asset": "polar-farmhouse-l01",
-        "viewport": {
-          "width": 1366,
-          "height": 768
-        },
-        "quality": "normal",
-        "devicePixelRatio": 1,
-        "accepted": [
-          "four-pose contact sheet",
-          "planning full frame",
-          "focus full frame"
-        ],
-        "observations": [
-          "planning pad remains solid",
-          "focus fades roof while retaining full silhouette",
-          "no horizontal cut or black rectangle"
-        ]
-      },
-      "evidence": "MAP-25D-FARMHOUSE-VISUAL-REVIEW.json",
-      "suiteStatus": "all-captures-reviewed-scoped-acceptance",
-      "visualMatrixReview": {
-        "status": "accepted at contact-sheet overview and representative raw-frame review scope",
-        "evidence": "MAP-25D-VISUAL-MATRIX-REVIEW.json",
-        "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
-        "captureWorkflowRun": 38852705161,
-        "reviewPackagingWorkflowRun": 38855212025,
-        "reviewArtifacts": 12,
-        "rows": 876,
-        "lanes": 4,
-        "rowsPerLane": 219,
-        "representativeRawSha256Verified": true,
-        "scopeNote": "Contact sheets cover all rows; parent review included selected sheets and representative raw frames, not individual inspection of every original. Acceptance is limited to captured scenes and does not accept target-device performance.",
-        "appliesToSourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
-        "coversCurrentMotionAndFootprintIndexChanges": false,
-        "currentSourceRerun": "d612 workflow 38889534646 completed all four visual lanes successfully; separate scoped local review noted in latestSourceCheckpoint"
-      },
-      "latestCaptureBatch": {
-        "status": "all lanes captured and verified; contact-sheet overview and selected raw-frame review accepted",
-        "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
-        "viewportWidths": [
-          1366,
-          1920,
-          390
-        ],
-        "rowsPerLane": 73,
-        "rowsCaptured": 876,
-        "laneCountCompleted": 4,
-        "laneCountExpected": 4,
-        "rowsExpectedAcrossFullMatrix": 876,
-        "laneReviewStatus": {
-          "low/DPR1": "accepted",
-          "low/DPR2": "accepted",
-          "normal/DPR1": "accepted",
-          "normal/DPR2": "accepted"
-        },
-        "appliesToSourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
-        "coversCurrentSourceChanges": false
-      }
-    },
-    "postGeographyFixtureValidation": {
-      "sourceChange": "DEMO-only synthetic QA-known-geography projection at authored anchors; water QA camera/pan metadata correction; align the remembered DEMO stone disc with MODELED-STONE-01 world coordinates; no saved/live knowledge mutation",
-      "focusedUnitFiles": [
-        "tests/mapGeographyFixtures.test.mjs",
-        "tests/mapModel.test.mjs",
-        "tests/mapRendering.test.mjs",
-        "tests/terrainCache.test.mjs",
-        "tests/textureOwnership.test.mjs"
-      ],
-      "focusedUnitSuitesPassed": 5,
-      "focusedUnitSuitesFailed": 0,
-      "typecheck": "passed (npx tsc --noEmit)",
-      "productionBuild": "passed; final build after frozen source; 2,282 modules transformed; 20.94 seconds",
-      "geographyOnlyBrowserCapture": {
-        "forest": {
-          "status": "captured and accepted at 1366×768, normal, DPR1",
-          "file": "../../frontend/map-evidence/geo-final-1366-normal-dpr1/1366/local-forest-1366-normal-dpr1.png",
-          "sha256": "755d1a6da60a5ac20006ae355a828becc80fc75b8dac8d5e0321df969ca7f31f"
-        },
-        "stone": {
-          "status": "captured and accepted at 1366×768, normal, DPR1",
-          "file": "../../frontend/map-evidence/geo-final-1366-normal-dpr1/1366/local-stone-1366-normal-dpr1.png",
-          "sha256": "4dc1e9a2a722a12cb4e049a45a4505cd19baa55280d6ca0cf40a951ee1f866ff"
-        },
-        "water": {
-          "status": "superseded by accepted ICE-paint captures at desktop and 390 pixel viewport widths",
-          "file": "../../frontend/map-evidence/shoreline-banks-final-1366-normal-dpr1/1366/local-water-1366-normal-dpr1.png",
-          "sha256": "4baa7660262b923e1aaf424df4f24504a31c6ced69f092ee4c9463c5ea8c286e",
-          "detailCrop": "../../frontend/map-evidence/shoreline-banks-final-1366-normal-dpr1/1366/local-water-1366-normal-dpr1-shore-detail.png",
-          "detailCropSha256": "90388a96d79e1a8984fdbf21ea86f685b52abf4ce2f41deb5482036a94dcffd3",
-          "scenarioMetadataSha256": "946fd6c6079bcd5bc499058c86a7e24dbbe51fe2bbd6dfaea24396f09470b65e",
-          "review": "replaced by accepted ICE-paint captures at 1366×768 and 390×844, normal quality, DPR1"
-        },
-        "rememberedNightFog": {
-          "status": "captured and accepted",
-          "file": "../../frontend/map-evidence/fog-remembered-night-final-1366-normal-dpr1/1366/fog-remembered-night-1366-normal-dpr1.png",
-          "sha256": "f987dafac4d27c3844eafa52e38d0de3997cfe11956e71d1d70a167a8362f9c5"
-        }
-      }
-    },
-    "iceEdgePaintValidation": {
-      "sourceChange": "ICE-only source-over paint raises painted ice from terrain weight 0.34 to 0.56 through a smooth visual mask; other materials retain their prior soft-light treatment. Terrain semantics, geometry, heat, and discovery knowledge are unchanged.",
-      "focusedUnitFiles": [
-        "tests/terrainPaint.test.mjs",
-        "tests/mapRendering.test.mjs",
-        "tests/mapGeographyFixtures.test.mjs",
-        "tests/mapModel.test.mjs",
-        "tests/terrainCache.test.mjs",
-        "tests/textureOwnership.test.mjs"
-      ],
-      "focusedUnitSuitesPassed": 6,
-      "focusedUnitSuitesFailed": 0,
-      "typecheck": "passed (npx tsc --noEmit and production build typecheck)",
-      "productionBuild": "passed; 2,282 modules transformed; 11.64 seconds",
-      "terrainChunkCacheSourceSha256": "cd5b6c63cc694ed6da95b3c9911e6f8b181c60961f118dcf643768124477c883",
-      "compiledRendererBundle": "../../frontend/dist/assets/MapRenderer-YNH9O17d.js",
-      "compiledRendererBundleSha256": "f4dafcfcede6031ecf4db8eaeea47ae4c80f531cf34f38ed82ec0e9a1d08a3a1",
-      "waterCaptures": {
-        "status": "accepted at 1366×768 and 390×844, normal quality, DPR1",
-        "desktop1366": {
-          "file": "../../frontend/map-evidence/ice-paint-review-1366-390-normal-dpr1/1366/local-water-1366-normal-dpr1.png",
-          "sha256": "01f366401440cf0fad12a89530257ae7f1021846cca7910f9243b2d95565cc89"
-        },
-        "mobile390": {
-          "file": "../../frontend/map-evidence/ice-paint-review-1366-390-normal-dpr1/390/local-water-390-normal-dpr1.png",
-          "sha256": "43da8d23c964e1190e8a28b0c1721466ba74f79de226598d1961fed5457c6ef0"
-        },
-        "scenarioMetadata": "../../frontend/map-evidence/ice-paint-review-1366-390-normal-dpr1/scenarios.json",
-        "scenarioMetadataSha256": "62aab1d629180b5cb34ad2f3c9f4a96a8b39b9c80669f8d9dc8f34632ffbe36b",
-        "paintedIceWeightTransition": [
-          0.34,
-          0.56
-        ],
-        "visualReview": "coherent painted ice/snow transition with native-scale shoreline banks; no hard outline or black artifact",
-        "renderErrors": 0
-      }
-    },
-    "savedPopulatedLiveTransfer": {
-      "status": "blocked; no populated-save gallery was fabricated",
-      "blocker": "RESOURCE_LEDGER_STAGE_05",
-      "evidence": "MAP-25D-LIVE-TRANSFER-EVIDENCE.json"
-    },
-    "scopeNote": "Historical integration fields retain their recorded source commits. The 437a heap and frame measurements are historical; latest frame measurements are from d612 in latestSourceCheckpoint. Saved-populated LIVE extraction and Intel UHD 620 validation remain pending.",
-    "currentSourceVerification": {
-      "sourceCommit": "612046999bde5eaf6226b6d753e35f880291359e",
-      "sourceEquivalenceTests": "passed 3/3",
-      "fullFrontendTests": "passed; 35 test files",
-      "typecheck": "passed",
-      "productionBuild": "passed",
-      "freshWorkflowRuns": {
-        "performance": 38889534615,
-        "visualMatrix": 38889534646,
-        "javascriptTransfer": 38889534590,
-        "rendering": 38889534662,
-        "backendRegression": 38889534595
-      },
-      "performanceGateStatus": "low dense-520 frame and normal dense-520/local frame gates remain unmet; other reported frame and pointer gates pass",
-      "renderingWorkflow": "86 passed, 5 skipped, 1 failed; isolated exact pause/resume test passed 1/1; 390px narrow QA capture passed 73/73 after CI timeout",
-      "backendWorkflow": "Stages 02-10 passed; bot archive assertion failed; no backend packages changed",
-      "targetDeviceVerified": false,
-      "sourceTree": "20c79342def32d4e9f8c823c844316325b6551aa",
-      "sourceTreeVerifiedAgainstGitHubCommit": true,
-      "note": "Historical integration fields above retain their original source provenance; current d612 results are in latestSourceCheckpoint."
-    }
+    "mapInteractionJourneys": "passed",
+    "captureMaps": "passed",
+    "benchmarkHarnessVerification": "passed",
+    "performanceGates": "pan-only interval and pointer-feedback misses recorded; diagnostics green",
+    "visualMatrix": "39019997669 passed all four lanes",
+    "javascriptTransfer": "39019997680 passed",
+    "backendStageRun": "39019997708; backend Stage02-10 and bot suites passed",
+    "frontendE2E": "failed; 11 failed, 100 passed, 5 skipped",
+    "targetDeviceVerified": false,
+    "remainingBlockers": [
+      "Intel UHD 620/equivalent target-device verification unavailable",
+      "RESOURCE_LEDGER_STAGE_05 blocks authoritative populated LIVE extraction"
+    ]
   },
   "currentIntegrationMemoryPlateau": [
     {
@@ -693,43 +423,40 @@
     "interpretation": "Using the corrected pan-only frame interval, low p95 exceeds 40 ms in populated (48.2), dense-520 (140.7), and local (51.1). Normal p95 exceeds 20 ms in all five fixtures (20.9–105.7). Aggregate pointer-feedback p95 is not phase-attributed; dense-520 exceeds 100 ms low (140.7) and 75 ms normal (109.6). Dense-520 has zero successful selection samples, so its selection percentiles are unavailable."
   },
   "fullJourneyJavaScriptTransfer": {
-    "status": "passed the configured gzip transfer budget",
+    "status": "passed workflow comparison",
     "workflow": "Map JavaScript transfer comparison",
-    "runId": 38852705055,
-    "artifactId": 12025993118,
-    "baselineSourceCommit": "2de4ece02b5c00dea647b98bac0ffdb787690616",
-    "currentSourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
-    "scope": "One identical measured journey per build. Sum the gzip-compressed unique JavaScript responses actually requested while opening demo territory, local map, and world map, including UI, shared, and worker scripts. These are single-case totals, not repeated-run medians.",
-    "uniqueJavaScriptResponsesPerJourney": 11,
-    "baselineGzipBytes": 105435,
-    "currentGzipBytes": 267361,
-    "increaseGzipBytes": 161926,
-    "budgetGzipBytes": 307200,
-    "budgetMet": true,
-    "baselineResultsSha256": "c2d15d932741b91f6fa5184a7d8abfd8f6d2b5219eb042c24a697b9c16a2ac81",
-    "currentResultsSha256": "073078cdd87648c77dbbfd2cb4cdedc0eb43168e5743a67af2b1e6d2f9c6ab04",
-    "comparisonResultsSha256": "85bd91d390d8f1f6a088645fc5c3c917c93cbc79c34a8540c7e202106c6d784c",
-    "rendererBundleComparisonNote": "This full journey measurement is distinct from the earlier 100,738-byte named renderer entry-and-chunks measurement; that figure was not a before/after full JavaScript delta."
+    "runId": 39019997680,
+    "sourceCommit": "31a963f000d62921d529b1686e7d9865d41e8613",
+    "numericalTotalsRecorded": false,
+    "scopeNote": "Current workflow passed. Historical numerical transfer evidence remains preserved under historicalFullJourneyJavaScriptTransferAt388527."
   },
   "backendStage08Triage": {
-    "status": "CI test failed; baseline classification is unconfirmed",
-    "workflowRun": 38852705042,
-    "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
-    "runner": "Ubuntu 24.04, Node 24",
-    "suiteResult": {
-      "passed": 6,
-      "failed": 1,
-      "total": 7
+    "status": "backend suites passed; frontend E2E failed",
+    "workflowRun": 39019997708,
+    "sourceCommit": "31a963f000d62921d529b1686e7d9865d41e8613",
+    "backend": "Stages02-10 and bots/bots-storage/bots-api passed",
+    "frontend": {
+      "build": "passed",
+      "unitTests": "passed",
+      "playwrightPassed": 100,
+      "playwrightFailed": 11,
+      "playwrightSkipped": 5,
+      "artifactId": 12097000179
     },
-    "failingTest": "a 5x clock settles through a restart and advances beyond EV02 while preserving the unresolved EV01 rank result",
-    "testLocation": "packages/sim/test/stage08.test.ts:458",
-    "failure": "RepositoryError: The stored save schema cannot be migrated safely.",
-    "stack": "SqliteRepository.getStateFromRow (repository.ts:345) → transaction (:613) → commitSystemTransition (:534) → GameApplicationService.persistSystemEvents (service.ts:1216) → settleClockTarget (:1336) → tickClock (:1394)",
-    "backendPackagesTreeId": "e1130d2da1ec585a873b7146e517100a7e6696b1",
-    "comparisonCommit": "7caa55bd18632967368c46fee40bb59fc96f5c31",
-    "backendTreeMatchesComparisonCommit": true,
-    "localTargetedRerun": "inconclusive: the existing test exceeded the 120-second bound in this CPU-limited environment and emitted no assertion result",
-    "classificationNote": "No backend source changes exist relative to the comparison commit; without a completed comparison test on that commit, this failure is not confirmed as a pre-existing baseline or as flaky."
+    "failingE2E": [
+      "Chromium live-api/Tomb reload",
+      "Chromium map visual baseline",
+      "Chromium Stage07 combat",
+      "Chromium Stage09 all-screen projection",
+      "Chromium Stage09 expedition/search API",
+      "Chromium Stage09 save switching",
+      "mobile live-api/Tomb reload",
+      "mobile ordinary placement palette",
+      "mobile Stage07 combat",
+      "mobile Stage09 all-screen projection",
+      "mobile late-art map rendering"
+    ],
+    "note": "The Stage09 failures showed clean-game API creation feedback rather than the expected save projection."
   },
   "sourceCommit": "31a963f000d62921d529b1686e7d9865d41e8613",
   "workflowRun": {
@@ -1236,156 +963,34 @@
   },
   "latestSourceCheckpoint": {
     "branch": "codex/map-25d-overhaul",
-    "commit": "612046999bde5eaf6226b6d753e35f880291359e",
-    "tree": "20c79342def32d4e9f8c823c844316325b6551aa",
+    "commit": "31a963f000d62921d529b1686e7d9865d41e8613",
+    "runtimeSourceCommit": "607932af0c5ea90e85f507675eb44246cae2ed1d",
+    "changeDescription": "The low-quality particle/sway cap is preserved from 607932af; 31a963f corrects interval acceptance to use pan-only samples and reports phase-separated diagnostics.",
     "runtimeChanges": [
-      "frontend/src/rendering/DepthSlices.ts",
-      "frontend/tests/mapDepthSlices.test.mjs"
+      "frontend/src/rendering/mapStyle.ts",
+      "frontend/src/rendering/MapEffects.ts",
+      "frontend/src/rendering/MapRenderer.ts"
     ],
-    "changeDescription": "Reuse per-slice derived values and preserve output equivalence with the prior algorithm.",
-    "verification": {
-      "focusedEquivalenceTests": "passed 3/3",
-      "fullFrontendTests": "passed; 35 test files",
-      "typecheck": "passed",
-      "productionBuild": "passed",
-      "gitDiffCheck": "passed"
-    },
+    "benchmarkChanges": [
+      "frontend/scripts/map-benchmark-summary.mjs",
+      "frontend/scripts/map-benchmark.mjs",
+      "frontend/tests/mapBenchmarkSummary.test.mjs"
+    ],
     "workflowRuns": {
-      "performance": {
-        "id": 38889534615,
-        "status": "success; diagnostics collected, thresholds evaluated separately",
-        "sourceCommit": "612046999bde5eaf6226b6d753e35f880291359e",
-        "artifactIds": {
-          "low": 12042161719,
-          "normal": 12041832974
-        },
-        "environment": "Hosted Chromium headless SwiftShader, AMD EPYC 9V45",
-        "targetDeviceVerified": false,
-        "runsPerFixture": 3,
-        "secondsPerRun": 60,
-        "fixtureOrder": [
-          "fresh",
-          "populated",
-          "dense-520",
-          "local",
-          "world-1023"
-        ],
-        "gatesMs": {
-          "lowFrameIntervalP95": 40,
-          "lowPointerFeedbackP95": 100,
-          "normalFrameIntervalP95": 20,
-          "normalPointerFeedbackP95": 75
-        },
-        "lowFrameIntervalP95Ms": [
-          33.4,
-          33.5,
-          116.4,
-          33.6,
-          33.7
-        ],
-        "lowPointerFeedbackP95Ms": [
-          33.5,
-          33.6,
-          65.3,
-          33.8,
-          33.9
-        ],
-        "normalFrameIntervalP95Ms": [
-          16.8,
-          17.1,
-          116.5,
-          28.3,
-          18
-        ],
-        "normalPointerFeedbackP95Ms": [
-          20,
-          21.5,
-          72.8,
-          33.1,
-          24.7
-        ],
-        "lowFrameGateMisses": [
-          "dense-520"
-        ],
-        "lowPointerGateMisses": [],
-        "normalFrameGateMisses": [
-          "dense-520",
-          "local"
-        ],
-        "normalPointerGateMisses": [],
-        "interpretation": "Dense frame-interval result remains essentially unchanged from the d329 run (116.4 ms low and normal previously). Current SwiftShader gates do not show a dense-scene improvement; target-device acceptance is unavailable."
-      },
-      "visualMatrix": {
-        "id": 38889534646,
-        "status": "success",
-        "lanesPassed": 4
-      },
-      "javascriptTransfer": {
-        "id": 38889534590,
-        "status": "success; transfer-budget workflow passed",
-        "artifactTotalsRecorded": false
-      },
-      "rendering": {
-        "id": 38889534662,
-        "status": "completed with a timing-sensitive test failure",
-        "playwrightPassed": 0,
-        "playwrightFailed": 1,
-        "playwrightSkipped": 0,
-        "failure": "map-rendering.spec.ts hidden/offscreen pause-resume assertion expected visibleFrame to advance but both values were 7 after scroll.",
-        "isolatedRerun": "Exact test passed 1/1 with system Chromium; this supports timing sensitivity but does not prove the CI miss has no product impact.",
-        "mapQaCapture": "390x844 capture timed out after 60 seconds at readyMap with pendingTextures=2, frames=144, queue=0, errors=0. Narrow local system-Chromium MAP_QA_VIEWPORTS=390 capture passed 73/73 deterministic scenarios.",
-        "playwright": {
-          "passed": 86,
-          "skipped": 5,
-          "failed": 1,
-          "status": "one timing-sensitive assertion failed"
-        }
-      },
-      "backendRegression": {
-        "id": 38889534595,
-        "status": "failure",
-        "stages02Through10": "passed",
-        "botTests": "8/9 passed",
-        "failure": "Existing activity-receipt lossless archive assertion; later suites skipped. No backend packages changed."
-      }
+      "performance": 39019997807,
+      "visualMatrix": 39019997669,
+      "rendering": 39019997679,
+      "javascriptTransfer": 39019997680,
+      "backendRegression": 39019997708
     },
-    "shortDiagnostic": {
-      "framesPerRun": 11,
-      "denseRenderP95MsBeforeAfter": [
-        184.3,
-        138.8
-      ],
-      "denseIntervalP95MsBeforeAfter": [
-        2599,
-        2434
-      ],
-      "interpretation": "Very noisy and not a gate result."
+    "verification": {
+      "build": "passed",
+      "frontendTests": "passed in rendering validation; Stage E2E 100 passed/11 failed/5 skipped",
+      "panSummaryRegression": "passed",
+      "visualMatrix": "passed 4/4",
+      "performanceWorkflow": "all jobs passed; pan-only budgets misses remain"
     },
-    "localLoafInvestigation": {
-      "warmup": "completed",
-      "scriptP95Ms": {
-        "normal": 230,
-        "low": 268
-      },
-      "renderPhaseP95Ms": {
-        "normal": 206,
-        "low": 224
-      },
-      "styleLayoutP95Ms": {
-        "normal": 10,
-        "low": 6
-      },
-      "attribution": "MapRenderer bundle only; no function-level attribution. Host was heavily overscheduled; not causal evidence."
-    },
-    "limitations": [
-      "No Intel UHD 620 or equivalent target hardware was available.",
-      "The performance CI workflow completed successfully, but the explicit frame gates remain missed for dense-520 (low and normal) and local (normal).",
-      "Transfer workflow passed; its current numerical totals were not recorded here.",
-      "One CI pause/resume browser assertion was timing-sensitive and passed its exact isolated rerun; a separate narrow mobile QA capture also passed after its CI capture timed out.",
-      "RESOURCE_LEDGER_STAGE_05 blocks authoritative populated LIVE extraction."
-    ],
-    "backendPackagesChanged": false,
-    "noActiveCheckpointWorkflows": true
+    "targetDeviceVerified": false
   },
   "historicalResultsAtRun387919": [
     {
@@ -2316,5 +1921,492 @@
       "Backend bots activity-receipt archive assertion failed after stages 02–10."
     ],
     "runtimeSourceTree": "20c79342def32d4e9f8c823c844316325b6551aa"
+  },
+  "historicalIntegrationValidationAt612": {
+    "assetExport": {
+      "status": "passed; repeat export byte-identical",
+      "mapSourceAndGeneratedFilesCompared": 1233,
+      "manifestsCompared": 2,
+      "totalFilesCompared": 1235,
+      "previouslyTrackedMapPngsCompared": 1054,
+      "previouslyTrackedMapPngsIntentionallyChanged": 2
+    },
+    "unitTests": {
+      "status": "all 123 cases passed across two runs",
+      "fullRunPassed": 122,
+      "fullRunFailed": 0,
+      "fullRunEnvironmentLimitedSkipped": 1,
+      "separatelyExecutedSkippedCasePassed": 1
+    },
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "liveBaselineIntegrity": {
+      "status": "passed on the final local production dist",
+      "qualityModes": [
+        "low",
+        "normal"
+      ],
+      "realApiTerritoryBuildingReferencesPreserved": 3,
+      "lowAndNormalLiveViewsRenderedWithoutQaOnlyAttributes": true,
+      "qaOnlyAttributesPresent": 0,
+      "domainHashUnchangedDuringPostReloadMapViewAndPan": true,
+      "preReloadDomainHashCompared": true,
+      "focusedLiveQueryRegression": "passed in a separate targeted browser run",
+      "separateRevision2ReloadHashCheck": "passed; before/after reload hashes matched; this was separate from the complete transfer run",
+      "latestCombinedTransferAttempt": "passed; actual temporary SQLite API and production-dist LiveApp save/reopen/render/pan flow",
+      "proxyCloseSmokeCheck": "passed separately with a real HTTP request and no proxy errors",
+      "localBaselineMapAssetWireBytes": {
+        "low": {
+          "requests": 37,
+          "uniqueFiles": 23,
+          "bytes": 2986115
+        },
+        "normal": {
+          "requests": 21,
+          "uniqueFiles": 21,
+          "bytes": 2406796
+        }
+      },
+      "gzipManifestBytesPerRequest": 110706,
+      "savedPopulatedAssetTransferMeasured": false,
+      "populationBlocker": "RESOURCE_LEDGER_STAGE_05",
+      "evidence": "MAP-25D-LIVE-TRANSFER-EVIDENCE.json",
+      "visibleWorldEntityCount": 4,
+      "visibleWorldEntitiesHaveApiPositions": true,
+      "houseAndTombLinkedSitePositionsAvailable": false,
+      "survivalFireProjection": "anchored to API territory origin by existing LiveApp behavior",
+      "domainStateSha256": "907aca737e5026d811a25e8bd2e6728e9c7ea2616c0a9adb83c8832c125717bf",
+      "domainStateRevisionBeforeInspectEntity": 1,
+      "domainStateRevisionBeforeReload": 2,
+      "domainStateRevisionAfterReload": 2,
+      "domainHashUnchangedBeforeAndAfterReload": true,
+      "domainHashUnchangedThroughLowAndNormalRenderPan": true,
+      "previousSeparateRunMapAssetWireBytes": {
+        "low": {
+          "requests": 39,
+          "uniqueFiles": 24,
+          "bytes": 3226903
+        },
+        "normal": {
+          "requests": 22,
+          "uniqueFiles": 22,
+          "bytes": 2467797
+        }
+      },
+      "sourceFingerprint": "ea687299b65929a1114131cad19a481972fce64fe92701fe37d03ba5c86e561f",
+      "productionDistFingerprint": "999ed313d7961149e2b1ed44d9e7463ca2417ff2509a51bc0a0bc304df8a3e6f"
+    },
+    "browserVisualReview": {
+      "status": "latest rendering CI workflow passed; 876-row visual matrix accepted at contact-sheet and selected-raw review scope",
+      "ciInteractionValidation": {
+        "workflowRun": 38852705019,
+        "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
+        "playwright": {
+          "passed": 87,
+          "skipped": 5,
+          "failed": 0,
+          "duration": "2.4 minutes",
+          "status": "passed"
+        },
+        "npmTest": "passed",
+        "productionBuild": "passed",
+        "captureStep": "passed",
+        "benchmarkHarness": "passed",
+        "artifactUploads": "passed",
+        "overallWorkflow": "passed"
+      },
+      "watchtower390LowDpr2Readiness": {
+        "status": "passed; four-pose renderer readiness diagnostics only",
+        "durationSeconds": 22.4,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "quality": "low",
+        "devicePixelRatio": 2,
+        "orientations": [
+          "north",
+          "east",
+          "south",
+          "west"
+        ],
+        "allFocusedAndVisible": true,
+        "backend": "webgl",
+        "queuedTextures": 0,
+        "pendingTextures": 0,
+        "errors": 0,
+        "proof": "../../frontend/map-evidence/watchtower-390-low-dpr2-readiness/readiness.json",
+        "proofSha256": "faf937f2c969890acda216ecd3e51cc96c7e5ee74defec432be262ccc5e22ecd",
+        "scopeNote": "Confirms readiness diagnostics and saved frames for this one viewport/quality/DPR combination; it does not accept the full visual matrix."
+      },
+      "passedJourneys": [
+        "ordinary demo placement palette",
+        "wall and gate upright-pose previews",
+        "overlapping distant-symbol selection",
+        "static DEMO QA fixture metadata",
+        "visible-active-fire animation, reduced motion, and planning suppression",
+        "offscreen/document-hidden renderer pause and resume",
+        "known-entity fog metadata",
+        "Canvas2D fallback",
+        "repaired/damaged house architecture",
+        "layered Tomb rendering"
+      ],
+      "journeySuiteStatus": "focused-subset-only",
+      "acceptedScope": {
+        "asset": "polar-farmhouse-l01",
+        "viewport": {
+          "width": 1366,
+          "height": 768
+        },
+        "quality": "normal",
+        "devicePixelRatio": 1,
+        "accepted": [
+          "four-pose contact sheet",
+          "planning full frame",
+          "focus full frame"
+        ],
+        "observations": [
+          "planning pad remains solid",
+          "focus fades roof while retaining full silhouette",
+          "no horizontal cut or black rectangle"
+        ]
+      },
+      "evidence": "MAP-25D-FARMHOUSE-VISUAL-REVIEW.json",
+      "suiteStatus": "all-captures-reviewed-scoped-acceptance",
+      "visualMatrixReview": {
+        "status": "accepted at contact-sheet overview and representative raw-frame review scope",
+        "evidence": "MAP-25D-VISUAL-MATRIX-REVIEW.json",
+        "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
+        "captureWorkflowRun": 38852705161,
+        "reviewPackagingWorkflowRun": 38855212025,
+        "reviewArtifacts": 12,
+        "rows": 876,
+        "lanes": 4,
+        "rowsPerLane": 219,
+        "representativeRawSha256Verified": true,
+        "scopeNote": "Contact sheets cover all rows; parent review included selected sheets and representative raw frames, not individual inspection of every original. Acceptance is limited to captured scenes and does not accept target-device performance.",
+        "appliesToSourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
+        "coversCurrentMotionAndFootprintIndexChanges": false,
+        "currentSourceRerun": "d612 workflow 38889534646 completed all four visual lanes successfully; separate scoped local review noted in latestSourceCheckpoint"
+      },
+      "latestCaptureBatch": {
+        "status": "all lanes captured and verified; contact-sheet overview and selected raw-frame review accepted",
+        "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
+        "viewportWidths": [
+          1366,
+          1920,
+          390
+        ],
+        "rowsPerLane": 73,
+        "rowsCaptured": 876,
+        "laneCountCompleted": 4,
+        "laneCountExpected": 4,
+        "rowsExpectedAcrossFullMatrix": 876,
+        "laneReviewStatus": {
+          "low/DPR1": "accepted",
+          "low/DPR2": "accepted",
+          "normal/DPR1": "accepted",
+          "normal/DPR2": "accepted"
+        },
+        "appliesToSourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
+        "coversCurrentSourceChanges": false
+      }
+    },
+    "postGeographyFixtureValidation": {
+      "sourceChange": "DEMO-only synthetic QA-known-geography projection at authored anchors; water QA camera/pan metadata correction; align the remembered DEMO stone disc with MODELED-STONE-01 world coordinates; no saved/live knowledge mutation",
+      "focusedUnitFiles": [
+        "tests/mapGeographyFixtures.test.mjs",
+        "tests/mapModel.test.mjs",
+        "tests/mapRendering.test.mjs",
+        "tests/terrainCache.test.mjs",
+        "tests/textureOwnership.test.mjs"
+      ],
+      "focusedUnitSuitesPassed": 5,
+      "focusedUnitSuitesFailed": 0,
+      "typecheck": "passed (npx tsc --noEmit)",
+      "productionBuild": "passed; final build after frozen source; 2,282 modules transformed; 20.94 seconds",
+      "geographyOnlyBrowserCapture": {
+        "forest": {
+          "status": "captured and accepted at 1366×768, normal, DPR1",
+          "file": "../../frontend/map-evidence/geo-final-1366-normal-dpr1/1366/local-forest-1366-normal-dpr1.png",
+          "sha256": "755d1a6da60a5ac20006ae355a828becc80fc75b8dac8d5e0321df969ca7f31f"
+        },
+        "stone": {
+          "status": "captured and accepted at 1366×768, normal, DPR1",
+          "file": "../../frontend/map-evidence/geo-final-1366-normal-dpr1/1366/local-stone-1366-normal-dpr1.png",
+          "sha256": "4dc1e9a2a722a12cb4e049a45a4505cd19baa55280d6ca0cf40a951ee1f866ff"
+        },
+        "water": {
+          "status": "superseded by accepted ICE-paint captures at desktop and 390 pixel viewport widths",
+          "file": "../../frontend/map-evidence/shoreline-banks-final-1366-normal-dpr1/1366/local-water-1366-normal-dpr1.png",
+          "sha256": "4baa7660262b923e1aaf424df4f24504a31c6ced69f092ee4c9463c5ea8c286e",
+          "detailCrop": "../../frontend/map-evidence/shoreline-banks-final-1366-normal-dpr1/1366/local-water-1366-normal-dpr1-shore-detail.png",
+          "detailCropSha256": "90388a96d79e1a8984fdbf21ea86f685b52abf4ce2f41deb5482036a94dcffd3",
+          "scenarioMetadataSha256": "946fd6c6079bcd5bc499058c86a7e24dbbe51fe2bbd6dfaea24396f09470b65e",
+          "review": "replaced by accepted ICE-paint captures at 1366×768 and 390×844, normal quality, DPR1"
+        },
+        "rememberedNightFog": {
+          "status": "captured and accepted",
+          "file": "../../frontend/map-evidence/fog-remembered-night-final-1366-normal-dpr1/1366/fog-remembered-night-1366-normal-dpr1.png",
+          "sha256": "f987dafac4d27c3844eafa52e38d0de3997cfe11956e71d1d70a167a8362f9c5"
+        }
+      }
+    },
+    "iceEdgePaintValidation": {
+      "sourceChange": "ICE-only source-over paint raises painted ice from terrain weight 0.34 to 0.56 through a smooth visual mask; other materials retain their prior soft-light treatment. Terrain semantics, geometry, heat, and discovery knowledge are unchanged.",
+      "focusedUnitFiles": [
+        "tests/terrainPaint.test.mjs",
+        "tests/mapRendering.test.mjs",
+        "tests/mapGeographyFixtures.test.mjs",
+        "tests/mapModel.test.mjs",
+        "tests/terrainCache.test.mjs",
+        "tests/textureOwnership.test.mjs"
+      ],
+      "focusedUnitSuitesPassed": 6,
+      "focusedUnitSuitesFailed": 0,
+      "typecheck": "passed (npx tsc --noEmit and production build typecheck)",
+      "productionBuild": "passed; 2,282 modules transformed; 11.64 seconds",
+      "terrainChunkCacheSourceSha256": "cd5b6c63cc694ed6da95b3c9911e6f8b181c60961f118dcf643768124477c883",
+      "compiledRendererBundle": "../../frontend/dist/assets/MapRenderer-YNH9O17d.js",
+      "compiledRendererBundleSha256": "f4dafcfcede6031ecf4db8eaeea47ae4c80f531cf34f38ed82ec0e9a1d08a3a1",
+      "waterCaptures": {
+        "status": "accepted at 1366×768 and 390×844, normal quality, DPR1",
+        "desktop1366": {
+          "file": "../../frontend/map-evidence/ice-paint-review-1366-390-normal-dpr1/1366/local-water-1366-normal-dpr1.png",
+          "sha256": "01f366401440cf0fad12a89530257ae7f1021846cca7910f9243b2d95565cc89"
+        },
+        "mobile390": {
+          "file": "../../frontend/map-evidence/ice-paint-review-1366-390-normal-dpr1/390/local-water-390-normal-dpr1.png",
+          "sha256": "43da8d23c964e1190e8a28b0c1721466ba74f79de226598d1961fed5457c6ef0"
+        },
+        "scenarioMetadata": "../../frontend/map-evidence/ice-paint-review-1366-390-normal-dpr1/scenarios.json",
+        "scenarioMetadataSha256": "62aab1d629180b5cb34ad2f3c9f4a96a8b39b9c80669f8d9dc8f34632ffbe36b",
+        "paintedIceWeightTransition": [
+          0.34,
+          0.56
+        ],
+        "visualReview": "coherent painted ice/snow transition with native-scale shoreline banks; no hard outline or black artifact",
+        "renderErrors": 0
+      }
+    },
+    "savedPopulatedLiveTransfer": {
+      "status": "blocked; no populated-save gallery was fabricated",
+      "blocker": "RESOURCE_LEDGER_STAGE_05",
+      "evidence": "MAP-25D-LIVE-TRANSFER-EVIDENCE.json"
+    },
+    "scopeNote": "Historical integration fields retain their recorded source commits. The 437a heap and frame measurements are historical; latest frame measurements are from d612 in latestSourceCheckpoint. Saved-populated LIVE extraction and Intel UHD 620 validation remain pending.",
+    "currentSourceVerification": {
+      "sourceCommit": "612046999bde5eaf6226b6d753e35f880291359e",
+      "sourceEquivalenceTests": "passed 3/3",
+      "fullFrontendTests": "passed; 35 test files",
+      "typecheck": "passed",
+      "productionBuild": "passed",
+      "freshWorkflowRuns": {
+        "performance": 38889534615,
+        "visualMatrix": 38889534646,
+        "javascriptTransfer": 38889534590,
+        "rendering": 38889534662,
+        "backendRegression": 38889534595
+      },
+      "performanceGateStatus": "low dense-520 frame and normal dense-520/local frame gates remain unmet; other reported frame and pointer gates pass",
+      "renderingWorkflow": "86 passed, 5 skipped, 1 failed; isolated exact pause/resume test passed 1/1; 390px narrow QA capture passed 73/73 after CI timeout",
+      "backendWorkflow": "Stages 02-10 passed; bot archive assertion failed; no backend packages changed",
+      "targetDeviceVerified": false,
+      "sourceTree": "20c79342def32d4e9f8c823c844316325b6551aa",
+      "sourceTreeVerifiedAgainstGitHubCommit": true,
+      "note": "Historical integration fields above retain their original source provenance; current d612 results are in latestSourceCheckpoint."
+    }
+  },
+  "historicalFullJourneyJavaScriptTransferAt388527": {
+    "status": "passed the configured gzip transfer budget",
+    "workflow": "Map JavaScript transfer comparison",
+    "runId": 38852705055,
+    "artifactId": 12025993118,
+    "baselineSourceCommit": "2de4ece02b5c00dea647b98bac0ffdb787690616",
+    "currentSourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
+    "scope": "One identical measured journey per build. Sum the gzip-compressed unique JavaScript responses actually requested while opening demo territory, local map, and world map, including UI, shared, and worker scripts. These are single-case totals, not repeated-run medians.",
+    "uniqueJavaScriptResponsesPerJourney": 11,
+    "baselineGzipBytes": 105435,
+    "currentGzipBytes": 267361,
+    "increaseGzipBytes": 161926,
+    "budgetGzipBytes": 307200,
+    "budgetMet": true,
+    "baselineResultsSha256": "c2d15d932741b91f6fa5184a7d8abfd8f6d2b5219eb042c24a697b9c16a2ac81",
+    "currentResultsSha256": "073078cdd87648c77dbbfd2cb4cdedc0eb43168e5743a67af2b1e6d2f9c6ab04",
+    "comparisonResultsSha256": "85bd91d390d8f1f6a088645fc5c3c917c93cbc79c34a8540c7e202106c6d784c",
+    "rendererBundleComparisonNote": "This full journey measurement is distinct from the earlier 100,738-byte named renderer entry-and-chunks measurement; that figure was not a before/after full JavaScript delta."
+  },
+  "historicalBackendStage08TriageAt388527": {
+    "status": "CI test failed; baseline classification is unconfirmed",
+    "workflowRun": 38852705042,
+    "sourceCommit": "437a885acd4ffd765c33cb1ab82218c0c9ff84c1",
+    "runner": "Ubuntu 24.04, Node 24",
+    "suiteResult": {
+      "passed": 6,
+      "failed": 1,
+      "total": 7
+    },
+    "failingTest": "a 5x clock settles through a restart and advances beyond EV02 while preserving the unresolved EV01 rank result",
+    "testLocation": "packages/sim/test/stage08.test.ts:458",
+    "failure": "RepositoryError: The stored save schema cannot be migrated safely.",
+    "stack": "SqliteRepository.getStateFromRow (repository.ts:345) → transaction (:613) → commitSystemTransition (:534) → GameApplicationService.persistSystemEvents (service.ts:1216) → settleClockTarget (:1336) → tickClock (:1394)",
+    "backendPackagesTreeId": "e1130d2da1ec585a873b7146e517100a7e6696b1",
+    "comparisonCommit": "7caa55bd18632967368c46fee40bb59fc96f5c31",
+    "backendTreeMatchesComparisonCommit": true,
+    "localTargetedRerun": "inconclusive: the existing test exceeded the 120-second bound in this CPU-limited environment and emitted no assertion result",
+    "classificationNote": "No backend source changes exist relative to the comparison commit; without a completed comparison test on that commit, this failure is not confirmed as a pre-existing baseline or as flaky."
+  },
+  "historicalSourceCheckpointAt612": {
+    "branch": "codex/map-25d-overhaul",
+    "commit": "612046999bde5eaf6226b6d753e35f880291359e",
+    "tree": "20c79342def32d4e9f8c823c844316325b6551aa",
+    "runtimeChanges": [
+      "frontend/src/rendering/DepthSlices.ts",
+      "frontend/tests/mapDepthSlices.test.mjs"
+    ],
+    "changeDescription": "Reuse per-slice derived values and preserve output equivalence with the prior algorithm.",
+    "verification": {
+      "focusedEquivalenceTests": "passed 3/3",
+      "fullFrontendTests": "passed; 35 test files",
+      "typecheck": "passed",
+      "productionBuild": "passed",
+      "gitDiffCheck": "passed"
+    },
+    "workflowRuns": {
+      "performance": {
+        "id": 38889534615,
+        "status": "success; diagnostics collected, thresholds evaluated separately",
+        "sourceCommit": "612046999bde5eaf6226b6d753e35f880291359e",
+        "artifactIds": {
+          "low": 12042161719,
+          "normal": 12041832974
+        },
+        "environment": "Hosted Chromium headless SwiftShader, AMD EPYC 9V45",
+        "targetDeviceVerified": false,
+        "runsPerFixture": 3,
+        "secondsPerRun": 60,
+        "fixtureOrder": [
+          "fresh",
+          "populated",
+          "dense-520",
+          "local",
+          "world-1023"
+        ],
+        "gatesMs": {
+          "lowFrameIntervalP95": 40,
+          "lowPointerFeedbackP95": 100,
+          "normalFrameIntervalP95": 20,
+          "normalPointerFeedbackP95": 75
+        },
+        "lowFrameIntervalP95Ms": [
+          33.4,
+          33.5,
+          116.4,
+          33.6,
+          33.7
+        ],
+        "lowPointerFeedbackP95Ms": [
+          33.5,
+          33.6,
+          65.3,
+          33.8,
+          33.9
+        ],
+        "normalFrameIntervalP95Ms": [
+          16.8,
+          17.1,
+          116.5,
+          28.3,
+          18
+        ],
+        "normalPointerFeedbackP95Ms": [
+          20,
+          21.5,
+          72.8,
+          33.1,
+          24.7
+        ],
+        "lowFrameGateMisses": [
+          "dense-520"
+        ],
+        "lowPointerGateMisses": [],
+        "normalFrameGateMisses": [
+          "dense-520",
+          "local"
+        ],
+        "normalPointerGateMisses": [],
+        "interpretation": "Dense frame-interval result remains essentially unchanged from the d329 run (116.4 ms low and normal previously). Current SwiftShader gates do not show a dense-scene improvement; target-device acceptance is unavailable."
+      },
+      "visualMatrix": {
+        "id": 38889534646,
+        "status": "success",
+        "lanesPassed": 4
+      },
+      "javascriptTransfer": {
+        "id": 38889534590,
+        "status": "success; transfer-budget workflow passed",
+        "artifactTotalsRecorded": false
+      },
+      "rendering": {
+        "id": 38889534662,
+        "status": "completed with a timing-sensitive test failure",
+        "playwrightPassed": 0,
+        "playwrightFailed": 1,
+        "playwrightSkipped": 0,
+        "failure": "map-rendering.spec.ts hidden/offscreen pause-resume assertion expected visibleFrame to advance but both values were 7 after scroll.",
+        "isolatedRerun": "Exact test passed 1/1 with system Chromium; this supports timing sensitivity but does not prove the CI miss has no product impact.",
+        "mapQaCapture": "390x844 capture timed out after 60 seconds at readyMap with pendingTextures=2, frames=144, queue=0, errors=0. Narrow local system-Chromium MAP_QA_VIEWPORTS=390 capture passed 73/73 deterministic scenarios.",
+        "playwright": {
+          "passed": 86,
+          "skipped": 5,
+          "failed": 1,
+          "status": "one timing-sensitive assertion failed"
+        }
+      },
+      "backendRegression": {
+        "id": 38889534595,
+        "status": "failure",
+        "stages02Through10": "passed",
+        "botTests": "8/9 passed",
+        "failure": "Existing activity-receipt lossless archive assertion; later suites skipped. No backend packages changed."
+      }
+    },
+    "shortDiagnostic": {
+      "framesPerRun": 11,
+      "denseRenderP95MsBeforeAfter": [
+        184.3,
+        138.8
+      ],
+      "denseIntervalP95MsBeforeAfter": [
+        2599,
+        2434
+      ],
+      "interpretation": "Very noisy and not a gate result."
+    },
+    "localLoafInvestigation": {
+      "warmup": "completed",
+      "scriptP95Ms": {
+        "normal": 230,
+        "low": 268
+      },
+      "renderPhaseP95Ms": {
+        "normal": 206,
+        "low": 224
+      },
+      "styleLayoutP95Ms": {
+        "normal": 10,
+        "low": 6
+      },
+      "attribution": "MapRenderer bundle only; no function-level attribution. Host was heavily overscheduled; not causal evidence."
+    },
+    "limitations": [
+      "No Intel UHD 620 or equivalent target hardware was available.",
+      "The performance CI workflow completed successfully, but the explicit frame gates remain missed for dense-520 (low and normal) and local (normal).",
+      "Transfer workflow passed; its current numerical totals were not recorded here.",
+      "One CI pause/resume browser assertion was timing-sensitive and passed its exact isolated rerun; a separate narrow mobile QA capture also passed after its CI capture timed out.",
+      "RESOURCE_LEDGER_STAGE_05 blocks authoritative populated LIVE extraction."
+    ],
+    "backendPackagesChanged": false,
+    "noActiveCheckpointWorkflows": true
   }
 }
