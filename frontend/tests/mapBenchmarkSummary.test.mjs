@@ -22,6 +22,19 @@ test('benchmark summary lines expose frame, render and pointer percentiles per r
  })}`]);
 });
 
+
+test('benchmark summary keeps unavailable selection explicit and reports latency only for confirmed picks',()=>{
+ const [line]=formatBenchmarkSummaries([{
+  quality:'low',fixture:'dense-520',run:0,
+  interval:{p50:16,p95:40,p99:90},metrics:{renderMs:[1]},pointerFeedback:{p50:20,p95:35},
+  interactionCounts:{pan:100,zoom:12,selection:0,selectionAttempts:40,selectionUnavailable:40},
+  selectionFeedback:{successfulSamples:0,p50:null,p95:null},
+ }]);
+ const result=JSON.parse(line.slice('MAP_BENCH_RESULT '.length));
+ assert.deepEqual(result.interactionCounts,{pan:100,zoom:12,selection:0,selectionAttempts:40,selectionUnavailable:40});
+ assert.deepEqual(result.selectionFeedback,{successfulSamples:0,p50:null,p95:null});
+});
+
 test('benchmark summary handles empty metric samples',()=>{
  const [line]=formatBenchmarkSummaries([{
   quality:'normal',fixture:'local',run:0,

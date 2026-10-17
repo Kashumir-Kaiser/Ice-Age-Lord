@@ -105,6 +105,8 @@ export function formatBenchmarkResult(result){
   renderMs:metric(result.metrics?.renderMs??[]),
   pointerFeedback:result.pointerFeedback,
  };
+ if(result.interactionCounts)formatted.interactionCounts=result.interactionCounts;
+ if(result.selectionFeedback)formatted.selectionFeedback=result.selectionFeedback;
  // Report the latest rendered scene state for the dense fixture without changing the gate formulas.
  if(result.fixture==='dense-520'){
   for(const key of ['drawCalls','visible','total','textureBytes','terrainBytes','effectSprites'])
