@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { spriteRect, referenceSize, artPolygon, composition, resolveOrientation, architecturalCompositePlan, qaArtLayerMetrics, createCompositionCache } from '../src/rendering/SpriteRegistration.ts';
 import { pointInPolygon, pointerCSS, pickStack, cyclePick } from '../src/rendering/MapPicking.ts';
+import { createOcclusionCache } from '../src/rendering/OcclusionCache.ts';
 import { TerrainSampler, noise, chunkLevel } from '../src/rendering/TerrainSampler.ts';
 import { depthOrder } from '../src/rendering/DepthOrder.ts';
 import { projectBuildings, rectPolygon } from '../src/rendering/BuildingGeometry.ts';
@@ -13,6 +14,30 @@ import { validateMapExport } from '../scripts/validate-map-assets.mjs';
 const manifest=JSON.parse(readFileSync(new URL('../../assets/manifest.json',import.meta.url),'utf8'));
 const asset=manifest.assets.find(a=>a.assetId==='lord-house-damaged');
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,`${a} != ${b}`);
+
+test('selected-object occlusion cache preserves silhouette classification across affine pan/zoom and invalidates on geometry or selection changes',()=>{
+ const rows=[{id:'selected',point:{x:1,y:1}},{id:'candidate'}],cache=createOcclusionCache(),hull=[[.1,.1],[.9,.1],[.9,.9],[.1,.9]],target={x:1,y:1};
+ let calculations=0;
+ const classify=(camera,zoom)=>{
+  const project=point=>({x:500+(point.x-camera.x)*20*zoom,y:300+(-point.y-camera.y)*20*zoom});
+  const ground=project({x:0,y:0}),selected=project(target),rect={x:ground.x-50*zoom,y:ground.y-120*zoom,width:100*zoom,height:160*zoom};
+  const depth=ground.y;
+  const uncached=depth>selected.y&&pointInPolygon(selected,artPolygon(hull,rect));
+  const cached=cache.get(rows,'selected',target,'candidate',()=>{calculations++;return depth>selected.y&&rect.width>0&&rect.height>0&&pointInPolygon({x:(selected.x-rect.x)/rect.width,y:(selected.y-rect.y)/rect.height},hull);});
+  assert.equal(cached,uncached,'normalized hit test matches screen-space polygon behavior');
+  return cached;
+ };
+ assert.equal(classify({x:0,y:0},.5),true);
+ for(const [camera,zoom] of [[{x:120,y:-80},.5],[{x:-400,y:90},1],[{x:17,y:26},3]])assert.equal(classify(camera,zoom),true);
+ assert.equal(calculations,1,'camera pan and zoom reuse the map-space classification');
+ const otherTarget={x:2,y:1};
+ assert.notEqual(cache.get(rows,'other-selection',otherTarget,'candidate',()=>{calculations++;return false;}),true);
+ assert.equal(calculations,2,'selected ID or target change invalidates the cache');
+ const changedRows=[...rows];
+ cache.get(changedRows,'other-selection',otherTarget,'candidate',()=>{calculations++;return true;});
+ assert.equal(calculations,3,'building/asset snapshot identity change invalidates cached classifications');
+});
+
 test('CSS pointer offsets, DPR-independent projection, negative coordinates, resize and anchored extreme zoom',()=>{
  for(const dpr of [1,2])for(const viewport of [{width:1366,height:768},{width:390,height:844}])for(const zoom of [.002,.5,3]){
   const camera={x:-191,y:75,zoom},world={x:-17,y:81},screen=worldToScreen(world,camera,viewport);
