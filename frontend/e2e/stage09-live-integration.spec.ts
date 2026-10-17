@@ -55,7 +55,7 @@ test('all nine live screens remain on one server-owned save projection at releas
         const fireSprite = page.locator('.territory-building[data-building-id="SITE-LL01-000"]');
         await expect(page.locator('.territory-scene-svg')).toBeVisible();
         await expect(fireSprite).toBeVisible();
-        await expect(page.getByRole('button', { name: 'Mặt bằng' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Mặt bằng' })).toHaveCount(0);
         await expect(page.locator('.territory-build-tray')).toHaveCount(0);
         await expect(fireSprite).toHaveAttribute('data-asset-id','survival-fire-l01');
         await expect(page.locator('.territory-stage .map-render-canvas')).toBeVisible();

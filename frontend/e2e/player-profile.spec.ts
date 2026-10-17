@@ -60,8 +60,9 @@ test('settlement map follows the player and dragging the player unlocks and pans
   await expect(scene).toBeVisible();
   await expect(lock).toBeVisible();
   await expect(marker).toHaveCount(1);
-  const fire = scene.locator('circle[fill="#db8c56"]');
-  const before = await fire.getAttribute('cx');
+  const fireFootprint = scene.locator('.territory-building[data-asset-id="survival-fire-l01"] .territory-footprint');
+  await expect(fireFootprint).toHaveCount(1);
+  const before = await fireFootprint.getAttribute('points');
   const bounds = await marker.boundingBox();
   expect(bounds).not.toBeNull();
   await page.mouse.move(bounds!.x + bounds!.width / 2, bounds!.y + bounds!.height / 2);
@@ -71,5 +72,5 @@ test('settlement map follows the player and dragging the player unlocks and pans
 
   await expect(lock).toHaveCount(0);
   await expect(marker).toHaveCount(0);
-  await expect.poll(async () => Number(await fire.getAttribute('cx'))).not.toBe(Number(before));
+  await expect.poll(() => fireFootprint.getAttribute('points')).not.toBe(before);
 });
