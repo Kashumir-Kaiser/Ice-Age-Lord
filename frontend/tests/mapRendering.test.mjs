@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { spriteRect, referenceSize, artPolygon, composition, resolveOrientation, architecturalCompositePlan, qaArtLayerMetrics, createCompositionCache } from '../src/rendering/SpriteRegistration.ts';
 import { pointInPolygon, pointerCSS, pickStack, cyclePick } from '../src/rendering/MapPicking.ts';
-import { createOcclusionCache, pointInArtPolygon } from '../src/rendering/OcclusionCache.ts';
 import { TerrainSampler, noise, chunkLevel } from '../src/rendering/TerrainSampler.ts';
 import { depthOrder } from '../src/rendering/DepthOrder.ts';
 import { projectBuildings, rectPolygon } from '../src/rendering/BuildingGeometry.ts';
@@ -14,50 +13,6 @@ import { validateMapExport } from '../scripts/validate-map-assets.mjs';
 const manifest=JSON.parse(readFileSync(new URL('../../assets/manifest.json',import.meta.url),'utf8'));
 const asset=manifest.assets.find(a=>a.assetId==='lord-house-damaged');
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,`${a} != ${b}`);
-
-test('selected-object occlusion cache preserves silhouette classification across affine pan/zoom and invalidates on geometry or selection changes',()=>{
- const rows=[{id:'selected',point:{x:1,y:1}},{id:'candidate'}],cache=createOcclusionCache(),hull=[[.1,.1],[.9,.1],[.9,.9],[.1,.9]],target={x:1,y:1};
- let calculations=0;
- const classify=(camera,zoom)=>{
-  const project=point=>({x:500+(point.x-camera.x)*20*zoom,y:300+(-point.y-camera.y)*20*zoom});
-  const ground=project({x:0,y:0}),selected=project(target),rect={x:ground.x-50*zoom,y:ground.y-120*zoom,width:100*zoom,height:160*zoom};
-  const depth=ground.y;
-  const uncached=depth>selected.y&&pointInPolygon(selected,artPolygon(hull,rect));
-  const cached=cache.get(rows,'selected',target,'candidate',()=>{calculations++;return depth>selected.y&&pointInArtPolygon(selected,hull,rect);});
-  assert.equal(cached,uncached,'normalized hit test matches screen-space polygon behavior');
-  return cached;
- };
- assert.equal(classify({x:0,y:0},.5),true);
- for(const [camera,zoom] of [[{x:120,y:-80},.5],[{x:-400,y:90},1],[{x:17,y:26},3]])assert.equal(classify(camera,zoom),true);
- assert.equal(calculations,1,'camera pan and zoom reuse the map-space classification');
- const otherTarget={x:2,y:1};
- assert.notEqual(cache.get(rows,'other-selection',otherTarget,'candidate',()=>{calculations++;return false;}),true);
- assert.equal(calculations,2,'selected ID or target change invalidates the cache');
- const changedRows=[...rows];
- cache.get(changedRows,'other-selection',otherTarget,'candidate',()=>{calculations++;return true;});
- assert.equal(calculations,3,'building/asset snapshot identity change invalidates cached classifications');
-});
-
-
-test('allocation-free art hit test matches the original at inside, outside and epsilon-adjacent boundary points',()=>{
- const hull=[[.1,.1],[.9,.1],[.9,.9],[.1,.9]];
- for(const scale of [.25,1,4]){
-  const rect={x:37.125,y:-91.75,width:100*scale,height:160*scale};
-  const edgeX=rect.x+.1*rect.width,midY=rect.y+.5*rect.height;
-  const samples=[
-   {x:rect.x+.5*rect.width,y:midY},
-   {x:edgeX,y:midY},
-   {x:edgeX-0.5e-7,y:midY},
-   {x:edgeX-2e-7,y:midY},
-   {x:rect.x-.01*scale,y:midY}
-  ];
-  for(const point of samples){
-   const original=pointInPolygon(point,artPolygon(hull,rect));
-   assert.equal(pointInArtPolygon(point,hull,rect),original,'boundary sample agrees with allocating implementation at scale '+scale);
-  }
- }
-});
-
 test('CSS pointer offsets, DPR-independent projection, negative coordinates, resize and anchored extreme zoom',()=>{
  for(const dpr of [1,2])for(const viewport of [{width:1366,height:768},{width:390,height:844}])for(const zoom of [.002,.5,3]){
   const camera={x:-191,y:75,zoom},world={x:-17,y:81},screen=worldToScreen(world,camera,viewport);

@@ -11,8 +11,8 @@ import { cameraOnlySnapshot, terrainInputsChanged } from './CameraUpdate.ts';
 import { MapEffects, ambientSnowDraws, foliageSwayOffset, rootAnchoredSwayMatrix, selectSwayingConiferIds, sightIntersectsViewport } from './MapEffects.ts';
 import type {EffectParticleDraw} from './MapEffects.ts';
 import { flameFrame, flameRect, flameKey } from './FlamePresentation.ts';
-import { createCompositionCache, architecturalCompositePlan, qaArtLayerMetrics } from './SpriteRegistration.ts';
-import { createOcclusionCache, pointInArtPolygon } from './OcclusionCache.ts';
+import { artPolygon, createCompositionCache, architecturalCompositePlan, qaArtLayerMetrics } from './SpriteRegistration.ts';
+import { pointInPolygon } from './MapPicking.ts';
 import { depthOrder } from './DepthOrder.ts';
 import {projectDepthNodes} from './DepthSlices.ts';
 import { projectBuildings } from './BuildingGeometry.ts';
@@ -84,7 +84,6 @@ export class MapRenderer {
   private depthProjection:MapSnapshot['projection']|null=null;
   private depthPlanning=false;
   private depthIds:string[]=[];
-  private readonly occlusionCache=createOcclusionCache();
   readonly metrics:MapMetrics;
   constructor(private canvas:HTMLCanvasElement,snapshot:MapSnapshot,private status:(backend:string)=>void,enabledMetrics=false,environment:readonly {path:string;sha256:string;width:number;height:number}[]=[],private readonly mapEffects?:MapEffectsAtlas){
     this.snapshot=snapshot;this.snapshotSource=snapshot;this.metrics=new MapMetrics(enabledMetrics);
@@ -280,7 +279,7 @@ export class MapRenderer {
     const drawBuilding=(b:typeof nodes[number])=>{
       const asset=b.asset!;this.assets.register(asset,useAtlas);const lod=b.lod;
       if(b.slice&&draws.some(d=>d.id===b.entityId+':body-fallback'))return;
-      const occludes=Boolean(target&&!b.selected&&this.occlusionCache.get(this.snapshot.buildings,selected!.id,selected!.point,b.id,()=>Boolean(b.depth>target.y&&pointInArtPolygon(target,b.slice?.hull??asset.occlusionRegion.upper,b.rect))));
+      const occludes=Boolean(target&&!b.selected&&b.depth>this.project(selected!.point).y&&pointInPolygon(target,artPolygon(b.slice?.hull??asset.occlusionRegion.upper,b.rect)));
       if(lod==='regional'&&this.snapshot.mode!=='planning'){draws.push({id:b.id+':symbol',path:asset.layers.uiIcon!,...b.symbol,alpha:b.draft?.55:1});return;}
       const flame=asset.mapFlame,frame=flame?flameFrame(this.effects.time,flame.frames.length,flame.fps,this.reducedMotion):0;
       const key=flame?flameKey(flame.path,frame):null;
