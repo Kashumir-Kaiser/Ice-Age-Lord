@@ -8,7 +8,7 @@ export function exportPath(asset:AssetManifestEntry,layer:CompositionLayer,lod:'
   return asset.mapExports?.find(e=>e.role===layer.role&&e.lod===lod&&(e.layerPath??e.source)===layer.path)?.path??layer.path;
 }
 type CachedImage=HTMLImageElement|HTMLCanvasElement;
-type Entry={refs:number;image:CachedImage|null;texture:Texture|null;request:Promise<CachedImage>;bytes:number;reservedBytes:number;controller:AbortController;state:'pending'|'ready'|'failed'};
+type Entry={refs:number;image:CachedImage|null;texture:Texture|null;request:Promise<CachedImage>;bytes:number;reservedBytes:number;controller:AbortController;loadingImage:HTMLImageElement|null;state:'pending'|'ready'|'failed'};
 function imageBytes(image:CachedImage):number {
   const width='naturalWidth' in image?image.naturalWidth:image.width,height='naturalHeight' in image?image.naturalHeight:image.height;
   return width*height*4;
@@ -100,28 +100,40 @@ export class AssetTextureCache {
       if(this.reservedBytes+estimated>this.limit){if(!this.rejected.has(path)){this.rejected.add(path);this.onBudget(path);}return null;}
       this.rejected.delete(path);
       if(!e){
-        const image=new Image(),controller=new AbortController();image.decoding='async';
+        const controller=new AbortController();
+        let entry:Entry|undefined,activeImage:HTMLImageElement|null=null;
         const request=new Promise<CachedImage>((resolve,reject)=>{
-          let settled=false;
+          let settled=false,attempt=0,timer:ReturnType<typeof setTimeout>|undefined,image:HTMLImageElement;
           const detach=()=>controller.signal.removeEventListener('abort',abort);
-          const fail=(error:Error)=>{if(settled)return;settled=true;detach();disposeImage(image);reject(error);};
-          const finish=(value:CachedImage)=>{if(settled)return;settled=true;detach();image.onload=image.onerror=null;resolve(value);};
-          const abort=()=>fail(new Error('Disposed '+path));
-          image.onload=()=>{
-            if(!path.split(/[?#]/,1)[0].toLowerCase().endsWith('.svg')){finish(image);return;}
-            let canvas:HTMLCanvasElement|null=null;
-            try{
-              canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
-              const context=canvas.getContext('2d',{alpha:true});if(!context)throw new Error('Canvas2D unavailable for '+path);
-              context.drawImage(image,0,0);disposeImage(image);finish(canvas);
-            }catch(error){if(canvas)canvas.width=canvas.height=0;fail(error instanceof Error?error:new Error(String(error)));}
+          const clearTimer=()=>{if(timer!==undefined){clearTimeout(timer);timer=undefined;}};
+          const finish=(value:CachedImage)=>{if(settled)return;settled=true;clearTimer();detach();image.onload=image.onerror=null;activeImage=null;if(entry)entry.loadingImage=null;resolve(value);};
+          const fail=(error:Error,retryable=false)=>{
+            if(settled)return;
+            clearTimer();image.onload=image.onerror=null;disposeImage(image);activeImage=null;if(entry)entry.loadingImage=null;
+            if(retryable&&attempt===0&&!controller.signal.aborted){attempt++;start();return;}
+            settled=true;detach();reject(error);
           };
-          image.onerror=()=>fail(new Error('Cannot decode '+path));
-          controller.signal.addEventListener('abort',abort,{once:true});image.src=path;
+          const abort=()=>fail(new Error('Disposed '+path));
+          const start=()=>{
+            image=new Image();image.decoding='async';activeImage=image;if(entry)entry.loadingImage=image;
+            timer=setTimeout(()=>fail(new Error('Timed out loading '+path+' after '+(attempt+1)+' attempt'+(attempt?'s':'')),true),15000);
+            image.onload=()=>{
+              if(!path.split(/[?#]/,1)[0].toLowerCase().endsWith('.svg')){finish(image);return;}
+              let canvas:HTMLCanvasElement|null=null;
+              try{
+                canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
+                const context=canvas.getContext('2d',{alpha:true});if(!context)throw new Error('Canvas2D unavailable for '+path);
+                context.drawImage(image,0,0);disposeImage(image);finish(canvas);
+              }catch(error){if(canvas)canvas.width=canvas.height=0;fail(error instanceof Error?error:new Error(String(error)));}
+            };
+            image.onerror=()=>fail(new Error('Cannot decode '+path));
+            image.src=path;
+          };
+          controller.signal.addEventListener('abort',abort,{once:true});start();
         });
-        e={refs:0,image:null,texture:null,request,bytes:0,reservedBytes:estimated,controller,state:'pending'};shared.set(path,e);
+        e={refs:0,image:null,texture:null,request,bytes:0,reservedBytes:estimated,controller,loadingImage:activeImage,state:'pending'};entry=e;shared.set(path,e);
         const target=e;
-        void request.then(value=>{target.state='ready';if(!target.refs)return;target.image=value;target.bytes=imageBytes(value);target.reservedBytes=target.bytes;}).catch(()=>{target.state='failed';target.reservedBytes=0;});
+        void request.then(value=>{target.loadingImage=null;target.state='ready';if(!target.refs)return;target.image=value;target.bytes=imageBytes(value);target.reservedBytes=target.bytes;}).catch(()=>{target.loadingImage=null;target.state='failed';target.reservedBytes=0;});
       }
       e.refs++;this.owned.add(path);
       // Another host can finish a shared load without this host owning its callback.
@@ -143,10 +155,10 @@ export class AssetTextureCache {
   get pending():number {let n=0;for(const path of this.owned)if(shared.get(path)?.state==='pending')n++;return n;}
   get deferred():number{return this.rejected.size;}
   /** Current blockers for opt-in map QA diagnostics; does not affect rendering or admission. */
-  get readinessDiagnostics():{id:string;state:'loading'|'budget-deferred';refs:number;reservedBytes:number}[]{
-    const details:{id:string;state:'loading'|'budget-deferred';refs:number;reservedBytes:number}[]=[];
-    for(const path of this.owned){const entry=shared.get(path);if(entry?.state==='pending')details.push({id:path,state:'loading',refs:entry.refs,reservedBytes:entry.reservedBytes});}
-    for(const path of this.rejected)details.push({id:path,state:'budget-deferred',refs:0,reservedBytes:this.estimates.get(path.split('?')[0])??0});
+  get readinessDiagnostics():{id:string;state:'loading'|'budget-deferred';refs:number;reservedBytes:number;browserComplete:boolean|null;naturalWidth:number|null;naturalHeight:number|null}[]{
+    const details:{id:string;state:'loading'|'budget-deferred';refs:number;reservedBytes:number;browserComplete:boolean|null;naturalWidth:number|null;naturalHeight:number|null}[]=[];
+    for(const path of this.owned){const entry=shared.get(path);if(entry?.state==='pending'){const image=entry.loadingImage;details.push({id:path,state:'loading',refs:entry.refs,reservedBytes:entry.reservedBytes,browserComplete:image?.complete??null,naturalWidth:image?.naturalWidth??null,naturalHeight:image?.naturalHeight??null});}}
+    for(const path of this.rejected)details.push({id:path,state:'budget-deferred',refs:0,reservedBytes:this.estimates.get(path.split('?')[0])??0,browserComplete:null,naturalWidth:null,naturalHeight:null});
     return details.sort((a,b)=>a.id.localeCompare(b.id));
   }
   retain(paths:ReadonlySet<string>):void {
