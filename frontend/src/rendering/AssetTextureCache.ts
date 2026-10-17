@@ -8,7 +8,7 @@ export function exportPath(asset:AssetManifestEntry,layer:CompositionLayer,lod:'
   return asset.mapExports?.find(e=>e.role===layer.role&&e.lod===lod&&(e.layerPath??e.source)===layer.path)?.path??layer.path;
 }
 type CachedImage=HTMLImageElement|HTMLCanvasElement;
-type Entry={refs:number;image:CachedImage|null;texture:Texture|null;request:Promise<CachedImage>;bytes:number;reservedBytes:number;controller:AbortController;loadingImage:HTMLImageElement|null;state:'pending'|'ready'|'failed'};
+type Entry={refs:number;image:CachedImage|null;texture:Texture|null;request:Promise<CachedImage>;bytes:number;reservedBytes:number;controller:AbortController;loadingImage:HTMLImageElement|null;loadStartedAt:number;attemptStartedAt:number;loadAttempt:number;watchdogDeadline:number|null;state:'pending'|'ready'|'failed'};
 function imageBytes(image:CachedImage):number {
   const width='naturalWidth' in image?image.naturalWidth:image.width,height='naturalHeight' in image?image.naturalHeight:image.height;
   return width*height*4;
@@ -102,10 +102,11 @@ export class AssetTextureCache {
       if(!e){
         const controller=new AbortController();
         let entry:Entry|undefined,activeImage:HTMLImageElement|null=null;
+        const loadStartedAt=Date.now();let attemptStartedAt=loadStartedAt;
         const request=new Promise<CachedImage>((resolve,reject)=>{
           let settled=false,attempt=0,timer:ReturnType<typeof setTimeout>|undefined,image:HTMLImageElement;
           const detach=()=>controller.signal.removeEventListener('abort',abort);
-          const clearTimer=()=>{if(timer!==undefined){clearTimeout(timer);timer=undefined;}};
+          const clearTimer=()=>{if(timer!==undefined){clearTimeout(timer);timer=undefined;}if(entry)entry.watchdogDeadline=null;};
           const finish=(value:CachedImage)=>{if(settled)return;settled=true;clearTimer();detach();image.onload=image.onerror=null;activeImage=null;if(entry)entry.loadingImage=null;resolve(value);};
           const fail=(error:Error,retryable=false)=>{
             if(settled)return;
@@ -115,7 +116,8 @@ export class AssetTextureCache {
           };
           const abort=()=>fail(new Error('Disposed '+path));
           const start=()=>{
-            image=new Image();image.decoding='async';activeImage=image;if(entry)entry.loadingImage=image;
+            attemptStartedAt=Date.now();
+            image=new Image();image.decoding='async';activeImage=image;if(entry){entry.loadingImage=image;entry.attemptStartedAt=attemptStartedAt;entry.loadAttempt=attempt+1;entry.watchdogDeadline=attemptStartedAt+15000;}
             timer=setTimeout(()=>fail(new Error('Timed out loading '+path+' after '+(attempt+1)+' attempt'+(attempt?'s':'')),true),15000);
             image.onload=()=>{
               if(!path.split(/[?#]/,1)[0].toLowerCase().endsWith('.svg')){finish(image);return;}
@@ -131,7 +133,7 @@ export class AssetTextureCache {
           };
           controller.signal.addEventListener('abort',abort,{once:true});start();
         });
-        e={refs:0,image:null,texture:null,request,bytes:0,reservedBytes:estimated,controller,loadingImage:activeImage,state:'pending'};entry=e;shared.set(path,e);
+        e={refs:0,image:null,texture:null,request,bytes:0,reservedBytes:estimated,controller,loadingImage:activeImage,loadStartedAt,attemptStartedAt,loadAttempt:1,watchdogDeadline:attemptStartedAt+15000,state:'pending'};entry=e;shared.set(path,e);
         const target=e;
         void request.then(value=>{target.loadingImage=null;target.state='ready';if(!target.refs)return;target.image=value;target.bytes=imageBytes(value);target.reservedBytes=target.bytes;}).catch(()=>{target.loadingImage=null;target.state='failed';target.reservedBytes=0;});
       }
@@ -155,10 +157,11 @@ export class AssetTextureCache {
   get pending():number {let n=0;for(const path of this.owned)if(shared.get(path)?.state==='pending')n++;return n;}
   get deferred():number{return this.rejected.size;}
   /** Current blockers for opt-in map QA diagnostics; does not affect rendering or admission. */
-  get readinessDiagnostics():{id:string;state:'loading'|'budget-deferred';refs:number;reservedBytes:number;browserComplete:boolean|null;naturalWidth:number|null;naturalHeight:number|null}[]{
-    const details:{id:string;state:'loading'|'budget-deferred';refs:number;reservedBytes:number;browserComplete:boolean|null;naturalWidth:number|null;naturalHeight:number|null}[]=[];
-    for(const path of this.owned){const entry=shared.get(path);if(entry?.state==='pending'){const image=entry.loadingImage;details.push({id:path,state:'loading',refs:entry.refs,reservedBytes:entry.reservedBytes,browserComplete:image?.complete??null,naturalWidth:image?.naturalWidth??null,naturalHeight:image?.naturalHeight??null});}}
-    for(const path of this.rejected)details.push({id:path,state:'budget-deferred',refs:0,reservedBytes:this.estimates.get(path.split('?')[0])??0,browserComplete:null,naturalWidth:null,naturalHeight:null});
+  get readinessDiagnostics():{id:string;state:'loading'|'budget-deferred';refs:number;reservedBytes:number;browserComplete:boolean|null;naturalWidth:number|null;naturalHeight:number|null;attempt:number|null;elapsedMs:number|null;attemptAgeMs:number|null;watchdogArmed:boolean;watchdogRemainingMs:number|null}[]{
+    const details:{id:string;state:'loading'|'budget-deferred';refs:number;reservedBytes:number;browserComplete:boolean|null;naturalWidth:number|null;naturalHeight:number|null;attempt:number|null;elapsedMs:number|null;attemptAgeMs:number|null;watchdogArmed:boolean;watchdogRemainingMs:number|null}[]=[];
+    const now=Date.now();
+    for(const path of this.owned){const entry=shared.get(path);if(entry?.state==='pending'){const image=entry.loadingImage,watchdogRemainingMs=entry.watchdogDeadline===null?null:entry.watchdogDeadline-now;details.push({id:path,state:'loading',refs:entry.refs,reservedBytes:entry.reservedBytes,browserComplete:image?.complete??null,naturalWidth:image?.naturalWidth??null,naturalHeight:image?.naturalHeight??null,attempt:entry.loadAttempt,elapsedMs:Math.max(0,now-entry.loadStartedAt),attemptAgeMs:Math.max(0,now-entry.attemptStartedAt),watchdogArmed:entry.watchdogDeadline!==null,watchdogRemainingMs});}}
+    for(const path of this.rejected)details.push({id:path,state:'budget-deferred',refs:0,reservedBytes:this.estimates.get(path.split('?')[0])??0,browserComplete:null,naturalWidth:null,naturalHeight:null,attempt:null,elapsedMs:null,attemptAgeMs:null,watchdogArmed:false,watchdogRemainingMs:null});
     return details.sort((a,b)=>a.id.localeCompare(b.id));
   }
   retain(paths:ReadonlySet<string>):void {

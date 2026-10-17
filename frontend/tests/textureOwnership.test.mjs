@@ -158,3 +158,29 @@ test('stalled shared image retries once, cancels the first request, and settles 
   globalThis.Image=OriginalImage;globalThis.setTimeout=OriginalSetTimeout;globalThis.clearTimeout=OriginalClearTimeout;
  }
 });
+
+
+test('pending readiness diagnostics expose attempt age and an overdue watchdog',async()=>{
+ const OriginalImage=globalThis.Image,OriginalSetTimeout=globalThis.setTimeout,OriginalClearTimeout=globalThis.clearTimeout,OriginalNow=Date.now;
+ const images=[],timers=[];let now=1000;
+ globalThis.Image=class {naturalWidth=16;naturalHeight=16;complete=false;onload=null;onerror=null;decoding='';_src='';constructor(){images.push(this);}set src(value){this._src=value;}get src(){return this._src;}};
+ globalThis.setTimeout=(callback,delay)=>{const timer={callback,delay,cleared:false};timers.push(timer);return timer;};
+ globalThis.clearTimeout=timer=>{if(timer)timer.cleared=true;};
+ Date.now=()=>now;
+ const cache=new AssetTextureCache(()=>{},()=>{},1024);
+ try{
+  cache.registerEnvironment([{path:'/diagnostic.png',sha256:'diagnostic',width:16,height:16}]);
+  cache.acquire('/diagnostic.png');
+  assert.deepEqual(cache.readinessDiagnostics[0],{id:'/diagnostic.png?mapHash=diagnostic',state:'loading',refs:1,reservedBytes:1024,browserComplete:false,naturalWidth:16,naturalHeight:16,attempt:1,elapsedMs:0,attemptAgeMs:0,watchdogArmed:true,watchdogRemainingMs:15000});
+  now+=60000;
+  const overdue=cache.readinessDiagnostics[0];
+  assert.equal(overdue.elapsedMs,60000);assert.equal(overdue.attempt,1);assert.equal(overdue.watchdogArmed,true);assert.equal(overdue.watchdogRemainingMs,-45000,'negative time exposes a watchdog callback that has not run');assert.equal(overdue.attemptAgeMs,60000);
+  timers[0].callback();
+  const retried=cache.readinessDiagnostics[0];
+  assert.equal(images.length,2);assert.equal(retried.attempt,2);assert.equal(retried.elapsedMs,60000);assert.equal(retried.attemptAgeMs,0);assert.equal(retried.watchdogArmed,true);assert.equal(retried.watchdogRemainingMs,15000);
+  images[1].onload();await new Promise(setImmediate);
+  assert.deepEqual(cache.readinessDiagnostics,[]);
+ }finally{
+  cache.destroy();globalThis.Image=OriginalImage;globalThis.setTimeout=OriginalSetTimeout;globalThis.clearTimeout=OriginalClearTimeout;Date.now=OriginalNow;
+ }
+});

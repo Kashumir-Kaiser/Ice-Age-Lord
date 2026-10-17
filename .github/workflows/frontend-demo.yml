@@ -87,6 +87,7 @@ jobs:
       - name: Prepare test local API
         run: |
           cd ..
+          npm run content:compile
           npm run owner:key:create
           npm run db:migrate
           ILL_TEST_OWNER_KEY="$(cat .local/owner-key)"
