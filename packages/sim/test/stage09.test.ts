@@ -215,7 +215,18 @@ test('physical supply remains conserved; unsupported harvest fails closed and st
         return true;
       },
     );
-    assert.deepEqual(harness.currentState(), beforeHarvest, 'a rejected extraction leaves time, revision, inventory, jobs, and resource balances unchanged');
+    const afterHarvestReject = harness.currentState();
+    const rejectedReceipt = afterHarvestReject.receipts.find(entry => entry.commandId === harvestRequest.commandId);
+    assert.equal(rejectedReceipt?.receipt.accepted, false);
+    assert.equal(rejectedReceipt?.receipt.code, 'RESOURCE_LEDGER_STAGE_05');
+    assert.equal(rejectedReceipt?.receipt.eventSequence, null);
+    assert.equal(afterHarvestReject.revision, beforeHarvest.revision);
+    assert.equal(afterHarvestReject.lastEventSequence, beforeHarvest.lastEventSequence);
+    assert.deepEqual(
+      afterHarvestReject,
+      { ...beforeHarvest, receipts: afterHarvestReject.receipts },
+      'the rejected extraction adds only its audit receipt; gameplay state remains unchanged',
+    );
 
     const beforeRestart = harness.currentState();
     const recovered = harness.restart();
