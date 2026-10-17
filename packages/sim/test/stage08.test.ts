@@ -44,21 +44,28 @@ function elapsedFromSource(value: string): number {
 }
 
 test('daily resource renewal system receipts are projected without resource details', () => {
-  const service = new GameApplicationService({} as SqliteRepository, world, { timersEnabled: false });
-  const projected = (service as unknown as {
+  const service = Object.create(GameApplicationService.prototype) as GameApplicationService;
+  const project = (type: string, payload: Record<string, unknown>) => (service as unknown as {
     projectSystemPlayerEvent: (event: { sequence: number; type: string; occurredAtElapsedMs: number; payload: Record<string, unknown> }, eventId: string, state: GameState) => {
       sequence: number; eventId: string; type: string; category: string; title: string; text: string;
     };
   }).projectSystemPlayerEvent({
-    sequence: 1, type: 'resource_daily_quotas_reset', occurredAtElapsedMs: 24 * HOUR_MS,
-    payload: { resourceId: 'hidden-resource', remaining: 123 },
+    sequence: 1, type, occurredAtElapsedMs: 24 * HOUR_MS, payload,
   }, 'daily-renewal', freshState());
 
-  assert.equal(projected.type, 'resource_daily_quotas_reset');
-  assert.equal(projected.category, 'world');
-  assert.equal(projected.text, 'Daily gathering limits have reset.');
-  assert.equal(JSON.stringify(projected).includes('hidden-resource'), false);
-  assert.equal('payload' in projected, false);
+  const quotaReset = project('resource_daily_quotas_reset', { resourceId: 'hidden-resource', remaining: 123 });
+  assert.equal(quotaReset.type, 'resource_daily_quotas_reset');
+  assert.equal(quotaReset.category, 'world');
+  assert.equal(quotaReset.text, 'Daily gathering limits have reset.');
+  assert.equal(JSON.stringify(quotaReset).includes('hidden-resource'), false);
+  assert.equal('payload' in quotaReset, false);
+
+  const biomassRegenerated = project('resource_biomass_regenerated', { resourceId: 'hidden-resource', quantity: 1979 });
+  assert.equal(biomassRegenerated.type, 'resource_biomass_regenerated');
+  assert.equal(biomassRegenerated.category, 'world');
+  assert.equal(biomassRegenerated.text, 'A renewable resource has regrown.');
+  assert.equal(JSON.stringify(biomassRegenerated).includes('hidden-resource'), false);
+  assert.equal('payload' in biomassRegenerated, false);
 });
 
 function isolatedEventState(eventId: string, elapsed: number, status: ScheduledEventState['status'] = 'scheduled'): GameState {
