@@ -351,9 +351,10 @@ export class MapRenderer {
     m.effectSprites=this.effectDraws.length;
     let terrainGPUBytes=0;for(const texture of this.chunkTextures.values())terrainGPUBytes+=texture.source.width*texture.source.height*4;
     m.textureBytes=this.app?this.assets.gpuBytes+terrainGPUBytes+this.architectureTextureBytes+this.renderTargetBytes():0;
-    m.decodedBytes=this.assets.bytes+this.terrain.bytes+this.terrain.scratchBytes;m.terrainBytes=terrainGPUBytes;m.queued=this.terrain.pending;m.pendingTextures=this.assets.pending+this.assets.deferred;m.pendingTextureDetails=this.metrics.enabled?this.assets.readinessDiagnostics:[];m.visible=buildingObjects.length+props.length;m.total=this.snapshot.buildings.length+worldProps.length;
+    m.decodedBytes=this.assets.bytes+this.terrain.bytes+this.terrain.scratchBytes;m.terrainBytes=terrainGPUBytes;this.refreshReadinessMetrics();m.qaDraftOrientations=this.metrics.enabled?this.snapshot.buildings.filter(building=>building.draft).map(({id,assetId,orientation})=>({id,assetId,orientation})):[];m.visible=buildingObjects.length+props.length;m.total=this.snapshot.buildings.length+worldProps.length;
     m.quality=this.quality;m.terrainLevel=this.level;m.visibleTerrainChunks=chunkCoverage(bounds,this.level);m.prefetchChunks=prefetched;
   }
+  refreshReadinessMetrics():void{const metrics=this.metrics.data;metrics.queued=this.terrain.pending;metrics.pendingTextures=this.assets.pending+this.assets.deferred;metrics.pendingTextureDetails=this.metrics.enabled?this.assets.readinessDiagnostics:[];}
   private groundDraw(chunk:TerrainChunk):Draw {
     const scale=this.scale(),step=chunk.span/(chunk.canvas.width-2),ground=this.project({x:chunk.x*chunk.span-step,y:chunk.y*chunk.span-step});
     const matrix=this.snapshot.projection==='territory'?new Matrix(2*step*scale,step*scale,2*step*scale,-step*scale,ground.x,ground.y):new Matrix(step*(this.snapshot.northExtent?this.size.width/this.snapshot.northExtent.width:scale),0,0,-step*scale,ground.x,ground.y);

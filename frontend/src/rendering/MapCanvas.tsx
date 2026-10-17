@@ -28,7 +28,7 @@ export default function MapCanvas({snapshot,label}:Props){
       if(disposed)return;
       current=new Renderer(canvas,latest.current,value=>{if(!disposed)setBackend(value);},qa,manifest?.environmentArt,manifest?.mapEffects);renderer.current=current;
       const b=node.getBoundingClientRect();current.resize({width:b.width,height:b.height});configure();visibility();current.setHostVisible(hostVisible);
-      if(qa){const target=window as unknown as {__mapMetrics?:Record<string,unknown>[]};target.__mapMetrics??=[];target.__mapMetrics.push(current.metrics.data);}
+      if(qa){const target=window as unknown as {__mapMetrics?:Record<string,unknown>[];__mapReadinessRefresh?:Array<()=>void>};target.__mapMetrics??=[];target.__mapMetrics.push(current.metrics.data);target.__mapReadinessRefresh??=[];target.__mapReadinessRefresh.push(()=>current?.refreshReadinessMetrics());}
       await current.init(new URLSearchParams(location.search).get('mapFallback')==='1');
     }).catch(error=>{if(!disposed){setBackend('unavailable');console.error('Map initialization failed',error);}});
     return()=>{disposed=true;observer.disconnect();intersection?.disconnect();parent?.removeEventListener('map-camera',cameraChange);reduced.removeEventListener('change',configure);document.removeEventListener('visibilitychange',visibility);current?.destroy();renderer.current=null;node.replaceChildren();};

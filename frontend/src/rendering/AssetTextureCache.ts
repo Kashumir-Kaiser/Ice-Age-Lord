@@ -102,7 +102,7 @@ export class AssetTextureCache {
       if(!e){
         const controller=new AbortController();
         let entry:Entry|undefined,activeImage:HTMLImageElement|null=null;
-        const loadStartedAt=Date.now();let attemptStartedAt=loadStartedAt;
+        const loadStartedAt=performance.now();let attemptStartedAt=loadStartedAt;
         const request=new Promise<CachedImage>((resolve,reject)=>{
           let settled=false,attempt=0,timer:ReturnType<typeof setTimeout>|undefined,image:HTMLImageElement;
           const detach=()=>controller.signal.removeEventListener('abort',abort);
@@ -116,7 +116,7 @@ export class AssetTextureCache {
           };
           const abort=()=>fail(new Error('Disposed '+path));
           const start=()=>{
-            attemptStartedAt=Date.now();
+            attemptStartedAt=performance.now();
             image=new Image();image.decoding='async';activeImage=image;if(entry){entry.loadingImage=image;entry.attemptStartedAt=attemptStartedAt;entry.loadAttempt=attempt+1;entry.watchdogDeadline=attemptStartedAt+15000;}
             timer=setTimeout(()=>fail(new Error('Timed out loading '+path+' after '+(attempt+1)+' attempt'+(attempt?'s':'')),true),15000);
             image.onload=()=>{
@@ -159,7 +159,7 @@ export class AssetTextureCache {
   /** Current blockers for opt-in map QA diagnostics; does not affect rendering or admission. */
   get readinessDiagnostics():{id:string;state:'loading'|'budget-deferred';refs:number;reservedBytes:number;browserComplete:boolean|null;naturalWidth:number|null;naturalHeight:number|null;attempt:number|null;elapsedMs:number|null;attemptAgeMs:number|null;watchdogArmed:boolean;watchdogRemainingMs:number|null}[]{
     const details:{id:string;state:'loading'|'budget-deferred';refs:number;reservedBytes:number;browserComplete:boolean|null;naturalWidth:number|null;naturalHeight:number|null;attempt:number|null;elapsedMs:number|null;attemptAgeMs:number|null;watchdogArmed:boolean;watchdogRemainingMs:number|null}[]=[];
-    const now=Date.now();
+    const now=performance.now();
     for(const path of this.owned){const entry=shared.get(path);if(entry?.state==='pending'){const image=entry.loadingImage,watchdogRemainingMs=entry.watchdogDeadline===null?null:entry.watchdogDeadline-now;details.push({id:path,state:'loading',refs:entry.refs,reservedBytes:entry.reservedBytes,browserComplete:image?.complete??null,naturalWidth:image?.naturalWidth??null,naturalHeight:image?.naturalHeight??null,attempt:entry.loadAttempt,elapsedMs:Math.max(0,now-entry.loadStartedAt),attemptAgeMs:Math.max(0,now-entry.attemptStartedAt),watchdogArmed:entry.watchdogDeadline!==null,watchdogRemainingMs});}}
     for(const path of this.rejected)details.push({id:path,state:'budget-deferred',refs:0,reservedBytes:this.estimates.get(path.split('?')[0])??0,browserComplete:null,naturalWidth:null,naturalHeight:null,attempt:null,elapsedMs:null,attemptAgeMs:null,watchdogArmed:false,watchdogRemainingMs:null});
     return details.sort((a,b)=>a.id.localeCompare(b.id));

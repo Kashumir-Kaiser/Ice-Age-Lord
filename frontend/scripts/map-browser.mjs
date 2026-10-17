@@ -26,6 +26,7 @@ export async function readyMap(page){
   if(result?.errors?.length)throw new Error('Map renderer failed before readiness: '+result.errors.join('; '));
  }catch(error){
   error.mapReadiness=await page.evaluate(()=>{
+   window.__mapReadinessRefresh?.at(-1)?.();
    const host=document.querySelector('.map-render-host'),renderer=document.querySelector('[data-map-renderer]'),rect=host?.getBoundingClientRect();
    return {visibilityState:document.visibilityState,focused:document.hasFocus(),viewport:{width:innerWidth,height:innerHeight},hostRect:rect?{x:rect.x,y:rect.y,width:rect.width,height:rect.height,top:rect.top,right:rect.right,bottom:rect.bottom,left:rect.left}:null,hostFullyOutside:rect?rect.bottom<=0||rect.top>=innerHeight||rect.right<=0||rect.left>=innerWidth:null,rendererPresent:Boolean(renderer),metrics:window.__mapMetrics?.at(-1)??null};
   }).catch(()=>null);

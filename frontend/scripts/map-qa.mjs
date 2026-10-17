@@ -3,6 +3,7 @@ import {createHash} from 'node:crypto';
 import {resolve} from 'node:path';
 import sharp from 'sharp';
 import {launchMapBrowser,openMap,navigateMap,readyMap} from './map-browser.mjs';
+import {waitForAppliedQaOrientation} from './map-qa-readiness.mjs';
 import {TerrainSampler,regionWeight} from '../src/rendering/TerrainSampler.ts';
 import {paintedIceWeight} from '../src/rendering/TerrainChunkCache.ts';
 
@@ -437,6 +438,7 @@ try{
      const renderedOrientation=await item.getAttribute('data-orientation');
      if(renderedOrientation!==orientation)throw new Error(`${family} requested ${orientation} but the authored placement rendered ${renderedOrientation}`);
     }
+    if(orientationAssetIds[family])await waitForAppliedQaOrientation(()=>calibration.evaluate(()=>window.__mapMetrics?.at(-1)??null),orientationAssetIds[family],orientation);
     const row=await capture(calibration,`${family}-${orientation}`,viewport);
     if(orientationAssetIds[family]){
      const assetId=orientationAssetIds[family],item=calibration.locator(`.territory-building.is-draft[data-asset-id="${assetId}"]`).last(),box=await item.boundingBox();
