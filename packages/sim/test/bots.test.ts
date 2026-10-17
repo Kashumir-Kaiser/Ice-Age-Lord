@@ -9,7 +9,7 @@ import { reduceCommand } from '../src/reducer.ts';
 import { projectPlayerView } from '../src/view.ts';
 import { settleOpeningLevelRank } from '../src/stage08.ts';
 import { appendBotActionReceipt, beginBotPopulationAdvance, botActionReceiptCount, botChunkHash, botPopulationRoot, botRowHash, findBotActionReceipt, forEachBotActionReceipt, finishBotPopulationAdvance, freezeBotColdRecord, verifyBotPopulation } from '../src/bots/state.ts';
-import { BOT_HUNT_RULE_VERSION, botConstructionPermille, botTalentXpMultiplierPermille } from '../src/bots/state.ts';
+import { BOT_ACTION_RECEIPT_RECENT_LIMIT, BOT_HUNT_RULE_VERSION, botConstructionPermille, botTalentXpMultiplierPermille } from '../src/bots/state.ts';
 import { botCohortPower } from '../src/bots/combat.ts';
 import { BOT_P0_COUNT, BOT_TALENT_QUOTAS, botGradeAt, botKindAt, generateBotPopulation } from '../src/bots/generation.ts';
 import { consumeSharedWildlifeStock } from '../src/bots/economy.ts';
@@ -336,6 +336,25 @@ test('P0 opening level board freezes the qualified top 100 after 144 hours and s
   forEachBotActionReceipt(sProduction, receipt => { sProductionAdjustedXp += receipt.xpAwarded; });
   assert.ok(sCombatAdjustedXp > sProductionAdjustedXp,
     'the committed XP ledger must preserve the combat specialist lead despite its lower base activity XP');
+  const totalActionReceipts = population.chunks.reduce((sum, chunk) => sum + chunk.cold.reduce((chunkSum, bot) => chunkSum + botActionReceiptCount(bot), 0), 0);
+  assert.ok(totalActionReceipts >= population.completedActionCount,
+    'every completed action must retain its receipt; additional side-effect receipts are allowed');
+  assert.ok(totalActionReceipts > population.botCount,
+    'the six-day simulation must settle real bot activities');
+  // Archiving is per bot, not global: only individual rows exceeding 128 receipts roll over.
+  // The current survival simulation produces fewer than 128 actions per bot by day six.
+  // The 300-receipt copy-on-write test above independently proves actual page rollover.
+  for (const chunk of population.chunks) for (const bot of chunk.cold) {
+    const count = botActionReceiptCount(bot);
+    if (count > BOT_ACTION_RECEIPT_RECENT_LIMIT) {
+      assert.ok(bot.actionReceiptArchive.length > 0, 'overflowed bot rows must retain compact archive pages');
+    } else {
+      assert.equal(bot.actionReceiptArchive.length, 0, 'rows below the threshold must not invent archive pages');
+    }
+    let visited = 0;
+    forEachBotActionReceipt(bot, () => { visited += 1; });
+    assert.equal(visited, count, 'every committed recent or archived receipt must remain enumerable');
+  }
   const botRows = state.stage08.rankSnapshots.find(item => item.boardId === 'OPENING_LEVEL')!.rows.filter(row => row.playerId !== state.player.id);
   assert.equal(population.rewardReceipts.length, botRows.length, 'each ranked bot receives exactly one immutable reward receipt');
   assert.deepEqual(population.rewardReceipts.map(receipt => receipt.botId).sort(), botRows.map(row => row.playerId).sort());

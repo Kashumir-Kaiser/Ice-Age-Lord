@@ -546,7 +546,9 @@ test('a 5x clock settles through a restart and advances beyond EV02 while preser
     assert.equal(state.offers.length, 0);
     assert.ok(state.quests.every(quest => quest.state === 'dormant'));
     const view = projectPlayerView(state, world);
-    assert.deepEqual(view.calendar.map(event => event.id), world.eventSchedule.map(event => event.id));
+    const announced = state.calendar.filter(event => event.status !== 'scheduled' && event.openReceiptSequence !== null && event.opensAtMs <= state.simElapsedMs);
+    assert.deepEqual(view.calendar.map(event => event.id), announced.map(event => event.id),
+      'player only receives announced events; the remaining authored timeline stays internal');
     assert.equal(view.eventProgressionBlocker, null);
     assert.deepEqual(view.quests, []);
     assert.deepEqual(view.currency, []);

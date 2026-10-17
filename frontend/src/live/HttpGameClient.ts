@@ -60,7 +60,7 @@ export class HttpGameClient {
         status: 0,
         code: 'API_DISCONNECTED',
         message: detail,
-        displayText: 'Không kết nối được API cục bộ. Hãy kiểm tra dịch vụ tại 127.0.0.1:8081.',
+        displayText: 'Không thể kết nối với trò chơi. Hãy kiểm tra dịch vụ đang chạy rồi thử lại.',
         retryable: true,
       });
     }
@@ -72,7 +72,7 @@ export class HttpGameClient {
         status: response.status,
         code: problem?.error?.code || 'HTTP_ERROR',
         message: problem?.error?.message || ('HTTP ' + response.status),
-        displayText: problem?.error?.displayText || 'API từ chối yêu cầu (' + response.status + ').',
+        displayText: problem?.error?.displayText || 'Yêu cầu chưa được chấp nhận (' + response.status + ').',
         currentRevision: problem?.error?.currentRevision,
         retryable: problem?.error?.retryable,
       });

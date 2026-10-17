@@ -296,8 +296,6 @@ export type PlayerCalendarEvent = {
   displayName: string;
   status: ScheduledEventState['status'];
   readiness: 'executable_lifecycle' | 'executable_ranked_board' | 'calendar_only' | 'settlement_blocked' | 'mandatory_content_blocked';
-  eventContract: Omit<EventContractDefinition, 'eventId'>;
-  researchEvidence: FixedEventScheduleRow['researchEvidence'];
   opensAtElapsedMs: number;
   locksAtElapsedMs: number;
   resolvesAtElapsedMs: number;

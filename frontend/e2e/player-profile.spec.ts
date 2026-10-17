@@ -11,7 +11,7 @@ async function openPlayerProfile(page: import('@playwright/test').Page) {
 }
 
 test('player profile opens from the header and shows the T0 character record', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?mode=demo');
   await expect(page.locator('.app-shell')).toBeVisible();
   const dialog = await openPlayerProfile(page);
   await expect(dialog).toContainText('Tử Phục Linh Sư · SSS');
@@ -22,7 +22,7 @@ test('player profile opens from the header and shows the T0 character record', a
 });
 
 test('global map follows the player and dragging the player unlocks and pans', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?mode=demo');
   await expect(page.locator('.app-shell')).toBeVisible();
   const dialog = await openPlayerProfile(page);
   await dialog.getByRole('button', { name: /Định vị trên bản đồ thế giới/ }).click();
@@ -49,7 +49,7 @@ test('global map follows the player and dragging the player unlocks and pans', a
 });
 
 test('settlement map follows the player and dragging the player unlocks and pans', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?mode=demo');
   await expect(page.locator('.app-shell')).toBeVisible();
   const dialog = await openPlayerProfile(page);
   await dialog.getByRole('button', { name: /Định vị ở lãnh địa/ }).click();
@@ -60,9 +60,10 @@ test('settlement map follows the player and dragging the player unlocks and pans
   await expect(scene).toBeVisible();
   await expect(lock).toBeVisible();
   await expect(marker).toHaveCount(1);
-  const fireFootprint = scene.locator('.territory-building[data-asset-id="survival-fire-l01"] .territory-footprint');
-  await expect(fireFootprint).toHaveCount(1);
-  const before = await fireFootprint.getAttribute('points');
+  // The scene viewBox is viewport-sized and remains constant as the camera pans.
+  // Track the heat-boundary ellipse's projected position instead of old raster internals.
+  const heatBoundary = scene.locator('.territory-camera-overlay > ellipse').first();
+  const before = await heatBoundary.getAttribute('cx');
   const bounds = await marker.boundingBox();
   expect(bounds).not.toBeNull();
   await page.mouse.move(bounds!.x + bounds!.width / 2, bounds!.y + bounds!.height / 2);
@@ -72,5 +73,5 @@ test('settlement map follows the player and dragging the player unlocks and pans
 
   await expect(lock).toHaveCount(0);
   await expect(marker).toHaveCount(0);
-  await expect.poll(() => fireFootprint.getAttribute('points')).not.toBe(before);
+  await expect.poll(() => heatBoundary.getAttribute('cx')).not.toBe(before);
 });

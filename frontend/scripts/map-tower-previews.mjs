@@ -18,6 +18,23 @@ export function colorPaths(data,width,height){
  }
  return [...colors].map(([key,runs])=>{const[r,g,b,a]=key.split(',').map(Number);return `<path fill="#${[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('')}" fill-opacity="${a/255}" d="${runs.join('')}"/>`;}).join('\n');
 }
+/**
+ * UI thumbnails must stay beneath the established 30 KB transfer limit.
+ * The native Sharp/libvips palette can change across security upgrades, so
+ * start at the original 96x80 and reduce colours or resolution only if needed.
+ * Both dimensions always scale to the 480x400 logical canvas without distortion.
+ */
+const PREVIEW_ICON_MAX_BYTES=30000;
+export async function generateBudgetedPreviewIcon(full){
+ for(const [width,height,colours] of [[96,80,24],[96,80,16],[96,80,12],[60,50,24],[60,50,16],[48,40,12],[24,20,8]]){
+  const png=await sharp(full).resize({width,height}).png({palette:true,colours,dither:0}).toBuffer();
+  const pixels=await sharp(png).ensureAlpha().raw().toBuffer();
+  const icon=document(`<g transform="scale(${480/width})" shape-rendering="crispEdges">${colorPaths(pixels,width,height)}</g>`);
+  if(Buffer.byteLength(icon,'utf8')<PREVIEW_ICON_MAX_BYTES)return icon;
+ }
+ throw new Error('Unable to keep tower preview icon below '+PREVIEW_ICON_MAX_BYTES+' bytes');
+}
+
 /** New art previews reuse the existing calibration footprint; no gameplay definition is added. */
 export async function prepareTowerPreviews(manifest,repo){
  const definitions=JSON.parse(readFileSync(resolve(repo,'assets/map-tower-previews.json'))),dependencies=new Map();
@@ -31,8 +48,7 @@ export async function prepareTowerPreviews(manifest,repo){
   if(left<0||top<0||left+resized.info.width>480||top+resized.info.height>400)throw new Error('Tower exceeds registered canvas');
   const full=await sharp({create:{width:480,height:400,channels:4,background:{r:0,g:0,b:0,alpha:0}}}).composite([{input:resized.data,raw:{width:resized.info.width,height:resized.info.height,channels:4},left,top}]).png({palette:true,colours:144,dither:0}).toBuffer();
   const pixels=await sharp(full).ensureAlpha().raw().toBuffer(),body=document(`<g shape-rendering="crispEdges">${colorPaths(pixels,480,400)}</g>`);
-  const iconPNG=await sharp(full).resize({width:96,height:80}).png({palette:true,colours:24,dither:0}).toBuffer(),iconPixels=await sharp(iconPNG).ensureAlpha().raw().toBuffer();
-  const icon=document(`<g transform="scale(5)" shape-rendering="crispEdges">${colorPaths(iconPixels,96,80)}</g>`);
+  const icon=await generateBudgetedPreviewIcon(full);
   const asset=structuredClone(template);asset.assetId=definition.assetId;asset.definitionId='FIXTURE-'+definition.assetId.toUpperCase();asset.variant='authored-preview';asset.status='draft';asset.source=definition.source;asset.referenceSource=definition.source;asset.logicalCanvas={width:480,height:400};asset.revision=1;asset.trimOffset={x:0,y:0};asset.groundAnchor={x:.5,y:.82};delete asset.presentationScale;
   const half=definition.footprintSpan/2,minor=half/9;
   asset.artFootprint=[[.5-half,.82-minor/2],[.5+minor,.82-half/2],[.5+half,.82+minor/2],[.5-minor,.82+half/2]];

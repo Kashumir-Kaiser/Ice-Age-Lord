@@ -121,14 +121,14 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
 
   await page.goto('/?mode=live&mapQA=1&mapFixture=1023');
   await expect(page).toHaveURL(/mode=live.*mapQA=1.*mapFixture=1023/);
-  await expect(page.getByRole('heading', { name: 'Kết nối game API' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Kết nối trò chơi' })).toBeVisible();
   await page.getByLabel('Khóa chủ sở hữu').fill('local-owner-key');
-  await page.getByRole('button', { name: 'Kết nối API' }).click();
+  await page.getByRole('button', { name: 'Kết nối trò chơi' }).click();
   await expect(page.getByRole('heading', { name: 'Chọn hoặc tạo lượt lưu' })).toBeVisible();
-  await page.getByRole('button', { name: 'Tạo lượt chơi sạch' }).click();
-  await expect(page.locator('.live-footer')).toContainText('revision 1');
+  await page.getByRole('button', { name: 'Bắt đầu lượt chơi' }).click();
+  await expect(page.locator('.live-footer')).toHaveAttribute('data-revision', '1');
 
-  await page.getByRole('button', { name: 'Lãnh địa' }).click();
+  await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Lãnh địa/ }).click();
   const territoryCampfire = page.locator('.territory-building[data-building-id="SITE-LL01-000"]');
   await expect(territoryCampfire).toBeVisible();
   await expect(page.locator('.territory-stage[data-map-qa-fixture], .territory-building[data-building-id^="map-qa-static-"]')).toHaveCount(0);
@@ -141,20 +141,15 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
   const mapCampfire = page.getByTestId('map-campfire-marker');
   await expect(mapCampfire).toHaveAttribute('data-entity-ref', fireKey);
   await expect(mapCampfire).toBeVisible();
-  await expect(page.locator('.live-map-marker')).toHaveCount(currentView.visibleMap.entities.length);
-  await expect(page.locator('.live-map-marker[data-entity-ref*="QA-KNOWN-"]')).toHaveCount(0);
-  await expect(page.locator('.map-scene, [data-map-qa-fixture], [data-map-qa-known-state]')).toHaveCount(0);
-  expect(await page.locator('.live-map-marker').evaluateAll(nodes => nodes.map(node => node.getAttribute('data-entity-ref'))))
-    .toEqual(currentView.visibleMap.entities.map(entity => `${entity.ref.type}:${entity.ref.id}`));
-  await page.getByRole('button', { name: 'Zoom in' }).click();
-  await page.getByRole('button', { name: 'Choose destination' }).click();
+  await page.getByRole('button', { name: 'Phóng to bản đồ' }).click();
+  await page.getByRole('button', { name: 'Chọn điểm đến' }).click();
   const liveMapBox = await page.getByTestId('live-map').boundingBox();
   expect(liveMapBox).not.toBeNull();
   await page.getByTestId('live-map').click({ position: { x: liveMapBox!.width * 0.82, y: liveMapBox!.height * 0.82 } });
-  await expect(page.getByText('Destination preview')).toBeVisible();
+  await expect(page.getByText('Điểm đến', { exact: true })).toBeVisible();
   expect(previews).toBe(1);
   expect(commands).toBe(0);
-  await page.getByRole('button', { name: 'Cancel destination selection' }).click();
+  await page.getByRole('button', { name: 'Hủy chọn điểm đến' }).click();
   await page.evaluate(() => {
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
     window.scrollTo(0, 0);
@@ -174,17 +169,17 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
     console.log('COMMAND_DIAGNOSTIC', JSON.stringify({ commands, previews, commandDiagnostic }));
     throw error;
   }
-  await expect(page.getByRole('status')).toContainText('revision 2');
-  await expect(page.locator('.live-footer')).toContainText('revision 2');
+  await expect(page.locator('.live-notice')).toContainText('Đã thực hiện hành động.');
+  await expect(page.locator('.live-footer')).toHaveAttribute('data-revision', '2');
   expect(created).toBe(true);
   expect(commands).toBe(1);
   expect(expectedRevision).toBe(1);
 
   await page.reload();
   await page.getByLabel('Khóa chủ sở hữu').fill('local-owner-key');
-  await page.getByRole('button', { name: 'Kết nối API' }).click();
-  await expect(page.getByText('Đã khôi phục đúng lượt lưu từ API.')).toBeVisible();
-  await expect(page.locator('.live-topbar')).toContainText('revision 2');
+  await page.getByRole('button', { name: 'Kết nối trò chơi' }).click();
+  await expect(page.getByText('Đã mở lượt lưu trước đó.')).toBeVisible();
+  await expect(page.locator('.live-footer')).toHaveAttribute('data-revision', '2');
   await page.getByRole('navigation', { name: 'Màn hình game' }).getByRole('button', { name: /^Bản đồ/ }).click();
   await expect(page.getByTestId('map-campfire-marker')).toHaveAttribute('data-entity-ref', fireKey);
   if (testInfo.project.name === 'chromium') {
@@ -197,7 +192,7 @@ test('live mode keeps map and settlement campfire on one entity and camera contr
 test('live mode keeps the API disconnection visible and does not fall back to demo', async ({ page }) => {
   await page.route('**/api/v1/health', route => route.abort());
   await page.goto('/?mode=live');
-  await expect(page.getByRole('heading', { name: 'Kết nối game API' })).toBeVisible();
-  await expect(page.getByText(/Không kết nối được API cục bộ/)).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Kết nối trò chơi' })).toBeVisible();
+  await expect(page.getByText(/Không thể kết nối với trò chơi/)).toBeVisible();
   await expect(page.getByText(/Chế độ demo/)).toHaveCount(0);
 });

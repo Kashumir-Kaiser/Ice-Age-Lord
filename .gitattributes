@@ -1,0 +1,15 @@
+# Repository hashes are calculated over committed bytes. Enforce identical LF checkout
+# for all text inputs on Windows and POSIX (including map generator .mjs files).
+* text=auto eol=lf
+*.png -text
+*.webp -text
+*.jpg -text
+*.jpeg -text
+*.gif -text
+*.ico -text
+*.woff -text
+*.woff2 -text
+*.ttf -text
+*.otf -text
+*.zip -text
+*.gz -text

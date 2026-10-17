@@ -34,8 +34,10 @@ const MAX_BACKUP_BYTES = 64 * 1024 * 1024;
 // Use the simulation's bounded 100 ms ceiling while amortizing that scheduling
 // overhead for deterministic clock catch-up.
 const CLOCK_SIMULATION_SLICE_MS = 100;
-const DEFAULT_CLOCK_LEASE_MS = 5_000;
-const DEFAULT_CLOCK_TICK_MS = 250;
+// Bot-state catch-up and view projection can outlast a 5s lease on constrained CPUs.
+// Keep one driver for 30s while 1s heartbeats continue; explicit leases in tests take precedence.
+const DEFAULT_CLOCK_LEASE_MS = 30_000;
+const DEFAULT_CLOCK_TICK_MS = 1_000;
 const LEGACY_README_SHA256 = '6e30d099e63a8253134d9de87d495053744ad868cde4ff468ba4bdc31d53c26b';
 
 type ClockDriver = {
@@ -1239,7 +1241,7 @@ export class GameApplicationService {
     });
   }
 
-  private driverStatus(saveId: string, state: GameState, sessionToken?: string, driverId?: string) {
+  private driverStatus(saveId: string, state: Pick<GameState, 'simElapsedMs'>, sessionToken?: string, driverId?: string) {
     const driver = this.clockDrivers.get(saveId);
     if (!driver) return { driver: 'unclaimed' as const, catchingUp: false, targetSimElapsedMs: state.simElapsedMs, leaseRemainingMs: 0 };
     const leaseRemainingMs = Math.max(0, driver.lastHeartbeatMonoMs + this.clockLeaseMs - this.monotonicNow());
@@ -1461,7 +1463,13 @@ export class GameApplicationService {
         current = undefined;
         this.clockDrivers.delete(saveId);
       } else if (current) {
+        // Renew a healthy owner without deserializing all 1,023 bot rows on
+        // every heartbeat. The timer is installed on selection/speed changes.
         current.lastHeartbeatMonoMs = now;
+        return {
+          ...this.driverStatus(saveId, { simElapsedMs: current.lastProgressSimElapsedMs }, sessionToken, driverId),
+          sessionTokenIsDriver: true,
+        };
       }
       if (!current) {
         const state = this.repository.loadSave(ownerId, saveId).state;
@@ -1569,6 +1577,12 @@ export class GameApplicationService {
     catch (error) { throw fromRepositoryError(error); }
   }
 
+  /** Select/renew a save without deserializing the entire bot population or projecting the player view. */
+  saveMetadata(saveId: string): { revision: number; lastEventSequence: number } {
+    try { return this.repository.getSaveMetadata(ownerId, saveId); }
+    catch (error) { throw fromRepositoryError(error); }
+  }
+
   loadSave(saveId: string, sessionToken?: string, driverId?: string): { state: GameState; summary: SaveSummary; view: PlayerView } {
     try {
       const result = this.repository.loadSave(ownerId, saveId);
@@ -1625,6 +1639,7 @@ export class GameApplicationService {
             driver.lastTickMonoMs = this.monotonicNow();
             driver.lastHeartbeatMonoMs = this.monotonicNow();
             driver.targetSimElapsedMs = result.state.simElapsedMs;
+            driver.lastProgressSimElapsedMs = result.state.simElapsedMs;
             driver.fractionalSimMs = 0;
             if (result.state.clockControl.status === 'running') this.ensureDriverTimer(saveId, driver, result.state);
             else this.clearDriverTimer(driver);

@@ -67,10 +67,11 @@ jobs:
       - run: npm run test:bots-storage
       - run: npm run test:bots-api
   frontend:
-    needs: backend
+    # Test the UI independently; a bot/backend regression must not suppress browser QA.
+    # Overall workflow still fails unless both jobs pass.
     runs-on: ubuntu-latest
     env:
-      VITE_GAME_MODE: demo
+      VITE_ENABLE_DEMO: 'true' # E2E preview explicitly includes the isolated demo; shipping bundles omit it.
     defaults:
       run:
         working-directory: frontend

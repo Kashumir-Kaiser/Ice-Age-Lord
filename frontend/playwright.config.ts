@@ -8,8 +8,11 @@ const localBaseURL = productionPreview ? 'http://127.0.0.1:4173' : 'http://127.0
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
-  timeout: 20_000,
-  workers: process.env.CI ? 2 : undefined,
+  timeout: 45_000,
+  // The local API runs on one Node event loop. Concurrent multi-save integration
+  // journeys serialize CPU-heavy persistence and falsely trip browser timeouts.
+  workers: process.env.CI ? 1 : undefined,
+  expect: { timeout: 15_000 },
   retries: 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {

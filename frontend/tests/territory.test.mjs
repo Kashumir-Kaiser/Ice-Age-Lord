@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import ts from 'typescript';
 
-const root = resolve(new URL('../', import.meta.url).pathname);
+const root = resolve(fileURLToPath(new URL('../', import.meta.url)));
 async function loadTypeScript(relativePath) {
   const source = readFileSync(resolve(root, relativePath), 'utf8');
   const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;

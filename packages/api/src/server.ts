@@ -145,13 +145,13 @@ export function createApiServer(service: GameApplicationService, options: ApiSer
       const saveId = parts[3];
       if (!saveId) throw jsonError(404, 'NOT_FOUND', 'The requested save route was not found.', 'Không tìm thấy lượt lưu.');
       if (parts.length === 5 && parts[4] === 'session' && method === 'POST') {
-        service.loadSave(saveId);
+        service.saveMetadata(saveId); // Validate ownership before changing the session; do not project a view.
         const selected = sessions.selectSave(authenticated.token, saveId);
         if (!selected) throw jsonError(401, 'UNAUTHORIZED', 'The local owner session has expired.', 'Phiên chủ sở hữu đã hết hạn.');
         const driverId = typeof request.headers['x-clock-driver-id'] === 'string' ? request.headers['x-clock-driver-id'] : authenticated.token;
         const clockDriver = await service.heartbeatClock(saveId, authenticated.token, driverId);
-        const loaded = service.loadSave(saveId, authenticated.token, driverId);
-        sendJson(response, 200, { saveId, revision: loaded.state.revision, lastEventSequence: loaded.state.lastEventSequence, sessionExpiresAtUtc: new Date(selected.expiresAtMs).toISOString(), clockDriver }, corsHeaders);
+        const metadata = service.saveMetadata(saveId); // Fresh revision after any lease-related catch-up.
+        sendJson(response, 200, { saveId, ...metadata, sessionExpiresAtUtc: new Date(selected.expiresAtMs).toISOString(), clockDriver }, corsHeaders);
         return;
       }
 

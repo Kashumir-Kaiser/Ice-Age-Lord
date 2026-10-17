@@ -1,3 +1,4 @@
+import { playerItemName, playerStatus } from '../live/playerText';
 import type { OpeningBoardView, Stage08RankSnapshot } from '../../../packages/contracts/src/index.ts';
 import './shared.css';
 
@@ -20,10 +21,10 @@ export function OpeningRankingBoard({
   const playerHasPendingClaim = board.rewardClaimStatus === 'pending';
   return <section className="shared-opening-board" aria-label="Xếp hạng và quyết toán">
     <header className="shared-opening-board__heading">
-      <div><span className="shared-opening-board__eyebrow">RANKING · SERVER SETTLEMENT</span><h2>Xếp hạng và quyết toán</h2></div>
+      <div><span className="shared-opening-board__eyebrow">BẢNG XẾP HẠNG</span><h2>Xếp hạng và quyết toán</h2></div>
       <span className={`shared-opening-board__status shared-opening-board__status--${board.status}`}>{boardStatus(board.status)}</span>
     </header>
-    <p className="shared-opening-board__timing">Bảng {board.boardId} · mở {formatTime(board.opensAtElapsedMs)} · đóng {formatTime(board.closesAtElapsedMs)}</p>
+    <p className="shared-opening-board__timing">Mở {formatTime(board.opensAtElapsedMs)} · đóng {formatTime(board.closesAtElapsedMs)}</p>
     {board.rows.length > 0
       ? <ol className="shared-opening-board__rows" aria-label="Bảng xếp hạng hiện tại">{board.rows.map(row => <li key={row.playerId}>
         <strong>#{row.rank} · {row.playerName}</strong><span>Cấp {row.level} · hoàn tất {formatTime(row.completionAtElapsedMs)}</span>
@@ -38,27 +39,27 @@ export function OpeningRankingBoard({
       : snapshots.map(snapshot => {
         const playerRow = snapshot.rows.find(row => row.playerId === playerId);
         const canDeliver = playerRow?.rewardItems.some(item => item.status === 'committed' && item.quantity > 0) ?? false;
-        return <section className="shared-opening-board__settlement" key={snapshot.boardId} aria-label={`Settlement ${snapshot.boardId}`}>
+        return <section className="shared-opening-board__settlement" key={snapshot.boardId} aria-label="Kết quả xếp hạng">
           <div className="shared-opening-board__settlement-heading">
-            <div><strong>{snapshot.boardId} · {snapshot.status === 'settled' ? 'đã quyết toán' : 'đang bị chặn'}</strong>
-              <span>Nguồn {snapshot.sourceContract} · {formatTime(snapshot.settledAtElapsedMs)}</span></div>
+            <div><strong>{snapshot.status === 'settled' ? 'Đã tổng kết' : 'Đang chờ kết quả'}</strong>
+              <span>{formatTime(snapshot.settledAtElapsedMs)}</span></div>
             <span className="shared-opening-board__reward-status">{playerRow
               ? playerRow.rewardStatus === 'claimed' ? 'Đã nhận thưởng' : playerRow.rewardStatus === 'npc_materialized' ? 'Phần thưởng đã xử lý' : 'Thưởng đang chờ nhận'
-              : 'Save này không có hạng thưởng'}</span>
+              : 'Bạn chưa có hạng thưởng'}</span>
           </div>
-          {snapshot.reasonCode && <p className="shared-opening-board__empty">Quyết toán bị chặn: {snapshot.reasonCode}</p>}
+          {snapshot.reasonCode && <p className="shared-opening-board__empty">Kết quả đang chờ xác nhận.</p>}
           <ol className="shared-opening-board__rows" aria-label={`Kết quả ${snapshot.boardId}`}>{snapshot.rows.map(row => <li key={row.playerId}>
-            <strong>#{row.rank} · {row.playerName}</strong><span>Cấp {row.level} · hoàn tất {formatTime(row.completionAtElapsedMs)} · {row.rewardBandId}</span>
+            <strong>#{row.rank} · {row.playerName}</strong><span>Cấp {row.level} · hoàn tất {formatTime(row.completionAtElapsedMs)}</span>
           </li>)}</ol>
           {playerRow && <div className="shared-opening-board__player-reward">
             {playerRow.rewardItems.length > 0
-              ? <ul>{playerRow.rewardItems.map(item => <li key={item.instanceId}>{item.itemTemplateId} ×{item.quantity} · {item.status}{item.blocker ? ` · ${item.blocker}` : ''}</li>)}</ul>
+              ? <ul>{playerRow.rewardItems.map(item => <li key={item.instanceId}>{playerItemName(item.itemTemplateId)} ×{item.quantity} · {playerStatus(item.status)}{item.blocker ? ' · Chưa thể nhận' : ''}</li>)}</ul>
               : <span>Không có vật phẩm trong hạng thưởng này.</span>}
             {playerHasPendingClaim && playerRow.rewardStatus === 'pending' && <button type="button" disabled={busy || !canDeliver || snapshot.status !== 'settled'} onClick={() => onClaim?.(snapshot.boardId)}>
               {canDeliver ? 'Nhận thưởng xếp hạng' : 'Phần thưởng đang chờ dữ liệu nguồn'}
             </button>}
           </div>}
-          <small className="shared-opening-board__hash">Snapshot SHA-256 · <code>{snapshot.snapshotSha256}</code></small>
+          
         </section>;
       })}
   </section>;

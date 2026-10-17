@@ -1,0 +1,412 @@
+/* Live uses the demo's presentation tokens and components; only data sources differ. */
+.live-overview { gap: 24px; }
+.live-overview .live-overview-hero { min-height: 290px; }
+.live-overview-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 11px;
+  border: 1px solid rgba(234,213,164,.34);
+  border-radius: 4px;
+  color: #e4d8b3;
+  background: rgba(40,47,46,.47);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+}
+.live-overview .stat-card { min-width: 0; }
+.live-overview .stat-card > strong { overflow-wrap: anywhere; }
+.live-overview-columns { align-items: stretch; }
+.live-overview-map-panel { min-width: 0; }
+.live-overview-map {
+  position: relative;
+  isolation: isolate;
+  height: 295px;
+  overflow: hidden;
+  border: 1px solid rgba(177,201,201,.22);
+  border-radius: 9px;
+  background: #294958;
+}
+.live-overview-map .map-render-host { z-index: 0; }
+.live-overview-map .map-render-options { z-index: 4; }
+.live-overview-map-heat {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.live-overview-map-heat ellipse {
+  fill: rgba(245,177,95,.09);
+  stroke: rgba(255,211,145,.72);
+  stroke-width: .45;
+  stroke-dasharray: 1.2 .7;
+  vector-effect: non-scaling-stroke;
+}
+.live-overview-fire-marker {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 50%;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  transform: translate(-50%,-50%);
+  border: 1px solid rgba(249,211,148,.75);
+  border-radius: 50%;
+  background: rgba(41,48,42,.85);
+  box-shadow: 0 0 23px rgba(234,162,78,.35);
+  color: #f2c78c;
+  pointer-events: none;
+}
+.live-overview-map-caption {
+  position: absolute;
+  z-index: 2;
+  top: calc(50% + 24px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 8px;
+  border: 1px solid rgba(223,198,155,.2);
+  border-radius: 5px;
+  background: rgba(8,25,35,.83);
+  color: #e9ddc2;
+  font-size: 10px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.live-overview-inspector {
+  min-width: 0;
+  padding: 24px 23px;
+}
+.live-overview-inspector .inspector-top h3 {
+  margin: 4px 0 0;
+  font: normal 24px/1.2 Georgia,'Times New Roman',serif;
+}
+.live-overview-inspector .hero-link { margin-top: 4px; }
+.live-overview .feature-card { min-width: 0; }
+
+/* Bring live navigation and spacing into the same visual rhythm as the demo. */
+@media (min-width: 621px) {
+  .live-shell { grid-template-columns: 260px minmax(0,1fr); }
+  .live-sidebar {
+    padding: 0 0 16px;
+    border-right-color: #294451;
+    background: linear-gradient(180deg,#102333 0%,#0a1a27 58%,#081621 100%);
+  }
+  .live-brand { padding: 22px 23px 20px; gap: 12px; }
+  .live-brand-mark { width: 43px; height: 43px; flex: 0 0 auto; }
+  .live-brand strong { font-size: 16px; letter-spacing: 1.3px; }
+  .live-brand small { letter-spacing: 1.9px; }
+  .live-sidebar-status { padding: 18px 23px 12px; }
+  .live-nav { gap: 5px; padding: 7px 11px 12px; overflow-y: auto; min-height: 0; }
+  .live-nav-item { min-height: 55px; padding: 9px 13px; position: relative; gap: 15px; }
+  .live-nav-item strong { font-size: 13px; }
+  .live-nav-item small { font-size: 10px; }
+  .live-nav-item.is-active {
+    border-color: rgba(144,196,195,.14);
+    background: linear-gradient(90deg,rgba(96,150,160,.22),rgba(47,82,96,.13));
+  }
+  .live-nav-item.is-active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--gold,#d7b787);
+  }
+  .live-sidebar-footer { padding: 14px 23px; }
+}
+.live-topbar { min-height: 112px; padding: 18px 38px; background: rgba(10,26,39,.72); }
+.live-header-actions { flex-wrap: wrap; justify-content: flex-end; }
+.live-content { max-width: 1780px; padding: 30px 38px 38px; }
+.live-section-stack { gap: 24px; }
+.live-panel { border-color: var(--line,rgba(159,189,194,.13)); border-radius: 12px; }
+
+@media (min-width: 621px) and (max-width: 1150px) {
+  .live-shell { grid-template-columns: 220px minmax(0,1fr); }
+  .live-brand { padding-left: 15px; padding-right: 12px; }
+  .live-brand strong { font-size: 13px; }
+  .live-topbar { padding: 16px 25px; }
+  .live-content { padding: 25px; }
+}
+@media (max-width: 1000px) {
+  .live-overview-columns { grid-template-columns: 1fr; }
+  .live-overview-inspector { display: block; }
+  .live-overview .bottom-cards { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 620px) {
+  .live-topbar { padding: 13px 16px; }
+  .live-content { padding: 16px; }
+  .live-section-stack,.live-overview { gap: 16px; }
+  .live-overview .hero-copy { padding: 25px 22px; }
+  .live-overview .hero-copy h2 { font-size: 30px; }
+  .live-overview .hero-art--portrait { opacity: .55; right: -75px; }
+  .live-overview .stats-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .live-overview .stat-card { padding: 14px; }
+  .live-overview .stat-card > strong { font-size: 19px; }
+  .live-overview .bottom-cards { grid-template-columns: 1fr; }
+  .live-overview-map { height: 260px; }
+}
+@media (max-width: 390px) {
+  .live-overview .hero-copy h2 { font-size: 27px; }
+  .live-overview .stats-grid { grid-template-columns: 1fr; }
+}
+
+/* Character uses the same authored three-column portrait composition as the demo. */
+.live-character-loadout { min-width: 0; }
+.live-character-loadout .equipment-socket { overflow: hidden; }
+.live-character-loadout .equipment-socket-copy small { overflow-wrap: anywhere; }
+.live-character-other-equipment {
+  display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 0;
+  border-top: 1px solid var(--line);
+  color: #c9d7d0; font-size: 11px;
+}
+.live-character-other-equipment strong { width: 100%; }
+.live-character-other-equipment span {
+  padding: 7px 9px; border: 1px solid var(--line);
+  border-radius: 6px; background: #102937;
+}
+.live-character-equipment-note { display: block; margin-top: 13px; color: #8ca7ae; font-size: 10px; line-height: 1.65; }
+.live-character-page .live-attribute-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.live-character-page .character-details-card > p { margin-top: 13px; color: #a5b8ba; }
+
+/* The local overview remains the visual starting point, not a monitoring dashboard. */
+.live-overview-diagnostics > summary { color: #bbd2d3; cursor: pointer; font-size: 12px; }
+.live-overview-diagnostics > p { margin-top: 12px; }
+
+/* Full map takes visual priority over status copy and selection details. */
+.live-exploration-panel { display: flex; flex-direction: column; gap: 12px; }
+.live-exploration-panel > .live-panel-heading { order: 0; margin-bottom: 0; }
+.live-exploration-panel > .live-muted { order: 1; margin: 0; }
+.live-exploration-panel > .live-map-tools { order: 2; }
+.live-exploration-panel > .live-map-canvas { order: 3; margin-top: 0; min-height: 465px;
+  border-color: rgba(177,201,201,.28); box-shadow: 0 12px 30px rgba(2,13,23,.26); }
+.live-exploration-panel > .live-inspector { order: 4; }
+.live-exploration-panel > :not(.live-panel-heading):not(.live-muted):not(.live-map-tools):not(.live-map-canvas):not(.live-inspector) { order: 5; }
+.live-exploration-panel > .live-inspector {
+  width: 100%; align-items: stretch;
+  border: 1px solid rgba(177,201,201,.16);
+  border-radius: 11px; background: rgba(8,28,40,.68);
+}
+.live-exploration-panel .live-map-tools { align-items: center; }
+
+/* Force roster displays cards in the same hierarchy as the demo, retaining commands. */
+.live-forces-stats { margin-bottom: 0; }
+.live-force-roster { min-width: 0; }
+.live-force-unit-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; padding-top: 8px; }
+.live-force-unit-grid > .live-container-card {
+  padding: 19px 20px 18px; min-width: 0;
+  border-color: rgba(164,199,195,.2);
+  border-radius: 11px;
+  background: radial-gradient(ellipse at 85% 5%,rgba(107,158,157,.12),transparent 52%),linear-gradient(140deg,#193340,#0e2432);
+}
+.live-force-unit-grid > .live-container-card .live-panel-heading {
+  padding-bottom: 12px; border-bottom: 1px solid var(--line);
+}
+.live-force-unit-grid > .live-container-card h3 {
+  font-size: 18px; font-family: Georgia,'Times New Roman',serif;
+}
+.live-force-unit-grid > .live-container-card p { margin-bottom: 9px; }
+.live-force-unit-grid > .live-container-card .live-container-row { align-items: center; }
+.live-force-unit-grid .live-data-chip { white-space: normal; }
+.live-force-page > .live-dispatch-panel { border-color: rgba(201,178,135,.2); }
+@media (max-width: 1000px) {
+  .live-force-unit-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 620px) {
+  .live-exploration-panel { padding: 12px; }
+  .live-exploration-panel > .live-map-canvas { min-height: 340px; }
+  .live-forces-stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .live-force-unit-grid > .live-container-card { padding: 14px; }
+  .live-character-page .live-attribute-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+
+/* Inventory tiles reuse the demo's gallery rhythm but keep full server inventory operations. */
+.live-inventory-search { max-width: 520px; }
+.live-inventory-search input { min-width: 240px; }
+.live-inventory-grid { align-items: start; }
+.live-inventory-grid > .live-container-card { min-width: 0; padding: 20px; border-radius: 11px; }
+.live-inventory-grid .live-panel-heading { padding-bottom: 11px; border-bottom: 1px solid var(--line); }
+.live-inventory-art-list {
+  display: grid; grid-template-columns: repeat(auto-fill,minmax(175px,1fr));
+  gap: 12px; margin: 16px 0; padding: 0; list-style: none;
+}
+.live-inventory-art-list > li {
+  display: flex; flex-direction: column; align-items: flex-start;
+  min-width: 0; gap: 10px; padding: 16px 14px; border: 1px solid rgba(151,184,187,.16);
+  border-radius: 10px;
+  background: radial-gradient(ellipse at 50% 10%,rgba(119,154,156,.15),transparent 60%),rgba(8,26,37,.64);
+  transition: border-color .16s,background .16s;
+}
+/* Regression: live.css sets flex-wrap:wrap and flex:1 1 160px on list children.
+   Those legacy declarations cause vertical flex-column items to spill sideways.
+   Force a single column and constrain every descendant to the card. */
+.live-inventory-art-list > li {
+  flex-flow: column nowrap;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+.live-inventory-art-list > li > * { min-width: 0; max-width: 100%; }
+.live-inventory-art-list > li > strong {
+  flex: 0 0 auto;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+.live-inventory-art-list .live-item-art,
+.live-inventory-art-list .live-item-placeholder-art { align-self: center; }
+.live-inventory-art-list .live-item-details,
+.live-inventory-art-list .live-item-details summary,
+.live-inventory-art-list .live-item-details-body {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.live-inventory-grid > .live-container-card,
+.live-inventory-grid .live-container-card .live-panel-heading,
+.live-inventory-grid .live-container-access { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+.live-inventory-grid .live-container-access { white-space: normal; word-break: break-word; }
+.live-inventory-art-list .live-item-card-copy {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.live-inventory-art-list .live-item-name {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  color: #f0e9dc;
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 700;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.live-inventory-art-list .live-item-quantity,
+.live-inventory-art-list .live-item-card-copy small {
+  display: block;
+  color: #9eb6b8;
+  font-size: 10px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.live-inventory-art-list .live-item-details-body p { margin: 0 0 6px; }
+.live-inventory-art-list > li:hover { border-color: rgba(218,187,139,.32); background-color: rgba(19,45,58,.78); }
+.live-inventory-art-list .live-item-art,
+.live-item-placeholder-art {
+  display: grid; place-items: center;
+  width: 72px; height: 72px; flex: 0 0 72px;
+  padding: 6px; border: 1px solid rgba(201,185,143,.18);
+  border-radius: 9px;
+  background: linear-gradient(145deg,#244352,#132d39);
+  color: #c3ba9e;
+}
+.live-inventory-art-list .live-item-art { object-fit: contain; }
+.live-inventory-art-list > li > strong {
+  flex: initial; width: 100%; min-height: 28px;
+  font-size: 12px; line-height: 1.5; color: #e9e6db; overflow-wrap: anywhere;
+}
+.live-item-details { min-width: 0; width: 100%; margin-top: auto; font-size: 10px; }
+.live-item-details summary {
+  padding: 8px 9px; cursor: pointer; color: #d8c39e;
+  border: 1px solid rgba(203,177,131,.22);
+  border-radius: 6px; background: rgba(185,145,83,.06);
+}
+.live-item-details-body { padding: 10px 2px 3px; line-height: 1.65; color: #9db2b7; overflow-wrap: anywhere; }
+.live-item-details-body .live-text-button {
+  display: block; margin: 7px 0 0; padding: 5px 0; text-align: left; white-space: normal;
+}
+.live-inventory-art-list > li > .live-button { width: 100%; font-size: 10px; }
+.live-inventory-grid .live-container-access { display: block; margin-top: 12px; }
+@media (max-width: 1150px) {
+  .live-inventory-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 620px) {
+  .live-inventory-grid > .live-container-card { padding: 14px; }
+  .live-inventory-art-list { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+  .live-inventory-art-list > li { padding: 11px; }
+  .live-inventory-search input { min-width: 0; }
+}
+@media (max-width: 370px) {
+  .live-inventory-art-list { grid-template-columns: 1fr; }
+}
+
+/* An actual building list should look like the demo's structure collection. */
+.live-building-gallery-panel { padding: 22px 23px; }
+.live-building-gallery { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; }
+.live-building-gallery-card { display: flex; flex-direction: column; min-width: 0; overflow: hidden; padding: 0; text-align: left; }
+.live-building-gallery-card:hover { border-color: rgba(226,192,142,.38); }
+.live-building-gallery-art {
+  display: grid; place-items: center; width: 100%; min-height: 140px;
+  background: radial-gradient(ellipse at center,rgba(88,142,149,.2),transparent 65%),linear-gradient(140deg,#193846,#112b39);
+  color: #d7c29c;
+}
+.live-building-gallery-art img { display: block; width: 100px; height: 100px; max-width: 75%; object-fit: contain; filter: drop-shadow(0 9px 17px rgba(0,0,0,.4)); }
+.live-building-gallery-card .building-info { min-width: 0; flex: 1; padding: 17px; }
+.live-building-gallery-card .building-info > span:first-child { color: #98c0c1; }
+.live-building-gallery-card .building-info h3 { font: normal 19px Georgia,'Times New Roman',serif; margin: 8px 0; }
+.live-building-gallery-card .building-info p { min-height: 18px; margin-bottom: 10px; }
+.live-building-gallery-card .building-open { display: inline-flex; gap: 5px; align-items: center; color: #e0c28e; font-size: 11px; }
+@media (max-width: 1020px) { .live-building-gallery { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 620px) {
+  .live-building-gallery-panel { padding: 15px; }
+  .live-building-gallery { gap: 8px; }
+  .live-building-gallery-art { min-height: 110px; }
+  .live-building-gallery-art img { width: 75px; height: 75px; }
+  .live-building-gallery-card .building-info { padding: 12px; }
+  .live-building-gallery-card .building-info h3 { font-size: 16px; }
+}
+@media (max-width: 390px) { .live-building-gallery { grid-template-columns: 1fr; } }
+
+.live-exploration-panel .live-map-canvas { cursor: grab; touch-action: none; user-select: none; }
+.live-exploration-panel .live-map-canvas:active { cursor: grabbing; }
+.live-exploration-panel .live-map-canvas:focus-visible { outline: 2px solid #e5c28a; outline-offset: 3px; }
+.live-exploration-panel .live-map-canvas .live-map-marker { cursor: pointer; }
+
+/* Brand, account portrait and unobtrusive runtime drawer follow the demo chrome. */
+.live-brand-emblem { display: block; flex: 0 0 auto; filter: drop-shadow(0 0 11px rgba(159,216,219,.14)); }
+.live-brand em { font-style: normal; color: #d7b787; }
+.live-profile-mini { flex: 0 0 auto; }
+.live-profile-mini .profile-portrait { display: block; width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
+.live-profile-mini .profile-name { max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
+.live-runtime-details {
+  margin: 0 0 14px; border: 1px solid rgba(159,189,194,.12);
+  border-radius: 9px; background: rgba(12,34,46,.65);
+}
+.live-runtime-details > summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 9px 15px; cursor: pointer; color: #c8d5d1;
+  font-size: 11px;
+}
+.live-runtime-details > summary::marker { color: #d2bb90; }
+.live-runtime-details > summary span:last-child { margin-left: auto; color: #819eaa; font-size: 10px; text-align: right; }
+.live-runtime-details > .live-stage-strip { margin: 7px 12px 12px; }
+.live-footer { align-items: center; }
+.live-footer > span:first-child { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
+.live-footer img { opacity: .72; }
+@media (max-width: 1150px) {
+  .live-profile-mini .profile-name { display: none; }
+  .live-header-actions { gap: 7px; }
+}
+@media (max-width: 620px) {
+  .live-profile-mini { padding-left: 9px; }
+  .live-profile-mini .profile-portrait { width: 30px; height: 30px; }
+  .live-runtime-details > summary { flex-direction: column; align-items: flex-start; gap: 3px; }
+  .live-runtime-details > summary span:last-child { margin-left: 0; text-align: left; }
+}

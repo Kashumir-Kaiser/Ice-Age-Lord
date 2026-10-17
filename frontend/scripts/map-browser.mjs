@@ -45,6 +45,10 @@ export async function readyMap(page){
 }
 export async function openMap(browser,{viewport={width:1366,height:768},dpr=1,quality='normal',motion='reduce',fallback=false,fixture=''}={}){
  const page=await browser.newPage({viewport,deviceScaleFactor:dpr,reducedMotion:motion,hasTouch:viewport.width<500,isMobile:viewport.width<500});
+ const bootErrors=[];
+ page.on('pageerror',error=>bootErrors.push('pageerror: '+String(error)));
+ page.on('requestfailed',request=>bootErrors.push('failed '+request.url()+': '+request.failure()?.errorText));
+ page.on('console',message=>{if(message.type()==='error')bootErrors.push('console: '+message.text());});
  page.mapAssetTransfers=[];
  page.mapAssetEvents=[];
  page.mapScriptTransfers=new Map();
