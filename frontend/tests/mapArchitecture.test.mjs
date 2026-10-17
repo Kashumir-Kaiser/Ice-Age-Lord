@@ -3,23 +3,31 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import sharp from 'sharp';
 import {Resvg} from '@resvg/resvg-js';
-import {composition,createCompositionCache,artPolygon} from '../src/rendering/SpriteRegistration.ts';
+import {composition,createCompositionCache,architecturalCompositePlan,artPolygon} from '../src/rendering/SpriteRegistration.ts';
 import {pointInPolygon} from '../src/rendering/MapPicking.ts';
 import {validateMapExport} from '../scripts/validate-map-assets.mjs';
 import {splitMapArchitecture} from '../scripts/split-map-architecture.mjs';
 
 const manifest=JSON.parse(readFileSync(new URL('../../assets/manifest.json',import.meta.url)));
 const tower=manifest.assets.find(a=>a.assetId==='fixture-tall-tower');
-test('composition cache reuses only identical asset and render-state keys',()=>{
+test('composition and architectural plan caches reuse results across renderer frames and invalidate changed inputs',()=>{
  const cache=createCompositionCache(),house=manifest.assets.find(a=>a.assetId==='lord-house-damaged'),other=manifest.assets.find(a=>a.assetId==='fixture-tall-tower');
- const base=cache(house,'normal',false,false,'north');
- assert.strictEqual(cache(house,'normal',false,false,'north'),base);
- assert.notStrictEqual(cache(house,'normal',false,true,'north'),base);
- assert.notStrictEqual(cache(house,'focus',false,false,'north'),base);
- assert.notStrictEqual(cache(house,'focus',true,false,'north'),cache(house,'focus',false,false,'north'));
- assert.notStrictEqual(cache(house,'normal',false,false,'east'),base);
- assert.notStrictEqual(cache(other,'normal',false,false,'north'),base);
- assert.deepEqual(base,composition(house,'normal',false,false,'north'));
+ const renderFrame=()=>cache(house,'normal',false,false,'north');
+ const frameOne=renderFrame(),frameTwo=renderFrame();
+ assert.strictEqual(frameTwo,frameOne,'unchanged frames reuse the same immutable composition');
+ const planOne=architecturalCompositePlan(house,frameOne,'north','close');
+ assert.ok(planOne,'authored house exports should produce a reusable composite plan');
+ assert.strictEqual(architecturalCompositePlan(house,frameTwo,'north','close'),planOne,'unchanged frames reuse the same architectural plan');
+ const fadedPlan=architecturalCompositePlan(house,frameTwo,'north','close',.55);
+ assert.notStrictEqual(fadedPlan,planOne,'entity opacity is part of the plan key');
+ assert.equal(fadedPlan.parts[0].alpha,.55);
+ assert.notStrictEqual(cache(house,'normal',false,true,'north'),frameOne,'active state invalidates composition');
+ assert.notStrictEqual(cache(house,'focus',false,false,'north'),frameOne,'mode invalidates composition');
+ assert.notStrictEqual(cache(house,'normal',false,false,'east'),frameOne,'orientation invalidates composition');
+ assert.notStrictEqual(cache(other,'normal',false,false,'north'),frameOne,'a different authored asset gets a separate composition');
+ const changedHouse={...house,revision:house.revision+'-changed'};
+ assert.notStrictEqual(cache(changedHouse,'normal',false,false,'north'),frameOne,'a replaced authored asset invalidates composition');
+ assert.deepEqual(frameOne,composition(house,'normal',false,false,'north'));
  assert.deepEqual(cache(house,'focus',true,false,'north'),composition(house,'focus',true,false,'north'));
 });
 test('renderer composition cache persists across render calls',()=>{
