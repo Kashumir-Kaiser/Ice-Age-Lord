@@ -255,7 +255,9 @@ test('art QA loads preserved late art without adding a settlement entity or plac
  await expect(list).toHaveText(before);
  await page.goto('/?mode=demo');
  const menu=page.getByRole('button',{name:'Mở điều hướng'});if(await menu.isVisible())await menu.click();
- await page.getByRole('navigation',{name:'Các mục giao diện'}).getByRole('button',{name:'Lãnh địa',exact:true}).click();
+ const territoryLink=page.getByRole('navigation',{name:'Các mục giao diện'}).getByRole('button',{name:'Lãnh địa',exact:true});
+ await territoryLink.scrollIntoViewIfNeeded();
+ await territoryLink.click();
  await page.locator('.territory-calibration > summary').click();
  await expect(page.getByRole('button',{name:'Xem hình kiểm tra trên bản đồ',exact:true})).toHaveCount(0);
 });
