@@ -2522,5 +2522,343 @@
         }
       ]
     }
-  ]
+  ],
+  "headedBenchmarkModeAnd57dfValidation": {
+    "sourceCommit": "57df4134436b1c715e44c534e37f6222e2866d92",
+    "commandNormal": "cd frontend && MAP_BENCH_HEADLESS=false npm run benchmark:maps",
+    "commandLow": "cd frontend && MAP_BENCH_HEADLESS=false MAP_BENCH_QUALITY=low npm run benchmark:maps",
+    "requirements": "Logged-in desktop graphical session; headed Chromium; optional CHROMIUM_EXECUTABLE_PATH",
+    "runtime": "5 fixtures × 60 seconds × 3 runs, after 10-second warmup; each quality run overwrites frontend/map-evidence/benchmark/results.json",
+    "hardwareVerification": "Computed true only for headed WebGL with Intel and UHD Graphics 620 renderer strings and no software-renderer identifier; no manual override.",
+    "validation": {
+      "renderingRunId": 39021863647,
+      "rendering": "passed",
+      "visualRunId": 39021863584,
+      "visual": "all four normal/low × DPR1/DPR2 lanes passed",
+      "transferRunId": 39021863565,
+      "transfer": "passed",
+      "stageRunId": 39021863668,
+      "backend": "passed Stages 02–10 and bot suites",
+      "frontendE2E": "failed: 12 failed, 99 passed, 5 skipped"
+    },
+    "performance": {
+      "runId": 39021863615,
+      "status": "completed successfully",
+      "lowArtifactId": 12097387040,
+      "normalArtifactId": 12096979660,
+      "memoryLowArtifactId": 12096714361,
+      "memoryNormalArtifactId": 12097372147,
+      "traceArtifactId": 12096823484,
+      "cpuProfileArtifactId": 12096672697,
+      "environment": {
+        "browser": "Chromium headless",
+        "renderer": "ANGLE/SwiftShader",
+        "targetDeviceVerified": false,
+        "intelUhd620Evidence": "pending"
+      },
+      "panIntervalBudgetMs": {
+        "low": 40,
+        "normal": 20
+      },
+      "pointerFeedbackBudgetMs": {
+        "low": 100,
+        "normal": 75
+      },
+      "metrics": {
+        "low": {
+          "panIntervalP50P95P99WorstMs": {
+            "fresh": [
+              33.3,
+              33.8,
+              40.5,
+              47.2
+            ],
+            "populated": [
+              33.4,
+              47.8,
+              49.3,
+              50.1
+            ],
+            "dense520": [
+              127.6,
+              139.5,
+              152,
+              152.9
+            ],
+            "local": [
+              35.9,
+              50.2,
+              54,
+              66.4
+            ],
+            "world1023": [
+              33.2,
+              38.7,
+              41.3,
+              44.9
+            ]
+          },
+          "pointerFeedbackP50P95P99WorstMs": {
+            "fresh": [
+              32.9,
+              33.8,
+              37,
+              50.5
+            ],
+            "populated": [
+              32.5,
+              38.7,
+              48.8,
+              50.1
+            ],
+            "dense520": [
+              126,
+              141.2,
+              183.4,
+              200
+            ],
+            "local": [
+              35.3,
+              50.3,
+              54.3,
+              83.3
+            ],
+            "world1023": [
+              32.3,
+              39.9,
+              60.8,
+              93
+            ]
+          },
+          "rendererRenderP95Ms": [
+            1.1,
+            1.2,
+            16.4,
+            1.6,
+            0.9
+          ],
+          "pageRafP95Ms": [
+            16.8,
+            16.8,
+            133.2,
+            49.9,
+            33.4
+          ],
+          "selectionSuccessfulSamplesPerRun": {
+            "fresh": [
+              30,
+              30,
+              30
+            ],
+            "populated": [
+              30,
+              30,
+              30
+            ],
+            "dense520": [
+              0,
+              0,
+              0
+            ],
+            "local": [
+              40,
+              40,
+              40
+            ],
+            "world1023": [
+              20,
+              20,
+              20
+            ]
+          },
+          "selectionFeedbackP50P95P99WorstMs": {
+            "fresh": [
+              34.3,
+              36.2,
+              36.6,
+              36.6
+            ],
+            "populated": [
+              35.1,
+              36.6,
+              38.3,
+              38.3
+            ],
+            "dense520": null,
+            "local": [
+              48.9,
+              56.3,
+              58.3,
+              58.3
+            ],
+            "world1023": [
+              39.9,
+              49.1,
+              49.1,
+              49.1
+            ]
+          },
+          "intervalBudgetMisses": [
+            "populated",
+            "dense-520",
+            "local"
+          ],
+          "pointerBudgetMisses": [
+            "dense-520"
+          ]
+        },
+        "normal": {
+          "panIntervalP50P95P99WorstMs": {
+            "fresh": [
+              26.1,
+              35.3,
+              47.9,
+              65.6
+            ],
+            "populated": [
+              32.4,
+              43.4,
+              58.2,
+              71.5
+            ],
+            "dense520": [
+              155.6,
+              187.5,
+              203.3,
+              215.4
+            ],
+            "local": [
+              36.2,
+              46.8,
+              56.3,
+              71.5
+            ],
+            "world1023": [
+              30.2,
+              36.6,
+              39.2,
+              46.8
+            ]
+          },
+          "pointerFeedbackP50P95P99WorstMs": {
+            "fresh": [
+              26.3,
+              40.1,
+              56.1,
+              63.1
+            ],
+            "populated": [
+              32.5,
+              49.3,
+              64.5,
+              72
+            ],
+            "dense520": [
+              154,
+              184.1,
+              208.4,
+              223.5
+            ],
+            "local": [
+              36.1,
+              64.8,
+              72.5,
+              82.6
+            ],
+            "world1023": [
+              30.4,
+              50.8,
+              58,
+              73
+            ]
+          },
+          "rendererRenderP95Ms": [
+            1.2,
+            1.6,
+            24.2,
+            1.4,
+            0.8
+          ],
+          "pageRafP95Ms": [
+            33.4,
+            33.4,
+            150,
+            50,
+            49.9
+          ],
+          "selectionSuccessfulSamplesPerRun": {
+            "fresh": [
+              29,
+              30,
+              20
+            ],
+            "populated": [
+              20,
+              20,
+              21
+            ],
+            "dense520": [
+              0,
+              0,
+              0
+            ],
+            "local": [
+              39,
+              39,
+              39
+            ],
+            "world1023": [
+              19,
+              20,
+              20
+            ]
+          },
+          "selectionFeedbackP50P95P99WorstMs": {
+            "fresh": [
+              54.9,
+              59.4,
+              63.1,
+              63.1
+            ],
+            "populated": [
+              64.2,
+              68.3,
+              68.7,
+              68.7
+            ],
+            "dense520": null,
+            "local": [
+              66.8,
+              79.6,
+              82.6,
+              82.6
+            ],
+            "world1023": [
+              55.2,
+              72.9,
+              72.9,
+              72.9
+            ]
+          },
+          "intervalBudgetMisses": [
+            "fresh",
+            "populated",
+            "dense-520",
+            "local",
+            "world-1023"
+          ],
+          "pointerBudgetMisses": [
+            "dense-520"
+          ]
+        }
+      }
+    },
+    "remainingBlockers": [
+      "Intel UHD 620/equivalent target-device evidence pending",
+      "Low pan p95 misses populated/dense-520/local; normal misses all five fixtures",
+      "Dense-520 pointer-feedback p95 misses low and normal budgets",
+      "RESOURCE_LEDGER_STAGE_05 blocks authoritative populated LIVE extraction",
+      "Stage 39021863668 frontend E2E: 12 failures, 99 passes, 5 skips"
+    ]
+  }
 }
