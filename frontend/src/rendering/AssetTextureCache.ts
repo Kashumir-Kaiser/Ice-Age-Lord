@@ -142,6 +142,13 @@ export class AssetTextureCache {
   get gpuBytes():number {let n=0;for(const path of this.owned){const entry=shared.get(path);if(entry?.texture)n+=entry.bytes;}return n;}
   get pending():number {let n=0;for(const path of this.owned)if(shared.get(path)?.state==='pending')n++;return n;}
   get deferred():number{return this.rejected.size;}
+  /** Current blockers for opt-in map QA diagnostics; does not affect rendering or admission. */
+  get readinessDiagnostics():{id:string;state:'loading'|'budget-deferred';refs:number;reservedBytes:number}[]{
+    const details:{id:string;state:'loading'|'budget-deferred';refs:number;reservedBytes:number}[]=[];
+    for(const path of this.owned){const entry=shared.get(path);if(entry?.state==='pending')details.push({id:path,state:'loading',refs:entry.refs,reservedBytes:entry.reservedBytes});}
+    for(const path of this.rejected)details.push({id:path,state:'budget-deferred',refs:0,reservedBytes:this.estimates.get(path.split('?')[0])??0});
+    return details.sort((a,b)=>a.id.localeCompare(b.id));
+  }
   retain(paths:ReadonlySet<string>):void {
     const resolved=new Set(Array.from(paths).map(path=>this.url(path)));
     for(const path of this.rejected)if(!resolved.has(path))this.rejected.delete(path);

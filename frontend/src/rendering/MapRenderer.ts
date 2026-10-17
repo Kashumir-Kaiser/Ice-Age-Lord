@@ -351,7 +351,7 @@ export class MapRenderer {
     m.effectSprites=this.effectDraws.length;
     let terrainGPUBytes=0;for(const texture of this.chunkTextures.values())terrainGPUBytes+=texture.source.width*texture.source.height*4;
     m.textureBytes=this.app?this.assets.gpuBytes+terrainGPUBytes+this.architectureTextureBytes+this.renderTargetBytes():0;
-    m.decodedBytes=this.assets.bytes+this.terrain.bytes+this.terrain.scratchBytes;m.terrainBytes=terrainGPUBytes;m.queued=this.terrain.pending;m.pendingTextures=this.assets.pending+this.assets.deferred;m.visible=buildingObjects.length+props.length;m.total=this.snapshot.buildings.length+worldProps.length;
+    m.decodedBytes=this.assets.bytes+this.terrain.bytes+this.terrain.scratchBytes;m.terrainBytes=terrainGPUBytes;m.queued=this.terrain.pending;m.pendingTextures=this.assets.pending+this.assets.deferred;m.pendingTextureDetails=this.metrics.enabled?this.assets.readinessDiagnostics:[];m.visible=buildingObjects.length+props.length;m.total=this.snapshot.buildings.length+worldProps.length;
     m.quality=this.quality;m.terrainLevel=this.level;m.visibleTerrainChunks=chunkCoverage(bounds,this.level);m.prefetchChunks=prefetched;
   }
   private groundDraw(chunk:TerrainChunk):Draw {
