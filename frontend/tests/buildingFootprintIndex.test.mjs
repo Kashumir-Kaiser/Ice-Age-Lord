@@ -10,6 +10,25 @@ const intersectsBruteForce = (buildings, prop) => buildings.some(building => {
     Math.abs(prop.y - building.point.y) < depth / 2 + prop.size;
 });
 
+test('query buckets deduplicate wide footprints without changing strict edge results', () => {
+  const buildings = [
+    { id: 'wide', point: { x: 0, y: 0 }, orientation: 'north', footprint: { widthM: 128, depthM: 96 } },
+  ];
+  const index = new BuildingFootprintIndex(buildings, 8);
+  // The first prop spans 25 cells, all containing the same footprint candidate.
+  const cases = [
+    [{ x: 0, y: 0, size: 16 }, true],
+    [{ x: 80, y: 0, size: 16 }, false], // exact footprint-plus-prop edge
+    [{ x: 79.999, y: 0, size: 16 }, true],
+    [{ x: 0, y: 0, size: 0 }, true],
+    [{ x: 80, y: 0, size: 16 }, false], // a fresh epoch must not reuse the previous hit
+  ];
+  for (const [prop, expected] of cases) {
+    assert.equal(index.overlaps(prop), expected);
+    assert.equal(index.overlaps(prop), intersectsBruteForce(buildings, prop));
+  }
+});
+
 test('footprint index preserves strict boundary and orientation semantics', () => {
   const buildings = [
     { id: 'north', point: { x: 0, y: 0 }, orientation: 'north', footprint: { widthM: 8, depthM: 4 } },

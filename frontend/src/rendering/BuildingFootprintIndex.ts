@@ -9,7 +9,7 @@ export type FootprintBuilding = {
 
 export type PropPoint = { x: number; y: number; size: number };
 
-type Bounds = { minX: number; maxX: number; minY: number; maxY: number; centerX: number; centerY: number; halfWidth: number; halfDepth: number };
+type Bounds = { minX: number; maxX: number; minY: number; maxY: number; centerX: number; centerY: number; halfWidth: number; halfDepth: number; queryEpoch: number };
 const MAX_BUCKETS_PER_FOOTPRINT = 256;
 const MAX_QUERY_BUCKETS = 256;
 
@@ -22,6 +22,7 @@ export class BuildingFootprintIndex {
   private readonly allFootprints: Bounds[] = [];
   private readonly broadFootprints: Bounds[] = [];
   private readonly cellSize: number;
+  private queryEpoch = 0;
 
   constructor(buildings: readonly FootprintBuilding[], cellSize = 32) {
     if (!(cellSize > 0) || !Number.isFinite(cellSize)) throw new RangeError('cellSize must be finite and positive');
@@ -42,6 +43,7 @@ export class BuildingFootprintIndex {
         centerY: building.point.y,
         halfWidth,
         halfDepth,
+        queryEpoch: 0,
       };
       this.allFootprints.push(bounds);
       if (![bounds.minX, bounds.maxX, bounds.minY, bounds.maxY].every(Number.isFinite)) {
@@ -69,25 +71,45 @@ export class BuildingFootprintIndex {
 
   /** Matches the renderer's strict footprint-plus-prop-size overlap rule. */
   overlaps(prop: PropPoint): boolean {
-    if (![prop.x, prop.y, prop.size].every(Number.isFinite) || prop.size < 0) return false;
-    const minX = this.cell(prop.x - prop.size);
-    const maxX = this.cell(prop.x + prop.size);
-    const minY = this.cell(prop.y - prop.size);
-    const maxY = this.cell(prop.y + prop.size);
+    if (!Number.isFinite(prop.x) || !Number.isFinite(prop.y) || !Number.isFinite(prop.size) || prop.size < 0) return false;
+    const minPropX = prop.x - prop.size, maxPropX = prop.x + prop.size;
+    const minPropY = prop.y - prop.size, maxPropY = prop.y + prop.size;
+    const minX = this.cell(minPropX), maxX = this.cell(maxPropX);
+    const minY = this.cell(minPropY), maxY = this.cell(maxPropY);
     const columns = maxX - minX + 1, rows = maxY - minY + 1;
-    if (![minX, maxX, minY, maxY].every(Number.isSafeInteger) ||
-        ![prop.x - prop.size, prop.x + prop.size, prop.y - prop.size, prop.y + prop.size].every(Number.isFinite) ||
+    if (!Number.isSafeInteger(minX) || !Number.isSafeInteger(maxX) ||
+        !Number.isSafeInteger(minY) || !Number.isSafeInteger(maxY) ||
+        !Number.isFinite(minPropX) || !Number.isFinite(maxPropX) ||
+        !Number.isFinite(minPropY) || !Number.isFinite(maxPropY) ||
         columns <= 0 || rows <= 0 || columns * rows > MAX_QUERY_BUCKETS) {
       return this.allFootprints.some(bounds => this.overlapsBounds(bounds, prop));
     }
-    const candidates = new Set<Bounds>();
-    for (const bounds of this.broadFootprints) candidates.add(bounds);
+    const epoch = this.nextQueryEpoch();
+    for (const bounds of this.broadFootprints) {
+      if (bounds.queryEpoch === epoch) continue;
+      bounds.queryEpoch = epoch;
+      if (this.overlapsBounds(bounds, prop)) return true;
+    }
     for (let y = minY; y <= maxY; y++) {
       for (let x = minX; x <= maxX; x++) {
-        for (const bounds of this.buckets.get(this.key(x, y)) ?? []) candidates.add(bounds);
+        const bucket = this.buckets.get(this.key(x, y));
+        if (!bucket) continue;
+        for (const bounds of bucket) {
+          if (bounds.queryEpoch === epoch) continue;
+          bounds.queryEpoch = epoch;
+          if (this.overlapsBounds(bounds, prop)) return true;
+        }
       }
     }
-    return [...candidates].some(bounds => this.overlapsBounds(bounds, prop));
+    return false;
+  }
+
+  private nextQueryEpoch(): number {
+    if (this.queryEpoch === Number.MAX_SAFE_INTEGER) {
+      for (const bounds of this.allFootprints) bounds.queryEpoch = 0;
+      this.queryEpoch = 0;
+    }
+    return ++this.queryEpoch;
   }
 
   private overlapsBounds(bounds: Bounds, prop: PropPoint): boolean {
