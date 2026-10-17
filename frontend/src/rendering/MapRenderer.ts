@@ -279,7 +279,7 @@ export class MapRenderer {
     const drawBuilding=(b:typeof nodes[number])=>{
       const asset=b.asset!;this.assets.register(asset,useAtlas);const lod=b.lod;
       if(b.slice&&draws.some(d=>d.id===b.entityId+':body-fallback'))return;
-      const occludes=Boolean(target&&!b.selected&&b.depth>target!.y&&pointInTransformedPolygon(target!,b.slice?.hull??asset.occlusionRegion.upper,b.rect));
+      const occludes=this.snapshot.mode==='focus'&&Boolean(target&&!b.selected&&b.depth>target!.y&&pointInTransformedPolygon(target!,b.slice?.hull??asset.occlusionRegion.upper,b.rect));
       if(lod==='regional'&&this.snapshot.mode!=='planning'){draws.push({id:b.id+':symbol',path:asset.layers.uiIcon!,...b.symbol,alpha:b.draft?.55:1});return;}
       const flame=asset.mapFlame,frame=flame?flameFrame(this.effects.time,flame.frames.length,flame.fps,this.reducedMotion):0;
       const key=flame?flameKey(flame.path,frame):null;
