@@ -164,7 +164,7 @@ test('fresh API save reveals opening contents by inspection and preserves one-ti
   }
 });
 
-test('physical supply, harvest and fire refuelling use conserved inventory; survival state survives restart', async () => {
+test('physical supply remains conserved; unsupported harvest fails closed and state survives restart', async () => {
   const harness = createHarness();
   try {
     assert.deepEqual(harness.created.view.inventory.inspectableContainers.map(container => container.containerId), ['LL-CNT-CARRIED-FOOD-BAG-01']);
@@ -199,37 +199,23 @@ test('physical supply, harvest and fire refuelling use conserved inventory; surv
     const wood = world.resources.find(resource => resource.id === 'RES-LL01-06')!;
     await harness.send('move', { actorId: 'LI_LAN', destination: wood.location });
     await completeActiveMove(harness);
-    const beforeHarvest = harness.currentState();
-    const availableWood = beforeHarvest.spatial.resourceBalances.find(balance => balance.resourceId === wood.id)!;
-    await harness.send('harvest', {
-      actorId: 'LI_LAN', resourceId: wood.id, materialId: wood.materialId, quantity: 1, toolItemId: carriedAxe!.itemId,
-    });
-    const harvest = harness.currentState().spatial.harvestJobs.at(-1)!;
-    assert.equal(harvest.status, 'active');
-    await harness.advanceSimulationBy(2 * 60 * 60 * 1000);
-    const completedState = harness.currentState();
-    const completed = completedState.spatial.harvestJobs.find(job => job.id === harvest.id)!;
-    assert.equal(completed.status, 'completed');
-    assert.equal(completed.extractedQuantity, 1);
-    assert.equal(completedState.spatial.resourceBalances.find(balance => balance.resourceId === wood.id)?.remaining, availableWood.remaining - 1);
-    const deliveredWood = completedState.inventory.containers.find(container => container.id === bagId)?.stacks.find(stack => stack.templateId === 'WOOD');
-    assert.equal(deliveredWood?.quantity, 1, 'completed real harvest delivers a real WOOD stack to the player bag');
 
-    await harness.send('move', { actorId: 'LI_LAN', destination: world.origin });
-    await completeActiveMove(harness);
-    const beforeFuelAttempt = structuredClone(harness.currentState().inventory.containers.find(container => container.id === bagId)?.stacks);
-    const fuelBeforeRefuel = harness.currentState().territory.survivalFire.fuelRemaining;
-    const refuelRequest = {
-      schemaVersion: 1, saveId: harness.saveId, commandId: 'stage09-refuel-known-fuel', expectedRevision: harness.currentState().revision,
-      type: 'refuel_fire', payload: { containerId: bagId, itemId: deliveredWood!.itemId, quantity: 1 },
+    const beforeHarvest = harness.currentState();
+    const harvestRequest = {
+      schemaVersion: 1, saveId: harness.saveId, commandId: 'stage09-harvest-source-blocked', expectedRevision: beforeHarvest.revision,
+      type: 'harvest', payload: {
+        actorId: 'LI_LAN', resourceId: wood.id, materialId: wood.materialId, quantity: 1, toolItemId: carriedAxe!.itemId,
+      },
     };
-    assert.equal(harness.service.preview(harness.saveId, refuelRequest).availability.enabled, true);
-    const refuel = await harness.service.executeCommand(harness.saveId, refuelRequest);
-    assert.equal(refuel.receipt.accepted, true);
-    assert.deepEqual(harness.currentState().inventory.containers.find(container => container.id === bagId)?.stacks, beforeFuelAttempt?.filter(stack => stack.itemId !== deliveredWood!.itemId));
-    assert.equal(harness.currentState().territory.survivalFire.fuelRemaining, fuelBeforeRefuel! + 1);
-    assert.equal(harness.currentState().territory.survivalFire.fuelKnowledge, 'state_unobserved');
-    assert.equal(harness.currentState().survival.blocker, null);
+    assert.equal(harness.service.preview(harness.saveId, harvestRequest).availability.enabled, false);
+    await assert.rejects(
+      harness.service.executeCommand(harness.saveId, harvestRequest),
+      (error: unknown) => {
+        assert.equal((error as { code?: string }).code, 'RULE_NOT_READY');
+        return true;
+      },
+    );
+    assert.deepEqual(harness.currentState(), beforeHarvest, 'a rejected extraction leaves time, revision, inventory, jobs, and resource balances unchanged');
 
     const beforeRestart = harness.currentState();
     const recovered = harness.restart();
