@@ -62,7 +62,7 @@ async function ensureCalibrationOpen(page){
  const details=page.locator('.territory-calibration');
  if(!await details.evaluate(node=>node.open))await details.locator('summary').click();
 }
-async function capture(page,name,viewport,{waitForIdle=true}={}){
+async function capture(page,name,viewport,{waitForIdle=true,beforeScreenshot=null}={}){
  await page.locator('.map-render-host').evaluate(node=>node.scrollIntoView({block:'center',inline:'nearest'}));
  const group=/^damaged-house/.test(name)?'architecture/damaged-house/':/^tomb-entry-/.test(name)?'architecture/tomb-entry/':/^(watchtower|elemental)-/.test(name)?'architecture/prototypes/':/^(farmhouse|late)-/.test(name)?'architecture/progression/':/^(house|tower)-/.test(name)?'architecture/extended/':/^(wall|gate)-/.test(name)?'architecture/':'';
  const directory=resolve(output,String(viewport.width),group);mkdirSync(directory,{recursive:true});
@@ -72,6 +72,7 @@ async function capture(page,name,viewport,{waitForIdle=true}={}){
   writeFileSync(resolve(output,filename+'.failure.json'),JSON.stringify({name,phase:'renderer-idle-poll',viewport,dpr,quality,metrics,readiness:error?.mapReadiness??null,error:String(error)},null,2));
   await page.screenshot({path:resolve(output,filename+'.failure.png'),animations:'disabled'});throw error;
  }
+ if(beforeScreenshot)await beforeScreenshot();
  await page.screenshot({path:resolve(output,filename),animations:'disabled'});
  const row={filename,scenario:name,viewport,dpr,quality,reviewStatus:'pending-parent-visual-review',provenance:'demo-only-read-only-visual-qa',metrics:await page.evaluate(()=>window.__mapMetrics.at(-1))};
  const mapScene=page.locator('.map-scene');
@@ -433,13 +434,27 @@ try{
    }
    const poseRows=[];
    for(const [index,orientation] of orientations.entries()){
+    let beforeScreenshot=null;
     if(orientationAssetIds[family]){
      const assetId=orientationAssetIds[family],item=calibration.locator(`.territory-building.is-draft[data-asset-id="${assetId}"]`).last();
-     const renderedOrientation=await item.getAttribute('data-orientation');
-     if(renderedOrientation!==orientation)throw new Error(`${family} requested ${orientation} but the authored placement rendered ${renderedOrientation}`);
+     const node=await item.elementHandle();
+     if(!node)throw new Error(`${family} has no active SVG draft for ${assetId}`);
+     const readActive=()=>node.evaluate(el=>({id:el.getAttribute('data-building-id'),assetId:el.getAttribute('data-asset-id'),orientation:el.getAttribute('data-orientation'),connected:el.isConnected})).catch(()=>null);
+     const waitForPaint=before=>node.evaluate(async(el,expected)=>{
+      const read=()=>({id:el.getAttribute('data-building-id'),assetId:el.getAttribute('data-asset-id'),orientation:el.getAttribute('data-orientation'),connected:el.isConnected});
+      const matches=value=>value?.connected&&value.id===expected.id&&value.assetId===expected.assetId&&value.orientation===expected.orientation;
+      if(!matches(read()))return null;
+      const frame=()=>new Promise(resolve=>requestAnimationFrame(()=>resolve()));
+      await frame();await frame();
+      const applied=read();return matches(applied)?applied:null;
+     },before).catch(()=>null);
+     const applied=await waitForAppliedQaOrientation(readActive,waitForPaint,assetId,orientation);
+     beforeScreenshot=async()=>{
+      const current=await readActive();
+      if(!current?.connected||current.id!==applied.id||current.assetId!==assetId||current.orientation!==orientation)throw new Error(`${family} SVG draft changed before capture: ${JSON.stringify(current)}`);
+     };
     }
-    if(orientationAssetIds[family])await waitForAppliedQaOrientation(()=>calibration.evaluate(()=>window.__mapMetrics?.at(-1)??null),orientationAssetIds[family],orientation);
-    const row=await capture(calibration,`${family}-${orientation}`,viewport);
+    const row=await capture(calibration,`${family}-${orientation}`,viewport,{beforeScreenshot});
     if(orientationAssetIds[family]){
      const assetId=orientationAssetIds[family],item=calibration.locator(`.territory-building.is-draft[data-asset-id="${assetId}"]`).last(),box=await item.boundingBox();
      if(!box)throw new Error(`${family}-${orientation} authored draft has no visible crop bounds`);
