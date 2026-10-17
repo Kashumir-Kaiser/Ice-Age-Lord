@@ -350,9 +350,9 @@ test('backup import preserves untouched RES-02 opening stock after rejected harv
     payload: { actorId: before.ownedUnits.find(unit => !before.travel.orders.some(order => order.status === 'active' && order.actorIds.includes(unit.id)))?.id ?? before.player.id, resourceId: 'RES-LL01-02', materialId: 'STONE', quantity: 1, toolItemId: 'missing-tool' },
   });
   assert.equal(rejected.receipt.accepted, false);
-  assert.equal(rejected.receipt.code, 'RESOURCE_NOT_ACCESSIBLE');
+  assert.equal(rejected.receipt.code, 'ACTOR_ALREADY_TRAVELLING');
   const afterRejectedHarvest = fixture.service.loadSave(saveId).state;
-  assert.equal(afterRejectedHarvest.receipts.at(-1)?.receipt.code, 'RESOURCE_NOT_ACCESSIBLE');
+  assert.equal(afterRejectedHarvest.receipts.at(-1)?.receipt.code, 'ACTOR_ALREADY_TRAVELLING');
   const beforeWithoutReceipts = structuredClone(before);
   beforeWithoutReceipts.receipts = [];
   const afterWithoutReceipts = structuredClone(afterRejectedHarvest);
