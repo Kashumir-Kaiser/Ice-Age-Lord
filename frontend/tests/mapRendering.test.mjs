@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { spriteRect, referenceSize, artPolygon, composition, resolveOrientation, architecturalCompositePlan, qaArtLayerMetrics, createCompositionCache } from '../src/rendering/SpriteRegistration.ts';
-import { pointInPolygon, pointerCSS, pickStack, cyclePick } from '../src/rendering/MapPicking.ts';
+import { pointInPolygon, pointInTransformedPolygon, pointerCSS, pickStack, cyclePick } from '../src/rendering/MapPicking.ts';
 import { TerrainSampler, noise, chunkLevel } from '../src/rendering/TerrainSampler.ts';
 import { depthOrder } from '../src/rendering/DepthOrder.ts';
 import { projectBuildings, rectPolygon } from '../src/rendering/BuildingGeometry.ts';
@@ -207,5 +207,22 @@ test('north-only QA fixtures do not claim compass equivalence for asymmetric pla
   const item=manifest.assets.find(a=>a.assetId===id);assert.ok(item,id);
   assert.deepEqual(item.equivalentOrientations??[],[],id+' must not pass an unpainted pose off as symmetry');
   for(const orientation of ['east','south','west'])assert.equal(resolveOrientation(item,orientation).missing,true,id+':'+orientation);
+ }
+});
+
+test('transformed normalized polygon picking matches allocated screen polygon including epsilon boundaries',()=>{
+ const polygon=[[0,0],[1,0],[1,.7],[.4,1],[0,.7]],rect={x:-17.25,y:42.5,width:83.75,height:61.125};
+ const screen=artPolygon(polygon,rect),points=[
+  {x:rect.x+rect.width*.5,y:rect.y+rect.height*.4},
+  {x:rect.x-1,y:rect.y-1},
+  {x:rect.x+rect.width*.4,y:rect.y+rect.height},
+  ...[-1e-7,-.99e-7,0,.99e-7,1e-7].map(delta=>({x:rect.x+rect.width*.5,y:rect.y+delta})),
+  ...[-1e-7,-.99e-7,0,.99e-7,1e-7].map(delta=>({x:rect.x+rect.width*.5,y:rect.y+delta-1e-7})),
+ ];
+ for(const point of points)assert.equal(pointInTransformedPolygon(point,polygon,rect),pointInPolygon(point,screen),JSON.stringify(point));
+ for(const polygon of [[],[[0,0]],[[0,0],[1,0]]]){
+  const transformed=artPolygon(polygon,rect);
+  for(const point of [{x:rect.x,y:rect.y},{x:rect.x+rect.width*.5,y:rect.y}])
+   assert.equal(pointInTransformedPolygon(point,polygon,rect),pointInPolygon(point,transformed));
  }
 });
